@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-yaml
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.6.0
+    hooks:
+      - id: prettier
+
+  - repo: https://github.com/yelp/detect-secrets
+    rev: v1.2.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: package.lock.json
