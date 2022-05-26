@@ -1,0 +1,15 @@
+{
+  "extends": "ts-node/node16/tsconfig.json",
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+    "//comment": "ts-node compiler options that will override when run by ts-node",
+    "compilerOptions": {}
+  },
+  "//comment": "we are almost always either bundling or ts-noding - if we do run tsc for type checking we never want it to output .js files",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["./src/**/*", "./dbschema/edgeql-js/**/*", "./tests/**/*"],
+  "exclude": ["node_modules"]
+}

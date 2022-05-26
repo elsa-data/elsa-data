@@ -5,12 +5,13 @@ module release {
 
     type Release {
 
-        property foos -> array<str>;
-
         required property created -> datetime;
 
         property started -> datetime;
         property ended -> datetime;
+
+        property applicationIdentifier -> str;
+        property applicationCoded -> json;
 
         # 1..n datasets that are suitable for releasing in this release
         # (note: this is the master set of items - the actual released data may be a subset of this)
@@ -27,7 +28,7 @@ module release {
 
         # the set of resources explicitly chosen for exclusion no matter what an automated
         # algorithm says
-        multi link manual_exclusions -> dataset::DatasetShareable {
+        multi link manualExclusions -> dataset::DatasetShareable {
             property who -> str;
             property recorded -> str;
             property reason -> str;
@@ -35,13 +36,20 @@ module release {
     }
 
     type AuditEvent {
-        property occurredDateTime -> datetime;
+        # when the event occurred - including optional duration if
+        # modelling an event that occurred over a significant period of time
+        # in this case occurredDateTime always records the 'beginning' of the activity
+        # for instance copying a large file may take 10 minutes, starting 9am on Friday
+        # -> occurredDateTime = Friday 9am, occurredDuration = 10 mins
 
-        #constraint expression on (
-        #        __subject__.occurredDateTime is not null or __subject__.occurredDuration is not null
-        #    );
+        required property occurredDateTime -> datetime;
+        property occurredDuration -> duration;
 
-        required property recorded -> datetime;
+        # when this audit record has been made (should be close to occurredDateTime!)
+        required property recordedDateTime -> datetime {
+            default := datetime_current();
+            readonly := true;
+        }
 
         property what -> str;
     }

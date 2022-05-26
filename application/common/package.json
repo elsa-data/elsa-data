@@ -1,0 +1,15 @@
+{
+  "name": "@umccr/elsa-types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Common types for Elsa Data",
+  "main": "index.ts",
+  "author": "Andrew Patterson",
+  "license": "MIT",
+  "dependencies": {
+    "@sinclair/typebox": "^0.23.5"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "watch": ["src", ".env", "dbschema"],
+  "ext": "js,ts,json",
+  "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts", "tests/**/*"],
+  "exec": "ts-node --transpile-only --require dotenv/config src/bootstrap-local.ts"
+}
