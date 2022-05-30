@@ -5,12 +5,12 @@ import { blankTestData, insertTestData } from "./test-data/insert-test-data";
 console.log("Creating Fastify app");
 
 const start = async () => {
-  await blankTestData();
-  await insertTestData();
-
   console.log("Locating secrets/settings");
 
   const settings = await getLocalSettings();
+
+  await blankTestData();
+  await insertTestData(settings);
 
   const app = new App(settings);
 

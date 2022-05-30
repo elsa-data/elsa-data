@@ -9,6 +9,7 @@ import {
 import { ElsaSettings } from "./bootstrap-settings";
 import { generators } from "openid-client";
 import { registerReleaseRoutes } from "./api/routes/release";
+import { registerDatasetsRoutes } from "./api/routes/datasets";
 
 export class App {
   public server: FastifyInstance;
@@ -39,7 +40,11 @@ export class App {
 
     this.server.register(helmet, { contentSecurityPolicy: false });
 
+    // inject the Elsa settings into every request (this is a shared immutable object)
+    this.server.decorateRequest("settings", settings);
+
     registerReleaseRoutes(this.server);
+    registerDatasetsRoutes(this.server);
 
     /*const client = new settings.oidcIssuer.Client({
       client_id: settings.oidcClientId,
@@ -174,6 +179,7 @@ export class App {
 
     addAttribute("data-oidc-issuer", this.settings.oidcIssuer.metadata.issuer);
     addAttribute("data-oidc-client-id", this.settings.oidcClientId);
+    // TODO: this is not meant to be passed to frontend.. needs PKCE enabled at OIDC endpoint first though
     addAttribute("data-oidc-client-secret", this.settings.oidcClientSecret);
     addAttribute("data-oidc-redirect-uri", "http://localhost:3000/cb");
 

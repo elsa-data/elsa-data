@@ -1,7 +1,8 @@
 import { FastifyInstance } from "fastify";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { ReleaseType } from "@umccr/elsa-types";
+import { ApplicationCodedTypeV1, ReleaseType } from "@umccr/elsa-types";
+import { ElsaSettings } from "../../bootstrap-settings";
 
 const client = edgedb.createClient();
 
@@ -25,6 +26,8 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     "/api/releases/:rid",
     {},
     async function (request, reply) {
+      const elsaSettings: ElsaSettings = (request as any).settings;
+
       const releaseId = request.params.rid;
 
       const thisRelease = await e
@@ -33,11 +36,45 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
           datasets: {
             externalIdentifiers: true,
           },
+          applicationCoded: true,
+          applicationDacIdentifier: true,
+          applicationDacTitle: true,
+          applicationDacDetails: true,
           filter: e.op(r.id, "=", e.uuid(releaseId)),
         }))
         .run(client);
 
-      if (thisRelease != null) reply.send(thisRelease);
+      if (thisRelease != null)
+        reply.send({
+          id: thisRelease.id,
+          applicationCoded:
+            thisRelease.applicationCoded != null
+              ? JSON.parse(thisRelease.applicationCoded)
+              : {},
+          datasets: thisRelease.datasets,
+        });
+    }
+  );
+
+  fastify.put<{ Params: { rid: string }; Request: ApplicationCodedTypeV1 }>(
+    "/api/releases/:rid/application-coded",
+    {},
+    async function (request, reply) {
+      const releaseId = request.params.rid;
+      const newApplicationCoded = request.body;
+
+      console.log(newApplicationCoded);
+
+      const updateStatus = await e
+        .update(e.release.Release, (r) => ({
+          set: (r.applicationCoded = e.json(newApplicationCoded)),
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+        }))
+        .run(client);
+
+      console.log(updateStatus);
+
+      reply.send("ok");
     }
   );
 }

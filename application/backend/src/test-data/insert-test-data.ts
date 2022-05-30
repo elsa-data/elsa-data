@@ -3,6 +3,9 @@ import e from "../../dbschema/edgeql-js";
 import { insertCARDIAC } from "./insert-test-data-cardiac";
 import { insert10G } from "./insert-test-data-10g";
 import { ApplicationCodedTypeV1 } from "@umccr/elsa-types";
+import { ElsaSettings } from "../bootstrap-settings";
+import axios from "axios";
+import { remsApplicationsResponse } from "./mock-responses";
 
 const client = edgedb.createClient();
 
@@ -78,12 +81,12 @@ export async function blankTestData() {
   );
 }
 
-export async function insertTestData() {
+export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
   await insert10G();
   await insertCARDIAC();
   //await insertIICON();
-  await insertRelease1();
+  await insertRelease1(settings);
 
   console.log(
     `  Number of object artifacts present = ${await e
@@ -111,22 +114,55 @@ export async function insertTestData() {
   console.log(await eachDs.run(client));
 }
 
-async function insertRelease1() {
+async function insertRelease1(settings: ElsaSettings) {
   const appCoded: ApplicationCodedTypeV1 = {
     version: 1,
-    researchersInvolved: [],
-    countriesInvolved: ["AU"],
+    countriesInvolved: [
+      {
+        system: "urn:iso:std:iso:3166",
+        code: "AU",
+      },
+    ],
     researchType: {
       code: "DS",
-      diseases: ["SNOMED:asdad"],
+      diseases: [
+        {
+          system: "http://purl.obolibrary.org/obo/mondo.owl",
+          code: "MONDO:0019501",
+          // we have no display value here so that we test rehydrating at the frontend
+        },
+        {
+          system: "http://purl.obolibrary.org/obo/mondo.owl",
+          code: "MONDO:0008678",
+          display: "Williams syndrome",
+        },
+        {
+          system: "http://purl.obolibrary.org/obo/mondo.owl",
+          code: "MONDO:0021531",
+          // we have no display value here so that we test rehydrating at the frontend
+        },
+      ],
     },
     institutesInvolved: [],
   };
 
+  /*const appData = await axios.get(`${settings.remsUrl}/api/applications`, {
+    headers: {
+      "accept": "application/json",
+      "x-rems-api-key": settings.remsBotKey,
+      "x-rems-user-id": settings.remsBotUser,
+    }
+  }); */
+
+  for (const application of remsApplicationsResponse) {
+    if (application["application/state"] === "application.state/approved") {
+    }
+  }
+
   const r1 = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
-      applicationIdentifier: "ABC",
+      applicationDacIdentifier: "ABC",
       applicationCoded: e.json(appCoded),
       datasets: e.select(e.dataset.Dataset, (ds) => ({
         filter: e.op(
@@ -141,6 +177,20 @@ async function insertRelease1() {
   const r2 = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
+      applicationDacIdentifier: "XYZ",
+      applicationCoded: e.json({
+        version: 1,
+        countriesInvolved: [
+          {
+            system: "urn:iso:std:iso:3166",
+            code: "AU",
+          },
+        ],
+        researchType: {
+          code: "HMB",
+        },
+        institutesInvolved: [],
+      }),
       datasets: e.select(e.dataset.Dataset, (ds) => ({
         filter: e.op(
           makeSystemlessIdentifier("CARDIAC"),

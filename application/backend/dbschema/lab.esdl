@@ -4,9 +4,9 @@ module lab {
 
     abstract type ArtifactBase {
         required property url -> str;
+        required property size -> int64;
 
         property checksums -> array<tuple<type: ChecksumType, value: str>>;
-        property size -> int64;
     }
 
     abstract type RunArtifactBase extending ArtifactBase {
@@ -16,8 +16,21 @@ module lab {
     }
 
     type RunArtifactFastqPair extending RunArtifactBase {
-        property url_r2 -> str;
+        property urlR2 -> str;
     }
+
+    abstract type AnalysesArtifactBase extending ArtifactBase {
+    }
+
+    type AnalysesArtifactVcf extending AnalysesArtifactBase {
+        property urlTbi -> str;
+    }
+
+    type AnalysesArtifactBam extending AnalysesArtifactBase {
+        property urlBai -> str;
+    }
+
+
 
     # a collection of artifacts uploaded/submitted in a batch that has no information about run/analyses
     type SubmissionBatch {
@@ -36,9 +49,9 @@ module lab {
     # a genomic sequencing run that outputs artifacts
     type Run {
         property platform -> str;
-        property run_date -> datetime;
+        property runDate -> datetime;
 
-        multi link artifacts_produced -> RunArtifactBase {
+        multi link artifactsProduced -> RunArtifactBase {
             constraint exclusive;
             on target delete allow;
        };
@@ -46,7 +59,7 @@ module lab {
 
     type Analyses {
         property pipeline -> str;
-        property analyses_date -> datetime;
+        property analysesDate -> datetime;
 
         multi link input -> RunArtifactBase;
 
@@ -56,15 +69,5 @@ module lab {
         };
     }
 
-    abstract type AnalysesArtifactBase extending ArtifactBase {
-    }
-
-    type AnalysesArtifactVcf extending AnalysesArtifactBase {
-        property url_tbi -> str;
-    }
-
-    type AnalysesArtifactBam extending AnalysesArtifactBase {
-        property url_bai -> str;
-    }
 
 }

@@ -5,6 +5,8 @@ import { useAuth } from "react-oidc-context";
 import { LayoutNoAuthPage } from "./layouts/layout-noauth-page";
 import { ReleasesPage } from "./pages/releases-page";
 import { ReleasesSpecificPage } from "./pages/releases-specific-page";
+import { DatasetsPage } from "./pages/datasets-page";
+import { DatasetsSpecificPage } from "./pages/datasets-specific-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -49,6 +51,11 @@ export const App: React.FC = () => {
         <Route
           path={`/releases/:releaseId`}
           element={<ReleasesSpecificPage />}
+        />
+        <Route path={`/datasets`} element={<DatasetsPage />} />
+        <Route
+          path={`/datasets/:datasetId`}
+          element={<DatasetsSpecificPage />}
         />
         <Route path="*" element={<NoMatch />} />
       </Routes>

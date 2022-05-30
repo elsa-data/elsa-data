@@ -19,7 +19,12 @@ export function makeEmptyIdentifierArray() {
   return e.array([e.tuple({ system: "", value: "" })]);
 }
 
-export type FastqPair = [r1: string, r2: string];
+export type FastqPair = [
+  r1: string,
+  r2: string,
+  r1size: number,
+  r2size: number
+];
 
 /**
  * Insert artifacts where each has their own pseudo run and analyses
@@ -33,27 +38,30 @@ export type FastqPair = [r1: string, r2: string];
  */
 export async function createArtifacts(
   vcf: string,
+  vcfSize: number,
   vcfIndex: string,
   bam: string,
+  bamSize: number,
   bamIndex: string,
   fastqs: FastqPair[]
 ) {
   const pairInserts = fastqs.map((fq) =>
     e.insert(e.lab.RunArtifactFastqPair, {
       url: fq[0],
-      url_r2: fq[1],
+      size: fq[2],
+      urlR2: fq[1],
     })
   );
 
   // we insert all the fastq pairs as if they are owned by a pseudo-run
   const r1 = await e
     .insert(e.lab.Run, {
-      artifacts_produced: e.set(...pairInserts),
+      artifactsProduced: e.set(...pairInserts),
     })
     .run(client);
 
-  const r1select = e.select(e.lab.Run.artifacts_produced, (ab) => ({
-    filter: e.op(e.uuid(r1.id), "=", ab["<artifacts_produced[is lab::Run]"].id),
+  const r1select = e.select(e.lab.Run.artifactsProduced, (ab) => ({
+    filter: e.op(e.uuid(r1.id), "=", ab["<artifactsProduced[is lab::Run]"].id),
   }));
 
   // we insert all the bams as owned by a pseudo-analysis
@@ -64,11 +72,13 @@ export async function createArtifacts(
       output: e.set(
         e.insert(e.lab.AnalysesArtifactVcf, {
           url: vcf,
-          url_tbi: vcfIndex,
+          size: vcfSize,
+          urlTbi: vcfIndex,
         }),
         e.insert(e.lab.AnalysesArtifactBam, {
           url: bam,
-          url_bai: bamIndex,
+          size: bamSize,
+          urlBai: bamIndex,
         })
       ),
     })

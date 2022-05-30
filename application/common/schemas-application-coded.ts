@@ -8,6 +8,16 @@ import { Type } from "@sinclair/typebox";
  * using the Typescript types for clearer React/Api code.
  */
 
+export const CodingSchema = Type.Object({
+  system: Type.String(),
+  // I'd like to not have to deal with versioned codes if possible
+  // version: Type.Optional(Type.String()),
+  code: Type.String(),
+  display: Type.Optional(Type.String()),
+  // not sure needed for us
+  // userSelected: Type.Optional(Type.Boolean())
+});
+
 export const ApplicationGeneralResearchSchemaV1 = Type.Object({
   code: Type.Literal("GRU"),
 });
@@ -18,7 +28,7 @@ export const ApplicationHealthMedicalBioResearchSchemaV1 = Type.Object({
 
 export const ApplicationDiseaseResearchSchemaV1 = Type.Object({
   code: Type.Literal("DS"),
-  diseases: Type.Array(Type.String()),
+  diseases: Type.Array(CodingSchema),
 });
 
 export const ApplicationClinicalCareSchemaV1 = Type.Object({
@@ -40,9 +50,8 @@ export const ApplicationCodedSchemaV1 = Type.Object({
     ApplicationClinicalCareSchemaV1,
   ]),
 
-  researchersInvolved: Type.Array(Type.String()),
-  institutesInvolved: Type.Array(Type.String()),
-  countriesInvolved: Type.Array(Type.String()),
+  institutesInvolved: Type.Array(CodingSchema),
+  countriesInvolved: Type.Array(CodingSchema),
 
   studyStart: Type.Optional(Type.String()),
   studyEnd: Type.Optional(Type.String()),

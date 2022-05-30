@@ -23,7 +23,16 @@ module dataset {
     # collected from an organisation/study
 
     type Dataset extending DatasetShareable, DatasetIdentifiable {
+
+        # along with any external identifiers - we require that datasets have an immutable URI
+        # that uniquely identifies them globally
+        required property uri -> str {
+          readonly := true;
+        }
+
         required property description -> str;
+
+        optional link previous -> Dataset;
 
         multi link cases -> DatasetCase {
             on target delete allow;

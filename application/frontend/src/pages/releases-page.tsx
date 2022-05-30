@@ -5,7 +5,8 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { LayoutAuthPage } from "../layouts/layout-auth-page";
-import { Box } from "../helpers/boxes";
+import { Box } from "../components/boxes";
+import { BasicTable } from "../components/tables";
 
 export const ReleasesPage: React.FC = () => {
   const envRelay = useEnvRelay();
@@ -21,9 +22,44 @@ export const ReleasesPage: React.FC = () => {
     {}
   );
 
+  const data = React.useMemo(
+    () => [
+      {
+        col1: "Hello",
+        col2: "World",
+      },
+      {
+        col1: "react-table",
+        col2: "rocks",
+      },
+      {
+        col1: "whatever",
+        col2: "you want",
+      },
+    ],
+    []
+  );
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: "Column 1",
+        accessor: "col1", // accessor is the "key" in the data
+      },
+      {
+        Header: "Column 2",
+        accessor: "col2",
+      },
+    ],
+    []
+  );
+
   return (
     <LayoutAuthPage>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
+        <Box heading="AAA">
+          <BasicTable tableOptions={{ columns: columns, data: data }} />
+        </Box>
         <Box heading="Releases">
           {releaseData && (
             <table className="w-full text-sm text-left text-gray-500 light:text-gray-400">

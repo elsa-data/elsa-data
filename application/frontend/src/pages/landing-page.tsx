@@ -5,7 +5,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { LayoutAuthPage } from "../layouts/layout-auth-page";
-import { Box } from "../helpers/boxes";
 
 export const HomePage: React.FC = () => {
   const envRelay = useEnvRelay();

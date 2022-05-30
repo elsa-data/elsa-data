@@ -5,13 +5,24 @@ module release {
 
     type Release {
 
-        required property created -> datetime;
+        required property created -> datetime {
+             default := datetime_current();
+             readonly := true;
+        };
 
-        property started -> datetime;
-        property ended -> datetime;
+        # the creation of a release will be triggered by an approved application in a DAC
 
-        property applicationIdentifier -> str;
+        property applicationDacIdentifier -> str;
+        property applicationDacTitle -> str;
+        property applicationDacDetails -> str;
+
+
         property applicationCoded -> json;
+
+        property releaseIdentifier -> str;
+
+        property releaseStarted -> datetime;
+        property releaseEnded -> datetime;
 
         # 1..n datasets that are suitable for releasing in this release
         # (note: this is the master set of items - the actual released data may be a subset of this)
