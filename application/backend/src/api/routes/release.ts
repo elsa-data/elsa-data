@@ -14,7 +14,6 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       const allForUser = await e
         .select(e.release.Release, (r) => ({
           ...e.release.Release["*"],
-          datasets: true,
         }))
         .run(client);
 
@@ -33,9 +32,7 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       const thisRelease = await e
         .select(e.release.Release, (r) => ({
           id: true,
-          datasets: {
-            externalIdentifiers: true,
-          },
+          datasetUris: true,
           applicationCoded: true,
           applicationDacIdentifier: true,
           applicationDacTitle: true,
@@ -51,7 +48,10 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
             thisRelease.applicationCoded != null
               ? JSON.parse(thisRelease.applicationCoded)
               : {},
-          datasets: thisRelease.datasets,
+          datasetUris: thisRelease.datasetUris,
+          applicationDacDetails: thisRelease.applicationDacDetails,
+          applicationDacIdentifier: thisRelease.applicationDacIdentifier,
+          applicationDacTitle: thisRelease.applicationDacTitle,
         });
     }
   );

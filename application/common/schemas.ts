@@ -48,12 +48,13 @@ export const DatasetSchemaDeep = Type.Intersect([
   DatasetSchemaNesting,
 ]);
 
-const ReleaseDatasetSchema = Type.Object({});
-
 export const ReleaseSchema = Type.Object({
   id: Type.String(),
-  datasets: Type.Array(ReleaseDatasetSchema),
+  datasetUris: Type.Array(Type.String()),
   applicationCoded: ApplicationCodedSchemaV1,
+  applicationDacIdentifier: Type.Optional(Type.String()),
+  applicationDacTitle: Type.Optional(Type.String()),
+  applicationDacDetails: Type.Optional(Type.String()),
 });
 
 export const DatasetGen3SyncRequestSchema = Type.Object({

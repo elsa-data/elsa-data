@@ -164,13 +164,7 @@ async function insertRelease1(settings: ElsaSettings) {
       created: e.datetime(new Date()),
       applicationDacIdentifier: "ABC",
       applicationCoded: e.json(appCoded),
-      datasets: e.select(e.dataset.Dataset, (ds) => ({
-        filter: e.op(
-          makeSystemlessIdentifier("CARDIAC"),
-          "in",
-          e.array_unpack(ds.externalIdentifiers)
-        ),
-      })),
+      datasetUris: e.array(["urn:fdc:umccr.org:2022:dataset/10g"]),
     })
     .run(client);
 
@@ -191,13 +185,9 @@ async function insertRelease1(settings: ElsaSettings) {
         },
         institutesInvolved: [],
       }),
-      datasets: e.select(e.dataset.Dataset, (ds) => ({
-        filter: e.op(
-          makeSystemlessIdentifier("CARDIAC"),
-          "in",
-          e.array_unpack(ds.externalIdentifiers)
-        ),
-      })),
+      datasetUris: e.array([
+        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
+      ]),
     })
     .run(client);
 }
