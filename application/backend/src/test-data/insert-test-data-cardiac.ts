@@ -1,12 +1,160 @@
 import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e, { lab } from "../../dbschema/edgeql-js";
 import {
+  File,
   createArtifacts,
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
 } from "./insert-test-data-helpers";
 
 const client = edgedb.createClient();
+
+const VCF_FILE_TEST_DATA: File = {
+  name: "19W001062.individual.norm.vcf.gz",
+  url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.individual.norm.vcf.gz",
+  size: 0,
+  checksums: [
+    {
+      type: lab.ChecksumType.MD5,
+      value: "721970cb30906405d4045f702ca72376",
+    },
+  ],
+};
+
+const VCF_INDEX_FILE_TEST_DATA: File = {
+  name: "19W001062.individual.norm.vcf.gz",
+  url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.individual.norm.vcf.gz.tbi",
+  size: 0,
+  checksums: [
+    {
+      type: lab.ChecksumType.MD5,
+      value: "721970cb30906405d4045f702ca72376",
+    },
+  ],
+};
+
+const BAM_FILE_TEST_DATA: File = {
+  name: "19W001062.bam",
+  url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.bam",
+  size: 0,
+  checksums: [
+    {
+      type: lab.ChecksumType.MD5,
+      value: "721970cb30906405d4045f702ca72376",
+    },
+  ],
+};
+
+const BAM_INDEX_FILE_TEST_DATA: File = {
+  name: "19W001062.bam",
+  url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.bam.bai",
+  size: 0,
+  checksums: [
+    {
+      type: lab.ChecksumType.MD5,
+      value: "721970cb30906405d4045f702ca72376",
+    },
+  ],
+};
+
+const FASTQ_FILE_TEST_DATA: File[][] = [
+  [
+    {
+      name: "191001_A00692_0027_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191001_A00692_0027_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002_R1.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+    {
+      name: "191001_A00692_0027_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191001_A00692_0027_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002_R2.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+  ],
+  [
+    {
+      name: "191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R1.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+    {
+      name: "191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R2.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+  ],
+  [
+    {
+      name: "191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R1.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+    {
+      name: "191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R2.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+  ],
+  [
+    {
+      name: "191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003_R1.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+    {
+      name: "191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003",
+      url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003_R2.fastq.gz",
+      size: 0,
+      checksums: [
+        {
+          type: lab.ChecksumType.MD5,
+          value: "721970cb30906405d4045f702ca72376",
+        },
+      ],
+    },
+  ],
+];
 
 export async function insertCARDIAC() {
   await e
@@ -23,122 +171,11 @@ export async function insertCARDIAC() {
               e.insert(e.dataset.DatasetSpecimen, {
                 externalIdentifiers: makeEmptyIdentifierArray(),
                 artifacts: await createArtifacts(
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.individual.norm.vcf.gz",
-                  0,
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.individual.norm.vcf.gz.tbi",
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.bam",
-                  0,
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.bam.bai",
-                  [
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191001_A00692_0027_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191001_A00692_0027_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L002_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                  ]
-                ),
-              })
-            ),
-          }),
-        }),
-        e.insert(e.dataset.DatasetCase, {
-          externalIdentifiers: makeEmptyIdentifierArray(),
-          patients: e.insert(e.dataset.DatasetPatient, {
-            externalIdentifiers: makeSystemlessIdentifierArray("19W001063"),
-            specimens: e.set(
-              e.insert(e.dataset.DatasetSpecimen, {
-                externalIdentifiers: makeEmptyIdentifierArray(),
-                artifacts: await createArtifacts(
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001063.individual.norm.vcf.gz",
-                  0,
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001063.individual.norm.vcf.gz.tbi",
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001063.bam",
-                  0,
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001063.bam.bai",
-                  [
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909261_19W001063_MAN-20190926_NEXTERAFLEXWGS_L001_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909261_19W001063_MAN-20190926_NEXTERAFLEXWGS_L001_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909261_19W001063_MAN-20190926_NEXTERAFLEXWGS_L002_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909261_19W001063_MAN-20190926_NEXTERAFLEXWGS_L002_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909261_19W001063_MAN-20190926_NEXTERAFLEXWGS_L003_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909261_19W001063_MAN-20190926_NEXTERAFLEXWGS_L003_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                  ]
-                ),
-              })
-            ),
-          }),
-        }),
-        e.insert(e.dataset.DatasetCase, {
-          externalIdentifiers: makeEmptyIdentifierArray(),
-          patients: e.insert(e.dataset.DatasetPatient, {
-            externalIdentifiers: makeSystemlessIdentifierArray("19W001134"),
-            specimens: e.set(
-              e.insert(e.dataset.DatasetSpecimen, {
-                externalIdentifiers: makeEmptyIdentifierArray(),
-                artifacts: await createArtifacts(
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001134.individual.norm.vcf.gz",
-                  0,
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001134.individual.norm.vcf.gz.tbi",
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001134.bam",
-                  0,
-                  "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001134.bam.bai",
-                  [
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L001_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L001_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L002_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L002_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L003_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L003_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                    [
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L004_R1.fastq.gz",
-                      "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191025_A00692_0030_TL1909928_19W001134_MAN-20191018_NEXTERAFLEXWGS_L004_R2.fastq.gz",
-                      0,
-                      0,
-                    ],
-                  ]
+                  VCF_FILE_TEST_DATA,
+                  VCF_INDEX_FILE_TEST_DATA,
+                  BAM_FILE_TEST_DATA,
+                  BAM_INDEX_FILE_TEST_DATA,
+                  FASTQ_FILE_TEST_DATA
                 ),
               })
             ),
