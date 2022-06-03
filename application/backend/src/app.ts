@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, { fastify, FastifyInstance } from "fastify";
 import fastifyStatic from "@fastify/static";
 import helmet from "@fastify/helmet";
 import {
@@ -10,6 +10,8 @@ import { ElsaSettings } from "./bootstrap-settings";
 import { generators } from "openid-client";
 import { registerReleaseRoutes } from "./api/routes/release";
 import { registerDatasetsRoutes } from "./api/routes/datasets";
+import { ErrorHandler } from "./api/errors/_error.handler";
+import { registerTestingRoutes } from "./api/routes/testing";
 
 export class App {
   public server: FastifyInstance;
@@ -43,8 +45,19 @@ export class App {
     // inject the Elsa settings into every request (this is a shared immutable object)
     this.server.decorateRequest("settings", settings);
 
+    this.server.setErrorHandler(ErrorHandler);
+
+    this.server.ready(() => {
+      console.log(this.server.printRoutes({ commonPrefix: false }));
+    });
+
     registerReleaseRoutes(this.server);
     registerDatasetsRoutes(this.server);
+
+    registerTestingRoutes(
+      this.server,
+      this.serverEnvironment === "development"
+    );
 
     /*const client = new settings.oidcIssuer.Client({
       client_id: settings.oidcClientId,

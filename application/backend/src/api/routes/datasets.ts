@@ -13,56 +13,41 @@ import { ElsaSettings } from "../../bootstrap-settings";
 
 import addFormats from "ajv-formats";
 import Ajv from "ajv/dist/2019";
-
-const ajv = addFormats(new Ajv({}), [
-  "date-time",
-  "time",
-  "date",
-  "email",
-  "hostname",
-  "ipv4",
-  "ipv6",
-  "uri",
-  "uri-reference",
-  "uuid",
-  "uri-template",
-  "json-pointer",
-  "relative-json-pointer",
-  "regex",
-])
-  .addKeyword("kind")
-  .addKeyword("modifier");
-
-const gen3SyncRequestValidate = ajv.compile(DatasetGen3SyncRequestSchema);
+import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
 
 const client = edgedb.createClient();
+
+/**
+ * Returns a base edgedb query for our dataset info + counts/calcs. It *does not*
+ * however recurse deep into the dataset structures for all the sub cases/patients etc - those
+ * query elements need to be added elsewhere
+ */
+function baseDatasetSelect() {
+  return e.select(e.dataset.Dataset, (r) => ({
+    ...e.dataset.Dataset["*"],
+    summaryCaseCount: e.count(r.cases),
+    summaryPatientCount: e.count(r.cases.patients),
+    summarySpecimenCount: e.count(r.cases.patients.specimens),
+    summaryArtifactCount: e.count(r.cases.patients.specimens.artifacts),
+    summaryArtifactBytes: e.sum(r.cases.patients.specimens.artifacts.size),
+    bamsCount: e.count(
+      r.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactBam)
+    ),
+    vcfsCount: e.count(
+      r.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactVcf)
+    ),
+    fastqsCount: e.count(
+      r.cases.patients.specimens.artifacts.is(e.lab.RunArtifactFastqPair)
+    ),
+  }));
+}
 
 export function registerDatasetsRoutes(fastify: FastifyInstance) {
   fastify.get<{ Reply: DatasetLightType[] }>(
     "/api/datasets",
     {},
     async function (request, reply) {
-      const fullDatasets = await e
-        .select(e.dataset.Dataset, (r) => ({
-          ...e.dataset.Dataset["*"],
-          summaryCaseCount: e.count(r.cases),
-          summaryPatientCount: e.count(r.cases.patients),
-          summarySpecimenCount: e.count(r.cases.patients.specimens),
-          summaryArtifactCount: e.count(r.cases.patients.specimens.artifacts),
-          summaryArtifactBytes: e.sum(
-            r.cases.patients.specimens.artifacts.size
-          ),
-          bamsCount: e.count(
-            r.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactBam)
-          ),
-          vcfsCount: e.count(
-            r.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactVcf)
-          ),
-          fastqsCount: e.count(
-            r.cases.patients.specimens.artifacts.is(e.lab.RunArtifactFastqPair)
-          ),
-        }))
-        .run(client);
+      const fullDatasets = await baseDatasetSelect().run(client);
 
       const converted: DatasetLightType[] = fullDatasets.map((fd) => {
         const includes: string[] = [];
@@ -105,11 +90,6 @@ export function registerDatasetsRoutes(fastify: FastifyInstance) {
               externalIdentifiers: true,
               specimens: {
                 externalIdentifiers: true,
-                artifacts: {
-                  id: true,
-                  url: true,
-                  size: true,
-                },
               },
             },
           },
@@ -121,19 +101,19 @@ export function registerDatasetsRoutes(fastify: FastifyInstance) {
         reply.send({
           id: singleDataset.id,
           uri: singleDataset.uri,
+          description: singleDataset.description,
+          summaryArtifactCount: 0,
+          summaryArtifactIncludes: "",
+          summarySpecimenCount: 0,
+          summaryPatientCount: 0,
+          summaryArtifactSizeBytes: 0,
           cases: singleDataset.cases.map((c) => {
             return {
               patients: c.patients.map((p) => {
                 return {
                   specimens: p.specimens.map((s) => {
                     return {
-                      artifacts: s.artifacts.map((a) => {
-                        return {
-                          location: a.url,
-                          size: a.size,
-                          type: "BAMFASTQVCF",
-                        };
-                      }),
+                      artifacts: [],
                     };
                   }),
                 };
@@ -148,9 +128,14 @@ export function registerDatasetsRoutes(fastify: FastifyInstance) {
     Request: DatasetGen3SyncRequestType;
     Reply: DatasetGen3SyncResponseType;
   }>("/api/datasets", {}, async function (request, reply) {
-    if (!gen3SyncRequestValidate(request.body)) {
+    if (!datasetGen3SyncRequestValidate(request.body)) {
+      //reply
+      //    .code(200)
+      //    .header('Content-Type', 'application/json; charset=utf-8')
+      //    .send({ hello: 'world' })
+
       reply.send({
-        error: gen3SyncRequestValidate.errors,
+        error: datasetGen3SyncRequestValidate.errors?.join(" "),
       });
     }
 

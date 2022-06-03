@@ -4,5 +4,6 @@
     "composite": true,
     "module": "commonjs",
     "preserveConstEnums": true
-  }
+  },
+  "include": ["*.ts"]
 }

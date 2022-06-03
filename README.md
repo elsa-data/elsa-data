@@ -31,6 +31,18 @@ npm run build:dev
 ```shell
 npm install
 edgedb project init
+npm run edgetypes
+```
+
+4. Create local secrets for local boot
+
+You will need to get these actual values out of band (i.e. Slack).
+
+```shell
+security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
+security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
+security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
+security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
 ```
 
 ### Run Locally

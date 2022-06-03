@@ -16,7 +16,7 @@ RUN npm install
 COPY frontend/ ./
 RUN npx craco build
 
-FROM --platform=linux/amd64 public.ecr.aws/lambda/nodejs:14
+FROM --platform=linux/amd64 public.ecr.aws/lambda/nodejs:16
 
 # Create this in / which is the location for the other entrypoint scripts provided by AWS
 # This allows shell control signals to work when running the Docker image in a shell

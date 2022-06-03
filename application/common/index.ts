@@ -4,6 +4,7 @@ import {
   DatasetGen3SyncResponseSchema,
   DatasetSchemaDeep,
   DatasetSchemaLight,
+  ReleaseRemsSyncRequestSchema,
   ReleaseSchema,
 } from "./schemas";
 import {
@@ -15,9 +16,11 @@ import {
   ApplicationCodedSchemaV1,
   CodingSchema,
 } from "./schemas-application-coded";
+import { TestingRequestSchema } from "./schemas-testing";
 
 export * from "./schemas";
 export * from "./schemas-duo";
+export * from "./schemas-testing";
 
 export type ReleaseType = Static<typeof ReleaseSchema>;
 
@@ -42,3 +45,9 @@ export type DatasetGen3SyncRequestType = Static<
 export type DatasetGen3SyncResponseType = Static<
   typeof DatasetGen3SyncResponseSchema
 >;
+
+export type ReleaseRemsSyncRequestType = Static<
+  typeof ReleaseRemsSyncRequestSchema
+>;
+
+export type TestingRequestType = Static<typeof TestingRequestSchema>;

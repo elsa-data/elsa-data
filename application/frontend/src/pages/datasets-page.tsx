@@ -16,11 +16,6 @@ import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useForm, SubmitHandler } from "react-hook-form";
 
-type Inputs = {
-  uri: string;
-  gen3Url: string;
-};
-
 export const DatasetsPage: React.FC = () => {
   const envRelay = useEnvRelay();
   const navigate = useNavigate();
@@ -103,12 +98,9 @@ export const DatasetsPage: React.FC = () => {
               <tbody>
                 {datasetsData.map((ds) => (
                   <tr className="bg-white border-b hover:bg-gray-50">
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                    >
+                    <td className="px-6 py-4 font-mono whitespace-nowrap">
                       {ds.uri}
-                    </th>
+                    </td>
                     <td className="px-6 py-4">{ds.description}</td>
                     <td className="px-6 py-4">
                       {ds.summaryArtifactCount} artifacts of{" "}
@@ -130,72 +122,73 @@ export const DatasetsPage: React.FC = () => {
           )}
         </Box>
         <Box heading="Import/Update Dataset">
-          <Tab.Group>
-            <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/20 p-1">
-              <Tab
-                className={({ selected }) =>
-                  classNames(
-                    "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
-                    "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                    selected
-                      ? "bg-white shadow"
-                      : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
-                  )
-                }
-              >
-                gen3
-              </Tab>
-              <Tab
-                className={({ selected }) =>
-                  classNames(
-                    "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
-                    "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                    selected
-                      ? "bg-white shadow"
-                      : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
-                  )
-                }
-              >
-                UMCCR Data Portal
-              </Tab>
-              <Tab
-                className={({ selected }) =>
-                  classNames(
-                    "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
-                    "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                    selected
-                      ? "bg-white shadow"
-                      : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
-                  )
-                }
-              >
-                CSV/TSV/JSON
-              </Tab>
-            </Tab.List>
-            <Tab.Panels>
-              <Tab.Panel className="p-6">
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <div className="flex flex-col gap-6">
-                    {uriBlock()}
+          <div className="flex">
+            <Tab.Group vertical={true}>
+              <Tab.List className="flex-none w-1/5 flex-col space-x-1 rounded-xl bg-blue-900/20 p-1">
+                <Tab
+                  className={({ selected }) =>
+                    classNames(
+                      "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
+                      "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
+                      selected
+                        ? "bg-white shadow"
+                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
+                    )
+                  }
+                >
+                  gen3
+                </Tab>
+                <Tab
+                  className={({ selected }) =>
+                    classNames(
+                      "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
+                      "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
+                      selected
+                        ? "bg-white shadow"
+                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
+                    )
+                  }
+                >
+                  UMCCR Data Portal
+                </Tab>
+                <Tab
+                  className={({ selected }) =>
+                    classNames(
+                      "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
+                      "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
+                      selected
+                        ? "bg-white shadow"
+                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
+                    )
+                  }
+                >
+                  CSV/TSV/JSON
+                </Tab>
+              </Tab.List>
+              <Tab.Panels className="grow">
+                <Tab.Panel className="p-6">
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className="flex flex-col gap-6">
+                      {uriBlock()}
 
-                    <label className="block">
-                      <span className="text-xs font-bold text-gray-700 uppercase">
-                        Instance URL
-                      </span>
-                      <input
-                        type="text"
-                        {...register("gen3Url", { required: true })}
-                        className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
-                        placeholder="https://gen3.dev.umccr.org"
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="text-xs font-bold text-gray-700 uppercase">
-                        Bearer JWT
-                      </span>
-                      <textarea
-                        {...register("gen3Bearer", { required: true })}
-                        className="
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-700 uppercase">
+                          Instance URL
+                        </span>
+                        <input
+                          type="text"
+                          {...register("gen3Url", { required: true })}
+                          className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                          placeholder="https://gen3.dev.umccr.org"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-xs font-bold text-gray-700 uppercase">
+                          Bearer JWT
+                        </span>
+                        <textarea
+                          {...register("gen3Bearer", { required: true })}
+                          className="
                     mt-1
                     block
                     w-full
@@ -204,21 +197,22 @@ export const DatasetsPage: React.FC = () => {
                     border-transparent
                     focus:border-gray-500 focus:bg-white focus:ring-0
                   "
-                        rows={3}
-                      ></textarea>
-                    </label>
-                    <input type="submit" className="btn-blue w-60" />
-                  </div>
-                </form>
-              </Tab.Panel>
-              <Tab.Panel className="p-6">
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <div className="flex flex-col gap-6">{uriBlock()}</div>
-                </form>
-              </Tab.Panel>
-              <Tab.Panel className="p-6">There</Tab.Panel>
-            </Tab.Panels>
-          </Tab.Group>
+                          rows={3}
+                        ></textarea>
+                      </label>
+                      <input type="submit" className="btn-blue w-60" />
+                    </div>
+                  </form>
+                </Tab.Panel>
+                <Tab.Panel className="p-6">
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className="flex flex-col gap-6">{uriBlock()}</div>
+                  </form>
+                </Tab.Panel>
+                <Tab.Panel className="p-6">There</Tab.Panel>
+              </Tab.Panels>
+            </Tab.Group>
+          </div>
         </Box>
       </div>
     </LayoutAuthPage>
