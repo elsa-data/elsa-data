@@ -44,7 +44,9 @@ export async function insert10G() {
 
   const teng = await e
     .insert(e.dataset.Dataset, {
-      uri: "urn:fdc:umccr.org:2022:dataset/10g",
+      // temp rename this to match an existing REMS application
+      uri: "http://cci.org.au/datasets/BOWEL",
+      // uri: "urn:fdc:umccr.org:2022:dataset/10g",
       externalIdentifiers: makeSystemlessIdentifierArray("10G"),
       description: "UMCCR 10G",
       cases: e.set(

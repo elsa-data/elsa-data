@@ -11,7 +11,8 @@ const client = edgedb.createClient();
 export async function insertCARDIAC() {
   await e
     .insert(e.dataset.Dataset, {
-      uri: "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
+      uri: "urn:fdc:umccr.org:2021:datasets/CARDIAC",
+      // uri: "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
       description: "Australian Genomics cardiac flagship",
       externalIdentifiers: makeSystemlessIdentifierArray("CARDIAC"),
       cases: e.set(

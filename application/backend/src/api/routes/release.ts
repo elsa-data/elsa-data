@@ -6,6 +6,20 @@ import { ElsaSettings } from "../../bootstrap-settings";
 
 const client = edgedb.createClient();
 
+function mapDbToApi(dbObject: any): ReleaseType {
+  return {
+    id: dbObject.id,
+    datasetUris: dbObject.datasetUris,
+    applicationDacIdentifier: dbObject?.applicationDacIdentifier,
+    applicationDacTitle: dbObject?.applicationDacTitle,
+    applicationDacDetails: dbObject?.applicationDacDetails,
+    applicationCoded:
+      dbObject.applicationCoded != null
+        ? JSON.parse(dbObject.applicationCoded)
+        : {},
+  };
+}
+
 export function registerReleaseRoutes(fastify: FastifyInstance) {
   fastify.get<{ Reply: ReleaseType[] }>(
     "/api/releases",
@@ -17,7 +31,7 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
         }))
         .run(client);
 
-      reply.send(allForUser);
+      reply.send(allForUser.map((dbObject) => mapDbToApi(dbObject)));
     }
   );
 
@@ -49,9 +63,9 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
               ? JSON.parse(thisRelease.applicationCoded)
               : {},
           datasetUris: thisRelease.datasetUris,
-          applicationDacDetails: thisRelease.applicationDacDetails,
-          applicationDacIdentifier: thisRelease.applicationDacIdentifier,
-          applicationDacTitle: thisRelease.applicationDacTitle,
+          applicationDacDetails: thisRelease.applicationDacDetails!,
+          applicationDacIdentifier: thisRelease.applicationDacIdentifier!,
+          applicationDacTitle: thisRelease.applicationDacTitle!,
         });
     }
   );
@@ -65,14 +79,14 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
       console.log(newApplicationCoded);
 
-      const updateStatus = await e
+      /*const updateStatus = await e
         .update(e.release.Release, (r) => ({
           set: (r.applicationCoded = e.json(newApplicationCoded)),
           filter: e.op(r.id, "=", e.uuid(releaseId)),
         }))
         .run(client);
 
-      console.log(updateStatus);
+      console.log(updateStatus); */
 
       reply.send("ok");
     }

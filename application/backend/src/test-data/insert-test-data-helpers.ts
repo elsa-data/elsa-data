@@ -1,22 +1,28 @@
-import * as edgedb from "edgedb";
+import { createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 
-const client = edgedb.createClient();
+const edgeDbClient = createClient();
 
 export function makeSystemlessIdentifier(entry1: string) {
   return e.tuple({ system: "", value: entry1 });
 }
 
+/**
+ * Make an identifier array (array of tuples) where there is only
+ * one entry and it is a identifier with value only (no system)
+ * @param entry1
+ */
 export function makeSystemlessIdentifierArray(entry1: string) {
-  return e.array([e.tuple({ system: "", value: entry1 })]);
+  return e.array([makeSystemlessIdentifier(entry1)]);
 }
 
+/**
+ * Make an identifier array (array of tuples) that is empty.
+ */
 export function makeEmptyIdentifierArray() {
-  //const identifierTupleType = e.tuple({ system: e.str, value: e.str });
+  const tupleArrayType = e.array(e.tuple({ system: e.str, value: e.str }));
 
-  //return e.literal(identifierTupleType);
-
-  return e.array([e.tuple({ system: "", value: "" })]);
+  return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
 }
 
 export type FastqPair = [
@@ -58,7 +64,7 @@ export async function createArtifacts(
     .insert(e.lab.Run, {
       artifactsProduced: e.set(...pairInserts),
     })
-    .run(client);
+    .run(edgeDbClient);
 
   const r1select = e.select(e.lab.Run.artifactsProduced, (ab) => ({
     filter: e.op(e.uuid(r1.id), "=", ab["<artifactsProduced[is lab::Run]"].id),
@@ -82,7 +88,7 @@ export async function createArtifacts(
         })
       ),
     })
-    .run(client);
+    .run(edgeDbClient);
 
   const a1select = e.select(e.lab.Analyses.output, (ab) => ({
     filter: e.op(e.uuid(a1.id), "=", ab["<output[is lab::Analyses]"].id),

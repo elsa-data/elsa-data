@@ -48,8 +48,6 @@ module release {
         # consent statements in parent items in the dataset tree also always apply if present
 
         link consent -> consent::Consent;
-
-        required property included -> bool;
     }
 
     # a abstract type that represents a location to store identifiers for
@@ -111,6 +109,8 @@ module release {
     # sequencing performed on an individual
 
     type ReleaseSpecimen extending ReleaseShareable, ReleaseIdentifiable {
+
+        required property included -> bool;
 
         # the backlink to the dataset that owns us
         link dataset := .<specimens[is ReleasePatient].<patients[is ReleaseCase].<cases[is ReleaseDataset];

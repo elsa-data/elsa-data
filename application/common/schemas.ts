@@ -66,3 +66,9 @@ export const DatasetGen3SyncRequestSchema = Type.Object({
 export const DatasetGen3SyncResponseSchema = Type.Object({
   error: Type.Optional(Type.String()),
 });
+
+export const ReleaseRemsSyncRequestSchema = Type.Object({
+  remsUrl: Type.String(),
+  remsUser: Type.String(),
+  remsKey: Type.String(),
+});
