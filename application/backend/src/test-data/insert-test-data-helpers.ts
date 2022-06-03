@@ -1,26 +1,31 @@
-import * as edgedb from "edgedb";
+import { createClient } from "edgedb";
 import e, { lab } from "../../dbschema/edgeql-js";
 
-const client = edgedb.createClient();
+const edgeDbClient = createClient();
 
 export function makeSystemlessIdentifier(entry1: string) {
   return e.tuple({ system: "", value: entry1 });
 }
 
+/**
+ * Make an identifier array (array of tuples) where there is only
+ * one entry and it is a identifier with value only (no system)
+ * @param entry1
+ */
 export function makeSystemlessIdentifierArray(entry1: string) {
-  return e.array([e.tuple({ system: "", value: entry1 })]);
+  return e.array([makeSystemlessIdentifier(entry1)]);
 }
 
+/**
+ * Make an identifier array (array of tuples) that is empty.
+ */
 export function makeEmptyIdentifierArray() {
-  //const identifierTupleType = e.tuple({ system: e.str, value: e.str });
+  const tupleArrayType = e.array(e.tuple({ system: e.str, value: e.str }));
 
-  //return e.literal(identifierTupleType);
-
-  return e.array([e.tuple({ system: "", value: "" })]);
+  return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
 }
 
 export interface File {
-  name: string;
   size: number;
   url: string;
   checksums: {
@@ -48,19 +53,16 @@ export async function createArtifacts(
 ) {
   const fastqPair = fastqs.map((fq) =>
     e.insert(e.lab.RunArtifactFastqPair, {
-      name: fq[0].name,
-      files: e.set(
-        e.insert(e.lab.File, {
-          url: fq[0].url,
-          size: fq[0].size,
-          checksums: fq[0].checksums,
-        }),
-        e.insert(e.lab.File, {
-          url: fq[1].url,
-          size: fq[1].size,
-          checksums: fq[1].checksums,
-        })
-      ),
+      forwardFile: e.insert(e.lab.File, {
+        url: fq[0].url,
+        size: fq[0].size,
+        checksums: fq[0].checksums,
+      }),
+      reverseFile: e.insert(e.lab.File, {
+        url: fq[1].url,
+        size: fq[1].size,
+        checksums: fq[1].checksums,
+      }),
     })
   );
 
@@ -69,7 +71,7 @@ export async function createArtifacts(
     .insert(e.lab.Run, {
       artifactsProduced: e.set(...fastqPair),
     })
-    .run(client);
+    .run(edgeDbClient);
 
   const r1select = e.select(e.lab.Run.artifactsProduced, (ab) => ({
     filter: e.op(e.uuid(r1.id), "=", ab["<artifactsProduced[is lab::Run]"].id),
@@ -82,7 +84,6 @@ export async function createArtifacts(
       input: r1select,
       output: e.set(
         e.insert(e.lab.AnalysesArtifactVcf, {
-          name: vcf.name,
           vcfFile: e.insert(e.lab.File, {
             url: vcf.url,
             size: vcf.size,
@@ -95,7 +96,6 @@ export async function createArtifacts(
           }),
         }),
         e.insert(e.lab.AnalysesArtifactBam, {
-          name: bam.name,
           bamFile: e.insert(e.lab.File, {
             url: bam.url,
             size: bam.size,
@@ -109,7 +109,7 @@ export async function createArtifacts(
         })
       ),
     })
-    .run(client);
+    .run(edgeDbClient);
 
   const a1select = e.select(e.lab.Analyses.output, (ab) => ({
     filter: e.op(e.uuid(a1.id), "=", ab["<output[is lab::Analyses]"].id),

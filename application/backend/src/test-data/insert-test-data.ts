@@ -83,7 +83,7 @@ export async function blankTestData() {
 
 export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
-  // await insert10G();
+  await insert10G();
   await insertCARDIAC();
   //await insertIICON();
   await insertRelease1(settings);
