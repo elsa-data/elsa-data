@@ -1,12 +1,15 @@
 module lab {
 
-    scalar type ChecksumType extending enum<'MD5', 'AWS-ETAG', 'SHA-1', 'SHA-256'>;
-
-    abstract type ArtifactBase {
+    type File {
         required property url -> str;
         required property size -> int64;
 
-        property checksums -> array<tuple<type: ChecksumType, value: str>>;
+        required property checksums -> array<tuple<type: ChecksumType, value: str>>;
+    }
+
+    scalar type ChecksumType extending enum<'MD5', 'AWS-ETAG', 'SHA-1', 'SHA-256'>;
+
+    abstract type ArtifactBase  {
     }
 
     abstract type RunArtifactBase extending ArtifactBase {
@@ -16,18 +19,21 @@ module lab {
     }
 
     type RunArtifactFastqPair extending RunArtifactBase {
-        property urlR2 -> str;
+        link forwardFile -> File;
+        link reverseFile -> File;
     }
 
     abstract type AnalysesArtifactBase extending ArtifactBase {
     }
 
     type AnalysesArtifactVcf extending AnalysesArtifactBase {
-        property urlTbi -> str;
+        link vcfFile -> File;
+        link tbiFile -> File;
     }
 
     type AnalysesArtifactBam extending AnalysesArtifactBase {
-        property urlBai -> str;
+        link bamFile -> File;
+        link baiFile -> File;
     }
 
 

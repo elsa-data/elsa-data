@@ -1,12 +1,26 @@
 import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e, { lab } from "../../dbschema/edgeql-js";
 import {
+  File,
   createArtifacts,
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
 } from "./insert-test-data-helpers";
 
 const client = edgedb.createClient();
+
+const createMockFileFromName = (name: string, size: number): File => {
+  return {
+    url: name,
+    size: size,
+    checksums: [
+      {
+        type: lab.ChecksumType.MD5,
+        value: "721970cb30906405d4045f702ca72376",
+      },
+    ],
+  };
+};
 
 /**
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
@@ -29,12 +43,22 @@ export async function insert10G() {
         specimens: e.insert(e.dataset.DatasetSpecimen, {
           externalIdentifiers: makeEmptyIdentifierArray(),
           artifacts: await createArtifacts(
-            `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
-            vcfSize,
-            `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-            `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
-            bamSize,
-            `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
+            createMockFileFromName(
+              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+              0
+            ),
+            createMockFileFromName(
+              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+              vcfSize
+            ),
+            createMockFileFromName(
+              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
+              bamSize
+            ),
+            createMockFileFromName(
+              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
+              0
+            ),
             []
           ),
         }),

@@ -1,5 +1,5 @@
 import { createClient } from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e, { lab } from "../../dbschema/edgeql-js";
 
 const edgeDbClient = createClient();
 
@@ -25,12 +25,14 @@ export function makeEmptyIdentifierArray() {
   return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
 }
 
-export type FastqPair = [
-  r1: string,
-  r2: string,
-  r1size: number,
-  r2size: number
-];
+export interface File {
+  size: number;
+  url: string;
+  checksums: {
+    type: lab.ChecksumType;
+    value: string;
+  }[];
+}
 
 /**
  * Insert artifacts where each has their own pseudo run and analyses
@@ -43,26 +45,31 @@ export type FastqPair = [
  * @param fastqs
  */
 export async function createArtifacts(
-  vcf: string,
-  vcfSize: number,
-  vcfIndex: string,
-  bam: string,
-  bamSize: number,
-  bamIndex: string,
-  fastqs: FastqPair[]
+  vcf: File,
+  vcfIndex: File,
+  bam: File,
+  bamIndex: File,
+  fastqs: File[][]
 ) {
-  const pairInserts = fastqs.map((fq) =>
+  const fastqPair = fastqs.map((fq) =>
     e.insert(e.lab.RunArtifactFastqPair, {
-      url: fq[0],
-      size: fq[2],
-      urlR2: fq[1],
+      forwardFile: e.insert(e.lab.File, {
+        url: fq[0].url,
+        size: fq[0].size,
+        checksums: fq[0].checksums,
+      }),
+      reverseFile: e.insert(e.lab.File, {
+        url: fq[1].url,
+        size: fq[1].size,
+        checksums: fq[1].checksums,
+      }),
     })
   );
 
   // we insert all the fastq pairs as if they are owned by a pseudo-run
   const r1 = await e
     .insert(e.lab.Run, {
-      artifactsProduced: e.set(...pairInserts),
+      artifactsProduced: e.set(...fastqPair),
     })
     .run(edgeDbClient);
 
@@ -77,14 +84,28 @@ export async function createArtifacts(
       input: r1select,
       output: e.set(
         e.insert(e.lab.AnalysesArtifactVcf, {
-          url: vcf,
-          size: vcfSize,
-          urlTbi: vcfIndex,
+          vcfFile: e.insert(e.lab.File, {
+            url: vcf.url,
+            size: vcf.size,
+            checksums: vcf.checksums,
+          }),
+          tbiFile: e.insert(e.lab.File, {
+            url: vcfIndex.url,
+            size: vcfIndex.size,
+            checksums: vcfIndex.checksums,
+          }),
         }),
         e.insert(e.lab.AnalysesArtifactBam, {
-          url: bam,
-          size: bamSize,
-          urlBai: bamIndex,
+          bamFile: e.insert(e.lab.File, {
+            url: bam.url,
+            size: bam.size,
+            checksums: bam.checksums,
+          }),
+          baiFile: e.insert(e.lab.File, {
+            url: bamIndex.url,
+            size: bamIndex.size,
+            checksums: bamIndex.checksums,
+          }),
         })
       ),
     })
