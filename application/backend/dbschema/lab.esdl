@@ -3,40 +3,37 @@ module lab {
     type File {
         required property url -> str;
         required property size -> int64;
-
         required property checksums -> array<tuple<type: ChecksumType, value: str>>;
     }
 
-    scalar type ChecksumType extending enum<'MD5', 'AWS-ETAG', 'SHA-1', 'SHA-256'>;
+    scalar type ChecksumType extending enum<'MD5', 'AWS_ETAG', 'SHA_1', 'SHA_256'>;
 
     abstract type ArtifactBase  {
     }
 
-    abstract type RunArtifactBase extending ArtifactBase {
+    type ArtifactBcl extending ArtifactBase {
+        required link bclFile -> File;
     }
 
-    type RunArtifactBcl extending RunArtifactBase {
+    type ArtifactFastqPair extending ArtifactBase {
+        required link forwardFile -> File;
+        required link reverseFile -> File;
     }
 
-    type RunArtifactFastqPair extending RunArtifactBase {
-        link forwardFile -> File;
-        link reverseFile -> File;
+    type ArtifactVcf extending ArtifactBase {
+        required link vcfFile -> File;
+        required link tbiFile -> File;
     }
 
-    abstract type AnalysesArtifactBase extending ArtifactBase {
+    type ArtifactBam extending ArtifactBase {
+        required link bamFile -> File;
+        required link baiFile -> File;
     }
 
-    type AnalysesArtifactVcf extending AnalysesArtifactBase {
-        link vcfFile -> File;
-        link tbiFile -> File;
+    type ArtifactCram extending ArtifactBase {
+        required link cramFile -> File;
+        required link craiFile -> File;
     }
-
-    type AnalysesArtifactBam extending AnalysesArtifactBase {
-        link bamFile -> File;
-        link baiFile -> File;
-    }
-
-
 
     # a collection of artifacts uploaded/submitted in a batch that has no information about run/analyses
     type SubmissionBatch {
@@ -48,7 +45,6 @@ module lab {
             constraint exclusive;
             on target delete allow;
        };
-
     }
 
 
@@ -57,7 +53,7 @@ module lab {
         property platform -> str;
         property runDate -> datetime;
 
-        multi link artifactsProduced -> RunArtifactBase {
+        multi link artifactsProduced -> ArtifactBase {
             constraint exclusive;
             on target delete allow;
        };
@@ -67,9 +63,9 @@ module lab {
         property pipeline -> str;
         property analysesDate -> datetime;
 
-        multi link input -> RunArtifactBase;
+        multi link input -> ArtifactBase;
 
-        multi link output -> AnalysesArtifactBase {
+        multi link output -> ArtifactBase {
               constraint exclusive;
               on target delete allow;
         };

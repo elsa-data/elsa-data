@@ -8,8 +8,8 @@ describe("http API error handling tests", () => {
 
   beforeAll(async () => {
     const settings = await getLocalSettings();
-    const app = new App(settings);
-    server = app.getServer();
+    const app = new App(() => settings);
+    server = await app.setupServer();
     await server.ready();
   });
 

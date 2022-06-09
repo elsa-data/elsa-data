@@ -12,16 +12,18 @@ const start = async () => {
   await blankTestData();
   await insertTestData(settings);
 
-  const app = new App(settings);
+  const app = new App(() => ({ ...settings }));
 
   const PORT = 3000;
+
+  const server = await app.setupServer();
 
   console.log(`Listening on port ${PORT}`);
 
   try {
-    await app.getServer().listen(PORT);
+    await server.listen(PORT);
   } catch (err) {
-    app.getServer().log.error(err);
+    server.log.error(err);
     process.exit(1);
   }
 };

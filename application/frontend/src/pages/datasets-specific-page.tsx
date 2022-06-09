@@ -3,10 +3,10 @@ import { useEnvRelay } from "../providers/env-relay-provider";
 import { useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { LayoutAuthPage } from "../layouts/layout-auth-page";
 import { Box } from "../components/boxes";
 import { DatasetDeepType, ReleaseType } from "@umccr/elsa-types";
 import { MyModal } from "../components/modals";
+import { LayoutBase } from "../layouts/layout-base";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -34,7 +34,7 @@ export const DatasetsSpecificPage: React.FC = () => {
   });
 
   return (
-    <LayoutAuthPage>
+    <LayoutBase>
       <MyModal />
       <div className="flex flex-row flex-wrap flex-grow mt-2">
         {datasetData && (
@@ -56,6 +56,6 @@ export const DatasetsSpecificPage: React.FC = () => {
           </>
         )}
       </div>
-    </LayoutAuthPage>
+    </LayoutBase>
   );
 };

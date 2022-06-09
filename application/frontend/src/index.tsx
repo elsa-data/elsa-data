@@ -1,14 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { App } from "./app";
-import { BrowserRouter, useNavigate } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import {
   DeployedEnvironments,
   EnvRelayProvider,
 } from "./providers/env-relay-provider";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { AuthProvider, AuthProviderProps } from "react-oidc-context";
 import "./index.css";
+import { CookiesProvider } from "react-cookie";
+import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 
 const root = document.getElementById("root");
 
@@ -28,36 +29,29 @@ if (root != null) {
   const de = (root.dataset.deployedEnvironment ||
     "development") as DeployedEnvironments;
 
-  const oidcConfig: AuthProviderProps = {
-    authority: root.dataset.oidcIssuer!,
-    client_id: root.dataset.oidcClientId!,
-    client_secret: root.dataset.oidcClientSecret!,
-    redirect_uri: root.dataset.oidcRedirectUri!,
-  };
-
   const queryClient = new QueryClient({});
 
   ReactDOM.render(
     <React.StrictMode>
+      {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
+
       {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
       <EnvRelayProvider
         semanticVersion={sv}
         buildVersion={bv}
         deployedEnvironment={de}
       >
-        <AuthProvider
-          {...oidcConfig}
-          onSigninCallback={() => {
-            window.location.assign("/");
-          }}
-        >
-          {/* the query provider comes from react-query and provides standardised remote query semantics */}
-          <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-              <App />
-            </BrowserRouter>
-          </QueryClientProvider>
-        </AuthProvider>
+        {/* the query provider comes from react-query and provides standardised remote query semantics */}
+        <QueryClientProvider client={queryClient}>
+          {/* we use session cookies for auth and use this provider to make them easily available */}
+          <CookiesProvider>
+            <LoggedInUserProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </LoggedInUserProvider>
+          </CookiesProvider>
+        </QueryClientProvider>
       </EnvRelayProvider>
     </React.StrictMode>,
     document.getElementById("root")

@@ -5,6 +5,9 @@ import { Issuer } from "openid-client";
 const execPromise = promisify(exec);
 
 export type ElsaSettings = {
+  sessionSecret: string;
+  sessionSalt: string;
+
   oidcIssuer: Issuer;
   oidcClientId: string;
   oidcClientSecret: string;
@@ -26,7 +29,7 @@ export async function getLocalSettings(): Promise<ElsaSettings> {
   // security add-generic-password -a "$USER" -s 'Elsa REMS Bot User Dev' -w 'qwerty123'
   // security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
 
-  const issuer = await Issuer.discover("https://accounts.google.com");
+  const issuer = await Issuer.discover("https://cilogon.org");
 
   const { stdout: clientIdStdout, stderr: clientIdStderr } = await execPromise(
     `security find-generic-password -s "Elsa Client Id Dev" -w`
@@ -45,6 +48,12 @@ export async function getLocalSettings(): Promise<ElsaSettings> {
   );
 
   return {
+    // the security of our localhost dev cookies is not so important - for the real deployments
+    // we need to get these secrets from a real secret source
+    sessionSecret:
+      "This is a long string that will encrypt our session cookies but only for localhost",
+    sessionSalt: "Also a string 16",
+
     oidcIssuer: issuer,
     oidcClientId: clientIdStdout.trim(),
     oidcClientSecret: clientSecretStdout.trim(),

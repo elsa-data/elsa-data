@@ -8,9 +8,9 @@ describe("http integration tests", () => {
   beforeAll(async () => {
     const settings = await getLocalSettings();
 
-    const app = new App(settings);
+    const app = new App(() => settings);
 
-    server = app.getServer();
+    server = await app.setupServer();
 
     await server.ready();
   });

@@ -1,21 +1,27 @@
-import Fastify, { fastify, FastifyInstance } from "fastify";
+import Fastify, {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+} from "fastify";
 import fastifyStatic from "@fastify/static";
-import helmet from "@fastify/helmet";
+import fastifySecureSession from "@fastify/secure-session";
+import fastifyFormBody from "@fastify/formbody";
+import fastifyHelmet from "@fastify/helmet";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
   strictServeRealFileIfPresent,
 } from "./app-helpers";
 import { ElsaSettings } from "./bootstrap-settings";
-import { generators } from "openid-client";
-import { registerReleaseRoutes } from "./api/routes/release";
-import { registerDatasetsRoutes } from "./api/routes/datasets";
 import { ErrorHandler } from "./api/errors/_error.handler";
 import { registerTestingRoutes } from "./api/routes/testing";
+import { apiRoutes } from "./api/api-routes";
+import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
 
 export class App {
   public server: FastifyInstance;
   public serverEnvironment: "production" | "development";
+  public serverLocation: "local" | "server";
 
   private readonly required_runtime_environment: string[] = [];
   private readonly optional_runtime_environment: string[] = [
@@ -23,27 +29,58 @@ export class App {
     "BUILD_VERSION",
   ];
 
+  private readonly settings: ElsaSettings;
+
   // a absolute path to where static files are to be served from
   public staticFilesPath: string;
 
-  constructor(private settings: ElsaSettings) {
-    this.server = Fastify({ logger: true });
+  /**
+   * Our constructor does all the setup that can be done without async/await
+   * (increasingly almost nothing). It should check settings and establish
+   * anything that cannot be changed.
+   *
+   * @param settingsGenerator a generator function for making copies of the settings
+   */
+  constructor(settingsGenerator: () => ElsaSettings) {
     this.serverEnvironment =
       process.env.NODE_ENV === "production" ? "production" : "development";
+
+    // this is for determining whether we are running local dev or deployed dev
+    // (it alters things like the use of SSL etc)
+    // TODO: once we start deploying we will need to be better at where this gets set
+    this.serverLocation = "local";
+
+    if (
+      this.serverLocation === "local" &&
+      this.serverEnvironment !== "development"
+    )
+      throw new Error(
+        "Cannot run anything other than a development server on local"
+      );
 
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(this.serverEnvironment);
 
-    // register global middleware/plugins
-    this.server.register(fastifyStatic, {
+    this.settings = settingsGenerator();
+
+    this.server = Fastify({ logger: true });
+
+    // inject a copy of the Elsa settings into every request
+    this.server.decorateRequest("settings", null);
+    this.server.addHook("onRequest", async (req, reply) => {
+      (req as any).settings = settingsGenerator();
+    });
+  }
+
+  public async setupServer(): Promise<FastifyInstance> {
+    await this.server.register(fastifyFormBody);
+
+    await this.server.register(fastifyHelmet, { contentSecurityPolicy: false });
+
+    await this.server.register(fastifyStatic, {
       root: this.staticFilesPath,
       serve: false,
     });
-
-    this.server.register(helmet, { contentSecurityPolicy: false });
-
-    // inject the Elsa settings into every request (this is a shared immutable object)
-    this.server.decorateRequest("settings", settings);
 
     this.server.setErrorHandler(ErrorHandler);
 
@@ -51,54 +88,28 @@ export class App {
       console.log(this.server.printRoutes({ commonPrefix: false }));
     });
 
-    registerReleaseRoutes(this.server);
-    registerDatasetsRoutes(this.server);
+    // TODO: compute the redirect URI from the deployment settings
+
+    await this.server.register(
+      fastifySecureSession,
+      getSecureSessionOptions(this.settings)
+    );
+
+    this.server.register(apiRoutes, {
+      allowTestCookieEquals:
+        this.serverEnvironment === "development" ? "hello" : undefined,
+    });
+
+    this.server.register(authRoutes, {
+      settings: this.settings,
+      redirectUri: "http://localhost:3000/cb",
+      includeTestUsers: this.serverEnvironment === "development",
+    });
 
     registerTestingRoutes(
       this.server,
       this.serverEnvironment === "development"
     );
-
-    /*const client = new settings.oidcIssuer.Client({
-      client_id: settings.oidcClientId,
-      client_secret: settings.oidcClientSecret,
-      redirect_uris: ["http://localhost:3000/cb"],
-      response_types: ["code"],
-      // id_token_signed_response_alg (default "RS256")
-      // token_endpoint_auth_method (default "client_secret_basic")
-    });
-
-    const code_verifier = generators.codeVerifier();
-    // store the code_verifier in your framework's session mechanism, if it is a cookie based solution
-    // it should be httpOnly (not readable by javascript) and encrypted.
-
-    const code_challenge = generators.codeChallenge(code_verifier);
-
-    this.server.get("/login", async (request, reply) => {
-      reply.redirect(
-        client.authorizationUrl({
-          scope: "openid email profile",
-          // resource: 'https://my.api.example.com/resource/32178',
-          code_challenge,
-          code_challenge_method: "S256",
-        })
-      );
-    });
-
-    this.server.get("/cb", async (request, reply) => {
-      const params = client.callbackParams(request.raw);
-
-      const tokenSet = await client.callback(
-        "http://localhost:3000/cb",
-        params,
-        { code_verifier }
-      );
-
-      console.log(tokenSet);
-
-      reply.header("Hi", "There");
-      reply.redirect("/");
-    }); */
 
     // our behaviour for React routed websites is that NotFound responses might instead be replaced
     // with serving up index.html
@@ -131,9 +142,7 @@ export class App {
         await strictServeRealFileIfPresent(reply, requestPath);
       }
     });
-  }
 
-  public getServer() {
     return this.server;
   }
 
@@ -189,12 +198,6 @@ export class App {
     );
     addAttribute("data-build-version", result.build_version || "unknown");
     addAttribute("data-deployed-environment", this.serverEnvironment);
-
-    addAttribute("data-oidc-issuer", this.settings.oidcIssuer.metadata.issuer);
-    addAttribute("data-oidc-client-id", this.settings.oidcClientId);
-    // TODO: this is not meant to be passed to frontend.. needs PKCE enabled at OIDC endpoint first though
-    addAttribute("data-oidc-client-secret", this.settings.oidcClientSecret);
-    addAttribute("data-oidc-redirect-uri", "http://localhost:3000/cb");
 
     result["data_attributes"] = dataAttributes;
 

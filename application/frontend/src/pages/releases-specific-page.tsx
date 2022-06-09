@@ -3,11 +3,11 @@ import { useEnvRelay } from "../providers/env-relay-provider";
 import { useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { LayoutAuthPage } from "../layouts/layout-auth-page";
 import { Box } from "../components/boxes";
 import { ReleaseType } from "@umccr/elsa-types";
 import { MondoChooser } from "../components/concept-chooser/mondo-chooser";
 import { doBatchLookup } from "../helpers/ontology-helper";
+import { LayoutBase } from "../layouts/layout-base";
 
 type ReleaseSpecificPageParams = {
   releaseId: string;
@@ -42,7 +42,7 @@ export const ReleasesSpecificPage: React.FC = () => {
   });
 
   return (
-    <LayoutAuthPage>
+    <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
         {releaseData && (
           <>
@@ -102,6 +102,6 @@ export const ReleasesSpecificPage: React.FC = () => {
           </>
         )}
       </div>
-    </LayoutAuthPage>
+    </LayoutBase>
   );
 };

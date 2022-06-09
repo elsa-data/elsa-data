@@ -14,6 +14,10 @@ export async function blankTestData() {
   console.log(`Removing any existing data in test database`);
 
   console.log(
+    `  ${(await e.delete(e.permission.User).run(client)).length} user(s)`
+  );
+
+  console.log(
     `  ${(await e.delete(e.release.Release).run(client)).length} release(s)`
   );
 
@@ -47,22 +51,21 @@ export async function blankTestData() {
   );
 
   console.log(
-    `  ${(await e.delete(e.lab.RunArtifactBcl).run(client)).length} lab bcl(s)`
+    `  ${(await e.delete(e.lab.ArtifactBcl).run(client)).length} lab bcl(s)`
   );
   console.log(
     `  ${
-      (await e.delete(e.lab.RunArtifactFastqPair).run(client)).length
+      (await e.delete(e.lab.ArtifactFastqPair).run(client)).length
     } lab fastq(s)`
   );
   console.log(
-    `  ${
-      (await e.delete(e.lab.AnalysesArtifactBam).run(client)).length
-    } lab bam(s)`
+    `  ${(await e.delete(e.lab.ArtifactBam).run(client)).length} lab bam(s)`
   );
   console.log(
-    `  ${
-      (await e.delete(e.lab.AnalysesArtifactVcf).run(client)).length
-    } lab vcf(s)`
+    `  ${(await e.delete(e.lab.ArtifactCram).run(client)).length} lab cram(s)`
+  );
+  console.log(
+    `  ${(await e.delete(e.lab.ArtifactVcf).run(client)).length} lab vcf(s)`
   );
 }
 
@@ -151,13 +154,16 @@ async function insertRelease1(settings: ElsaSettings) {
     institutesInvolved: [],
   };
 
-  const appData = await axios.get(`${settings.remsUrl}/api/applications`, {
-    headers: {
-      accept: "application/json",
-      "x-rems-api-key": settings.remsBotKey,
-      "x-rems-user-id": settings.remsBotUser,
-    },
-  });
+  const appData = { data: [] };
+
+  /*await axios.get(`${settings.remsUrl}/api/applications`, {
+      headers: {
+        accept: "application/json",
+        "x-rems-api-key": settings.remsBotKey,
+        "x-rems-user-id": settings.remsBotUser,
+      },
+    })
+  };*/
 
   for (const application of appData.data) {
     if (application["application/state"] === "application.state/approved") {
@@ -165,7 +171,7 @@ async function insertRelease1(settings: ElsaSettings) {
 
       const resourceToDatasetMap: { [uri: string]: string } = {};
 
-      // loop through the resources (datasets) in the application and make sure we are a data holder
+      /*// loop through the resources (datasets) in the application and make sure we are a data holder
       // for them (create a map of dataset id to our edgedb id for that dataset)
       for (const res of application["application/resources"] || []) {
         const remsDatasetUri = res["resource/ext-id"];
@@ -186,7 +192,7 @@ async function insertRelease1(settings: ElsaSettings) {
         } else {
           throw new Error(`No matching dataset for ${remsDatasetUri}`);
         }
-      }
+      } */
 
       const r1 = await e
         .insert(e.release.Release, {

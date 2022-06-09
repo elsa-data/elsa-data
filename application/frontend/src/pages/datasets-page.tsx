@@ -3,8 +3,6 @@ import { useEnvRelay } from "../providers/env-relay-provider";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "react-oidc-context";
-import { LayoutAuthPage } from "../layouts/layout-auth-page";
 import { Box } from "../components/boxes";
 import { BasicTable } from "../components/tables";
 import {
@@ -15,6 +13,7 @@ import { fileSize } from "humanize-plus";
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { LayoutBase } from "../layouts/layout-base";
 
 export const DatasetsPage: React.FC = () => {
   const envRelay = useEnvRelay();
@@ -74,7 +73,7 @@ export const DatasetsPage: React.FC = () => {
   );
 
   return (
-    <LayoutAuthPage>
+    <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
         <Box heading="Datasets">
           {datasetsData && (
@@ -215,6 +214,6 @@ export const DatasetsPage: React.FC = () => {
           </div>
         </Box>
       </div>
-    </LayoutAuthPage>
+    </LayoutBase>
   );
 };

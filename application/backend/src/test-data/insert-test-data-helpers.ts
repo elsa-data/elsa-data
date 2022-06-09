@@ -1,5 +1,6 @@
 import { createClient } from "edgedb";
 import e, { lab } from "../../dbschema/edgeql-js";
+import ChecksumType = lab.ChecksumType;
 
 const edgeDbClient = createClient();
 
@@ -23,6 +24,59 @@ export function makeEmptyIdentifierArray() {
   const tupleArrayType = e.array(e.tuple({ system: e.str, value: e.str }));
 
   return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
+}
+
+export function createFile(
+  name: string,
+  size: number,
+  etag?: string,
+  md5?: string,
+  sha1?: string,
+  sha256?: string
+): File {
+  const f: File = {
+    url: name,
+    size: size,
+    checksums: [],
+  };
+
+  if (etag) {
+    f.checksums.push({
+      type: "AWS_ETAG" as lab.ChecksumType,
+      value: etag,
+    });
+  }
+
+  if (md5) {
+    f.checksums.push({
+      type: lab.ChecksumType.MD5,
+      value: md5,
+    });
+  }
+
+  if (sha1) {
+    f.checksums.push({
+      type: "SHA_1" as lab.ChecksumType,
+      value: sha1,
+    });
+  }
+
+  if (sha256) {
+    f.checksums.push({
+      type: "SHA_256" as lab.ChecksumType,
+      value: sha256,
+    });
+  }
+
+  // if we haven't managed to make a checksum - for the purposes of test data lets make a fake MD5
+  if (f.checksums.length === 0) {
+    f.checksums.push({
+      type: lab.ChecksumType.MD5,
+      value: "721970cb30906405d4045f702ca72376", // pragma: allowlist secret
+    });
+  }
+
+  return f;
 }
 
 export interface File {
@@ -52,7 +106,7 @@ export async function createArtifacts(
   fastqs: File[][]
 ) {
   const fastqPair = fastqs.map((fq) =>
-    e.insert(e.lab.RunArtifactFastqPair, {
+    e.insert(e.lab.ArtifactFastqPair, {
       forwardFile: e.insert(e.lab.File, {
         url: fq[0].url,
         size: fq[0].size,
@@ -83,7 +137,7 @@ export async function createArtifacts(
       pipeline: "A pipeline",
       input: r1select,
       output: e.set(
-        e.insert(e.lab.AnalysesArtifactVcf, {
+        e.insert(e.lab.ArtifactVcf, {
           vcfFile: e.insert(e.lab.File, {
             url: vcf.url,
             size: vcf.size,
@@ -95,7 +149,7 @@ export async function createArtifacts(
             checksums: vcfIndex.checksums,
           }),
         }),
-        e.insert(e.lab.AnalysesArtifactBam, {
+        e.insert(e.lab.ArtifactBam, {
           bamFile: e.insert(e.lab.File, {
             url: bam.url,
             size: bam.size,
