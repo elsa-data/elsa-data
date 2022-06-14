@@ -4,8 +4,13 @@ import {
   DatasetGen3SyncResponseSchema,
   DatasetSchemaDeep,
   DatasetSchemaLight,
+  ReleaseCaseSchema,
+  ReleaseDatasetSchema,
+  ReleaseNodeStatusSchema,
+  ReleasePatientSchema,
   ReleaseRemsSyncRequestSchema,
   ReleaseSchema,
+  ReleaseSpecimenSchema,
 } from "./schemas";
 import {
   DuoLimitationCodedSchema,
@@ -51,3 +56,10 @@ export type ReleaseRemsSyncRequestType = Static<
 >;
 
 export type TestingRequestType = Static<typeof TestingRequestSchema>;
+
+export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
+
+export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
+export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
+export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
+export type ReleaseDatasetType = Static<typeof ReleaseDatasetSchema>;

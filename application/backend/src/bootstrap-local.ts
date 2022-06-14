@@ -1,6 +1,7 @@
 import { App } from "./app";
 import { getLocalSettings } from "./bootstrap-settings";
-import { blankTestData, insertTestData } from "./test-data/insert-test-data";
+import { insertTestData } from "./test-data/insert-test-data";
+import { blankTestData } from "./test-data/blank-test-data";
 
 console.log("Creating Fastify app");
 

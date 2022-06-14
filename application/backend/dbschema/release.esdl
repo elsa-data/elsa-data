@@ -26,6 +26,13 @@ module release {
         # 1..n datasets that we the sources of items in this release
         required property datasetUris -> array<str>;
 
+        multi link selectedSpecimens -> dataset::DatasetSpecimen {
+            on target delete allow;
+        }
+
+
+
+
         # the set of copied dataset information
 
         multi link sharedContent -> ReleaseDataset {

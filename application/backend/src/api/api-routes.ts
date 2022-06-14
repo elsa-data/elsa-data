@@ -3,6 +3,7 @@ import { registerReleaseRoutes } from "./routes/release";
 import { datasetRoutes } from "./routes/datasets";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
+import { usersService } from "../business/services/users";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -31,6 +32,8 @@ export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
           }
 
           const data = request.session.get(TOKEN_PRIMARY);
+
+          // await usersService.getBySubjectId(data.id)
 
           if (!data) {
             reply.code(401).send();

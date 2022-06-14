@@ -1,4 +1,4 @@
-CREATE MIGRATION m1dvtusguyxve52gel6ua2q6qi7fdv7y4yb47uvr6r2xlvjxh6k7ea
+CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
     ONTO initial
 {
   CREATE MODULE consent IF NOT EXISTS;
@@ -117,8 +117,11 @@ CREATE MIGRATION m1dvtusguyxve52gel6ua2q6qi7fdv7y4yb47uvr6r2xlvjxh6k7ea
       CREATE PROPERTY releaseStarted -> std::datetime;
   };
   CREATE TYPE permission::User {
-      CREATE MULTI LINK datasetOwner -> dataset::Dataset;
+      CREATE MULTI LINK datasetOwner -> dataset::Dataset {
+          ON TARGET DELETE  ALLOW;
+      };
       CREATE MULTI LINK releaseParticipant -> release::Release {
+          ON TARGET DELETE  ALLOW;
           CREATE PROPERTY role -> std::str {
               CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
           };
@@ -126,6 +129,8 @@ CREATE MIGRATION m1dvtusguyxve52gel6ua2q6qi7fdv7y4yb47uvr6r2xlvjxh6k7ea
       CREATE PROPERTY displayName -> std::str;
       CREATE REQUIRED PROPERTY subjectId -> std::str {
           SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+          CREATE CONSTRAINT std::min_len_value(6);
       };
   };
   CREATE TYPE lab::Analyses {

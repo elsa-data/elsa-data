@@ -1,8 +1,7 @@
-import { App } from "../../src/app";
-import { getLocalSettings } from "../../src/bootstrap-settings";
-import { FastifyInstance } from "fastify";
 import { Client, createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/insert-test-data";
+import { blankTestData } from "../../src/test-data/blank-test-data";
+import { insert10G } from "../../src/test-data/insert-test-data-10g";
+import e from "../../dbschema/edgeql-js";
 
 describe("edgedb base tests", () => {
   let edgeDbClient: Client;
@@ -13,7 +12,10 @@ describe("edgedb base tests", () => {
 
   afterAll(() => {});
 
-  it("root page is some sort of HTML", async () => {
+  beforeEach(async () => {
     await blankTestData();
+    await insert10G();
   });
+
+  it("root page is some sort of HTML", async () => {});
 });

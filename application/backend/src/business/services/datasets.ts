@@ -158,6 +158,39 @@ class DatasetsService {
 
     return null;
   }
+
+  /**
+   * Get all the cases for a dataset
+   *
+   * @param user
+   * @param datasetId
+   * @param limit
+   * @param offset
+   */
+  public async getCases(
+    user: AuthUser,
+    datasetId: string,
+    limit: number,
+    offset: number
+  ): Promise<any | null> {
+    const pageCases = await e
+      .select(e.dataset.DatasetCase, (dsc) => ({
+        ...e.dataset.DatasetCase["*"],
+        externalIdentifiers: true,
+        patients: {
+          externalIdentifiers: true,
+          specimens: {
+            externalIdentifiers: true,
+          },
+        },
+        filter: e.op(dsc.dataset.id, "=", e.uuid(datasetId)),
+        limit: e.int32(limit),
+        offset: e.int32(offset),
+      }))
+      .run(this.edgeDbClient);
+
+    return pageCases;
+  }
 }
 
 export const datasetsService = new DatasetsService();

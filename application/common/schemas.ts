@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox";
+import { TLiteral, TUnion, Type } from "@sinclair/typebox";
 import { ApplicationCodedSchemaV1 } from "./schemas-application-coded";
 
 /**
@@ -55,6 +55,45 @@ export const ReleaseSchema = Type.Object({
   applicationDacIdentifier: Type.Optional(Type.String()),
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
+});
+
+type IntoStringUnion<T> = {
+  [K in keyof T]: T[K] extends string ? TLiteral<T[K]> : never;
+};
+
+function StringUnion<T extends string[]>(
+  values: [...T]
+): TUnion<IntoStringUnion<T>> {
+  return { enum: values } as any;
+}
+
+export const ReleaseNodeStatusSchema = StringUnion([
+  "selected",
+  "indeterminate",
+  "unselected",
+]);
+
+export const ReleaseSpecimenSchema = Type.Object({
+  id: Type.String(),
+  nodeStatus: ReleaseNodeStatusSchema,
+});
+
+export const ReleasePatientSchema = Type.Object({
+  id: Type.String(),
+  nodeStatus: ReleaseNodeStatusSchema,
+  specimens: Type.Array(ReleaseSpecimenSchema),
+});
+
+export const ReleaseCaseSchema = Type.Object({
+  id: Type.String(),
+  nodeStatus: ReleaseNodeStatusSchema,
+  patients: Type.Array(ReleasePatientSchema),
+});
+
+export const ReleaseDatasetSchema = Type.Object({
+  id: Type.String(),
+  nodeStatus: ReleaseNodeStatusSchema,
+  cases: Type.Array(ReleaseCaseSchema),
 });
 
 export const DatasetGen3SyncRequestSchema = Type.Object({

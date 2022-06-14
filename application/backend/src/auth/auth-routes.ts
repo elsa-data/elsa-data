@@ -64,10 +64,12 @@ export const authRoutes = async (fastify: FastifyInstance, opts: Opts) => {
       reply.setCookie(USER_SUBJECT_COOKIE_NAME, "http://subject1.com", {
         secure: true,
         httpOnly: false,
+        path: "/",
       });
       reply.setCookie(USER_NAME_COOKIE_NAME, "Test User", {
         secure: true,
         httpOnly: false,
+        path: "/",
       });
 
       reply.redirect("/");
@@ -87,6 +89,7 @@ export const authRoutes = async (fastify: FastifyInstance, opts: Opts) => {
     reply.setCookie(USER_SUBJECT_COOKIE_NAME, tokenSet.claims().sub, {
       secure: true,
       httpOnly: false,
+      path: "/",
     });
     reply.setCookie(
       USER_NAME_COOKIE_NAME,
@@ -94,6 +97,7 @@ export const authRoutes = async (fastify: FastifyInstance, opts: Opts) => {
       {
         secure: true,
         httpOnly: false,
+        path: "/",
       }
     );
 

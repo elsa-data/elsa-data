@@ -28,7 +28,7 @@ export async function insert10G() {
       patients: e.insert(e.dataset.DatasetPatient, {
         externalIdentifiers: makeSystemlessIdentifierArray(patientId),
         specimens: e.insert(e.dataset.DatasetSpecimen, {
-          externalIdentifiers: makeEmptyIdentifierArray(),
+          externalIdentifiers: makeSystemlessIdentifierArray(specimenId),
           artifacts: await createArtifacts(
             createFile(
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,

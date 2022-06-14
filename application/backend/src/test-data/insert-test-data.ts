@@ -7,66 +7,22 @@ import { ElsaSettings } from "../bootstrap-settings";
 import axios from "axios";
 import { remsApplicationsResponse } from "./mock-responses";
 import { makeSystemlessIdentifierArray } from "./insert-test-data-helpers";
+import { usersService } from "../business/services/users";
+import { AuthenticatedUser } from "../business/authenticated-user";
 
-const client = edgedb.createClient();
+const edgeDbClient = edgedb.createClient();
 
-export async function blankTestData() {
-  console.log(`Removing any existing data in test database`);
-
-  console.log(
-    `  ${(await e.delete(e.permission.User).run(client)).length} user(s)`
-  );
-
-  console.log(
-    `  ${(await e.delete(e.release.Release).run(client)).length} release(s)`
-  );
-
-  console.log(
-    `  ${
-      (await e.delete(e.dataset.DatasetSpecimen).run(client)).length
-    } dataset specimen(s)`
-  );
-  console.log(
-    `  ${
-      (await e.delete(e.dataset.DatasetPatient).run(client)).length
-    } dataset patient(s)`
-  );
-  console.log(
-    `  ${
-      (await e.delete(e.dataset.DatasetCase).run(client)).length
-    } dataset case(s)`
-  );
-  console.log(
-    `  ${(await e.delete(e.dataset.Dataset).run(client)).length} dataset(s)`
-  );
-
-  console.log(
-    `  ${(await e.delete(e.lab.Analyses).run(client)).length} lab analyses(s)`
-  );
-  console.log(`  ${(await e.delete(e.lab.Run).run(client)).length} lab run(s)`);
-  console.log(
-    `  ${
-      (await e.delete(e.lab.SubmissionBatch).run(client)).length
-    } lab submission batch(s)`
-  );
-
-  console.log(
-    `  ${(await e.delete(e.lab.ArtifactBcl).run(client)).length} lab bcl(s)`
-  );
-  console.log(
-    `  ${
-      (await e.delete(e.lab.ArtifactFastqPair).run(client)).length
-    } lab fastq(s)`
-  );
-  console.log(
-    `  ${(await e.delete(e.lab.ArtifactBam).run(client)).length} lab bam(s)`
-  );
-  console.log(
-    `  ${(await e.delete(e.lab.ArtifactCram).run(client)).length} lab cram(s)`
-  );
-  console.log(
-    `  ${(await e.delete(e.lab.ArtifactVcf).run(client)).length} lab vcf(s)`
-  );
+// make an empty dataset.. for test purposes we want at least 10 datasets just so we can deal with paging
+async function insertBlankDataset(id: string, uri: string) {
+  return await e
+    .insert(e.dataset.Dataset, {
+      // temp datasets to match an existing REMS application
+      uri: uri,
+      externalIdentifiers: makeSystemlessIdentifierArray(id),
+      description: `Madeup dataset ${id}`,
+      cases: e.set(),
+    })
+    .run(edgeDbClient);
 }
 
 export async function insertTestData(settings: ElsaSettings) {
@@ -75,15 +31,54 @@ export async function insertTestData(settings: ElsaSettings) {
   await insertCARDIAC();
   //await insertIICON();
 
-  const randomDsBm = await e
-    .insert(e.dataset.Dataset, {
-      // temp datasets to match an existing REMS application
-      uri: "urn:fdc:australiangenomics.org.au:2022:datasets/bm",
-      externalIdentifiers: makeSystemlessIdentifierArray("BM"),
-      description: "Madeup BM",
-      cases: e.set(),
-    })
-    .run(client);
+  await insertBlankDataset(
+    "BM",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/bm"
+  );
+  await insertBlankDataset(
+    "MITO",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/mito"
+  );
+  await insertBlankDataset(
+    "BOW",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/bow"
+  );
+  await insertBlankDataset(
+    "RR",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/rr"
+  );
+  await insertBlankDataset(
+    "SS",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/ss"
+  );
+  await insertBlankDataset(
+    "TT",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/tt"
+  );
+  await insertBlankDataset(
+    "UU",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/uu"
+  );
+  await insertBlankDataset(
+    "VV",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/vv"
+  );
+  await insertBlankDataset(
+    "WW",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/ww"
+  );
+  await insertBlankDataset(
+    "XX",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/xx"
+  );
+  await insertBlankDataset(
+    "YY",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/yy"
+  );
+  await insertBlankDataset(
+    "ZZ",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/zz"
+  );
 
   /*const randomDs = await e
       .insert(e.dataset.Dataset, {
@@ -99,15 +94,20 @@ export async function insertTestData(settings: ElsaSettings) {
   console.log(
     `  Number of object artifacts present = ${await e
       .count(e.lab.ArtifactBase)
-      .run(client)}`
+      .run(edgeDbClient)}`
   );
   console.log(
-    `  Number of runs present = ${await e.count(e.lab.Run).run(client)}`
+    `  Number of users present = ${await e
+      .count(e.permission.User)
+      .run(edgeDbClient)}`
+  );
+  console.log(
+    `  Number of runs present = ${await e.count(e.lab.Run).run(edgeDbClient)}`
   );
   console.log(
     `  Number of releases present = ${await e
       .count(e.release.Release)
-      .run(client)}`
+      .run(edgeDbClient)}`
   );
 
   const eachDs = e.for(e.dataset.Dataset, (ds) => {
@@ -119,7 +119,7 @@ export async function insertTestData(settings: ElsaSettings) {
     });
   });
 
-  console.log(await eachDs.run(client));
+  console.log(await eachDs.run(edgeDbClient));
 }
 
 async function insertRelease1(settings: ElsaSettings) {
@@ -214,7 +214,7 @@ Applicant: ${JSON.stringify(
             Object.keys(resourceToDatasetMap)
           ),
         })
-        .run(client);
+        .run(edgeDbClient);
 
       /*{
   "application/workflow": {
@@ -319,7 +319,7 @@ Applicant: ${JSON.stringify(
       applicationCoded: e.json(appCoded),
       datasetUris: e.array(["urn:fdc:umccr.org:2022:dataset/10g"]),
     })
-    .run(client);
+    .run(edgeDbClient);
 
   const r2 = await e
     .insert(e.release.Release, {
@@ -342,5 +342,38 @@ Applicant: ${JSON.stringify(
         "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
       ]),
     })
-    .run(client);
+    .run(edgeDbClient);
+
+  const user2 = await e
+    .insert(e.permission.User, {
+      subjectId: "http://subject2.com",
+      displayName: "Test User 2",
+    })
+    .run(edgeDbClient);
+
+  const user1 = await e
+    .insert(e.permission.User, {
+      subjectId: "http://subject1.com",
+      displayName: "Test User",
+      releaseParticipant: e.select(e.release.Release, (r) => ({
+        filter: e.op(e.uuid(r1.id), "=", r.id),
+        "@role": e.str("PI"),
+      })),
+    })
+    .run(edgeDbClient);
+
+  await e.update(e.permission.User, (user) => ({
+    filter: e.op(user.id, "=", e.uuid(user1.id)),
+    set: {
+      releaseParticipant: {
+        "+=": e.select(e.release.Release, (r) => ({
+          filter: e.op(e.uuid(r2.id), "=", r.id),
+          "@role": e.str("Member"),
+        })),
+      },
+    },
+  }));
+
+  //console.log(await usersService.roleInRelease("http://subject1.com", r1.id));
+  //console.log(await usersService.roleInRelease(new AuthenticatedUser("http://subject2.com", r1.id));
 }
