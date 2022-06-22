@@ -23,6 +23,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     .run(edgeDbClient);
   const casesDeleted = await e.delete(e.dataset.DatasetCase).run(edgeDbClient);
   const datasetsDeleted = await e.delete(e.dataset.Dataset).run(edgeDbClient);
+
   const analysesDeleted = await e.delete(e.lab.Analyses).run(edgeDbClient);
   const runsDeleted = await e.delete(e.lab.Run).run(edgeDbClient);
   const submissionsBatchesDeleted = await e
@@ -35,6 +36,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const bamsDeleted = await e.delete(e.lab.ArtifactBam).run(edgeDbClient);
   const cramsDeleted = await e.delete(e.lab.ArtifactCram).run(edgeDbClient);
   const vcfsDeleted = await e.delete(e.lab.ArtifactVcf).run(edgeDbClient);
+  const filesDeleted = await e.delete(e.storage.File).run(edgeDbClient);
 
   if (printDetailsToConsole) {
     console.log(`  ${usersDeleted.length} user(s)`);
@@ -57,5 +59,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`  ${bamsDeleted.length} lab bam(s)`);
     console.log(`  ${cramsDeleted.length} lab cram(s)`);
     console.log(`  ${vcfsDeleted.length} lab vcf(s)`);
+
+    console.log(`  ${filesDeleted.length} storage file(s)`);
   }
 }

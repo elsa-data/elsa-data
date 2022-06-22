@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import e, { lab } from "../../dbschema/edgeql-js";
+import e, { lab, storage } from "../../dbschema/edgeql-js";
 import {
   File,
   createArtifacts,
@@ -28,8 +28,8 @@ const createMockFileFromName = (name: string): File => {
     size: 0,
     checksums: [
       {
-        type: lab.ChecksumType.MD5,
-        value: "721970cb30906405d4045f702ca72376",
+        type: storage.ChecksumType.MD5,
+        value: "00000000000000000000000000000000",
       },
     ],
   };

@@ -7,11 +7,8 @@ describe("http integration tests", () => {
 
   beforeAll(async () => {
     const settings = await getLocalSettings();
-
     const app = new App(() => settings);
-
     server = await app.setupServer();
-
     await server.ready();
   });
 

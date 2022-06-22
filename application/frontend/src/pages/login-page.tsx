@@ -17,6 +17,11 @@ export const LoginPage: React.FC = () => {
             Log in (test user 1)
           </button>
         </form>
+        <form action="/auth/login-bypass-2" method="POST" id="loginBypass2Form">
+          <button className="btn btn-blue" type="submit">
+            Log in (test user 2)
+          </button>
+        </form>
       </div>
     </LayoutBase>
   );

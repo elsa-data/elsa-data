@@ -1,4 +1,4 @@
-import { TLiteral, TUnion, Type } from "@sinclair/typebox";
+import { TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
 import { ApplicationCodedSchemaV1 } from "./schemas-application-coded";
 
 /**
@@ -55,6 +55,10 @@ export const ReleaseSchema = Type.Object({
   applicationDacIdentifier: Type.Optional(Type.String()),
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
+
+  permissionEditSelections: Type.Optional(Type.Boolean()),
+  permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
+  permissionAccessData: Type.Optional(Type.Boolean()),
 });
 
 type IntoStringUnion<T> = {
@@ -75,19 +79,35 @@ export const ReleaseNodeStatusSchema = StringUnion([
 
 export const ReleaseSpecimenSchema = Type.Object({
   id: Type.String(),
+  externalId: Type.String(), // TODO: fix this
+  // the node status of whether this specimen is released
   nodeStatus: ReleaseNodeStatusSchema,
 });
 
+export const ReleasePatientBirthSexSchema = StringUnion([
+  "male",
+  "female",
+  "other",
+]);
+
 export const ReleasePatientSchema = Type.Object({
   id: Type.String(),
-  nodeStatus: ReleaseNodeStatusSchema,
+  externalId: Type.String(), // TODO: fix this
+  sexAtBirth: Type.Optional(ReleasePatientBirthSexSchema),
   specimens: Type.Array(ReleaseSpecimenSchema),
+  // the node status of whether this patient is released
+  nodeStatus: ReleaseNodeStatusSchema,
 });
 
 export const ReleaseCaseSchema = Type.Object({
   id: Type.String(),
-  nodeStatus: ReleaseNodeStatusSchema,
+  externalId: Type.String(), // TODO: fix this
   patients: Type.Array(ReleasePatientSchema),
+  // both of these identifiers are possibly useful - lets work out which is most useful
+  fromDatasetUri: Type.String(),
+  fromDatasetId: Type.String(),
+  // the node status of whether this case is released
+  nodeStatus: ReleaseNodeStatusSchema,
 });
 
 export const ReleaseDatasetSchema = Type.Object({
@@ -110,4 +130,13 @@ export const ReleaseRemsSyncRequestSchema = Type.Object({
   remsUrl: Type.String(),
   remsUser: Type.String(),
   remsKey: Type.String(),
+});
+
+export const ReleaseAwsS3PresignRequestSchema = Type.Object({
+  // id: Type.String(),
+});
+
+export const ReleaseAwsS3PresignResponseSchema = Type.Object({
+  id: Type.String(),
+  files: Type.Array(Type.String()),
 });

@@ -1,6 +1,5 @@
 import { createClient } from "edgedb";
-import e, { lab } from "../../dbschema/edgeql-js";
-import ChecksumType = lab.ChecksumType;
+import e, { lab, storage } from "../../dbschema/edgeql-js";
 
 const edgeDbClient = createClient();
 
@@ -10,7 +9,8 @@ export function makeSystemlessIdentifier(entry1: string) {
 
 /**
  * Make an identifier array (array of tuples) where there is only
- * one entry and it is a identifier with value only (no system)
+ * one entry and it is an identifier with value only (no system)
+ *
  * @param entry1
  */
 export function makeSystemlessIdentifierArray(entry1: string) {
@@ -26,6 +26,91 @@ export function makeEmptyIdentifierArray() {
   return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
 }
 
+/**
+ * Create a user for testing purposes.
+ *
+ * @param subjectId
+ * @param displayName
+ * @param releasesAsDataOwner
+ * @param releasesAsPI
+ * @param releasesAsMember
+ */
+export async function createTestUser(
+  subjectId: string,
+  displayName: string,
+  releasesAsDataOwner: string[],
+  releasesAsPI: string[],
+  releasesAsMember: string[]
+) {
+  // create the user
+  const newUser = await e
+    .insert(e.permission.User, {
+      subjectId: subjectId,
+      displayName: displayName,
+    })
+    .run(edgeDbClient);
+
+  // a helper to update the role this users has with a release
+  const insertRole = async (
+    releaseId: string,
+    role: "DataOwner" | "PI" | "Member"
+  ) => {
+    await e
+      .update(e.permission.User, (user) => ({
+        filter: e.op(e.uuid(newUser.id), "=", user.id),
+        set: {
+          releaseParticipant: {
+            "+=": e.select(e.release.Release, (r) => ({
+              filter: e.op(e.uuid(releaseId), "=", r.id),
+              "@role": e.str(role),
+            })),
+          },
+        },
+      }))
+      .run(edgeDbClient);
+  };
+
+  for (const dataOwnerReleaseId of releasesAsDataOwner) {
+    await insertRole(dataOwnerReleaseId, "DataOwner");
+  }
+
+  for (const piReleaseId of releasesAsPI) {
+    await insertRole(piReleaseId, "PI");
+  }
+
+  for (const memberReleaseId of releasesAsMember) {
+    await insertRole(memberReleaseId, "Member");
+  }
+}
+
+/**
+ * Create a blank dataset for testing purposes (we sometimes want
+ * to create lots of datasets just for testing paging algorithms/load etc)
+ *
+ * @param id
+ * @param uri
+ */
+export async function insertBlankDataset(id: string, uri: string) {
+  return await e
+    .insert(e.dataset.Dataset, {
+      uri: uri,
+      externalIdentifiers: makeSystemlessIdentifierArray(id),
+      description: `Madeup blank dataset ${id}`,
+      cases: e.set(),
+    })
+    .run(edgeDbClient);
+}
+
+/**
+ * Create a File entry
+ *
+ * @param name
+ * @param size
+ * @param etag
+ * @param md5
+ * @param sha1
+ * @param sha256
+ */
 export function createFile(
   name: string,
   size: number,
@@ -42,28 +127,28 @@ export function createFile(
 
   if (etag) {
     f.checksums.push({
-      type: "AWS_ETAG" as lab.ChecksumType,
+      type: "AWS_ETAG" as storage.ChecksumType,
       value: etag,
     });
   }
 
   if (md5) {
     f.checksums.push({
-      type: lab.ChecksumType.MD5,
+      type: storage.ChecksumType.MD5,
       value: md5,
     });
   }
 
   if (sha1) {
     f.checksums.push({
-      type: "SHA_1" as lab.ChecksumType,
+      type: "SHA_1" as storage.ChecksumType,
       value: sha1,
     });
   }
 
   if (sha256) {
     f.checksums.push({
-      type: "SHA_256" as lab.ChecksumType,
+      type: "SHA_256" as storage.ChecksumType,
       value: sha256,
     });
   }
@@ -71,7 +156,7 @@ export function createFile(
   // if we haven't managed to make a checksum - for the purposes of test data lets make a fake MD5
   if (f.checksums.length === 0) {
     f.checksums.push({
-      type: lab.ChecksumType.MD5,
+      type: storage.ChecksumType.MD5,
       value: "721970cb30906405d4045f702ca72376", // pragma: allowlist secret
     });
   }
@@ -83,7 +168,7 @@ export interface File {
   size: number;
   url: string;
   checksums: {
-    type: lab.ChecksumType;
+    type: storage.ChecksumType;
     value: string;
   }[];
 }
@@ -107,12 +192,12 @@ export async function createArtifacts(
 ) {
   const fastqPair = fastqs.map((fq) =>
     e.insert(e.lab.ArtifactFastqPair, {
-      forwardFile: e.insert(e.lab.File, {
+      forwardFile: e.insert(e.storage.File, {
         url: fq[0].url,
         size: fq[0].size,
         checksums: fq[0].checksums,
       }),
-      reverseFile: e.insert(e.lab.File, {
+      reverseFile: e.insert(e.storage.File, {
         url: fq[1].url,
         size: fq[1].size,
         checksums: fq[1].checksums,
@@ -138,24 +223,24 @@ export async function createArtifacts(
       input: r1select,
       output: e.set(
         e.insert(e.lab.ArtifactVcf, {
-          vcfFile: e.insert(e.lab.File, {
+          vcfFile: e.insert(e.storage.File, {
             url: vcf.url,
             size: vcf.size,
             checksums: vcf.checksums,
           }),
-          tbiFile: e.insert(e.lab.File, {
+          tbiFile: e.insert(e.storage.File, {
             url: vcfIndex.url,
             size: vcfIndex.size,
             checksums: vcfIndex.checksums,
           }),
         }),
         e.insert(e.lab.ArtifactBam, {
-          bamFile: e.insert(e.lab.File, {
+          bamFile: e.insert(e.storage.File, {
             url: bam.url,
             size: bam.size,
             checksums: bam.checksums,
           }),
-          baiFile: e.insert(e.lab.File, {
+          baiFile: e.insert(e.storage.File, {
             url: bamIndex.url,
             size: bamIndex.size,
             checksums: bamIndex.checksums,

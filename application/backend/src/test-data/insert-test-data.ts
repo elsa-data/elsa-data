@@ -4,30 +4,17 @@ import { insertCARDIAC } from "./insert-test-data-cardiac";
 import { insert10G } from "./insert-test-data-10g";
 import { ApplicationCodedTypeV1 } from "@umccr/elsa-types";
 import { ElsaSettings } from "../bootstrap-settings";
-import axios from "axios";
-import { remsApplicationsResponse } from "./mock-responses";
-import { makeSystemlessIdentifierArray } from "./insert-test-data-helpers";
-import { usersService } from "../business/services/users";
-import { AuthenticatedUser } from "../business/authenticated-user";
+import { createTestUser, insertBlankDataset } from "./insert-test-data-helpers";
+import { insert10F } from "./insert-test-data-10f";
+import { insert10C } from "./insert-test-data-10c";
 
 const edgeDbClient = edgedb.createClient();
-
-// make an empty dataset.. for test purposes we want at least 10 datasets just so we can deal with paging
-async function insertBlankDataset(id: string, uri: string) {
-  return await e
-    .insert(e.dataset.Dataset, {
-      // temp datasets to match an existing REMS application
-      uri: uri,
-      externalIdentifiers: makeSystemlessIdentifierArray(id),
-      description: `Madeup dataset ${id}`,
-      cases: e.set(),
-    })
-    .run(edgeDbClient);
-}
 
 export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
   await insert10G();
+  await insert10F();
+  await insert10C();
   await insertCARDIAC();
   //await insertIICON();
 
@@ -80,14 +67,7 @@ export async function insertTestData(settings: ElsaSettings) {
     "urn:fdc:australiangenomics.org.au:2022:datasets/zz"
   );
 
-  /*const randomDs = await e
-      .insert(e.dataset.Dataset, {
-        // temp datasets to match an existing REMS application
-        uri: "http://cci.org.au/datasets/BOWEL",
-        externalIdentifiers: makeSystemlessIdentifierArray("BOWEL"),
-        description: "Madeup BOWEL",
-        cases: e.set()
-      }).run(client); */
+  await insertBlankDataset("BOWEL", "http://cci.org.au/datasets/BOWEL");
 
   await insertRelease1(settings);
 
@@ -315,9 +295,16 @@ Applicant: ${JSON.stringify(
   const r1 = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
+      applicationDacTitle: "A Study of Lots of Test Data",
       applicationDacIdentifier: "ABC",
       applicationCoded: e.json(appCoded),
-      datasetUris: e.array(["urn:fdc:umccr.org:2022:dataset/10g"]),
+      datasetUris: e.array([
+        "urn:fdc:umccr.org:2022:dataset/10g",
+        "urn:fdc:umccr.org:2022:dataset/10f",
+        "urn:fdc:umccr.org:2022:dataset/10c",
+      ]),
+      selectedSpecimens: e.set(),
+      manualExclusions: e.set(),
     })
     .run(edgeDbClient);
 
@@ -341,39 +328,17 @@ Applicant: ${JSON.stringify(
       datasetUris: e.array([
         "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
       ]),
+      selectedSpecimens: e.set(),
+      manualExclusions: e.set(),
     })
     .run(edgeDbClient);
 
-  const user2 = await e
-    .insert(e.permission.User, {
-      subjectId: "http://subject2.com",
-      displayName: "Test User 2",
-    })
-    .run(edgeDbClient);
-
-  const user1 = await e
-    .insert(e.permission.User, {
-      subjectId: "http://subject1.com",
-      displayName: "Test User",
-      releaseParticipant: e.select(e.release.Release, (r) => ({
-        filter: e.op(e.uuid(r1.id), "=", r.id),
-        "@role": e.str("PI"),
-      })),
-    })
-    .run(edgeDbClient);
-
-  await e.update(e.permission.User, (user) => ({
-    filter: e.op(user.id, "=", e.uuid(user1.id)),
-    set: {
-      releaseParticipant: {
-        "+=": e.select(e.release.Release, (r) => ({
-          filter: e.op(e.uuid(r2.id), "=", r.id),
-          "@role": e.str("Member"),
-        })),
-      },
-    },
-  }));
-
-  //console.log(await usersService.roleInRelease("http://subject1.com", r1.id));
-  //console.log(await usersService.roleInRelease(new AuthenticatedUser("http://subject2.com", r1.id));
+  await createTestUser(
+    "http://subject1.com",
+    "Test User 1",
+    [r1.id],
+    [r2.id],
+    []
+  );
+  await createTestUser("http://subject2.com", "Test User 2", [], [r1.id], []);
 }

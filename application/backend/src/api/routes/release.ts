@@ -1,12 +1,27 @@
 import { FastifyInstance } from "fastify";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { ApplicationCodedTypeV1, ReleaseType } from "@umccr/elsa-types";
+import {
+  ApplicationCodedTypeV1,
+  ReleaseAwsS3PresignRequestType,
+  ReleaseCaseType,
+  ReleaseType,
+} from "@umccr/elsa-types";
 import { ElsaSettings } from "../../bootstrap-settings";
+import LinkHeader from "http-link-header";
+import { releasesService } from "../../business/services/releases";
+import { AuthenticatedUser } from "../../business/authenticated-user";
+import { authenticatedRouteOnEntryHelper } from "../api-routes";
+import { Readable } from "stream";
+import { releasesAwsService } from "../../business/services/releases-aws";
 
 const client = edgedb.createClient();
 
-function mapDbToApi(dbObject: any): ReleaseType {
+function mapDbToApi(
+  dbObject: any,
+  editSelections?: boolean,
+  editApplicationCoded?: boolean
+): ReleaseType {
   return {
     id: dbObject.id,
     datasetUris: dbObject.datasetUris,
@@ -17,6 +32,9 @@ function mapDbToApi(dbObject: any): ReleaseType {
       dbObject.applicationCoded != null
         ? JSON.parse(dbObject.applicationCoded)
         : {},
+    permissionEditSelections: editSelections,
+    permissionEditApplicationCoded: editApplicationCoded,
+    permissionAccessData: false,
   };
 }
 
@@ -39,34 +57,77 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     "/api/releases/:rid",
     {},
     async function (request, reply) {
-      const elsaSettings: ElsaSettings = (request as any).settings;
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
 
-      const thisRelease = await e
-        .select(e.release.Release, (r) => ({
-          id: true,
-          datasetUris: true,
-          applicationCoded: true,
-          applicationDacIdentifier: true,
-          applicationDacTitle: true,
-          applicationDacDetails: true,
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-        }))
-        .run(client);
+      const release = await releasesService.get(authenticatedUser, releaseId);
 
-      if (thisRelease != null)
-        reply.send({
-          id: thisRelease.id,
-          applicationCoded:
-            thisRelease.applicationCoded != null
-              ? JSON.parse(thisRelease.applicationCoded)
-              : {},
-          datasetUris: thisRelease.datasetUris,
-          applicationDacDetails: thisRelease.applicationDacDetails!,
-          applicationDacIdentifier: thisRelease.applicationDacIdentifier!,
-          applicationDacTitle: thisRelease.applicationDacTitle!,
-        });
+      if (release) reply.send(release);
+      else reply.status(400).send();
+    }
+  );
+
+  fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
+    "/api/releases/:rid/cases",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser, pageSize } =
+        authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const page = parseInt((request.query as any).page) || 0;
+
+      const cases = await releasesService.getCases(
+        authenticatedUser,
+        releaseId,
+        pageSize,
+        page * pageSize
+      );
+
+      if (!cases) reply.status(400).send();
+      else reply.send(cases.data);
+    }
+  );
+
+  fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
+    "/api/releases/:rid/specimens/select",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const specs: string[] = request.body;
+
+      const setResult = await releasesService.setSelected(
+        authenticatedUser,
+        releaseId,
+        specs
+      );
+
+      reply.send("ok");
+    }
+  );
+
+  fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
+    "/api/releases/:rid/specimens/unselect",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const specs: string[] = request.body;
+
+      const unsetResult = await releasesService.setUnselected(
+        authenticatedUser,
+        releaseId,
+        specs
+      );
+
+      reply.send("ok");
     }
   );
 
@@ -91,4 +152,35 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       reply.send("ok");
     }
   );
+
+  fastify.post<{
+    Body: ReleaseAwsS3PresignRequestType;
+    Params: { rid: string };
+  }>("/api/releases/:rid/pre-signed", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+
+    console.log(
+      await releasesAwsService.getPresigned(authenticatedUser, releaseId)
+    );
+
+    //const newApplicationCoded = request.body;
+
+    //console.log(newApplicationCoded);
+
+    const myStream = new Readable({
+      read() {
+        this.push("Hello");
+        this.push(null);
+      },
+    });
+
+    const response = myStream;
+
+    reply.header("Content-Disposition", "attachment; filename=s3.txt");
+    // reply.header('Content-Length', img.dataValues.Length);
+    reply.type("application/octet-stream");
+    reply.send(response);
+  });
 }

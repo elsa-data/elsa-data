@@ -4,10 +4,31 @@ import { datasetRoutes } from "./routes/datasets";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
 import { usersService } from "../business/services/users";
+import { AuthenticatedUser } from "../business/authenticated-user";
+import { currentPageSize } from "./api-pagination";
 
 type Opts = {
   allowTestCookieEquals?: string;
 };
+
+/**
+ * A helper function that does any work which we need to do on the entrypoint
+ * to pretty much every route. At the minimum, this converts untyped values
+ * inserted earlier in fastify into strongly typed values.
+ *
+ * @param request
+ */
+export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
+  const elsaSettings: ElsaSettings = (request as any).settings;
+  const authenticatedUser: AuthenticatedUser = (request as any).user;
+  const pageSize = currentPageSize(request);
+
+  return {
+    elsaSettings,
+    authenticatedUser,
+    pageSize,
+  };
+}
 
 /**
  * The main API routes plugin point, defining a set of authenticated and
@@ -17,9 +38,18 @@ type Opts = {
  * @param opts
  */
 export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
+  // TODO place any unauthenticated routes first here
+
+  // now register the auth hook and then register all the rest of our routes nested within
   fastify
     .addHook(
       "onRequest",
+      /**
+       * Enforce the minimum session auth access for our APIs
+       *
+       * @param request
+       * @param reply
+       */
       async (request: FastifyRequest, reply: FastifyReply) => {
         try {
           // if we are in test mode - then we want to accept a manually constructed cookie in lieu of a real
@@ -28,19 +58,36 @@ export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
           if (opts.allowTestCookieEquals) {
             const rawCookie = request.cookies[TOKEN_PRIMARY];
 
-            if (rawCookie == opts.allowTestCookieEquals) return;
+            if (rawCookie == opts.allowTestCookieEquals) {
+              // setup up the fake authed user
+              (request as any).user = await usersService.getBySubjectId(
+                "http://subject1.com"
+              );
+              return;
+            }
           }
 
-          const data = request.session.get(TOKEN_PRIMARY);
+          const sessionCookieData = request.session.get(TOKEN_PRIMARY);
 
-          // await usersService.getBySubjectId(data.id)
-
-          if (!data) {
-            reply.code(401).send();
+          if (!sessionCookieData) {
+            console.log("NO SESSSION COOKIE DATA PRESENT TO ENABLE AUTH");
+            reply.code(403).send();
             return;
           }
+
+          const authedUser = await usersService.getBySubjectId(
+            sessionCookieData.id
+          );
+
+          if (!authedUser) {
+            console.log(`NO AUTH USER FOUND FOR ${sessionCookieData.id}`);
+            reply.code(403).send();
+            return;
+          }
+
+          (request as any).user = authedUser;
         } catch (error) {
-          reply.code(404).send();
+          reply.code(403).send();
         }
       }
     )

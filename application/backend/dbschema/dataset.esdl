@@ -56,14 +56,18 @@ module dataset {
         }
 
         # pedigree data structure
+        optional link pedigree := pedigree::Pedigree;
 
         # sample info (which are normals etc)
     }
 
+    scalar type SexAtBirthType extending enum<'male', 'female', 'other'>;
 
     # the patient represents a single human who may have attached specimens
 
     type DatasetPatient  extending DatasetShareable, DatasetIdentifiable {
+
+        optional property sexAtBirth -> SexAtBirthType;
 
         # the backlink to the dataset that owns us
         link dataset := .<patients[is DatasetCase].<cases[is Dataset];

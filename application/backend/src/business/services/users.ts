@@ -1,17 +1,15 @@
 import * as edgedb from "edgedb";
 import e, { permission } from "../../../dbschema/edgeql-js";
-import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
-import { AuthUser } from "../../auth/auth-user";
-import { sub } from "edgedb/dist/primitives/bigint";
 import { AuthenticatedUser } from "../authenticated-user";
-import { filter } from "lodash";
 
-export type UserId = string;
+// possibly can somehow get this from the schemas files?
+type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
 
 class UsersService {
   private edgeDbClient = edgedb.createClient();
 
-  private baseUserSelect(subjectId: string) {
+  private baseUserSelectQuery(subjectId: string) {
+    // TODO: convert this to use edge parameters?
     return e
       .select(e.permission.User, (u) => ({
         ...e.permission.User["*"],
@@ -20,20 +18,35 @@ class UsersService {
       .assert_single();
   }
 
+  /**
+   * Get a user from our database when given just a subject id. Returns null
+   * if the user is not in the database.
+   *
+   * @param subjectId
+   */
   public async getBySubjectId(
     subjectId: string
   ): Promise<AuthenticatedUser | null> {
-    const dbUser = await this.baseUserSelect(subjectId).run(this.edgeDbClient);
+    const dbUser = await this.baseUserSelectQuery(subjectId).run(
+      this.edgeDbClient
+    );
 
     if (dbUser != null) return new AuthenticatedUser(dbUser);
 
     return null;
   }
 
+  /**
+   * Return the role a user has in a particular release, or null if they are not involved
+   * in the release.
+   *
+   * @param user
+   * @param releaseId
+   */
   public async roleInRelease(
     user: AuthenticatedUser,
     releaseId: string
-  ): Promise<string | null> {
+  ): Promise<ReleaseRoleStrings | null> {
     const userWithMatchingReleases = await e
       .select(e.permission.User, (u) => ({
         subjectId: true,
@@ -51,7 +64,9 @@ class UsersService {
         userWithMatchingReleases.length > 0 &&
         userWithMatchingReleases[0].releaseParticipant.length > 0
       ) {
-        return userWithMatchingReleases[0].releaseParticipant[0]["@role"];
+        return userWithMatchingReleases[0].releaseParticipant[0][
+          "@role"
+        ] as ReleaseRoleStrings;
       }
     }
 
@@ -78,7 +93,7 @@ class UsersService {
         userWithMatchingDatasets.length > 0 &&
         userWithMatchingDatasets[0].datasetOwner.length > 0
       ) {
-        return "Owner";
+        return "DataOwner";
         // currently there is no role for datasets other than owning them
         // userWithMatchingDatasets[0].datasetOwner[0]['@role'];
       }

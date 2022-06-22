@@ -4,7 +4,6 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "../components/boxes";
-import { BasicTable } from "../components/tables";
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -14,6 +13,7 @@ import {
   ReleaseType,
 } from "@umccr/elsa-types";
 import { LayoutBase } from "../layouts/layout-base";
+import { VerticalTabs } from "../components/vertical-tabs";
 
 export const ReleasesPage: React.FC = () => {
   const envRelay = useEnvRelay();
@@ -82,64 +82,28 @@ export const ReleasesPage: React.FC = () => {
         {/* SYNCHRONISE DAC BOX */}
         <Box heading="Synchronise Releases with DAC">
           <div className="flex">
-            <Tab.Group vertical={true}>
-              <Tab.List className="flex-none w-1/5 flex-col rounded-xl border-solid border-2 border-sky-500 p-2 min-h-[200px]">
-                <Tab
-                  className={({ selected }) =>
-                    classNames(
-                      "w-full bg-gray-500 rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
-                      "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                      selected
-                        ? "bg-white shadow"
-                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
-                    )
-                  }
-                >
-                  REMS
-                </Tab>
-                <Tab
-                  className={({ selected }) =>
-                    classNames(
-                      "w-full bg-gray-500 rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700",
-                      "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
-                      selected
-                        ? "bg-white shadow"
-                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
-                    )
-                  }
-                >
-                  DUOS
-                </Tab>
-              </Tab.List>
-              <Tab.Panels className="grow">
-                <Tab.Panel className="ml-6">
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="flex flex-col gap-6">
-                      <label className="block">
-                        <span className="text-xs font-bold text-gray-700 uppercase">
-                          Instance URL
-                        </span>
-                        <input
-                          type="text"
-                          defaultValue="https://hgpp-rems.dev.umccr.org"
-                          {...register("remsUrl", { required: true })}
-                          className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
-                        />
-                      </label>
-                      <input type="submit" className="btn-blue w-60" />
-                    </div>
-                  </form>
-                </Tab.Panel>
-                <Tab.Panel className="ml-6">
-                  <form onSubmit={handleSubmit(onSubmit)}></form>
-                </Tab.Panel>
-                <Tab.Panel className="ml-6">There</Tab.Panel>
-              </Tab.Panels>
-            </Tab.Group>
+            <VerticalTabs tabs={["REMS", "DUOS"]}>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="flex flex-col gap-6">
+                  <label className="block">
+                    <span className="text-xs font-bold text-gray-700 uppercase">
+                      Instance URL
+                    </span>
+                    <input
+                      type="text"
+                      defaultValue="https://hgpp-rems.dev.umccr.org"
+                      {...register("remsUrl", { required: true })}
+                      className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                    />
+                  </label>
+                  <input type="submit" className="btn-blue w-60" />
+                </div>
+              </form>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <input type="submit" className="btn-blue w-60" />
+              </form>
+            </VerticalTabs>
           </div>
-        </Box>
-        <Box heading="AAA">
-          <BasicTable tableOptions={{ columns: columns, data: data }} />
         </Box>
         <Box heading="Releases">
           {releaseData && (

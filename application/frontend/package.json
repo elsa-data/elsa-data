@@ -19,7 +19,9 @@
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
     "@fortawesome/free-regular-svg-icons": "^6.1.1",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/react-fontawesome": "^0.1.18",
     "@headlessui/react": "^1.6.4",
+    "@tanstack/react-table": "8.0.0-beta.9",
     "@umccr/elsa-strings": "file:../common/elsa-strings",
     "@umccr/elsa-types": "file:../common",
     "axios": "0.27.2",
@@ -34,8 +36,7 @@
     "react-dom": "18.1.0",
     "react-hook-form": "^7.31.3",
     "react-query": "3.39.0",
-    "react-router-dom": "6.3.0",
-    "react-table": "7.8.0"
+    "react-router-dom": "6.3.0"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.2",

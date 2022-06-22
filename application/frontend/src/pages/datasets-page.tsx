@@ -4,7 +4,6 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "../components/boxes";
-import { BasicTable } from "../components/tables";
 import {
   DatasetGen3SyncRequestType,
   DatasetLightType,

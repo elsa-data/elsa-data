@@ -1,38 +1,30 @@
 module lab {
 
-    type File {
-        required property url -> str;
-        required property size -> int64;
-        required property checksums -> array<tuple<type: ChecksumType, value: str>>;
-    }
-
-    scalar type ChecksumType extending enum<'MD5', 'AWS_ETAG', 'SHA_1', 'SHA_256'>;
-
     abstract type ArtifactBase  {
     }
 
     type ArtifactBcl extending ArtifactBase {
-        required link bclFile -> File;
+        required link bclFile -> storage::File;
     }
 
     type ArtifactFastqPair extending ArtifactBase {
-        required link forwardFile -> File;
-        required link reverseFile -> File;
+        required link forwardFile -> storage::File;
+        required link reverseFile -> storage::File;
     }
 
     type ArtifactVcf extending ArtifactBase {
-        required link vcfFile -> File;
-        required link tbiFile -> File;
+        required link vcfFile -> storage::File;
+        required link tbiFile -> storage::File;
     }
 
     type ArtifactBam extending ArtifactBase {
-        required link bamFile -> File;
-        required link baiFile -> File;
+        required link bamFile -> storage::File;
+        required link baiFile -> storage::File;
     }
 
     type ArtifactCram extending ArtifactBase {
-        required link cramFile -> File;
-        required link craiFile -> File;
+        required link cramFile -> storage::File;
+        required link craiFile -> storage::File;
     }
 
     # a collection of artifacts uploaded/submitted in a batch that has no information about run/analyses

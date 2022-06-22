@@ -1,11 +1,13 @@
-CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
+CREATE MIGRATION m12gcqoo5okdl5adq7cxa7zza3x62omfzkql6xy5d4d7dndik4hu6a
     ONTO initial
 {
   CREATE MODULE consent IF NOT EXISTS;
   CREATE MODULE dataset IF NOT EXISTS;
   CREATE MODULE lab IF NOT EXISTS;
+  CREATE MODULE pedigree IF NOT EXISTS;
   CREATE MODULE permission IF NOT EXISTS;
   CREATE MODULE release IF NOT EXISTS;
+  CREATE MODULE storage IF NOT EXISTS;
   CREATE ABSTRACT TYPE consent::ConsentStatement;
   CREATE TYPE consent::Consent {
       CREATE MULTI LINK statements -> consent::ConsentStatement {
@@ -33,7 +35,10 @@ CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable;
+  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
+  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
+  };
   ALTER TYPE dataset::DatasetCase {
       CREATE MULTI LINK patients -> dataset::DatasetPatient {
           ON TARGET DELETE  ALLOW;
@@ -74,9 +79,9 @@ CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
       CREATE MULTI LINK artifacts -> lab::ArtifactBase;
       CREATE REQUIRED PROPERTY included -> std::bool;
   };
-  CREATE SCALAR TYPE lab::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
-  CREATE TYPE lab::File {
-      CREATE REQUIRED PROPERTY checksums -> array<tuple<type: lab::ChecksumType, value: std::str>>;
+  CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
+  CREATE TYPE storage::File {
+      CREATE REQUIRED PROPERTY checksums -> array<tuple<type: storage::ChecksumType, value: std::str>>;
       CREATE REQUIRED PROPERTY size -> std::int64;
       CREATE REQUIRED PROPERTY url -> std::str;
   };
@@ -94,10 +99,13 @@ CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   CREATE TYPE release::Release {
-      CREATE MULTI LINK manualExclusions -> release::ReleaseShareable {
+      CREATE MULTI LINK manualExclusions -> dataset::DatasetShareable {
           CREATE PROPERTY reason -> std::str;
           CREATE PROPERTY recorded -> std::str;
           CREATE PROPERTY who -> std::str;
+      };
+      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
+          ON TARGET DELETE  ALLOW;
       };
       CREATE MULTI LINK sharedContent -> release::ReleaseDataset {
           ON TARGET DELETE  ALLOW;
@@ -133,6 +141,23 @@ CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
           CREATE CONSTRAINT std::min_len_value(6);
       };
   };
+  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
+  CREATE TYPE pedigree::PedigreeRelationship {
+      CREATE REQUIRED LINK individual -> dataset::DatasetPatient;
+      CREATE REQUIRED LINK relative -> dataset::DatasetPatient;
+      CREATE REQUIRED PROPERTY relation -> pedigree::KinType;
+  };
+  CREATE TYPE pedigree::Pedigree {
+      CREATE LINK proband -> dataset::DatasetPatient;
+      CREATE MULTI LINK relationships -> pedigree::PedigreeRelationship {
+          ON TARGET DELETE  ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE OPTIONAL PROPERTY reason -> tuple<system: std::str, value: std::str>;
+  };
+  ALTER TYPE dataset::DatasetCase {
+      CREATE OPTIONAL LINK pedigree := (pedigree::Pedigree);
+  };
   CREATE TYPE lab::Analyses {
       CREATE MULTI LINK input -> lab::ArtifactBase;
       CREATE MULTI LINK output -> lab::ArtifactBase {
@@ -143,23 +168,23 @@ CREATE MIGRATION m17xv2r7ypv54c2qgl2rlytnihxk4qn2kyq4rvoymjezkypd7sptoa
       CREATE PROPERTY pipeline -> std::str;
   };
   CREATE TYPE lab::ArtifactBam EXTENDING lab::ArtifactBase {
-      CREATE REQUIRED LINK baiFile -> lab::File;
-      CREATE REQUIRED LINK bamFile -> lab::File;
+      CREATE REQUIRED LINK baiFile -> storage::File;
+      CREATE REQUIRED LINK bamFile -> storage::File;
   };
   CREATE TYPE lab::ArtifactBcl EXTENDING lab::ArtifactBase {
-      CREATE REQUIRED LINK bclFile -> lab::File;
+      CREATE REQUIRED LINK bclFile -> storage::File;
   };
   CREATE TYPE lab::ArtifactCram EXTENDING lab::ArtifactBase {
-      CREATE REQUIRED LINK craiFile -> lab::File;
-      CREATE REQUIRED LINK cramFile -> lab::File;
+      CREATE REQUIRED LINK craiFile -> storage::File;
+      CREATE REQUIRED LINK cramFile -> storage::File;
   };
   CREATE TYPE lab::ArtifactFastqPair EXTENDING lab::ArtifactBase {
-      CREATE REQUIRED LINK forwardFile -> lab::File;
-      CREATE REQUIRED LINK reverseFile -> lab::File;
+      CREATE REQUIRED LINK forwardFile -> storage::File;
+      CREATE REQUIRED LINK reverseFile -> storage::File;
   };
   CREATE TYPE lab::ArtifactVcf EXTENDING lab::ArtifactBase {
-      CREATE REQUIRED LINK tbiFile -> lab::File;
-      CREATE REQUIRED LINK vcfFile -> lab::File;
+      CREATE REQUIRED LINK tbiFile -> storage::File;
+      CREATE REQUIRED LINK vcfFile -> storage::File;
   };
   CREATE TYPE lab::SubmissionBatch {
       CREATE MULTI LINK artifactsIncluded -> lab::ArtifactBase {

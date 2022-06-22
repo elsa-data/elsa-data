@@ -4,6 +4,8 @@ import {
   DatasetGen3SyncResponseSchema,
   DatasetSchemaDeep,
   DatasetSchemaLight,
+  ReleaseAwsS3PresignRequestSchema,
+  ReleaseAwsS3PresignResponseSchema,
   ReleaseCaseSchema,
   ReleaseDatasetSchema,
   ReleaseNodeStatusSchema,
@@ -63,3 +65,10 @@ export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
 export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
 export type ReleaseDatasetType = Static<typeof ReleaseDatasetSchema>;
+
+export type ReleaseAwsS3PresignRequestType = Static<
+  typeof ReleaseAwsS3PresignRequestSchema
+>;
+export type ReleaseAwsS3PresignResponseType = Static<
+  typeof ReleaseAwsS3PresignResponseSchema
+>;

@@ -58,7 +58,9 @@ export const authRoutes = async (fastify: FastifyInstance, opts: Opts) => {
   if (opts.includeTestUsers) {
     // register a login endpoint that sets a cookie without actual login
     fastify.post("/auth/login-bypass-1", async (request, reply) => {
-      request.session.set(TOKEN_PRIMARY, "This is not a real access token");
+      request.session.set(TOKEN_PRIMARY, {
+        id: "http://subject1.com",
+      });
 
       // these cookies however are available to React - PURELY for UI/display purposes
       reply.setCookie(USER_SUBJECT_COOKIE_NAME, "http://subject1.com", {
@@ -66,7 +68,28 @@ export const authRoutes = async (fastify: FastifyInstance, opts: Opts) => {
         httpOnly: false,
         path: "/",
       });
-      reply.setCookie(USER_NAME_COOKIE_NAME, "Test User", {
+      reply.setCookie(USER_NAME_COOKIE_NAME, "Test User 1", {
+        secure: true,
+        httpOnly: false,
+        path: "/",
+      });
+
+      reply.redirect("/");
+    });
+
+    // register a login endpoint that sets a cookie without actual login
+    fastify.post("/auth/login-bypass-2", async (request, reply) => {
+      request.session.set(TOKEN_PRIMARY, {
+        id: "http://subject2.com",
+      });
+
+      // these cookies however are available to React - PURELY for UI/display purposes
+      reply.setCookie(USER_SUBJECT_COOKIE_NAME, "http://subject2.com", {
+        secure: true,
+        httpOnly: false,
+        path: "/",
+      });
+      reply.setCookie(USER_NAME_COOKIE_NAME, "Test User 2", {
         secure: true,
         httpOnly: false,
         path: "/",

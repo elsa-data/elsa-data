@@ -42,7 +42,7 @@ module release {
 
         # the set of resources explicitly chosen for exclusion no matter what an automated
         # algorithm says
-        multi link manualExclusions -> ReleaseShareable {
+        multi link manualExclusions -> dataset::DatasetShareable {
             property who -> str;
             property recorded -> str;
             property reason -> str;

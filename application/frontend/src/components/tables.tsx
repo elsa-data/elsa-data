@@ -1,4 +1,5 @@
-import { TableOptions, useTable } from "react-table";
+export {};
+/*import { TableOptions, useTable } from "react-table";
 import React, { PropsWithChildren } from "react";
 
 type Props = {
@@ -49,4 +50,4 @@ export const BasicTable: React.FC<PropsWithChildren<Props>> = ({
       </tbody>
     </table>
   );
-};
+};*/

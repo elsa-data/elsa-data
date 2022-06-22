@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import e, { permission } from "../../../dbschema/edgeql-js";
 import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
-import { AuthUser } from "../../auth/auth-user";
+import { AuthenticatedUser } from "../authenticated-user";
 
 class DatasetsService {
   private edgeDbClient = edgedb.createClient();
@@ -82,7 +82,7 @@ class DatasetsService {
     }));
   }
 
-  public async getAll(user: AuthUser, limit: number, offset: number) {
+  public async getAll(user: AuthenticatedUser, limit: number, offset: number) {
     const fullDatasets = await this.baseDatasetSelect(limit, offset).run(
       this.edgeDbClient
     );
@@ -108,7 +108,7 @@ class DatasetsService {
   }
 
   public async get(
-    user: AuthUser,
+    user: AuthenticatedUser,
     datasetId: string
   ): Promise<DatasetDeepType | null> {
     const singleDataset = await e
@@ -168,7 +168,7 @@ class DatasetsService {
    * @param offset
    */
   public async getCases(
-    user: AuthUser,
+    user: AuthenticatedUser,
     datasetId: string,
     limit: number,
     offset: number
