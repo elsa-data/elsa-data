@@ -1,12 +1,13 @@
 import { Concept, ConceptDictionary } from "./concept-chooser-types";
 import React, { Dispatch } from "react";
 import { ConceptChooser } from "./concept-chooser";
-import { CodingType } from "@umccr/elsa-types";
+import { ApplicationCodedCodingType } from "@umccr/elsa-types";
 
 type Props = {
-  selected: CodingType[];
+  label: string;
+  selected: ApplicationCodedCodingType[];
 
-  addToSelected(code: CodingType): void;
+  addToSelected(code: ApplicationCodedCodingType): void;
   removeFromSelected(system: string, code: string): void;
 
   disabled: boolean;
@@ -17,6 +18,7 @@ type Props = {
  * @constructor
  */
 export const MondoChooser: React.FC<Props> = ({
+  label,
   selected,
   addToSelected,
   removeFromSelected,
@@ -28,7 +30,7 @@ export const MondoChooser: React.FC<Props> = ({
       systemUri="http://purl.obolibrary.org/obo/mondo.owl?vs"
       //systemVersion="2022-03-01"
       rootConceptId="MONDO:0000001"
-      label="Monash Disease Ontology"
+      label={label}
       placeholder="e.g. heart cancer, Usher syndrome"
       codePrefix="MONDO"
       selected={selected}

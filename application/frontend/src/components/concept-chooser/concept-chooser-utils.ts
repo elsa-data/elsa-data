@@ -1,6 +1,6 @@
 import _ from "lodash";
 import React, { Dispatch } from "react";
-import { CodingType } from "@umccr/elsa-types";
+import { ApplicationCodedCodingType } from "@umccr/elsa-types";
 
 /**
  * A function to safely add concept searched results into our state.
@@ -9,8 +9,8 @@ import { CodingType } from "@umccr/elsa-types";
  * @param concept the concept data to add
  */
 export function addToSelected(
-  setSelected: Dispatch<React.SetStateAction<CodingType[]>>,
-  concept: CodingType
+  setSelected: Dispatch<React.SetStateAction<ApplicationCodedCodingType[]>>,
+  concept: ApplicationCodedCodingType
 ) {
   const permanentConcept = _.cloneDeep(concept);
 
@@ -30,7 +30,7 @@ export function addToSelected(
  * @param code the concept id to delete
  */
 export function removeFromSelected(
-  setSelected: Dispatch<React.SetStateAction<CodingType[]>>,
+  setSelected: Dispatch<React.SetStateAction<ApplicationCodedCodingType[]>>,
   system: string,
   code: string
 ) {

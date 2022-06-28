@@ -1,4 +1,4 @@
-CREATE MIGRATION m12gcqoo5okdl5adq7cxa7zza3x62omfzkql6xy5d4d7dndik4hu6a
+CREATE MIGRATION m1zlk7wx7ozu5qe6uwznjssh5z3ygqwkvn2z7lmldfmmrcki27fpoq
     ONTO initial
 {
   CREATE MODULE consent IF NOT EXISTS;
@@ -8,6 +8,15 @@ CREATE MIGRATION m12gcqoo5okdl5adq7cxa7zza3x62omfzkql6xy5d4d7dndik4hu6a
   CREATE MODULE permission IF NOT EXISTS;
   CREATE MODULE release IF NOT EXISTS;
   CREATE MODULE storage IF NOT EXISTS;
+  CREATE SCALAR TYPE release::ApplicationCodedStudyType EXTENDING enum<GRU, HMB, CC, POA, DS>;
+  CREATE TYPE release::ApplicationCoded {
+      CREATE REQUIRED PROPERTY countriesInvolved -> array<tuple<system: std::str, code: std::str>>;
+      CREATE REQUIRED PROPERTY diseasesOfStudy -> array<tuple<system: std::str, code: std::str>>;
+      CREATE REQUIRED PROPERTY institutesInvolved -> array<tuple<system: std::str, code: std::str>>;
+      CREATE REQUIRED PROPERTY studyAgreesToPublish -> std::bool;
+      CREATE REQUIRED PROPERTY studyIsNotCommercial -> std::bool;
+      CREATE REQUIRED PROPERTY studyType -> release::ApplicationCodedStudyType;
+  };
   CREATE ABSTRACT TYPE consent::ConsentStatement;
   CREATE TYPE consent::Consent {
       CREATE MULTI LINK statements -> consent::ConsentStatement {
@@ -49,6 +58,7 @@ CREATE MIGRATION m12gcqoo5okdl5adq7cxa7zza3x62omfzkql6xy5d4d7dndik4hu6a
   CREATE ABSTRACT TYPE lab::ArtifactBase;
   CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE MULTI LINK artifacts -> lab::ArtifactBase;
+      CREATE OPTIONAL PROPERTY sampleType -> std::str;
   };
   CREATE ABSTRACT TYPE release::ReleaseIdentifiable {
       CREATE PROPERTY externalIdentifiers -> array<tuple<system: std::str, value: std::str>>;
@@ -97,6 +107,8 @@ CREATE MIGRATION m12gcqoo5okdl5adq7cxa7zza3x62omfzkql6xy5d4d7dndik4hu6a
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
+      CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
+      CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
   };
   CREATE TYPE release::Release {
       CREATE MULTI LINK manualExclusions -> dataset::DatasetShareable {
@@ -107,11 +119,11 @@ CREATE MIGRATION m12gcqoo5okdl5adq7cxa7zza3x62omfzkql6xy5d4d7dndik4hu6a
       CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
           ON TARGET DELETE  ALLOW;
       };
+      CREATE REQUIRED LINK applicationCoded -> release::ApplicationCoded;
       CREATE MULTI LINK sharedContent -> release::ReleaseDataset {
           ON TARGET DELETE  ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
-      CREATE PROPERTY applicationCoded -> std::json;
       CREATE PROPERTY applicationDacDetails -> std::str;
       CREATE PROPERTY applicationDacIdentifier -> std::str;
       CREATE PROPERTY applicationDacTitle -> std::str;

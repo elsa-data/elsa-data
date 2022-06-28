@@ -5,9 +5,12 @@ import {
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
+  makeSystemlessIdentifier,
 } from "./insert-test-data-helpers";
 
 const edgeDbClient = edgedb.createClient();
+
+export const TENF_URI = "urn:fdc:umccr.org:2022:dataset/10f";
 
 /**
  * The 10F dataset is a subset of the 1000 genomes data with a combination of more complex
@@ -83,9 +86,51 @@ export async function insert10F() {
     });
   };
 
+  const addPatient = async (
+    familyId: string,
+    patientId: string,
+    specimenId: string,
+    sex: "male" | "female" | "other"
+  ) => {
+    const arts = await makeArtifacts(specimenId);
+    await e
+      .update(e.dataset.DatasetCase, (dc) => ({
+        filter: e.op(
+          makeSystemlessIdentifier(familyId),
+          "in",
+          e.set(e.array_unpack(dc.externalIdentifiers))
+        ),
+        set: {
+          patients: {
+            "+=": e.insert(e.dataset.DatasetPatient, {
+              sexAtBirth: sex,
+              externalIdentifiers: makeSystemlessIdentifierArray(patientId),
+              specimens: e.insert(e.dataset.DatasetSpecimen, {
+                externalIdentifiers: makeSystemlessIdentifierArray(specimenId),
+                artifacts: arts,
+              }),
+            }),
+          },
+        },
+      }))
+      .run(edgeDbClient);
+  };
+
+  const deletePatient = async (patientId: string) => {
+    await e
+      .delete(e.dataset.DatasetPatient, (dp) => ({
+        filter: e.op(
+          makeSystemlessIdentifier(patientId),
+          "in",
+          e.set(e.array_unpack(dp.externalIdentifiers))
+        ),
+      }))
+      .run(edgeDbClient);
+  };
+
   const tenf = await e
     .insert(e.dataset.Dataset, {
-      uri: "urn:fdc:umccr.org:2022:dataset/10f",
+      uri: TENF_URI,
       externalIdentifiers: makeSystemlessIdentifierArray("10F"),
       description: "UMCCR 10F",
       cases: e.set(
@@ -130,12 +175,12 @@ export async function insert10F() {
           "DONALD",
           "HG90",
           "male",
-          "UNKNOWN",
+          "UNKNOWNDUCK",
           "HG92",
           "DELLA",
           "HG91"
-          // DELIA and DONALD are twins
-          // DELIA is mother of
+          // DELLA and DONALD are twins
+          // DELLA is mother of
           // HUEY, DEWEY and LOUIE (triplets)
           // SCROOGE in there too
           // DAISY DUCK .. girlfield to donald
@@ -143,4 +188,13 @@ export async function insert10F() {
       ),
     })
     .run(edgeDbClient);
+
+  // add in some extras to the 'beyond trio' families
+  await addPatient("DUCK", "HUEY", "HG93", "male");
+  await addPatient("DUCK", "DEWEY", "HG94", "male");
+  await addPatient("DUCK", "LOUIE", "HG95", "male");
+  await addPatient("DUCK", "SCROOGE", "HG96", "male");
+  await addPatient("DUCK", "DAISY", "HG97", "female");
+  // we actually want a complex family with no father - so we delete this placeholder duck
+  await deletePatient("UNKNOWNDUCK");
 }

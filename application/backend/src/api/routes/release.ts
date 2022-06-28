@@ -2,18 +2,17 @@ import { FastifyInstance } from "fastify";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
-  ApplicationCodedTypeV1,
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
   ReleaseType,
 } from "@umccr/elsa-types";
-import { ElsaSettings } from "../../bootstrap-settings";
-import LinkHeader from "http-link-header";
 import { releasesService } from "../../business/services/releases";
-import { AuthenticatedUser } from "../../business/authenticated-user";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
-import { Readable } from "stream";
+import { Readable, Stream } from "stream";
 import { releasesAwsService } from "../../business/services/releases-aws";
+import archiver, { ArchiverOptions } from "archiver";
+import { stringify } from "csv-stringify";
+import streamConsumers from "node:stream/consumers";
 
 const client = edgedb.createClient();
 
@@ -28,10 +27,6 @@ function mapDbToApi(
     applicationDacIdentifier: dbObject?.applicationDacIdentifier,
     applicationDacTitle: dbObject?.applicationDacTitle,
     applicationDacDetails: dbObject?.applicationDacDetails,
-    applicationCoded:
-      dbObject.applicationCoded != null
-        ? JSON.parse(dbObject.applicationCoded)
-        : {},
     permissionEditSelections: editSelections,
     permissionEditApplicationCoded: editApplicationCoded,
     permissionAccessData: false,
@@ -131,27 +126,84 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     }
   );
 
-  fastify.put<{ Params: { rid: string }; Request: ApplicationCodedTypeV1 }>(
-    "/api/releases/:rid/application-coded",
+  fastify.post<{
+    Params: {
+      rid: string;
+      field: "diseases" | "countries";
+      op: "add" | "remove";
+    };
+    Body: { system: string; code: string };
+  }>(
+    "/api/releases/:rid/application-coded/:field/:op",
     {},
     async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
       const releaseId = request.params.rid;
-      const newApplicationCoded = request.body;
+      const field = request.params.field;
+      const op = request.params.op;
 
-      console.log(newApplicationCoded);
+      if (op !== "add" && op !== "remove") {
+        reply.status(400).send();
+        return;
+      }
 
-      /*const updateStatus = await e
-        .update(e.release.Release, (r) => ({
-          set: (r.applicationCoded = e.json(newApplicationCoded)),
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-        }))
-        .run(client);
+      const { system, code } = request.body;
 
-      console.log(updateStatus); */
+      switch (field) {
+        case "diseases":
+          if (op === "add")
+            await releasesService.addDiseaseToApplicationCoded(
+              authenticatedUser,
+              releaseId,
+              system,
+              code
+            );
+          else
+            await releasesService.removeDiseaseFromApplicationCoded(
+              authenticatedUser,
+              releaseId,
+              system,
+              code
+            );
+          break;
+        case "countries":
+          if (op === "add")
+            await releasesService.addCountryToApplicationCoded(
+              authenticatedUser,
+              releaseId,
+              system,
+              code
+            );
+          else
+            await releasesService.removeCountryFromApplicationCoded(
+              authenticatedUser,
+              releaseId,
+              system,
+              code
+            );
+          break;
+        default:
+          reply.status(400).send();
+          return;
+      }
 
       reply.send("ok");
     }
   );
+
+  /**
+   * @param binary Buffer
+   * returns readableInstanceStream Readable
+   */
+  function bufferToStream(binary: Buffer) {
+    return new Readable({
+      read() {
+        this.push(binary);
+        this.push(null);
+      },
+    });
+  }
 
   fastify.post<{
     Body: ReleaseAwsS3PresignRequestType;
@@ -161,26 +213,48 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     const releaseId = request.params.rid;
 
-    console.log(
-      await releasesAwsService.getPresigned(authenticatedUser, releaseId)
+    const awsFiles = await releasesAwsService.getPresigned(
+      authenticatedUser,
+      releaseId
     );
 
-    //const newApplicationCoded = request.body;
+    if (!awsFiles) throw new Error("Could not pre-sign S3 URLs");
 
-    //console.log(newApplicationCoded);
-
-    const myStream = new Readable({
-      read() {
-        this.push("Hello");
-        this.push(null);
-      },
+    const stringifier = stringify({
+      header: true,
+      columns: [
+        { key: "s3", header: "S3" },
+        { key: "fileType", header: "FILETYPE" },
+        { key: "md5", header: "MD5" },
+        { key: "size", header: "SIZE" },
+        { key: "caseId", header: "CASEID" },
+        { key: "patientId", header: "PATIENTID" },
+        { key: "specimenId", header: "SPECIMENID" },
+        { key: "s3Signed", header: "S3SIGNED" },
+      ],
+      delimiter: "\t",
     });
 
-    const response = myStream;
+    const readableStream = Readable.from(awsFiles);
 
-    reply.header("Content-Disposition", "attachment; filename=s3.txt");
-    // reply.header('Content-Length', img.dataValues.Length);
-    reply.type("application/octet-stream");
-    reply.send(response);
+    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
+
+    // create archive and specify method of encryption and password
+    let archive = archiver.create("zip-encrypted", {
+      zlib: { level: 8 },
+      encryptionMethod: "aes256",
+      password: "123",
+    } as ArchiverOptions);
+
+    archive.append(buf, { name: "files.tsv" });
+
+    await archive.finalize();
+
+    reply.raw.writeHead(200, {
+      "Content-Disposition": "attachment; filename=releaseXYZ.zip",
+      "Content-Type": "application/octet-stream",
+    });
+
+    archive.pipe(reply.raw);
   });
 }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CodingType } from "@umccr/elsa-types";
+import { ApplicationCodedCodingType } from "@umccr/elsa-types";
 
 /**
  * Do a batch lookup at a single Ontoserver endpoint for any concepts that do not yet have
@@ -11,9 +11,9 @@ import { CodingType } from "@umccr/elsa-types";
  */
 export async function doBatchLookup(
   ontoUrl: string,
-  codes: CodingType[],
+  codes: ApplicationCodedCodingType[],
   forceAllRefresh: boolean = false
-): Promise<CodingType[]> {
+): Promise<ApplicationCodedCodingType[]> {
   if (codes.length === 0) return codes;
 
   const bundle = {
@@ -24,7 +24,8 @@ export async function doBatchLookup(
 
   // we need to keep track of which entries that come back from the Ontoserver correspond
   // to which code in the array that went in
-  const entryToCodeMap: { [entryCount: number]: CodingType } = {};
+  const entryToCodeMap: { [entryCount: number]: ApplicationCodedCodingType } =
+    {};
 
   let entryToCodeCount = 0;
 

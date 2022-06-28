@@ -2,14 +2,14 @@ import { Concept, ConceptDictionary } from "./concept-chooser-types";
 import React, { Dispatch } from "react";
 import { ConceptChooser } from "./concept-chooser";
 import { addToSelected, removeFromSelected } from "./concept-chooser-utils";
-import { CodingType } from "@umccr/elsa-types";
+import { ApplicationCodedCodingType } from "@umccr/elsa-types";
 
 type Props = {
   // the dictionary of currently selected concepts to be held in suitable state somewhere else
-  selected: CodingType[];
+  selected: ApplicationCodedCodingType[];
 
   // the action to mutate concept state
-  setSelected: Dispatch<React.SetStateAction<CodingType[]>>;
+  setSelected: Dispatch<React.SetStateAction<ApplicationCodedCodingType[]>>;
 
   setIsDirty: Dispatch<React.SetStateAction<boolean>>;
 

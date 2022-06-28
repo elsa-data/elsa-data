@@ -10,8 +10,8 @@ import {
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, useQueryClient } from "react-query";
-import { IndeterminateCheckbox } from "../components/indeterminate-checkbox";
-import { ReleasesCasesPatientsFlexRow } from "./releases-cases-patients-flex-row";
+import { IndeterminateCheckbox } from "../../../components/indeterminate-checkbox";
+import { PatientsFlexRow } from "./patients-flex-row";
 
 let table = createTable().setRowType<ReleaseCaseType>();
 
@@ -25,13 +25,18 @@ type Props = {
   isEditable: boolean;
 };
 
-export const ReleasesCasesTable: React.FC<Props> = ({
+export const CasesTable: React.FC<Props> = ({
   releaseId,
   datasetMap,
   isEditable,
 }) => {
   const queryClient = useQueryClient();
 
+  /**
+   * Dynamically create a column list - parametrised by some simple settings.
+   *
+   * @param isEditable whether to show any of the columns in 'edit' mode
+   */
   const columnList = (isEditable: boolean) => {
     const cols = [];
 
@@ -74,7 +79,7 @@ export const ReleasesCasesTable: React.FC<Props> = ({
       table.createDataColumn((row) => row.patients, {
         id: "patients",
         cell: (info) => (
-          <ReleasesCasesPatientsFlexRow
+          <PatientsFlexRow
             releaseId={releaseId}
             patients={info.getValue()}
             showCheckboxes={isEditable}

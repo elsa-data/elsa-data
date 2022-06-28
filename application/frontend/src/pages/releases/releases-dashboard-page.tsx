@@ -1,9 +1,9 @@
 import React from "react";
-import { useEnvRelay } from "../providers/env-relay-provider";
+import { useEnvRelay } from "../../providers/env-relay-provider";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "../components/boxes";
+import { Box } from "../../components/boxes";
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -12,8 +12,8 @@ import {
   ReleaseRemsSyncRequestType,
   ReleaseType,
 } from "@umccr/elsa-types";
-import { LayoutBase } from "../layouts/layout-base";
-import { VerticalTabs } from "../components/vertical-tabs";
+import { LayoutBase } from "../../layouts/layout-base";
+import { VerticalTabs } from "../../components/vertical-tabs";
 
 export const ReleasesPage: React.FC = () => {
   const envRelay = useEnvRelay();
@@ -27,38 +27,6 @@ export const ReleasesPage: React.FC = () => {
         .then((response) => response.data);
     },
     {}
-  );
-
-  const data = React.useMemo(
-    () => [
-      {
-        col1: "Hello",
-        col2: "World",
-      },
-      {
-        col1: "react-table",
-        col2: "rocks",
-      },
-      {
-        col1: "whatever",
-        col2: "you want",
-      },
-    ],
-    []
-  );
-
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: "Column 1",
-        accessor: "col1", // accessor is the "key" in the data
-      },
-      {
-        Header: "Column 2",
-        accessor: "col2",
-      },
-    ],
-    []
   );
 
   const {

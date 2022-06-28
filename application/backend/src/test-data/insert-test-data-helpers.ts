@@ -27,6 +27,49 @@ export function makeEmptyIdentifierArray() {
 }
 
 /**
+ * Make a code array (array of tuples) that is empty.
+ */
+export function makeEmptyCodeArray() {
+  const tupleArrayType = e.array(e.tuple({ system: e.str, code: e.str }));
+
+  return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
+}
+
+/**
+ * Make a code array - rewrite for typescript varargs at some point
+ */
+export function makeSingleCodeArray(system: string, code: string) {
+  return e.array([e.tuple({ system: system, code: code })]);
+}
+
+export function makeDoubleCodeArray(
+  system1: string,
+  code1: string,
+  system2: string,
+  code2: string
+) {
+  return e.array([
+    e.tuple({ system: system1, code: code1 }),
+    e.tuple({ system: system2, code: code2 }),
+  ]);
+}
+
+export function makeTripleCodeArray(
+  system1: string,
+  code1: string,
+  system2: string,
+  code2: string,
+  system3: string,
+  code3: string
+) {
+  return e.array([
+    e.tuple({ system: system1, code: code1 }),
+    e.tuple({ system: system2, code: code2 }),
+    e.tuple({ system: system3, code: code3 }),
+  ]);
+}
+
+/**
  * Create a user for testing purposes.
  *
  * @param subjectId
@@ -99,6 +142,42 @@ export async function insertBlankDataset(id: string, uri: string) {
       cases: e.set(),
     })
     .run(edgeDbClient);
+}
+
+export function findCase(id: string) {
+  return e
+    .select(e.dataset.DatasetCase, (dp) => ({
+      filter: e.op(
+        makeSystemlessIdentifier(id),
+        "in",
+        e.set(e.array_unpack(dp.externalIdentifiers))
+      ),
+    }))
+    .assert_single();
+}
+
+export function findPatient(id: string) {
+  return e
+    .select(e.dataset.DatasetPatient, (dp) => ({
+      filter: e.op(
+        makeSystemlessIdentifier(id),
+        "in",
+        e.set(e.array_unpack(dp.externalIdentifiers))
+      ),
+    }))
+    .assert_single();
+}
+
+export function findSpecimen(id: string) {
+  return e
+    .select(e.dataset.DatasetSpecimen, (dp) => ({
+      filter: e.op(
+        makeSystemlessIdentifier(id),
+        "in",
+        e.set(e.array_unpack(dp.externalIdentifiers))
+      ),
+    }))
+    .assert_single();
 }
 
 /**

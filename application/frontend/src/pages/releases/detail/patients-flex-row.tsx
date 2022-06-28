@@ -18,7 +18,7 @@ type Props = {
   showCheckboxes: boolean;
 };
 
-export const ReleasesCasesPatientsFlexRow: React.FC<Props> = ({
+export const PatientsFlexRow: React.FC<Props> = ({
   releaseId,
   patients,
   showCheckboxes,
@@ -110,14 +110,10 @@ export const ReleasesCasesPatientsFlexRow: React.FC<Props> = ({
     );
   };
 
-  return (
-    <div className="grid grid-flow-row-dense grid-cols-3 gap-2">
-      {patients.map((pat, index) => patientDiv(pat))}
-    </div>
-  );
+  // TODO: possibly chose the number of grid columns based on the number of patients
 
   return (
-    <div className="flex flex-row flex-wrap space-x-2 space-y-2">
+    <div className="grid grid-flow-row-dense grid-cols-3 gap-2">
       {patients.map((pat, index) => patientDiv(pat))}
     </div>
   );

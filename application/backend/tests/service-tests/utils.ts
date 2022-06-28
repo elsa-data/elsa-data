@@ -7,6 +7,22 @@ import {
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
 
+export async function findDatabaseRelease(client: Client, releaseId: string) {
+  const res = await e
+    .select(e.release.Release, (r) => ({
+      ...e.release.Release["*"],
+      applicationCoded: {
+        ...e.release.ApplicationCoded["*"],
+      },
+      filter: e.op(r.id, "=", e.uuid(releaseId)),
+    }))
+    .assert_single()
+    .run(client);
+
+  if (res) return res;
+  else throw new Error(`Release id ${releaseId} does not exist in database`);
+}
+
 /**
  * Given a set of systemless id values - return the specimen ids of all matching
  * specimens from the database.

@@ -3,7 +3,7 @@ import { useCombobox } from "downshift";
 import axios from "axios";
 import classNames from "classnames";
 import _ from "lodash";
-import { CodingType } from "@umccr/elsa-types";
+import { ApplicationCodedCodingType } from "@umccr/elsa-types";
 
 type Props = {
   ontoServerUrl: string; // "https://genomics.ontoserver.csiro.au
@@ -20,10 +20,10 @@ type Props = {
   placeholder: string;
 
   // the list of currently visible concepts
-  selected: CodingType[];
+  selected: ApplicationCodedCodingType[];
 
   // the actions to change the list of selected concepts
-  addToSelected(code: CodingType): void;
+  addToSelected(code: ApplicationCodedCodingType): void;
   removeFromSelected(system: string, code: string): void;
 };
 
@@ -35,7 +35,9 @@ type Props = {
  * @constructor
  */
 export const ConceptChooser: React.FC<Props> = (props: Props) => {
-  const [searchHits, setSearchHits] = useState([] as CodingType[]);
+  const [searchHits, setSearchHits] = useState(
+    [] as ApplicationCodedCodingType[]
+  );
 
   const stateReducer = (state: any, actionAndChanges: any) => {
     const { type, changes } = actionAndChanges;
@@ -87,44 +89,6 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       return;
     }
 
-    /* OLD WAY IF WE WERE ALLOWED POSTS
-      const searchBody = {
-
-      resourceType: "Parameters",
-      parameter: [
-        { name: "filter", valueString: query },
-        {
-          name: "valueSet",
-          resource: {
-            resourceType: "ValueSet",
-            status: "active",
-            compose: {
-              include: [
-                {
-                  system: props.systemUri,
-                  version: props.systemVersion,
-                  //                  filter: [
-                  //                    {
-                  //                     property: "concept",
-                  //                    op: "is-a",
-                  //                    value: props.rootConceptId,
-                  //                  },
-                  //                ],
-                },
-              ],
-            },
-          },
-        },
-      ],
-    }; */
-    // _format: json
-    // url: http://snomed.info/sct/32506021000036107/version/20210731?fhir_vs=refset/32570581000036105
-    // filter: atax
-    // system-version: http://snomed.info/sct|http://snomed.info/sct/32506021000036107/version/20210731
-    // includeDesignations: true
-    // count: 100
-    // elements: expansion.contains.code,expansion.contains.display,expansion.contains.fullySpecifiedName,expansion.contains.active
-
     axios
       .get(`${props.ontoServerUrl}/ValueSet/$expand`, {
         params: {
@@ -172,7 +136,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
         <div className="relative">
           <div className="mt-1 relative rounded-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 text-lg">{props.codePrefix}</span>
+              <span className="text-gray-500 text-sm">{props.codePrefix}</span>
             </div>
             <input
               type="text"
@@ -180,7 +144,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
                 placeholder: props.placeholder,
                 disabled: props.disabled,
               })}
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-3/4 pl-28 pr-12 text-lg border-gray-300 rounded-md"
+              className="focus:ring-indigo-500 focus:border-indigo-500 block w-3/4 pl-28 pr-12 text-sm border-gray-300 rounded-md"
             />
           </div>
           {/* if the input element is open, render the div else render nothing*/}

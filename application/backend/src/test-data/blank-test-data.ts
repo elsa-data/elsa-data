@@ -5,7 +5,9 @@ const edgeDbClient = edgedb.createClient();
 
 /**
  * In the absence of some sort of truncate functionality in edgedb - we explicitly
- * delete all object types in an order that is safe from delete classhes.
+ * delete all object types in an order that is safe from delete clashes.
+ * 0
+ * This is for use in unit tests setups etc to ensure an empty db state.
  */
 export async function blankTestData(printDetailsToConsole: boolean = false) {
   // TODO: add a guard such that this can only execute on a local db
@@ -14,7 +16,9 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`Removing any existing data in test database`);
 
   const usersDeleted = await e.delete(e.permission.User).run(edgeDbClient);
+
   const releasesDeleted = await e.delete(e.release.Release).run(edgeDbClient);
+
   const specimensDeleted = await e
     .delete(e.dataset.DatasetSpecimen)
     .run(edgeDbClient);
@@ -36,6 +40,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const bamsDeleted = await e.delete(e.lab.ArtifactBam).run(edgeDbClient);
   const cramsDeleted = await e.delete(e.lab.ArtifactCram).run(edgeDbClient);
   const vcfsDeleted = await e.delete(e.lab.ArtifactVcf).run(edgeDbClient);
+
   const filesDeleted = await e.delete(e.storage.File).run(edgeDbClient);
 
   if (printDetailsToConsole) {

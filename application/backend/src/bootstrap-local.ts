@@ -2,8 +2,14 @@ import { App } from "./app";
 import { getLocalSettings } from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
+import archiver from "archiver";
+import archiverZipEncrypted from "archiver-zip-encrypted";
 
 console.log("Creating Fastify app");
+
+// register format for archiver
+// note: only do it once per Node.js process/application, as duplicate registration will throw an error
+archiver.registerFormat("zip-encrypted", archiverZipEncrypted);
 
 const start = async () => {
   console.log("Locating secrets/settings");

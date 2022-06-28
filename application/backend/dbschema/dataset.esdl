@@ -83,8 +83,16 @@ module dataset {
 
     type DatasetSpecimen extending DatasetShareable, DatasetIdentifiable {
 
+        optional property sampleType -> str;
+
         # the backlink to the dataset that owns us
         link dataset := .<specimens[is DatasetPatient].<patients[is DatasetCase].<cases[is Dataset];
+
+        # the backlink to the case that owns us
+        link case_ := .<specimens[is DatasetPatient].<patients[is DatasetCase];
+
+        # the backlink to the patient that owns us
+        link patient := .<specimens[is DatasetPatient];
 
         # the specimen links to all actual genomic artifacts (files) that have been
         # created in any lab process

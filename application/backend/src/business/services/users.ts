@@ -47,6 +47,10 @@ class UsersService {
     user: AuthenticatedUser,
     releaseId: string
   ): Promise<ReleaseRoleStrings | null> {
+    // TODO: check that releaseId is a valid UUID structure
+    // given this is a boundary check function for our routes - we need to protect against being
+    // sent release ids that are invalid entirely (as edgedb sends a wierd uuid() error msg)
+
     const userWithMatchingReleases = await e
       .select(e.permission.User, (u) => ({
         subjectId: true,

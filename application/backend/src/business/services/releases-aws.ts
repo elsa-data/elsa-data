@@ -1,11 +1,26 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./releases-helper";
+import {
+  collapseExternalIds,
+  doRoleInReleaseCheck,
+  getReleaseInfo,
+} from "./releases-helper";
 import * as edgedb from "edgedb";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
 import { Client } from "edgedb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+export type ReleaseAwsFileRecord = {
+  caseId: string;
+  patientId: string;
+  specimenId: string;
+  fileType: string;
+  size: string;
+  s3: string;
+  s3Signed: string;
+  md5: string;
+};
 
 class ReleasesAwsService {
   private readonly edgeDbClient: Client;
@@ -32,7 +47,7 @@ class ReleasesAwsService {
   public async getPresigned(
     user: AuthenticatedUser,
     releaseId: string
-  ): Promise<string[] | null> {
+  ): Promise<ReleaseAwsFileRecord[] | null> {
     if (!this.enabled)
       throw new Error(
         "This service is not enabled due to lack of AWS credentials"
@@ -40,26 +55,34 @@ class ReleasesAwsService {
 
     const { userRole } = await doRoleInReleaseCheck(user, releaseId);
 
-    const {
-      releaseInfoQuery,
-      selectedSpecimenIds,
-      selectedSpecimenUuids,
-      datasetUriToIdMap,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseInfoQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
 
     const filesQuery = e.select(e.dataset.DatasetSpecimen, (rs) => ({
+      externalIdentifiers: true,
+      patient: {
+        externalIdentifiers: true,
+      },
+      case_: {
+        externalIdentifiers: true,
+      },
+      dataset: {
+        externalIdentifiers: true,
+      },
       artifacts: {
         ...e.is(e.lab.ArtifactFastqPair, {
-          forwardFile: { url: true },
-          reverseFile: { url: true },
+          forwardFile: { url: true, size: true, checksums: true },
+          reverseFile: { url: true, size: true, checksums: true },
         }),
         ...e.is(e.lab.ArtifactBam, {
-          bamFile: { url: true },
-          baiFile: { url: true },
+          bamFile: { url: true, size: true, checksums: true },
+          baiFile: { url: true, size: true, checksums: true },
         }),
         ...e.is(e.lab.ArtifactVcf, {
-          vcfFile: { url: true },
-          tbiFile: { url: true },
+          vcfFile: { url: true, size: true, checksums: true },
+          tbiFile: { url: true, size: true, checksums: true },
         }),
       },
       filter: e.op(rs, "in", releaseInfoQuery.selectedSpecimens),
@@ -67,7 +90,7 @@ class ReleasesAwsService {
 
     const specimensInFiles = await filesQuery.run(this.edgeDbClient);
 
-    const rows: string[] = [];
+    const rows: ReleaseAwsFileRecord[] = [];
 
     const s3Client = new S3Client({});
 
@@ -81,11 +104,48 @@ class ReleasesAwsService {
       return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     };
 
+    const getMd5 = (checksums: any[]): string => {
+      for (const c of checksums || []) {
+        if (c.type === "MD5") return c.value;
+      }
+      return "NONE";
+    };
+
     for (const sif of specimensInFiles) {
+      const caseId = collapseExternalIds(sif.case_?.externalIdentifiers);
+      const patientId = collapseExternalIds(sif.patient?.externalIdentifiers);
+      const specimenId = collapseExternalIds(sif.externalIdentifiers);
+
       for (const fa of sif.artifacts) {
-        if (fa.forwardFile) rows.push(await presign(fa.forwardFile.url));
-        if (fa.reverseFile) rows.push(await presign(fa.reverseFile.url));
-        if (fa.bamFile) rows.push(await presign(fa.bamFile.url));
+        const result: Partial<ReleaseAwsFileRecord> = {
+          caseId: caseId,
+          patientId: patientId,
+          specimenId: specimenId,
+          size: "-1",
+        };
+
+        if (fa.forwardFile) {
+          result.fileType = "FASTQ";
+          result.s3 = fa.forwardFile.url;
+          result.size = fa.forwardFile.size.toString();
+          result.md5 = getMd5(fa.forwardFile.checksums);
+        } else if (fa.reverseFile) {
+          result.fileType = "FASTQ";
+          result.s3 = fa.reverseFile.url;
+          result.size = fa.reverseFile.size.toString();
+          result.md5 = getMd5(fa.reverseFile.checksums);
+        } else if (fa.bamFile) {
+          result.fileType = "BAM";
+          result.s3 = fa.bamFile.url;
+          result.size = fa.bamFile.size.toString();
+          result.md5 = getMd5(fa.bamFile.checksums);
+        } else {
+          continue;
+        }
+
+        result.s3Signed = await presign(result.s3);
+
+        rows.push(result as ReleaseAwsFileRecord);
       }
     }
 

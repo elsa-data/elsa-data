@@ -11,12 +11,16 @@ module release {
         };
 
         # the creation of a release will be triggered by an approved application in a DAC
+        # this is all the details we can import from the source DAC
 
         property applicationDacIdentifier -> str;
         property applicationDacTitle -> str;
         property applicationDacDetails -> str;
 
-        property applicationCoded -> json;
+        # once a release is started - it is possible for the data owner to encode some
+        # details of the application to help with automation
+
+        required link applicationCoded -> ApplicationCoded;
 
         property releaseIdentifier -> str;
 
@@ -29,9 +33,6 @@ module release {
         multi link selectedSpecimens -> dataset::DatasetSpecimen {
             on target delete allow;
         }
-
-
-
 
         # the set of copied dataset information
 
@@ -48,6 +49,24 @@ module release {
             property reason -> str;
         };
     }
+
+    scalar type ApplicationCodedStudyType extending enum<'GRU', 'HMB', 'CC', 'POA', 'DS'>;
+
+    type ApplicationCoded {
+
+        required property studyType -> ApplicationCodedStudyType;
+
+        required property diseasesOfStudy -> array<tuple<system: str, code: str>>;
+
+        required property countriesInvolved -> array<tuple<system: str, code: str>>;
+
+        required property institutesInvolved -> array<tuple<system: str, code: str>>;
+
+        required property studyAgreesToPublish -> bool;
+
+        required property studyIsNotCommercial -> bool;
+    }
+
 
     abstract type ReleaseShareable {
 

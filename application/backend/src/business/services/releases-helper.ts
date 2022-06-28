@@ -8,6 +8,11 @@ import { usersService } from "./users";
  * functions that can be independently tested.
  */
 
+export function collapseExternalIds(externals: any): string {
+  if (!externals || externals.length < 1) return "<empty ids>";
+  else return externals[0].value ?? "<empty id value>";
+}
+
 /**
  *
  * @param user

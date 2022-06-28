@@ -19,10 +19,6 @@ import {
   DuoLimitationSchema,
   DuoModifierSchema,
 } from "./schemas-duo";
-import {
-  ApplicationCodedSchemaV1,
-  CodingSchema,
-} from "./schemas-application-coded";
 import { TestingRequestSchema } from "./schemas-testing";
 
 export * from "./schemas";
@@ -39,9 +35,8 @@ export type DuoLimitationType = Static<typeof DuoLimitationSchema>;
 
 export type DuoModifierType = Static<typeof DuoModifierSchema>;
 
-export type ApplicationCodedTypeV1 = Static<typeof ApplicationCodedSchemaV1>;
-
-export type CodingType = Static<typeof CodingSchema>;
+//export type ApplicationCodedTypeV1 = Static<typeof ApplicationCodedSchemaV1>;
+//export type ApplicationCodedCodingType = Static<typeof CodingSchema>;
 
 export type DatasetLightType = Static<typeof DatasetSchemaLight>;
 export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;

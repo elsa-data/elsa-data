@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import e, { dataset } from "../../../dbschema/edgeql-js";
+import e, { dataset, release } from "../../../dbschema/edgeql-js";
 import {
   DatasetDeepType,
   ReleaseCaseType,
@@ -13,7 +13,18 @@ import { usersService } from "./users";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isSafeInteger } from "lodash";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./releases-helper";
+import {
+  collapseExternalIds,
+  doRoleInReleaseCheck,
+  getReleaseInfo,
+} from "./releases-helper";
+import { NamedTupleType } from "edgedb/dist/reflection";
+import { makeSingleCodeArray } from "../../test-data/insert-test-data-helpers";
+import ApplicationCoded = release.ApplicationCoded;
+
+// an internal string set that tells the service which generic field to alter
+// (this allows us to make a mega function that sets all array fields in the same way)
+type CodeArrayFields = "diseases" | "countries" | "institutes";
 
 class ReleasesService {
   private edgeDbClient = edgedb.createClient();
@@ -45,10 +56,6 @@ class ReleasesService {
     if (thisRelease != null)
       return {
         id: thisRelease.id,
-        applicationCoded:
-          thisRelease.applicationCoded != null
-            ? JSON.parse(thisRelease.applicationCoded)
-            : {},
         datasetUris: thisRelease.datasetUris,
         applicationDacDetails: thisRelease.applicationDacDetails!,
         applicationDacIdentifier: thisRelease.applicationDacIdentifier!,
@@ -183,11 +190,6 @@ class ReleasesService {
       ) as ReleaseNodeStatusType;
     };
 
-    const collapseExternalIds = (externals: any): string => {
-      if (!externals || externals.length < 1) return "<empty ids>";
-      else return externals[0].value ?? "<empty id value>";
-    };
-
     const createSpecimenMap = (
       spec: dataset.DatasetSpecimen
     ): ReleaseSpecimenType => {
@@ -239,6 +241,95 @@ class ReleasesService {
     );
   }
 
+  public async setSelected(
+    user: AuthenticatedUser,
+    releaseId: string,
+    specimenIds: string[]
+  ): Promise<any | null> {
+    return await this.setStatus(user, releaseId, specimenIds, true);
+  }
+
+  public async setUnselected(
+    user: AuthenticatedUser,
+    releaseId: string,
+    specimenIds: string[]
+  ): Promise<any | null> {
+    return await this.setStatus(user, releaseId, specimenIds, false);
+  }
+
+  public async addDiseaseToApplicationCoded(
+    user: AuthenticatedUser,
+    releaseId: string,
+    system: string,
+    code: string
+  ): Promise<boolean | null> {
+    return await this.alterApplicationCodedArrayEntry(
+      user,
+      releaseId,
+      "diseases",
+      system,
+      code,
+      false
+    );
+  }
+
+  public async removeDiseaseFromApplicationCoded(
+    user: AuthenticatedUser,
+    releaseId: string,
+    system: string,
+    code: string
+  ): Promise<boolean | null> {
+    return await this.alterApplicationCodedArrayEntry(
+      user,
+      releaseId,
+      "diseases",
+      system,
+      code,
+      true
+    );
+  }
+
+  public async addCountryToApplicationCoded(
+    user: AuthenticatedUser,
+    releaseId: string,
+    system: string,
+    code: string
+  ): Promise<boolean | null> {
+    return await this.alterApplicationCodedArrayEntry(
+      user,
+      releaseId,
+      "countries",
+      system,
+      code,
+      false
+    );
+  }
+
+  public async removeCountryFromApplicationCoded(
+    user: AuthenticatedUser,
+    releaseId: string,
+    system: string,
+    code: string
+  ): Promise<boolean | null> {
+    return await this.alterApplicationCodedArrayEntry(
+      user,
+      releaseId,
+      "countries",
+      system,
+      code,
+      true
+    );
+  }
+
+  /**
+   * A mega function that handles altering the sharing status of a node in our 'release'.
+   *
+   * @param user the user attempting the changes
+   * @param releaseId the release id of the release to alter
+   * @param specimenIds
+   * @param selected the status to set i.e. selected = true means shared, selected = false means not shared
+   * @private
+   */
   private async setStatus(
     user: AuthenticatedUser,
     releaseId: string,
@@ -254,6 +345,9 @@ class ReleasesService {
 
     // we make a query that returns specimens of only where the input specimen ids belong
     // to the datasets in our release
+    // we need to do this to prevent our list of valid shared specimens from being
+    // infected with edgedb nodes from different datasets
+
     const specimensFromValidDatasetsQuery = e.select(
       e.dataset.DatasetSpecimen,
       (s) => ({
@@ -298,20 +392,183 @@ class ReleasesService {
     }
   }
 
-  public async setSelected(
+  /**
+   * A mega function that can be used to add or delete coded values from any application
+   * coded field that is a coded array. So this means things like list of diseases, countries,
+   * institutes etc. The basic pattern of code is the same for all of them - hence us
+   * merging into one big function. Unfortunately this leads to some pretty messy/duplicated code - as
+   * I can't make EdgeDb libraries re-use code where I'd like (which is possibly more about me than
+   * edgedb)
+   *
+   * @param user the user attempting the changes
+   * @param releaseId the release id of the release to alter
+   * @param field the field name to alter e.g. 'institutes', 'diseases'...
+   * @param system the system URI of the entry to add/delete
+   * @param code the code value of the entry to add/delete
+   * @param removeRatherThanAdd if false then we are asking to add (default), else asking to remove
+   * @returns true if the array was actually altered (i.e. the entry was actually removed or added)
+   * @private
+   */
+  private async alterApplicationCodedArrayEntry(
     user: AuthenticatedUser,
     releaseId: string,
-    specimenIds: string[]
-  ): Promise<any | null> {
-    return await this.setStatus(user, releaseId, specimenIds, true);
-  }
+    field: CodeArrayFields,
+    system: string,
+    code: string,
+    removeRatherThanAdd: boolean = false
+  ): Promise<boolean> {
+    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
 
-  public async setUnselected(
-    user: AuthenticatedUser,
-    releaseId: string,
-    specimenIds: string[]
-  ): Promise<any | null> {
-    return await this.setStatus(user, releaseId, specimenIds, false);
+    const { selectedSpecimenIds, datasetUriToIdMap } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
+
+    // we need to get/set the Coded Application all within a transaction context
+    await this.edgeDbClient.transaction(async (tx) => {
+      // get the current coded application
+      const releaseWithAppCoded = await e
+        .select(e.release.Release, (r) => ({
+          applicationCoded: {
+            id: true,
+            studyType: true,
+            institutesInvolved: true,
+            countriesInvolved: true,
+            diseasesOfStudy: true,
+          },
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+        }))
+        .assert_single()
+        .run(tx);
+
+      if (!releaseWithAppCoded)
+        throw new Error(
+          `Release ${releaseId} that existed just before this code has now disappeared!`
+        );
+
+      let newArray: { system: string; code: string }[];
+
+      if (field === "diseases")
+        newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
+      else if (field === "institutes")
+        newArray = releaseWithAppCoded.applicationCoded.institutesInvolved;
+      else if (field === "countries")
+        newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
+      else
+        throw new Error(
+          `Field instruction of ${field} was not a known field for array alteration`
+        );
+
+      const commonFilter = (ac: any) => {
+        return e.op(
+          ac.id,
+          "=",
+          e.uuid(releaseWithAppCoded.applicationCoded.id)
+        );
+      };
+
+      if (removeRatherThanAdd) {
+        const oldLength = newArray.length;
+
+        // we want to remove any entries with the same system/code from our array
+        // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
+        newArray = newArray.filter(
+          (tup) => tup.system !== system || tup.code !== code
+        );
+
+        // nothing to mutate - return false
+        if (newArray.length == oldLength) return false;
+
+        if (field === "diseases")
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: commonFilter(ac),
+              set: {
+                diseasesOfStudy: newArray,
+              },
+            }))
+            .run(tx);
+        else if (field === "institutes")
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: commonFilter(ac),
+              set: {
+                institutesInvolved: newArray,
+              },
+            }))
+            .run(tx);
+        else if (field === "countries")
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: commonFilter(ac),
+              set: {
+                countriesInvolved: newArray,
+              },
+            }))
+            .run(tx);
+        else
+          throw new Error(
+            `Field instruction of ${field} was not handled in the remove operation`
+          );
+      } else {
+        // only do an insert if the entry is not already present
+        // i.e. set like semantics - but with an ordered array
+        // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
+        if (
+          // if the entry already exists - we can return - nothing to do
+          newArray.findIndex(
+            (tup) => tup.system === system && tup.code === code
+          ) > -1
+        )
+          return false;
+
+        const commonAddition = e.array([
+          e.tuple({ system: system, code: code }),
+        ]);
+
+        if (field === "diseases")
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: commonFilter(ac),
+              set: {
+                diseasesOfStudy: e.op(ac.diseasesOfStudy, "++", commonAddition),
+              },
+            }))
+            .run(tx);
+        else if (field === "institutes")
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: commonFilter(ac),
+              set: {
+                institutesInvolved: e.op(
+                  ac.institutesInvolved,
+                  "++",
+                  commonAddition
+                ),
+              },
+            }))
+            .run(tx);
+        else if (field === "countries")
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: commonFilter(ac),
+              set: {
+                countriesInvolved: e.op(
+                  ac.countriesInvolved,
+                  "++",
+                  commonAddition
+                ),
+              },
+            }))
+            .run(tx);
+        else
+          throw new Error(
+            `Field instruction of ${field} was not handled in the add operation`
+          );
+      }
+    });
+
+    return true;
   }
 }
 

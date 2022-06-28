@@ -161,7 +161,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       {/* NAV END */}
 
       <div className="container w-full mx-auto pt-20 grow">
-        <div className="w-full px-4 md:px-0 md:mt-8 mb-16 text-gray-800 leading-normal">
+        <div className="w-full mt-8 mb-8 text-gray-800 leading-normal">
           {children}
         </div>
       </div>

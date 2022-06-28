@@ -7,7 +7,7 @@ import { Type } from "@sinclair/typebox";
  * This then allows us to do JSON schema checking on API boundaries, whilst
  * using the Typescript types for clearer React/Api code.
  */
-
+/*
 export const CodingSchema = Type.Object({
   system: Type.String(),
   // I'd like to not have to deal with versioned codes if possible
@@ -33,14 +33,14 @@ export const ApplicationDiseaseResearchSchemaV1 = Type.Object({
 
 export const ApplicationClinicalCareSchemaV1 = Type.Object({
   code: Type.Literal("CC"),
-});
+});*/
 
 /**
  * The application coded schema contains all coded details retrieved from the application
  * form, with any necessary computable clarifications. i.e. area of disease under study
  * coded in SNOMED as opposed to freetext.
  */
-export const ApplicationCodedSchemaV1 = Type.Object({
+/*export const ApplicationCodedSchemaV1 = Type.Object({
   version: Type.Literal(1),
 
   researchType: Type.Union([
@@ -55,4 +55,4 @@ export const ApplicationCodedSchemaV1 = Type.Object({
 
   studyStart: Type.Optional(Type.String()),
   studyEnd: Type.Optional(Type.String()),
-});
+});*/

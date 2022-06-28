@@ -1,5 +1,4 @@
 import { TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
-import { ApplicationCodedSchemaV1 } from "./schemas-application-coded";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -51,8 +50,18 @@ export const DatasetSchemaDeep = Type.Intersect([
 export const ReleaseSchema = Type.Object({
   id: Type.String(),
   datasetUris: Type.Array(Type.String()),
-  applicationCoded: ApplicationCodedSchemaV1,
   applicationDacIdentifier: Type.Optional(Type.String()),
+  applicationDacTitle: Type.Optional(Type.String()),
+  applicationDacDetails: Type.Optional(Type.String()),
+
+  permissionEditSelections: Type.Optional(Type.Boolean()),
+  permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
+  permissionAccessData: Type.Optional(Type.Boolean()),
+});
+
+export const ReleaseApplicationCodedSchema = Type.Object({
+  datasetUris: Type.Array(Type.String()),
+  diseases: Type.Optional(Type.String()),
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
 

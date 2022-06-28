@@ -64,3 +64,7 @@ npm run dev
 Backend code is automatically monitored and will restart on any code changes.
 
 Browse to `localhost:3000`.
+
+##
+
+https://tkdodo.eu/blog/react-query-fa-qs
