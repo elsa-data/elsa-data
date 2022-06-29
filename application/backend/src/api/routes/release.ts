@@ -13,6 +13,7 @@ import { releasesAwsService } from "../../business/services/releases-aws";
 import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
 import streamConsumers from "node:stream/consumers";
+import { Base7807Error } from "../errors/_error.types";
 
 const client = edgedb.createClient();
 
@@ -27,6 +28,11 @@ function mapDbToApi(
     applicationDacIdentifier: dbObject?.applicationDacIdentifier,
     applicationDacTitle: dbObject?.applicationDacTitle,
     applicationDacDetails: dbObject?.applicationDacDetails,
+    applicationCoded: {
+      diseases: [],
+      countriesInvolved: [],
+      type: "HMB",
+    },
     permissionEditSelections: editSelections,
     permissionEditApplicationCoded: editApplicationCoded,
     permissionAccessData: false,
@@ -132,7 +138,7 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       field: "diseases" | "countries";
       op: "add" | "remove";
     };
-    Body: { system: string; code: string };
+    Body: any;
   }>(
     "/api/releases/:rid/application-coded/:field/:op",
     {},
@@ -142,53 +148,70 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       const releaseId = request.params.rid;
       const field = request.params.field;
       const op = request.params.op;
+      const body = request.body;
 
-      if (op !== "add" && op !== "remove") {
-        reply.status(400).send();
-        return;
-      }
-
-      const { system, code } = request.body;
-
-      switch (field) {
-        case "diseases":
-          if (op === "add")
+      // we are pretty safe to add these fields together - even though they come from the user supplied route
+      // if someone makes either field something unexpected - we'll fall through to the 400 reply
+      switch (field + "-" + op) {
+        case "diseases-add":
+          reply.send(
             await releasesService.addDiseaseToApplicationCoded(
               authenticatedUser,
               releaseId,
-              system,
-              code
-            );
-          else
+              body.system,
+              body.code
+            )
+          );
+          return;
+        case "diseases-remove":
+          reply.send(
             await releasesService.removeDiseaseFromApplicationCoded(
               authenticatedUser,
               releaseId,
-              system,
-              code
-            );
-          break;
-        case "countries":
-          if (op === "add")
+              body.system,
+              body.code
+            )
+          );
+          return;
+        case "countries-add":
+          reply.send(
             await releasesService.addCountryToApplicationCoded(
               authenticatedUser,
               releaseId,
-              system,
-              code
-            );
-          else
+              body.system,
+              body.code
+            )
+          );
+          return;
+        case "countries-remove":
+          reply.send(
             await releasesService.removeCountryFromApplicationCoded(
               authenticatedUser,
               releaseId,
-              system,
-              code
+              body.system,
+              body.code
+            )
+          );
+          return;
+        case "type-set":
+          if (body.type === "AWS")
+            throw new Base7807Error(
+              "Invalid research type",
+              400,
+              `The type ${body.type} is invalid`
             );
-          break;
+          reply.send(
+            await releasesService.setTypeOfApplicationCoded(
+              authenticatedUser,
+              releaseId,
+              body.type
+            )
+          );
+          return;
         default:
           reply.status(400).send();
           return;
       }
-
-      reply.send("ok");
     }
   );
 

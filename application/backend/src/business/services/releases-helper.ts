@@ -14,6 +14,9 @@ export function collapseExternalIds(externals: any): string {
 }
 
 /**
+ * Do a boundary level check for entry point into most public service functions - that
+ * checks if the user has a role in the given release (and therefore also if the release
+ * exists).
  *
  * @param user
  * @param releaseId
@@ -24,7 +27,10 @@ export async function doRoleInReleaseCheck(
 ) {
   const userRole = await usersService.roleInRelease(user, releaseId);
 
-  if (!userRole) throw new Error("Unauthenticated attempt to access release");
+  if (!userRole)
+    throw new Error(
+      "Unauthenticated attempt to access release, or release does not exist"
+    );
 
   return {
     userRole: userRole,

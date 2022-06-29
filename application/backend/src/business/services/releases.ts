@@ -1,15 +1,12 @@
 import * as edgedb from "edgedb";
 import e, { dataset, release } from "../../../dbschema/edgeql-js";
 import {
-  DatasetDeepType,
   ReleaseCaseType,
-  ReleaseDatasetType,
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
   ReleaseType,
 } from "@umccr/elsa-types";
-import { usersService } from "./users";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isSafeInteger } from "lodash";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
@@ -18,13 +15,10 @@ import {
   doRoleInReleaseCheck,
   getReleaseInfo,
 } from "./releases-helper";
-import { NamedTupleType } from "edgedb/dist/reflection";
-import { makeSingleCodeArray } from "../../test-data/insert-test-data-helpers";
-import ApplicationCoded = release.ApplicationCoded;
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
-type CodeArrayFields = "diseases" | "countries" | "institutes";
+type CodeArrayFields = "diseases" | "countries" | "type";
 
 class ReleasesService {
   private edgeDbClient = edgedb.createClient();
@@ -45,29 +39,7 @@ class ReleasesService {
   ): Promise<ReleaseType | null> {
     const { userRole } = await doRoleInReleaseCheck(user, releaseId);
 
-    const thisRelease = await e
-      .select(e.release.Release, (r) => ({
-        ...e.release.Release["*"],
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
-      }))
-      .assert_single()
-      .run(this.edgeDbClient);
-
-    if (thisRelease != null)
-      return {
-        id: thisRelease.id,
-        datasetUris: thisRelease.datasetUris,
-        applicationDacDetails: thisRelease.applicationDacDetails!,
-        applicationDacIdentifier: thisRelease.applicationDacIdentifier!,
-        applicationDacTitle: thisRelease.applicationDacTitle!,
-        // data owners can code/edit the release information
-        permissionEditApplicationCoded: userRole === "DataOwner",
-        permissionEditSelections: userRole === "DataOwner",
-        // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
-        permissionAccessData: userRole !== "DataOwner",
-      };
-
-    return null;
+    return this.getBase(releaseId, userRole);
   }
 
   /**
@@ -98,9 +70,14 @@ class ReleasesService {
         ? e.set(...selectedSpecimenUuids)
         : e.cast(e.uuid, e.set());
 
+    const datasetIdSet =
+      datasetUriToIdMap.size > 0
+        ? e.set(...datasetUriToIdMap.values())
+        : e.cast(e.uuid, e.set());
+
     const makeFilter = (dsc: any) => {
       return e.op(
-        e.op(dsc.dataset.id, "in", e.set(...datasetUriToIdMap.values())),
+        e.op(dsc.dataset.id, "in", datasetIdSet),
         "and",
         e.op(
           e.bool(userRole === "DataOwner"),
@@ -262,15 +239,19 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<boolean | null> {
-    return await this.alterApplicationCodedArrayEntry(
-      user,
+  ): Promise<ReleaseType> {
+    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+
+    const didMutate = await this.alterApplicationCodedArrayEntry(
+      userRole,
       releaseId,
       "diseases",
       system,
       code,
       false
     );
+
+    return await this.getBase(releaseId, userRole);
   }
 
   public async removeDiseaseFromApplicationCoded(
@@ -278,15 +259,19 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<boolean | null> {
-    return await this.alterApplicationCodedArrayEntry(
-      user,
+  ): Promise<ReleaseType> {
+    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+
+    const didMutate = await this.alterApplicationCodedArrayEntry(
+      userRole,
       releaseId,
       "diseases",
       system,
       code,
       true
     );
+
+    return await this.getBase(releaseId, userRole);
   }
 
   public async addCountryToApplicationCoded(
@@ -294,15 +279,19 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<boolean | null> {
-    return await this.alterApplicationCodedArrayEntry(
-      user,
+  ): Promise<ReleaseType> {
+    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+
+    const didMutate = await this.alterApplicationCodedArrayEntry(
+      userRole,
       releaseId,
       "countries",
       system,
       code,
       false
     );
+
+    return await this.getBase(releaseId, userRole);
   }
 
   public async removeCountryFromApplicationCoded(
@@ -310,15 +299,109 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<boolean | null> {
-    return await this.alterApplicationCodedArrayEntry(
-      user,
+  ): Promise<ReleaseType> {
+    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+
+    const didMutate = await this.alterApplicationCodedArrayEntry(
+      userRole,
       releaseId,
       "countries",
       system,
       code,
       true
     );
+
+    return await this.getBase(releaseId, userRole);
+  }
+
+  public async setTypeOfApplicationCoded(
+    user: AuthenticatedUser,
+    releaseId: string,
+    type: "HMB" | "DS" | "CC" | "GRU" | "POA"
+  ): Promise<ReleaseType> {
+    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      // get the current coded application
+      const releaseWithAppCoded = await e
+        .select(e.release.Release, (r) => ({
+          applicationCoded: {
+            id: true,
+            studyType: true,
+            countriesInvolved: true,
+            diseasesOfStudy: true,
+          },
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+        }))
+        .assert_single()
+        .run(tx);
+
+      if (!releaseWithAppCoded)
+        throw new Error(
+          `Release ${releaseId} that existed just before this code has now disappeared!`
+        );
+
+      await e
+        .update(e.release.ApplicationCoded, (ac) => ({
+          filter: e.op(
+            ac.id,
+            "=",
+            e.uuid(releaseWithAppCoded.applicationCoded.id)
+          ),
+          set: {
+            studyType: type,
+          },
+        }))
+        .run(tx);
+    });
+
+    return await this.getBase(releaseId, userRole);
+  }
+
+  /**
+   * Get a single release assuming the user definitely has the role
+   * passed in and that the release exists (otherwise how could they have a role?).
+   * This is the base level fetch that can be used after
+   * a previous service call has already established the user's role in
+   * this release.
+   *
+   * @param releaseId
+   * @param userRole
+   */
+  private async getBase(releaseId: string, userRole: string) {
+    const thisRelease = await e
+      .select(e.release.Release, (r) => ({
+        ...e.release.Release["*"],
+        applicationCoded: {
+          ...e.release.ApplicationCoded["*"],
+        },
+        filter: e.op(r.id, "=", e.uuid(releaseId)),
+      }))
+      .assert_single()
+      .run(this.edgeDbClient);
+
+    if (!thisRelease)
+      throw new Error(
+        "getPreAuthorised is meant for use only where the release and user role are already established"
+      );
+
+    return {
+      id: thisRelease.id,
+      datasetUris: thisRelease.datasetUris,
+      applicationDacDetails: thisRelease.applicationDacDetails!,
+      applicationDacIdentifier: thisRelease.applicationDacIdentifier!,
+      applicationDacTitle: thisRelease.applicationDacTitle!,
+      applicationCoded: {
+        type: thisRelease.applicationCoded.studyType,
+        diseases: thisRelease.applicationCoded.diseasesOfStudy,
+        countriesInvolved: thisRelease.applicationCoded.countriesInvolved,
+      },
+      // data owners can code/edit the release information
+      permissionEditApplicationCoded: userRole === "DataOwner",
+      permissionEditSelections: userRole === "DataOwner",
+      // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
+      permissionAccessData: userRole !== "DataOwner",
+    };
   }
 
   /**
@@ -400,8 +483,8 @@ class ReleasesService {
    * I can't make EdgeDb libraries re-use code where I'd like (which is possibly more about me than
    * edgedb)
    *
-   * @param user the user attempting the changes
-   * @param releaseId the release id of the release to alter
+   * @param userRole the role the user has in this release (must be something!)
+   * @param releaseId the release id of the release to alter (must exist)
    * @param field the field name to alter e.g. 'institutes', 'diseases'...
    * @param system the system URI of the entry to add/delete
    * @param code the code value of the entry to add/delete
@@ -410,15 +493,13 @@ class ReleasesService {
    * @private
    */
   private async alterApplicationCodedArrayEntry(
-    user: AuthenticatedUser,
+    userRole: string,
     releaseId: string,
     field: CodeArrayFields,
     system: string,
     code: string,
     removeRatherThanAdd: boolean = false
   ): Promise<boolean> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
-
     const { selectedSpecimenIds, datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
       releaseId
@@ -432,7 +513,6 @@ class ReleasesService {
           applicationCoded: {
             id: true,
             studyType: true,
-            institutesInvolved: true,
             countriesInvolved: true,
             diseasesOfStudy: true,
           },
@@ -450,8 +530,6 @@ class ReleasesService {
 
       if (field === "diseases")
         newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
-      else if (field === "institutes")
-        newArray = releaseWithAppCoded.applicationCoded.institutesInvolved;
       else if (field === "countries")
         newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
       else
@@ -485,15 +563,6 @@ class ReleasesService {
               filter: commonFilter(ac),
               set: {
                 diseasesOfStudy: newArray,
-              },
-            }))
-            .run(tx);
-        else if (field === "institutes")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                institutesInvolved: newArray,
               },
             }))
             .run(tx);
@@ -532,19 +601,6 @@ class ReleasesService {
               filter: commonFilter(ac),
               set: {
                 diseasesOfStudy: e.op(ac.diseasesOfStudy, "++", commonAddition),
-              },
-            }))
-            .run(tx);
-        else if (field === "institutes")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                institutesInvolved: e.op(
-                  ac.institutesInvolved,
-                  "++",
-                  commonAddition
-                ),
               },
             }))
             .run(tx);

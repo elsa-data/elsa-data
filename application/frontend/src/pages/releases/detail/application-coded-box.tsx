@@ -1,34 +1,21 @@
-import React from "react";
-import { useEnvRelay } from "../../../providers/env-relay-provider";
-import { useQuery, useQueryClient } from "react-query";
-import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "../../../components/boxes";
+import React, { useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
+import axios, { AxiosError } from "axios";
 import {
-  ApplicationCodedTypeV1,
-  DatasetGen3SyncRequestType,
+  CodingType,
+  ReleaseApplicationCodedType,
   ReleaseType,
 } from "@umccr/elsa-types";
 import { MondoChooser } from "../../../components/concept-chooser/mondo-chooser";
-import { doBatchLookup } from "../../../helpers/ontology-helper";
-import { LayoutBase } from "../../../layouts/layout-base";
-import { CasesTable } from "./cases-table";
-import { ReleaseTypeLocal } from "./shared-types";
-import { VerticalTabs } from "../../../components/vertical-tabs";
-import { AwsS3PresignedForm } from "./aws-s3-presigned-form";
-import { SnomedChooser } from "../../../components/concept-chooser/snomed-chooser";
 import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
-import { RhFormWithSaveButton } from "../../../components/rh/rh-form-with-save-button";
-import { RhTextArea } from "../../../components/rh/rh-text-area";
-import { RhInput } from "../../../components/rh/rh-input";
 import { RhSelect } from "../../../components/rh/rh-select";
-import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { makeReleaseTypeLocal, REACT_QUERY_RELEASE_KEYS } from "./queries";
+import { ReleaseTypeLocal } from "./shared-types";
 
 type Props = {
   releaseId: string;
-  applicationCoded: ApplicationCodedTypeV1;
+  applicationCoded: ReleaseApplicationCodedType;
 };
 
 export const ApplicationCodedBox: React.FC<Props> = ({
@@ -37,13 +24,66 @@ export const ApplicationCodedBox: React.FC<Props> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const formMethods = useForm<ApplicationCodedTypeV1>({
-    defaultValues: applicationCoded,
-  });
+  const [lastMutateError, setLastMutateError] = useState<string | null>(null);
 
-  const onSubmit: SubmitHandler<ApplicationCodedTypeV1> = async (data) => {
-    console.log(data);
+  // whenever we do a mutation of application coded data - our API returns the complete updated
+  // state of the whole release
+  // we set this as the success function to take advantage of that
+  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
+    queryClient.setQueryData(
+      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      result
+    );
+    setLastMutateError(null);
   };
+
+  const afterMutateError = (err: any) => {
+    setLastMutateError(err?.response?.data?.detail);
+  };
+
+  // all of our coded application apis follow the same pattern - post new value to API and get
+  // returned the updated release data - this generic mutator handles them all
+  const genericMutationFn =
+    <T,>(apiUrl: string) =>
+    (c: T) =>
+      axios
+        .post<ReleaseType>(apiUrl, c)
+        .then((response) => makeReleaseTypeLocal(response.data));
+
+  const diseaseAddMutate = useMutation(
+    genericMutationFn<CodingType>(
+      `/api/releases/${releaseId}/application-coded/diseases/add`
+    )
+  );
+
+  const diseaseRemoveMutate = useMutation(
+    genericMutationFn<CodingType>(
+      `/api/releases/${releaseId}/application-coded/diseases/remove`
+    )
+  );
+
+  const typeSetMutate = useMutation(
+    genericMutationFn<{ type: string }>(
+      `/api/releases/${releaseId}/application-coded/type/set`
+    )
+  );
+
+  const typeRadio = (label: string, value: string) => (
+    <RhRadioItem
+      label={label}
+      name="study"
+      checked={applicationCoded.type === value}
+      onChange={(e) =>
+        typeSetMutate.mutate(
+          { type: value },
+          {
+            onSuccess: afterMutateUpdateQueryData,
+            onError: afterMutateError,
+          }
+        )
+      }
+    />
+  );
 
   return (
     <div className="md:grid md:grid-cols-5 md:gap-6">
@@ -54,91 +94,49 @@ export const ApplicationCodedBox: React.FC<Props> = ({
         }
       />
       <RightDiv>
-        <RhFormWithSaveButton<ApplicationCodedTypeV1>
-          onSubmit={onSubmit}
-          methods={formMethods}
-        >
-          {({ register }) => (
-            <>
+        <div className="shadow sm:rounded-md sm:overflow-hidden">
+          <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+            <div className="grid grid-cols-3 gap-6">
+              {lastMutateError && (
+                <p className="col-span-3 font-bold text-red-700 border-gray-800 border-2 p-2">
+                  {lastMutateError}
+                </p>
+              )}
               <RhRadios label={"Study Type"}>
-                <RhRadioItem label="DS" name="study" value="DS" />
-                <RhRadioItem label="HMB" name="study" value="HMB" />
-                <RhRadioItem label="AWS" name="study" value="AWS" />
+                {typeRadio("Disease Specific", "DS")}
+                {typeRadio("Health/Medical/Bio", "HMB")}
+                {typeRadio("POA", "POA")}
+                {typeRadio("AWS", "AWS")}
               </RhRadios>
-              <RhTextArea
-                label={"Study Start"}
-                {...register("studyStart")}
-                extra={"Here is some extra text"}
-              />
               <RhSelect
                 label={"Country of Research"}
                 options={[
-                  { label: "Australia", value: "AU" },
-                  { label: "New Zealand", value: "NZ" },
-                  { label: "United States", value: "US" },
+                  { label: "Australia", value: "AUS" },
+                  { label: "New Zealand", value: "NZL" },
+                  { label: "United States", value: "USA" },
                 ]}
               />
-              <RhChecks label={"Institute(s)"}>
-                <RhCheckItem
-                  label="WEHI"
-                  value="WEHI"
-                  {...register("institutesInvolved")}
-                />
-                <RhCheckItem
-                  label="MCRI"
-                  value="MCRI"
-                  {...register("institutesInvolved")}
-                />
-                <RhCheckItem
-                  label="Hudson"
-                  value="Hudson"
-                  {...register("institutesInvolved")}
-                />
-              </RhChecks>
 
-              {applicationCoded.researchType?.code && (
+              {applicationCoded.type && applicationCoded.type === "DS" && (
                 <MondoChooser
-                  label="Disease Specific Study of Condition(s)"
-                  selected={(applicationCoded.researchType as any).diseases}
-                  addToSelected={(c) => {
-                    queryClient.setQueryData<ReleaseType>(
-                      ["release", releaseId],
-                      (x) => {
-                        if (x) {
-                          if (x.applicationCoded.researchType.code === "DS") {
-                            x.applicationCoded.researchType.diseases = [
-                              ...x.applicationCoded.researchType.diseases,
-                              c,
-                            ];
-                          }
-                        }
-                        return x!;
-                      }
-                    );
-                  }}
-                  removeFromSelected={(system, code) => {
-                    queryClient.setQueryData<ReleaseType>(
-                      ["release", releaseId],
-                      (x) => {
-                        if (x) {
-                          if (x.applicationCoded.researchType.code === "DS") {
-                            x.applicationCoded.researchType.diseases =
-                              x.applicationCoded.researchType.diseases.filter(
-                                (item) =>
-                                  item.code !== code || item.system !== system
-                              );
-                          }
-                        }
-                        return x!;
-                      }
-                    );
-                  }}
+                  label="Research of Disease/Condition(s)"
+                  selected={applicationCoded.diseases}
+                  addToSelected={(c) =>
+                    diseaseAddMutate.mutate(c, {
+                      onSuccess: afterMutateUpdateQueryData,
+                    })
+                  }
+                  removeFromSelected={(c) =>
+                    diseaseRemoveMutate.mutate(c, {
+                      onSuccess: afterMutateUpdateQueryData,
+                    })
+                  }
                   disabled={false}
                 />
               )}
-            </>
-          )}
-        </RhFormWithSaveButton>
+            </div>
+          </div>
+        </div>
       </RightDiv>
     </div>
   );

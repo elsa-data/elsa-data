@@ -4,6 +4,7 @@ import {
   DatasetGen3SyncResponseSchema,
   DatasetSchemaDeep,
   DatasetSchemaLight,
+  ReleaseApplicationCodedSchema,
   ReleaseAwsS3PresignRequestSchema,
   ReleaseAwsS3PresignResponseSchema,
   ReleaseCaseSchema,
@@ -20,6 +21,7 @@ import {
   DuoModifierSchema,
 } from "./schemas-duo";
 import { TestingRequestSchema } from "./schemas-testing";
+import { CodingSchema } from "./schemas-coding";
 
 export * from "./schemas";
 export * from "./schemas-duo";
@@ -35,8 +37,11 @@ export type DuoLimitationType = Static<typeof DuoLimitationSchema>;
 
 export type DuoModifierType = Static<typeof DuoModifierSchema>;
 
-//export type ApplicationCodedTypeV1 = Static<typeof ApplicationCodedSchemaV1>;
-//export type ApplicationCodedCodingType = Static<typeof CodingSchema>;
+export type ReleaseApplicationCodedType = Static<
+  typeof ReleaseApplicationCodedSchema
+>;
+
+export type CodingType = Static<typeof CodingSchema>;
 
 export type DatasetLightType = Static<typeof DatasetSchemaLight>;
 export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;

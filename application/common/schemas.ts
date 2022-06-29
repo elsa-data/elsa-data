@@ -1,4 +1,5 @@
 import { TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
+import { CodingSchema } from "./schemas-coding";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -47,6 +48,22 @@ export const DatasetSchemaDeep = Type.Intersect([
   DatasetSchemaNesting,
 ]);
 
+export const ReleaseApplicationCodedTypeSchema = StringUnion([
+  "HMB",
+  "DS",
+  "CC",
+  "GRU",
+  "POA",
+]);
+
+export const ReleaseApplicationCodedSchema = Type.Object({
+  type: ReleaseApplicationCodedTypeSchema,
+
+  diseases: Type.Array(CodingSchema),
+
+  countriesInvolved: Type.Array(CodingSchema),
+});
+
 export const ReleaseSchema = Type.Object({
   id: Type.String(),
   datasetUris: Type.Array(Type.String()),
@@ -54,16 +71,7 @@ export const ReleaseSchema = Type.Object({
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
 
-  permissionEditSelections: Type.Optional(Type.Boolean()),
-  permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
-  permissionAccessData: Type.Optional(Type.Boolean()),
-});
-
-export const ReleaseApplicationCodedSchema = Type.Object({
-  datasetUris: Type.Array(Type.String()),
-  diseases: Type.Optional(Type.String()),
-  applicationDacTitle: Type.Optional(Type.String()),
-  applicationDacDetails: Type.Optional(Type.String()),
+  applicationCoded: ReleaseApplicationCodedSchema,
 
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),

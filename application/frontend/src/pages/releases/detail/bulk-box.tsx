@@ -38,6 +38,41 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
           }
         />
       </div>
+      <HrDiv />
+      <div className="md:grid md:grid-cols-5 md:gap-6">
+        <LeftDiv
+          heading={"Apply"}
+          extra={
+            "Executing this operation will start a background task that calculates the correct sharing status for every specimen in the release"
+          }
+        />
+        <RightDiv>
+          <div className="shadow sm:rounded-md sm:overflow-hidden">
+            <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+              <div className="grid grid-cols-3 gap-6">
+                <div className="flex flex-col gap-6 col-span-3">
+                  <button className="btn-blue w-1/6 h-8">Apply All</button>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-base font-medium text-blue-700">
+                      Progress
+                    </span>
+                    <span className="text-sm font-medium text-blue-700">
+                      45%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full"
+                      style={{ width: "45%" }}
+                    ></div>
+                  </div>
+                  <p>Error/status messages</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </RightDiv>
+      </div>
     </Box>
   );
 };

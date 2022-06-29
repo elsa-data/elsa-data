@@ -3,7 +3,7 @@ import { useCombobox } from "downshift";
 import axios from "axios";
 import classNames from "classnames";
 import _ from "lodash";
-import { ApplicationCodedCodingType } from "@umccr/elsa-types";
+import { CodingType } from "@umccr/elsa-types";
 
 type Props = {
   ontoServerUrl: string; // "https://genomics.ontoserver.csiro.au
@@ -20,11 +20,11 @@ type Props = {
   placeholder: string;
 
   // the list of currently visible concepts
-  selected: ApplicationCodedCodingType[];
+  selected: CodingType[];
 
   // the actions to change the list of selected concepts
-  addToSelected(code: ApplicationCodedCodingType): void;
-  removeFromSelected(system: string, code: string): void;
+  addToSelected(coding: CodingType): void;
+  removeFromSelected(coding: CodingType): void;
 };
 
 /**
@@ -35,9 +35,7 @@ type Props = {
  * @constructor
  */
 export const ConceptChooser: React.FC<Props> = (props: Props) => {
-  const [searchHits, setSearchHits] = useState(
-    [] as ApplicationCodedCodingType[]
-  );
+  const [searchHits, setSearchHits] = useState([] as CodingType[]);
 
   const stateReducer = (state: any, actionAndChanges: any) => {
     const { type, changes } = actionAndChanges;
@@ -227,10 +225,10 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
                             <button
                               className="hover:text-indigo-900 text-red-500"
                               onClick={() =>
-                                props.removeFromSelected(
-                                  panel.system,
-                                  panel.code
-                                )
+                                props.removeFromSelected({
+                                  system: panel.system,
+                                  code: panel.code,
+                                })
                               }
                             >
                               x

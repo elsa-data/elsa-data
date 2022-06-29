@@ -8,15 +8,6 @@ import { Type } from "@sinclair/typebox";
  * using the Typescript types for clearer React/Api code.
  */
 /*
-export const CodingSchema = Type.Object({
-  system: Type.String(),
-  // I'd like to not have to deal with versioned codes if possible
-  // version: Type.Optional(Type.String()),
-  code: Type.String(),
-  display: Type.Optional(Type.String()),
-  // not sure needed for us
-  // userSelected: Type.Optional(Type.Boolean())
-});
 
 export const ApplicationGeneralResearchSchemaV1 = Type.Object({
   code: Type.Literal("GRU"),

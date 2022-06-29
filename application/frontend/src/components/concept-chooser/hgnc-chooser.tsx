@@ -2,16 +2,15 @@ import { Concept, ConceptDictionary } from "./concept-chooser-types";
 import React, { Dispatch } from "react";
 import { ConceptChooser } from "./concept-chooser";
 import { addToSelected, removeFromSelected } from "./concept-chooser-utils";
-import { ApplicationCodedCodingType } from "@umccr/elsa-types";
+import { CodingType } from "@umccr/elsa-types";
 
 type Props = {
   // the dictionary of currently selected concepts to be held in suitable state somewhere else
-  selected: ApplicationCodedCodingType[];
+  selected: CodingType[];
 
   // the action to mutate concept state
-  setSelected: Dispatch<React.SetStateAction<ApplicationCodedCodingType[]>>;
-
-  setIsDirty: Dispatch<React.SetStateAction<boolean>>;
+  addToSelected(coding: CodingType): void;
+  removeFromSelected(coding: CodingType): void;
 
   disabled: boolean;
 };
@@ -22,8 +21,8 @@ type Props = {
  */
 export const HgncChooser: React.FC<Props> = ({
   selected,
-  setSelected,
-  setIsDirty,
+  addToSelected,
+  removeFromSelected,
   disabled,
 }) => {
   return (
@@ -37,13 +36,13 @@ export const HgncChooser: React.FC<Props> = ({
       codePrefix="HGNC"
       selected={selected}
       disabled={disabled}
-      addToSelected={(code) => {
-        addToSelected(setSelected, code);
-        setIsDirty(true);
+      addToSelected={(coding) => {
+        addToSelected(coding);
+        //setIsDirty(true);
       }}
-      removeFromSelected={(system, code) => {
-        removeFromSelected(setSelected, system, code);
-        setIsDirty(true);
+      removeFromSelected={(coding) => {
+        removeFromSelected(coding);
+        //setIsDirty(true);
       }}
     />
   );

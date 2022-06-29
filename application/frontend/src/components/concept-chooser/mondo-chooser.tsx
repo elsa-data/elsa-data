@@ -1,14 +1,16 @@
 import { Concept, ConceptDictionary } from "./concept-chooser-types";
 import React, { Dispatch } from "react";
 import { ConceptChooser } from "./concept-chooser";
-import { ApplicationCodedCodingType } from "@umccr/elsa-types";
+import { CodingType } from "@umccr/elsa-types";
 
 type Props = {
   label: string;
-  selected: ApplicationCodedCodingType[];
 
-  addToSelected(code: ApplicationCodedCodingType): void;
-  removeFromSelected(system: string, code: string): void;
+  // the list of currently selected concepts
+  selected: CodingType[];
+
+  addToSelected(coding: CodingType): void;
+  removeFromSelected(coding: CodingType): void;
 
   disabled: boolean;
 };

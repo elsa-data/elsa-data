@@ -7,6 +7,7 @@ import {
   createTestUser,
   findSpecimen,
   insertBlankDataset,
+  makeDoubleCodeArray,
   makeEmptyCodeArray,
   makeSingleCodeArray,
   makeTripleCodeArray,
@@ -118,12 +119,10 @@ async function insertRelease1(settings: ElsaSettings) {
       applicationDacIdentifier: "ABC",
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.DS,
-        countriesInvolved: makeSingleCodeArray("urn:iso:std:iso:3166", "AU"),
-        diseasesOfStudy: makeTripleCodeArray(
+        countriesInvolved: makeSingleCodeArray("urn:iso:std:iso:3166", "AUS"),
+        diseasesOfStudy: makeDoubleCodeArray(
           mondoUri,
           "MONDO:0008678",
-          mondoUri,
-          "",
           mondoUri,
           "MONDO:0021531"
         ),
@@ -149,6 +148,7 @@ async function insertRelease1(settings: ElsaSettings) {
   const r2 = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
+      applicationDacTitle: "A Better Study of Limited Test Data",
       applicationDacIdentifier: "XYZ",
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.HMB,
