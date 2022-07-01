@@ -17,12 +17,12 @@ export async function makeReleaseTypeLocal(
 ): Promise<ReleaseTypeLocal> {
   // the release data comes with only terminology *codes* - so we need to lookup
   // the display terms for the UI
-  if (releaseData.applicationCoded.type === "DS") {
-    await doBatchLookup(
-      "https://onto.prod.umccr.org/fhir",
-      releaseData.applicationCoded.diseases
-    );
-  }
+  //if (releaseData.applicationCoded.type === "DS") {
+  //  await doBatchLookup(
+  //    "https://onto.prod.umccr.org/fhir",
+  //    releaseData.applicationCoded.diseases
+  //  );
+  // }
 
   // we want to make an immutable map of letters (e.g. uri => A,B...)
   // just for some UI optimisations which is why this is strictly local

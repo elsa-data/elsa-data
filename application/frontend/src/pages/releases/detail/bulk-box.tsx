@@ -47,7 +47,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
           }
         />
         <RightDiv>
-          <div className="shadow sm:rounded-md sm:overflow-hidden">
+          <div className="shadow sm:rounded-md">
             <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
               <div className="grid grid-cols-3 gap-6">
                 <div className="flex flex-col gap-6 col-span-3">

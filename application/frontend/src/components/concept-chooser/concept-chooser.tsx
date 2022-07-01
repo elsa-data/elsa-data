@@ -4,6 +4,11 @@ import axios from "axios";
 import classNames from "classnames";
 import _ from "lodash";
 import { CodingType } from "@umccr/elsa-types";
+import {
+  doBatchLookup,
+  makeCacheEntry,
+  ontologyLookupCache,
+} from "../../helpers/ontology-helper";
 
 type Props = {
   ontoServerUrl: string; // "https://genomics.ontoserver.csiro.au
@@ -35,7 +40,36 @@ type Props = {
  * @constructor
  */
 export const ConceptChooser: React.FC<Props> = (props: Props) => {
+  // a code array that is set on mount to the same as props.selected - and which then
+  // is background filled with 'display' terms
+
+  // given the number of display terms is likely to be small, and is very stable - we aggressively
+  // cache them locally and use those values rather than go to the network
+  const [codesWithDisplay, setCodesWithDisplay] = useState(
+    props.selected.map((c) => {
+      const newC: CodingType = { system: c.system, code: c.code };
+      if (makeCacheEntry(c.system, c.code) in ontologyLookupCache) {
+        console.log("Found cache entry for " + c.code);
+        newC.display = ontologyLookupCache[makeCacheEntry(c.system, c.code)];
+      }
+      return newC;
+    })
+  );
+
+  // state for the list of concepts that appear as we are doing searchers
   const [searchHits, setSearchHits] = useState([] as CodingType[]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const newCodes = await doBatchLookup(
+        "https://onto.prod.umccr.org/fhir",
+        codesWithDisplay
+      );
+      console.log(JSON.stringify(newCodes));
+      setCodesWithDisplay([...newCodes]);
+    };
+    fetchData().catch();
+  }, [props.selected]);
 
   const stateReducer = (state: any, actionAndChanges: any) => {
     const { type, changes } = actionAndChanges;
@@ -119,131 +153,111 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       });
   };
 
-  return (
-    <>
-      <div>
-        <label
-          {...getLabelProps()}
-          className="block text-sm font-medium text-gray-700"
+  const chip = (c: CodingType) => (
+    <li className="px-4 py-2 rounded-full text-gray-500 bg-gray-200 text-sm flex-none flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease">
+      {c.display ?? c.code}
+      <button
+        className="bg-transparent hover focus:outline-none"
+        onClick={() => props.removeFromSelected(c)}
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          data-prefix="fas"
+          data-icon="times"
+          className="w-3 ml-3"
+          role="img"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 352 512"
         >
-          {props.label}
-        </label>
-      </div>
+          <path
+            fill="currentColor"
+            d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
+          ></path>
+        </svg>
+      </button>
+    </li>
+  );
 
-      <div>
-        <div className="relative">
-          <div className="mt-1 relative rounded-md">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 text-sm">{props.codePrefix}</span>
-            </div>
-            <input
-              type="text"
-              {...getInputProps({
-                placeholder: props.placeholder,
-                disabled: props.disabled,
-              })}
-              className="focus:ring-indigo-500 focus:border-indigo-500 block w-3/4 pl-28 pr-12 text-sm border-gray-300 rounded-md"
-            />
-          </div>
-          {/* if the input element is open, render the div else render nothing*/}
-          {isOpen && searchHits && searchHits.length > 0 && (
-            <div
-              className="origin-top-left absolute z-10 mt-1 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-              role="menu"
-              aria-orientation="vertical"
-              aria-labelledby="menu-button"
-              tabIndex={-1}
-              {...getMenuProps()}
-            >
-              <div className="py-1" role="none">
-                {searchHits.slice(0, 10).map((item: any, index: number) => {
-                  const itemProps = getItemProps({
-                    key: index,
-                    index,
-                    item,
-                  });
+  return (
+    <div className="col-span-3">
+      <label
+        {...getLabelProps()}
+        className="block text-sm font-medium text-gray-700"
+      >
+        {props.label}
+      </label>
 
-                  const classn = classNames(
-                    {
-                      "bg-gray-100": highlightedIndex === index,
-                      "text-gray-900": highlightedIndex === index,
-                      "text-gray-700": highlightedIndex !== index,
-                    },
-                    "block",
-                    "px-4",
-                    "py-2",
-                    "text-sm"
-                  );
-
-                  return (
-                    <div
-                      className={classn}
-                      role="menuitem"
-                      tabIndex={-1}
-                      key={itemProps.key}
-                      {...itemProps}
-                    >
-                      <span className="mr-6" />
-                      {item.display}
-                    </div>
-                  );
-                })}
-                {searchHits.length > 10 && (
-                  <div
-                    className="block px-4 py-2 text-sm"
-                    role="menuitem"
-                    tabIndex={-1}
-                  >
-                    ...
-                  </div>
-                )}
-              </div>
-            </div>
+      <div className="mt-1 p-2 rounded-md w-full border border-gray-300">
+        <ul className="flex flex-row flex-wrap space-x-2 space-y-2">
+          {!_.isEmpty(codesWithDisplay) && (
+            <>{Object.values(codesWithDisplay).map((c, index) => chip(c))}</>
           )}
-        </div>
+          <input
+            type="text"
+            {...getInputProps({
+              placeholder: props.placeholder,
+              disabled: props.disabled,
+            })}
+            className="min-w-[15em] flex-grow border-none border-white focus:border-none p-0"
+          />
+        </ul>
       </div>
-      <div>
-        {!_.isEmpty(props.selected) && (
-          <div className="flex flex-col mt-4">
-            <div className="ml-8 -my-2 overflow-x-auto">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {Object.entries(props.selected).map(([_, panel], index) => (
-                      <tr key={index}>
-                        <td className="px-4 py-2 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div>
-                              <div className="text-sm  text-gray-900">
-                                {panel.display}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-right text-sm">
-                          {!props.disabled && (
-                            <button
-                              className="hover:text-indigo-900 text-red-500"
-                              onClick={() =>
-                                props.removeFromSelected({
-                                  system: panel.system,
-                                  code: panel.code,
-                                })
-                              }
-                            >
-                              x
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+      {/* if the input element is open, render the div else render nothing*/}
+      {isOpen && searchHits && searchHits.length > 0 && (
+        <div
+          className="origin-top-left overflow-auto absolute z-10 mt-1 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="menu-button"
+          tabIndex={-1}
+          {...getMenuProps()}
+        >
+          <div className="py-1" role="none">
+            {searchHits.slice(0, 10).map((item: any, index: number) => {
+              const itemProps = getItemProps({
+                key: index,
+                index,
+                item,
+              });
+
+              const classn = classNames(
+                {
+                  "bg-gray-100": highlightedIndex === index,
+                  "text-gray-900": highlightedIndex === index,
+                  "text-gray-700": highlightedIndex !== index,
+                },
+                "block",
+                "px-4",
+                "py-2",
+                "text-sm"
+              );
+
+              return (
+                <div
+                  className={classn}
+                  role="menuitem"
+                  tabIndex={-1}
+                  key={itemProps.key}
+                  {...itemProps}
+                >
+                  <span className="mr-6" />
+                  {item.display}
+                </div>
+              );
+            })}
+            {searchHits.length > 10 && (
+              <div
+                className="block px-4 py-2 text-sm"
+                role="menuitem"
+                tabIndex={-1}
+              >
+                ...
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 };

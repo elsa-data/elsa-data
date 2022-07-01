@@ -9,7 +9,7 @@ import {
 
 const edgeDbClient = edgedb.createClient();
 
-export const TENC_URI = "";
+export const TENC_URI = "urn:fdc:umccr.org:2022:dataset/10c";
 
 /**
  * The 10C dataset is cancer patients

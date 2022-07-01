@@ -39,8 +39,6 @@ it("allowed users can get release data", async () => {
 
   expect(result).not.toBeNull();
   assert(result != null);
-
-  expect(result.applicationDacTitle).toBe("A Study in Many Parts");
 });
 
 /**
@@ -50,6 +48,19 @@ it("not allowed users cannot get release data", async () => {
   await expect(async () => {
     const result = await releasesService.get(notAllowedUser, testReleaseId);
   }).rejects.toThrow(Error);
+});
+
+it("basic release data is present", async () => {
+  const result = await releasesService.get(allowedPiUser, testReleaseId);
+
+  expect(result).not.toBeNull();
+  assert(result != null);
+
+  expect(result.applicationDacTitle).toBe("A Study in Many Parts");
+  expect(result.runningJob).toBeUndefined();
+  expect(result.applicationDacDetails).toBe(
+    "So this is all that we have brought over not coded"
+  );
 });
 
 it("aa", async () => {

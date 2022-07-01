@@ -45,22 +45,31 @@ export async function doRoleInReleaseCheck(
  * @param releaseId the release to load
  */
 export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
-  const releaseInfoQuery = e
+  // the base query that will give us just the release
+  const releaseQuery = e
     .select(e.release.Release, (r) => ({
-      // the select specimens tell us the leaf nodes that have been 'checked'
-      selectedSpecimens: true,
-      // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
-      manualExclusions: true,
-      // we are loosely linked (by uri) to datasets which this release draws data from
-      // TODO: revisit the loose linking
-      datasetIds: e.select(e.dataset.Dataset, (ds) => ({
-        id: true,
-        uri: true,
-        filter: e.op(ds.uri, "in", e.array_unpack(r.datasetUris)),
-      })),
       filter: e.op(r.id, "=", e.uuid(releaseId)),
     }))
     .assert_single();
+
+  // the set of selected specimens from the release
+  const releaseSelectedSpecimensQuery = e.select(
+    releaseQuery.selectedSpecimens
+  );
+
+  const releaseInfoQuery = e.select(releaseQuery, (r) => ({
+    // the select specimens tell us the leaf nodes that have been 'checked'
+    selectedSpecimens: true,
+    // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
+    //manualExclusions: true,
+    // we are loosely linked (by uri) to datasets which this release draws data from
+    // TODO: revisit the loose linking
+    datasetIds: e.select(e.dataset.Dataset, (ds) => ({
+      id: true,
+      uri: true,
+      filter: e.op(ds.uri, "in", e.array_unpack(r.datasetUris)),
+    })),
+  }));
 
   const releaseInfo = await releaseInfoQuery.run(edgeDbClient);
 
@@ -68,18 +77,6 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     throw new Error(
       `Case fetch attempted on non-existent release ${releaseId}`
     );
-
-  const selectedSpecimenIds: Set<string> = new Set<string>(
-    releaseInfo.selectedSpecimens.map((ss) => ss.id)
-  );
-
-  const selectedSpecimenUuids = new Set(
-    releaseInfo.selectedSpecimens.map((ss) => e.uuid(ss.id))
-  );
-
-  const releaseExcluded: Set<string> = new Set<string>(
-    releaseInfo.manualExclusions.map((ss) => ss.id)
-  );
 
   const datasetUriToIdMap = new Map(
     releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)])
@@ -89,13 +86,27 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     releaseInfo.datasetIds.map((d) => [d.id, d.uri])
   );
 
+  const releaseAllDatasetIdDbSet =
+    datasetUriToIdMap.size > 0
+      ? e.set(...datasetUriToIdMap.values())
+      : e.cast(e.uuid, e.set());
+
+  const releaseAllDatasetQuery = e.select(e.dataset.Dataset, (ds) => ({
+    ...e.dataset.Dataset["*"],
+    filter: e.op(ds.id, "in", releaseAllDatasetIdDbSet),
+  }));
+
+  // the set of all cases from the release
+  const releaseAllDatasetCasesQuery = e.select(releaseAllDatasetQuery.cases);
+
   return {
+    releaseQuery,
+    releaseSelectedSpecimensQuery,
     releaseInfoQuery,
-    // we provide all the specimens ids that are currently selected as a Set<string>
-    selectedSpecimenIds,
-    // and as a set of uuid expressions
-    selectedSpecimenUuids,
-    releaseExcluded,
+    //releaseExcluded,
     datasetUriToIdMap,
+    releaseAllDatasetIdDbSet,
+    releaseAllDatasetQuery,
+    releaseAllDatasetCasesQuery,
   };
 }

@@ -15,6 +15,8 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   if (printDetailsToConsole)
     console.log(`Removing any existing data in test database`);
 
+  const jobsDeleted = await e.delete(e.job.Job).run(edgeDbClient);
+
   const usersDeleted = await e.delete(e.permission.User).run(edgeDbClient);
 
   const releasesDeleted = await e.delete(e.release.Release).run(edgeDbClient);
@@ -44,6 +46,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const filesDeleted = await e.delete(e.storage.File).run(edgeDbClient);
 
   if (printDetailsToConsole) {
+    console.log(`  ${jobsDeleted.length} job(s)`);
     console.log(`  ${usersDeleted.length} user(s)`);
 
     console.log(`  ${releasesDeleted.length} release(s)`);

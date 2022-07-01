@@ -5,9 +5,9 @@ import {
   ISO3166_SYTEM_URI,
 } from "../ontology/countries";
 
-const ontologyLookupCache: { [systemCode: string]: string } = {};
+export const ontologyLookupCache: { [systemCode: string]: string } = {};
 
-function makeCacheEntry(system: string, code: string) {
+export function makeCacheEntry(system: string, code: string) {
   return `${system}---${code}`;
 }
 /**

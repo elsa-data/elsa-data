@@ -62,13 +62,12 @@ class ReleasesService {
   ): Promise<PagedResult<ReleaseCaseType> | null> {
     const { userRole } = await doRoleInReleaseCheck(user, releaseId);
 
-    const { selectedSpecimenIds, selectedSpecimenUuids, datasetUriToIdMap } =
-      await getReleaseInfo(this.edgeDbClient, releaseId);
-
-    const selectedSet =
-      selectedSpecimenUuids.size > 0
-        ? e.set(...selectedSpecimenUuids)
-        : e.cast(e.uuid, e.set());
+    const {
+      releaseQuery,
+      releaseInfoQuery,
+      releaseSelectedSpecimensQuery,
+      datasetUriToIdMap,
+    } = await getReleaseInfo(this.edgeDbClient, releaseId);
 
     const datasetIdSet =
       datasetUriToIdMap.size > 0
@@ -82,7 +81,7 @@ class ReleasesService {
         e.op(
           e.bool(userRole === "DataOwner"),
           "or",
-          e.op(dsc.patients.specimens.id, "in", selectedSet)
+          e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
         )
       );
     };
@@ -97,14 +96,15 @@ class ReleasesService {
         filter: e.op(
           e.bool(userRole === "DataOwner"),
           "or",
-          e.op(p.specimens.id, "in", selectedSet)
+          e.op(p.specimens, "in", releaseSelectedSpecimensQuery)
         ),
         specimens: (s) => ({
           ...e.dataset.DatasetSpecimen["*"],
+          isSelected: e.op(s, "in", releaseSelectedSpecimensQuery),
           filter: e.op(
             e.bool(userRole === "DataOwner"),
             "or",
-            e.op(s.id, "in", selectedSet)
+            e.op(s, "in", releaseSelectedSpecimensQuery)
           ),
         }),
       }),
@@ -173,7 +173,7 @@ class ReleasesService {
       return {
         id: spec.id,
         externalId: collapseExternalIds(spec.externalIdentifiers),
-        nodeStatus: (selectedSpecimenIds.has(spec.id)
+        nodeStatus: ((spec as any).isSelected
           ? "selected"
           : "unselected") as ReleaseNodeStatusType,
       };
@@ -211,7 +211,9 @@ class ReleasesService {
     };
 
     return createPagedResult(
-      pageCases.map((pc) => createCaseMap(pc as dataset.DatasetCase)),
+      pageCases.map((pc) =>
+        createCaseMap(pc as unknown as dataset.DatasetCase)
+      ),
       casesCount,
       limit,
       offset
@@ -368,12 +370,18 @@ class ReleasesService {
    * @param releaseId
    * @param userRole
    */
-  private async getBase(releaseId: string, userRole: string) {
+  private async getBase(
+    releaseId: string,
+    userRole: string
+  ): Promise<ReleaseType> {
     const thisRelease = await e
       .select(e.release.Release, (r) => ({
         ...e.release.Release["*"],
         applicationCoded: {
           ...e.release.ApplicationCoded["*"],
+        },
+        runningJob: {
+          ...e.job.Job["*"],
         },
         filter: e.op(r.id, "=", e.uuid(releaseId)),
       }))
@@ -396,6 +404,9 @@ class ReleasesService {
         diseases: thisRelease.applicationCoded.diseasesOfStudy,
         countriesInvolved: thisRelease.applicationCoded.countriesInvolved,
       },
+      runningJob: thisRelease.runningJob
+        ? { messages: thisRelease.runningJob.messages }
+        : undefined,
       // data owners can code/edit the release information
       permissionEditApplicationCoded: userRole === "DataOwner",
       permissionEditSelections: userRole === "DataOwner",
@@ -421,7 +432,7 @@ class ReleasesService {
   ): Promise<any> {
     const { userRole } = await doRoleInReleaseCheck(user, releaseId);
 
-    const { selectedSpecimenIds, datasetUriToIdMap } = await getReleaseInfo(
+    const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
       releaseId
     );
@@ -500,7 +511,7 @@ class ReleasesService {
     code: string,
     removeRatherThanAdd: boolean = false
   ): Promise<boolean> {
-    const { selectedSpecimenIds, datasetUriToIdMap } = await getReleaseInfo(
+    const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
       releaseId
     );

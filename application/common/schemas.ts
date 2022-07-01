@@ -64,6 +64,10 @@ export const ReleaseApplicationCodedSchema = Type.Object({
   countriesInvolved: Type.Array(CodingSchema),
 });
 
+export const ReleaseRunningJobSchema = Type.Object({
+  messages: Type.Array(Type.String()),
+});
+
 export const ReleaseSchema = Type.Object({
   id: Type.String(),
   datasetUris: Type.Array(Type.String()),
@@ -72,6 +76,8 @@ export const ReleaseSchema = Type.Object({
   applicationDacDetails: Type.Optional(Type.String()),
 
   applicationCoded: ReleaseApplicationCodedSchema,
+
+  runningJob: Type.Optional(ReleaseRunningJobSchema),
 
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
