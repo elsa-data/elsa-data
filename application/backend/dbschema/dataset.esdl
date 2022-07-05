@@ -23,7 +23,16 @@ module dataset {
     # collected from an organisation/study
 
     type Dataset extending DatasetShareable, DatasetIdentifiable {
+
+        # along with any external identifiers - we require that datasets have an immutable URI
+        # that uniquely identifies them globally
+        required property uri -> str {
+          readonly := true;
+        }
+
         required property description -> str;
+
+        optional link previous -> Dataset;
 
         multi link cases -> DatasetCase {
             on target delete allow;
@@ -47,14 +56,18 @@ module dataset {
         }
 
         # pedigree data structure
+        optional link pedigree := pedigree::Pedigree;
 
         # sample info (which are normals etc)
     }
 
+    scalar type SexAtBirthType extending enum<'male', 'female', 'other'>;
 
     # the patient represents a single human who may have attached specimens
 
     type DatasetPatient  extending DatasetShareable, DatasetIdentifiable {
+
+        optional property sexAtBirth -> SexAtBirthType;
 
         # the backlink to the dataset that owns us
         link dataset := .<patients[is DatasetCase].<cases[is Dataset];
@@ -70,8 +83,16 @@ module dataset {
 
     type DatasetSpecimen extending DatasetShareable, DatasetIdentifiable {
 
+        optional property sampleType -> str;
+
         # the backlink to the dataset that owns us
         link dataset := .<specimens[is DatasetPatient].<patients[is DatasetCase].<cases[is Dataset];
+
+        # the backlink to the case that owns us
+        link case_ := .<specimens[is DatasetPatient].<patients[is DatasetCase];
+
+        # the backlink to the patient that owns us
+        link patient := .<specimens[is DatasetPatient];
 
         # the specimen links to all actual genomic artifacts (files) that have been
         # created in any lab process

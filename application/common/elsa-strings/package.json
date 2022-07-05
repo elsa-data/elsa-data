@@ -1,0 +1,13 @@
+{
+  "name": "@umccr/elsa-strings",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Common literal string constants for Elsa Data",
+  "main": "index.ts",
+  "author": "Andrew Patterson",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "4.7.2"
+  }
+}

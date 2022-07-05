@@ -1,0 +1,27 @@
+{
+  "extends": "ts-node/node16/tsconfig.json",
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+    "//comment": "ts-node compiler options that will override when run by ts-node",
+    "compilerOptions": {
+      "//comment": "enable decorators/metadata for use by tsyringe",
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true
+    }
+  },
+  "//comment": "we are almost always either bundling or ts-noding - if we do run tsc for type checking we never want it to output .js files",
+  "compilerOptions": {
+    "noEmit": true,
+    "//comment": "enable decorators/metadata for use by tsyringe",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "./src/**/*",
+    "./jobs/**/*",
+    "./dbschema/edgeql-js/**/*",
+    "./tests/**/*"
+  ],
+  "exclude": ["node_modules"]
+}

@@ -1,22 +1,30 @@
 module lab {
 
-    scalar type ChecksumType extending enum<'MD5', 'AWS-ETAG', 'SHA-1', 'SHA-256'>;
-
-    abstract type ArtifactBase {
-        required property url -> str;
-
-        property checksums -> array<tuple<type: ChecksumType, value: str>>;
-        property size -> int64;
+    abstract type ArtifactBase  {
     }
 
-    abstract type RunArtifactBase extending ArtifactBase {
+    type ArtifactBcl extending ArtifactBase {
+        required link bclFile -> storage::File;
     }
 
-    type RunArtifactBcl extending RunArtifactBase {
+    type ArtifactFastqPair extending ArtifactBase {
+        required link forwardFile -> storage::File;
+        required link reverseFile -> storage::File;
     }
 
-    type RunArtifactFastqPair extending RunArtifactBase {
-        property url_r2 -> str;
+    type ArtifactVcf extending ArtifactBase {
+        required link vcfFile -> storage::File;
+        required link tbiFile -> storage::File;
+    }
+
+    type ArtifactBam extending ArtifactBase {
+        required link bamFile -> storage::File;
+        required link baiFile -> storage::File;
+    }
+
+    type ArtifactCram extending ArtifactBase {
+        required link cramFile -> storage::File;
+        required link craiFile -> storage::File;
     }
 
     # a collection of artifacts uploaded/submitted in a batch that has no information about run/analyses
@@ -29,16 +37,15 @@ module lab {
             constraint exclusive;
             on target delete allow;
        };
-
     }
 
 
     # a genomic sequencing run that outputs artifacts
     type Run {
         property platform -> str;
-        property run_date -> datetime;
+        property runDate -> datetime;
 
-        multi link artifacts_produced -> RunArtifactBase {
+        multi link artifactsProduced -> ArtifactBase {
             constraint exclusive;
             on target delete allow;
        };
@@ -46,25 +53,15 @@ module lab {
 
     type Analyses {
         property pipeline -> str;
-        property analyses_date -> datetime;
+        property analysesDate -> datetime;
 
-        multi link input -> RunArtifactBase;
+        multi link input -> ArtifactBase;
 
-        multi link output -> AnalysesArtifactBase {
+        multi link output -> ArtifactBase {
               constraint exclusive;
               on target delete allow;
         };
     }
 
-    abstract type AnalysesArtifactBase extending ArtifactBase {
-    }
-
-    type AnalysesArtifactVcf extending AnalysesArtifactBase {
-        property url_tbi -> str;
-    }
-
-    type AnalysesArtifactBam extending AnalysesArtifactBase {
-        property url_bai -> str;
-    }
 
 }
