@@ -5,7 +5,8 @@ import {
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
-  ReleaseType,
+  ReleaseDetailType,
+  ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isSafeInteger } from "lodash";
@@ -14,17 +15,56 @@ import {
   collapseExternalIds,
   doRoleInReleaseCheck,
   getReleaseInfo,
-} from "./releases-helper";
+} from "./helpers";
+import { inject, injectable, singleton } from "tsyringe";
+import { Client } from "edgedb";
+import { UsersService } from "./users-service";
+import { SelectService } from "./select-service";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
 type CodeArrayFields = "diseases" | "countries" | "type";
 
-class ReleasesService {
-  private edgeDbClient = edgedb.createClient();
+@injectable()
+@singleton()
+export class ReleasesService {
+  constructor(
+    @inject("Database") private edgeDbClient: Client,
+    private usersService: UsersService
+  ) {}
 
-  public async getAll(user: AuthenticatedUser, limit: number, offset: number) {
-    return {};
+  public async getAll(
+    user: AuthenticatedUser,
+    limit: number,
+    offset: number
+  ): Promise<ReleaseSummaryType[]> {
+    const allForUser = await e
+      .select(e.release.Release, (r) => ({
+        ...e.release.Release["*"],
+        runningJob: {
+          percentDone: true,
+        },
+        userRoles: e.select(
+          r["<releaseParticipant[is permission::User]"],
+          (u) => ({
+            id: true,
+            filter: e.op(u.id, "=", e.uuid(user.dbId)),
+            // "@role": true
+          })
+        ),
+      }))
+      .run(this.edgeDbClient);
+
+    console.log(JSON.stringify(allForUser));
+
+    return allForUser
+      .filter((a) => a.userRoles != null)
+      .map((a) => ({
+        id: a.id,
+        datasetUris: a.datasetUris,
+        applicationDacTitle: a?.applicationDacTitle ?? "<untitled>",
+        isRunningJobPercentDone: undefined,
+      }));
   }
 
   /**
@@ -36,8 +76,12 @@ class ReleasesService {
   public async get(
     user: AuthenticatedUser,
     releaseId: string
-  ): Promise<ReleaseType | null> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+  ): Promise<ReleaseDetailType | null> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     return this.getBase(releaseId, userRole);
   }
@@ -60,7 +104,11 @@ class ReleasesService {
     limit?: number,
     offset?: number
   ): Promise<PagedResult<ReleaseCaseType> | null> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const {
       releaseQuery,
@@ -241,8 +289,12 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<ReleaseType> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const didMutate = await this.alterApplicationCodedArrayEntry(
       userRole,
@@ -261,8 +313,12 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<ReleaseType> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const didMutate = await this.alterApplicationCodedArrayEntry(
       userRole,
@@ -281,8 +337,12 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<ReleaseType> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const didMutate = await this.alterApplicationCodedArrayEntry(
       userRole,
@@ -301,8 +361,12 @@ class ReleasesService {
     releaseId: string,
     system: string,
     code: string
-  ): Promise<ReleaseType> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const didMutate = await this.alterApplicationCodedArrayEntry(
       userRole,
@@ -320,8 +384,12 @@ class ReleasesService {
     user: AuthenticatedUser,
     releaseId: string,
     type: "HMB" | "DS" | "CC" | "GRU" | "POA"
-  ): Promise<ReleaseType> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     await this.edgeDbClient.transaction(async (tx) => {
       // get the current coded application
@@ -365,15 +433,16 @@ class ReleasesService {
    * passed in and that the release exists (otherwise how could they have a role?).
    * This is the base level fetch that can be used after
    * a previous service call has already established the user's role in
-   * this release.
+   * this release. This is public because some other services may want to return the
+   * current release state from API operations.
    *
    * @param releaseId
    * @param userRole
    */
-  private async getBase(
+  public async getBase(
     releaseId: string,
     userRole: string
-  ): Promise<ReleaseType> {
+  ): Promise<ReleaseDetailType> {
     const thisRelease = await e
       .select(e.release.Release, (r) => ({
         ...e.release.Release["*"],
@@ -393,6 +462,14 @@ class ReleasesService {
         "getPreAuthorised is meant for use only where the release and user role are already established"
       );
 
+    const hasRunningJob =
+      thisRelease.runningJob && thisRelease.runningJob.length === 1;
+
+    if (thisRelease.runningJob && thisRelease.runningJob.length > 1)
+      throw new Error(
+        "There should only be one running job (if any job is running)"
+      );
+
     return {
       id: thisRelease.id,
       datasetUris: thisRelease.datasetUris,
@@ -404,8 +481,13 @@ class ReleasesService {
         diseases: thisRelease.applicationCoded.diseasesOfStudy,
         countriesInvolved: thisRelease.applicationCoded.countriesInvolved,
       },
-      runningJob: thisRelease.runningJob
-        ? { messages: thisRelease.runningJob.messages }
+      runningJob: hasRunningJob
+        ? {
+            percentDone: thisRelease.runningJob[0].percentDone,
+            messages: thisRelease.runningJob[0].messages,
+            requestedCancellation:
+              thisRelease.runningJob[0].requestedCancellation,
+          }
         : undefined,
       // data owners can code/edit the release information
       permissionEditApplicationCoded: userRole === "DataOwner",
@@ -430,7 +512,11 @@ class ReleasesService {
     specimenIds: string[],
     selected: boolean
   ): Promise<any> {
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
@@ -638,5 +724,3 @@ class ReleasesService {
     return true;
   }
 }
-
-export const releasesService = new ReleasesService();

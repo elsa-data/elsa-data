@@ -1,12 +1,15 @@
-import * as edgedb from "edgedb";
-import e, { permission } from "../../../dbschema/edgeql-js";
+import { Client } from "edgedb";
+import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
+import { inject, injectable, singleton } from "tsyringe";
 
 // possibly can somehow get this from the schemas files?
 type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
 
-class UsersService {
-  private edgeDbClient = edgedb.createClient();
+@injectable()
+@singleton()
+export class UsersService {
+  constructor(@inject("Database") private edgeDbClient: Client) {}
 
   private baseUserSelectQuery(subjectId: string) {
     // TODO: convert this to use edge parameters?
@@ -38,7 +41,7 @@ class UsersService {
 
   /**
    * Return the role a user has in a particular release, or null if they are not involved
-   * in the release.
+   * in the release. As a by-product, checks that the releaseId is a valid release identifier.
    *
    * @param user
    * @param releaseId
@@ -106,5 +109,3 @@ class UsersService {
     return null;
   }
 }
-
-export const usersService = new UsersService();

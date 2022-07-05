@@ -114,9 +114,26 @@ async function insertRelease1(settings: ElsaSettings) {
 
   const r1 = await e
     .insert(e.release.Release, {
-      created: e.datetime(new Date()),
       applicationDacTitle: "A Study of Lots of Test Data",
       applicationDacIdentifier: "ABC",
+      applicationDacDetails: `
+#### Origin
+
+This is an application from REMS instance HGPP.
+
+#### Purpose
+
+We are going to take the test data and study it.
+
+#### Ethics
+
+Ethics form XYZ.
+
+#### Other DAC application details
+
+* Signed by A, B, C
+* Agreed to condition Y
+        `,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.DS,
         countriesInvolved: makeSingleCodeArray("urn:iso:std:iso:3166", "AUS"),
@@ -147,7 +164,6 @@ async function insertRelease1(settings: ElsaSettings) {
 
   const r2 = await e
     .insert(e.release.Release, {
-      created: e.datetime(new Date()),
       applicationDacTitle: "A Better Study of Limited Test Data",
       applicationDacIdentifier: "XYZ",
       applicationCoded: e.insert(e.release.ApplicationCoded, {
@@ -167,6 +183,26 @@ async function insertRelease1(settings: ElsaSettings) {
         findSpecimen("HG3"),
         findSpecimen("HG4")
       ),
+      manualExclusions: e.set(),
+    })
+    .run(edgeDbClient);
+
+  const r3 = await e
+    .insert(e.release.Release, {
+      applicationDacTitle: "An Invisible Study",
+      applicationDacIdentifier: "XYZ",
+      applicationCoded: e.insert(e.release.ApplicationCoded, {
+        studyType: ApplicationCodedStudyType.HMB,
+        countriesInvolved: makeEmptyCodeArray(),
+        diseasesOfStudy: makeEmptyCodeArray(),
+        institutesInvolved: makeEmptyCodeArray(),
+        studyAgreesToPublish: true,
+        studyIsNotCommercial: true,
+      }),
+      datasetUris: e.array([
+        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
+      ]),
+      selectedSpecimens: e.set(),
       manualExclusions: e.set(),
     })
     .run(edgeDbClient);

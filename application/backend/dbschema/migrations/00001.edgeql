@@ -1,4 +1,4 @@
-CREATE MIGRATION m1jlbllidb5lrklnrcofp4ypqiuiuf47uwitaeosd4q3lfktl6mpjq
+CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
     ONTO initial
 {
   CREATE MODULE consent IF NOT EXISTS;
@@ -64,9 +64,6 @@ CREATE MIGRATION m1jlbllidb5lrklnrcofp4ypqiuiuf47uwitaeosd4q3lfktl6mpjq
       CREATE REQUIRED PROPERTY size -> std::int64;
       CREATE REQUIRED PROPERTY url -> std::str;
   };
-  CREATE ABSTRACT TYPE release::ReleaseShareable {
-      CREATE LINK consent -> consent::Consent;
-  };
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation -> std::json;
   };
@@ -85,46 +82,9 @@ CREATE MIGRATION m1jlbllidb5lrklnrcofp4ypqiuiuf47uwitaeosd4q3lfktl6mpjq
       CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
       CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
   };
-  CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, failed, completed>;
-  CREATE ABSTRACT TYPE job::Job {
-      CREATE REQUIRED PROPERTY messages -> array<std::str>;
-      CREATE REQUIRED PROPERTY status -> job::JobStatus;
-  };
-  CREATE TYPE release::Release {
-      CREATE MULTI LINK manualExclusions -> dataset::DatasetShareable {
-          CREATE PROPERTY reason -> std::str;
-          CREATE PROPERTY recorded -> std::str;
-          CREATE PROPERTY who -> std::str;
-      };
-      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE  ALLOW;
-      };
-      CREATE OPTIONAL LINK runningJob -> job::Job {
-          ON TARGET DELETE  ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE REQUIRED LINK applicationCoded -> release::ApplicationCoded;
-      CREATE PROPERTY applicationDacDetails -> std::str;
-      CREATE PROPERTY applicationDacIdentifier -> std::str;
-      CREATE PROPERTY applicationDacTitle -> std::str;
-      CREATE REQUIRED PROPERTY created -> std::datetime {
-          SET default := (std::datetime_current());
-          SET readonly := true;
-      };
-      CREATE REQUIRED PROPERTY datasetUris -> array<std::str>;
-      CREATE PROPERTY releaseEnded -> std::datetime;
-      CREATE PROPERTY releaseIdentifier -> std::str;
-      CREATE PROPERTY releaseStarted -> std::datetime;
-  };
   CREATE TYPE permission::User {
       CREATE MULTI LINK datasetOwner -> dataset::Dataset {
           ON TARGET DELETE  ALLOW;
-      };
-      CREATE MULTI LINK releaseParticipant -> release::Release {
-          ON TARGET DELETE  ALLOW;
-          CREATE PROPERTY role -> std::str {
-              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
-          };
       };
       CREATE PROPERTY displayName -> std::str;
       CREATE REQUIRED PROPERTY subjectId -> std::str {
@@ -150,6 +110,24 @@ CREATE MIGRATION m1jlbllidb5lrklnrcofp4ypqiuiuf47uwitaeosd4q3lfktl6mpjq
   ALTER TYPE dataset::DatasetCase {
       CREATE OPTIONAL LINK pedigree := (pedigree::Pedigree);
   };
+  CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
+  CREATE ABSTRACT TYPE job::Job {
+      CREATE REQUIRED PROPERTY status -> job::JobStatus;
+      CREATE REQUIRED PROPERTY created -> std::datetime {
+          SET default := (std::datetime_current());
+          SET readonly := true;
+      };
+      CREATE OPTIONAL PROPERTY ended -> std::datetime;
+      CREATE REQUIRED PROPERTY messages -> array<std::str>;
+      CREATE REQUIRED PROPERTY percentDone -> std::int16 {
+          CREATE CONSTRAINT std::max_value(100);
+          CREATE CONSTRAINT std::min_value(0);
+      };
+      CREATE REQUIRED PROPERTY requestedCancellation -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY started -> std::datetime;
+  };
   CREATE TYPE job::SelectJob EXTENDING job::Job {
       CREATE MULTI LINK todoQueue -> dataset::DatasetCase {
           ON TARGET DELETE  ALLOW;
@@ -157,6 +135,41 @@ CREATE MIGRATION m1jlbllidb5lrklnrcofp4ypqiuiuf47uwitaeosd4q3lfktl6mpjq
       CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
           ON TARGET DELETE  ALLOW;
       };
+      CREATE REQUIRED PROPERTY initialTodoCount -> std::int32;
+  };
+  CREATE TYPE release::Release {
+      CREATE MULTI LINK manualExclusions -> dataset::DatasetShareable {
+          CREATE PROPERTY reason -> std::str;
+          CREATE PROPERTY recorded -> std::str;
+          CREATE PROPERTY who -> std::str;
+      };
+      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
+          ON TARGET DELETE  ALLOW;
+      };
+      CREATE REQUIRED LINK applicationCoded -> release::ApplicationCoded;
+      CREATE PROPERTY applicationDacDetails -> std::str;
+      CREATE PROPERTY applicationDacIdentifier -> std::str;
+      CREATE PROPERTY applicationDacTitle -> std::str;
+      CREATE REQUIRED PROPERTY created -> std::datetime {
+          SET default := (std::datetime_current());
+          SET readonly := true;
+      };
+      CREATE REQUIRED PROPERTY datasetUris -> array<std::str>;
+      CREATE PROPERTY releaseEnded -> std::datetime;
+      CREATE PROPERTY releaseIdentifier -> std::str;
+      CREATE PROPERTY releaseStarted -> std::datetime;
+  };
+  ALTER TYPE job::Job {
+      CREATE REQUIRED LINK forRelease -> release::Release {
+          ON TARGET DELETE  RESTRICT;
+      };
+  };
+  ALTER TYPE release::Release {
+      CREATE OPTIONAL LINK runningJob := (SELECT
+          .<forRelease[IS job::Job]
+      FILTER
+          (.status = job::JobStatus.running)
+      );
   };
   CREATE TYPE lab::Analyses {
       CREATE MULTI LINK input -> lab::ArtifactBase;
@@ -200,6 +213,14 @@ CREATE MIGRATION m1jlbllidb5lrklnrcofp4ypqiuiuf47uwitaeosd4q3lfktl6mpjq
       };
       CREATE PROPERTY platform -> std::str;
       CREATE PROPERTY runDate -> std::datetime;
+  };
+  ALTER TYPE permission::User {
+      CREATE MULTI LINK releaseParticipant -> release::Release {
+          ON TARGET DELETE  ALLOW;
+          CREATE PROPERTY role -> std::str {
+              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
+          };
+      };
   };
   CREATE TYPE release::AuditEvent {
       CREATE REQUIRED PROPERTY occurredDateTime -> std::datetime;

@@ -2,7 +2,7 @@ import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
 import { doBatchLookup } from "../../../helpers/ontology-helper";
 import { QueryFunctionContext } from "react-query";
-import { CodingType, ReleaseType } from "@umccr/elsa-types";
+import { CodingType, ReleaseDetailType } from "@umccr/elsa-types";
 
 export const REACT_QUERY_RELEASE_KEYS = {
   all: ["releases"] as const,
@@ -13,7 +13,7 @@ export const REACT_QUERY_RELEASE_KEYS = {
 };
 
 export async function makeReleaseTypeLocal(
-  releaseData: ReleaseType
+  releaseData: ReleaseDetailType
 ): Promise<ReleaseTypeLocal> {
   // the release data comes with only terminology *codes* - so we need to lookup
   // the display terms for the UI
@@ -37,6 +37,18 @@ export async function makeReleaseTypeLocal(
 
   return releaseData as ReleaseTypeLocal;
 }
+
+export const axiosPostNullMutationFn = (apiUrl: string) => (c: null) =>
+  axios
+    .post<ReleaseDetailType>(apiUrl, null)
+    .then((response) => makeReleaseTypeLocal(response.data));
+
+export const axiosPostArgMutationFn =
+  <T>(apiUrl: string) =>
+  (c: T) =>
+    axios
+      .post<ReleaseDetailType>(apiUrl, c)
+      .then((response) => makeReleaseTypeLocal(response.data));
 
 export async function specificReleaseQuery(context: QueryFunctionContext) {
   const rid = REACT_QUERY_RELEASE_KEYS.getReleaseId(context.queryKey);

@@ -10,7 +10,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import {
   DatasetGen3SyncRequestType,
   ReleaseRemsSyncRequestType,
-  ReleaseType,
+  ReleaseDetailType,
 } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
@@ -23,7 +23,7 @@ export const ReleasesPage: React.FC = () => {
     "releases",
     async () => {
       return await axios
-        .get<ReleaseType[]>(`/api/releases`)
+        .get<ReleaseDetailType[]>(`/api/releases`)
         .then((response) => response.data);
     },
     {}

@@ -3,9 +3,11 @@ import { registerReleaseRoutes } from "./routes/release";
 import { datasetRoutes } from "./routes/datasets";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
-import { usersService } from "../business/services/users";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import { currentPageSize } from "./api-pagination";
+import { container } from "tsyringe";
+import { AwsService } from "../business/services/aws-service";
+import { UsersService } from "../business/services/users-service";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -38,6 +40,8 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
  * @param opts
  */
 export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
+  const usersService = container.resolve(UsersService);
+
   // TODO place any unauthenticated routes first here
 
   // now register the auth hook and then register all the rest of our routes nested within

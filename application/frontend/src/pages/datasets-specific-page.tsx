@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "../components/boxes";
-import { DatasetDeepType, ReleaseType } from "@umccr/elsa-types";
+import { DatasetDeepType, ReleaseDetailType } from "@umccr/elsa-types";
 import { MyModal } from "../components/modals";
 import { LayoutBase } from "../layouts/layout-base";
 

@@ -35,11 +35,13 @@
     "react-cookie": "^4.1.1",
     "react-dom": "18.1.0",
     "react-hook-form": "^7.31.3",
+    "react-markdown": "^8.0.3",
     "react-query": "3.39.0",
     "react-router-dom": "6.3.0"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.2",
+    "@tailwindcss/typography": "^0.5.2",
     "@types/humanize-plus": "^1.8.0",
     "@types/lodash": "4.14.182",
     "@types/luxon": "2.3.2",

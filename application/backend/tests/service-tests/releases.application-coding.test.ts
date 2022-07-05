@@ -1,5 +1,5 @@
 import { Client, createClient } from "edgedb";
-import { releasesService } from "../../src/business/services/releases";
+import { releasesService } from "../../src/business/services/releases-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { findDatabaseRelease } from "./utils";
 import { beforeEachCommon } from "./releases.common";

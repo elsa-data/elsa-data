@@ -1,5 +1,5 @@
-import React, { PropsWithChildren } from "react";
-import { useQueryClient } from "react-query";
+import React, { PropsWithChildren, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "./shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";
@@ -8,20 +8,54 @@ import { RhFormWithSaveButton } from "../../../components/rh/rh-form-with-save-b
 import { RhInput } from "../../../components/rh/rh-input";
 import { RhSelect } from "../../../components/rh/rh-select";
 import { HrDiv, LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
+import axios from "axios";
+import { CodingType, ReleaseDetailType } from "@umccr/elsa-types";
+import {
+  axiosPostNullMutationFn,
+  makeReleaseTypeLocal,
+  REACT_QUERY_RELEASE_KEYS,
+} from "./queries";
+import { isUndefined } from "lodash";
 
 type Props = {
   releaseId: string;
   releaseData: ReleaseTypeLocal;
 };
 
-type FormValues = {
-  firstName: string;
-  lastName: string;
-  sex: string;
-};
-
 export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
+
+  // *only* when running a job in the background - we want to set up a polling loop of the backend
+  // so we set this effect up with a dependency on the runningJob field - and switch the
+  // interval on only when there is background job
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (releaseData.runningJob) {
+        console.log("Refreshing running job status");
+        queryClient.invalidateQueries(
+          REACT_QUERY_RELEASE_KEYS.detail(releaseId)
+        );
+      }
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [releaseData.runningJob]);
+
+  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
+    queryClient.setQueryData(
+      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      result
+    );
+  };
+
+  const applyAllMutate = useMutation(
+    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/select`)
+  );
+
+  const cancelMutate = useMutation(
+    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
+  );
 
   return (
     <Box heading="Bulk">
@@ -51,22 +85,59 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
             <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
               <div className="grid grid-cols-3 gap-6">
                 <div className="flex flex-col gap-6 col-span-3">
-                  <button className="btn-blue w-1/6 h-8">Apply All</button>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-base font-medium text-blue-700">
-                      Progress
-                    </span>
-                    <span className="text-sm font-medium text-blue-700">
-                      45%
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-blue-600 h-2.5 rounded-full"
-                      style={{ width: "45%" }}
-                    ></div>
-                  </div>
-                  <p>Error/status messages</p>
+                  <button
+                    className="btn-blue w-1/6 h-8 disabled:opacity-25"
+                    onClick={async () => {
+                      applyAllMutate.mutate(null, {
+                        onSuccess: afterMutateUpdateQueryData,
+                      });
+                    }}
+                    disabled={!isUndefined(releaseData.runningJob)}
+                  >
+                    Apply All
+                  </button>
+
+                  <button
+                    className="btn-blue w-1/6 h-8 disabled:opacity-25"
+                    onClick={async () => {
+                      cancelMutate.mutate(null, {
+                        onSuccess: afterMutateUpdateQueryData,
+                      });
+                    }}
+                    disabled={
+                      !releaseData.runningJob ||
+                      releaseData.runningJob.requestedCancellation
+                    }
+                  >
+                    Cancel
+                    {releaseData.runningJob?.requestedCancellation && (
+                      <span> (in progress)</span>
+                    )}
+                  </button>
+
+                  {releaseData.runningJob && (
+                    <>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-base font-medium text-blue-700">
+                          Running
+                        </span>
+                        <span className="text-sm font-medium text-blue-700">
+                          {releaseData.runningJob.percentDone.toString()}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className="bg-blue-600 h-2.5 rounded-full"
+                          style={{
+                            width:
+                              releaseData.runningJob.percentDone.toString() +
+                              "%",
+                          }}
+                        ></div>
+                      </div>
+                      <p></p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

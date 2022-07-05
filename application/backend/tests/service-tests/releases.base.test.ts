@@ -1,5 +1,5 @@
 import { Client, createClient } from "edgedb";
-import { releasesService } from "../../src/business/services/releases";
+import { releasesService } from "../../src/business/services/releases-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import {
@@ -11,7 +11,7 @@ import {
 import LinkHeader from "http-link-header";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
-import { releasesAwsService } from "../../src/business/services/releases-aws";
+import { releasesAwsService } from "../../src/business/services/aws-service";
 import { beforeEachCommon } from "./releases.common";
 
 let edgeDbClient: Client;

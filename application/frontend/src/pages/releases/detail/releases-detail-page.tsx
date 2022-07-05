@@ -10,6 +10,7 @@ import { ApplicationCodedBox } from "./application-coded-box";
 import { InformationBox } from "./information-box";
 import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
 import { BulkBox } from "./bulk-box";
+import { isUndefined } from "lodash";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -33,6 +34,8 @@ export const ReleasesDetailPage: React.FC = () => {
     queryFn: specificReleaseQuery,
   });
 
+  const isJobRunning: boolean = !isUndefined(releaseQuery?.data?.runningJob);
+
   return (
     <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
@@ -49,13 +52,29 @@ export const ReleasesDetailPage: React.FC = () => {
 
             <Box heading="Cases">
               <div className="shadow-md rounded-lg">
-                <CasesTable
-                  releaseId={releaseId}
-                  datasetMap={releaseQuery.data.datasetMap}
-                  isEditable={
-                    releaseQuery.data.permissionEditSelections || false
-                  }
-                />
+                {!isJobRunning && (
+                  <CasesTable
+                    releaseId={releaseId}
+                    datasetMap={releaseQuery.data.datasetMap}
+                    isEditable={
+                      releaseQuery.data.permissionEditSelections || false
+                    }
+                  />
+                )}
+                {isJobRunning && (
+                  <>
+                    <p>
+                      Case processing is happening in the background -
+                      cases/patients/specimens will be displayed once this
+                      processing is finished.
+                    </p>
+                    <ul className="h-12">
+                      {releaseQuery.data.runningJob!.messages.map((m) => (
+                        <li>{m}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
             </Box>
 

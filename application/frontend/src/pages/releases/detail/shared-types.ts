@@ -1,9 +1,9 @@
-import { ReleaseType } from "@umccr/elsa-types";
+import { ReleaseDetailType } from "@umccr/elsa-types";
 
 /**
  * We extend our API level ReleaseType with a map used
  * purely for UI
  */
-export type ReleaseTypeLocal = ReleaseType & {
+export type ReleaseTypeLocal = ReleaseDetailType & {
   datasetMap: Map<string, string>;
 };

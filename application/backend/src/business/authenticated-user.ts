@@ -14,6 +14,10 @@ export class AuthenticatedUser {
       );
   }
 
+  public get dbId(): string {
+    return this.dbUser!.id;
+  }
+
   public get subjectId(): string {
     return this.dbUser!.subjectId;
   }

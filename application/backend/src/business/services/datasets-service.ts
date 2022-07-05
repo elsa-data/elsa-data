@@ -1,10 +1,13 @@
-import * as edgedb from "edgedb";
-import e, { permission } from "../../../dbschema/edgeql-js";
+import { Client } from "edgedb";
+import e from "../../../dbschema/edgeql-js";
 import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
+import { inject, injectable, singleton } from "tsyringe";
 
-class DatasetsService {
-  private edgeDbClient = edgedb.createClient();
+@injectable()
+@singleton()
+export class DatasetsService {
+  constructor(@inject("Database") private readonly edgeDbClient: Client) {}
 
   /**
    * Returns a base edgedb query for our dataset info + counts/calcs. It *does not*
@@ -192,5 +195,3 @@ class DatasetsService {
     return pageCases;
   }
 }
-
-export const datasetsService = new DatasetsService();

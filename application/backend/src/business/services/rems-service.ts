@@ -1,9 +1,13 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../test-data/insert-test-data-helpers";
+import { inject, injectable, singleton } from "tsyringe";
+import { Client } from "edgedb";
 
-class RemsService {
-  private edgeDbClient = edgedb.createClient();
+@injectable()
+@singleton()
+export class RemsService {
+  constructor(@inject("Database") private edgeDbClient: Client) {}
 
   public async import(url: string) {
     throw new Error("not implemented");
@@ -171,5 +175,3 @@ Applicant: ${JSON.stringify(
     }
   }
 }
-
-export const remsService = new RemsService();

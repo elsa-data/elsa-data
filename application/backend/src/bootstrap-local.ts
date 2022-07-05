@@ -1,3 +1,6 @@
+// must be first and before any DI is used
+import "reflect-metadata";
+
 import { App } from "./app";
 import { getLocalSettings } from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
@@ -5,6 +8,11 @@ import { blankTestData } from "./test-data/blank-test-data";
 import archiver from "archiver";
 import archiverZipEncrypted from "archiver-zip-encrypted";
 import Bree from "bree";
+import { container } from "tsyringe";
+import { Client } from "edgedb";
+import * as edgedb from "edgedb";
+import { registerTypes } from "./bootstrap-container";
+import path from "path";
 
 console.log("Creating Fastify app");
 
@@ -21,14 +29,18 @@ console.log("Creating Fastify app");
 }
 
 const bree = new Bree({
+  root: path.resolve("src", "jobs"),
   jobs: [
     {
-      name: "short.ts",
-      timeout: "10s",
-      interval: "30s",
+      name: "select-job.ts",
+      timeout: "5s",
+      interval: "20s",
     },
   ],
 });
+
+// global settings for DI
+registerTypes();
 
 const start = async () => {
   console.log("Locating secrets/settings");

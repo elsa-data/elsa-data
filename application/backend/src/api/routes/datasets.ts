@@ -7,10 +7,15 @@ import {
 } from "@umccr/elsa-types";
 import { ElsaSettings } from "../../bootstrap-settings";
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
-import { datasetsService } from "../../business/services/datasets";
 import { currentPageSize } from "../api-pagination";
+import { container } from "tsyringe";
+import { AwsService } from "../../business/services/aws-service";
+import { DatasetsService } from "../../business/services/datasets-service";
+import { authenticatedRouteOnEntryHelper } from "../api-routes";
 
 export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
+  const datasetsService = container.resolve(DatasetsService);
+
   /**
    * Pageable fetching of top-level dataset information (summary level info)
    */
@@ -18,12 +23,14 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     "/api/datasets",
     {},
     async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
       const limit = currentPageSize(request);
 
       const offset = (request.query as any).offset || 0;
 
       const converted = await datasetsService.getAll(
-        { subjectId: "ss" },
+        authenticatedUser,
         limit,
         offset
       );
@@ -36,11 +43,13 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     "/api/datasets/:did",
     {},
     async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
       const elsaSettings: ElsaSettings = (request as any).settings;
 
       const datasetId = request.params.did;
 
-      const result = await datasetsService.get({ subjectId: "aa" }, datasetId);
+      const result = await datasetsService.get(authenticatedUser, datasetId);
 
       if (result) reply.send(result);
       else reply.status(403).send();

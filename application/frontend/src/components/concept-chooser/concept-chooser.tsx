@@ -49,7 +49,6 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
     props.selected.map((c) => {
       const newC: CodingType = { system: c.system, code: c.code };
       if (makeCacheEntry(c.system, c.code) in ontologyLookupCache) {
-        console.log("Found cache entry for " + c.code);
         newC.display = ontologyLookupCache[makeCacheEntry(c.system, c.code)];
       }
       return newC;

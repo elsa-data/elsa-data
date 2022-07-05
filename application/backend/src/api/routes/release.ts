@@ -4,57 +4,43 @@ import e from "../../../dbschema/edgeql-js";
 import {
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
-  ReleaseType,
+  ReleaseDetailType,
+  ReleaseSummaryType,
 } from "@umccr/elsa-types";
-import { releasesService } from "../../business/services/releases";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
 import { Readable, Stream } from "stream";
-import { releasesAwsService } from "../../business/services/releases-aws";
 import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
 import streamConsumers from "node:stream/consumers";
 import { Base7807Error } from "../errors/_error.types";
-
-const client = edgedb.createClient();
-
-function mapDbToApi(
-  dbObject: any,
-  editSelections?: boolean,
-  editApplicationCoded?: boolean
-): ReleaseType {
-  return {
-    id: dbObject.id,
-    datasetUris: dbObject.datasetUris,
-    applicationDacIdentifier: dbObject?.applicationDacIdentifier,
-    applicationDacTitle: dbObject?.applicationDacTitle,
-    applicationDacDetails: dbObject?.applicationDacDetails,
-    applicationCoded: {
-      diseases: [],
-      countriesInvolved: [],
-      type: "HMB",
-    },
-    permissionEditSelections: editSelections,
-    permissionEditApplicationCoded: editApplicationCoded,
-    permissionAccessData: false,
-  };
-}
+import { container } from "tsyringe";
+import { JobsService } from "../../business/services/jobs-service";
+import { AwsService } from "../../business/services/aws-service";
+import { ReleasesService } from "../../business/services/releases-service";
 
 export function registerReleaseRoutes(fastify: FastifyInstance) {
-  fastify.get<{ Reply: ReleaseType[] }>(
+  const jobsService = container.resolve(JobsService);
+  const awsService = container.resolve(AwsService);
+  const releasesService = container.resolve(ReleasesService);
+  const edgeDbClient = container.resolve<edgedb.Client>("Database");
+
+  fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/api/releases",
     {},
     async function (request, reply) {
-      const allForUser = await e
-        .select(e.release.Release, (r) => ({
-          ...e.release.Release["*"],
-        }))
-        .run(client);
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      reply.send(allForUser.map((dbObject) => mapDbToApi(dbObject)));
+      const allForUser = await releasesService.getAll(
+        authenticatedUser,
+        100,
+        0
+      );
+
+      reply.send(allForUser);
     }
   );
 
-  fastify.get<{ Params: { rid: string }; Reply: ReleaseType }>(
+  fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
     "/api/releases/:rid",
     {},
     async function (request, reply) {
@@ -129,6 +115,37 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       );
 
       reply.send("ok");
+    }
+  );
+
+  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
+    "/api/releases/:rid/jobs/select",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      reply.send(
+        await jobsService.startSelectJob(authenticatedUser, releaseId)
+      );
+    }
+  );
+
+  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
+    "/api/releases/:rid/jobs/cancel",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      reply.send(
+        await jobsService.cancelInProgressSelectJob(
+          authenticatedUser,
+          releaseId
+        )
+      );
     }
   );
 
@@ -236,7 +253,12 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     const releaseId = request.params.rid;
 
-    const awsFiles = await releasesAwsService.getPresigned(
+    if (!awsService.isEnabled)
+      throw new Error(
+        "The AWS service was not started so no AWS signing will work"
+      );
+
+    const awsFiles = await awsService.getPresigned(
       authenticatedUser,
       releaseId
     );

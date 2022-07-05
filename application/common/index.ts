@@ -4,16 +4,9 @@ import {
   DatasetGen3SyncResponseSchema,
   DatasetSchemaDeep,
   DatasetSchemaLight,
-  ReleaseApplicationCodedSchema,
   ReleaseAwsS3PresignRequestSchema,
   ReleaseAwsS3PresignResponseSchema,
-  ReleaseCaseSchema,
-  ReleaseDatasetSchema,
-  ReleaseNodeStatusSchema,
-  ReleasePatientSchema,
   ReleaseRemsSyncRequestSchema,
-  ReleaseSchema,
-  ReleaseSpecimenSchema,
 } from "./schemas";
 import {
   DuoLimitationCodedSchema,
@@ -22,12 +15,22 @@ import {
 } from "./schemas-duo";
 import { TestingRequestSchema } from "./schemas-testing";
 import { CodingSchema } from "./schemas-coding";
+import {
+  ReleaseApplicationCodedSchema,
+  ReleaseCaseSchema,
+  ReleaseNodeStatusSchema,
+  ReleasePatientSchema,
+  ReleaseDetailSchema,
+  ReleaseSpecimenSchema,
+  ReleaseSummarySchema,
+} from "./schemas-releases";
 
 export * from "./schemas";
 export * from "./schemas-duo";
 export * from "./schemas-testing";
 
-export type ReleaseType = Static<typeof ReleaseSchema>;
+export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
+export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
 
 export type DuoLimitationCodedType = Static<typeof DuoLimitationCodedSchema>;
 
@@ -64,7 +67,6 @@ export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
 export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
-export type ReleaseDatasetType = Static<typeof ReleaseDatasetSchema>;
 
 export type ReleaseAwsS3PresignRequestType = Static<
   typeof ReleaseAwsS3PresignRequestSchema

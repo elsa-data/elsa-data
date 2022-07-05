@@ -4,12 +4,14 @@ import {
   collapseExternalIds,
   doRoleInReleaseCheck,
   getReleaseInfo,
-} from "./releases-helper";
+} from "./helpers";
 import * as edgedb from "edgedb";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
 import { Client } from "edgedb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { inject, injectable, singleton } from "tsyringe";
+import { UsersService } from "./users-service";
 
 export type ReleaseAwsFileRecord = {
   caseId: string;
@@ -22,11 +24,15 @@ export type ReleaseAwsFileRecord = {
   md5: string;
 };
 
-class ReleasesAwsService {
-  private readonly edgeDbClient: Client;
+@injectable()
+@singleton()
+export class AwsService {
   private enabled: boolean;
 
-  constructor() {
+  constructor(
+    @inject("Database") private readonly edgeDbClient: Client,
+    private readonly usersService: UsersService
+  ) {
     // until we get proof our AWS commands have succeeded we assume this functionality is not available
     this.enabled = false;
 
@@ -37,7 +43,6 @@ class ReleasesAwsService {
         this.enabled = true;
       });
     } catch (e) {}
-    this.edgeDbClient = edgedb.createClient();
   }
 
   public get isEnabled(): boolean {
@@ -53,7 +58,11 @@ class ReleasesAwsService {
         "This service is not enabled due to lack of AWS credentials"
       );
 
-    const { userRole } = await doRoleInReleaseCheck(user, releaseId);
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const { releaseInfoQuery } = await getReleaseInfo(
       this.edgeDbClient,
@@ -152,5 +161,3 @@ class ReleasesAwsService {
     return rows;
   }
 }
-
-export const releasesAwsService = new ReleasesAwsService();

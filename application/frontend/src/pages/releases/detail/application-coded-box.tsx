@@ -4,13 +4,17 @@ import axios, { AxiosError } from "axios";
 import {
   CodingType,
   ReleaseApplicationCodedType,
-  ReleaseType,
+  ReleaseDetailType,
 } from "@umccr/elsa-types";
 import { MondoChooser } from "../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
 import { RhSelect } from "../../../components/rh/rh-select";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
-import { makeReleaseTypeLocal, REACT_QUERY_RELEASE_KEYS } from "./queries";
+import {
+  axiosPostArgMutationFn,
+  makeReleaseTypeLocal,
+  REACT_QUERY_RELEASE_KEYS,
+} from "./queries";
 import { ReleaseTypeLocal } from "./shared-types";
 
 type Props = {
@@ -43,27 +47,21 @@ export const ApplicationCodedBox: React.FC<Props> = ({
 
   // all of our coded application apis follow the same pattern - post new value to API and get
   // returned the updated release data - this generic mutator handles them all
-  const genericMutationFn =
-    <T,>(apiUrl: string) =>
-    (c: T) =>
-      axios
-        .post<ReleaseType>(apiUrl, c)
-        .then((response) => makeReleaseTypeLocal(response.data));
 
   const diseaseAddMutate = useMutation(
-    genericMutationFn<CodingType>(
+    axiosPostArgMutationFn<CodingType>(
       `/api/releases/${releaseId}/application-coded/diseases/add`
     )
   );
 
   const diseaseRemoveMutate = useMutation(
-    genericMutationFn<CodingType>(
+    axiosPostArgMutationFn<CodingType>(
       `/api/releases/${releaseId}/application-coded/diseases/remove`
     )
   );
 
   const typeSetMutate = useMutation(
-    genericMutationFn<{ type: string }>(
+    axiosPostArgMutationFn<{ type: string }>(
       `/api/releases/${releaseId}/application-coded/type/set`
     )
   );
@@ -124,11 +122,13 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   addToSelected={(c) =>
                     diseaseAddMutate.mutate(c, {
                       onSuccess: afterMutateUpdateQueryData,
+                      onError: afterMutateError,
                     })
                   }
                   removeFromSelected={(c) =>
                     diseaseRemoveMutate.mutate(c, {
                       onSuccess: afterMutateUpdateQueryData,
+                      onError: afterMutateError,
                     })
                   }
                   disabled={false}

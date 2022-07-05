@@ -1,7 +1,7 @@
 import e from "../../../dbschema/edgeql-js";
 import { Client } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
-import { usersService } from "./users";
+import { UsersService } from "./users-service";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate
@@ -18,10 +18,12 @@ export function collapseExternalIds(externals: any): string {
  * checks if the user has a role in the given release (and therefore also if the release
  * exists).
  *
+ * @param usersService
  * @param user
  * @param releaseId
  */
 export async function doRoleInReleaseCheck(
+  usersService: UsersService,
   user: AuthenticatedUser,
   releaseId: string
 ) {
@@ -99,6 +101,11 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
   // the set of all cases from the release
   const releaseAllDatasetCasesQuery = e.select(releaseAllDatasetQuery.cases);
 
+  // the count of all cases from the release
+  const releaseAllDatasetCasesCountyQuery = e.count(
+    releaseAllDatasetQuery.cases
+  );
+
   return {
     releaseQuery,
     releaseSelectedSpecimensQuery,
@@ -108,5 +115,6 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     releaseAllDatasetIdDbSet,
     releaseAllDatasetQuery,
     releaseAllDatasetCasesQuery,
+    releaseAllDatasetCasesCountyQuery,
   };
 }

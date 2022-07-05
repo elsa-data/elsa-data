@@ -24,6 +24,7 @@ module permission {
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release
             # (in general releases won't be deleted anyway)
+            #
             on target delete allow;
         }
 
