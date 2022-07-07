@@ -137,16 +137,6 @@ async function addS3MetadataToCloudTrailS3Logs(
       s3ObjectSize: objectSize,
     };
 
-    let downloadStatus: string;
-    if (temp.s3ObjectSize == temp.bytesTransferredOut) {
-      downloadStatus = "completed";
-    } else if (temp.bytesTransferredOut > 0) {
-      downloadStatus = "partial";
-    } else {
-      downloadStatus = "none";
-    }
-    temp["downloadStatus"] = downloadStatus;
-
     logsResult.push(temp);
   }
 
@@ -157,16 +147,6 @@ function sortString(a: logsType, b: logsType, column: string) {
   if (a[column] < b[column]) return -1;
   if (a[column] > b[column]) return 1;
   return 0;
-}
-
-function countDownloadStatus(logs: logsType[]) {
-  const count: Record<string, number> = {};
-  for (const log of logs) {
-    const { downloadStatus } = log;
-    count[downloadStatus] = count[downloadStatus] ?? 0;
-    count[downloadStatus] = count[downloadStatus] += 1;
-  }
-  return count;
 }
 
 function sumEgressBytes(logs: logsType[]) {
@@ -211,23 +191,25 @@ function displayStatsFromS3Logs(logsType: logsType[]) {
     result["lastIpRequest"] =
       lastEvent.sourceIPAddress; /* Ext: could use external API to search location */
     result["lastDownload"] = lastEvent.eventTime;
-    result["objectSizeBytes"] = lastEvent.objectSizeBytes;
+    result["objectSizeBytes"] = lastEvent.s3ObjectSize;
 
     // Total ObjectSize egress
     result["totalEgressBytes"] = sumEgressBytes(keyLogs);
 
-    resultStat.push(result);
-    // Total DownloadStatus Count
-    const downloadCount = countDownloadStatus(keyLogs);
-    for (const key in downloadCount) {
-      if (key == "completed") {
-        result["numberOfCompletedDownload"] = downloadCount[key];
-      } else if (key == "partial") {
-        result["numberOfPartialDownload"] = downloadCount[key];
-      } else if (key == "partial") {
-        result["numberOfFailedDownload"] = downloadCount[key];
-      }
+    // Download status
+    let downloadStatus: string;
+    if (result["totalEgressBytes"] == result["objectSizeBytes"]) {
+      downloadStatus = "completed";
+    } else if (result["totalEgressBytes"] < result["objectSizeBytes"]) {
+      downloadStatus = "incomplete";
+    } else if (result["totalEgressBytes"] > result["objectSizeBytes"]) {
+      downloadStatus = "multiple-download";
+    } else {
+      downloadStatus = "-";
     }
+    result["downloadStatus"] = downloadStatus;
+
+    resultStat.push(result);
   }
   console.log("Group by s3Keys");
   console.table(resultStat);
