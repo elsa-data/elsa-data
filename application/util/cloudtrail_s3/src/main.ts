@@ -38,17 +38,17 @@ async function requestS3CloudTrailLakeQuery(
     "element_at(requestParameters, 'key') as key, " +
     "element_at(additionalEventData, 'bytesTransferredOut') as bytesTransferredOut";
 
-  const sqlStatement =
+  let sqlStatement =
     `SELECT ${requestedField} FROM ${props.eventDataStoreId} ` +
     `WHERE userIdentity.accessKeyId='${props.awsAccessKeyId}' `;
 
   // Additional filter
   if (props.startTimestamp)
-    sqlStatement + `AND eventtime > '${props.startTimestamp}'`;
+    sqlStatement += `AND eventtime > '${props.startTimestamp}'`;
   if (props.endTimestamp)
-    sqlStatement + `AND eventtime < '${props.endTimestamp}'`;
+    sqlStatement += `AND eventtime < '${props.endTimestamp}'`;
   if (props.s3KeyObject)
-    sqlStatement +
+    sqlStatement +=
       `AND element_at(requestParameters, 'key') = '${props.s3KeyObject}'`;
 
   // Sending request to query
