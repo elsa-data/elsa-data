@@ -1,4 +1,3 @@
-import { fromIni } from "@aws-sdk/credential-providers";
 import { S3Client, HeadObjectCommand } from "@aws-sdk/client-s3";
 import {
   CloudTrailClient,
@@ -9,10 +8,7 @@ import {
 /**
  * AWS Client
  */
-const CONFIG = {
-  credentials: fromIni({ profile: process.env.AWS_PROFILE }),
-  region: "ap-southeast-2",
-};
+const CONFIG = {};
 const CLOUDTRAIL_CLIENT = new CloudTrailClient(CONFIG);
 const S3_CLIENT = new S3Client(CONFIG);
 
