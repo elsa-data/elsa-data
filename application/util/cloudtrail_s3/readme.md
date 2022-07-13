@@ -22,3 +22,16 @@ To run
 ```
 npm run run_main
 ```
+
+# Infrastructure
+
+In order to run the query, CloudTrail Lake should be deployed into the AWS account to listen any get event from AWS S3. There is a cdk in the `infrastructure` folder to deploy the CloudTrail events based on the give S3 ARN. This will store S3 event at cloudTrail lake for 7 years.
+
+At the `infrastructure/bin/infrastructure.ts` configure/replace bucketArn with the prefix to the data. (e.g. `arn:aws:s3:::example/store/`)
+
+Deploy it by 
+```bash
+npm run cdk-deploy
+```
+
+Take note of the ARN given out from deploy
