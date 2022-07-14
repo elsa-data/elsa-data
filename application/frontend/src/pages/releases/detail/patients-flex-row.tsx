@@ -41,10 +41,12 @@ export const PatientsFlexRow: React.FC<Props> = ({
     let patientIcon = <FontAwesomeIcon icon={faQuestion} />;
     let patientClasses = [
       "p-2",
-      "border-gray-500",
       "border",
+      "border-gray-400",
       "flex",
-      "justify-between",
+      "flex-col",
+      "lg:flex-row",
+      "lg:justify-between",
     ];
 
     if (patient.sexAtBirth === "male") {
@@ -55,32 +57,6 @@ export const PatientsFlexRow: React.FC<Props> = ({
       patientClasses.push("rounded-xl");
     }
 
-    // if we have a specimen then there is no benefit to displaying two levels here - we can merge
-    // into one combined patient/specimen
-    if (patient.specimens.length === 1) {
-      const specimen = patient.specimens[0];
-      return (
-        <div className={classNames(...patientClasses)}>
-          <span>
-            {patientIcon}/<FontAwesomeIcon icon={faDna} /> {patient.externalId}/
-            {specimen.externalId}
-          </span>
-          {showCheckboxes && (
-            <input
-              type="checkbox"
-              className="ml-2"
-              checked={specimen.nodeStatus == "selected"}
-              onChange={async (ce) =>
-                ce.target.checked
-                  ? await onSelectChange(specimen.id)
-                  : await onUnselectChange(specimen.id)
-              }
-            />
-          )}
-        </div>
-      );
-    }
-
     return (
       <div className={classNames(...patientClasses)}>
         <span>
@@ -88,21 +64,24 @@ export const PatientsFlexRow: React.FC<Props> = ({
         </span>
         <ul key={patient.id}>
           {patient.specimens.map((spec) => (
-            <li key={spec.id}>
-              <FontAwesomeIcon icon={faDna} />
-              {spec.externalId}
+            <li key={spec.id} className="text-left lg:text-right">
+              <FontAwesomeIcon icon={faDna} />{" "}
               {showCheckboxes && (
-                <input
-                  type="checkbox"
-                  className="ml-2"
-                  checked={spec.nodeStatus == "selected"}
-                  onChange={async (ce) =>
-                    ce.target.checked
-                      ? await onSelectChange(spec.id)
-                      : await onUnselectChange(spec.id)
-                  }
-                />
+                <label>
+                  {spec.externalId}
+                  <input
+                    type="checkbox"
+                    className="ml-2"
+                    checked={spec.nodeStatus == "selected"}
+                    onChange={async (ce) =>
+                      ce.target.checked
+                        ? await onSelectChange(spec.id)
+                        : await onUnselectChange(spec.id)
+                    }
+                  />
+                </label>
               )}
+              {!showCheckboxes && <span>{spec.externalId}</span>}
             </li>
           ))}
         </ul>

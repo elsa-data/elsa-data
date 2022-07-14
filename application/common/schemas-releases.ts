@@ -34,10 +34,14 @@ export const ReleaseRunningJobSchema = Type.Object({
 export const ReleaseSummarySchema = Type.Object({
   id: Type.String(),
 
-  applicationDacTitle: Type.Optional(Type.String()),
+  applicationDacIdentifier: Type.String(),
+  applicationDacTitle: Type.String(),
 
   // if a job is running then this is the percent it is complete
   isRunningJobPercentDone: Type.Optional(Type.Number()),
+
+  // once we get @role link properties working we should enable this
+  // roleInRelease: Type.String(),
 });
 
 export const ReleaseDetailSchema = Type.Object({

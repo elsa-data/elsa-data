@@ -14,7 +14,6 @@ import {
   DuoModifierSchema,
 } from "./schemas-duo";
 import { TestingRequestSchema } from "./schemas-testing";
-import { CodingSchema } from "./schemas-coding";
 import {
   ReleaseApplicationCodedSchema,
   ReleaseCaseSchema,
@@ -27,6 +26,7 @@ import {
 
 export * from "./schemas";
 export * from "./schemas-duo";
+export * from "./schemas-coding";
 export * from "./schemas-testing";
 
 export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
@@ -43,8 +43,6 @@ export type DuoModifierType = Static<typeof DuoModifierSchema>;
 export type ReleaseApplicationCodedType = Static<
   typeof ReleaseApplicationCodedSchema
 >;
-
-export type CodingType = Static<typeof CodingSchema>;
 
 export type DatasetLightType = Static<typeof DatasetSchemaLight>;
 export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;

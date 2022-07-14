@@ -11,7 +11,7 @@ import {
 import LinkHeader from "http-link-header";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
-import { releasesAwsService } from "../../src/business/services/aws-service";
+import { releasesAwsService } from "../../src/business/services/aws-base-service";
 import { beforeEachCommon } from "./releases.common";
 import { jobsService } from "../../src/business/services/jobs-service";
 

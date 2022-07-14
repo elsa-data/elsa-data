@@ -9,7 +9,7 @@ import { ElsaSettings } from "../../bootstrap-settings";
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
 import { currentPageSize } from "../api-pagination";
 import { container } from "tsyringe";
-import { AwsService } from "../../business/services/aws-service";
+import { AwsBaseService } from "../../business/services/aws-base-service";
 import { DatasetsService } from "../../business/services/datasets-service";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
 

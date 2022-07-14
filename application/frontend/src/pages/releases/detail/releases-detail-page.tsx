@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
-import { Box } from "../../../components/boxes";
+import { Box, BoxNoPad } from "../../../components/boxes";
 import { LayoutBase } from "../../../layouts/layout-base";
 import { CasesTable } from "./cases-table";
 import { VerticalTabs } from "../../../components/vertical-tabs";
@@ -11,6 +11,8 @@ import { InformationBox } from "./information-box";
 import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
 import { BulkBox } from "./bulk-box";
 import { isUndefined } from "lodash";
+import { FutherRestrictionsBox } from "./further-restrictions-box";
+import axios from "axios";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -50,39 +52,48 @@ export const ReleasesDetailPage: React.FC = () => {
               <BulkBox releaseId={releaseId} releaseData={releaseQuery.data} />
             )}
 
-            <Box heading="Cases">
-              <div className="shadow-md rounded-lg">
-                {!isJobRunning && (
-                  <CasesTable
-                    releaseId={releaseId}
-                    datasetMap={releaseQuery.data.datasetMap}
-                    isEditable={
-                      releaseQuery.data.permissionEditSelections || false
-                    }
-                  />
-                )}
-                {isJobRunning && (
-                  <>
-                    <p>
-                      Case processing is happening in the background -
-                      cases/patients/specimens will be displayed once this
-                      processing is finished.
-                    </p>
-                    <ul className="h-12">
-                      {releaseQuery.data.runningJob!.messages.map((m) => (
-                        <li>{m}</li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </div>
-            </Box>
+            <BoxNoPad heading="Cases">
+              {!isJobRunning && (
+                <CasesTable
+                  releaseId={releaseId}
+                  datasetMap={releaseQuery.data.datasetMap}
+                  isEditable={
+                    releaseQuery.data.permissionEditSelections || false
+                  }
+                />
+              )}
+              {isJobRunning && (
+                <>
+                  <p>
+                    Case processing is happening in the background -
+                    cases/patients/specimens will be displayed once this
+                    processing is finished.
+                  </p>
+                  <ul className="h-12">
+                    {releaseQuery.data.runningJob!.messages.map((m) => (
+                      <li>{m}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </BoxNoPad>
+
+            {releaseQuery.data.permissionEditSelections && (
+              <FutherRestrictionsBox
+                releaseId={releaseId}
+                releaseData={releaseQuery.data}
+              />
+            )}
 
             <Box heading="Access Data">
               <div className="flex">
                 <VerticalTabs tabs={["AWS S3 PreSigned", "htsget"]}>
                   <AwsS3PresignedForm releaseId={releaseId} />
-                  <form>
+                  <form
+                    onSubmit={() =>
+                      axios.post(`/api/releases/${releaseId}/cfn`)
+                    }
+                  >
                     <input type="submit" className="btn-blue w-60" />
                   </form>
                 </VerticalTabs>

@@ -1,11 +1,11 @@
-import * as edgedb from "edgedb";
-import e, { dataset, release } from "../../../dbschema/edgeql-js";
+import { Client } from "edgedb";
+import e, { dataset } from "../../../dbschema/edgeql-js";
 import {
   ReleaseCaseType,
+  ReleaseDetailType,
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
-  ReleaseDetailType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
@@ -17,9 +17,7 @@ import {
   getReleaseInfo,
 } from "./helpers";
 import { inject, injectable, singleton } from "tsyringe";
-import { Client } from "edgedb";
 import { UsersService } from "./users-service";
-import { SelectService } from "./select-service";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -55,13 +53,13 @@ export class ReleasesService {
       }))
       .run(this.edgeDbClient);
 
-    console.log(JSON.stringify(allForUser));
-
     return allForUser
       .filter((a) => a.userRoles != null)
       .map((a) => ({
         id: a.id,
         datasetUris: a.datasetUris,
+        applicationDacIdentifier:
+          a?.applicationDacIdentifier ?? "<unidentified>",
         applicationDacTitle: a?.applicationDacTitle ?? "<untitled>",
         isRunningJobPercentDone: undefined,
       }));
@@ -101,8 +99,8 @@ export class ReleasesService {
   public async getCases(
     user: AuthenticatedUser,
     releaseId: string,
-    limit?: number,
-    offset?: number
+    limit: number,
+    offset: number
   ): Promise<PagedResult<ReleaseCaseType> | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
@@ -263,8 +261,7 @@ export class ReleasesService {
         createCaseMap(pc as unknown as dataset.DatasetCase)
       ),
       casesCount,
-      limit,
-      offset
+      limit
     );
   }
 

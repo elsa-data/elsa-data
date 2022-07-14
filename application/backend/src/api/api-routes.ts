@@ -6,7 +6,7 @@ import { ElsaSettings } from "../bootstrap-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import { currentPageSize } from "./api-pagination";
 import { container } from "tsyringe";
-import { AwsService } from "../business/services/aws-service";
+import { AwsBaseService } from "../business/services/aws-base-service";
 import { UsersService } from "../business/services/users-service";
 
 type Opts = {

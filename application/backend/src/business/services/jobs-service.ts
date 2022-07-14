@@ -10,6 +10,7 @@ import { differenceInSeconds } from "date-fns";
 import { SelectService } from "./select-service";
 import { ReleasesService } from "./releases-service";
 import { UsersService } from "./users-service";
+import { Transaction } from "edgedb/dist/transaction";
 
 class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseId: string) {
@@ -30,6 +31,41 @@ export class JobsService {
     private releasesService: ReleasesService,
     private selectService: SelectService
   ) {}
+
+  private async startGenericJob(
+    releaseId: string,
+    finalJobStartStep: (tx: Transaction) => Promise<void>
+  ) {
+    await this.edgeDbClient.transaction(async (tx) => {
+      // we do not use the 'exclusive constraint's of edgedb because we want to
+      // retain the link to the release - but with the constraint there is
+      // only one *running* job per release - and exclusive constraints cannot have filters
+
+      // so we need to check here inside a transaction to make sure that this
+      // is the only running job for this release
+      const oldJob = await e
+        .select(e.job.Job, (j) => ({
+          id: true,
+          filter: e.op(
+            e.op(j.status, "=", e.job.JobStatus.running),
+            "and",
+            e.op(j.forRelease.id, "=", e.uuid(releaseId))
+          ),
+        }))
+        .run(tx);
+
+      if (oldJob && oldJob.length > 0)
+        throw new Base7807Error(
+          "Only one running job is allowed per release",
+          400,
+          `Job with id(s) ${oldJob
+            .map((oj) => oj.id)
+            .join(" ")} have been found in the running state`
+        );
+
+      await finalJobStartStep(tx);
+    });
+  }
 
   /**
    * For a given release, start a background job identifying/selecting cases/patients/specimens
@@ -58,35 +94,9 @@ export class JobsService {
       releaseAllDatasetCasesCountyQuery,
     } = await getReleaseInfo(this.edgeDbClient, releaseId);
 
-    await this.edgeDbClient.transaction(async (tx) => {
-      // we do not use the 'exclusive constraint's of edgedb because we want to
-      // retain the link to the release - but with the constraint there is
-      // only one *running* job per release - and exlusive contraints cannot have filters
-
-      // so we need to check here inside a transaction to make sure that this
-      // is the only running job for this release
-      const oldJob = await e
-        .select(e.job.Job, (j) => ({
-          id: true,
-          filter: e.op(
-            e.op(j.status, "=", e.job.JobStatus.running),
-            "and",
-            e.op(j.forRelease.id, "=", e.uuid(releaseId))
-          ),
-        }))
-        .run(tx);
-
-      if (oldJob && oldJob.length > 0)
-        throw new Base7807Error(
-          "Only one running job is allowed per release",
-          400,
-          `Job with id(s) ${oldJob
-            .map((oj) => oj.id)
-            .join(" ")} have been found in the running state`
-        );
-
-      // create a new job
-      const newJob = await e
+    await this.startGenericJob(releaseId, async (tx) => {
+      // create a new select job entry
+      await e
         .insert(e.job.SelectJob, {
           forRelease: releaseQuery,
           status: e.job.JobStatus.running,
