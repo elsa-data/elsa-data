@@ -4,7 +4,7 @@ import {
   doRoleInReleaseCheck,
   getReleaseInfo,
 } from "./helpers";
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
@@ -33,7 +33,7 @@ export abstract class AwsBaseService {
   private enabled: boolean;
 
   protected constructor(
-    protected readonly edgeDbClient: Client,
+    protected readonly edgeDbClient: edgedb.Client,
     protected readonly usersService: UsersService
   ) {
     // until we get proof our AWS commands have succeeded we assume AWS functionality is not available

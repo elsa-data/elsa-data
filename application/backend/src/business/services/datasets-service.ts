@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
@@ -7,7 +7,9 @@ import { inject, injectable, singleton } from "tsyringe";
 @injectable()
 @singleton()
 export class DatasetsService {
-  constructor(@inject("Database") private readonly edgeDbClient: Client) {}
+  constructor(
+    @inject("Database") private readonly edgeDbClient: edgedb.Client
+  ) {}
 
   /**
    * Returns a base edgedb query for our dataset info + counts/calcs. It *does not*

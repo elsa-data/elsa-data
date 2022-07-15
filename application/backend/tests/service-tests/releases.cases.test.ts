@@ -1,5 +1,3 @@
-import { Client, createClient } from "edgedb";
-import { releasesService } from "../../src/business/services/releases-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import {
@@ -8,27 +6,32 @@ import {
   findPatient,
   findSpecimen,
 } from "./utils";
-import LinkHeader from "http-link-header";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
-import { releasesAwsService } from "../../src/business/services/aws-base-service";
 import { beforeEachCommon } from "./releases.common";
+import { registerTypes } from "./setup";
+import { ReleasesService } from "../../src/business/services/releases-service";
+import { Client } from "edgedb";
 
-let edgeDbClient: Client;
+const testContainer = registerTypes();
+
+const edgeDbClient = testContainer.resolve<Client>("Database");
+const releasesService = testContainer.resolve(ReleasesService);
+
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
+const DEFAULT_LIMIT = 10000;
+const DEFAULT_OFFSET = 0;
+
 beforeEach(async () => {
-  ({
-    edgeDbClient,
-    testReleaseId,
-    allowedDataOwnerUser,
-    allowedPiUser,
-    notAllowedUser,
-  } = await beforeEachCommon());
+  testContainer.clearInstances();
+
+  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+    await beforeEachCommon());
 });
 
 /**
@@ -37,7 +40,9 @@ beforeEach(async () => {
 it("get all case level information from a release as a data owner", async () => {
   const pagedResult = await releasesService.getCases(
     allowedDataOwnerUser,
-    testReleaseId
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET
   );
 
   expect(pagedResult).not.toBeNull();
@@ -64,7 +69,9 @@ it("get all case level information from a release as a data owner", async () => 
 it("get limited case level information from a release as a PI", async () => {
   const pagedResult = await releasesService.getCases(
     allowedPiUser,
-    testReleaseId
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET
   );
 
   expect(pagedResult).not.toBeNull();
@@ -94,7 +101,9 @@ it("get limited case level information from a release as a PI", async () => {
 it("get patient/specimen level data fields", async () => {
   const pagedResult = await releasesService.getCases(
     allowedDataOwnerUser,
-    testReleaseId
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET
   );
 
   expect(pagedResult).not.toBeNull();
@@ -117,7 +126,9 @@ it("node status changes as leaves are selected and unselected", async () => {
   {
     const initialResult = await releasesService.getCases(
       allowedDataOwnerUser,
-      testReleaseId
+      testReleaseId,
+      DEFAULT_LIMIT,
+      DEFAULT_OFFSET
     );
 
     assert(initialResult != null);
@@ -157,7 +168,9 @@ it("node status changes as leaves are selected and unselected", async () => {
   {
     const afterSetResult = await releasesService.getCases(
       allowedDataOwnerUser,
-      testReleaseId
+      testReleaseId,
+      DEFAULT_LIMIT,
+      DEFAULT_OFFSET
     );
 
     expect(afterSetResult).not.toBeNull();
@@ -199,7 +212,9 @@ it("node status changes as leaves are selected and unselected", async () => {
   {
     const afterUnsetResult = await releasesService.getCases(
       allowedDataOwnerUser,
-      testReleaseId
+      testReleaseId,
+      DEFAULT_LIMIT,
+      DEFAULT_OFFSET
     );
 
     expect(afterUnsetResult).not.toBeNull();
@@ -248,24 +263,29 @@ it("test paging", async () => {
   const limit = 3;
 
   let result: PagedResult<ReleaseCaseType> | null = null;
+  let page = 0;
 
   do {
+    page += 1;
+
     result = await releasesService.getCases(
       allowedDataOwnerUser,
       testReleaseId,
       limit,
-      result ? result.next : 0
+      (page - 1) * limit
     );
 
     expect(result).not.toBeNull();
     assert(result != null);
 
     expect(result.total).toBe(14);
+    expect(result.first).toBe(1);
+    expect(result.last).toBe(6);
 
     for (const c of result.data) {
       allCasesFound.push(c.id);
     }
-  } while (result && result.next);
+  } while (result && page <= result.last);
 
   // 10 cases from 10g and 4 cases from 10f
   expect(allCasesFound.length).toBe(14);

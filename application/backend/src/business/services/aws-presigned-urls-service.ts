@@ -1,14 +1,7 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import {
-  collapseExternalIds,
-  doRoleInReleaseCheck,
-  getReleaseInfo,
-} from "./helpers";
-import * as edgedb from "edgedb";
-import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
@@ -19,7 +12,7 @@ import { all } from "edgedb/dist/reflection/builders";
 @singleton()
 export class AwsPresignedUrlsService extends AwsBaseService {
   constructor(
-    @inject("Database") edgeDbClient: Client,
+    @inject("Database") edgeDbClient: edgedb.Client,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);

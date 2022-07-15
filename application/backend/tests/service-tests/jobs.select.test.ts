@@ -1,38 +1,32 @@
-import { Client, createClient } from "edgedb";
-import { releasesService } from "../../src/business/services/releases-service";
+import { Client } from "edgedb";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import assert from "assert";
-import {
-  findCase,
-  findDatabaseSpecimenIds,
-  findPatient,
-  findSpecimen,
-} from "./utils";
-import LinkHeader from "http-link-header";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
-import { releasesAwsService } from "../../src/business/services/aws-base-service";
 import { beforeEachCommon } from "./releases.common";
-import { jobsService } from "../../src/business/services/jobs-service";
+import { registerTypes } from "./setup";
+import { ReleasesService } from "../../src/business/services/releases-service";
+import { JobsService } from "../../src/business/services/jobs-service";
 
-let edgeDbClient: Client;
+const testContainer = registerTypes();
+
+const releasesService = testContainer.resolve(ReleasesService);
+const jobsService = testContainer.resolve(JobsService);
+const edgeDbClient = testContainer.resolve<Client>("Database");
+
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
+const DEFAULT_ROUGH_SECONDS = 10;
+
 // because our 'select' job has a fake sleep in it - this tests runs long
 jest.setTimeout(60000);
 
 beforeEach(async () => {
-  ({
-    edgeDbClient,
-    testReleaseId,
-    allowedDataOwnerUser,
-    allowedPiUser,
-    notAllowedUser,
-  } = await beforeEachCommon());
+  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+    await beforeEachCommon());
 });
 
 /**
@@ -48,7 +42,7 @@ it("jobs", async () => {
 
   for (const j of await jobsService.getInProgressSelectJobs()) {
     console.log(`Rnd 1 found ${j}`);
-    console.log(await jobsService.doSelectJobWork(j.id));
+    console.log(await jobsService.doSelectJobWork(j.id, DEFAULT_ROUGH_SECONDS));
   }
 
   for (const j of await jobsService.getInProgressSelectJobs()) {

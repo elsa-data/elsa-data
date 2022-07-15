@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import e, { dataset } from "../../../dbschema/edgeql-js";
 import {
   ReleaseCaseType,
@@ -24,10 +24,9 @@ import { UsersService } from "./users-service";
 type CodeArrayFields = "diseases" | "countries" | "type";
 
 @injectable()
-@singleton()
 export class ReleasesService {
   constructor(
-    @inject("Database") private edgeDbClient: Client,
+    @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService
   ) {}
 
@@ -81,6 +80,13 @@ export class ReleasesService {
       releaseId
     );
 
+    const {
+      releaseQuery,
+      releaseInfoQuery,
+      releaseSelectedSpecimensQuery,
+      datasetUriToIdMap,
+    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+
     return this.getBase(releaseId, userRole);
   }
 
@@ -109,9 +115,9 @@ export class ReleasesService {
     );
 
     const {
-      releaseQuery,
-      releaseInfoQuery,
+      releaseAllDatasetCasesQuery,
       releaseSelectedSpecimensQuery,
+      releaseSelectedCasesQuery,
       datasetUriToIdMap,
     } = await getReleaseInfo(this.edgeDbClient, releaseId);
 
@@ -177,25 +183,10 @@ export class ReleasesService {
 
     if (!pageCases) return null;
 
-    // basically the identical query as above but without limit/offset and counting the
-    // total
-    const caseCountQuery = e.count(
-      e.select(e.dataset.DatasetCase, (dsc) => ({
-        ...e.dataset.DatasetCase["*"],
-        dataset: {
-          ...e.dataset.Dataset["*"],
-        },
-        patients: {
-          ...e.dataset.DatasetPatient["*"],
-          specimens: {
-            ...e.dataset.DatasetSpecimen["*"],
-          },
-        },
-        filter: makeFilter(dsc),
-      }))
-    );
-
-    const casesCount = await caseCountQuery.run(this.edgeDbClient);
+    const casesCount =
+      userRole === "DataOwner"
+        ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
+        : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
 
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
@@ -440,55 +431,54 @@ export class ReleasesService {
     releaseId: string,
     userRole: string
   ): Promise<ReleaseDetailType> {
-    const thisRelease = await e
-      .select(e.release.Release, (r) => ({
-        ...e.release.Release["*"],
-        applicationCoded: {
-          ...e.release.ApplicationCoded["*"],
-        },
-        runningJob: {
-          ...e.job.Job["*"],
-        },
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
-      }))
-      .assert_single()
-      .run(this.edgeDbClient);
+    const {
+      releaseInfo,
+      releaseAllDatasetCasesQuery,
+      releaseSelectedCasesQuery,
+    } = await getReleaseInfo(this.edgeDbClient, releaseId);
 
-    if (!thisRelease)
+    if (!releaseInfo)
       throw new Error(
-        "getPreAuthorised is meant for use only where the release and user role are already established"
+        "getBase is meant for use only where the release and user role are already established"
       );
 
-    const hasRunningJob =
-      thisRelease.runningJob && thisRelease.runningJob.length === 1;
+    // the visible cases depend on what roles you have
+    const visibleCasesCount =
+      userRole === "DataOwner"
+        ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
+        : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
 
-    if (thisRelease.runningJob && thisRelease.runningJob.length > 1)
+    const hasRunningJob =
+      releaseInfo.runningJob && releaseInfo.runningJob.length === 1;
+
+    if (releaseInfo.runningJob && releaseInfo.runningJob.length > 1)
       throw new Error(
         "There should only be one running job (if any job is running)"
       );
 
     return {
-      id: thisRelease.id,
-      datasetUris: thisRelease.datasetUris,
-      applicationDacDetails: thisRelease.applicationDacDetails!,
-      applicationDacIdentifier: thisRelease.applicationDacIdentifier!,
-      applicationDacTitle: thisRelease.applicationDacTitle!,
+      id: releaseInfo.id,
+      datasetUris: releaseInfo.datasetUris,
+      applicationDacDetails: releaseInfo.applicationDacDetails!,
+      applicationDacIdentifier: releaseInfo.applicationDacIdentifier!,
+      applicationDacTitle: releaseInfo.applicationDacTitle!,
       applicationCoded: {
-        type: thisRelease.applicationCoded.studyType,
-        diseases: thisRelease.applicationCoded.diseasesOfStudy,
-        countriesInvolved: thisRelease.applicationCoded.countriesInvolved,
+        type: releaseInfo.applicationCoded.studyType,
+        diseases: releaseInfo.applicationCoded.diseasesOfStudy,
+        countriesInvolved: releaseInfo.applicationCoded.countriesInvolved,
       },
       runningJob: hasRunningJob
         ? {
-            percentDone: thisRelease.runningJob[0].percentDone,
-            messages: thisRelease.runningJob[0].messages,
+            percentDone: releaseInfo.runningJob[0].percentDone,
+            messages: releaseInfo.runningJob[0].messages,
             requestedCancellation:
-              thisRelease.runningJob[0].requestedCancellation,
+              releaseInfo.runningJob[0].requestedCancellation,
           }
         : undefined,
+      visibleCasesCount: visibleCasesCount,
       // data owners can code/edit the release information
-      permissionEditApplicationCoded: userRole === "DataOwner",
       permissionEditSelections: userRole === "DataOwner",
+      permissionEditApplicationCoded: userRole === "DataOwner",
       // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
       permissionAccessData: userRole !== "DataOwner",
     };

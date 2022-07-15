@@ -53,6 +53,10 @@ export const ReleaseDetailSchema = Type.Object({
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
 
+  // the number of cases visible to whoever makes this call - for data owners this will always
+  // be *all* cases, for others it will only be those available to them
+  visibleCasesCount: Type.Integer(),
+
   applicationCoded: ReleaseApplicationCodedSchema,
 
   runningJob: Type.Optional(ReleaseRunningJobSchema),
@@ -60,6 +64,9 @@ export const ReleaseDetailSchema = Type.Object({
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
   permissionAccessData: Type.Optional(Type.Boolean()),
+
+  // once we get @role link properties working we should enable this
+  // roleInRelease: Type.String(),
 });
 
 type IntoStringUnion<T> = {

@@ -1,10 +1,15 @@
 import { Client, createClient } from "edgedb";
-import { releasesService } from "../../src/business/services/releases-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { findDatabaseRelease } from "./utils";
 import { beforeEachCommon } from "./releases.common";
+import { registerTypes } from "./setup";
+import { ReleasesService } from "../../src/business/services/releases-service";
 
-let edgeDbClient: Client;
+const testContainer = registerTypes();
+
+const releasesService = testContainer.resolve(ReleasesService);
+const edgeDbClient = testContainer.resolve<Client>("Database");
+
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
@@ -12,13 +17,10 @@ let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 beforeEach(async () => {
-  ({
-    edgeDbClient,
-    testReleaseId,
-    allowedDataOwnerUser,
-    allowedPiUser,
-    notAllowedUser,
-  } = await beforeEachCommon());
+  testContainer.clearInstances();
+
+  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+    await beforeEachCommon());
 });
 
 it("basic add/remove of diseases from coded application", async () => {

@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
 import { randomBytes } from "crypto";
@@ -25,7 +25,7 @@ export class AwsAccessPointService extends AwsBaseService {
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
-    @inject("Database") edgeDbClient: Client,
+    @inject("Database") edgeDbClient: edgedb.Client,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);

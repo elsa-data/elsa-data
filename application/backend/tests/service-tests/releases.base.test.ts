@@ -1,20 +1,16 @@
-import { Client, createClient } from "edgedb";
-import { releasesService } from "../../src/business/services/releases-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
-import {
-  findCase,
-  findDatabaseSpecimenIds,
-  findPatient,
-  findSpecimen,
-} from "./utils";
 import LinkHeader from "http-link-header";
-import { ReleaseCaseType } from "@umccr/elsa-types";
-import { PagedResult } from "../../src/api/api-pagination";
-import { releasesAwsService } from "../../src/business/services/aws-base-service";
 import { beforeEachCommon } from "./releases.common";
+import { ReleasesService } from "../../src/business/services/releases-service";
+import { AwsPresignedUrlsService } from "../../src/business/services/aws-presigned-urls-service";
+import { registerTypes } from "./setup";
 
-let edgeDbClient: Client;
+const testContainer = registerTypes();
+
+const releasesService = testContainer.resolve(ReleasesService);
+const awsPresignedUrlsService = testContainer.resolve(AwsPresignedUrlsService);
+
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
@@ -22,13 +18,10 @@ let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 beforeEach(async () => {
-  ({
-    edgeDbClient,
-    testReleaseId,
-    allowedDataOwnerUser,
-    allowedPiUser,
-    notAllowedUser,
-  } = await beforeEachCommon());
+  testContainer.clearInstances();
+
+  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+    await beforeEachCommon());
 });
 
 /**
@@ -72,5 +65,5 @@ it("aa", async () => {
 });
 
 it("bb", async () => {
-  await releasesAwsService.getPresigned(allowedPiUser, testReleaseId);
+  await awsPresignedUrlsService.getPresigned(allowedPiUser, testReleaseId);
 });

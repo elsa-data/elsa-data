@@ -5,7 +5,6 @@ import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { Base7807Error } from "../../api/errors/_error.types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
-import { Client } from "edgedb";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "./select-service";
 import { ReleasesService } from "./releases-service";
@@ -26,7 +25,7 @@ class NotAuthorisedToControlJob extends Base7807Error {
 @singleton()
 export class JobsService {
   constructor(
-    @inject("Database") private edgeDbClient: Client,
+    @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService,
     private releasesService: ReleasesService,
     private selectService: SelectService
@@ -88,11 +87,10 @@ export class JobsService {
     if (userRole != "DataOwner")
       throw new NotAuthorisedToControlJob(userRole, releaseId);
 
-    const {
-      releaseQuery,
-      releaseAllDatasetCasesQuery,
-      releaseAllDatasetCasesCountyQuery,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
 
     await this.startGenericJob(releaseId, async (tx) => {
       // create a new select job entry
@@ -103,7 +101,7 @@ export class JobsService {
           started: e.datetime_current(),
           percentDone: e.int16(0),
           messages: e.literal(e.array(e.str), ["Created"]),
-          initialTodoCount: releaseAllDatasetCasesCountyQuery,
+          initialTodoCount: e.count(releaseAllDatasetCasesQuery),
           todoQueue: releaseAllDatasetCasesQuery,
           selectedSpecimens: e.set(),
         })
@@ -127,11 +125,10 @@ export class JobsService {
     if (userRole != "DataOwner")
       throw new NotAuthorisedToControlJob(userRole, releaseId);
 
-    const {
-      releaseQuery,
-      releaseAllDatasetCasesQuery,
-      releaseAllDatasetCasesCountyQuery,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
 
     await this.edgeDbClient.transaction(async (tx) => {
       const currentJob = await e

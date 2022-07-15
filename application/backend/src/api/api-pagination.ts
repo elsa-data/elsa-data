@@ -54,7 +54,8 @@ export function createPagedResult<T>(
   return {
     data: data,
     total: total,
+    // note: our page start being 1 pushing all the matches forward by one...
     first: 1,
-    last: Math.floor(total / pageSize),
+    last: Math.ceil(total / pageSize) + 1,
   };
 }
