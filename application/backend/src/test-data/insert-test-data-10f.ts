@@ -6,7 +6,10 @@ import {
   makeSystemlessIdentifierArray,
   createFile,
   makeSystemlessIdentifier,
-} from "./insert-test-data-helpers";
+  makeDictionaryIdentifierArray,
+} from "./test-data-helpers";
+
+type IdentifierMap = { [system: string]: string };
 
 const edgeDbClient = edgedb.createClient();
 
@@ -43,8 +46,8 @@ export async function insert10F() {
   };
 
   const makeTrio = async (
-    familyId: string,
-    probandPatientId: string,
+    familyId: IdentifierMap,
+    probandPatientId: IdentifierMap,
     probandSpecimenId: string,
     probandSex: "male" | "female" | "other",
     fatherPatientId: string,
@@ -53,11 +56,11 @@ export async function insert10F() {
     motherSpecimenId: string
   ) => {
     return e.insert(e.dataset.DatasetCase, {
-      externalIdentifiers: makeSystemlessIdentifierArray(familyId),
+      externalIdentifiers: makeDictionaryIdentifierArray(familyId),
       patients: e.set(
         e.insert(e.dataset.DatasetPatient, {
           sexAtBirth: probandSex,
-          externalIdentifiers: makeSystemlessIdentifierArray(probandPatientId),
+          externalIdentifiers: makeDictionaryIdentifierArray(probandPatientId),
           specimens: e.insert(e.dataset.DatasetSpecimen, {
             externalIdentifiers:
               makeSystemlessIdentifierArray(probandSpecimenId),
@@ -128,6 +131,13 @@ export async function insert10F() {
       .run(edgeDbClient);
   };
 
+  const NIST_SYSTEM = "nist";
+  const CORIELL_SYSTEM = "coriell";
+  const PGP_SYSTEM = "https://my.pgp-hms.org";
+
+  // Samples from an Ashkenazim trio (son HG002-NA24385-huAA53E0, father HG003-NA24149-hu6E4515, and mother HG004-NA24143-hu8E87A9),
+  // Han Chinese trio (son HG005-NA24631-hu91BD69, father NA24694-huCA017E, and mother NA24695-hu38168C) from Personal Genome Project (PGP) are
+
   const tenf = await e
     .insert(e.dataset.Dataset, {
       uri: TENF_URI,
@@ -135,18 +145,18 @@ export async function insert10F() {
       description: "UMCCR 10F",
       cases: e.set(
         await makeTrio(
-          "SIMPSONS",
-          "TRIOLISA",
-          "HG1",
-          "female",
+          { "": "AJ" },
+          { NIST_SYSTEM: "HG002", PGP_SYSTEM: "huAA53E0" },
+          "NA24385",
+          "male",
           "TRIOHOMER",
           "HG2",
           "TRIOMARGE",
           "HG3"
         ),
         await makeTrio(
-          "JETSONS",
-          "TRIOELROY",
+          { "": "JETSONS" },
+          { "": "TRIOELROY" },
           "HG4",
           "male",
           "TRIOGEORGE",
@@ -156,8 +166,8 @@ export async function insert10F() {
         ),
         // convert this to a full family at some point
         await makeTrio(
-          "ADDAMS",
-          "QUINWEDNESDAY",
+          { "": "ADDAMS" },
+          { "": "QUINWEDNESDAY" },
           "HG7",
           "female",
           "QUINGGOMEZ",
@@ -171,8 +181,8 @@ export async function insert10F() {
         ),
         // convert this to a full family at some point
         await makeTrio(
-          "DUCK",
-          "DONALD",
+          { "": "DUCK" },
+          { "": "DONALD" },
           "HG90",
           "male",
           "UNKNOWNDUCK",

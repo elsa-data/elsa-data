@@ -2,9 +2,12 @@ import { FastifyInstance } from "fastify";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
+  DuoLimitationCodedType,
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
   ReleaseDetailType,
+  ReleaseMasterAccessRequestSchema,
+  ReleaseMasterAccessRequestType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
@@ -24,6 +27,8 @@ import {
 } from "../api-pagination";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
+import fastifyFormBody from "@fastify/formbody";
+import { isString } from "lodash";
 
 export function registerReleaseRoutes(fastify: FastifyInstance) {
   const jobsService = container.resolve(JobsService);
@@ -113,6 +118,22 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  fastify.get<{
+    Params: { rid: string; nid: string };
+    Reply: DuoLimitationCodedType[];
+  }>("/api/releases/:rid/consent/:nid", {}, async function (request, reply) {
+    const { authenticatedUser, pageSize } =
+      authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+    const nodeId = request.params.nid;
+
+    reply.send([
+      { code: "DUO:0000006", modifiers: [] },
+      { code: "DUO:0000042", modifiers: [] },
+    ]);
+  });
 
   fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
     "/api/releases/:rid/specimens/select",
@@ -280,6 +301,22 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       },
     });
   }
+
+  fastify.post<{
+    Body: ReleaseMasterAccessRequestType;
+    Params: { rid: string };
+  }>("/api/releases/:rid/access", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+
+    await releasesService.setMasterAccess(
+      authenticatedUser,
+      releaseId,
+      undefined, //isString(request.body.start) ? Date.parse(request.body.start) : request.body.start,
+      undefined // request.body.end
+    );
+  });
 
   fastify.post<{
     Body: any;

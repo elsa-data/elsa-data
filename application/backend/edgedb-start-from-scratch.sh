@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-edgedb instance destroy elsadata --force
+edgedb instance destroy -I elsadata --force
 rm dbschema/migrations/0000*
 edgedb instance create elsadata
 edgedb project init --non-interactive --link --server-instance elsadata

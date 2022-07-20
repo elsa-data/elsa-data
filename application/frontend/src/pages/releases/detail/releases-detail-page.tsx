@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import { Box, BoxNoPad } from "../../../components/boxes";
 import { LayoutBase } from "../../../layouts/layout-base";
-import { CasesTable } from "./cases-table";
+import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
 import { AwsS3PresignedForm } from "./aws-s3-presigned-form";
 import { ApplicationCodedBox } from "./application-coded-box";
@@ -13,6 +13,9 @@ import { BulkBox } from "./bulk-box";
 import { isUndefined } from "lodash";
 import { FutherRestrictionsBox } from "./further-restrictions-box";
 import axios from "axios";
+import { usePageSizer } from "../../../hooks/page-sizer";
+import { MasterAccessControlBox } from "./master-access-control-box";
+import { LogsBox } from "./logs-box/logs-box";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -28,6 +31,8 @@ export const ReleasesDetailPage: React.FC = () => {
     throw new Error(
       "This component should not be rendered outside a route with a releaseId param"
     );
+
+  const pageSize = usePageSizer();
 
   const queryClient = useQueryClient();
 
@@ -52,17 +57,17 @@ export const ReleasesDetailPage: React.FC = () => {
               <BulkBox releaseId={releaseId} releaseData={releaseQuery.data} />
             )}
 
-            <BoxNoPad heading="Cases">
-              {!isJobRunning && (
-                <CasesTable
-                  releaseId={releaseId}
-                  datasetMap={releaseQuery.data.datasetMap}
-                  isEditable={
-                    releaseQuery.data.permissionEditSelections || false
-                  }
-                />
-              )}
-              {isJobRunning && (
+            {!isJobRunning && (
+              <CasesBox
+                releaseId={releaseId}
+                datasetMap={releaseQuery.data.datasetMap}
+                isEditable={releaseQuery.data.permissionEditSelections || false}
+                casesCount={releaseQuery.data.visibleCasesCount}
+                pageSize={pageSize}
+              />
+            )}
+            {isJobRunning && (
+              <BoxNoPad heading="Cases">
                 <>
                   <p>
                     Case processing is happening in the background -
@@ -75,8 +80,8 @@ export const ReleasesDetailPage: React.FC = () => {
                     ))}
                   </ul>
                 </>
-              )}
-            </BoxNoPad>
+              </BoxNoPad>
+            )}
 
             {releaseQuery.data.permissionEditSelections && (
               <FutherRestrictionsBox
@@ -85,8 +90,15 @@ export const ReleasesDetailPage: React.FC = () => {
               />
             )}
 
+            {releaseQuery.data.permissionEditSelections && (
+              <MasterAccessControlBox
+                releaseId={releaseId}
+                releaseData={releaseQuery.data}
+              />
+            )}
+
             <Box heading="Access Data">
-              <div className="flex">
+              <div className="flex flex-row">
                 <VerticalTabs tabs={["AWS S3 PreSigned", "htsget"]}>
                   <AwsS3PresignedForm releaseId={releaseId} />
                   <form
@@ -99,6 +111,13 @@ export const ReleasesDetailPage: React.FC = () => {
                 </VerticalTabs>
               </div>
             </Box>
+
+            <LogsBox
+              releaseId={releaseId}
+              datasetMap={releaseQuery.data.datasetMap}
+              logsCount={releaseQuery.data.visibleCasesCount}
+              pageSize={pageSize}
+            />
           </>
         )}
       </div>

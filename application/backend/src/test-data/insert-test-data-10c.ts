@@ -5,7 +5,7 @@ import {
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
-} from "./insert-test-data-helpers";
+} from "./test-data-helpers";
 
 const edgeDbClient = edgedb.createClient();
 

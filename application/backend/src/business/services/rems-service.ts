@@ -1,6 +1,6 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { makeEmptyCodeArray } from "../../test-data/insert-test-data-helpers";
+import { makeEmptyCodeArray } from "../../test-data/test-data-helpers";
 import { inject, injectable, singleton } from "tsyringe";
 import { Client } from "edgedb";
 
@@ -72,9 +72,9 @@ Applicant: ${JSON.stringify(
             studyIsNotCommercial: true,
             diseasesOfStudy: makeEmptyCodeArray(),
             countriesInvolved: makeEmptyCodeArray(),
-            institutesInvolved: makeEmptyCodeArray(),
             studyType: "HMB",
           }),
+          releasePassword: "AAAAA", // pragma: allowlist secret
           datasetUris: e.literal(e.array(e.str), Object.keys({})),
         })
         .run(this.edgeDbClient);

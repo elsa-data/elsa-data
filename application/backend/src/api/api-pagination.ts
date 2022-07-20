@@ -1,34 +1,35 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import {
+  UI_PAGE_SIZE_COOKIE_NAME,
+  UI_PAGE_SIZE_DEFAULT,
+} from "@umccr/elsa-strings";
 
 // NOTE: both fastify and axios are going to lowercase this anyhow - so mind as well start out that way
 export const TOTAL_COUNT_HEADER_NAME = "elsa-total-count";
 export const LAST_PAGE_HEADER_NAME = "elsa-last-page";
 export const PAGE_SIZE_HEADER_NAME = "elsa-page-size";
 
-const DEFAULT_PAGE_SIZE = 5;
-const DEFAULT_PAGE_SIZE_COOKIE_NAME = "elsa-page-size";
-
 export function currentPageSize(request: FastifyRequest): number {
-  const cookiePageSizeValue = request.cookies[DEFAULT_PAGE_SIZE_COOKIE_NAME];
+  const cookiePageSizeValue = request.cookies[UI_PAGE_SIZE_COOKIE_NAME];
 
-  if (!cookiePageSizeValue) return DEFAULT_PAGE_SIZE;
+  if (!cookiePageSizeValue) return UI_PAGE_SIZE_DEFAULT;
 
   const cookieSetPageSize = parseInt(cookiePageSizeValue);
 
-  if (isNaN(cookieSetPageSize)) return DEFAULT_PAGE_SIZE;
+  if (isNaN(cookieSetPageSize)) return UI_PAGE_SIZE_DEFAULT;
 
-  if (!cookieSetPageSize) return DEFAULT_PAGE_SIZE;
+  if (!cookieSetPageSize) return UI_PAGE_SIZE_DEFAULT;
 
   return cookieSetPageSize;
 }
 
-export function setPageSize(
+/*export function setPageSize(
   request: FastifyRequest,
   reply: FastifyReply,
   pageSize: number
 ): void {
-  reply.setCookie(DEFAULT_PAGE_SIZE_COOKIE_NAME, pageSize.toString());
-}
+  reply.setCookie(UI_PAGE_SIZE_COOKIE_NAME, pageSize.toString());
+} */
 
 export type PagedResult<T> = {
   data: T[];
@@ -54,7 +55,7 @@ export function createPagedResult<T>(
   return {
     data: data,
     total: total,
-    // note: our page start being 1 pushing all the matches forward by one...
+    // note: our first page being 1 makes our last page one higher than you might expect!
     first: 1,
     last: Math.ceil(total / pageSize) + 1,
   };

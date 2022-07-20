@@ -5,12 +5,15 @@ import {
   faFemale,
   faMale,
   faQuestion,
+  faLock,
+  faUnlock,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { ReleasePatientType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQueryClient } from "react-query";
 import classNames from "classnames";
+import Popup from "reactjs-popup";
 
 type Props = {
   releaseId: string;
@@ -18,6 +21,16 @@ type Props = {
   showCheckboxes: boolean;
 };
 
+/**
+ * The patient flex row is a flex row div that displays all the individuals in
+ * a case, including listing their sample ids. It also draws icons to give extra
+ * data about the patient/samples in a compact form.
+ *
+ * @param releaseId
+ * @param patients
+ * @param showCheckboxes
+ * @constructor
+ */
 export const PatientsFlexRow: React.FC<Props> = ({
   releaseId,
   patients,
@@ -42,30 +55,50 @@ export const PatientsFlexRow: React.FC<Props> = ({
     let patientClasses = [
       "p-2",
       "border",
-      "border-gray-400",
+      "border-slate-200",
       "flex",
       "flex-col",
       "lg:flex-row",
       "lg:justify-between",
     ];
 
+    // at these sizes on screen the icons are barely distinguishable but whatever
     if (patient.sexAtBirth === "male") {
       patientIcon = <FontAwesomeIcon icon={faMale} />;
     }
     if (patient.sexAtBirth === "female") {
       patientIcon = <FontAwesomeIcon icon={faFemale} />;
+      // as per a pedigree chart - rounded=female
       patientClasses.push("rounded-xl");
     }
 
     return (
       <div className={classNames(...patientClasses)}>
         <span>
-          {patientIcon} {patient.externalId}
+          {patientIcon} {patient.externalId}{" "}
+          {patient.customConsent && (
+            <>
+              {" "}
+              <FontAwesomeIcon icon={faUnlock} />
+            </>
+          )}
         </span>
         <ul key={patient.id}>
           {patient.specimens.map((spec) => (
             <li key={spec.id} className="text-left lg:text-right">
-              <FontAwesomeIcon icon={faDna} />{" "}
+              <FontAwesomeIcon icon={faDna} />
+              {spec.customConsent && (
+                <>
+                  {"-"}
+                  <Popup
+                    trigger={<FontAwesomeIcon icon={faUnlock} />}
+                    position={["top center", "bottom right", "bottom left"]}
+                    on={["hover", "focus"]}
+                  >
+                    Tooltip content
+                  </Popup>
+                </>
+              )}{" "}
               {showCheckboxes && (
                 <label>
                   {spec.externalId}

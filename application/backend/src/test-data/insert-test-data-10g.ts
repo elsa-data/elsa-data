@@ -5,7 +5,8 @@ import {
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
-} from "./insert-test-data-helpers";
+} from "./test-data-helpers";
+import { DuoLimitationCodedType } from "@umccr/elsa-types";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -25,15 +26,41 @@ export async function insert10G() {
     bamEtag: string,
     bamMd5: string,
     vcfSize: number,
-    vcfEtag: string
+    vcfEtag: string,
+    patientConsentJsons?: DuoLimitationCodedType[],
+    specimenConsentJsons?: DuoLimitationCodedType[]
   ) => {
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
       patients: e.insert(e.dataset.DatasetPatient, {
         sexAtBirth: patientSexAtBirth,
         externalIdentifiers: makeSystemlessIdentifierArray(patientId),
+        consent:
+          patientConsentJsons && patientConsentJsons.length > 0
+            ? e.insert(e.consent.Consent, {
+                statements: e.set(
+                  ...patientConsentJsons.map((pc) =>
+                    e.insert(e.consent.ConsentStatementDuo, {
+                      dataUseLimitation: JSON.stringify(pc),
+                    })
+                  )
+                ),
+              })
+            : undefined,
         specimens: e.insert(e.dataset.DatasetSpecimen, {
           externalIdentifiers: makeSystemlessIdentifierArray(specimenId),
+          consent:
+            specimenConsentJsons && specimenConsentJsons.length > 0
+              ? e.insert(e.consent.Consent, {
+                  statements: e.set(
+                    ...specimenConsentJsons.map((sc) =>
+                      e.insert(e.consent.ConsentStatementDuo, {
+                        dataUseLimitation: JSON.stringify(sc),
+                      })
+                    )
+                  ),
+                })
+              : undefined,
           artifacts: await createArtifacts(
             createFile(
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
@@ -76,7 +103,8 @@ export async function insert10G() {
           "bfce3cfa4f0265866fae8f7a653cca95-3089", // pragma: allowlist secret
           "63f2b3c6b87c66d114f1e9bae8c35091", // pragma: allowlist secret
           425745911,
-          ""
+          "",
+          [{ code: "DUO:0000006", modifiers: [{ code: "DUO:0000045" }] }]
         ),
         await makeCase(
           "SINGLETONMARY",
@@ -87,7 +115,15 @@ export async function insert10G() {
           "06b1c646338fa079dd6d7cb5f9dd67ed-3063", // pragma: allowlist secret
           "a6e072e3831fbdad4b790b9655d03301", // pragma: allowlist secret
           432160352,
-          ""
+          "",
+          [{ code: "DUO:0000006", modifiers: [] }],
+          [
+            {
+              code: "DUO:0000007",
+              disease: "Diabetes",
+              modifiers: [{ code: "DUO:0000045" }],
+            },
+          ]
         ),
         await makeCase(
           "SINGLETONJANE",

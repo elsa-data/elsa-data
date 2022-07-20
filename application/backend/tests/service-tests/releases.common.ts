@@ -7,7 +7,7 @@ import {
   makeEmptyCodeArray,
   makeSingleCodeArray,
   makeSystemlessIdentifier,
-} from "../../src/test-data/insert-test-data-helpers";
+} from "../../src/test-data/test-data-helpers";
 import { insert10F, TENF_URI } from "../../src/test-data/insert-test-data-10f";
 import { container } from "tsyringe";
 import * as edgedb from "edgedb";

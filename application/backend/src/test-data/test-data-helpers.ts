@@ -3,6 +3,16 @@ import e, { lab, storage } from "../../dbschema/edgeql-js";
 
 const edgeDbClient = createClient();
 
+export function makeDictionaryIdentifierArray(dict: { [k: string]: string }) {
+  const asArrayEntries = Array.from(
+    Object.entries(dict).map((ent) => ({ system: ent[0], value: ent[1] }))
+  );
+
+  const tupleArrayType = e.array(e.tuple({ system: e.str, value: e.str }));
+
+  return e.cast(tupleArrayType, e.literal(tupleArrayType, asArrayEntries));
+}
+
 export function makeSystemlessIdentifier(entry1: string) {
   return e.tuple({ system: "", value: entry1 });
 }

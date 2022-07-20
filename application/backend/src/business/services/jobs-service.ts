@@ -235,9 +235,10 @@ export class JobsService {
 
         // todo: need to work out the magic of how EdgeDb wants us to type this kind of stuff...
         // (it can't be like this??)
-        const resultSpecimens: edgedb.reflection.$expr_Literal<
-          edgedb.reflection.ScalarType<"std::uuid", string, true, string>
-        >[] = [];
+        // edgedb.reflection.$expr_Literal<
+        //           edgedb.reflection.ScalarType<"std::uuid", string, true, string>
+        //         >
+        const resultSpecimens: any[] = [];
 
         const resultMessages: string[] = [];
 

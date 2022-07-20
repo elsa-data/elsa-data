@@ -10,6 +10,9 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
+import { i18n } from "@lingui/core";
+import { I18nProvider } from "@lingui/react";
+import { messages } from "./locales/en/messages";
 
 const root = document.getElementById("root");
 
@@ -24,12 +27,16 @@ if (root != null) {
   // e.g.
   // root.dataset.semanticVersion
   // (NOTE: the conversion from kebab casing to camel casing is AUTOMATIC as part of HTML5!)
+  const loc = root.dataset.locale || "en";
   const sv = root.dataset.semanticVersion || "undefined version";
   const bv = root.dataset.buildVersion || "-1";
   const de = (root.dataset.deployedEnvironment ||
     "development") as DeployedEnvironments;
 
   const queryClient = new QueryClient({});
+
+  i18n.load(loc, messages);
+  i18n.activate(loc);
 
   ReactDOM.render(
     <React.StrictMode>
@@ -41,17 +48,19 @@ if (root != null) {
         buildVersion={bv}
         deployedEnvironment={de}
       >
-        {/* the query provider comes from react-query and provides standardised remote query semantics */}
-        <QueryClientProvider client={queryClient}>
-          {/* we use session cookies for auth and use this provider to make them easily available */}
-          <CookiesProvider>
-            <LoggedInUserProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </LoggedInUserProvider>
-          </CookiesProvider>
-        </QueryClientProvider>
+        <I18nProvider i18n={i18n}>
+          {/* the query provider comes from react-query and provides standardised remote query semantics */}
+          <QueryClientProvider client={queryClient}>
+            {/* we use session cookies for auth and use this provider to make them easily available */}
+            <CookiesProvider>
+              <LoggedInUserProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </LoggedInUserProvider>
+            </CookiesProvider>
+          </QueryClientProvider>
+        </I18nProvider>
       </EnvRelayProvider>
     </React.StrictMode>,
     document.getElementById("root")

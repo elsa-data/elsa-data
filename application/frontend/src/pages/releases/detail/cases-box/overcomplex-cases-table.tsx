@@ -11,7 +11,7 @@ import {
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, useQueryClient } from "react-query";
-import { IndeterminateCheckbox } from "../../../components/indeterminate-checkbox";
+import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
 import { isNumber } from "lodash";

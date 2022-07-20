@@ -1,5 +1,6 @@
-import { TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
+import { Static, TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
+import { TypeDate } from "./schemas-releases";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -72,3 +73,19 @@ export const ReleaseAwsS3PresignResponseSchema = Type.Object({
   id: Type.String(),
   files: Type.Array(Type.String()),
 });
+
+export type ReleaseAwsS3PresignRequestType = Static<
+  typeof ReleaseAwsS3PresignRequestSchema
+>;
+export type ReleaseAwsS3PresignResponseType = Static<
+  typeof ReleaseAwsS3PresignResponseSchema
+>;
+
+export const ReleaseMasterAccessRequestSchema = Type.Object({
+  start: Type.Optional(TypeDate),
+  end: Type.Optional(TypeDate),
+});
+
+export type ReleaseMasterAccessRequestType = Static<
+  typeof ReleaseMasterAccessRequestSchema
+>;

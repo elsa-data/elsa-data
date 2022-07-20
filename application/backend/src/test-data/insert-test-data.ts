@@ -11,10 +11,13 @@ import {
   makeEmptyCodeArray,
   makeSingleCodeArray,
   makeTripleCodeArray,
-} from "./insert-test-data-helpers";
+} from "./test-data-helpers";
 import { insert10F } from "./insert-test-data-10f";
 import { insert10C } from "./insert-test-data-10c";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
+import { insertRelease1 } from "./insert-test-data-release1";
+import { insertRelease2 } from "./insert-test-data-release2";
+import { insertRelease3 } from "./insert-test-data-release3";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -76,7 +79,18 @@ export async function insertTestData(settings: ElsaSettings) {
 
   await insertBlankDataset("BOWEL", "http://cci.org.au/datasets/BOWEL");
 
-  await insertRelease1(settings);
+  const r1 = await insertRelease1(settings);
+  const r2 = await insertRelease2(settings);
+  const r3 = await insertRelease3(settings);
+
+  await createTestUser(
+    "http://subject1.com",
+    "Test User 1",
+    [r1.id],
+    [r2.id],
+    []
+  );
+  await createTestUser("http://subject2.com", "Test User 2", [], [r1.id], []);
 
   console.log(
     `  Number of object artifacts present = ${await e
@@ -107,112 +121,4 @@ export async function insertTestData(settings: ElsaSettings) {
   });
 
   console.log(await eachDs.run(edgeDbClient));
-}
-
-async function insertRelease1(settings: ElsaSettings) {
-  const mondoUri = "http://purl.obolibrary.org/obo/mondo.owl";
-
-  const r1 = await e
-    .insert(e.release.Release, {
-      applicationDacTitle: "A Study of Lots of Test Data",
-      applicationDacIdentifier: "ABC",
-      applicationDacDetails: `
-#### Origin
-
-This is an application from REMS instance HGPP.
-
-#### Purpose
-
-We are going to take the test data and study it.
-
-#### Ethics
-
-Ethics form XYZ.
-
-#### Other DAC application details
-
-* Signed by A, B, C
-* Agreed to condition Y
-        `,
-      applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.DS,
-        countriesInvolved: makeSingleCodeArray("urn:iso:std:iso:3166", "AUS"),
-        diseasesOfStudy: makeDoubleCodeArray(
-          mondoUri,
-          "MONDO:0008678",
-          mondoUri,
-          "MONDO:0021531"
-        ),
-        institutesInvolved: makeEmptyCodeArray(),
-        studyAgreesToPublish: true,
-        studyIsNotCommercial: true,
-      }),
-      datasetUris: e.array([
-        "urn:fdc:umccr.org:2022:dataset/10g",
-        "urn:fdc:umccr.org:2022:dataset/10f",
-        "urn:fdc:umccr.org:2022:dataset/10c",
-      ]),
-      selectedSpecimens: e.set(
-        findSpecimen("HG1"),
-        findSpecimen("HG2"),
-        findSpecimen("HG3"),
-        findSpecimen("HG4")
-      ),
-      manualExclusions: e.set(),
-    })
-    .run(edgeDbClient);
-
-  const r2 = await e
-    .insert(e.release.Release, {
-      applicationDacTitle: "A Better Study of Limited Test Data",
-      applicationDacIdentifier: "XYZ",
-      applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.HMB,
-        countriesInvolved: makeEmptyCodeArray(),
-        diseasesOfStudy: makeEmptyCodeArray(),
-        institutesInvolved: makeEmptyCodeArray(),
-        studyAgreesToPublish: true,
-        studyIsNotCommercial: true,
-      }),
-      datasetUris: e.array([
-        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
-      ]),
-      selectedSpecimens: e.set(
-        findSpecimen("HG1"),
-        findSpecimen("HG2"),
-        findSpecimen("HG3"),
-        findSpecimen("HG4")
-      ),
-      manualExclusions: e.set(),
-    })
-    .run(edgeDbClient);
-
-  const r3 = await e
-    .insert(e.release.Release, {
-      applicationDacTitle: "An Invisible Study",
-      applicationDacIdentifier: "XYZ",
-      applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.HMB,
-        countriesInvolved: makeEmptyCodeArray(),
-        diseasesOfStudy: makeEmptyCodeArray(),
-        institutesInvolved: makeEmptyCodeArray(),
-        studyAgreesToPublish: true,
-        studyIsNotCommercial: true,
-      }),
-      datasetUris: e.array([
-        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
-      ]),
-      selectedSpecimens: e.set(),
-      manualExclusions: e.set(),
-    })
-    .run(edgeDbClient);
-
-  await createTestUser(
-    "http://subject1.com",
-    "Test User 1",
-    [r1.id],
-    [r2.id],
-    []
-  );
-  await createTestUser("http://subject2.com", "Test User 2", [], [r1.id], []);
 }

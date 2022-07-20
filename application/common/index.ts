@@ -65,10 +65,3 @@ export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
 export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
-
-export type ReleaseAwsS3PresignRequestType = Static<
-  typeof ReleaseAwsS3PresignRequestSchema
->;
-export type ReleaseAwsS3PresignResponseType = Static<
-  typeof ReleaseAwsS3PresignResponseSchema
->;

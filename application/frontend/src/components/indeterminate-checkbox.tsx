@@ -1,4 +1,5 @@
 import React, { HTMLProps } from "react";
+import classNames from "classnames";
 
 export function IndeterminateCheckbox({
   indeterminate,
@@ -13,12 +14,12 @@ export function IndeterminateCheckbox({
     }
   }, [ref, indeterminate]);
 
-  return (
-    <input
-      type="checkbox"
-      ref={ref}
-      className={className + " cursor-pointer"}
-      {...rest}
-    />
-  );
+  // if we are disabled we don't want the cursor pointer hover... and we want to be
+  // a bit visually distinctive
+  const cn = classNames(className, {
+    "cursor-pointer": !rest.disabled,
+    "opacity-50": rest.disabled,
+  });
+
+  return <input type="checkbox" ref={ref} className={cn} {...rest} />;
 }

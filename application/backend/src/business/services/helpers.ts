@@ -67,6 +67,12 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     runningJob: {
       ...e.job.Job["*"],
     },
+    // the master computation of whether we are currently enabled for access
+    accessEnabled: e.op(
+      e.op(e.datetime_current(), ">=", r.releaseStarted),
+      "and",
+      e.op(e.datetime_current(), "<=", r.releaseEnded)
+    ),
     // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
     //manualExclusions: true,
     // we are loosely linked (by uri) to datasets which this release draws data from

@@ -42,18 +42,28 @@ module release {
             select .<forRelease[is job::Job] filter .status = job::JobStatus.running
         );
 
+        # a auto generated random string that is used for encrypting download zips etc
+        # can be re-generated at an admin level
+
+        required property releasePassword -> str;
+
+
+
         # the set of resources explicitly chosen for exclusion no matter what an automated
         # algorithm says
-        multi link manualExclusions -> dataset::DatasetShareable {
-            property who -> str;
-            property recorded -> str;
-            property reason -> str;
-        };
+        # DETERMINE IF THIS IS ACTUALLY A FEATURE WE WANT
+        #multi link manualExclusions -> dataset::DatasetShareable {
+        #    property who -> str;
+        #    property recorded -> str;
+        #    property reason -> str;
+        #};
     }
 
     scalar type ApplicationCodedStudyType extending enum<'GRU', 'HMB', 'CC', 'POA', 'DS'>;
 
     type ApplicationCoded {
+
+        # a classification of the type of research being performed with this release
 
         required property studyType -> ApplicationCodedStudyType;
 
@@ -61,7 +71,7 @@ module release {
 
         required property countriesInvolved -> array<tuple<system: str, code: str>>;
 
-        required property institutesInvolved -> array<tuple<system: str, code: str>>;
+        # required property institutesInvolved -> array<tuple<system: str, code: str>>;
 
         required property studyAgreesToPublish -> bool;
 

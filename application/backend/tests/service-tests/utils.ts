@@ -1,5 +1,5 @@
 import { Client } from "edgedb";
-import { makeSystemlessIdentifier } from "../../src/test-data/insert-test-data-helpers";
+import { makeSystemlessIdentifier } from "../../src/test-data/test-data-helpers";
 import e from "../../dbschema/edgeql-js";
 import {
   ReleaseCaseType,
