@@ -3,7 +3,7 @@ import {
   StackProps,
   RemovalPolicy,
   Duration,
-  SecretValue,
+  CfnOutput,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import {
@@ -15,48 +15,60 @@ import {
   aws_logs as logs,
   aws_secretsmanager as secretsmanager,
   aws_elasticloadbalancingv2 as elbv2,
+  aws_route53 as route53,
 } from "aws-cdk-lib";
 
 interface ElsaEdgedbStackProps extends StackProps {
   vpc: ec2.IVpc;
+  hostedZone: route53.IHostedZone;
+  config: {
+    isHighlyAvailable: boolean;
+    rds: {
+      clusterIdentifier: string;
+      dbName: string;
+      dsnRdsSecretManagerName: string;
+    };
+    ecs: {
+      serviceName: string;
+      clusterName: string;
+      cpu: number;
+      memory: number;
+      port: number;
+    };
+    edgedb: {
+      dbName: string;
+      user: string;
+      port: string;
+    };
+  };
 }
 
 export class ElsaEdgedbStack extends Stack {
+  // EdgeDb DSN url for elsa
+  public readonly elsaEdgedbUrl: string;
+
   constructor(scope: Construct, id: string, props: ElsaEdgedbStackProps) {
     super(scope, id, props);
 
     const vpc = props.vpc;
-
-    /*******************************/
-    // TODO: Put inside context
-    const rdsProps = {
-      clusterIdentifier: `elsaRDSCluster`,
-      dbName: `elsaDb`,
-    };
-    const ecsProps = {
-      serviceName: "Elsa",
-      clusterName: "ElsaEdgeDb",
-      cpu: 1024,
-      memory: 2048,
-      desiredCount: 1,
-      port: 5656,
-    };
-    /*******************************/
+    const hostedZone = props.hostedZone;
+    const config = props.config;
 
     /*******************************
      * Database
      *******************************/
 
     // Create RDS Secret
-    const rdsDatabaseSecret = new rds.DatabaseSecret(
-      this,
-      "RDSSecretManagerCredentials",
-      {
-        username: "postgres",
-        secretName: "ElsaRDS",
-      }
-    );
-    const rdsCredentials = rds.Credentials.fromSecret(rdsDatabaseSecret);
+    const rdsClusterSecret = new secretsmanager.Secret(this, "AuroraPassword", {
+      generateSecretString: {
+        excludePunctuation: true,
+        secretStringTemplate: JSON.stringify({
+          username: "postgres",
+          password: "",
+        }),
+        generateStringKey: "password",
+      },
+    });
 
     // RDS Cluster
     const rdsCluster = new rds.DatabaseCluster(this, "RDSDatabaseCluster", {
@@ -73,41 +85,32 @@ export class ElsaEdgedbStack extends Stack {
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         },
       },
-      clusterIdentifier: rdsProps.clusterIdentifier,
-      credentials: rdsCredentials,
-      defaultDatabaseName: rdsProps.dbName,
+      clusterIdentifier: config.rds.clusterIdentifier,
+      credentials: rds.Credentials.fromSecret(rdsClusterSecret),
+      defaultDatabaseName: config.rds.dbName,
       deletionProtection: false, // For DEV purposes
-      instances: 1,
-      port: 5432,
+      instances: config.isHighlyAvailable ? 2 : 1,
       removalPolicy: RemovalPolicy.DESTROY,
     });
-    const rdsDatabaseClusterDSN = new secretsmanager.Secret(
-      this,
-      "RdsDatabaseClusterDSN",
-      {
-        secretStringValue: SecretValue.unsafePlainText(
-          `postgres://${rdsDatabaseSecret
-            .secretValueFromJson("username")
-            .unsafeUnwrap()}:${rdsDatabaseSecret
-            .secretValueFromJson("password")
-            .unsafeUnwrap()}@${
-            rdsCluster.clusterEndpoint.hostname
-          }:${rdsDatabaseSecret
-            .secretValueFromJson("port")
-            .unsafeUnwrap()}/${rdsDatabaseSecret
-            .secretValueFromJson("dbname")
-            .unsafeUnwrap()}`
-        ),
-      }
-    );
+    const rdsDatabaseDsn =
+      `postgres://` +
+      `${rdsClusterSecret.secretValueFromJson("username").unsafeUnwrap()}` +
+      `:` +
+      `${rdsClusterSecret.secretValueFromJson("password").unsafeUnwrap()}` +
+      `@` +
+      `${rdsCluster.clusterEndpoint.hostname}` +
+      `:` +
+      `${rdsClusterSecret.secretValueFromJson("port").unsafeUnwrap()}` +
+      `/` +
+      `${rdsClusterSecret.secretValueFromJson("dbname").unsafeUnwrap()}`;
 
     /*******************************
-     * ECS for DB access
+     * ECS for EdgeDb protocol
      *******************************/
 
     const ecsCluster = new ecs.Cluster(this, "ECSCluster", {
       vpc: vpc,
-      clusterName: ecsProps.clusterName,
+      clusterName: config.ecs.clusterName,
     });
 
     // ECS execution role
@@ -119,39 +122,49 @@ export class ElsaEdgedbStack extends Stack {
         ),
       ],
     });
-    // Grant read access to secret manager
-    rdsDatabaseSecret.grantRead(ecsExecutionRole);
-    rdsDatabaseClusterDSN.grantRead(ecsExecutionRole);
 
     const clusterLogGroup = new logs.LogGroup(this, "ServiceLog", {
       retention: logs.RetentionDays.ONE_WEEK,
     });
 
-    const ecsElsaFargateService =
-      new ecs_p.ApplicationLoadBalancedFargateService(this, "ECSService", {
+    const edgeDBServerPasswordSecret = new secretsmanager.Secret(
+      this,
+      "EdgeDBServerPassword",
+      {
+        generateSecretString: {
+          excludePunctuation: true,
+        },
+      }
+    );
+
+    const ecsElsaFargateService = new ecs_p.NetworkLoadBalancedFargateService(
+      this,
+      "ECSService",
+      {
         assignPublicIp: true,
         cluster: ecsCluster,
-        cpu: ecsProps.cpu,
-        desiredCount: ecsProps.desiredCount,
-        memoryLimitMiB: ecsProps.memory,
+        cpu: config.ecs.cpu,
+        desiredCount: config.isHighlyAvailable ? 2 : 1,
+        memoryLimitMiB: config.ecs.memory,
         publicLoadBalancer: true,
-        redirectHTTP: false,
-        serviceName: ecsProps.serviceName,
-        listenerPort: ecsProps.port,
+        serviceName: config.ecs.serviceName,
+        listenerPort: config.ecs.port,
         taskImageOptions: {
           image: ecs.ContainerImage.fromRegistry("edgedb/edgedb"),
           containerName: "edgedb",
           environment: {
             EDGEDB_SERVER_TLS_CERT_MODE: "generate_self_signed",
+            EDGEDB_SERVER_BACKEND_DSN: rdsDatabaseDsn,
+            EDGEDB_SERVER_USER: config.edgedb.user,
+            EDGEDB_SERVER_DATABASE: config.edgedb.dbName,
+            EDGEDB_SERVER_PORT: config.edgedb.port,
           },
           secrets: {
-            EDGEDB_SERVER_PASSWORD:
-              ecs.Secret.fromSecretsManager(rdsDatabaseSecret),
-            EDGEDB_SERVER_BACKEND_DSN: ecs.Secret.fromSecretsManager(
-              rdsDatabaseClusterDSN
+            EDGEDB_SERVER_PASSWORD: ecs.Secret.fromSecretsManager(
+              edgeDBServerPasswordSecret
             ),
           },
-          containerPort: ecsProps.port,
+          containerPort: config.ecs.port,
           executionRole: ecsExecutionRole,
           family: "elsa-task-defintion",
           logDriver: ecs.LogDriver.awsLogs({
@@ -159,7 +172,10 @@ export class ElsaEdgedbStack extends Stack {
             logGroup: clusterLogGroup,
           }),
         },
-      });
+      }
+    );
+    // ecsElsaFargateService.node.addDependency(rdsCluster);
+
     ecsElsaFargateService.targetGroup.configureHealthCheck({
       enabled: true,
       healthyThresholdCount: 2,
@@ -171,7 +187,29 @@ export class ElsaEdgedbStack extends Stack {
 
     rdsCluster.connections.allowDefaultPortFrom(ecsElsaFargateService.service);
     ecsElsaFargateService.service.connections.allowFromAnyIpv4(
-      ec2.Port.tcp(ecsProps.port)
+      ec2.Port.tcp(config.ecs.port)
     );
+
+    // Adding custom hostname to UMCCR route53
+    const elsaEdgedbServer = new route53.CnameRecord(
+      this,
+      `elsaEdgedbRoute53`,
+      {
+        domainName: ecsElsaFargateService.loadBalancer.loadBalancerDnsName,
+        zone: hostedZone,
+        recordName: `elsa.${hostedZone.zoneName}`,
+      }
+    );
+
+    this.elsaEdgedbUrl = `edgedb://${
+      config.edgedb.user
+    }:${edgeDBServerPasswordSecret.secretValue.unsafeUnwrap()}@elsa.${
+      hostedZone.zoneName
+    }:${config.edgedb.port}/${config.edgedb.dbName}`;
+
+    // Edgedb DSN
+    new CfnOutput(this, "elsaEdgeDbUrl", {
+      value: this.elsaEdgedbUrl,
+    });
   }
 }

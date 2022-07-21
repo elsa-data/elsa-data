@@ -3,7 +3,6 @@ import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export class ElsaVPC extends ec2.Vpc {
-  public readonly vpc: ec2.Vpc;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, {
       maxAzs: 99, // Maximum AZ in the region

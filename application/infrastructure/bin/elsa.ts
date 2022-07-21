@@ -3,9 +3,11 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { ElsaStack } from "../stack/elsa-stack";
 
-const app = new cdk.App();
+const context = {
+  namespace: "elsa",
+};
 
-const props = {};
+const app = new cdk.App({ context: context });
 
 const stackTag = {
   stack: "elsa",
