@@ -113,7 +113,6 @@ export class ElsaEdgedbStack extends Stack {
       clusterName: config.ecs.clusterName,
     });
 
-    // ECS execution role
     const ecsExecutionRole = new iam.Role(this, "ECSExecutionRole", {
       assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
       managedPolicies: [
@@ -174,8 +173,8 @@ export class ElsaEdgedbStack extends Stack {
         },
       }
     );
-    // ecsElsaFargateService.node.addDependency(rdsCluster);
 
+    // Configure healtcheck
     ecsElsaFargateService.targetGroup.configureHealthCheck({
       enabled: true,
       healthyThresholdCount: 2,
@@ -185,22 +184,20 @@ export class ElsaEdgedbStack extends Stack {
       interval: Duration.seconds(10),
     });
 
+    // Giving correct SG permission between rds and fargate
     rdsCluster.connections.allowDefaultPortFrom(ecsElsaFargateService.service);
     ecsElsaFargateService.service.connections.allowFromAnyIpv4(
       ec2.Port.tcp(config.ecs.port)
     );
 
     // Adding custom hostname to UMCCR route53
-    const elsaEdgedbServer = new route53.CnameRecord(
-      this,
-      `elsaEdgedbRoute53`,
-      {
-        domainName: ecsElsaFargateService.loadBalancer.loadBalancerDnsName,
-        zone: hostedZone,
-        recordName: `elsa.${hostedZone.zoneName}`,
-      }
-    );
+    new route53.CnameRecord(this, `elsaEdgedbRoute53`, {
+      domainName: ecsElsaFargateService.loadBalancer.loadBalancerDnsName,
+      zone: hostedZone,
+      recordName: `elsa.${hostedZone.zoneName}`,
+    });
 
+    // Setting viarble
     this.elsaEdgedbUrl = `edgedb://${
       config.edgedb.user
     }:${edgeDBServerPasswordSecret.secretValue.unsafeUnwrap()}@elsa.${
