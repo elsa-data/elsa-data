@@ -4,10 +4,18 @@ import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import {
+  findSpecimenQuery,
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "../../src/test-data/test-data-helpers";
-import { insert10F, TENF_URI } from "../../src/test-data/insert-test-data-10f";
+import {
+  BART_SPECIMEN,
+  HOMER_SPECIMEN,
+  insert10F,
+  JUDY_SPECIMEN,
+  TENF_URI,
+} from "../../src/test-data/insert-test-data-10f";
+import { findSpecimen } from "./utils";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -56,21 +64,15 @@ export async function beforeEachCommon() {
       //})),
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
-      selectedSpecimens: e.select(e.dataset.DatasetSpecimen, (dss) => ({
-        filter: e.op(
-          e.set(
-            makeSystemlessIdentifier("HG00096"),
-            makeSystemlessIdentifier("HG00171"),
-            makeSystemlessIdentifier("HG00173"),
-            makeSystemlessIdentifier("HG03433"),
-            makeSystemlessIdentifier("HG1"),
-            makeSystemlessIdentifier("HG2"),
-            makeSystemlessIdentifier("HG6")
-          ),
-          "in",
-          e.array_unpack(dss.externalIdentifiers)
-        ),
-      })),
+      selectedSpecimens: e.set(
+        findSpecimenQuery("HG00096"),
+        findSpecimenQuery("HG00171"),
+        findSpecimenQuery("HG00173"),
+        findSpecimenQuery("HG03433"),
+        findSpecimenQuery(BART_SPECIMEN),
+        findSpecimenQuery(HOMER_SPECIMEN),
+        findSpecimenQuery(JUDY_SPECIMEN)
+      ),
     })
     .run(edgeDbClient);
 

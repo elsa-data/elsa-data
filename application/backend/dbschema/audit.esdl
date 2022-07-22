@@ -29,9 +29,9 @@ module audit {
         #    8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
         #    12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
 
-        required property outcome extending int16 {
-            constraint one_of (0, 4, 8, 12);
-        }
+        #required property outcome extending int16 {
+        #    constraint one_of (0, 4, 8, 12);
+        #}
 
 
         property what -> str;

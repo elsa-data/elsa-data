@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import { ElsaSettings } from "../bootstrap-settings";
 import {
-  findSpecimen,
+  findSpecimenQuery,
   makeDoubleCodeArray,
   makeSingleCodeArray,
 } from "./test-data-helpers";
@@ -63,11 +63,11 @@ Ethics form XYZ.
       ]),
       selectedSpecimens: e.set(
         // we fully select one trio
-        findSpecimen(BART_SPECIMEN),
-        findSpecimen(HOMER_SPECIMEN),
-        findSpecimen(MARGE_SPECIMEN),
+        findSpecimenQuery(BART_SPECIMEN),
+        findSpecimenQuery(HOMER_SPECIMEN),
+        findSpecimenQuery(MARGE_SPECIMEN),
         // and just the proband of another trio
-        findSpecimen(ELROY_SPECIMEN)
+        findSpecimenQuery(ELROY_SPECIMEN)
       ),
     })
     .run(edgeDbClient);

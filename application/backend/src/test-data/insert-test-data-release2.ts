@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import { ElsaSettings } from "../bootstrap-settings";
-import { findSpecimen, makeEmptyCodeArray } from "./test-data-helpers";
+import { findSpecimenQuery, makeEmptyCodeArray } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 
 const edgeDbClient = edgedb.createClient();
@@ -25,10 +25,10 @@ export async function insertRelease2(settings: ElsaSettings) {
       ]),
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       selectedSpecimens: e.set(
-        findSpecimen("HG1"),
-        findSpecimen("HG2"),
-        findSpecimen("HG3"),
-        findSpecimen("HG4")
+        findSpecimenQuery("HG1"),
+        findSpecimenQuery("HG2"),
+        findSpecimenQuery("HG3"),
+        findSpecimenQuery("HG4")
       ),
     })
     .run(edgeDbClient);

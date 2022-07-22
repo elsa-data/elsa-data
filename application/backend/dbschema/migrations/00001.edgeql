@@ -1,4 +1,4 @@
-CREATE MIGRATION m13hmwcgkf6cn5gvgcevmo2zfo4wg4vm5l7naodooe4pdrlxyqzqma
+CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -67,7 +67,10 @@ CREATE MIGRATION m13hmwcgkf6cn5gvgcevmo2zfo4wg4vm5l7naodooe4pdrlxyqzqma
       CREATE REQUIRED PROPERTY size -> std::int64;
       CREATE REQUIRED PROPERTY url -> std::str;
   };
+  CREATE FUNCTION dataset::extractIdentifierValue(i: tuple<system: std::str, value: std::str>) ->  std::str USING (i.value);
+  CREATE SCALAR TYPE audit::ActionType EXTENDING enum<C, R, U, D, E>;
   CREATE TYPE audit::AuditEvent {
+      CREATE REQUIRED PROPERTY action -> audit::ActionType;
       CREATE REQUIRED PROPERTY occurredDateTime -> std::datetime;
       CREATE PROPERTY occurredDuration -> std::duration;
       CREATE REQUIRED PROPERTY recordedDateTime -> std::datetime {

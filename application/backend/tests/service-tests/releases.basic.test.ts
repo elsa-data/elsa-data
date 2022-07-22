@@ -1,15 +1,12 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
-import LinkHeader from "http-link-header";
 import { beforeEachCommon } from "./releases.common";
 import { ReleasesService } from "../../src/business/services/releases-service";
-import { AwsPresignedUrlsService } from "../../src/business/services/aws-presigned-urls-service";
 import { registerTypes } from "./setup";
 
 const testContainer = registerTypes();
 
 const releasesService = testContainer.resolve(ReleasesService);
-const awsPresignedUrlsService = testContainer.resolve(AwsPresignedUrlsService);
 
 let testReleaseId: string;
 
@@ -71,12 +68,4 @@ it("basic release data is present for data owner", async () => {
   );
   // as the PI we will only see cases already selected
   expect(result.visibleCasesCount).toBe(14);
-});
-
-it("aa", async () => {
-  const l = new LinkHeader();
-
-  l.set({ rel: "next", uri: "http://example.com/next" });
-
-  console.log(l.toString());
 });

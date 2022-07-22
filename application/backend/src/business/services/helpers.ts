@@ -117,6 +117,7 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
   const releaseSelectedCasesQuery = e.select(
     releaseAllDatasetQuery.cases,
     (dsc) => ({
+      externalIdentifiers: true,
       filter: e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery),
     })
   );

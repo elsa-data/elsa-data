@@ -1,4 +1,8 @@
+
 module dataset {
+
+    function extractIdentifierValue(i: tuple<system: str, value: str>) -> str
+    using (i.value);
 
     # a abstract type that represents any part of the dataset that we might link
     # to to make statements about it being 'shared'

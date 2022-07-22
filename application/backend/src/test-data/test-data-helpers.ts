@@ -158,9 +158,9 @@ export function findCase(id: string) {
   return e
     .select(e.dataset.DatasetCase, (dp) => ({
       filter: e.op(
-        makeSystemlessIdentifier(id),
+        id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers))
+        e.set(e.array_unpack(dp.externalIdentifiers).value)
       ),
     }))
     .assert_single();
@@ -170,21 +170,21 @@ export function findPatient(id: string) {
   return e
     .select(e.dataset.DatasetPatient, (dp) => ({
       filter: e.op(
-        makeSystemlessIdentifier(id),
+        id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers))
+        e.set(e.array_unpack(dp.externalIdentifiers).value)
       ),
     }))
     .assert_single();
 }
 
-export function findSpecimen(id: string) {
+export function findSpecimenQuery(id: string) {
   return e
     .select(e.dataset.DatasetSpecimen, (dp) => ({
       filter: e.op(
-        makeSystemlessIdentifier(id),
+        id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers))
+        e.set(e.array_unpack(dp.externalIdentifiers).value)
       ),
     }))
     .assert_single();

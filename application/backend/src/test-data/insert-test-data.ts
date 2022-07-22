@@ -5,7 +5,7 @@ import { insert10G } from "./insert-test-data-10g";
 import { ElsaSettings } from "../bootstrap-settings";
 import {
   createTestUser,
-  findSpecimen,
+  findSpecimenQuery,
   insertBlankDataset,
   makeDoubleCodeArray,
   makeEmptyCodeArray,

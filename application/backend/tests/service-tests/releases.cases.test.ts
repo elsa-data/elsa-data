@@ -4,6 +4,7 @@ import {
   findCase,
   findDatabaseSpecimenIds,
   findPatient,
+  findPatientExpected,
   findSpecimen,
 } from "./utils";
 import { ReleaseCaseType } from "@umccr/elsa-types";
@@ -13,9 +14,17 @@ import { registerTypes } from "./setup";
 import { ReleasesService } from "../../src/business/services/releases-service";
 import { Client } from "edgedb";
 import {
+  BART_PATIENT_PGP,
   BART_SPECIMEN,
+  ELROY_SPECIMEN,
+  GEORGE_SPECIMEN,
+  HOMER_PATIENT_PGP,
   HOMER_SPECIMEN,
+  JETSONS_CASE,
+  JUDY_SPECIMEN,
+  MARGE_PATIENT_PGP,
   MARGE_SPECIMEN,
+  SIMPSONS_CASE,
 } from "../../src/test-data/insert-test-data-10f";
 
 const testContainer = registerTypes();
@@ -66,7 +75,12 @@ it("get all case level information from a release as a data owner", async () => 
   expect(findSpecimen(pagedResult.data, MARGE_SPECIMEN)?.nodeStatus).toBe(
     "unselected"
   );
-  expect(findSpecimen(pagedResult.data, "HG4")?.nodeStatus).toBe("unselected");
+  expect(findSpecimen(pagedResult.data, ELROY_SPECIMEN)?.nodeStatus).toBe(
+    "unselected"
+  );
+  expect(findSpecimen(pagedResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
+    "selected"
+  );
 
   // expect nothing in the duck family to be selected
   expect(findSpecimen(pagedResult.data, "HG90")?.nodeStatus).toBe("unselected");
@@ -88,23 +102,29 @@ it("get limited case level information from a release as a PI", async () => {
   assert(pagedResult != null);
 
   // as a PI we will only see cases that have _something_ selected in them
-  expect(pagedResult.data.length).toBe(4);
+  expect(pagedResult.data.length).toBe(6);
 
   // because the PI has no concept of 'unselected' item - every node present is selected
-  expect(findCase(pagedResult.data, "ASHKENAZIM")?.nodeStatus).toBe("selected");
-  expect(findCase(pagedResult.data, "HAN")?.nodeStatus).toBe("selected");
-
-  // the specimens that are shared
-  expect(findSpecimen(pagedResult.data, "NA24385")?.nodeStatus).toBe(
+  expect(findCase(pagedResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
     "selected"
   );
-  expect(findSpecimen(pagedResult.data, "NA24149")?.nodeStatus).toBe(
+  expect(findCase(pagedResult.data, JETSONS_CASE)?.nodeStatus).toBe("selected");
+
+  // the specimens that are shared
+  expect(findSpecimen(pagedResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
+    "selected"
+  );
+  expect(findSpecimen(pagedResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
     "selected"
   );
 
   // not expecting to find these specimens at all as they are not shared
-  expect(findSpecimen(pagedResult.data, "HG3")?.nodeStatus).toBeUndefined();
-  expect(findSpecimen(pagedResult.data, "HG4")?.nodeStatus).toBeUndefined();
+  expect(
+    findSpecimen(pagedResult.data, MARGE_SPECIMEN)?.nodeStatus
+  ).toBeUndefined();
+  expect(
+    findSpecimen(pagedResult.data, ELROY_SPECIMEN)?.nodeStatus
+  ).toBeUndefined();
   expect(findSpecimen(pagedResult.data, "HG90")?.nodeStatus).toBeUndefined();
 });
 
@@ -122,10 +142,10 @@ it("get patient/specimen level data fields", async () => {
   expect(pagedResult).not.toBeNull();
   assert(pagedResult != null);
 
-  const caseAshkenazim = findCase(pagedResult.data, "ASHKENAZIM");
-  const patientBart = findPatient(pagedResult.data, "BART");
-  const patientHomer = findPatient(pagedResult.data, "HOMER");
-  const patientMarge = findPatient(pagedResult.data, "MARGE");
+  const caseSimpsons = findCase(pagedResult.data, SIMPSONS_CASE);
+  const patientBart = findPatientExpected(pagedResult.data, "BART");
+  const patientHomer = findPatientExpected(pagedResult.data, "HOMER");
+  const patientMarge = findPatientExpected(pagedResult.data, "MARGE");
 
   expect(patientBart?.sexAtBirth).toBe("male");
   expect(patientHomer?.sexAtBirth).toBe("male");
@@ -146,28 +166,28 @@ it("node status changes as leaves are selected and unselected", async () => {
 
     assert(initialResult != null);
 
-    expect(findCase(initialResult.data, "ASHKENAZIM")?.nodeStatus).toBe(
+    expect(findCase(initialResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
       "indeterminate"
     );
-    expect(findSpecimen(initialResult.data, "NA24385")?.nodeStatus).toBe(
+    expect(findSpecimen(initialResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(initialResult.data, "NA24149")?.nodeStatus).toBe(
+    expect(findSpecimen(initialResult.data, HOMER_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(initialResult.data, "NA24143")?.nodeStatus).toBe(
+    expect(findSpecimen(initialResult.data, MARGE_SPECIMEN)?.nodeStatus).toBe(
       "unselected"
     );
-    expect(findCase(initialResult.data, "HAN")?.nodeStatus).toBe(
+    expect(findCase(initialResult.data, JETSONS_CASE)?.nodeStatus).toBe(
       "indeterminate"
     );
-    expect(findSpecimen(initialResult.data, "NA24631")?.nodeStatus).toBe(
+    expect(findSpecimen(initialResult.data, ELROY_SPECIMEN)?.nodeStatus).toBe(
       "unselected"
     );
-    expect(findSpecimen(initialResult.data, "NA24694")?.nodeStatus).toBe(
+    expect(findSpecimen(initialResult.data, GEORGE_SPECIMEN)?.nodeStatus).toBe(
       "unselected"
     );
-    expect(findSpecimen(initialResult.data, "NA24695")?.nodeStatus).toBe(
+    expect(findSpecimen(initialResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
   }
@@ -177,8 +197,8 @@ it("node status changes as leaves are selected and unselected", async () => {
     testReleaseId,
     await findDatabaseSpecimenIds(edgeDbClient, [
       "HG00097",
-      "NA24631",
-      "NA24694",
+      ELROY_SPECIMEN,
+      GEORGE_SPECIMEN,
     ])
   );
 
@@ -196,26 +216,26 @@ it("node status changes as leaves are selected and unselected", async () => {
     expect(findCase(afterSetResult.data, "SIMPSONS")?.nodeStatus).toBe(
       "indeterminate"
     );
-    expect(findSpecimen(afterSetResult.data, "HG1")?.nodeStatus).toBe(
+    expect(findSpecimen(afterSetResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(afterSetResult.data, "HG2")?.nodeStatus).toBe(
+    expect(findSpecimen(afterSetResult.data, HOMER_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(afterSetResult.data, "HG3")?.nodeStatus).toBe(
+    expect(findSpecimen(afterSetResult.data, MARGE_SPECIMEN)?.nodeStatus).toBe(
       "unselected"
     );
     // note this change which has occurred because the leaf node of HG4 and HG5 has changed
     expect(findCase(afterSetResult.data, "JETSONS")?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(afterSetResult.data, "HG4")?.nodeStatus).toBe(
+    expect(findSpecimen(afterSetResult.data, ELROY_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(afterSetResult.data, "HG5")?.nodeStatus).toBe(
+    expect(findSpecimen(afterSetResult.data, GEORGE_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
-    expect(findSpecimen(afterSetResult.data, "HG6")?.nodeStatus).toBe(
+    expect(findSpecimen(afterSetResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
       "selected"
     );
   }
@@ -223,7 +243,7 @@ it("node status changes as leaves are selected and unselected", async () => {
   await releasesService.setUnselected(
     allowedDataOwnerUser,
     testReleaseId,
-    await findDatabaseSpecimenIds(edgeDbClient, ["HG1", "HG2"])
+    await findDatabaseSpecimenIds(edgeDbClient, [BART_SPECIMEN, HOMER_SPECIMEN])
   );
 
   {
@@ -241,15 +261,15 @@ it("node status changes as leaves are selected and unselected", async () => {
     expect(findCase(afterUnsetResult.data, "SIMPSONS")?.nodeStatus).toBe(
       "unselected"
     );
-    expect(findSpecimen(afterUnsetResult.data, "HG1")?.nodeStatus).toBe(
+    expect(findSpecimen(afterUnsetResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
       "unselected"
     );
-    expect(findSpecimen(afterUnsetResult.data, "HG2")?.nodeStatus).toBe(
-      "unselected"
-    );
-    expect(findSpecimen(afterUnsetResult.data, "HG3")?.nodeStatus).toBe(
-      "unselected"
-    );
+    expect(
+      findSpecimen(afterUnsetResult.data, HOMER_SPECIMEN)?.nodeStatus
+    ).toBe("unselected");
+    expect(
+      findSpecimen(afterUnsetResult.data, MARGE_SPECIMEN)?.nodeStatus
+    ).toBe("unselected");
   }
 });
 

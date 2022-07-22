@@ -39,9 +39,9 @@ export async function findDatabaseSpecimenIds(
   const toChange = await e
     .select(e.dataset.DatasetSpecimen, (dss) => ({
       filter: e.op(
-        e.set(...valueIds.map((a) => makeSystemlessIdentifier(a))),
+        e.set(...valueIds),
         "in",
-        e.array_unpack(dss.externalIdentifiers)
+        e.array_unpack(dss.externalIdentifiers).value
       ),
     }))
     .run(client);
@@ -121,6 +121,16 @@ export function findPatient(
     }
   }
   return null;
+}
+
+export function findPatientExpected(
+  cases: ReleaseCaseType[],
+  externalId: string
+) {
+  const v = findPatient(cases, externalId);
+  if (!v)
+    throw new Error(`Could not find an expected patient with id ${externalId}`);
+  return v;
 }
 
 export function findCase(
