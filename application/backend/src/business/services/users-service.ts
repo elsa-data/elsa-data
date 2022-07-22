@@ -1,15 +1,14 @@
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 
 // possibly can somehow get this from the schemas files?
-type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
+export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
 
 @injectable()
-@singleton()
 export class UsersService {
-  constructor(@inject("Database") private edgeDbClient: Client) {}
+  constructor(@inject("Database") private edgeDbClient: edgedb.Client) {}
 
   private baseUserSelectQuery(subjectId: string) {
     // TODO: convert this to use edge parameters?

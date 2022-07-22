@@ -13,7 +13,7 @@ type LoggedInUser = {
 };
 
 /**
- * The logged in user provider is a context that tracks the logged in user via
+ * The logged-in user provider is a context that tracks the logged-in user via
  * cookies.
  *
  * @param props

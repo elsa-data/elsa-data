@@ -7,14 +7,23 @@ import {
 } from "@umccr/elsa-types";
 import { ElsaSettings } from "../../bootstrap-settings";
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
-import { currentPageSize } from "../api-pagination";
+import {
+  currentPageSize,
+  LAST_PAGE_HEADER_NAME,
+  PAGE_SIZE_HEADER_NAME,
+  TOTAL_COUNT_HEADER_NAME,
+} from "../api-pagination";
 import { container } from "tsyringe";
-import { AwsService } from "../../business/services/aws-service";
-import { DatasetsService } from "../../business/services/datasets-service";
-import { authenticatedRouteOnEntryHelper } from "../api-routes";
+import { AwsBaseService } from "../../business/services/aws-base-service";
+import { DatasetService } from "../../business/services/dataset-service";
+import {
+  authenticatedRouteOnEntryHelper,
+  sendPagedResult,
+} from "../api-routes";
+import LinkHeader from "http-link-header";
 
 export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
-  const datasetsService = container.resolve(DatasetsService);
+  const datasetsService = container.resolve(DatasetService);
 
   /**
    * Pageable fetching of top-level dataset information (summary level info)
@@ -23,19 +32,16 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     "/api/datasets",
     {},
     async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+      const { authenticatedUser, pageSize, page, offset } =
+        authenticatedRouteOnEntryHelper(request);
 
-      const limit = currentPageSize(request);
-
-      const offset = (request.query as any).offset || 0;
-
-      const converted = await datasetsService.getAll(
+      const datasetsPagedResult = await datasetsService.getAll(
         authenticatedUser,
-        limit,
+        pageSize,
         offset
       );
 
-      reply.send(converted);
+      sendPagedResult(reply, datasetsPagedResult, page, "/api/datasets?");
     }
   );
 

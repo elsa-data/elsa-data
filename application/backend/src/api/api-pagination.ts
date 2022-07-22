@@ -1,63 +1,62 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { isNumber } from "lodash";
+import {
+  UI_PAGE_SIZE_COOKIE_NAME,
+  UI_PAGE_SIZE_DEFAULT,
+} from "@umccr/elsa-strings";
 
-const DEFAULT_PAGE_SIZE = 5;
-const DEFAULT_PAGE_SIZE_COOKIE_NAME = "elsa-page-size";
+// NOTE: both fastify and axios are going to lowercase this anyhow - so mind as well start out that way
+export const TOTAL_COUNT_HEADER_NAME = "elsa-total-count";
+export const LAST_PAGE_HEADER_NAME = "elsa-last-page";
+export const PAGE_SIZE_HEADER_NAME = "elsa-page-size";
 
 export function currentPageSize(request: FastifyRequest): number {
-  const cookiePageSizeValue = request.cookies[DEFAULT_PAGE_SIZE_COOKIE_NAME];
+  const cookiePageSizeValue = request.cookies[UI_PAGE_SIZE_COOKIE_NAME];
 
-  if (!cookiePageSizeValue) return DEFAULT_PAGE_SIZE;
+  if (!cookiePageSizeValue) return UI_PAGE_SIZE_DEFAULT;
 
   const cookieSetPageSize = parseInt(cookiePageSizeValue);
 
-  if (isNaN(cookieSetPageSize)) return DEFAULT_PAGE_SIZE;
+  if (isNaN(cookieSetPageSize)) return UI_PAGE_SIZE_DEFAULT;
 
-  if (!cookieSetPageSize) return DEFAULT_PAGE_SIZE;
+  if (!cookieSetPageSize) return UI_PAGE_SIZE_DEFAULT;
 
   return cookieSetPageSize;
 }
 
-export function setPageSize(
+/*export function setPageSize(
   request: FastifyRequest,
   reply: FastifyReply,
   pageSize: number
 ): void {
-  reply.setCookie(DEFAULT_PAGE_SIZE_COOKIE_NAME, pageSize.toString());
-}
+  reply.setCookie(UI_PAGE_SIZE_COOKIE_NAME, pageSize.toString());
+} */
 
 export type PagedResult<T> = {
   data: T[];
   total: number;
-  limit?: number;
-  offset?: number;
-  prev?: number;
-  next?: number;
+  first: number;
+  last: number;
 };
 
+/**
+ * Create a paged result object from the results of an internal edge
+ * db query we have made using limits/offsets. Our outer APIs always
+ * use the concept of pages - so this converts back.
+ *
+ * @param data
+ * @param total
+ * @param pageSize
+ */
 export function createPagedResult<T>(
   data: T[],
   total: number,
-  limit?: number,
-  offset?: number
+  pageSize: number
 ): PagedResult<T> {
-  const pr: PagedResult<T> = {
+  return {
     data: data,
     total: total,
+    // note: our first page being 1 makes our last page one higher than you might expect!
+    first: 1,
+    last: Math.ceil(total / pageSize) + 1,
   };
-
-  if (isNumber(limit) && isNumber(offset)) {
-    pr.limit = limit;
-    pr.offset = offset;
-
-    if (offset > 0) {
-      pr.prev = Math.max(0, offset - limit);
-    }
-
-    if (offset < total) {
-      pr.next = Math.min(total, offset + limit);
-    }
-  }
-
-  return pr;
 }

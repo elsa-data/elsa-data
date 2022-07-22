@@ -10,6 +10,56 @@ import {
   ontologyLookupCache,
 } from "../../helpers/ontology-helper";
 
+const Chip: React.FC<{
+  c: CodingType;
+  removeFromSelected: (c: CodingType) => void;
+}> = ({ c, removeFromSelected }) => {
+  const initialDisplay =
+    c.display ||
+    (makeCacheEntry(c.system, c.code) in ontologyLookupCache
+      ? ontologyLookupCache[makeCacheEntry(c.system, c.code)]
+      : null);
+
+  const [display, setDisplay] = useState<string | null>(initialDisplay);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const newCodes = await doBatchLookup("https://onto.prod.umccr.org/fhir", [
+        c,
+      ]);
+      if (newCodes.length > 0 && newCodes[0].display)
+        setDisplay(newCodes[0].display);
+    };
+    fetchData().catch();
+  }, [c]);
+
+  return (
+    <li className="px-4 py-2 rounded-full text-gray-500 bg-gray-200 text-sm flex-none flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease">
+      {display ?? c.code}
+      <button
+        className="bg-transparent hover focus:outline-none"
+        onClick={() => removeFromSelected(c)}
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          data-prefix="fas"
+          data-icon="times"
+          className="w-3 ml-3"
+          role="img"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 352 512"
+        >
+          <path
+            fill="currentColor"
+            d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
+          ></path>
+        </svg>
+      </button>
+    </li>
+  );
+};
+
 type Props = {
   ontoServerUrl: string; // "https://genomics.ontoserver.csiro.au
 
@@ -43,9 +93,13 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
   // a code array that is set on mount to the same as props.selected - and which then
   // is background filled with 'display' terms
 
+  // TODO: THIS IS WRONG.. NEEDS FIXING..
+
+  const listItemBadge = (cn: string) => {};
+
   // given the number of display terms is likely to be small, and is very stable - we aggressively
   // cache them locally and use those values rather than go to the network
-  const [codesWithDisplay, setCodesWithDisplay] = useState(
+  /*const [codesWithDisplay, setCodesWithDisplay] = useState(
     props.selected.map((c) => {
       const newC: CodingType = { system: c.system, code: c.code };
       if (makeCacheEntry(c.system, c.code) in ontologyLookupCache) {
@@ -53,12 +107,12 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       }
       return newC;
     })
-  );
+  ); */
 
   // state for the list of concepts that appear as we are doing searchers
   const [searchHits, setSearchHits] = useState([] as CodingType[]);
 
-  React.useEffect(() => {
+  /*React.useEffect(() => {
     const fetchData = async () => {
       const newCodes = await doBatchLookup(
         "https://onto.prod.umccr.org/fhir",
@@ -68,7 +122,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       setCodesWithDisplay([...newCodes]);
     };
     fetchData().catch();
-  }, [props.selected]);
+  }, [props.selected]); */
 
   const stateReducer = (state: any, actionAndChanges: any) => {
     const { type, changes } = actionAndChanges;
@@ -152,32 +206,6 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       });
   };
 
-  const chip = (c: CodingType) => (
-    <li className="px-4 py-2 rounded-full text-gray-500 bg-gray-200 text-sm flex-none flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease">
-      {c.display ?? c.code}
-      <button
-        className="bg-transparent hover focus:outline-none"
-        onClick={() => props.removeFromSelected(c)}
-      >
-        <svg
-          aria-hidden="true"
-          focusable="false"
-          data-prefix="fas"
-          data-icon="times"
-          className="w-3 ml-3"
-          role="img"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 352 512"
-        >
-          <path
-            fill="currentColor"
-            d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
-          ></path>
-        </svg>
-      </button>
-    </li>
-  );
-
   return (
     <div className="col-span-3">
       <label
@@ -189,8 +217,12 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
 
       <div className="mt-1 p-2 rounded-md w-full border border-gray-300">
         <ul className="flex flex-row flex-wrap space-x-2 space-y-2">
-          {!_.isEmpty(codesWithDisplay) && (
-            <>{Object.values(codesWithDisplay).map((c, index) => chip(c))}</>
+          {!_.isEmpty(props.selected) && (
+            <>
+              {Object.values(props.selected).map((c, index) => (
+                <Chip c={c} removeFromSelected={props.removeFromSelected} />
+              ))}
+            </>
           )}
           <input
             type="text"

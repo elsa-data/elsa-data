@@ -1,18 +1,13 @@
 import React from "react";
-import { VerticalTabs } from "../../../components/vertical-tabs";
-import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  ReleaseAwsS3PresignRequestType,
-  ReleaseRemsSyncRequestType,
-} from "@umccr/elsa-types";
-import axios from "axios";
+import { useForm } from "react-hook-form";
+import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
 
 type Props = {
   releaseId: string;
 };
 
 /**
- * A form that is used to submit a job to the backend - asking for AWS S3
+ * A form that is used to ask for AWS S3
  * presigned URLS.
  *
  * @param releaseId

@@ -4,10 +4,18 @@ import { datasetRoutes } from "./routes/datasets";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
-import { currentPageSize } from "./api-pagination";
+import {
+  currentPageSize,
+  LAST_PAGE_HEADER_NAME,
+  PAGE_SIZE_HEADER_NAME,
+  PagedResult,
+  TOTAL_COUNT_HEADER_NAME,
+} from "./api-pagination";
 import { container } from "tsyringe";
-import { AwsService } from "../business/services/aws-service";
+import { AwsBaseService } from "../business/services/aws-base-service";
 import { UsersService } from "../business/services/users-service";
+import LinkHeader from "http-link-header";
+import { isNil, isFinite } from "lodash";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -24,12 +32,75 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
   const elsaSettings: ElsaSettings = (request as any).settings;
   const authenticatedUser: AuthenticatedUser = (request as any).user;
   const pageSize = currentPageSize(request);
+  const page = parseInt((request.query as any).page) || 1;
+  const offset = (page - 1) * pageSize;
 
   return {
     elsaSettings,
     authenticatedUser,
     pageSize,
+    page,
+    offset,
   };
+}
+
+/**
+ * A helper function that can send arbitrary paged results back to the client
+ * but inserting various headers to support paging.
+ *
+ * @param reply
+ * @param pr
+ * @param currentPage
+ * @param basePath
+ */
+export function sendPagedResult<T>(
+  reply: FastifyReply,
+  pr: PagedResult<T> | null,
+  currentPage: number,
+  basePath: string
+) {
+  // our services can indicate a lack of permissions, or an unknown identifier - by returning
+  // null as a PagedResult
+  // (they can also choose to throw an exception or other stuff - but if they do return null we want to handle it
+  // safely here)
+  if (isNil(pr) || isNil(pr!.data)) reply.status(400).send();
+  else {
+    if (!basePath.endsWith("?") && !basePath.endsWith("&"))
+      throw Error(
+        "The basePath for returnPagedResult must end with ? or & so that we can create the paging links"
+      );
+
+    // supporting returning RFC 8288 headers
+    const l = new LinkHeader();
+
+    if (currentPage < pr.last)
+      l.set({
+        rel: "next",
+        uri: `${basePath}page=${currentPage + 1}`,
+      });
+    if (currentPage > 1)
+      l.set({
+        rel: "prev",
+        uri: `${basePath}page=${currentPage - 1}`,
+      });
+
+    // TBH - we don't really use RFC 8288 at the client so no point to this
+    //if (isFinite(pr.first))
+    //  l.set({
+    //    rel: "first",
+    //    uri: `${basePath}page=${pr.first}`,
+    //  });
+    //if (isFinite(pr.last))
+    //  l.set({
+    //    rel: "last",
+    //    uri: `${basePath}page=${pr.last}`,
+    //  });
+
+    reply
+      .header(TOTAL_COUNT_HEADER_NAME, pr.total.toString())
+      .header("link", l)
+      .send(pr.data);
+  }
 }
 
 /**

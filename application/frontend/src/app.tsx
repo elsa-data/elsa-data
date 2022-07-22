@@ -7,6 +7,7 @@ import { DatasetsPage } from "./pages/datasets-page";
 import { DatasetsSpecificPage } from "./pages/datasets-specific-page";
 import { LoginPage } from "./pages/login-page";
 import { useLoggedInUser } from "./providers/logged-in-user-provider";
+import { NotAuthorisedPage } from "./pages/not-authorised-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -14,7 +15,16 @@ function NoMatch() {
   return (
     <div>
       <p>
-        No React router match for <code>{location.pathname}</code>
+        No React router match for <code>{location.pathname}</code>.
+      </p>
+      <p>
+        If you have landed on this page by following links within Elsa Data -
+        then this is an internal bug and we would be grateful if you could
+        report it.
+      </p>
+      <p>
+        If you have just been randomly typing in URLs then you have got what you
+        deserved!
       </p>
     </div>
   );
@@ -30,6 +40,7 @@ export const App: React.FC = () => {
     return (
       <Routes>
         <Route path={`/`} element={<HomePage />} />
+        <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
         <Route path={`/releases`} element={<ReleasesPage />} />
         <Route path={`/releases/:releaseId`} element={<ReleasesDetailPage />} />
         <Route path={`/datasets`} element={<DatasetsPage />} />

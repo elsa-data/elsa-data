@@ -47,7 +47,7 @@ export async function doRoleInReleaseCheck(
  * @param releaseId the release to load
  */
 export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
-  // the base query that will give us just the release
+  // the base (id only) query that will give us just the release
   const releaseQuery = e
     .select(e.release.Release, (r) => ({
       filter: e.op(r.id, "=", e.uuid(releaseId)),
@@ -60,8 +60,19 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
   );
 
   const releaseInfoQuery = e.select(releaseQuery, (r) => ({
-    // the select specimens tell us the leaf nodes that have been 'checked'
-    selectedSpecimens: true,
+    ...e.release.Release["*"],
+    applicationCoded: {
+      ...e.release.ApplicationCoded["*"],
+    },
+    runningJob: {
+      ...e.job.Job["*"],
+    },
+    // the master computation of whether we are currently enabled for access
+    accessEnabled: e.op(
+      e.op(e.datetime_current(), ">=", r.releaseStarted),
+      "and",
+      e.op(e.datetime_current(), "<=", r.releaseEnded)
+    ),
     // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
     //manualExclusions: true,
     // we are loosely linked (by uri) to datasets which this release draws data from
@@ -93,28 +104,33 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
       ? e.set(...datasetUriToIdMap.values())
       : e.cast(e.uuid, e.set());
 
+  // the (id only) set of all datasets included in this release
   const releaseAllDatasetQuery = e.select(e.dataset.Dataset, (ds) => ({
     ...e.dataset.Dataset["*"],
     filter: e.op(ds.id, "in", releaseAllDatasetIdDbSet),
   }));
 
-  // the set of all cases from the release
+  // the (id only) set of all cases from the release datasets irrespective of selection
   const releaseAllDatasetCasesQuery = e.select(releaseAllDatasetQuery.cases);
 
-  // the count of all cases from the release
-  const releaseAllDatasetCasesCountyQuery = e.count(
-    releaseAllDatasetQuery.cases
+  // the (id only) set of all cases from the release datasets that are selected
+  const releaseSelectedCasesQuery = e.select(
+    releaseAllDatasetQuery.cases,
+    (dsc) => ({
+      filter: e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery),
+    })
   );
 
   return {
     releaseQuery,
     releaseSelectedSpecimensQuery,
+    releaseInfo,
     releaseInfoQuery,
     //releaseExcluded,
     datasetUriToIdMap,
     releaseAllDatasetIdDbSet,
     releaseAllDatasetQuery,
     releaseAllDatasetCasesQuery,
-    releaseAllDatasetCasesCountyQuery,
+    releaseSelectedCasesQuery,
   };
 }

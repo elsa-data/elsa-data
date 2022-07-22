@@ -1,37 +1,30 @@
 import React from "react";
-import { useEnvRelay } from "../../../providers/env-relay-provider";
-import { useQuery, useQueryClient } from "react-query";
-import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
 import { Box } from "../../../components/boxes";
-import { ReleaseDetailType } from "@umccr/elsa-types";
-import { MondoChooser } from "../../../components/concept-chooser/mondo-chooser";
-import { doBatchLookup } from "../../../helpers/ontology-helper";
-import { LayoutBase } from "../../../layouts/layout-base";
-import { CasesTable } from "./cases-table";
 import { ReleaseTypeLocal } from "./shared-types";
-import { VerticalTabs } from "../../../components/vertical-tabs";
-import { AwsS3PresignedForm } from "./aws-s3-presigned-form";
-import { ApplicationCodedBox } from "./application-coded-box";
 import ReactMarkdown from "react-markdown";
 import classNames from "classnames";
+import { Trans } from "@lingui/macro";
+import { useLingui } from "@lingui/react";
 
 type Props = {
   releaseId: string;
   releaseData: ReleaseTypeLocal;
 };
 
+/**
+ * Displays summary/important information about a release.
+ *
+ * @param releaseData
+ * @param releaseId
+ * @constructor
+ */
 export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
-  const colours = [
-    "bg-amber-400",
-    "bg-red-400",
-    "bg-blue-400",
-    "bg-green-400",
-    "bg-gray-400",
-  ];
+  const { i18n } = useLingui();
+
+  const alertBoxClasses = "border-4 rounded-2xl p-4 text-center mb-2";
 
   return (
-    <Box heading="Release Information">
+    <Box heading={<Trans>Release Information</Trans>}>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           <span className="font-bold">
@@ -54,20 +47,32 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
           )}
         </div>
 
-        <div>
+        <div className="flex flex-col gap-2 items-end">
+          {releaseData.accessEnabled && (
+            <div className={classNames(alertBoxClasses, "border-green-400")}>
+              <Trans>
+                <p>Data access is currently enabled</p>
+                <p>Access will automatically cease</p>
+                <p title={i18n.date("2022-03-05")}>
+                  <b>in two months</b>
+                </p>
+              </Trans>
+            </div>
+          )}
+          {!releaseData.accessEnabled && (
+            <div className={classNames(alertBoxClasses, "border-red-400")}>
+              <p>Data access is currently disabled</p>
+            </div>
+          )}
           <ul className="text-right">
             {Array.from(releaseData.datasetMap.entries()).map(
-              ([uri, letter], index) => (
-                <li key={index}>
+              ([uri, vis], index) => (
+                <li
+                  key={index}
+                  className="flex flex-row justify-end align-middle"
+                >
                   <span className="mr-6 font-mono">{uri}</span>
-                  <span
-                    className={classNames(
-                      "rounded-full p-2 text-sm text-black",
-                      colours[index]
-                    )}
-                  >
-                    {letter}
-                  </span>
+                  <span className="w-6 h-6">{vis}</span>
                 </li>
               )
             )}

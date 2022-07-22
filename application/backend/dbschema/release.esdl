@@ -42,18 +42,28 @@ module release {
             select .<forRelease[is job::Job] filter .status = job::JobStatus.running
         );
 
+        # a auto generated random string that is used for encrypting download zips etc
+        # can be re-generated at an admin level
+
+        required property releasePassword -> str;
+
+
+
         # the set of resources explicitly chosen for exclusion no matter what an automated
         # algorithm says
-        multi link manualExclusions -> dataset::DatasetShareable {
-            property who -> str;
-            property recorded -> str;
-            property reason -> str;
-        };
+        # DETERMINE IF THIS IS ACTUALLY A FEATURE WE WANT
+        #multi link manualExclusions -> dataset::DatasetShareable {
+        #    property who -> str;
+        #    property recorded -> str;
+        #    property reason -> str;
+        #};
     }
 
     scalar type ApplicationCodedStudyType extending enum<'GRU', 'HMB', 'CC', 'POA', 'DS'>;
 
     type ApplicationCoded {
+
+        # a classification of the type of research being performed with this release
 
         required property studyType -> ApplicationCodedStudyType;
 
@@ -61,29 +71,10 @@ module release {
 
         required property countriesInvolved -> array<tuple<system: str, code: str>>;
 
-        required property institutesInvolved -> array<tuple<system: str, code: str>>;
+        # required property institutesInvolved -> array<tuple<system: str, code: str>>;
 
         required property studyAgreesToPublish -> bool;
 
         required property studyIsNotCommercial -> bool;
-    }
-
-    type AuditEvent {
-        # when the event occurred - including optional duration if
-        # modelling an event that occurred over a significant period of time
-        # in this case occurredDateTime always records the 'beginning' of the activity
-        # for instance copying a large file may take 10 minutes, starting 9am on Friday
-        # -> occurredDateTime = Friday 9am, occurredDuration = 10 mins
-
-        required property occurredDateTime -> datetime;
-        property occurredDuration -> duration;
-
-        # when this audit record has been made (should be close to occurredDateTime!)
-        required property recordedDateTime -> datetime {
-            default := datetime_current();
-            readonly := true;
-        }
-
-        property what -> str;
     }
 }

@@ -3,6 +3,7 @@ import { ReleaseTypeLocal } from "./shared-types";
 import { doBatchLookup } from "../../../helpers/ontology-helper";
 import { QueryFunctionContext } from "react-query";
 import { CodingType, ReleaseDetailType } from "@umccr/elsa-types";
+import { createDatasetMap } from "./dataset-map";
 
 export const REACT_QUERY_RELEASE_KEYS = {
   all: ["releases"] as const,
@@ -26,13 +27,8 @@ export async function makeReleaseTypeLocal(
 
   // we want to make an immutable map of letters (e.g. uri => A,B...)
   // just for some UI optimisations which is why this is strictly local
-  (releaseData as ReleaseTypeLocal).datasetMap = new Map(
+  (releaseData as ReleaseTypeLocal).datasetMap = createDatasetMap(
     releaseData.datasetUris
-      .sort()
-      .map((duri, index) => [
-        duri,
-        String.fromCharCode(index + "A".charCodeAt(0)),
-      ])
   );
 
   return releaseData as ReleaseTypeLocal;

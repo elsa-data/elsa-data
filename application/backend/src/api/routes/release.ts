@@ -2,9 +2,12 @@ import { FastifyInstance } from "fastify";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
+  DuoLimitationCodedType,
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
   ReleaseDetailType,
+  ReleaseMasterAccessRequestSchema,
+  ReleaseMasterAccessRequestType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
@@ -15,12 +18,22 @@ import streamConsumers from "node:stream/consumers";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs-service";
-import { AwsService } from "../../business/services/aws-service";
 import { ReleasesService } from "../../business/services/releases-service";
+import LinkHeader from "http-link-header";
+import {
+  LAST_PAGE_HEADER_NAME,
+  PAGE_SIZE_HEADER_NAME,
+  TOTAL_COUNT_HEADER_NAME,
+} from "../api-pagination";
+import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
+import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
+import fastifyFormBody from "@fastify/formbody";
+import { isString } from "lodash";
 
 export function registerReleaseRoutes(fastify: FastifyInstance) {
   const jobsService = container.resolve(JobsService);
-  const awsService = container.resolve(AwsService);
+  const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
+  const awsAccessPointService = container.resolve(AwsAccessPointService);
   const releasesService = container.resolve(ReleasesService);
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
 
@@ -28,12 +41,13 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     "/api/releases",
     {},
     async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+      const { authenticatedUser, pageSize, offset } =
+        authenticatedRouteOnEntryHelper(request);
 
       const allForUser = await releasesService.getAll(
         authenticatedUser,
-        100,
-        0
+        pageSize,
+        offset
       );
 
       reply.send(allForUser);
@@ -64,19 +78,63 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
       const releaseId = request.params.rid;
 
-      const page = parseInt((request.query as any).page) || 0;
+      const page = parseInt((request.query as any).page) || 1;
 
       const cases = await releasesService.getCases(
         authenticatedUser,
         releaseId,
         pageSize,
-        page * pageSize
+        (page - 1) * pageSize
       );
 
       if (!cases) reply.status(400).send();
-      else reply.send(cases.data);
+      else {
+        const l = new LinkHeader();
+
+        if (page < cases.last)
+          l.set({
+            rel: "next",
+            uri: `/api/releases/${releaseId}/cases?page=${page + 1}`,
+          });
+        if (page > 1)
+          l.set({
+            rel: "prev",
+            uri: `/api/releases/${releaseId}/cases?page=${page - 1}`,
+          });
+        l.set({
+          rel: "first",
+          uri: `/api/releases/${releaseId}/cases?page=${cases.first}`,
+        });
+        l.set({
+          rel: "last",
+          uri: `/api/releases/${releaseId}/cases?page=${cases.last}`,
+        });
+
+        reply
+          .header(TOTAL_COUNT_HEADER_NAME, cases.total.toString())
+          .header(LAST_PAGE_HEADER_NAME, pageSize.toString())
+          .header(PAGE_SIZE_HEADER_NAME, pageSize.toString())
+          .header("Link", l)
+          .send(cases.data);
+      }
     }
   );
+
+  fastify.get<{
+    Params: { rid: string; nid: string };
+    Reply: DuoLimitationCodedType[];
+  }>("/api/releases/:rid/consent/:nid", {}, async function (request, reply) {
+    const { authenticatedUser, pageSize } =
+      authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+    const nodeId = request.params.nid;
+
+    reply.send([
+      { code: "DUO:0000006", modifiers: [] },
+      { code: "DUO:0000042", modifiers: [] },
+    ]);
+  });
 
   fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
     "/api/releases/:rid/specimens/select",
@@ -246,6 +304,42 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
   }
 
   fastify.post<{
+    Body: ReleaseMasterAccessRequestType;
+    Params: { rid: string };
+  }>("/api/releases/:rid/access", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+
+    await releasesService.setMasterAccess(
+      authenticatedUser,
+      releaseId,
+      undefined, //isString(request.body.start) ? Date.parse(request.body.start) : request.body.start,
+      undefined // request.body.end
+    );
+  });
+
+  fastify.post<{
+    Body: any;
+    Params: { rid: string };
+  }>("/api/releases/:rid/cfn", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+
+    if (!awsPresignedUrlsService.isEnabled)
+      throw new Error(
+        "The AWS service was not started so no AWS signing will work"
+      );
+
+    await awsAccessPointService.installCloudFormationAccessPointForRelease(
+      authenticatedUser,
+      releaseId,
+      ["409003025053"]
+    );
+  });
+
+  fastify.post<{
     Body: ReleaseAwsS3PresignRequestType;
     Params: { rid: string };
   }>("/api/releases/:rid/pre-signed", {}, async function (request, reply) {
@@ -253,12 +347,12 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     const releaseId = request.params.rid;
 
-    if (!awsService.isEnabled)
+    if (!awsPresignedUrlsService.isEnabled)
       throw new Error(
         "The AWS service was not started so no AWS signing will work"
       );
 
-    const awsFiles = await awsService.getPresigned(
+    const awsFiles = await awsPresignedUrlsService.getPresigned(
       authenticatedUser,
       releaseId
     );

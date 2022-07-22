@@ -1,104 +1,57 @@
-import { Client } from "edgedb";
+import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable, singleton } from "tsyringe";
+import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import { BadLimitOffset } from "../exceptions/BadLimitOffset";
+import {
+  datasetAllCountQuery,
+  datasetAllSummaryQuery,
+} from "../db/dataset-queries";
 
 @injectable()
 @singleton()
-export class DatasetsService {
-  constructor(@inject("Database") private readonly edgeDbClient: Client) {}
+export class DatasetService {
+  constructor(
+    @inject("Database") private readonly edgeDbClient: edgedb.Client
+  ) {}
 
   /**
-   * Returns a base edgedb query for our dataset info + counts/calcs. It *does not*
-   * however recurse deep into the dataset structures for all the sub cases/patients etc - those
-   * query elements need to be added elsewhere
+   * Return a paged result of datasets in summary form.
+   *
+   * @param user
+   * @param limit
+   * @param offset
    */
-  private baseDatasetSelect(limit: number, offset: number) {
-    return e.select(e.dataset.Dataset, (ds) => ({
-      // get the top level dataset elements
-      ...e.dataset.Dataset["*"],
-      // compute some useful summary counts
-      summaryCaseCount: e.count(ds.cases),
-      summaryPatientCount: e.count(ds.cases.patients),
-      summarySpecimenCount: e.count(ds.cases.patients.specimens),
-      summaryArtifactCount: e.count(ds.cases.patients.specimens.artifacts),
-      summaryBclCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl)
-      ),
-      summaryFastqCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-      ),
-      summaryBamCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam)
-      ),
-      summaryCramCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-      ),
-      summaryVcfCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf)
-      ),
-      // the byte size of all artifacts
-      summaryArtifactBytes: e.sum(
-        e.set(
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl).bclFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-              .forwardFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-              .reverseFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam).bamFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam).baiFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-              .cramFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-              .craiFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf).vcfFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf).tbiFile
-              .size
-          )
-        )
-      ),
-      limit: e.int32(limit),
-      offset: e.int32(offset),
-      //filter: e.op(ds, "in", e.set(user.datasetOwner))
-    }));
-  }
+  public async getAll(
+    user: AuthenticatedUser,
+    limit: number,
+    offset: number
+  ): Promise<PagedResult<DatasetLightType>> {
+    if (limit <= 0 || offset < 0) throw new BadLimitOffset(limit, offset);
 
-  public async getAll(user: AuthenticatedUser, limit: number, offset: number) {
-    const fullDatasets = await this.baseDatasetSelect(limit, offset).run(
+    // TODO: if we introduce any security model into dataset (i.e. at the moment
+    // all data owners can see all datasets) - we need to add some filtering to these
+    // queries
+    const fullCount = await datasetAllCountQuery().run(this.edgeDbClient);
+
+    const fullDatasets = await datasetAllSummaryQuery(limit, offset).run(
       this.edgeDbClient
     );
 
     const converted: DatasetLightType[] = fullDatasets.map((fd) => {
       const includes: string[] = [];
       if (fd.summaryBamCount > 0) includes.push("BAM");
+      if (fd.summaryBclCount > 0) includes.push("BCL");
+      if (fd.summaryCramCount > 0) includes.push("CRAM");
       if (fd.summaryFastqCount > 0) includes.push("FASTQ");
       if (fd.summaryVcfCount > 0) includes.push("VCF");
       return {
         id: fd.id,
         uri: fd.uri!,
         description: fd.description,
+        summaryCaseCount: fd.summaryCaseCount,
         summaryPatientCount: fd.summaryPatientCount,
         summarySpecimenCount: fd.summarySpecimenCount,
         summaryArtifactCount: fd.summaryArtifactCount,
@@ -107,7 +60,7 @@ export class DatasetsService {
       };
     });
 
-    return converted;
+    return createPagedResult(converted, fullCount, limit);
   }
 
   public async get(
@@ -141,6 +94,7 @@ export class DatasetsService {
         description: singleDataset.description,
         summaryArtifactCount: 0,
         summaryArtifactIncludes: "",
+        summaryCaseCount: 0,
         summarySpecimenCount: 0,
         summaryPatientCount: 0,
         summaryArtifactSizeBytes: 0,

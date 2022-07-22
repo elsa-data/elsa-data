@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -24,3 +24,5 @@ export const CodingSchema = Type.Object({
   // not sure needed for us
   // userSelected: Type.Optional(Type.Boolean())
 });
+
+export type CodingType = Static<typeof CodingSchema>;

@@ -1,6 +1,7 @@
-CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
+CREATE MIGRATION m13hmwcgkf6cn5gvgcevmo2zfo4wg4vm5l7naodooe4pdrlxyqzqma
     ONTO initial
 {
+  CREATE MODULE audit IF NOT EXISTS;
   CREATE MODULE consent IF NOT EXISTS;
   CREATE MODULE dataset IF NOT EXISTS;
   CREATE MODULE job IF NOT EXISTS;
@@ -13,7 +14,6 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   CREATE TYPE release::ApplicationCoded {
       CREATE REQUIRED PROPERTY countriesInvolved -> array<tuple<system: std::str, code: std::str>>;
       CREATE REQUIRED PROPERTY diseasesOfStudy -> array<tuple<system: std::str, code: std::str>>;
-      CREATE REQUIRED PROPERTY institutesInvolved -> array<tuple<system: std::str, code: std::str>>;
       CREATE REQUIRED PROPERTY studyAgreesToPublish -> std::bool;
       CREATE REQUIRED PROPERTY studyIsNotCommercial -> std::bool;
       CREATE REQUIRED PROPERTY studyType -> release::ApplicationCodedStudyType;
@@ -21,7 +21,7 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   CREATE ABSTRACT TYPE consent::ConsentStatement;
   CREATE TYPE consent::Consent {
       CREATE MULTI LINK statements -> consent::ConsentStatement {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
   };
@@ -41,22 +41,25 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   CREATE TYPE dataset::DatasetCase EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable;
   ALTER TYPE dataset::Dataset {
       CREATE MULTI LINK cases -> dataset::DatasetCase {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
+  };
+  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
+  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
+  };
+  ALTER TYPE dataset::DatasetCase {
+      CREATE MULTI LINK patients -> dataset::DatasetPatient {
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
   };
   CREATE ABSTRACT TYPE lab::ArtifactBase;
   CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE MULTI LINK artifacts -> lab::ArtifactBase;
       CREATE OPTIONAL PROPERTY sampleType -> std::str;
-  };
-  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
-  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE  ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
   };
   CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE storage::File {
@@ -64,18 +67,24 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
       CREATE REQUIRED PROPERTY size -> std::int64;
       CREATE REQUIRED PROPERTY url -> std::str;
   };
+  CREATE TYPE audit::AuditEvent {
+      CREATE REQUIRED PROPERTY occurredDateTime -> std::datetime;
+      CREATE PROPERTY occurredDuration -> std::duration;
+      CREATE REQUIRED PROPERTY recordedDateTime -> std::datetime {
+          SET default := (std::datetime_current());
+          SET readonly := true;
+      };
+      CREATE PROPERTY what -> std::str;
+  };
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation -> std::json;
   };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK patients -> dataset::DatasetPatient {
-          ON TARGET DELETE  ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-  };
   ALTER TYPE dataset::DatasetPatient {
       CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
@@ -84,7 +93,7 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   };
   CREATE TYPE permission::User {
       CREATE MULTI LINK datasetOwner -> dataset::Dataset {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
       };
       CREATE PROPERTY displayName -> std::str;
       CREATE REQUIRED PROPERTY subjectId -> std::str {
@@ -102,7 +111,7 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   CREATE TYPE pedigree::Pedigree {
       CREATE LINK proband -> dataset::DatasetPatient;
       CREATE MULTI LINK relationships -> pedigree::PedigreeRelationship {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
       CREATE OPTIONAL PROPERTY reason -> tuple<system: std::str, value: std::str>;
@@ -130,21 +139,16 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   };
   CREATE TYPE job::SelectJob EXTENDING job::Job {
       CREATE MULTI LINK todoQueue -> dataset::DatasetCase {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
       };
       CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
       };
       CREATE REQUIRED PROPERTY initialTodoCount -> std::int32;
   };
   CREATE TYPE release::Release {
-      CREATE MULTI LINK manualExclusions -> dataset::DatasetShareable {
-          CREATE PROPERTY reason -> std::str;
-          CREATE PROPERTY recorded -> std::str;
-          CREATE PROPERTY who -> std::str;
-      };
       CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
       };
       CREATE REQUIRED LINK applicationCoded -> release::ApplicationCoded;
       CREATE PROPERTY applicationDacDetails -> std::str;
@@ -157,11 +161,12 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
       CREATE REQUIRED PROPERTY datasetUris -> array<std::str>;
       CREATE PROPERTY releaseEnded -> std::datetime;
       CREATE PROPERTY releaseIdentifier -> std::str;
+      CREATE REQUIRED PROPERTY releasePassword -> std::str;
       CREATE PROPERTY releaseStarted -> std::datetime;
   };
   ALTER TYPE job::Job {
       CREATE REQUIRED LINK forRelease -> release::Release {
-          ON TARGET DELETE  RESTRICT;
+          ON TARGET DELETE RESTRICT;
       };
   };
   ALTER TYPE release::Release {
@@ -174,7 +179,7 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   CREATE TYPE lab::Analyses {
       CREATE MULTI LINK input -> lab::ArtifactBase;
       CREATE MULTI LINK output -> lab::ArtifactBase {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
       CREATE PROPERTY analysesDate -> std::datetime;
@@ -201,14 +206,14 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   };
   CREATE TYPE lab::SubmissionBatch {
       CREATE MULTI LINK artifactsIncluded -> lab::ArtifactBase {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
       CREATE PROPERTY externalIdentifier -> std::str;
   };
   CREATE TYPE lab::Run {
       CREATE MULTI LINK artifactsProduced -> lab::ArtifactBase {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
       CREATE PROPERTY platform -> std::str;
@@ -216,19 +221,10 @@ CREATE MIGRATION m1pxswcgxed3m27tdqeji7ijczuo5xsmf6xae6q7zucs3ymbajxg5q
   };
   ALTER TYPE permission::User {
       CREATE MULTI LINK releaseParticipant -> release::Release {
-          ON TARGET DELETE  ALLOW;
+          ON TARGET DELETE ALLOW;
           CREATE PROPERTY role -> std::str {
               CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
           };
       };
-  };
-  CREATE TYPE release::AuditEvent {
-      CREATE REQUIRED PROPERTY occurredDateTime -> std::datetime;
-      CREATE PROPERTY occurredDuration -> std::duration;
-      CREATE REQUIRED PROPERTY recordedDateTime -> std::datetime {
-          SET default := (std::datetime_current());
-          SET readonly := true;
-      };
-      CREATE PROPERTY what -> std::str;
   };
 };

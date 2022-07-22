@@ -26,8 +26,12 @@ export type ElsaSettings = {
  */
 export async function getLocalSettings(): Promise<ElsaSettings> {
   // https://coderwall.com/p/5ck85g/storing-secrets-in-the-macos-keychain
-  // security add-generic-password -a "$USER" -s 'Elsa REMS Bot User Dev' -w 'qwerty123'
-  // security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
+  /*
+   security add-generic-password -a "$USER" -s 'Elsa Client Id Dev' -w 'qwerty123'
+   security add-generic-password -a "$USER" -s 'Elsa Client Secret Dev' -w 'qwerty123'
+   security add-generic-password -a "$USER" -s 'Elsa REMS Bot User Dev' -w 'qwerty123'
+   security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
+   */
 
   const issuer = await Issuer.discover("https://cilogon.org");
 

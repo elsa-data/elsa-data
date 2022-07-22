@@ -5,11 +5,11 @@ import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { Base7807Error } from "../../api/errors/_error.types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
-import { Client } from "edgedb";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "./select-service";
 import { ReleasesService } from "./releases-service";
 import { UsersService } from "./users-service";
+import { Transaction } from "edgedb/dist/transaction";
 
 class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseId: string) {
@@ -25,43 +25,20 @@ class NotAuthorisedToControlJob extends Base7807Error {
 @singleton()
 export class JobsService {
   constructor(
-    @inject("Database") private edgeDbClient: Client,
+    @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService,
     private releasesService: ReleasesService,
     private selectService: SelectService
   ) {}
 
-  /**
-   * For a given release, start a background job identifying/selecting cases/patients/specimens
-   * that should be included. Returns the release information which will now have
-   * a 'runningJob' field.
-   *
-   * @param user
-   * @param releaseId
-   */
-  public async startSelectJob(
-    user: AuthenticatedUser,
-    releaseId: string
-  ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
-      user,
-      releaseId
-    );
-
-    if (userRole != "DataOwner")
-      throw new NotAuthorisedToControlJob(userRole, releaseId);
-
-    const {
-      releaseQuery,
-      releaseAllDatasetCasesQuery,
-      releaseAllDatasetCasesCountyQuery,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
-
+  private async startGenericJob(
+    releaseId: string,
+    finalJobStartStep: (tx: Transaction) => Promise<void>
+  ) {
     await this.edgeDbClient.transaction(async (tx) => {
       // we do not use the 'exclusive constraint's of edgedb because we want to
       // retain the link to the release - but with the constraint there is
-      // only one *running* job per release - and exlusive contraints cannot have filters
+      // only one *running* job per release - and exclusive constraints cannot have filters
 
       // so we need to check here inside a transaction to make sure that this
       // is the only running job for this release
@@ -85,15 +62,46 @@ export class JobsService {
             .join(" ")} have been found in the running state`
         );
 
-      // create a new job
-      const newJob = await e
+      await finalJobStartStep(tx);
+    });
+  }
+
+  /**
+   * For a given release, start a background job identifying/selecting cases/patients/specimens
+   * that should be included. Returns the release information which will now have
+   * a 'runningJob' field.
+   *
+   * @param user
+   * @param releaseId
+   */
+  public async startSelectJob(
+    user: AuthenticatedUser,
+    releaseId: string
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    if (userRole != "DataOwner")
+      throw new NotAuthorisedToControlJob(userRole, releaseId);
+
+    const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
+
+    await this.startGenericJob(releaseId, async (tx) => {
+      // create a new select job entry
+      await e
         .insert(e.job.SelectJob, {
           forRelease: releaseQuery,
           status: e.job.JobStatus.running,
           started: e.datetime_current(),
           percentDone: e.int16(0),
           messages: e.literal(e.array(e.str), ["Created"]),
-          initialTodoCount: releaseAllDatasetCasesCountyQuery,
+          initialTodoCount: e.count(releaseAllDatasetCasesQuery),
           todoQueue: releaseAllDatasetCasesQuery,
           selectedSpecimens: e.set(),
         })
@@ -117,11 +125,10 @@ export class JobsService {
     if (userRole != "DataOwner")
       throw new NotAuthorisedToControlJob(userRole, releaseId);
 
-    const {
-      releaseQuery,
-      releaseAllDatasetCasesQuery,
-      releaseAllDatasetCasesCountyQuery,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
 
     await this.edgeDbClient.transaction(async (tx) => {
       const currentJob = await e
@@ -228,9 +235,10 @@ export class JobsService {
 
         // todo: need to work out the magic of how EdgeDb wants us to type this kind of stuff...
         // (it can't be like this??)
-        const resultSpecimens: edgedb.reflection.$expr_Literal<
-          edgedb.reflection.ScalarType<"std::uuid", string, true, string>
-        >[] = [];
+        // edgedb.reflection.$expr_Literal<
+        //           edgedb.reflection.ScalarType<"std::uuid", string, true, string>
+        //         >
+        const resultSpecimens: any[] = [];
 
         const resultMessages: string[] = [];
 

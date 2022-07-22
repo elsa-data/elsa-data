@@ -5,12 +5,15 @@ import {
   faFemale,
   faMale,
   faQuestion,
+  faLock,
+  faUnlock,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { ReleasePatientType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQueryClient } from "react-query";
 import classNames from "classnames";
+import Popup from "reactjs-popup";
 
 type Props = {
   releaseId: string;
@@ -18,6 +21,16 @@ type Props = {
   showCheckboxes: boolean;
 };
 
+/**
+ * The patient flex row is a flex row div that displays all the individuals in
+ * a case, including listing their sample ids. It also draws icons to give extra
+ * data about the patient/samples in a compact form.
+ *
+ * @param releaseId
+ * @param patients
+ * @param showCheckboxes
+ * @constructor
+ */
 export const PatientsFlexRow: React.FC<Props> = ({
   releaseId,
   patients,
@@ -41,68 +54,67 @@ export const PatientsFlexRow: React.FC<Props> = ({
     let patientIcon = <FontAwesomeIcon icon={faQuestion} />;
     let patientClasses = [
       "p-2",
-      "border-gray-500",
       "border",
+      "border-slate-200",
       "flex",
-      "justify-between",
+      "flex-col",
+      "lg:flex-row",
+      "lg:justify-between",
     ];
 
+    // at these sizes on screen the icons are barely distinguishable but whatever
     if (patient.sexAtBirth === "male") {
       patientIcon = <FontAwesomeIcon icon={faMale} />;
     }
     if (patient.sexAtBirth === "female") {
       patientIcon = <FontAwesomeIcon icon={faFemale} />;
+      // as per a pedigree chart - rounded=female
       patientClasses.push("rounded-xl");
-    }
-
-    // if we have a specimen then there is no benefit to displaying two levels here - we can merge
-    // into one combined patient/specimen
-    if (patient.specimens.length === 1) {
-      const specimen = patient.specimens[0];
-      return (
-        <div className={classNames(...patientClasses)}>
-          <span>
-            {patientIcon}/<FontAwesomeIcon icon={faDna} /> {patient.externalId}/
-            {specimen.externalId}
-          </span>
-          {showCheckboxes && (
-            <input
-              type="checkbox"
-              className="ml-2"
-              checked={specimen.nodeStatus == "selected"}
-              onChange={async (ce) =>
-                ce.target.checked
-                  ? await onSelectChange(specimen.id)
-                  : await onUnselectChange(specimen.id)
-              }
-            />
-          )}
-        </div>
-      );
     }
 
     return (
       <div className={classNames(...patientClasses)}>
         <span>
-          {patientIcon} {patient.externalId}
+          {patientIcon} {patient.externalId}{" "}
+          {patient.customConsent && (
+            <>
+              {" "}
+              <FontAwesomeIcon icon={faUnlock} />
+            </>
+          )}
         </span>
         <ul key={patient.id}>
           {patient.specimens.map((spec) => (
-            <li key={spec.id}>
+            <li key={spec.id} className="text-left lg:text-right">
               <FontAwesomeIcon icon={faDna} />
-              {spec.externalId}
+              {spec.customConsent && (
+                <>
+                  {"-"}
+                  <Popup
+                    trigger={<FontAwesomeIcon icon={faUnlock} />}
+                    position={["top center", "bottom right", "bottom left"]}
+                    on={["hover", "focus"]}
+                  >
+                    Tooltip content
+                  </Popup>
+                </>
+              )}{" "}
               {showCheckboxes && (
-                <input
-                  type="checkbox"
-                  className="ml-2"
-                  checked={spec.nodeStatus == "selected"}
-                  onChange={async (ce) =>
-                    ce.target.checked
-                      ? await onSelectChange(spec.id)
-                      : await onUnselectChange(spec.id)
-                  }
-                />
+                <label>
+                  {spec.externalId}
+                  <input
+                    type="checkbox"
+                    className="ml-2"
+                    checked={spec.nodeStatus == "selected"}
+                    onChange={async (ce) =>
+                      ce.target.checked
+                        ? await onSelectChange(spec.id)
+                        : await onUnselectChange(spec.id)
+                    }
+                  />
+                </label>
               )}
+              {!showCheckboxes && <span>{spec.externalId}</span>}
             </li>
           ))}
         </ul>

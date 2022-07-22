@@ -2,8 +2,6 @@ import { Static } from "@sinclair/typebox";
 import {
   DatasetGen3SyncRequestSchema,
   DatasetGen3SyncResponseSchema,
-  DatasetSchemaDeep,
-  DatasetSchemaLight,
   ReleaseAwsS3PresignRequestSchema,
   ReleaseAwsS3PresignResponseSchema,
   ReleaseRemsSyncRequestSchema,
@@ -14,7 +12,6 @@ import {
   DuoModifierSchema,
 } from "./schemas-duo";
 import { TestingRequestSchema } from "./schemas-testing";
-import { CodingSchema } from "./schemas-coding";
 import {
   ReleaseApplicationCodedSchema,
   ReleaseCaseSchema,
@@ -26,7 +23,9 @@ import {
 } from "./schemas-releases";
 
 export * from "./schemas";
+export * from "./schemas-dataset";
 export * from "./schemas-duo";
+export * from "./schemas-coding";
 export * from "./schemas-testing";
 
 export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
@@ -43,11 +42,6 @@ export type DuoModifierType = Static<typeof DuoModifierSchema>;
 export type ReleaseApplicationCodedType = Static<
   typeof ReleaseApplicationCodedSchema
 >;
-
-export type CodingType = Static<typeof CodingSchema>;
-
-export type DatasetLightType = Static<typeof DatasetSchemaLight>;
-export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;
 
 export type DatasetGen3SyncRequestType = Static<
   typeof DatasetGen3SyncRequestSchema
@@ -67,10 +61,3 @@ export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
 export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
-
-export type ReleaseAwsS3PresignRequestType = Static<
-  typeof ReleaseAwsS3PresignRequestSchema
->;
-export type ReleaseAwsS3PresignResponseType = Static<
-  typeof ReleaseAwsS3PresignResponseSchema
->;

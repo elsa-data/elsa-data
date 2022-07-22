@@ -13,6 +13,7 @@ import { Client } from "edgedb";
 import * as edgedb from "edgedb";
 import { registerTypes } from "./bootstrap-container";
 import path from "path";
+import i18n from "i18n";
 
 console.log("Creating Fastify app");
 
@@ -38,6 +39,17 @@ const bree = new Bree({
     },
   ],
 });
+
+/*i18n.configure({
+  locales: ['en', 'el'],
+  defaultLocale: 'en',
+  queryParameter: 'lang',
+  directory: path.join('./', 'locales'),
+  api: {
+    '__': 'translate',
+    '__n': 'translateN'
+  },
+}); */
 
 // global settings for DI
 registerTypes();
