@@ -21,6 +21,9 @@ jobs:
       # Install an EdgeDb for use by the tests
       - uses: edgedb/setup-edgedb@8bc9e10005674ec772652b86e1fdd476e6462284
         with:
+          # Trying nightly to get around some bugs.. pin when we can
+          cli-version: nightly
+          server-version: nightly
           project-dir: application/backend
 
       - uses: actions/setup-node@v3
