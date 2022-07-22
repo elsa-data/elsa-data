@@ -37,7 +37,7 @@ jobs:
         working-directory: application/backend
 
       - name: Generate EdgeDb types
-        run: npm edgetypes
+        run: npm run edgetypes
         working-directory: application/backend
 
       - name: Run tests
