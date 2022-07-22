@@ -80,7 +80,3 @@ it("aa", async () => {
 
   console.log(l.toString());
 });
-
-it("bb", async () => {
-  await awsPresignedUrlsService.getPresigned(allowedPiUser, testReleaseId);
-});

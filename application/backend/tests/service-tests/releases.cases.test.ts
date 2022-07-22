@@ -78,7 +78,7 @@ it("get limited case level information from a release as a PI", async () => {
   assert(pagedResult != null);
 
   // as a PI we will only see cases that have _something_ selected in them
-  expect(pagedResult.data.length).toBe(6);
+  expect(pagedResult.data.length).toBe(4);
   expect(pagedResult.total).toBe(6);
 
   // because the PI has no concept of 'unselected' item - every node present is selected
@@ -109,12 +109,12 @@ it("get patient/specimen level data fields", async () => {
   expect(pagedResult).not.toBeNull();
   assert(pagedResult != null);
 
-  const caseSimpsons = findCase(pagedResult.data, "SIMPSONS");
-  const patientLisa = findPatient(pagedResult.data, "TRIOLISA");
-  const patientHomer = findPatient(pagedResult.data, "TRIOHOMER");
-  const patientMarge = findPatient(pagedResult.data, "TRIOMARGE");
+  const caseAshkenazim = findCase(pagedResult.data, "ASHKENAZIM");
+  const patientBart = findPatient(pagedResult.data, "BART");
+  const patientHomer = findPatient(pagedResult.data, "HOMER");
+  const patientMarge = findPatient(pagedResult.data, "MARGE");
 
-  expect(patientLisa?.sexAtBirth).toBe("female");
+  expect(patientBart?.sexAtBirth).toBe("male");
   expect(patientHomer?.sexAtBirth).toBe("male");
   expect(patientMarge?.sexAtBirth).toBe("female");
 });

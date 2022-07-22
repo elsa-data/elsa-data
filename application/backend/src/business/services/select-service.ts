@@ -1,12 +1,11 @@
+import * as edgedb from "edgedb";
 import { dataset, release } from "../../../dbschema/edgeql-js";
+import { inject, injectable } from "tsyringe";
 import { sleep } from "edgedb/dist/utils";
-import { inject, injectable, singleton } from "tsyringe";
-import { Client } from "edgedb";
 
 @injectable()
-@singleton()
 export class SelectService {
-  constructor(@inject("Database") private edgeDbClient: Client) {}
+  constructor(@inject("Database") private edgeDbClient: edgedb.Client) {}
 
   /**
    * For a given chain of specimen->patient->case - use the given consent information

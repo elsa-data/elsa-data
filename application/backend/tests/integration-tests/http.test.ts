@@ -1,6 +1,9 @@
 import { App } from "../../src/app";
 import { getLocalSettings } from "../../src/bootstrap-settings";
 import { FastifyInstance } from "fastify";
+import { registerTypes } from "../service-tests/setup";
+
+const testContainer = registerTypes();
 
 describe("http integration tests", () => {
   let server: FastifyInstance;
