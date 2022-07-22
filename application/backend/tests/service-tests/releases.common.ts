@@ -1,18 +1,13 @@
-import { Client, createClient } from "edgedb";
+import { createClient } from "edgedb";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import {
-  makeEmptyCodeArray,
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "../../src/test-data/test-data-helpers";
 import { insert10F, TENF_URI } from "../../src/test-data/insert-test-data-10f";
-import { container } from "tsyringe";
-import * as edgedb from "edgedb";
-import { S3Client } from "@aws-sdk/client-s3";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -39,7 +34,6 @@ export async function beforeEachCommon() {
         "So this is all that we have brought over not coded",
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         countriesInvolved: makeSingleCodeArray("iso", "AU"),
-        institutesInvolved: makeEmptyCodeArray(),
         studyType: "DS",
         diseasesOfStudy: makeSingleCodeArray("mondo", "ABCD"),
         studyAgreesToPublish: true,
@@ -60,6 +54,7 @@ export async function beforeEachCommon() {
       //  "@recorded": e.str("June"),
       //  "@reason": e.str("Because"),
       //})),
+      releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
       selectedSpecimens: e.select(e.dataset.DatasetSpecimen, (dss) => ({
         filter: e.op(

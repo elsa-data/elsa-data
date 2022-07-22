@@ -2,8 +2,6 @@ import { Static } from "@sinclair/typebox";
 import {
   DatasetGen3SyncRequestSchema,
   DatasetGen3SyncResponseSchema,
-  DatasetSchemaDeep,
-  DatasetSchemaLight,
   ReleaseAwsS3PresignRequestSchema,
   ReleaseAwsS3PresignResponseSchema,
   ReleaseRemsSyncRequestSchema,
@@ -25,6 +23,7 @@ import {
 } from "./schemas-releases";
 
 export * from "./schemas";
+export * from "./schemas-dataset";
 export * from "./schemas-duo";
 export * from "./schemas-coding";
 export * from "./schemas-testing";
@@ -43,9 +42,6 @@ export type DuoModifierType = Static<typeof DuoModifierSchema>;
 export type ReleaseApplicationCodedType = Static<
   typeof ReleaseApplicationCodedSchema
 >;
-
-export type DatasetLightType = Static<typeof DatasetSchemaLight>;
-export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;
 
 export type DatasetGen3SyncRequestType = Static<
   typeof DatasetGen3SyncRequestSchema

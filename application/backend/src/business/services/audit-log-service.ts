@@ -5,6 +5,9 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 
+export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
+export type AuditEventOutcome = 0 | 4 | 8 | 12;
+
 @injectable()
 export class AuditLogService {
   constructor(
@@ -19,6 +22,8 @@ export class AuditLogService {
     releaseId: string,
     user: AuthenticatedUser,
     what: string,
+    action: AuditEventAction,
+    outcome: AuditEventOutcome,
     start: Date,
     end?: Date
   ): Promise<void> {

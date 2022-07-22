@@ -41,12 +41,13 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     "/api/releases",
     {},
     async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+      const { authenticatedUser, pageSize, offset } =
+        authenticatedRouteOnEntryHelper(request);
 
       const allForUser = await releasesService.getAll(
         authenticatedUser,
-        100,
-        0
+        pageSize,
+        offset
       );
 
       reply.send(allForUser);

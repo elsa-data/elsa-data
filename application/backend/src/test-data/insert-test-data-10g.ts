@@ -216,4 +216,6 @@ export async function insert10G() {
       ),
     })
     .run(edgeDbClient);
+
+  return teng;
 }

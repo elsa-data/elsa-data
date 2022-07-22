@@ -15,6 +15,15 @@ const edgeDbClient = edgedb.createClient();
 
 export const TENF_URI = "urn:fdc:umccr.org:2022:dataset/10f";
 
+const NIST_BIOSAMPLE_SYSTEM = "http://www.ncbi.nlm.nih.gov/biosample";
+
+const CORIELL_CELL_SYSTEM = "coriellcell";
+const CORIELL_DNA_SYSTEM = "corielldna";
+const CORIELL_FAMILY_SYSTEM = "coriellfamily";
+
+const PGP_SYSTEM = "https://my.pgp-hms.org";
+const THOUSAND_GENOMES_SYSTEM = "1KGP";
+
 /**
  * The 10F dataset is a subset of the 1000 genomes data with a combination of more complex
  * families.
@@ -48,12 +57,12 @@ export async function insert10F() {
   const makeTrio = async (
     familyId: IdentifierMap,
     probandPatientId: IdentifierMap,
-    probandSpecimenId: string,
+    probandSpecimenId: IdentifierMap,
     probandSex: "male" | "female" | "other",
-    fatherPatientId: string,
-    fatherSpecimenId: string,
-    motherPatientId: string,
-    motherSpecimenId: string
+    fatherPatientId: IdentifierMap,
+    fatherSpecimenId: IdentifierMap,
+    motherPatientId: IdentifierMap,
+    motherSpecimenId: IdentifierMap
   ) => {
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeDictionaryIdentifierArray(familyId),
@@ -63,26 +72,32 @@ export async function insert10F() {
           externalIdentifiers: makeDictionaryIdentifierArray(probandPatientId),
           specimens: e.insert(e.dataset.DatasetSpecimen, {
             externalIdentifiers:
-              makeSystemlessIdentifierArray(probandSpecimenId),
-            artifacts: await makeArtifacts(probandSpecimenId),
+              makeDictionaryIdentifierArray(probandSpecimenId),
+            artifacts: await makeArtifacts(
+              probandSpecimenId[CORIELL_DNA_SYSTEM]
+            ),
           }),
         }),
         e.insert(e.dataset.DatasetPatient, {
           sexAtBirth: "male",
-          externalIdentifiers: makeSystemlessIdentifierArray(fatherPatientId),
+          externalIdentifiers: makeDictionaryIdentifierArray(fatherPatientId),
           specimens: e.insert(e.dataset.DatasetSpecimen, {
             externalIdentifiers:
-              makeSystemlessIdentifierArray(fatherSpecimenId),
-            artifacts: await makeArtifacts(fatherSpecimenId),
+              makeDictionaryIdentifierArray(fatherSpecimenId),
+            artifacts: await makeArtifacts(
+              fatherSpecimenId[CORIELL_DNA_SYSTEM]
+            ),
           }),
         }),
         e.insert(e.dataset.DatasetPatient, {
           sexAtBirth: "female",
-          externalIdentifiers: makeSystemlessIdentifierArray(motherPatientId),
+          externalIdentifiers: makeDictionaryIdentifierArray(motherPatientId),
           specimens: e.insert(e.dataset.DatasetSpecimen, {
             externalIdentifiers:
-              makeSystemlessIdentifierArray(motherSpecimenId),
-            artifacts: await makeArtifacts(motherSpecimenId),
+              makeDictionaryIdentifierArray(motherSpecimenId),
+            artifacts: await makeArtifacts(
+              motherSpecimenId[CORIELL_DNA_SYSTEM]
+            ),
           }),
         })
       ),
@@ -131,10 +146,6 @@ export async function insert10F() {
       .run(edgeDbClient);
   };
 
-  const NIST_SYSTEM = "nist";
-  const CORIELL_SYSTEM = "coriell";
-  const PGP_SYSTEM = "https://my.pgp-hms.org";
-
   // Samples from an Ashkenazim trio (son HG002-NA24385-huAA53E0, father HG003-NA24149-hu6E4515, and mother HG004-NA24143-hu8E87A9),
   // Han Chinese trio (son HG005-NA24631-hu91BD69, father NA24694-huCA017E, and mother NA24695-hu38168C) from Personal Genome Project (PGP) are
 
@@ -145,35 +156,74 @@ export async function insert10F() {
       description: "UMCCR 10F",
       cases: e.set(
         await makeTrio(
-          { "": "AJ" },
-          { NIST_SYSTEM: "HG002", PGP_SYSTEM: "huAA53E0" },
-          "NA24385",
+          { "": "ASHKENAZIM", [CORIELL_FAMILY_SYSTEM]: "3140" },
+          // Male	45 YR	White
+          {
+            "": "BART",
+            [THOUSAND_GENOMES_SYSTEM]: "HG002",
+            [PGP_SYSTEM]: "huAA53E0",
+          },
+          {
+            [CORIELL_DNA_SYSTEM]: "NA24385",
+            [CORIELL_CELL_SYSTEM]: "GM24385",
+          },
           "male",
-          "TRIOHOMER",
-          "HG2",
-          "TRIOMARGE",
-          "HG3"
+          // Male	90 YR	White	Unknown
+          {
+            "": "HOMER",
+            [THOUSAND_GENOMES_SYSTEM]: "HG003",
+            [PGP_SYSTEM]: "hu6E4515",
+          },
+          {
+            [CORIELL_DNA_SYSTEM]: "NA24149",
+            [CORIELL_CELL_SYSTEM]: "GM24149",
+          },
+          // Female	74 YR	White	Unknown
+          {
+            "": "MARGE",
+            [THOUSAND_GENOMES_SYSTEM]: "HG004",
+            [PGP_SYSTEM]: "hu8E87A9",
+          },
+          {
+            [CORIELL_DNA_SYSTEM]: "NA24143",
+            [CORIELL_CELL_SYSTEM]: "GM24143",
+          }
         ),
         await makeTrio(
-          { "": "JETSONS" },
-          { "": "TRIOELROY" },
-          "HG4",
+          { "": "HAN", [CORIELL_FAMILY_SYSTEM]: "3150" },
+          // Male	33 YR	Chinese
+          {
+            [THOUSAND_GENOMES_SYSTEM]: "HG005",
+            [PGP_SYSTEM]: "hu91BD69",
+          },
+          {
+            [CORIELL_DNA_SYSTEM]: "NA24631",
+            [CORIELL_CELL_SYSTEM]: "GM24631",
+          },
           "male",
-          "TRIOGEORGE",
-          "HG5",
-          "TRIOJUDY",
-          "HG6"
+          // Male	64 YR	Chinese
+          { [PGP_SYSTEM]: "huCA017E" },
+          {
+            [CORIELL_DNA_SYSTEM]: "NA24694",
+            [CORIELL_CELL_SYSTEM]: "GM24694",
+          },
+          // Female	63 YR	Chinese
+          { [PGP_SYSTEM]: "hu38168C" },
+          {
+            [CORIELL_DNA_SYSTEM]: "NA24695",
+            [CORIELL_CELL_SYSTEM]: "GM24694",
+          }
         ),
         // convert this to a full family at some point
         await makeTrio(
           { "": "ADDAMS" },
           { "": "QUINWEDNESDAY" },
-          "HG7",
+          { "": "HG7" },
           "female",
-          "QUINGGOMEZ",
-          "HG8",
-          "QUINMORTICIA",
-          "HG9"
+          { "": "QUINGGOMEZ" },
+          { "": "HG8" },
+          { "": "QUINMORTICIA" },
+          { "": "HG9" }
           // PUGSLEY
           // UNCLE FESTER - brother of GOMEZ
           // Esmeralda ADDAMS (Grandmama) - mother of MORITICIA
@@ -183,12 +233,12 @@ export async function insert10F() {
         await makeTrio(
           { "": "DUCK" },
           { "": "DONALD" },
-          "HG90",
+          { "": "HG90" },
           "male",
-          "UNKNOWNDUCK",
-          "HG92",
-          "DELLA",
-          "HG91"
+          { "": "UNKNOWNDUCK" },
+          { "": "HG92" },
+          { "": "DELLA" },
+          { "": "HG91" }
           // DELLA and DONALD are twins
           // DELLA is mother of
           // HUEY, DEWEY and LOUIE (triplets)
@@ -207,4 +257,6 @@ export async function insert10F() {
   await addPatient("DUCK", "DAISY", "HG97", "female");
   // we actually want a complex family with no father - so we delete this placeholder duck
   await deletePatient("UNKNOWNDUCK");
+
+  return tenf;
 }
