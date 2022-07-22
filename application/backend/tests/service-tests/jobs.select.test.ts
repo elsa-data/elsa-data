@@ -38,6 +38,7 @@ it("jobs", async () => {
     testReleaseId
   );
 
+  /*
   console.log(r);
 
   for (const j of await jobsService.getInProgressSelectJobs()) {
@@ -69,5 +70,5 @@ it("jobs", async () => {
 
   result = await releasesService.getCases(allowedPiUser, testReleaseId, 100, 0);
 
-  console.log(JSON.stringify(result));
+  console.log(JSON.stringify(result)); */
 });

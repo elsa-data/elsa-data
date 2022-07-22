@@ -7,6 +7,12 @@ import {
   makeSingleCodeArray,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
+import {
+  BART_SPECIMEN,
+  ELROY_SPECIMEN,
+  HOMER_SPECIMEN,
+  MARGE_SPECIMEN,
+} from "./insert-test-data-10f";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -56,10 +62,12 @@ Ethics form XYZ.
         "urn:fdc:umccr.org:2022:dataset/10c",
       ]),
       selectedSpecimens: e.set(
-        findSpecimen("HG1"),
-        findSpecimen("HG2"),
-        findSpecimen("HG3"),
-        findSpecimen("HG4")
+        // we fully select one trio
+        findSpecimen(BART_SPECIMEN),
+        findSpecimen(HOMER_SPECIMEN),
+        findSpecimen(MARGE_SPECIMEN),
+        // and just the proband of another trio
+        findSpecimen(ELROY_SPECIMEN)
       ),
     })
     .run(edgeDbClient);

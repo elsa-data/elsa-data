@@ -15,6 +15,8 @@ const edgeDbClient = edgedb.createClient();
 
 export const TENF_URI = "urn:fdc:umccr.org:2022:dataset/10f";
 
+const GIAB_FAMILY_SYSTEM = "giabfamily";
+
 const NIST_BIOSAMPLE_SYSTEM = "http://www.ncbi.nlm.nih.gov/biosample";
 
 const CORIELL_CELL_SYSTEM = "coriellcell";
@@ -23,6 +25,32 @@ const CORIELL_FAMILY_SYSTEM = "coriellfamily";
 
 const PGP_SYSTEM = "https://my.pgp-hms.org";
 const THOUSAND_GENOMES_SYSTEM = "1KGP";
+
+// so these identifiers are used both for insertion values - but can also be in test suites for
+// looking up know cases etc
+export const SIMPSONS_CASE = "SIMPSONS";
+
+export const BART_SPECIMEN = "NA24385";
+export const HOMER_SPECIMEN = "NA24149";
+export const MARGE_SPECIMEN = "NA24143";
+
+export const BART_PATIENT_1KGP = "HG002";
+export const BART_PATIENT_PGP = "huAA53E0";
+export const HOMER_PATIENT_1KGP = "HG003";
+export const HOMER_PATIENT_PGP = "hu6E4515";
+export const MARGE_PATIENT_1KGP = "HG004";
+export const MARGE_PATIENT_PGP = "hu8E87A9";
+
+export const JETSONS_CASE = "JETSONS";
+
+export const ELROY_SPECIMEN = "NA24631";
+export const GEORGE_SPECIMEN = "NA24694";
+export const JUDY_SPECIMEN = "NA24695";
+
+export const ELROY_PATIENT_1KGP = "HG005";
+export const ELROY_PATIENT_PGP = "hu91BD69";
+export const GEORGE_PATIENT_PGP = "huCA017E";
+export const JUDY_PATIENT_PGP = "hu38168C";
 
 /**
  * The 10F dataset is a subset of the 1000 genomes data with a combination of more complex
@@ -156,61 +184,72 @@ export async function insert10F() {
       description: "UMCCR 10F",
       cases: e.set(
         await makeTrio(
-          { "": "ASHKENAZIM", [CORIELL_FAMILY_SYSTEM]: "3140" },
+          {
+            "": SIMPSONS_CASE,
+            [CORIELL_FAMILY_SYSTEM]: "3140",
+            [GIAB_FAMILY_SYSTEM]: "ASHKENAZIM",
+          },
           // Male	45 YR	White
           {
             "": "BART",
-            [THOUSAND_GENOMES_SYSTEM]: "HG002",
-            [PGP_SYSTEM]: "huAA53E0",
+            [THOUSAND_GENOMES_SYSTEM]: BART_PATIENT_1KGP,
+            [PGP_SYSTEM]: BART_PATIENT_PGP,
           },
           {
-            [CORIELL_DNA_SYSTEM]: "NA24385",
+            [CORIELL_DNA_SYSTEM]: BART_SPECIMEN,
             [CORIELL_CELL_SYSTEM]: "GM24385",
           },
           "male",
           // Male	90 YR	White	Unknown
           {
             "": "HOMER",
-            [THOUSAND_GENOMES_SYSTEM]: "HG003",
-            [PGP_SYSTEM]: "hu6E4515",
+            [THOUSAND_GENOMES_SYSTEM]: HOMER_PATIENT_1KGP,
+            [PGP_SYSTEM]: HOMER_PATIENT_PGP,
           },
           {
-            [CORIELL_DNA_SYSTEM]: "NA24149",
+            [CORIELL_DNA_SYSTEM]: HOMER_SPECIMEN,
             [CORIELL_CELL_SYSTEM]: "GM24149",
           },
           // Female	74 YR	White	Unknown
           {
             "": "MARGE",
-            [THOUSAND_GENOMES_SYSTEM]: "HG004",
-            [PGP_SYSTEM]: "hu8E87A9",
+            [THOUSAND_GENOMES_SYSTEM]: MARGE_PATIENT_1KGP,
+            [PGP_SYSTEM]: MARGE_PATIENT_PGP,
           },
           {
-            [CORIELL_DNA_SYSTEM]: "NA24143",
+            [CORIELL_DNA_SYSTEM]: MARGE_SPECIMEN,
             [CORIELL_CELL_SYSTEM]: "GM24143",
           }
         ),
         await makeTrio(
-          { "": "HAN", [CORIELL_FAMILY_SYSTEM]: "3150" },
+          {
+            "": JETSONS_CASE,
+            [CORIELL_FAMILY_SYSTEM]: "3150",
+            [GIAB_FAMILY_SYSTEM]: "HAN",
+          },
           // Male	33 YR	Chinese
           {
-            [THOUSAND_GENOMES_SYSTEM]: "HG005",
-            [PGP_SYSTEM]: "hu91BD69",
+            "": "ELROY",
+            [THOUSAND_GENOMES_SYSTEM]: ELROY_PATIENT_1KGP,
+            [PGP_SYSTEM]: ELROY_PATIENT_PGP,
           },
           {
-            [CORIELL_DNA_SYSTEM]: "NA24631",
+            [CORIELL_DNA_SYSTEM]: ELROY_SPECIMEN,
             [CORIELL_CELL_SYSTEM]: "GM24631",
           },
           "male",
           // Male	64 YR	Chinese
-          { [PGP_SYSTEM]: "huCA017E" },
+          // george jetson
+          { [PGP_SYSTEM]: GEORGE_PATIENT_PGP },
           {
-            [CORIELL_DNA_SYSTEM]: "NA24694",
+            [CORIELL_DNA_SYSTEM]: GEORGE_SPECIMEN,
             [CORIELL_CELL_SYSTEM]: "GM24694",
           },
           // Female	63 YR	Chinese
-          { [PGP_SYSTEM]: "hu38168C" },
+          // Judy jetson
+          { [PGP_SYSTEM]: JUDY_PATIENT_PGP },
           {
-            [CORIELL_DNA_SYSTEM]: "NA24695",
+            [CORIELL_DNA_SYSTEM]: JUDY_SPECIMEN,
             [CORIELL_CELL_SYSTEM]: "GM24694",
           }
         ),

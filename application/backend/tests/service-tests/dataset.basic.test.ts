@@ -1,6 +1,5 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
-import LinkHeader from "http-link-header";
 import { beforeEachCommon } from "./dataset.common";
 import { registerTypes } from "./setup";
 import { DatasetService } from "../../src/business/services/dataset-service";
@@ -75,12 +74,4 @@ it("basic summary get all is sorted by dataset URI", async () => {
     expect(result.data[1].uri).toBe(TENF_URI);
     expect(result.data[2].uri).toBe(TENG_URI);
   }
-});
-
-it("aa", async () => {
-  const l = new LinkHeader();
-
-  l.set({ rel: "next", uri: "http://example.com/next" });
-
-  console.log(l.toString());
 });
