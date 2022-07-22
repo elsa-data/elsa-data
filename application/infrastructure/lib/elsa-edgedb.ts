@@ -39,6 +39,7 @@ interface ElsaEdgedbStackProps extends StackProps {
       dbName: string;
       user: string;
       port: string;
+      customDomain: string;
     };
   };
 }
@@ -194,15 +195,21 @@ export class ElsaEdgedbStack extends Stack {
     new route53.CnameRecord(this, `elsaEdgedbRoute53`, {
       domainName: ecsElsaFargateService.loadBalancer.loadBalancerDnsName,
       zone: hostedZone,
-      recordName: `elsa.${hostedZone.zoneName}`,
+      recordName: config.edgedb.customDomain,
     });
 
     // Setting viarble
-    this.elsaEdgedbUrl = `edgedb://${
-      config.edgedb.user
-    }:${edgeDBServerPasswordSecret.secretValue.unsafeUnwrap()}@elsa.${
-      hostedZone.zoneName
-    }:${config.edgedb.port}/${config.edgedb.dbName}`;
+    this.elsaEdgedbUrl =
+      `edgedb://` +
+      `${config.edgedb.user}` +
+      `:` +
+      `${edgeDBServerPasswordSecret.secretValue.unsafeUnwrap()}` +
+      `@` +
+      `${config.edgedb.customDomain}` +
+      `:` +
+      `${config.edgedb.port}` +
+      `/` +
+      `${config.edgedb.dbName}`;
 
     // Edgedb DSN
     new CfnOutput(this, "elsaEdgeDbUrl", {

@@ -60,6 +60,7 @@ export class ElsaStack extends Stack {
           dbName: "elsa",
           user: "elsa",
           port: "5656",
+          customDomain: `db.elsa.${hostedZone.zoneName}`,
         },
       },
       env: {

@@ -10,7 +10,7 @@ const context = {
 const app = new cdk.App({ context: context });
 
 const stackTag = {
-  stack: "elsa",
+  Stack: "Elsa",
 };
 
 new ElsaStack(app, "ElsaStack", {
