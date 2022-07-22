@@ -2,7 +2,7 @@
   "name": "elsa",
   "version": "0.1.0",
   "bin": {
-    "elsa": "bin/elsa.js"
+    "elsa": "./elsa.js"
   },
   "scripts": {
     "build": "tsc",

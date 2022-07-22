@@ -5,8 +5,8 @@ import {
   aws_ssm as ssm,
   aws_route53 as route53,
 } from "aws-cdk-lib";
-import { ElsaEdgedbStack } from "../lib/elsa-edgedb";
-import { ElsaVPC } from "../lib/vpc";
+import { ElsaEdgedbStack } from "./stack/elsa-edgedb";
+import { ElsaVPC } from "./lib/vpc";
 
 export class ElsaStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {

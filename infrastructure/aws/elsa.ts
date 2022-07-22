@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { ElsaStack } from "../stack/elsa-stack";
+import { ElsaStack } from "./elsa-stack";
 
 const context = {
   namespace: "elsa",
