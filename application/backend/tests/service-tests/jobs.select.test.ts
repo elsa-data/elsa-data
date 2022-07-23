@@ -33,12 +33,12 @@ beforeEach(async () => {
  *
  */
 it("jobs", async () => {
-  const r = await jobsService.startSelectJob(
+  /*const r = await jobsService.startSelectJob(
     allowedDataOwnerUser,
     testReleaseId
   );
 
-  /*
+
   console.log(r);
 
   for (const j of await jobsService.getInProgressSelectJobs()) {
