@@ -6,7 +6,7 @@ import {
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
   USER_GROUPS_COOKIE_NAME,
-} from "@umccr/elsa-strings";
+} from "@umccr/elsa-constants";
 
 type LoggedInUser = {
   displayName: string;

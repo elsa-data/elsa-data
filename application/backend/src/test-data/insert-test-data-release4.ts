@@ -7,12 +7,10 @@ import { TENF_URI } from "./insert-test-data-10f";
 
 const edgeDbClient = edgedb.createClient();
 
-export async function insertRelease2(settings: ElsaSettings) {
-  const mondoUri = "http://purl.obolibrary.org/obo/mondo.owl";
-
+export async function insertRelease4(settings: ElsaSettings) {
   return await e
     .insert(e.release.Release, {
-      applicationDacTitle: "A Better Study of Limited Test Data",
+      applicationDacTitle: "A Release With Nothing Selected By Default",
       applicationDacDetails: "Some other details from the DAC",
       applicationDacIdentifier: "XYZ",
       applicationCoded: e.insert(e.release.ApplicationCoded, {

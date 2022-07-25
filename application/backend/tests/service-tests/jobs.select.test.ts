@@ -4,12 +4,12 @@ import { ReleaseCaseType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
-import { ReleasesService } from "../../src/business/services/releases-service";
+import { ReleaseService } from "../../src/business/services/release-service";
 import { JobsService } from "../../src/business/services/jobs-service";
 
 const testContainer = registerTypes();
 
-const releasesService = testContainer.resolve(ReleasesService);
+const releasesService = testContainer.resolve(ReleaseService);
 const jobsService = testContainer.resolve(JobsService);
 const edgeDbClient = testContainer.resolve<Client>("Database");
 

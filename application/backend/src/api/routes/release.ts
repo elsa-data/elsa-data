@@ -18,7 +18,7 @@ import streamConsumers from "node:stream/consumers";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs-service";
-import { ReleasesService } from "../../business/services/releases-service";
+import { ReleaseService } from "../../business/services/release-service";
 import LinkHeader from "http-link-header";
 import {
   LAST_PAGE_HEADER_NAME,
@@ -28,13 +28,13 @@ import {
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
 import fastifyFormBody from "@fastify/formbody";
-import { isString } from "lodash";
+import { isEmpty, isString, trim } from "lodash";
 
 export function registerReleaseRoutes(fastify: FastifyInstance) {
   const jobsService = container.resolve(JobsService);
   const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
-  const releasesService = container.resolve(ReleasesService);
+  const releasesService = container.resolve(ReleaseService);
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
@@ -79,12 +79,14 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
       const releaseId = request.params.rid;
 
       const page = parseInt((request.query as any).page) || 1;
+      const search = (request.query as any).q;
 
       const cases = await releasesService.getCases(
         authenticatedUser,
         releaseId,
         pageSize,
-        (page - 1) * pageSize
+        (page - 1) * pageSize,
+        !isEmpty(search) && !isEmpty(trim(search)) ? search : undefined
       );
 
       if (!cases) reply.status(400).send();

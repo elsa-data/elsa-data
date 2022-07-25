@@ -19,13 +19,16 @@ import {
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
+import { allReleasesSummaryByUserQuery } from "../db/release-queries";
+import { $scopify } from "edgedb/dist/reflection/index";
+import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
 type CodeArrayFields = "diseases" | "countries" | "type";
 
 @injectable()
-export class ReleasesService extends ReleaseBaseService {
+export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     usersService: UsersService
@@ -38,22 +41,10 @@ export class ReleasesService extends ReleaseBaseService {
     limit: number,
     offset: number
   ): Promise<ReleaseSummaryType[]> {
-    const allForUser = await e
-      .select(e.release.Release, (r) => ({
-        ...e.release.Release["*"],
-        runningJob: {
-          percentDone: true,
-        },
-        userRoles: e.select(
-          r["<releaseParticipant[is permission::User]"],
-          (u) => ({
-            id: true,
-            filter: e.op(u.id, "=", e.uuid(user.dbId)),
-            // "@role": true
-          })
-        ),
-      }))
-      .run(this.edgeDbClient);
+    const allForUser = await allReleasesSummaryByUserQuery.run(
+      this.edgeDbClient,
+      { userDbId: user.dbId }
+    );
 
     return allForUser
       .filter((a) => a.userRoles != null)
@@ -120,12 +111,14 @@ export class ReleasesService extends ReleaseBaseService {
    * @param releaseId
    * @param limit
    * @param offset
+   * @param identifierSearchText if present, a string that must be present in an identifier within the case
    */
   public async getCases(
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
-    offset: number
+    offset: number,
+    identifierSearchText?: string
   ): Promise<PagedResult<ReleaseCaseType> | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
@@ -145,16 +138,51 @@ export class ReleasesService extends ReleaseBaseService {
         ? e.set(...datasetUriToIdMap.values())
         : e.cast(e.uuid, e.set());
 
-    const makeFilter = (dsc: any) => {
-      return e.op(
-        e.op(dsc.dataset.id, "in", datasetIdSet),
-        "and",
-        e.op(
-          e.bool(userRole === "DataOwner"),
-          "or",
-          e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-        )
-      );
+    // we actually have to switch off the type inference (any and any) - because this ends
+    // up so complex is breaks the typescript type inference depth calculations
+    // (revisit on new version of tsc)
+    const makeFilter = (dsc: $scopify<$DatasetCase>): any => {
+      if (identifierSearchText) {
+        // note that we are looking into *all* the identifiers for the case
+        // BUT we are only filtering at the case level. i.e. when searching
+        // by identifiers we are looking to identify at a case level - for a case
+        // the includes the identifier *anywhere* (case/patient/specimen)
+        return e.op(
+          e.contains(
+            identifierSearchText!.toUpperCase(),
+            e.set(
+              e.str_upper(e.array_unpack(dsc.externalIdentifiers).value),
+              e.str_upper(
+                e.array_unpack(dsc.patients.externalIdentifiers).value
+              ),
+              e.str_upper(
+                e.array_unpack(dsc.patients.specimens.externalIdentifiers).value
+              )
+            )
+          ),
+          "and",
+          e.op(
+            e.op(dsc.dataset.id, "in", datasetIdSet),
+            "and",
+            e.op(
+              e.bool(userRole === "DataOwner"),
+              "or",
+              e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
+            )
+          )
+        );
+      } else {
+        // with no identifier text to search for we can return a simpler filter
+        return e.op(
+          e.op(dsc.dataset.id, "in", datasetIdSet),
+          "and",
+          e.op(
+            e.bool(userRole === "DataOwner"),
+            "or",
+            e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
+          )
+        );
+      }
     };
 
     const caseSearchQuery = e.select(e.dataset.DatasetCase, (dsc) => ({
@@ -204,11 +232,6 @@ export class ReleasesService extends ReleaseBaseService {
 
     if (!pageCases) return null;
 
-    //const casesCount =
-    //  userRole === "DataOwner"
-    //    ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
-    //    : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
-
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
     const calcNodeStatus = (
@@ -249,6 +272,7 @@ export class ReleasesService extends ReleaseBaseService {
         id: pat.id,
         sexAtBirth: pat?.sexAtBirth || undefined,
         externalId: collapseExternalIds(pat.externalIdentifiers),
+        externalIdSystem: "",
         nodeStatus: calcNodeStatus(specimensMapped),
         customConsent: isObjectLike(pat.consent),
         specimens: specimensMapped,
@@ -263,6 +287,7 @@ export class ReleasesService extends ReleaseBaseService {
       return {
         id: cas.id,
         externalId: collapseExternalIds(cas.externalIdentifiers),
+        externalIdSystem: "",
         fromDatasetId: cas.dataset?.id!,
         fromDatasetUri: cas.dataset?.uri!,
         nodeStatus: calcNodeStatus(patientsMapped),

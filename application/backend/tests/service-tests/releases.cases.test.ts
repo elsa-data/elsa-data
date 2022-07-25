@@ -11,7 +11,7 @@ import { ReleaseCaseType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
-import { ReleasesService } from "../../src/business/services/releases-service";
+import { ReleaseService } from "../../src/business/services/release-service";
 import { Client } from "edgedb";
 import {
   BART_PATIENT_PGP,
@@ -30,7 +30,7 @@ import {
 const testContainer = registerTypes();
 
 const edgeDbClient = testContainer.resolve<Client>("Database");
-const releasesService = testContainer.resolve(ReleasesService);
+const releasesService = testContainer.resolve(ReleaseService);
 
 let testReleaseId: string;
 
@@ -322,4 +322,71 @@ it("test paging", async () => {
 
   // 10 cases from 10g and 4 cases from 10f
   expect(allCasesFound.length).toBe(14);
+});
+
+it("test identifier searching with case level match", async () => {
+  const result = await releasesService.getCases(
+    allowedDataOwnerUser,
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    "ASHKENAZIM"
+  );
+
+  expect(result).not.toBeNull();
+  assert(result != null);
+
+  expect(result.data.length).toBe(1);
+
+  // note the preferred identifier scheme is not necessarily the same as was hit in the search
+  expect(result.data[0].externalId).toBe("SIMPSONS");
+});
+
+it("test identifier searching with patient level match", async () => {
+  const result = await releasesService.getCases(
+    allowedDataOwnerUser,
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    "HOMER"
+  );
+
+  expect(result).not.toBeNull();
+  assert(result != null);
+
+  expect(result.data.length).toBe(1);
+  expect(result.data[0].externalId).toBe("SIMPSONS");
+});
+
+it("test identifier searching with specimen level match", async () => {
+  const result = await releasesService.getCases(
+    allowedDataOwnerUser,
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    BART_SPECIMEN
+  );
+
+  expect(result).not.toBeNull();
+  assert(result != null);
+
+  expect(result.data.length).toBe(1);
+  expect(result.data[0].externalId).toBe("SIMPSONS");
+});
+
+it("test identifier searching with specimen level partial match (not supported)", async () => {
+  const result = await releasesService.getCases(
+    allowedDataOwnerUser,
+    testReleaseId,
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    // only part of a specimen id
+    BART_SPECIMEN.substring(0, 3)
+  );
+
+  expect(result).not.toBeNull();
+  assert(result != null);
+
+  // we DO NOT currently want to support partial matching so this should return nothing
+  expect(result.data.length).toBe(0);
 });

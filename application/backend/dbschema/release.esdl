@@ -42,11 +42,16 @@ module release {
             select .<forRelease[is job::Job] filter .status = job::JobStatus.running
         );
 
+        # an ordered array (first is most preferred) of URI systems to include in UI etc
+
+        required property datasetCaseUrisOrderPreference -> array<str>;
+        required property datasetIndividualUrisOrderPreference -> array<str>;
+        required property datasetSpecimenUrisOrderPreference -> array<str>;
+
         # a auto generated random string that is used for encrypting download zips etc
         # can be re-generated at an admin level
 
         required property releasePassword -> str;
-
 
 
         # the set of resources explicitly chosen for exclusion no matter what an automated

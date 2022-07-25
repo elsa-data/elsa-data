@@ -2,7 +2,7 @@ import { useCookies } from "react-cookie";
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
-} from "@umccr/elsa-strings";
+} from "@umccr/elsa-constants";
 
 /**
  * Find the current UI wide page size - from either cookies or defaults.

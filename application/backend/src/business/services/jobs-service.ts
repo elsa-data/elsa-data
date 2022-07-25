@@ -7,7 +7,7 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "./select-service";
-import { ReleasesService } from "./releases-service";
+import { ReleaseService } from "./release-service";
 import { UsersService } from "./users-service";
 import { Transaction } from "edgedb/dist/transaction";
 
@@ -27,7 +27,7 @@ export class JobsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService,
-    private releasesService: ReleasesService,
+    private releasesService: ReleaseService,
     private selectService: SelectService
   ) {}
 

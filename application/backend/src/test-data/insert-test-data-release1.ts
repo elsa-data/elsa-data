@@ -12,7 +12,10 @@ import {
   ELROY_SPECIMEN,
   HOMER_SPECIMEN,
   MARGE_SPECIMEN,
+  TENF_URI,
 } from "./insert-test-data-10f";
+import { TENG_URI } from "./insert-test-data-10g";
+import { TENC_URI } from "./insert-test-data-10c";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -56,11 +59,7 @@ Ethics form XYZ.
       releaseIdentifier: "MNRETQER",
       releasePassword: "aeyePEWR", // pragma: allowlist secret
       releaseStarted: new Date(2022, 1, 23),
-      datasetUris: e.array([
-        "urn:fdc:umccr.org:2022:dataset/10g",
-        "urn:fdc:umccr.org:2022:dataset/10f",
-        "urn:fdc:umccr.org:2022:dataset/10c",
-      ]),
+      datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
       selectedSpecimens: e.set(
         // we fully select one trio
         findSpecimenQuery(BART_SPECIMEN),

@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -171,3 +171,11 @@ export const DuoLimitationCodedSchema = Type.Union([
   DuoHealthMedicalBiomedicalResearchSchema,
   DuoDiseaseSpecificResearchSchema,
 ]);
+
+export type DuoLimitationCodedType = Static<typeof DuoLimitationCodedSchema>;
+
+// for completeness, we include a DUO data use limitation that allows freetext - but for practical
+// computation we essentially never want these
+export type DuoLimitationType = Static<typeof DuoLimitationSchema>;
+
+export type DuoModifierType = Static<typeof DuoModifierSchema>;
