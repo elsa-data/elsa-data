@@ -4,6 +4,7 @@ import {
   RemovalPolicy,
   Duration,
   CfnOutput,
+  SecretValue,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import {
@@ -26,7 +27,6 @@ interface ElsaEdgedbStackProps extends StackProps {
     rds: {
       clusterIdentifier: string;
       dbName: string;
-      dsnRdsSecretManagerName: string;
     };
     ecs: {
       serviceName: string;
@@ -40,6 +40,9 @@ interface ElsaEdgedbStackProps extends StackProps {
       user: string;
       port: string;
       customDomain: string;
+      tlsKeySecretManagerName: string;
+      tlsCertSecretManagerName: string;
+      serverCredentialSecretManagerName: string;
     };
   };
 }
@@ -61,6 +64,7 @@ export class ElsaEdgedbStack extends Stack {
 
     // Create RDS Secret
     const rdsClusterSecret = new secretsmanager.Secret(this, "AuroraPassword", {
+      // secretName:'elsa/auroraCredentials',
       generateSecretString: {
         excludePunctuation: true,
         secretStringTemplate: JSON.stringify({
@@ -131,10 +135,23 @@ export class ElsaEdgedbStack extends Stack {
       this,
       "EdgeDBServerPassword",
       {
+        secretName: config.edgedb.serverCredentialSecretManagerName,
         generateSecretString: {
           excludePunctuation: true,
         },
       }
+    );
+
+    const tlsSecretCert = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      "elsaTlsSecretManagerCert",
+      "elsa/tls/cert"
+    );
+
+    const tlsSecretKey = secretsmanager.Secret.fromSecretNameV2(
+      this,
+      "elsaTlsSecretManagerKey",
+      "elsa/tls/key"
     );
 
     const ecsElsaFargateService = new ecs_p.NetworkLoadBalancedFargateService(
@@ -153,16 +170,20 @@ export class ElsaEdgedbStack extends Stack {
           image: ecs.ContainerImage.fromRegistry("edgedb/edgedb"),
           containerName: "edgedb",
           environment: {
-            EDGEDB_SERVER_TLS_CERT_MODE: "generate_self_signed",
+            EDGEDB_SERVER_TLS_CERT_MODE: "require_file",
             EDGEDB_SERVER_BACKEND_DSN: rdsDatabaseDsn,
             EDGEDB_SERVER_USER: config.edgedb.user,
             EDGEDB_SERVER_DATABASE: config.edgedb.dbName,
             EDGEDB_SERVER_PORT: config.edgedb.port,
           },
           secrets: {
+            // By default cdk will grant read access in ecsExecutionRole to read the Secret Manager
             EDGEDB_SERVER_PASSWORD: ecs.Secret.fromSecretsManager(
               edgeDBServerPasswordSecret
             ),
+            EDGEDB_SERVER_TLS_KEY: ecs.Secret.fromSecretsManager(tlsSecretKey),
+            EDGEDB_SERVER_TLS_CERT:
+              ecs.Secret.fromSecretsManager(tlsSecretCert),
           },
           containerPort: config.ecs.port,
           executionRole: ecsExecutionRole,

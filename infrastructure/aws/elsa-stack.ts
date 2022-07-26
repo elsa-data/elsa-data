@@ -7,7 +7,6 @@ import {
 } from "aws-cdk-lib";
 import { ElsaEdgedbStack } from "./stack/elsa-edgedb";
 import { ElsaVPC } from "./lib/vpc";
-
 export class ElsaStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
@@ -47,7 +46,6 @@ export class ElsaStack extends Stack {
         rds: {
           clusterIdentifier: `elsa`,
           dbName: `elsa`,
-          dsnRdsSecretManagerName: "elsa-postgres",
         },
         ecs: {
           serviceName: "elsa",
@@ -61,6 +59,9 @@ export class ElsaStack extends Stack {
           user: "elsa",
           port: "5656",
           customDomain: `db.elsa.${hostedZone.zoneName}`,
+          serverCredentialSecretManagerName: "elsa/edgedb/credentials",
+          tlsKeySecretManagerName: "elsa/tls/key",
+          tlsCertSecretManagerName: "elsa/tls/cert"
         },
       },
       env: {
