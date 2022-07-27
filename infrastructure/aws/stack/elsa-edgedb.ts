@@ -145,13 +145,13 @@ export class ElsaEdgedbStack extends Stack {
     const tlsSecretCert = secretsmanager.Secret.fromSecretNameV2(
       this,
       "elsaTlsSecretManagerCert",
-      "elsa/tls/cert"
+      config.edgedb.tlsCertSecretManagerName
     );
 
     const tlsSecretKey = secretsmanager.Secret.fromSecretNameV2(
       this,
       "elsaTlsSecretManagerKey",
-      "elsa/tls/key"
+      config.edgedb.tlsKeySecretManagerName
     );
 
     const ecsElsaFargateService = new ecs_p.NetworkLoadBalancedFargateService(
