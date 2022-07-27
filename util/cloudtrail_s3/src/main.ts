@@ -44,8 +44,7 @@ async function requestS3CloudTrailLakeQuery(
   if (props.endTimestamp)
     sqlStatement += `AND eventtime < '${props.endTimestamp}'`;
   if (props.s3KeyObject)
-    sqlStatement +=
-      `AND element_at(requestParameters, 'key') = '${props.s3KeyObject}'`;
+    sqlStatement += `AND element_at(requestParameters, 'key') = '${props.s3KeyObject}'`;
 
   // Sending request to query
   const command = new StartQueryCommand({ QueryStatement: sqlStatement });
@@ -225,7 +224,8 @@ async function main(param) {
 }
 
 const CONST_PARAMETER: CloudTrailInputQueryType = {
-...
+  eventDataStoreId: "STORE_ID",
+  awsAccessKeyId: "ACCESS+KEY_ID",
 };
 
 main(CONST_PARAMETER);
