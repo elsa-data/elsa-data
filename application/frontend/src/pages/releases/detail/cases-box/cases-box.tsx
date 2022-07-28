@@ -104,6 +104,8 @@ export const CasesBox: React.FC<Props> = ({
       <div className="flex flex-col">
         <BoxPaginator
           {...paginator}
+          currentPage={1}
+          rowsPerPage={pageSize}
           rowWord="cases"
           rowCount={casesCount}
           currentSearchText={searchText}

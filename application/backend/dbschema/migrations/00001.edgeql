@@ -1,4 +1,4 @@
-CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
+CREATE MIGRATION m1jv7pb7e3ihjgibbzydfdjj33aoc6c7wvoftlwh4aft434c3enzyq
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -70,14 +70,50 @@ CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
   CREATE FUNCTION dataset::extractIdentifierValue(i: tuple<system: std::str, value: std::str>) ->  std::str USING (i.value);
   CREATE SCALAR TYPE audit::ActionType EXTENDING enum<C, R, U, D, E>;
   CREATE TYPE audit::AuditEvent {
-      CREATE REQUIRED PROPERTY action -> audit::ActionType;
+      CREATE REQUIRED PROPERTY updatedDateTime -> std::datetime {
+          SET default := (std::datetime_current());
+      };
+      CREATE INDEX ON (.updatedDateTime);
+      CREATE REQUIRED PROPERTY actionCategory -> audit::ActionType;
+      CREATE REQUIRED PROPERTY actionDescription -> std::str;
+      CREATE PROPERTY details -> std::json;
       CREATE REQUIRED PROPERTY occurredDateTime -> std::datetime;
       CREATE PROPERTY occurredDuration -> std::duration;
+      CREATE REQUIRED PROPERTY outcome -> std::int16 {
+          CREATE CONSTRAINT std::one_of(0, 4, 8, 12);
+      };
       CREATE REQUIRED PROPERTY recordedDateTime -> std::datetime {
           SET default := (std::datetime_current());
           SET readonly := true;
       };
-      CREATE PROPERTY what -> std::str;
+      CREATE REQUIRED PROPERTY whoDisplayName -> std::str;
+      CREATE REQUIRED PROPERTY whoId -> std::str;
+  };
+  CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
+  CREATE TYPE release::Release {
+      CREATE MULTI LINK auditLog -> audit::AuditEvent {
+          ON SOURCE DELETE DELETE TARGET;
+          ON TARGET DELETE RESTRICT;
+      };
+      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
+          ON TARGET DELETE ALLOW;
+      };
+      CREATE REQUIRED LINK applicationCoded -> release::ApplicationCoded;
+      CREATE PROPERTY applicationDacDetails -> std::str;
+      CREATE PROPERTY applicationDacIdentifier -> std::str;
+      CREATE PROPERTY applicationDacTitle -> std::str;
+      CREATE REQUIRED PROPERTY created -> std::datetime {
+          SET default := (std::datetime_current());
+          SET readonly := true;
+      };
+      CREATE REQUIRED PROPERTY datasetCaseUrisOrderPreference -> array<std::str>;
+      CREATE REQUIRED PROPERTY datasetIndividualUrisOrderPreference -> array<std::str>;
+      CREATE REQUIRED PROPERTY datasetSpecimenUrisOrderPreference -> array<std::str>;
+      CREATE REQUIRED PROPERTY datasetUris -> array<std::str>;
+      CREATE PROPERTY releaseEnded -> std::datetime;
+      CREATE PROPERTY releaseIdentifier -> std::str;
+      CREATE REQUIRED PROPERTY releasePassword -> std::str;
+      CREATE PROPERTY releaseStarted -> std::datetime;
   };
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation -> std::json;
@@ -97,6 +133,12 @@ CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
   CREATE TYPE permission::User {
       CREATE MULTI LINK datasetOwner -> dataset::Dataset {
           ON TARGET DELETE ALLOW;
+      };
+      CREATE MULTI LINK releaseParticipant -> release::Release {
+          ON TARGET DELETE ALLOW;
+          CREATE PROPERTY role -> std::str {
+              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
+          };
       };
       CREATE PROPERTY displayName -> std::str;
       CREATE REQUIRED PROPERTY subjectId -> std::str {
@@ -122,9 +164,10 @@ CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
   ALTER TYPE dataset::DatasetCase {
       CREATE OPTIONAL LINK pedigree := (pedigree::Pedigree);
   };
-  CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
   CREATE ABSTRACT TYPE job::Job {
-      CREATE REQUIRED PROPERTY status -> job::JobStatus;
+      CREATE REQUIRED LINK forRelease -> release::Release {
+          ON TARGET DELETE RESTRICT;
+      };
       CREATE REQUIRED PROPERTY created -> std::datetime {
           SET default := (std::datetime_current());
           SET readonly := true;
@@ -139,6 +182,7 @@ CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
           SET default := false;
       };
       CREATE REQUIRED PROPERTY started -> std::datetime;
+      CREATE REQUIRED PROPERTY status -> job::JobStatus;
   };
   CREATE TYPE job::SelectJob EXTENDING job::Job {
       CREATE MULTI LINK todoQueue -> dataset::DatasetCase {
@@ -148,29 +192,6 @@ CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
           ON TARGET DELETE ALLOW;
       };
       CREATE REQUIRED PROPERTY initialTodoCount -> std::int32;
-  };
-  CREATE TYPE release::Release {
-      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE ALLOW;
-      };
-      CREATE REQUIRED LINK applicationCoded -> release::ApplicationCoded;
-      CREATE PROPERTY applicationDacDetails -> std::str;
-      CREATE PROPERTY applicationDacIdentifier -> std::str;
-      CREATE PROPERTY applicationDacTitle -> std::str;
-      CREATE REQUIRED PROPERTY created -> std::datetime {
-          SET default := (std::datetime_current());
-          SET readonly := true;
-      };
-      CREATE REQUIRED PROPERTY datasetUris -> array<std::str>;
-      CREATE PROPERTY releaseEnded -> std::datetime;
-      CREATE PROPERTY releaseIdentifier -> std::str;
-      CREATE REQUIRED PROPERTY releasePassword -> std::str;
-      CREATE PROPERTY releaseStarted -> std::datetime;
-  };
-  ALTER TYPE job::Job {
-      CREATE REQUIRED LINK forRelease -> release::Release {
-          ON TARGET DELETE RESTRICT;
-      };
   };
   ALTER TYPE release::Release {
       CREATE OPTIONAL LINK runningJob := (SELECT
@@ -221,13 +242,5 @@ CREATE MIGRATION m1usorqf6pbbwzucfdwqlzlkj4ha3lva2x74rwncsraqh3dwl6hc5a
       };
       CREATE PROPERTY platform -> std::str;
       CREATE PROPERTY runDate -> std::datetime;
-  };
-  ALTER TYPE permission::User {
-      CREATE MULTI LINK releaseParticipant -> release::Release {
-          ON TARGET DELETE ALLOW;
-          CREATE PROPERTY role -> std::str {
-              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
-          };
-      };
   };
 };

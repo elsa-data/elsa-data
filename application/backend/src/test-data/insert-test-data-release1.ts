@@ -16,6 +16,8 @@ import {
 } from "./insert-test-data-10f";
 import { TENG_URI } from "./insert-test-data-10g";
 import { TENC_URI } from "./insert-test-data-10c";
+import { Duration } from "edgedb";
+import { random } from "lodash";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -60,6 +62,9 @@ Ethics form XYZ.
       releasePassword: "aeyePEWR", // pragma: allowlist secret
       releaseStarted: new Date(2022, 1, 23),
       datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
+      datasetCaseUrisOrderPreference: [""],
+      datasetSpecimenUrisOrderPreference: [""],
+      datasetIndividualUrisOrderPreference: [""],
       selectedSpecimens: e.set(
         // we fully select one trio
         findSpecimenQuery(BART_SPECIMEN),
@@ -68,6 +73,84 @@ Ethics form XYZ.
         // and just the proband of another trio
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
+      auditLog: makeSytheticAuditLog(),
     })
     .run(edgeDbClient);
+}
+
+function makeSytheticAuditLog() {
+  const makeCreate = () => ({
+    actionCategory: "C" as "C",
+    actionDescription: "Created Release",
+    outcome: 0,
+    whoDisplayName: "Someone",
+    whoId: "a",
+    occurredDateTime: e.op(
+      e.datetime_current(),
+      "-",
+      e.duration(new Duration(0, 0, 0, 0, 1, 2, 3))
+    ),
+  });
+
+  const makeRead = () => ({
+    actionCategory: "R" as "R",
+    actionDescription: "Viewed Release",
+    outcome: 0,
+    whoDisplayName: "Bruce Smith",
+    whoId: "a",
+    occurredDateTime: e.op(
+      e.datetime_current(),
+      "-",
+      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
+    ),
+  });
+
+  const makeOperation = (op: string) => ({
+    actionCategory: "E" as "E",
+    actionDescription: op,
+    outcome: 0,
+    whoDisplayName: "Bruce Smith",
+    whoId: "a",
+    occurredDateTime: e.op(
+      e.datetime_current(),
+      "-",
+      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
+    ),
+  });
+
+  const makeLongOperation = (op: string) => ({
+    actionCategory: "E" as "E",
+    actionDescription: op,
+    outcome: 0,
+    whoDisplayName: "Alice Smythe",
+    whoId: "a",
+    occurredDateTime: e.op(
+      e.datetime_current(),
+      "-",
+      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
+    ),
+    occurredDuration: e.duration(
+      new Duration(0, 0, 0, 0, 0, random(59), random(59))
+    ),
+  });
+
+  return e.set(
+    e.insert(e.audit.AuditEvent, makeCreate()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeOperation("Selected Case")),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeOperation("Unselected Specimen")),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeLongOperation("Ran Dynamic Consent")),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead()),
+    e.insert(e.audit.AuditEvent, makeRead())
+  );
 }

@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { registerReleaseRoutes } from "./routes/release";
+import { registerReleaseRoutes } from "./routes/release-routes";
 import { datasetRoutes } from "./routes/datasets";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
@@ -15,7 +15,8 @@ import { container } from "tsyringe";
 import { AwsBaseService } from "../business/services/aws-base-service";
 import { UsersService } from "../business/services/users-service";
 import LinkHeader from "http-link-header";
-import { isNil, isFinite } from "lodash";
+import { isNil, isFinite, isEmpty, trim, isString } from "lodash";
+import { registerAuditLogRoutes } from "./routes/audit-log-routes";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -35,11 +36,19 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
   const page = parseInt((request.query as any).page) || 1;
   const offset = (page - 1) * pageSize;
 
+  const qRaw = (request.query as any).q;
+  // we want our q query to only ever be a non-empty trimmed string - or otherwise leave as undefined
+  const q =
+    isString(qRaw) && !isEmpty(qRaw) && !isEmpty(trim(qRaw))
+      ? trim(qRaw)
+      : undefined;
+
   return {
     elsaSettings,
     authenticatedUser,
     pageSize,
     page,
+    q,
     offset,
   };
 }
@@ -70,21 +79,22 @@ export function sendPagedResult<T>(
         "The basePath for returnPagedResult must end with ? or & so that we can create the paging links"
       );
 
-    // supporting returning RFC 8288 headers
-    const l = new LinkHeader();
-
-    if (currentPage < pr.last)
-      l.set({
-        rel: "next",
-        uri: `${basePath}page=${currentPage + 1}`,
-      });
-    if (currentPage > 1)
-      l.set({
-        rel: "prev",
-        uri: `${basePath}page=${currentPage - 1}`,
-      });
-
     // TBH - we don't really use RFC 8288 at the client so no point to this
+
+    // supporting returning RFC 8288 headers
+    //const l = new LinkHeader();
+
+    //if (currentPage < pr.last)
+    //  l.set({
+    //    rel: "next",
+    //    uri: `${basePath}page=${currentPage + 1}`,
+    //  });
+    //if (currentPage > 1)
+    //  l.set({
+    //    rel: "prev",
+    //    uri: `${basePath}page=${currentPage - 1}`,
+    //  });
+
     //if (isFinite(pr.first))
     //  l.set({
     //    rel: "first",
@@ -98,7 +108,7 @@ export function sendPagedResult<T>(
 
     reply
       .header(TOTAL_COUNT_HEADER_NAME, pr.total.toString())
-      .header("link", l)
+      // .header("link", l)
       .send(pr.data);
   }
 }
@@ -168,6 +178,7 @@ export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
     )
     .after(() => {
       registerReleaseRoutes(fastify);
+      registerAuditLogRoutes(fastify);
       fastify.register(datasetRoutes);
     });
 };

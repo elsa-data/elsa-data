@@ -23,8 +23,21 @@ export async function insertRelease2(settings: ElsaSettings) {
         studyIsNotCommercial: true,
       }),
       datasetUris: e.array([TENF_URI]),
+      datasetCaseUrisOrderPreference: [""],
+      datasetSpecimenUrisOrderPreference: [""],
+      datasetIndividualUrisOrderPreference: [""],
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       selectedSpecimens: e.set(),
+      auditLog: e.set(
+        e.insert(e.audit.AuditEvent, {
+          actionCategory: "C",
+          actionDescription: "Created Release",
+          outcome: 0,
+          whoDisplayName: "Someone",
+          whoId: "a",
+          occurredDateTime: e.datetime_current(),
+        })
+      ),
     })
     .run(edgeDbClient);
 }

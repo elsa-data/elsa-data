@@ -10,7 +10,10 @@ import {
   ReleaseMasterAccessRequestType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
-import { authenticatedRouteOnEntryHelper } from "../api-routes";
+import {
+  authenticatedRouteOnEntryHelper,
+  sendPagedResult,
+} from "../api-routes";
 import { Readable, Stream } from "stream";
 import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
@@ -73,52 +76,20 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     "/api/releases/:rid/cases",
     {},
     async function (request, reply) {
-      const { authenticatedUser, pageSize } =
+      const { authenticatedUser, pageSize, page, q } =
         authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-
-      const page = parseInt((request.query as any).page) || 1;
-      const search = (request.query as any).q;
 
       const cases = await releasesService.getCases(
         authenticatedUser,
         releaseId,
         pageSize,
         (page - 1) * pageSize,
-        !isEmpty(search) && !isEmpty(trim(search)) ? search : undefined
+        q
       );
 
-      if (!cases) reply.status(400).send();
-      else {
-        const l = new LinkHeader();
-
-        if (page < cases.last)
-          l.set({
-            rel: "next",
-            uri: `/api/releases/${releaseId}/cases?page=${page + 1}`,
-          });
-        if (page > 1)
-          l.set({
-            rel: "prev",
-            uri: `/api/releases/${releaseId}/cases?page=${page - 1}`,
-          });
-        l.set({
-          rel: "first",
-          uri: `/api/releases/${releaseId}/cases?page=${cases.first}`,
-        });
-        l.set({
-          rel: "last",
-          uri: `/api/releases/${releaseId}/cases?page=${cases.last}`,
-        });
-
-        reply
-          .header(TOTAL_COUNT_HEADER_NAME, cases.total.toString())
-          .header(LAST_PAGE_HEADER_NAME, pageSize.toString())
-          .header(PAGE_SIZE_HEADER_NAME, pageSize.toString())
-          .header("Link", l)
-          .send(cases.data);
-      }
+      sendPagedResult(reply, cases, page, `/api/releases/${releaseId}/cases?`);
     }
   );
 
@@ -131,6 +102,8 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     const releaseId = request.params.rid;
     const nodeId = request.params.nid;
+
+    // TODO: implement actual consent fetching service
 
     reply.send([
       { code: "DUO:0000006", modifiers: [] },

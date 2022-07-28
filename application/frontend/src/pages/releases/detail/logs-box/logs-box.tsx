@@ -1,115 +1,132 @@
-import React, { ReactNode } from "react";
-import { ReleaseCaseType } from "@umccr/elsa-types";
+import React, { ReactNode, useState } from "react";
+import { AuditEntryType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, useQueryClient } from "react-query";
-import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import classNames from "classnames";
-import usePagination from "headless-pagination-react";
 import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
+import { format } from "date-fns-tz";
+import * as duration from "duration-fns";
 
 type Props = {
   releaseId: string;
-
-  // a map of every dataset uri we will encounter mapped to a single letter
-  datasetMap: Map<string, ReactNode>;
-
-  // the total number of log entries that we will be scrolling/paging through
-  logsCount: number;
 
   // the (max) number of log items shown on any single page
   pageSize: number;
 };
 
-export const LogsBox: React.FC<Props> = ({
-  releaseId,
-  datasetMap,
-  logsCount,
-  pageSize,
-}) => {
-  const queryClient = useQueryClient();
-
-  const paginator = usePagination({
-    totalItems: logsCount,
-    perPage: pageSize,
-    maxLinks: 5,
-    initialPage: 1,
-  });
+export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const dataQuery = useQuery(
-    ["releases-cases", paginator.page, releaseId],
+    ["releases-audit-log", currentPage, releaseId],
     async () => {
       return await axios
-        .get<ReleaseCaseType[]>(
-          `/api/releases/${releaseId}/cases?page=${paginator.page}`
+        .get<AuditEntryType[]>(
+          `/api/releases/${releaseId}/audit-log?page=${currentPage}`
         )
-        .then((response) => response.data);
+        .then((response) => {
+          // as we page - the backend relays to us an accurate total count so we then use that
+          // in the UI
+          const newTotal = parseInt(response.headers["elsa-total-count"]);
+
+          if (isFinite(newTotal)) setCurrentTotal(newTotal);
+
+          return response.data;
+        });
     },
     { keepPreviousData: true }
   );
 
-  const rowSpans: number[] = [];
+  const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
 
-  // this horrible little piece of logic is used to make rowspans where we have a common
-  // dataset shared by rows
-  // our cases are always ordered by dataset - so that is why this will generally work
-  if (dataQuery.isSuccess) {
-    let currentDataset = "not a dataset";
-    let currentSpanRow = -1;
+  const createRows = (data: AuditEntryType[]) => {
+    let viewLastDay = "";
 
-    for (let r = 0; r < dataQuery.data.length; r++) {
-      if (dataQuery.data[r].fromDatasetUri != currentDataset) {
-        // if we have changed from the previous - then its a new span..
-        currentSpanRow = r;
-        currentDataset = dataQuery.data[r].fromDatasetUri;
+    return data.map((row, rowIndex) => {
+      const when = new Date(row.when);
 
-        rowSpans.push(1);
-      } else {
-        // if its the same as the previous - we want to increase the 'current' and put in a marker to the rowspans
-        rowSpans[currentSpanRow] += 1;
-        rowSpans.push(-1);
+      // TODO: get timezone from somewhere in config
+
+      const localDay = format(when, "d/M/yyyy", {
+        timeZone: "Australia/Melbourne",
+      });
+      const localTime = format(when, "HH:mm:ss", {
+        timeZone: "Australia/Melbourne",
+      });
+
+      let showDay = false;
+
+      if (localDay != viewLastDay) {
+        showDay = true;
+        viewLastDay = localDay;
       }
-    }
-  }
 
-  const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
+      let showDuration = false;
+      let localDuration = "";
+
+      if (row.duration) {
+        const parsedDuration = duration.parse(row.duration);
+
+        if (
+          parsedDuration.days > 0 ||
+          parsedDuration.weeks > 0 ||
+          parsedDuration.months > 0 ||
+          parsedDuration.years
+        )
+          // not at all expecting this to happen - if so - just show the entire duration string
+          localDuration = `for ${row.duration}`;
+        else if (parsedDuration.hours > 0)
+          // even hr long activities are unlikely - but we can show that
+          localDuration = `for ${parsedDuration.hours} hr(s)`;
+        else if (parsedDuration.minutes > 0)
+          localDuration = `for ${parsedDuration.minutes} min(s)`;
+        else if (parsedDuration.seconds > 0)
+          localDuration = `for ${parsedDuration.seconds} sec(s)`;
+        else localDuration = "";
+
+        showDuration = true;
+      }
+
+      return (
+        <tr key={rowIndex} className="border-b pl-2 pr-2">
+          <td
+            className={classNames(
+              baseColumnClasses,
+              "w-40",
+              "text-left",
+              "pl-2"
+            )}
+          >
+            {showDay && <p className="font-bold">{viewLastDay}</p>}
+            <p>{localTime}</p>
+            {showDuration && <p className="text-xs">{localDuration}</p>}
+          </td>
+          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
+            {row.actionDescription}
+          </td>
+          <td className={classNames(baseColumnClasses, "text-left", "w-40")}>
+            {row.whoDisplay}
+          </td>
+        </tr>
+      );
+    });
+  };
 
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">
         <BoxPaginator
-          {...paginator}
+          currentPage={currentPage}
+          setPage={(n) => setCurrentPage(n)}
+          rowCount={currentTotal}
+          rowsPerPage={pageSize}
           rowWord="log entries"
-          rowCount={logsCount}
         />
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
-          <tbody>
-            {dataQuery.data &&
-              dataQuery.data.map((row, rowIndex) => {
-                return (
-                  <tr key={row.id} className="border-b">
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "w-12",
-                        "text-center"
-                      )}
-                    >
-                      2022-01-23 12:23:45
-                    </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "text-left",
-                        "w-40"
-                      )}
-                    >
-                      {row.externalId}
-                    </td>
-                  </tr>
-                );
-              })}
-          </tbody>
+          <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
         </table>
       </div>
     </BoxNoPad>

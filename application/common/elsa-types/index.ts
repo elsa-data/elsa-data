@@ -32,6 +32,7 @@ import {
 
 export * from "./schemas";
 export * from "./schemas-application-coded";
+export * from "./schemas-audit";
 export * from "./schemas-coding";
 export * from "./schemas-dataset";
 export * from "./schemas-duo";

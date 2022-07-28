@@ -36,7 +36,20 @@ export async function insertRelease3(settings: ElsaSettings) {
       datasetUris: e.array([
         "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
       ]),
+      datasetCaseUrisOrderPreference: [""],
+      datasetSpecimenUrisOrderPreference: [""],
+      datasetIndividualUrisOrderPreference: [""],
       selectedSpecimens: e.set(),
+      auditLog: e.set(
+        e.insert(e.audit.AuditEvent, {
+          actionCategory: "C",
+          actionDescription: "Created Release",
+          outcome: 0,
+          whoDisplayName: "Someone",
+          whoId: "a",
+          occurredDateTime: e.datetime_current(),
+        })
+      ),
     })
     .run(edgeDbClient);
 }

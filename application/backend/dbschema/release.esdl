@@ -62,6 +62,18 @@ module release {
         #    property recorded -> str;
         #    property reason -> str;
         #};
+
+        multi link auditLog -> audit::AuditEvent {
+            # audit events should not be able to be deleted (singly)
+
+            on target delete restrict;
+
+            # the audit events can be deleted if the release itself is
+
+            on source delete delete target
+        }
+
+
     }
 
     scalar type ApplicationCodedStudyType extending enum<'GRU', 'HMB', 'CC', 'POA', 'DS'>;

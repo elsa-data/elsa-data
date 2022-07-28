@@ -3,9 +3,20 @@ module audit {
     scalar type ActionType extending enum<'C', 'R', 'U', 'D', 'E'>;
 
     type AuditEvent {
-        # a code for the broad category of action
+        # who initiated the action being audited
 
-        required property action -> ActionType;
+        required property whoId -> str;
+        required property whoDisplayName -> str;
+
+        # a code for the broad category of action (read, create, update etc)
+
+        required property actionCategory -> ActionType;
+
+        # a string describing the action but with no details i.e. "Viewing a Release", "Creating a User"
+        # any details will appear later in the details JSON
+        # the use of consistent (non-detailed) strings here can help with UI grouping/filtering etc
+
+        required property actionDescription -> str;
 
         # when this audit record has been made (should be close to occurredDateTime!)
 
@@ -13,6 +24,14 @@ module audit {
             default := datetime_current();
             readonly := true;
         }
+
+        # when this audit record has been updated in any way (by merging, outcome completion etc)
+
+        required property updatedDateTime -> datetime {
+            default := datetime_current();
+        }
+
+        index on (.updatedDateTime);
 
         # when the event occurred - including optional duration if
         # modelling an event that occurred over a significant period of time
@@ -29,11 +48,12 @@ module audit {
         #    8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
         #    12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
 
-        #required property outcome extending int16 {
-        #    constraint one_of (0, 4, 8, 12);
-        #}
+        required property outcome -> int16 {
+            constraint one_of (0, 4, 8, 12);
+        }
 
+        # bespoke JSON with details of the event
 
-        property what -> str;
+        property details -> json;
     }
 }
