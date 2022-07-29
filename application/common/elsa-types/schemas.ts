@@ -1,6 +1,6 @@
 import { Static, TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
-import { TypeDate } from "./schemas-releases";
+import { TypeDate } from "./typebox-helpers";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -49,4 +49,16 @@ export const ReleaseMasterAccessRequestSchema = Type.Object({
 
 export type ReleaseMasterAccessRequestType = Static<
   typeof ReleaseMasterAccessRequestSchema
+>;
+
+export const RemsApprovedApplicationSchema = Type.Object({
+  remsId: Type.Integer(),
+  whoDisplay: Type.Optional(Type.String()),
+  whoEmail: Type.Optional(Type.String()),
+  description: Type.String(),
+  when: Type.String(),
+});
+
+export type RemsApprovedApplicationType = Static<
+  typeof RemsApprovedApplicationSchema
 >;

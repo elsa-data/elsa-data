@@ -1,22 +1,19 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { registerReleaseRoutes } from "./routes/release-routes";
-import { datasetRoutes } from "./routes/datasets";
+import { releaseRoutes } from "./routes/release-routes";
+import { datasetRoutes } from "./routes/dataset-routes";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
-  LAST_PAGE_HEADER_NAME,
-  PAGE_SIZE_HEADER_NAME,
   PagedResult,
   TOTAL_COUNT_HEADER_NAME,
 } from "./api-pagination";
 import { container } from "tsyringe";
-import { AwsBaseService } from "../business/services/aws-base-service";
 import { UsersService } from "../business/services/users-service";
-import LinkHeader from "http-link-header";
-import { isNil, isFinite, isEmpty, trim, isString } from "lodash";
-import { registerAuditLogRoutes } from "./routes/audit-log-routes";
+import { isEmpty, isNil, isString, trim } from "lodash";
+import { auditLogRoutes } from "./routes/audit-log-routes";
+import { dacRoutes } from "./routes/dac-routes";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -177,8 +174,9 @@ export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
       }
     )
     .after(() => {
-      registerReleaseRoutes(fastify);
-      registerAuditLogRoutes(fastify);
+      fastify.register(auditLogRoutes);
+      fastify.register(releaseRoutes);
+      fastify.register(dacRoutes);
       fastify.register(datasetRoutes);
     });
 };

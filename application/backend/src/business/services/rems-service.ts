@@ -2,26 +2,64 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../test-data/test-data-helpers";
 import { inject, injectable, singleton } from "tsyringe";
-import { Client } from "edgedb";
+import { ElsaSettings } from "../../bootstrap-settings";
+import axios from "axios";
+import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 
 @injectable()
 @singleton()
 export class RemsService {
-  constructor(@inject("Database") private edgeDbClient: Client) {}
+  constructor(
+    @inject("Database") private edgeDbClient: edgedb.Client,
+    @inject("Settings") private settings: ElsaSettings
+  ) {}
 
-  public async import(url: string) {
-    throw new Error("not implemented");
+  public async detectNewReleases(): Promise<RemsApprovedApplicationType[]> {
+    const appData = await axios.get(
+      `${this.settings.remsUrl}/api/applications`,
+      {
+        headers: {
+          accept: "application/json",
+          "x-rems-api-key": this.settings.remsBotKey,
+          "x-rems-user-id": this.settings.remsBotUser,
+        },
+      }
+    );
 
-    /*await axios.get(`${settings.remsUrl}/api/applications`, {
-          headers: {
-            accept: "application/json",
-            "x-rems-api-key": settings.remsBotKey,
-            "x-rems-user-id": settings.remsBotUser,
-          },
-        })
-      };*/
+    const newReleases: RemsApprovedApplicationType[] = [];
 
-    const appData = { data: [] };
+    for (const application of appData.data) {
+      if (application["application/state"] === "application.state/approved") {
+        const applicant = application["application/applicant"];
+        if (applicant)
+          newReleases.push({
+            // consider what date we want to actually put here...
+            when: application["application/modified"],
+            remsId: application["application/id"],
+            description:
+              application["application/description"] ?? "<no description>",
+            whoDisplay: applicant?.name ?? "<no applicant name>",
+            whoEmail: applicant?.email ?? "<no applicant email>",
+          });
+      }
+    }
+
+    return newReleases;
+  }
+
+  public async startNewRelease(remsId: number) {
+    const appData = await axios.get(
+      `${this.settings.remsUrl}/api/applications/${remsId}`,
+      {
+        headers: {
+          accept: "application/json",
+          "x-rems-api-key": this.settings.remsBotKey,
+          "x-rems-user-id": this.settings.remsBotUser,
+        },
+      }
+    );
+
+    return appData.data;
 
     for (const application of appData.data) {
       if (application["application/state"] === "application.state/approved") {
@@ -53,7 +91,7 @@ export class RemsService {
       }
     } */
 
-      const r1 = await e
+      /*      const r1 = await e
         .insert(e.release.Release, {
           created: e.datetime(new Date()),
           applicationDacIdentifier: application["application/external-id"],
@@ -77,7 +115,7 @@ Applicant: ${JSON.stringify(
           releasePassword: "AAAAA", // pragma: allowlist secret
           datasetUris: e.literal(e.array(e.str), Object.keys({})),
         })
-        .run(this.edgeDbClient);
+        .run(this.edgeDbClient); */
 
       /*{
 "application/workflow": {

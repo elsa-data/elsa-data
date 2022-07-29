@@ -7,7 +7,7 @@ import {
 import { container } from "tsyringe";
 import { AuditLogService } from "../../business/services/audit-log-service";
 
-export function registerAuditLogRoutes(fastify: FastifyInstance) {
+export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
   const auditLogService = container.resolve(AuditLogService);
 
   fastify.get<{ Params: { rid: string }; Reply: AuditEntryType[] }>(
@@ -34,4 +34,4 @@ export function registerAuditLogRoutes(fastify: FastifyInstance) {
       );
     }
   );
-}
+};

@@ -33,7 +33,7 @@ import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-u
 import fastifyFormBody from "@fastify/formbody";
 import { isEmpty, isString, trim } from "lodash";
 
-export function registerReleaseRoutes(fastify: FastifyInstance) {
+export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
   const jobsService = container.resolve(JobsService);
   const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
@@ -371,4 +371,4 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     archive.pipe(reply.raw);
   });
-}
+};
