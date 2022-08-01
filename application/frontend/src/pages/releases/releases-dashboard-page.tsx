@@ -1,23 +1,30 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import { useEnvRelay } from "../../providers/env-relay-provider";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Box } from "../../components/boxes";
 import { Dialog, Transition } from "@headlessui/react";
 import {
+  CodingType,
   ReleaseDetailType,
+  ReleaseRemsSyncRequestType,
   RemsApprovedApplicationType,
 } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
+import { useForm } from "react-hook-form";
+import { isNil } from "lodash";
+import {
+  axiosPostArgMutationFn,
+  makeReleaseTypeLocal,
+  REACT_QUERY_RELEASE_KEYS,
+} from "./detail/queries";
+import { ReleasesAddReleaseDialog } from "./releases-dashboard-add-release-dialog";
 
 export const ReleasesPage: React.FC = () => {
-  const envRelay = useEnvRelay();
-  const navigate = useNavigate();
-
   const { data: releaseData } = useQuery(
-    "releases",
+    REACT_QUERY_RELEASE_KEYS.all,
     async () => {
       return await axios
         .get<ReleaseDetailType[]>(`/api/releases`)
@@ -26,24 +33,7 @@ export const ReleasesPage: React.FC = () => {
     {}
   );
 
-  const cancelButtonRef = useRef(null);
-
   const [showingRemsDialog, setShowingRemsDialog] = useState(false);
-  const [newReleases, setNewReleases] = useState<RemsApprovedApplicationType[]>(
-    []
-  );
-
-  useEffect(() => {
-    async function fetchData() {
-      const n = await axios
-        .get<RemsApprovedApplicationType[]>(`/api/dac/rems/new`)
-        .then((response) => response.data);
-      setNewReleases(n);
-    }
-    if (showingRemsDialog) {
-      fetchData();
-    }
-  }, [showingRemsDialog]);
 
   return (
     <LayoutBase>
@@ -123,7 +113,7 @@ export const ReleasesPage: React.FC = () => {
                       scope="row"
                       className="px-6 py-4 font-mono whitespace-nowrap"
                     >
-                      {r.applicationDacIdentifier}
+                      {JSON.stringify(r.applicationDacIdentifier)}
                     </th>
                     <td className="px-6 py-4">{r.applicationDacTitle}</td>
                     <td className="px-6 py-4 text-right">
@@ -141,108 +131,10 @@ export const ReleasesPage: React.FC = () => {
           )}
         </Box>
       </div>
-      <Transition.Root show={showingRemsDialog} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-10"
-          initialFocus={cancelButtonRef}
-          onClose={setShowingRemsDialog}
-        >
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-          </Transition.Child>
-
-          <div className="fixed z-10 inset-0 overflow-y-auto">
-            <div className="flex items-end sm:items-center justify-center min-h-full p-4 text-center sm:p-0">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enterTo="opacity-100 translate-y-0 sm:scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              >
-                <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-3xl sm:w-full">
-                  <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div className="sm:flex sm:items-start">
-                      <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"></div>
-                      <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <Dialog.Title
-                          as="h3"
-                          className="text-lg leading-6 font-medium text-gray-900"
-                        >
-                          Add Approved Application
-                        </Dialog.Title>
-                        <div className="mt-2">
-                          <p className="text-sm text-gray-500">
-                            This is a list of applications in the given REMS
-                            instance that are
-                          </p>
-                          <ul className="text-sm text-gray-500 list-disc">
-                            <li>approved</li>
-                            <li>
-                              not already associated with an Elsa Data release
-                            </li>
-                            <li>
-                              involve a resource that corresponds to a dataset
-                              under Elsa Data control
-                            </li>
-                          </ul>
-                        </div>
-                        <table className="table-auto text-sm mt-4">
-                          <tbody>
-                            {newReleases &&
-                              newReleases.map((nr) => (
-                                <tr>
-                                  <td>
-                                    <input type="radio" name="application" />
-                                  </td>
-                                  <td className="border p-2">{nr.when}</td>
-                                  <td className="border p-2">
-                                    {nr.whoDisplay}
-                                  </td>
-                                  <td className="border p-2">
-                                    {nr.description}
-                                  </td>
-                                </tr>
-                              ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button
-                      type="button"
-                      className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                      onClick={() => setShowingRemsDialog(false)}
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                      onClick={() => setShowingRemsDialog(false)}
-                      ref={cancelButtonRef}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition.Root>
+      <ReleasesAddReleaseDialog
+        showing={showingRemsDialog}
+        cancelShowing={() => setShowingRemsDialog(false)}
+      />
     </LayoutBase>
   );
 };

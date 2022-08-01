@@ -1,7 +1,11 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import { ElsaSettings } from "../bootstrap-settings";
-import { findSpecimenQuery, makeEmptyCodeArray } from "./test-data-helpers";
+import {
+  findSpecimenQuery,
+  makeEmptyCodeArray,
+  makeSystemlessIdentifier,
+} from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { TENF_URI } from "./insert-test-data-10f";
 
@@ -12,7 +16,7 @@ export async function insertRelease4(settings: ElsaSettings) {
     .insert(e.release.Release, {
       applicationDacTitle: "A Release With Nothing Selected By Default",
       applicationDacDetails: "Some other details from the DAC",
-      applicationDacIdentifier: "XYZ",
+      applicationDacIdentifier: makeSystemlessIdentifier("2"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.HMB,
         countriesInvolved: makeEmptyCodeArray(),
@@ -24,6 +28,7 @@ export async function insertRelease4(settings: ElsaSettings) {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
+      releaseIdentifier: "TR",
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       auditLog: e.set(

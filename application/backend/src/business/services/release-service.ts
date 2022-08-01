@@ -41,19 +41,20 @@ export class ReleaseService extends ReleaseBaseService {
     limit: number,
     offset: number
   ): Promise<ReleaseSummaryType[]> {
-    const allForUser = await allReleasesSummaryByUserQuery.run(
+    const allReleasesByUser = await allReleasesSummaryByUserQuery.run(
       this.edgeDbClient,
       { userDbId: user.dbId }
     );
 
-    return allForUser
+    return allReleasesByUser
       .filter((a) => a.userRoles != null)
       .map((a) => ({
         id: a.id,
         datasetUris: a.datasetUris,
-        applicationDacIdentifier:
-          a?.applicationDacIdentifier ?? "<unidentified>",
-        applicationDacTitle: a?.applicationDacTitle ?? "<untitled>",
+        releaseIdentifier: a.releaseIdentifier,
+        applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
+        applicationDacIdentifierValue: a.applicationDacIdentifier.value,
+        applicationDacTitle: a.applicationDacTitle,
         isRunningJobPercentDone: undefined,
       }));
   }

@@ -6,10 +6,12 @@ import { CodingType, ReleaseDetailType } from "@umccr/elsa-types";
 import { createDatasetMap } from "./dataset-map";
 
 export const REACT_QUERY_RELEASE_KEYS = {
+  // methods to create react query keys of varying levels
   all: ["releases"] as const,
   details: () => [...REACT_QUERY_RELEASE_KEYS.all, "detail"] as const,
   detail: (id: string) => [...REACT_QUERY_RELEASE_KEYS.details(), id] as const,
 
+  // an accessor function to get the release id back out of any given key array
   getReleaseId: (keys: readonly unknown[]) => keys[2],
 };
 

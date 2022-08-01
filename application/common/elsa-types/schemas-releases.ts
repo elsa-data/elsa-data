@@ -9,6 +9,27 @@ import {
 import { CodingSchema } from "./schemas-coding";
 import { StringUnion, TypeDate } from "./typebox-helpers";
 
+export const ReleaseSummarySchema = Type.Object({
+  id: Type.String(),
+
+  releaseIdentifier: Type.String(),
+
+  applicationDacIdentifierSystem: Type.String(),
+  applicationDacIdentifierValue: Type.String(),
+  applicationDacTitle: Type.String(),
+
+  // if this release is in the time period of sharing
+  //isSharingEnabled: Type.Boolean(),
+
+  // if a job is running then this is the percent it is complete
+  isRunningJobPercentDone: Type.Optional(Type.Number()),
+
+  // once we get @role link properties working we should enable this
+  // roleInRelease: Type.String(),
+});
+
+export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
+
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
   "DS",
@@ -29,22 +50,6 @@ export const ReleaseRunningJobSchema = Type.Object({
   percentDone: Type.Number(),
   messages: Type.Array(Type.String()),
   requestedCancellation: Type.Boolean(),
-});
-
-export const ReleaseSummarySchema = Type.Object({
-  id: Type.String(),
-
-  applicationDacIdentifier: Type.String(),
-  applicationDacTitle: Type.String(),
-
-  // if this release is in the time period of sharing
-  //isSharingEnabled: Type.Boolean(),
-
-  // if a job is running then this is the percent it is complete
-  isRunningJobPercentDone: Type.Optional(Type.Number()),
-
-  // once we get @role link properties working we should enable this
-  // roleInRelease: Type.String(),
 });
 
 export const ReleaseDetailSchema = Type.Object({
@@ -144,5 +149,4 @@ export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
 export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
 
-export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
 export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;

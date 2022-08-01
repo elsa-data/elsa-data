@@ -44,6 +44,7 @@ export const allReleasesSummaryByUserQuery = e.params(
         (u) => ({
           id: true,
           filter: e.op(u.id, "=", params.userDbId),
+          // got to work out how to extract the link property values.. this was broken in Edge pre 2.0
           // "@role": true
         })
       ),

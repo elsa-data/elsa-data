@@ -5,6 +5,7 @@ import {
   findSpecimenQuery,
   makeDoubleCodeArray,
   makeSingleCodeArray,
+  makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import {
@@ -27,7 +28,7 @@ export async function insertRelease1(settings: ElsaSettings) {
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Study of Lots of Test Data",
-      applicationDacIdentifier: "ABC",
+      applicationDacIdentifier: makeSystemlessIdentifier("ABC"),
       applicationDacDetails: `
 #### Origin
 

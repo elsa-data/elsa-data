@@ -29,9 +29,18 @@ type Opts = {
 export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
   const elsaSettings: ElsaSettings = (request as any).settings;
   const authenticatedUser: AuthenticatedUser = (request as any).user;
+  // page size is either a session cookie kind of setting, or a default - but we always have a value here
   const pageSize = currentPageSize(request);
+  // we have a sensible default page across the entire system, even if not specified
   const page = parseInt((request.query as any).page) || 1;
   const offset = (page - 1) * pageSize;
+
+  if (!authenticatedUser)
+    // we should never ever get to this - but if for some reason our plumbing has gone wrong
+    // then we need to stop this progressing any further
+    throw new Error(
+      "Inside authenticated route body but no authenticated user data"
+    );
 
   const qRaw = (request.query as any).q;
   // we want our q query to only ever be a non-empty trimmed string - or otherwise leave as undefined

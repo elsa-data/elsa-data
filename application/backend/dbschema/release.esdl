@@ -10,25 +10,36 @@ module release {
              readonly := true;
         };
 
-        # the creation of a release will be triggered by an approved application in a DAC
-        # this is all the details we can import from the source DAC
+        # imported DAC application identifier
 
-        property applicationDacIdentifier -> str;
-        property applicationDacTitle -> str;
-        property applicationDacDetails -> str;
+        required property applicationDacIdentifier -> tuple<system: str, value: str> {
+            # it is not allowed to have multiple releases from the same DAC application
+            constraint exclusive;
+        }
+
+        # imported DAC application title
+
+        required property applicationDacTitle -> str;
+
+        # imported DAC application markdown details
+
+        required property applicationDacDetails -> str;
 
         # once a release is started - it is possible for the data owner to encode some
         # details of the application to help with automation
 
         required link applicationCoded -> ApplicationCoded;
 
-        property releaseIdentifier -> str;
+        required property releaseIdentifier -> str {
+            constraint exclusive;
+        }
+
+        # 1..n datasets that we the sources of items in this release
+        required property datasetUris -> array<str>;
 
         property releaseStarted -> datetime;
         property releaseEnded -> datetime;
 
-        # 1..n datasets that we the sources of items in this release
-        required property datasetUris -> array<str>;
 
         # all the specimens that are included in this release
 

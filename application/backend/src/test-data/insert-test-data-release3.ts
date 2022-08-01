@@ -10,6 +10,7 @@ import {
   makeDoubleCodeArray,
   makeEmptyCodeArray,
   makeSingleCodeArray,
+  makeSystemlessIdentifier,
   makeTripleCodeArray,
 } from "./test-data-helpers";
 import { insert10F } from "./insert-test-data-10f";
@@ -24,7 +25,8 @@ export async function insertRelease3(settings: ElsaSettings) {
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "An Invisible Study",
-      applicationDacIdentifier: "XYZ",
+      applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
+      applicationDacDetails: "",
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.HMB,
         countriesInvolved: makeEmptyCodeArray(),
@@ -39,6 +41,7 @@ export async function insertRelease3(settings: ElsaSettings) {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
+      releaseIdentifier: "B",
       selectedSpecimens: e.set(),
       auditLog: e.set(
         e.insert(e.audit.AuditEvent, {
