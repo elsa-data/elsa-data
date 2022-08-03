@@ -6,6 +6,10 @@ const rs = e
   }))
   .assert_single().datasetUris;
 
+/**
+ * An EdgeDb query for all the dataset details for those datasets
+ * associated with a given release.
+ */
 const allReleaseDatasetsQuery = e.params({ releaseId: e.uuid }, (params) =>
   e.select(e.dataset.Dataset, (ds) => ({
     ...e.dataset.Dataset["*"],
@@ -21,4 +25,28 @@ const allReleaseDatasetsQuery = e.params({ releaseId: e.uuid }, (params) =>
       )
     ),
   }))
+);
+
+/**
+ * An EdgeDb query that returns all releases (filter so the specified user only sees their releases)
+ * and with various summary level data included.
+ */
+export const allReleasesSummaryByUserQuery = e.params(
+  { userDbId: e.uuid },
+  (params) =>
+    e.select(e.release.Release, (r) => ({
+      ...e.release.Release["*"],
+      runningJob: {
+        percentDone: true,
+      },
+      userRoles: e.select(
+        r["<releaseParticipant[is permission::User]"],
+        (u) => ({
+          id: true,
+          filter: e.op(u.id, "=", params.userDbId),
+          // got to work out how to extract the link property values.. this was broken in Edge pre 2.0
+          // "@role": true
+        })
+      ),
+    }))
 );

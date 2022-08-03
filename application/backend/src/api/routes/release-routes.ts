@@ -10,7 +10,10 @@ import {
   ReleaseMasterAccessRequestType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
-import { authenticatedRouteOnEntryHelper } from "../api-routes";
+import {
+  authenticatedRouteOnEntryHelper,
+  sendPagedResult,
+} from "../api-routes";
 import { Readable, Stream } from "stream";
 import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
@@ -18,7 +21,7 @@ import streamConsumers from "node:stream/consumers";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs-service";
-import { ReleasesService } from "../../business/services/releases-service";
+import { ReleaseService } from "../../business/services/release-service";
 import LinkHeader from "http-link-header";
 import {
   LAST_PAGE_HEADER_NAME,
@@ -28,13 +31,13 @@ import {
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
 import fastifyFormBody from "@fastify/formbody";
-import { isString } from "lodash";
+import { isEmpty, isString, trim } from "lodash";
 
-export function registerReleaseRoutes(fastify: FastifyInstance) {
+export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
   const jobsService = container.resolve(JobsService);
   const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
-  const releasesService = container.resolve(ReleasesService);
+  const releasesService = container.resolve(ReleaseService);
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
@@ -73,50 +76,20 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
     "/api/releases/:rid/cases",
     {},
     async function (request, reply) {
-      const { authenticatedUser, pageSize } =
+      const { authenticatedUser, pageSize, page, q } =
         authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-
-      const page = parseInt((request.query as any).page) || 1;
 
       const cases = await releasesService.getCases(
         authenticatedUser,
         releaseId,
         pageSize,
-        (page - 1) * pageSize
+        (page - 1) * pageSize,
+        q
       );
 
-      if (!cases) reply.status(400).send();
-      else {
-        const l = new LinkHeader();
-
-        if (page < cases.last)
-          l.set({
-            rel: "next",
-            uri: `/api/releases/${releaseId}/cases?page=${page + 1}`,
-          });
-        if (page > 1)
-          l.set({
-            rel: "prev",
-            uri: `/api/releases/${releaseId}/cases?page=${page - 1}`,
-          });
-        l.set({
-          rel: "first",
-          uri: `/api/releases/${releaseId}/cases?page=${cases.first}`,
-        });
-        l.set({
-          rel: "last",
-          uri: `/api/releases/${releaseId}/cases?page=${cases.last}`,
-        });
-
-        reply
-          .header(TOTAL_COUNT_HEADER_NAME, cases.total.toString())
-          .header(LAST_PAGE_HEADER_NAME, pageSize.toString())
-          .header(PAGE_SIZE_HEADER_NAME, pageSize.toString())
-          .header("Link", l)
-          .send(cases.data);
-      }
+      sendPagedResult(reply, cases, page, `/api/releases/${releaseId}/cases?`);
     }
   );
 
@@ -129,6 +102,8 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     const releaseId = request.params.rid;
     const nodeId = request.params.nid;
+
+    // TODO: implement actual consent fetching service
 
     reply.send([
       { code: "DUO:0000006", modifiers: [] },
@@ -396,4 +371,4 @@ export function registerReleaseRoutes(fastify: FastifyInstance) {
 
     archive.pipe(reply.raw);
   });
-}
+};

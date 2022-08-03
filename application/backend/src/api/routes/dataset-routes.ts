@@ -7,20 +7,12 @@ import {
 } from "@umccr/elsa-types";
 import { ElsaSettings } from "../../bootstrap-settings";
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
-import {
-  currentPageSize,
-  LAST_PAGE_HEADER_NAME,
-  PAGE_SIZE_HEADER_NAME,
-  TOTAL_COUNT_HEADER_NAME,
-} from "../api-pagination";
 import { container } from "tsyringe";
-import { AwsBaseService } from "../../business/services/aws-base-service";
 import { DatasetService } from "../../business/services/dataset-service";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
-import LinkHeader from "http-link-header";
 
 export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
   const datasetsService = container.resolve(DatasetService);

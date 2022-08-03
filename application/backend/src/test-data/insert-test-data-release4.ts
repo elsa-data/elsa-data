@@ -1,32 +1,22 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
-import { insertCARDIAC } from "./insert-test-data-cardiac";
-import { insert10G } from "./insert-test-data-10g";
 import { ElsaSettings } from "../bootstrap-settings";
 import {
-  createTestUser,
   findSpecimenQuery,
-  insertBlankDataset,
-  makeDoubleCodeArray,
   makeEmptyCodeArray,
-  makeSingleCodeArray,
   makeSystemlessIdentifier,
-  makeTripleCodeArray,
 } from "./test-data-helpers";
-import { insert10F } from "./insert-test-data-10f";
-import { insert10C } from "./insert-test-data-10c";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
+import { TENF_URI } from "./insert-test-data-10f";
 
 const edgeDbClient = edgedb.createClient();
 
-export async function insertRelease3(settings: ElsaSettings) {
-  // r3 is a test release that no-one has any permissions into - so should not
-  // appear in any queries
+export async function insertRelease4(settings: ElsaSettings) {
   return await e
     .insert(e.release.Release, {
-      applicationDacTitle: "An Invisible Study",
-      applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
-      applicationDacDetails: "",
+      applicationDacTitle: "A Release With Nothing Selected By Default",
+      applicationDacDetails: "Some other details from the DAC",
+      applicationDacIdentifier: makeSystemlessIdentifier("2"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.HMB,
         countriesInvolved: makeEmptyCodeArray(),
@@ -34,14 +24,12 @@ export async function insertRelease3(settings: ElsaSettings) {
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
       }),
-      releasePassword: "apassword", // pragma: allowlist secret
-      datasetUris: e.array([
-        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
-      ]),
+      datasetUris: e.array([TENF_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: "B",
+      releaseIdentifier: "TR",
+      releasePassword: "bbew75CZ", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       auditLog: e.set(
         e.insert(e.audit.AuditEvent, {

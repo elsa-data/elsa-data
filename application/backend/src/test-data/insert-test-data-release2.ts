@@ -1,8 +1,13 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import { ElsaSettings } from "../bootstrap-settings";
-import { findSpecimenQuery, makeEmptyCodeArray } from "./test-data-helpers";
+import {
+  findSpecimenQuery,
+  makeEmptyCodeArray,
+  makeSystemlessIdentifier,
+} from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
+import { TENF_URI } from "./insert-test-data-10f";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -12,7 +17,8 @@ export async function insertRelease2(settings: ElsaSettings) {
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Better Study of Limited Test Data",
-      applicationDacIdentifier: "XYZ",
+      applicationDacDetails: "Some other details from the DAC",
+      applicationDacIdentifier: makeSystemlessIdentifier("XYZ"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.HMB,
         countriesInvolved: makeEmptyCodeArray(),
@@ -20,15 +26,22 @@ export async function insertRelease2(settings: ElsaSettings) {
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
       }),
-      datasetUris: e.array([
-        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
-      ]),
+      datasetUris: e.array([TENF_URI]),
+      datasetCaseUrisOrderPreference: [""],
+      datasetSpecimenUrisOrderPreference: [""],
+      datasetIndividualUrisOrderPreference: [""],
+      releaseIdentifier: "A",
       releasePassword: "bbew75CZ", // pragma: allowlist secret
-      selectedSpecimens: e.set(
-        findSpecimenQuery("HG1"),
-        findSpecimenQuery("HG2"),
-        findSpecimenQuery("HG3"),
-        findSpecimenQuery("HG4")
+      selectedSpecimens: e.set(),
+      auditLog: e.set(
+        e.insert(e.audit.AuditEvent, {
+          actionCategory: "C",
+          actionDescription: "Created Release",
+          outcome: 0,
+          whoDisplayName: "Someone",
+          whoId: "a",
+          occurredDateTime: e.datetime_current(),
+        })
       ),
     })
     .run(edgeDbClient);

@@ -112,12 +112,7 @@ export const ReleasesDetailPage: React.FC = () => {
               </div>
             </Box>
 
-            <LogsBox
-              releaseId={releaseId}
-              datasetMap={releaseQuery.data.datasetMap}
-              logsCount={releaseQuery.data.visibleCasesCount}
-              pageSize={pageSize}
-            />
+            <LogsBox releaseId={releaseId} pageSize={pageSize} />
           </>
         )}
       </div>

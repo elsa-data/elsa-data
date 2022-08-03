@@ -39,9 +39,9 @@ npm run edgetypes
 You will need to get these actual values out of band (i.e. Slack).
 
 ```shell
-security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
-security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
-security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
+security add-generic-password -a "$USER" -s 'Elsa Client Id Dev' -w 'qwerty123'
+security add-generic-password -a "$USER" -s 'Elsa Client Secret Dev' -w 'qwerty123'
+security add-generic-password -a "$USER" -s 'Elsa REMS Bot User Dev' -w 'qwerty123'
 security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
 ```
 

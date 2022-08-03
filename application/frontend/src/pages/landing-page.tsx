@@ -8,7 +8,7 @@ import { useCookies } from "react-cookie";
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
-} from "@umccr/elsa-strings";
+} from "@umccr/elsa-constants";
 
 export const HomePage: React.FC = () => {
   const envRelay = useEnvRelay();

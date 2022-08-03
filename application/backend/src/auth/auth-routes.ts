@@ -3,7 +3,7 @@ import {
   SECURE_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-strings";
+} from "@umccr/elsa-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
 import { ElsaSettings } from "../bootstrap-settings";
 import { TOKEN_PRIMARY } from "./auth-strings";

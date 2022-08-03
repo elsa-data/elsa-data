@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
-} from "@umccr/elsa-strings";
+} from "@umccr/elsa-constants";
 
 // NOTE: both fastify and axios are going to lowercase this anyhow - so mind as well start out that way
 export const TOTAL_COUNT_HEADER_NAME = "elsa-total-count";

@@ -39,6 +39,36 @@ export class UsersService {
   }
 
   /**
+   * Register the calling user with a given role in the release.
+   *
+   * If the user already has a role in the release then this function
+   * aborts with an exception.
+   *
+   * @param user
+   * @param releaseId
+   * @param role
+   */
+  public async registerRoleInRelease(
+    user: AuthenticatedUser,
+    releaseId: string,
+    role: ReleaseRoleStrings
+  ) {
+    await e
+      .update(e.permission.User, (u) => ({
+        filter: e.op(e.uuid(user.dbId), "=", u.id),
+        set: {
+          releaseParticipant: {
+            "+=": e.select(e.release.Release, (r) => ({
+              filter: e.op(e.uuid(releaseId), "=", r.id),
+              "@role": e.str(role),
+            })),
+          },
+        },
+      }))
+      .run(this.edgeDbClient);
+  }
+
+  /**
    * Return the role a user has in a particular release, or null if they are not involved
    * in the release. As a by-product, checks that the releaseId is a valid release identifier.
    *

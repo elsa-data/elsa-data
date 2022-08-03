@@ -3,11 +3,11 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { findDatabaseRelease } from "./utils";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
-import { ReleasesService } from "../../src/business/services/releases-service";
+import { ReleaseService } from "../../src/business/services/release-service";
 
 const testContainer = registerTypes();
 
-const releasesService = testContainer.resolve(ReleasesService);
+const releasesService = testContainer.resolve(ReleaseService);
 const edgeDbClient = testContainer.resolve<Client>("Database");
 
 let testReleaseId: string;

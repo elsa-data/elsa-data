@@ -1,21 +1,19 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { registerReleaseRoutes } from "./routes/release";
-import { datasetRoutes } from "./routes/datasets";
+import { releaseRoutes } from "./routes/release-routes";
+import { datasetRoutes } from "./routes/dataset-routes";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
 import { ElsaSettings } from "../bootstrap-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
-  LAST_PAGE_HEADER_NAME,
-  PAGE_SIZE_HEADER_NAME,
   PagedResult,
   TOTAL_COUNT_HEADER_NAME,
 } from "./api-pagination";
 import { container } from "tsyringe";
-import { AwsBaseService } from "../business/services/aws-base-service";
 import { UsersService } from "../business/services/users-service";
-import LinkHeader from "http-link-header";
-import { isNil, isFinite } from "lodash";
+import { isEmpty, isNil, isString, trim } from "lodash";
+import { auditLogRoutes } from "./routes/audit-log-routes";
+import { dacRoutes } from "./routes/dac-routes";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -31,15 +29,32 @@ type Opts = {
 export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
   const elsaSettings: ElsaSettings = (request as any).settings;
   const authenticatedUser: AuthenticatedUser = (request as any).user;
+  // page size is either a session cookie kind of setting, or a default - but we always have a value here
   const pageSize = currentPageSize(request);
+  // we have a sensible default page across the entire system, even if not specified
   const page = parseInt((request.query as any).page) || 1;
   const offset = (page - 1) * pageSize;
+
+  if (!authenticatedUser)
+    // we should never ever get to this - but if for some reason our plumbing has gone wrong
+    // then we need to stop this progressing any further
+    throw new Error(
+      "Inside authenticated route body but no authenticated user data"
+    );
+
+  const qRaw = (request.query as any).q;
+  // we want our q query to only ever be a non-empty trimmed string - or otherwise leave as undefined
+  const q =
+    isString(qRaw) && !isEmpty(qRaw) && !isEmpty(trim(qRaw))
+      ? trim(qRaw)
+      : undefined;
 
   return {
     elsaSettings,
     authenticatedUser,
     pageSize,
     page,
+    q,
     offset,
   };
 }
@@ -70,21 +85,22 @@ export function sendPagedResult<T>(
         "The basePath for returnPagedResult must end with ? or & so that we can create the paging links"
       );
 
-    // supporting returning RFC 8288 headers
-    const l = new LinkHeader();
-
-    if (currentPage < pr.last)
-      l.set({
-        rel: "next",
-        uri: `${basePath}page=${currentPage + 1}`,
-      });
-    if (currentPage > 1)
-      l.set({
-        rel: "prev",
-        uri: `${basePath}page=${currentPage - 1}`,
-      });
-
     // TBH - we don't really use RFC 8288 at the client so no point to this
+
+    // supporting returning RFC 8288 headers
+    //const l = new LinkHeader();
+
+    //if (currentPage < pr.last)
+    //  l.set({
+    //    rel: "next",
+    //    uri: `${basePath}page=${currentPage + 1}`,
+    //  });
+    //if (currentPage > 1)
+    //  l.set({
+    //    rel: "prev",
+    //    uri: `${basePath}page=${currentPage - 1}`,
+    //  });
+
     //if (isFinite(pr.first))
     //  l.set({
     //    rel: "first",
@@ -98,7 +114,7 @@ export function sendPagedResult<T>(
 
     reply
       .header(TOTAL_COUNT_HEADER_NAME, pr.total.toString())
-      .header("link", l)
+      // .header("link", l)
       .send(pr.data);
   }
 }
@@ -167,7 +183,9 @@ export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
       }
     )
     .after(() => {
-      registerReleaseRoutes(fastify);
+      fastify.register(auditLogRoutes);
+      fastify.register(releaseRoutes);
+      fastify.register(dacRoutes);
       fastify.register(datasetRoutes);
     });
 };

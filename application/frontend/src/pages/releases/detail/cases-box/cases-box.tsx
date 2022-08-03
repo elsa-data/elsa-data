@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, useQueryClient } from "react-query";
@@ -8,6 +8,8 @@ import classNames from "classnames";
 import usePagination from "headless-pagination-react";
 import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
+import { BoxSearcher } from "../../../../components/box-searcher";
+import { isEmpty, trim } from "lodash";
 
 type Props = {
   releaseId: string;
@@ -41,13 +43,28 @@ export const CasesBox: React.FC<Props> = ({
     initialPage: 1,
   });
 
+  const [searchText, setSearchText] = useState("");
+
+  const clearSearchText = () => setSearchText("");
+
+  const makeUseableSearchText = (t: string | undefined) => {
+    if (!isEmpty(t) && !isEmpty(trim(t))) return trim(t);
+    else return undefined;
+  };
+
   const dataQuery = useQuery(
-    ["releases-cases", paginator.page, releaseId],
+    ["releases-cases", paginator.page, searchText, releaseId],
     async () => {
+      const urlParams = new URLSearchParams();
+      urlParams.append("page", paginator.page.toString());
+      const useableSearchText = makeUseableSearchText(searchText);
+      if (useableSearchText) {
+        urlParams.append("q", useableSearchText);
+      }
+      const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
+      console.log(u);
       return await axios
-        .get<ReleaseCaseType[]>(
-          `/api/releases/${releaseId}/cases?page=${paginator.page}`
-        )
+        .get<ReleaseCaseType[]>(u)
         .then((response) => response.data);
     },
     { keepPreviousData: true }
@@ -79,14 +96,52 @@ export const CasesBox: React.FC<Props> = ({
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
+  const baseMessageDivClasses =
+    "min-h-[10em] w-full flex items-center justify-center";
+
   return (
     <BoxNoPad heading="Cases">
       <div className="flex flex-col">
-        <BoxPaginator {...paginator} rowWord="cases" rowCount={casesCount} />
-        <table className="w-full text-sm text-left text-gray-500 table-fixed">
-          <tbody>
-            {dataQuery.data &&
-              dataQuery.data.map((row, rowIndex) => {
+        <BoxPaginator
+          {...paginator}
+          currentPage={1}
+          rowsPerPage={pageSize}
+          rowWord="cases"
+          rowCount={casesCount}
+          currentSearchText={searchText}
+          setSearchText={setSearchText}
+          clearSearchText={clearSearchText}
+        />
+        {/*<BoxSearcher
+          rowWord="cases"
+          currentSearchText={searchText}
+          setSearchText={setSearchText}
+          clearSearchText={clearSearchText}
+        /> */}
+        {dataQuery.isLoading && (
+          <div className={classNames(baseMessageDivClasses)}>Loading...</div>
+        )}
+        {dataQuery.data &&
+          dataQuery.data.length === 0 &&
+          !makeUseableSearchText(searchText) && (
+            <div className={classNames(baseMessageDivClasses)}>
+              <p>
+                There are no cases visible in the dataset(s) of this release
+              </p>
+            </div>
+          )}
+        {dataQuery.data && dataQuery.data.length === 0 && casesCount > 0 && (
+          <div className={classNames(baseMessageDivClasses)}>
+            <p>
+              No cases are being displayed due to the identifier filter you have
+              selected
+            </p>
+          </div>
+        )}
+        {dataQuery.data && dataQuery.data.length > 0 && (
+          <table className="w-full text-sm text-left text-gray-500 table-fixed">
+            <tbody>
+              {dataQuery.data.map((row, rowIndex) => {
                 return (
                   <tr key={row.id} className="border-b">
                     <td
@@ -147,8 +202,9 @@ export const CasesBox: React.FC<Props> = ({
                   </tr>
                 );
               })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        )}
       </div>
       <div id="popup-root" />
     </BoxNoPad>

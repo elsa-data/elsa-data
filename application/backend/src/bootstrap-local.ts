@@ -2,7 +2,7 @@
 import "reflect-metadata";
 
 import { App } from "./app";
-import { getLocalSettings } from "./bootstrap-settings";
+import { ElsaSettings, getLocalSettings } from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
 import archiver from "archiver";
@@ -58,6 +58,10 @@ const start = async () => {
   console.log("Locating secrets/settings");
 
   const settings = await getLocalSettings();
+
+  container.register<ElsaSettings>("Settings", {
+    useValue: settings,
+  });
 
   await blankTestData();
   await insertTestData(settings);

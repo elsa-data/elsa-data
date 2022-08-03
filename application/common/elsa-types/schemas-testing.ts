@@ -1,4 +1,4 @@
-import { Type } from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 
 export const TestingRequestSchema = Type.Object({
   // test of mandatory basic data types
@@ -10,3 +10,5 @@ export const TestingRequestSchema = Type.Object({
   // test of more advanced validations
   maxLengthString: Type.Optional(Type.String({ maxLength: 10 })),
 });
+
+export type TestingRequestType = Static<typeof TestingRequestSchema>;

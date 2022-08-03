@@ -22,22 +22,22 @@ import {
   ReleaseSummarySchema,
 } from "./schemas-releases";
 
+/**
+ * We use typebox to provide us with JSON schema compatible definitions
+ * AND Typescript compatible types.
+ *
+ * This then allows us to do JSON schema checking on API boundaries, whilst
+ * using the Typescript types for clearer React/Api code.
+ */
+
 export * from "./schemas";
+export * from "./schemas-application-coded";
+export * from "./schemas-audit";
+export * from "./schemas-coding";
 export * from "./schemas-dataset";
 export * from "./schemas-duo";
-export * from "./schemas-coding";
+export * from "./schemas-releases";
 export * from "./schemas-testing";
-
-export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
-export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
-
-export type DuoLimitationCodedType = Static<typeof DuoLimitationCodedSchema>;
-
-// for completeness, we include a DUO data use limitation that allows freetext - but for practical
-// computation we essentially never want these
-export type DuoLimitationType = Static<typeof DuoLimitationSchema>;
-
-export type DuoModifierType = Static<typeof DuoModifierSchema>;
 
 export type ReleaseApplicationCodedType = Static<
   typeof ReleaseApplicationCodedSchema
@@ -53,11 +53,3 @@ export type DatasetGen3SyncResponseType = Static<
 export type ReleaseRemsSyncRequestType = Static<
   typeof ReleaseRemsSyncRequestSchema
 >;
-
-export type TestingRequestType = Static<typeof TestingRequestSchema>;
-
-export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
-
-export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
-export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
-export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;

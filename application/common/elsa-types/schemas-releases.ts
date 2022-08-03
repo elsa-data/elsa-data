@@ -1,13 +1,34 @@
-import { TLiteral, TSchema, TString, TUnion, Type } from "@sinclair/typebox";
+import {
+  Static,
+  TLiteral,
+  TSchema,
+  TString,
+  TUnion,
+  Type,
+} from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
+import { StringUnion, TypeDate } from "./typebox-helpers";
 
-/**
- * We use typebox to provide us with JSON schema compatible definitions
- * AND Typescript compatible types.
- *
- * This then allows us to do JSON schema checking on API boundaries, whilst
- * using the Typescript types for clearer React/Api code.
- */
+export const ReleaseSummarySchema = Type.Object({
+  id: Type.String(),
+
+  releaseIdentifier: Type.String(),
+
+  applicationDacIdentifierSystem: Type.String(),
+  applicationDacIdentifierValue: Type.String(),
+  applicationDacTitle: Type.String(),
+
+  // if this release is in the time period of sharing
+  //isSharingEnabled: Type.Boolean(),
+
+  // if a job is running then this is the percent it is complete
+  isRunningJobPercentDone: Type.Optional(Type.Number()),
+
+  // once we get @role link properties working we should enable this
+  // roleInRelease: Type.String(),
+});
+
+export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
 
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
@@ -31,30 +52,6 @@ export const ReleaseRunningJobSchema = Type.Object({
   requestedCancellation: Type.Boolean(),
 });
 
-export const ReleaseSummarySchema = Type.Object({
-  id: Type.String(),
-
-  applicationDacIdentifier: Type.String(),
-  applicationDacTitle: Type.String(),
-
-  // if this release is in the time period of sharing
-  //isSharingEnabled: Type.Boolean(),
-
-  // if a job is running then this is the percent it is complete
-  isRunningJobPercentDone: Type.Optional(Type.Number()),
-
-  // once we get @role link properties working we should enable this
-  // roleInRelease: Type.String(),
-});
-
-export const DateKind = Symbol("DateKind");
-export interface TDate extends TSchema {
-  type: "string";
-  $static: Date;
-  kind: typeof DateKind;
-}
-export const TypeDate = Type.String({ format: "date-time" }) as TString | TDate;
-
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
@@ -75,8 +72,9 @@ export const ReleaseDetailSchema = Type.Object({
   accessStartDate: Type.Optional(TypeDate),
   accessEndDate: Type.Optional(TypeDate),
 
-  // the logically interpretation of the access start/end and current time - from the perspective of the server
-  // (i.e. this could be computed by the front end from start date and end date)
+  // the logically interpreted access start/end and current time - from the perspective of the server
+  // (i.e. this could have been computed by the front end from start date and end date - but we want the logic
+  // only in one spot)
   accessEnabled: Type.Boolean(),
 
   runningJob: Type.Optional(ReleaseRunningJobSchema),
@@ -88,16 +86,6 @@ export const ReleaseDetailSchema = Type.Object({
   // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),
 });
-
-type IntoStringUnion<T> = {
-  [K in keyof T]: T[K] extends string ? TLiteral<T[K]> : never;
-};
-
-function StringUnion<T extends string[]>(
-  values: [...T]
-): TUnion<IntoStringUnion<T>> {
-  return { enum: values } as any;
-}
 
 export const ReleaseNodeStatusSchema = StringUnion([
   "selected",
@@ -122,9 +110,17 @@ export const ReleasePatientBirthSexSchema = StringUnion([
 
 export const ReleasePatientSchema = Type.Object({
   id: Type.String(),
-  externalId: Type.String(), // TODO: fix this
+
+  externalId: Type.String(),
+  externalIdSystem: Type.String(),
+
+  searchMatchExternalId: Type.Optional(Type.String()),
+  searchMatchExternalIdSystem: Type.Optional(Type.String()),
+
   sexAtBirth: Type.Optional(ReleasePatientBirthSexSchema),
+
   specimens: Type.Array(ReleaseSpecimenSchema),
+
   // the node status of whether this patient is released
   nodeStatus: ReleaseNodeStatusSchema,
   // whether there is patient specific consent statements
@@ -133,7 +129,10 @@ export const ReleasePatientSchema = Type.Object({
 
 export const ReleaseCaseSchema = Type.Object({
   id: Type.String(),
+
   externalId: Type.String(), // TODO: fix this
+  externalIdSystem: Type.String(),
+
   patients: Type.Array(ReleasePatientSchema),
   // both of these identifiers are possibly useful - lets work out which is most useful
   fromDatasetUri: Type.String(),
@@ -143,3 +142,11 @@ export const ReleaseCaseSchema = Type.Object({
   // whether there is case specific consent statements
   customConsent: Type.Boolean(),
 });
+
+export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
+
+export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
+export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
+export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
+
+export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;

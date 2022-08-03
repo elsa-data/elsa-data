@@ -18,6 +18,7 @@ import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { insertRelease1 } from "./insert-test-data-release1";
 import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
+import { insertRelease4 } from "./insert-test-data-release4";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -82,11 +83,12 @@ export async function insertTestData(settings: ElsaSettings) {
   const r1 = await insertRelease1(settings);
   const r2 = await insertRelease2(settings);
   const r3 = await insertRelease3(settings);
+  const r4 = await insertRelease4(settings);
 
   await createTestUser(
     "http://subject1.com",
     "Test User 1",
-    [r1.id],
+    [r1.id, r4.id],
     [r2.id],
     []
   );

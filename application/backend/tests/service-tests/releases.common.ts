@@ -49,6 +49,10 @@ export async function beforeEachCommon() {
       }),
       // data for this release comes from 10g and 10f datasets
       datasetUris: e.array([TENG_URI, TENF_URI]),
+      datasetCaseUrisOrderPreference: [""],
+      datasetSpecimenUrisOrderPreference: [""],
+      datasetIndividualUrisOrderPreference: [""],
+
       // we set up the test data so that in no circumstances should SINGLETONMARIA->MARIA->HG00174 specimens ever
       // be allowed to be selected
       //TO BE IMPLEMENTED
@@ -72,6 +76,16 @@ export async function beforeEachCommon() {
         findSpecimenQuery(BART_SPECIMEN),
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(JUDY_SPECIMEN)
+      ),
+      auditLog: e.set(
+        e.insert(e.audit.AuditEvent, {
+          actionCategory: "C",
+          actionDescription: "Created Release",
+          outcome: 0,
+          whoDisplayName: "Someone",
+          whoId: "a",
+          occurredDateTime: e.datetime_current(),
+        })
       ),
     })
     .run(edgeDbClient);

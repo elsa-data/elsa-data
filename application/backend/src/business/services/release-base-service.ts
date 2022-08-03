@@ -138,7 +138,7 @@ export abstract class ReleaseBaseService {
       id: releaseInfo.id,
       datasetUris: releaseInfo.datasetUris,
       applicationDacDetails: releaseInfo.applicationDacDetails!,
-      applicationDacIdentifier: releaseInfo.applicationDacIdentifier!,
+      applicationDacIdentifier: releaseInfo.applicationDacIdentifier.value,
       applicationDacTitle: releaseInfo.applicationDacTitle!,
       applicationCoded: {
         type: releaseInfo.applicationCoded.studyType,

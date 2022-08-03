@@ -1,26 +1,30 @@
-import React from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { useEnvRelay } from "../../providers/env-relay-provider";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { Tab } from "@headlessui/react";
-import classNames from "classnames";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Dialog, Transition } from "@headlessui/react";
 import {
-  DatasetGen3SyncRequestType,
-  ReleaseRemsSyncRequestType,
+  CodingType,
   ReleaseDetailType,
+  ReleaseRemsSyncRequestType,
+  RemsApprovedApplicationType,
 } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
+import { useForm } from "react-hook-form";
+import { isNil } from "lodash";
+import {
+  axiosPostArgMutationFn,
+  makeReleaseTypeLocal,
+  REACT_QUERY_RELEASE_KEYS,
+} from "./detail/queries";
+import { ReleasesAddReleaseDialog } from "./releases-dashboard-add-release-dialog";
 
 export const ReleasesPage: React.FC = () => {
-  const envRelay = useEnvRelay();
-  const navigate = useNavigate();
-
   const { data: releaseData } = useQuery(
-    "releases",
+    REACT_QUERY_RELEASE_KEYS.all,
     async () => {
       return await axios
         .get<ReleaseDetailType[]>(`/api/releases`)
@@ -29,20 +33,7 @@ export const ReleasesPage: React.FC = () => {
     {}
   );
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<ReleaseRemsSyncRequestType>();
-  const onSubmit: SubmitHandler<ReleaseRemsSyncRequestType> = async (data) => {
-    const response = await axios.post<ReleaseRemsSyncRequestType>(
-      "/api/datasets",
-      data
-    );
-
-    console.log(response.data);
-  };
+  const [showingRemsDialog, setShowingRemsDialog] = useState(false);
 
   return (
     <LayoutBase>
@@ -51,24 +42,26 @@ export const ReleasesPage: React.FC = () => {
         <Box heading="Synchronise Releases with DAC">
           <div className="flex">
             <VerticalTabs tabs={["REMS", "DUOS"]}>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="flex flex-col gap-6">
-                  <label className="block">
-                    <span className="text-xs font-bold text-gray-700 uppercase">
-                      Instance URL
-                    </span>
-                    <input
-                      type="text"
-                      defaultValue="https://hgpp-rems.dev.umccr.org"
-                      {...register("remsUrl", { required: true })}
-                      className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
-                    />
-                  </label>
-                  <input type="submit" className="btn-blue w-60" />
-                </div>
-              </form>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <input type="submit" className="btn-blue w-60" />
+              <div className="flex flex-col gap-6">
+                <label className="block">
+                  <span className="text-xs font-bold text-gray-700 uppercase">
+                    Instance URL
+                  </span>
+                  <input
+                    type="text"
+                    defaultValue="https://hgpp-rems.dev.umccr.org"
+                    className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                  />
+                </label>
+                <button
+                  className="btn-blue w-60 h-8 rounded"
+                  onClick={() => setShowingRemsDialog(true)}
+                >
+                  Find New Applications
+                </button>
+              </div>
+              <form>
+                <p>Fetch from DUOS</p>
               </form>
             </VerticalTabs>
           </div>
@@ -120,7 +113,7 @@ export const ReleasesPage: React.FC = () => {
                       scope="row"
                       className="px-6 py-4 font-mono whitespace-nowrap"
                     >
-                      {r.applicationDacIdentifier}
+                      {JSON.stringify(r.applicationDacIdentifier)}
                     </th>
                     <td className="px-6 py-4">{r.applicationDacTitle}</td>
                     <td className="px-6 py-4 text-right">
@@ -138,6 +131,10 @@ export const ReleasesPage: React.FC = () => {
           )}
         </Box>
       </div>
+      <ReleasesAddReleaseDialog
+        showing={showingRemsDialog}
+        cancelShowing={() => setShowingRemsDialog(false)}
+      />
     </LayoutBase>
   );
 };

@@ -1,12 +1,12 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import { beforeEachCommon } from "./releases.common";
-import { ReleasesService } from "../../src/business/services/releases-service";
+import { ReleaseService } from "../../src/business/services/release-service";
 import { registerTypes } from "./setup";
 
 const testContainer = registerTypes();
 
-const releasesService = testContainer.resolve(ReleasesService);
+const releasesService = testContainer.resolve(ReleaseService);
 
 let testReleaseId: string;
 
