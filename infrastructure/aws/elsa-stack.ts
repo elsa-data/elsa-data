@@ -5,20 +5,18 @@ import {
   aws_ssm as ssm,
   aws_route53 as route53,
 } from "aws-cdk-lib";
-import { ElsaEdgedbStack } from "./stack/elsa-edgedb";
-import { ElsaVPC } from "./lib/vpc";
+import { EdgeDbStack } from "./stack/edge-db";
+import { smartVpcConstruct } from "./lib/vpc";
+import { ElsaApplicationStack } from "./stack/elsa-application";
+
 export class ElsaStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // const vpc = new ElsaVPC(this, `elsaVPC`);
-
     /**
      * Importing existing UMCCR Resource
      */
-    const vpc = ec2.Vpc.fromLookup(this, "UMCCRMainVPC", {
-      vpcName: "main-vpc",
-    });
+    const vpc = smartVpcConstruct(this, "VPC", "main-vpc");
     const hostedZoneName = ssm.StringParameter.valueFromLookup(
       this,
       "/hosted_zone/umccr/name"
@@ -37,7 +35,7 @@ export class ElsaStack extends Stack {
     /**
      * Creating DB and DB server
      */
-    const elsaEdgedb = new ElsaEdgedbStack(this, "DatabaseStack", {
+    const edgeDb = new EdgeDbStack(this, "DatabaseStack", {
       stackName: `elsaDatabaseStack`,
       vpc: vpc,
       hostedZone: hostedZone,
@@ -59,14 +57,22 @@ export class ElsaStack extends Stack {
           user: "elsa",
           port: "5656",
           customDomain: `db.elsa.${hostedZone.zoneName}`,
-          serverCredentialSecretManagerName: "elsa/edgedb/credentials",
-          tlsKeySecretManagerName: "elsa/tls/key",
-          tlsCertSecretManagerName: "elsa/tls/cert"
+          serverCredentialSecretManagerName: "elsa/edgedb/credentials", // pragma: allowlist secret
+          tlsKeySecretManagerName: "elsa/tls/key", // pragma: allowlist secret
+          tlsCertSecretManagerName: "elsa/tls/cert", // pragma: allowlist secret
         },
       },
       env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION,
+      },
+    });
+
+    const elsa = new ElsaApplicationStack(this, "Elsa", {
+      vpc: vpc,
+      hostedZone: hostedZone,
+      config: {
+        edgeDbUrl: edgeDb.edgeDbUrl,
       },
     });
   }

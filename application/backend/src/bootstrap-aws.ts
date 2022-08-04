@@ -2,7 +2,11 @@
 import "reflect-metadata";
 
 import { App } from "./app";
-import { ElsaSettings, getLocalSettings } from "./bootstrap-settings";
+import {
+  ElsaSettings,
+  getAwsSettings,
+  getLocalSettings,
+} from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
 import archiver from "archiver";
@@ -57,29 +61,28 @@ registerTypes();
 const start = async () => {
   console.log("Locating secrets/settings");
 
-  const settings = await getLocalSettings();
+  const settings = await getAwsSettings();
 
   container.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
 
-  await blankTestData();
-  await insertTestData(settings);
+  // await blankTestData();
+  // await insertTestData(settings);
 
-  console.log("Starting job queue");
+  //console.log("Starting job queue");
+  //await bree.start();
 
-  await bree.start();
+  const app = new App("server", () => ({ ...settings }));
 
-  const app = new App("local", () => ({ ...settings }));
-
-  const PORT = 3000;
+  const PORT = 80;
 
   const server = await app.setupServer();
 
   console.log(`Listening on port ${PORT}`);
 
   try {
-    await server.listen(PORT);
+    await server.listen(PORT, "0.0.0.0");
   } catch (err) {
     server.log.error(err);
     process.exit(1);
