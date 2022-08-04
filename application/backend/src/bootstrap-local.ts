@@ -30,7 +30,7 @@ console.log("Creating Fastify app");
 }
 
 const bree = new Bree({
-  root: path.resolve("src", "jobs"),
+  root: path.resolve("jobs"),
   jobs: [
     {
       name: "select-job.ts",

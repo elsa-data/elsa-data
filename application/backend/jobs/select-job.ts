@@ -2,8 +2,8 @@ import "reflect-metadata";
 
 import { parentPort } from "worker_threads";
 import { container } from "tsyringe";
-import { JobsService } from "../business/services/jobs-service";
-import { registerTypes } from "../bootstrap-container";
+import { JobsService } from "../src/business/services/jobs-service";
+import { registerTypes } from "../src/bootstrap-container";
 
 // global settings for DI
 registerTypes();
