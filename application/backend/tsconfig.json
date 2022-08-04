@@ -15,11 +15,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": [
-    "./src/**/*",
-    "./jobs/**/*",
-    "./dbschema/edgeql-js/**/*",
-    "./tests/**/*"
-  ],
+  "include": ["./src/**/*", "./jobs/**/*", "./dbschema/edgeql-js/**/*"],
   "exclude": ["node_modules"]
 }

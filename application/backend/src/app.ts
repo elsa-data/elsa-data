@@ -39,16 +39,19 @@ export class App {
    * (increasingly almost nothing). It should check settings and establish
    * anything that cannot be changed.
    *
+   * @param location whether this app is to be running local (i.e. localhost) or deployed
    * @param settingsGenerator a generator function for making copies of the settings
    */
-  constructor(settingsGenerator: () => ElsaSettings) {
+  constructor(
+    location: "local" | "server",
+    settingsGenerator: () => ElsaSettings
+  ) {
     this.serverEnvironment =
       process.env.NODE_ENV === "production" ? "production" : "development";
 
     // this is for determining whether we are running local dev or deployed dev
     // (it alters things like the use of SSL etc)
-    // TODO: once we start deploying we will need to be better at where this gets set
-    this.serverLocation = "local";
+    this.serverLocation = location;
 
     if (
       this.serverLocation === "local" &&
@@ -102,7 +105,11 @@ export class App {
 
     this.server.register(authRoutes, {
       settings: this.settings,
-      redirectUri: "http://localhost:3000/cb",
+      // TODO: need a better way for doing callback route discovery
+      redirectUri:
+        this.serverLocation === "local"
+          ? "http://localhost:3000/cb"
+          : "https://elsa.dev.umccr.org/cb",
       includeTestUsers: this.serverEnvironment === "development",
     });
 

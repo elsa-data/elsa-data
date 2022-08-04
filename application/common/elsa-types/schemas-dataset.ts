@@ -1,6 +1,4 @@
-import { Static, TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
-import { CodingSchema } from "./schemas-coding";
-import { TypeDate } from "./schemas-releases";
+import { Static, Type } from "@sinclair/typebox";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions

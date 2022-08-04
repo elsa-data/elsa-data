@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Common types for Elsa Data",
-  "main": "index.ts",
+  "module": "index.ts",
   "author": "Andrew Patterson",
   "license": "MIT",
   "dependencies": {

@@ -46,7 +46,8 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
     let viewLastDay = "";
 
     return data.map((row, rowIndex) => {
-      const when = new Date(row.when);
+      const when = new Date();
+      // TODO: replce above row.when
 
       // TODO: get timezone from somewhere in config
 
