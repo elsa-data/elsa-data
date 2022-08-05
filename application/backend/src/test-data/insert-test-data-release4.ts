@@ -1,6 +1,5 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
-import { ElsaSettings } from "../bootstrap-settings";
 import {
   findSpecimenQuery,
   makeEmptyCodeArray,
@@ -11,7 +10,7 @@ import { TENF_URI } from "./insert-test-data-10f";
 
 const edgeDbClient = edgedb.createClient();
 
-export async function insertRelease4(settings: ElsaSettings) {
+export async function insertRelease4() {
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Release With Nothing Selected By Default",

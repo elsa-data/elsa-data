@@ -2,13 +2,13 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../test-data/test-data-helpers";
 import { inject, injectable, singleton } from "tsyringe";
-import { ElsaSettings } from "../../bootstrap-settings";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { randomUUID } from "crypto";
 import { UsersService } from "./users-service";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isEmpty } from "lodash";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 @injectable()
 @singleton()

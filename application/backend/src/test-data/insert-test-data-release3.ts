@@ -1,25 +1,14 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
-import { insertCARDIAC } from "./insert-test-data-cardiac";
-import { insert10G } from "./insert-test-data-10g";
-import { ElsaSettings } from "../bootstrap-settings";
 import {
-  createTestUser,
-  findSpecimenQuery,
-  insertBlankDataset,
-  makeDoubleCodeArray,
   makeEmptyCodeArray,
-  makeSingleCodeArray,
   makeSystemlessIdentifier,
-  makeTripleCodeArray,
 } from "./test-data-helpers";
-import { insert10F } from "./insert-test-data-10f";
-import { insert10C } from "./insert-test-data-10c";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 
 const edgeDbClient = edgedb.createClient();
 
-export async function insertRelease3(settings: ElsaSettings) {
+export async function insertRelease3() {
   // r3 is a test release that no-one has any permissions into - so should not
   // appear in any queries
   return await e

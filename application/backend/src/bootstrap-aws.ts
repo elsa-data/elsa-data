@@ -2,22 +2,14 @@
 import "reflect-metadata";
 
 import { App } from "./app";
-import {
-  ElsaSettings,
-  getAwsSettings,
-  getLocalSettings,
-} from "./bootstrap-settings";
-import { insertTestData } from "./test-data/insert-test-data";
-import { blankTestData } from "./test-data/blank-test-data";
+import { getSettings } from "./bootstrap-settings";
 import archiver from "archiver";
 import archiverZipEncrypted from "archiver-zip-encrypted";
 import Bree from "bree";
 import { container } from "tsyringe";
-import { Client } from "edgedb";
-import * as edgedb from "edgedb";
 import { registerTypes } from "./bootstrap-container";
 import path from "path";
-import i18n from "i18n";
+import { ElsaSettings } from "./config/elsa-settings";
 
 console.log("Creating Fastify app");
 
@@ -34,10 +26,10 @@ console.log("Creating Fastify app");
 }
 
 const bree = new Bree({
-  root: path.resolve("src", "jobs"),
+  root: path.resolve("jobs"),
   jobs: [
     {
-      name: "select-job.ts",
+      name: "select-job.cjs",
       timeout: "5s",
       interval: "20s",
     },
@@ -61,7 +53,7 @@ registerTypes();
 const start = async () => {
   console.log("Locating secrets/settings");
 
-  const settings = await getAwsSettings();
+  const settings = await getSettings(["aws"]);
 
   container.register<ElsaSettings>("Settings", {
     useValue: settings,
@@ -75,14 +67,12 @@ const start = async () => {
 
   const app = new App("server", () => ({ ...settings }));
 
-  const PORT = 80;
-
   const server = await app.setupServer();
 
-  console.log(`Listening on port ${PORT}`);
+  console.log(`Listening on port ${settings.port}`);
 
   try {
-    await server.listen(PORT, "0.0.0.0");
+    await server.listen(settings.port, "0.0.0.0");
   } catch (err) {
     server.log.error(err);
     process.exit(1);

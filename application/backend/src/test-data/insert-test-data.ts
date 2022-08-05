@@ -2,7 +2,6 @@ import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import { insertCARDIAC } from "./insert-test-data-cardiac";
 import { insert10G } from "./insert-test-data-10g";
-import { ElsaSettings } from "../bootstrap-settings";
 import {
   createTestUser,
   findSpecimenQuery,
@@ -19,6 +18,7 @@ import { insertRelease1 } from "./insert-test-data-release1";
 import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
 import { insertRelease4 } from "./insert-test-data-release4";
+import { ElsaSettings } from "../config/elsa-settings";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -80,10 +80,10 @@ export async function insertTestData(settings: ElsaSettings) {
 
   await insertBlankDataset("BOWEL", "http://cci.org.au/datasets/BOWEL");
 
-  const r1 = await insertRelease1(settings);
-  const r2 = await insertRelease2(settings);
-  const r3 = await insertRelease3(settings);
-  const r4 = await insertRelease4(settings);
+  const r1 = await insertRelease1();
+  const r2 = await insertRelease2();
+  const r3 = await insertRelease3();
+  const r4 = await insertRelease4();
 
   await createTestUser(
     "http://subject1.com",

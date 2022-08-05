@@ -5,8 +5,8 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
-import { ElsaSettings } from "../bootstrap-settings";
 import { TOKEN_PRIMARY } from "./auth-strings";
+import { ElsaSettings } from "../config/elsa-settings";
 
 type Opts = {
   settings: ElsaSettings;

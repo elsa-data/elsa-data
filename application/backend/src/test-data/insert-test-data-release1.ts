@@ -1,6 +1,5 @@
 import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
-import { ElsaSettings } from "../bootstrap-settings";
 import {
   findSpecimenQuery,
   makeDoubleCodeArray,
@@ -22,7 +21,7 @@ import { random } from "lodash";
 
 const edgeDbClient = edgedb.createClient();
 
-export async function insertRelease1(settings: ElsaSettings) {
+export async function insertRelease1() {
   const mondoUri = "http://purl.obolibrary.org/obo/mondo.owl";
 
   return await e
