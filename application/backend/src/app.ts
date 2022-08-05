@@ -12,11 +12,11 @@ import {
   serveCustomIndexHtml,
   strictServeRealFileIfPresent,
 } from "./app-helpers";
-import { ElsaSettings } from "./bootstrap-settings";
 import { ErrorHandler } from "./api/errors/_error.handler";
 import { registerTestingRoutes } from "./api/routes/testing";
 import { apiRoutes } from "./api/api-routes";
 import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
+import { ElsaSettings } from "./config/elsa-settings";
 
 export class App {
   public server: FastifyInstance;

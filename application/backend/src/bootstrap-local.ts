@@ -2,7 +2,7 @@
 import "reflect-metadata";
 
 import { App } from "./app";
-import { ElsaSettings, getLocalSettings } from "./bootstrap-settings";
+import { getSettings } from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
 import archiver from "archiver";
@@ -14,6 +14,8 @@ import * as edgedb from "edgedb";
 import { registerTypes } from "./bootstrap-container";
 import path from "path";
 import i18n from "i18n";
+import { getConfig } from "./config/config-schema";
+import { ElsaSettings } from "./config/elsa-settings";
 
 console.log("Creating Fastify app");
 
@@ -57,7 +59,7 @@ registerTypes();
 const start = async () => {
   console.log("Locating secrets/settings");
 
-  const settings = await getLocalSettings();
+  const settings = await getSettings(["mac"]);
 
   container.register<ElsaSettings>("Settings", {
     useValue: settings,
@@ -72,14 +74,12 @@ const start = async () => {
 
   const app = new App("local", () => ({ ...settings }));
 
-  const PORT = 3000;
-
   const server = await app.setupServer();
 
-  console.log(`Listening on port ${PORT}`);
+  console.log(`Listening on port ${settings.port}`);
 
   try {
-    await server.listen(PORT);
+    await server.listen(settings.port);
   } catch (err) {
     server.log.error(err);
     process.exit(1);

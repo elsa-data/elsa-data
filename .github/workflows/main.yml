@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: application/backend/package-lock.json
 
       - name: Install modules
-        run: npm install
+        run: npm ci
         working-directory: application/backend
 
       - name: Generate EdgeDb types

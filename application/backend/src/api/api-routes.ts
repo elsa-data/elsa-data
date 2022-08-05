@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { releaseRoutes } from "./routes/release-routes";
 import { datasetRoutes } from "./routes/dataset-routes";
 import { TOKEN_PRIMARY } from "../auth/auth-strings";
-import { ElsaSettings } from "../bootstrap-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
@@ -14,6 +13,7 @@ import { UsersService } from "../business/services/users-service";
 import { isEmpty, isNil, isString, trim } from "lodash";
 import { auditLogRoutes } from "./routes/audit-log-routes";
 import { dacRoutes } from "./routes/dac-routes";
+import { ElsaSettings } from "../config/elsa-settings";
 
 type Opts = {
   allowTestCookieEquals?: string;

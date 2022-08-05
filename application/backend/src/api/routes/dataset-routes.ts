@@ -5,7 +5,6 @@ import {
   DatasetGen3SyncResponseType,
   DatasetLightType,
 } from "@umccr/elsa-types";
-import { ElsaSettings } from "../../bootstrap-settings";
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
 import { container } from "tsyringe";
 import { DatasetService } from "../../business/services/dataset-service";
@@ -13,6 +12,7 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
   const datasetsService = container.resolve(DatasetService);
