@@ -1,14 +1,9 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { ReleaseSummaryType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
-import {
-  differenceInHours,
-  differenceInMinutes,
-  differenceInSeconds,
-} from "date-fns";
+import { differenceInSeconds } from "date-fns";
 import { AuditEntryType } from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
@@ -29,7 +24,13 @@ export class AuditLogService {
   ) {}
 
   /**
+   * Start the entry for an audit event that occurs in a release context.
    *
+   * @param user
+   * @param releaseId
+   * @param actionCategory
+   * @param actionDescription
+   * @param start
    */
   public async startReleaseAuditEvent(
     user: AuthenticatedUser,
@@ -41,8 +42,7 @@ export class AuditLogService {
     const auditEvent = await e
       .insert(e.audit.AuditEvent, {
         whoId: user.subjectId,
-        // TODO: users should have display names from OIDC
-        whoDisplayName: user.subjectId,
+        whoDisplayName: user.displayName,
         occurredDateTime: start,
         actionCategory: actionCategory,
         actionDescription: actionDescription,
@@ -73,6 +73,15 @@ export class AuditLogService {
     return auditEvent.id;
   }
 
+  /**
+   * Complete the entry for an audit event that occurs in a release context.
+   *
+   * @param auditEventId
+   * @param outcome
+   * @param start
+   * @param end
+   * @param details
+   */
   public async completeReleaseAuditEvent(
     auditEventId: string,
     outcome: AuditEventOutcome,

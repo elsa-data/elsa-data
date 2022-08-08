@@ -11,7 +11,7 @@
   "private": true,
   "scripts": {
     "dev": " cross-env NODE_ENV=development nodemon",
-    "prod": "cross-env NODE_ENV=production ts-node -r dotenv/config src/bootstrap-local.ts",
+    "prod": "cross-env NODE_ENV=production ts-node -r dotenv/config src/bootstrap-local-mac.ts",
     "//typecheck": "Use the Typescript compiler for a compile of the complete src/test/types (no code generated or run)",
     "typecheck": "tsc --noEmit",
     "//edgemigration": "Creates a migration script based on the difference between the current db and schema file",

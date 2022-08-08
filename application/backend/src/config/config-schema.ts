@@ -1,4 +1,7 @@
 import convict from "convict";
+import { ElsaEnvironment, ElsaLocation } from "./elsa-settings";
+import { getConfigLocalMac } from "./config-local-mac";
+import { getConfigAwsSecretsManager } from "./config-aws-secrets-manager";
 
 convict.addParser({ extension: "json5", parse: require("json5").parse });
 
@@ -31,20 +34,27 @@ convict.addFormat({
   },
 });
 
-export async function getConfig(otherConfigs: any[]) {
+/**
+ * Scours the world finding us the consolidated configuration values for the given
+ * environment and location. This might involve reading specific configs from disk,
+ * or sourcing values from keychains or secrets.
+ *
+ * @param environment
+ * @param location
+ */
+export async function getConfig(
+  environment: ElsaEnvironment,
+  location: ElsaLocation
+) {
   // setup our configuration schema
   const config = convict(
     {
-      env: {
+      /*env: {
         doc: "The application environment.",
         format: ["production", "development", "test"],
         default: "development",
         env: "NODE_ENV",
-      },
-      //location: {
-      //  doc: " THe location the application is being run",
-      //  format: ["mac-local", "aws"],
-      //},
+      }, */
       edgeDb: {
         tlsRootCa: {
           doc: "A single line string (use \\n for breaks) of TLS Root CA used by the TLS of the EdgeDb",
@@ -138,15 +148,16 @@ export async function getConfig(otherConfigs: any[]) {
   );
 
   // first step is to identify the environment and load that
-  const env = config.get("env");
+  //const env = config.get("env");
 
-  // TODO: establish a "location" and bring in a location config as well (local-mac v aws dev v aws prod etc)
+  config.loadFile([
+    `./config/location-${location}.json5`,
+    `./config/environment-${environment}.json5`,
+    "./config/base.json5",
+  ]);
 
-  config.loadFile([`./config/environment-${env}.json5`, "./config/base.json5"]);
-
-  if (otherConfigs) {
-    for (const oc of otherConfigs) config.load(oc);
-  }
+  if (location === "local-mac") config.load(await getConfigLocalMac());
+  if (location === "aws") config.load(await getConfigAwsSecretsManager());
 
   // perform validation
   config.validate({ allowed: "strict" });

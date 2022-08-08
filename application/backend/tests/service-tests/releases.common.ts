@@ -36,7 +36,7 @@ export async function beforeEachCommon() {
   const testReleaseInsert = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
-      applicationDacIdentifier: "XYZ",
+      applicationDacIdentifier: { system: "", value: "XYZ" },
       applicationDacTitle: "A Study in Many Parts",
       applicationDacDetails:
         "So this is all that we have brought over not coded",
@@ -66,6 +66,7 @@ export async function beforeEachCommon() {
       //  "@recorded": e.str("June"),
       //  "@reason": e.str("Because"),
       //})),
+      releaseIdentifier: "A",
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
       selectedSpecimens: e.set(
@@ -98,11 +99,12 @@ export async function beforeEachCommon() {
   // data owner has read/write access and complete visibility of everything
   {
     const allowedDataOwnerSubject = "https://i-am-admin.org";
+    const allowedDisplayName = "Test User Who Is Allowed Data Owner Access";
 
     const allowedDataOwnerUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedDataOwnerSubject,
-        displayName: "Test User Who Is Allowed Data Owner Access",
+        displayName: allowedDisplayName,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(e.uuid(testReleaseId), "=", r.id),
           "@role": e.str("DataOwner"),
@@ -113,17 +115,19 @@ export async function beforeEachCommon() {
     allowedDataOwnerUser = new AuthenticatedUser({
       id: allowedDataOwnerUserInsert.id,
       subjectId: allowedDataOwnerSubject,
+      displayName: allowedDisplayName,
     });
   }
 
   // PI user has limits to read/write and only visibility of released data items
   {
     const allowedPiSubject = "http://subject1.com";
+    const allowedDisplayName = "Test User Who Is Allowed PI Access";
 
     const allowedPiUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedPiSubject,
-        displayName: "Test User Who Is Allowed PI Access",
+        displayName: allowedDisplayName,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(e.uuid(testReleaseId), "=", r.id),
           "@role": e.str("PI"),
@@ -134,12 +138,14 @@ export async function beforeEachCommon() {
     allowedPiUser = new AuthenticatedUser({
       id: allowedPiUserInsert.id,
       subjectId: allowedPiSubject,
+      displayName: allowedDisplayName,
     });
   }
 
   // not allowed user is valid but shouldn't have ANY access to the release
   {
     const notAllowedSubject = "http://subject3.com";
+    const notAllowedDisplayName = "Test User Who Isn't Allowed Any Access";
 
     const notAllowedUserInsert = await e
       .insert(e.permission.User, {
@@ -151,6 +157,7 @@ export async function beforeEachCommon() {
     notAllowedUser = new AuthenticatedUser({
       id: notAllowedUserInsert.id,
       subjectId: notAllowedSubject,
+      displayName: notAllowedDisplayName,
     });
   }
 

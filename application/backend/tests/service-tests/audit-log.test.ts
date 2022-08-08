@@ -4,22 +4,20 @@ import { registerTypes } from "./setup";
 import { AuditLogService } from "../../src/business/services/audit-log-service";
 import { addSeconds } from "date-fns";
 
-const testContainer = registerTypes();
-
-const auditLogService = testContainer.resolve(AuditLogService);
-
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
-
-// because our 'select' job has a fake sleep in it - this tests runs long
-jest.setTimeout(60000);
+let auditLogService: AuditLogService;
 
 beforeEach(async () => {
   ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
+
+  const testContainer = await registerTypes();
+
+  auditLogService = testContainer.resolve(AuditLogService);
 });
 
 /**
