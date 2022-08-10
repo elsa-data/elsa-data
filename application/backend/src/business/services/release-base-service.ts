@@ -157,6 +157,9 @@ export abstract class ReleaseBaseService {
       accessStartDate: releaseInfo.releaseStarted ?? undefined,
       accessEndDate: releaseInfo.releaseEnded ?? undefined,
       accessEnabled: releaseInfo.accessEnabled ?? false,
+      // password only gets sent down to the PI
+      downloadPassword:
+        userRole === "PI" ? releaseInfo.releasePassword : undefined,
       // data owners can code/edit the release information
       permissionEditSelections: userRole === "DataOwner",
       permissionEditApplicationCoded: userRole === "DataOwner",

@@ -90,6 +90,7 @@ export class App {
     );
 
     this.server.register(apiRoutes, {
+      container: container,
       allowTestCookieEquals:
         this.settings.environment === "development" ? "hello" : undefined,
     });

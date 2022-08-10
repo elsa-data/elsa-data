@@ -9,6 +9,7 @@ import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
+import { AuditLogService } from "./audit-log-service";
 
 export type ReleaseAwsFileRecord = {
   caseId: string;
@@ -34,7 +35,8 @@ export abstract class AwsBaseService {
 
   protected constructor(
     protected readonly edgeDbClient: edgedb.Client,
-    protected readonly usersService: UsersService
+    protected readonly usersService: UsersService,
+    protected readonly auditLogService: AuditLogService
   ) {
     // until we get proof our AWS commands have succeeded we assume AWS functionality is not available
     this.enabled = false;

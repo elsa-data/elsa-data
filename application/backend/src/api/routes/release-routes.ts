@@ -15,9 +15,6 @@ import {
   sendPagedResult,
 } from "../api-routes";
 import { Readable, Stream } from "stream";
-import archiver, { ArchiverOptions } from "archiver";
-import { stringify } from "csv-stringify";
-import streamConsumers from "node:stream/consumers";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs-service";
@@ -302,9 +299,11 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
 
     const releaseId = request.params.rid;
 
+    console.log(request.body);
+
     if (!awsPresignedUrlsService.isEnabled)
       throw new Error(
-        "The AWS service was not started so no AWS signing will work"
+        "The AWS service was not started so AWS VPC sharing will not work"
       );
 
     await awsAccessPointService.installCloudFormationAccessPointForRelease(
@@ -317,58 +316,32 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
   fastify.post<{
     Body: ReleaseAwsS3PresignRequestType;
     Params: { rid: string };
-  }>("/api/releases/:rid/pre-signed", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+  }>(
+    "/api/releases/:rid/aws-s3-presigned",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseId = request.params.rid;
+      const releaseId = request.params.rid;
 
-    if (!awsPresignedUrlsService.isEnabled)
-      throw new Error(
-        "The AWS service was not started so no AWS signing will work"
+      if (!awsPresignedUrlsService.isEnabled)
+        throw new Error(
+          "The AWS service was not started so AWS S3 presign will not work"
+        );
+
+      const presignResult = await awsPresignedUrlsService.getPresigned(
+        authenticatedUser,
+        releaseId
       );
 
-    const awsFiles = await awsPresignedUrlsService.getPresigned(
-      authenticatedUser,
-      releaseId
-    );
+      // if (!awsFiles) throw new Error("Could not pre-sign S3 URLs");
 
-    if (!awsFiles) throw new Error("Could not pre-sign S3 URLs");
+      reply.raw.writeHead(200, {
+        "Content-Disposition": `attachment; filename=${presignResult.filename}`,
+        "Content-Type": "application/octet-stream",
+      });
 
-    const stringifier = stringify({
-      header: true,
-      columns: [
-        { key: "s3", header: "S3" },
-        { key: "fileType", header: "FILETYPE" },
-        { key: "md5", header: "MD5" },
-        { key: "size", header: "SIZE" },
-        { key: "caseId", header: "CASEID" },
-        { key: "patientId", header: "PATIENTID" },
-        { key: "specimenId", header: "SPECIMENID" },
-        { key: "s3Signed", header: "S3SIGNED" },
-      ],
-      delimiter: "\t",
-    });
-
-    const readableStream = Readable.from(awsFiles);
-
-    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
-
-    // create archive and specify method of encryption and password
-    let archive = archiver.create("zip-encrypted", {
-      zlib: { level: 8 },
-      encryptionMethod: "aes256",
-      password: "123",
-    } as ArchiverOptions);
-
-    archive.append(buf, { name: "files.tsv" });
-
-    await archive.finalize();
-
-    reply.raw.writeHead(200, {
-      "Content-Disposition": "attachment; filename=releaseXYZ.zip",
-      "Content-Type": "application/octet-stream",
-    });
-
-    archive.pipe(reply.raw);
-  });
+      presignResult.archive.pipe(reply.raw);
+    }
+  );
 };

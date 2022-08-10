@@ -102,6 +102,38 @@ export class ReleaseService extends ReleaseBaseService {
   }
 
   /**
+   * Gets a value from the auto incrementing counter.
+   *
+   * @param user
+   * @param releaseId
+   */
+  public async getIncrementingCounter(
+    user: AuthenticatedUser,
+    releaseId: string
+  ): Promise<number> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    const { releaseQuery } = await getReleaseInfo(this.edgeDbClient, releaseId);
+
+    // TODO: this doesn't actually autoincrement .. I can't work out the typescript syntax though
+    // (I'm not sure its implemented in edgedb yet AP 10 Aug)
+    const next = await e
+      .select(releaseQuery, (r) => ({
+        counter: true,
+      }))
+      .assert_single()
+      .run(this.edgeDbClient);
+
+    if (!next) throw new Error("Couldn't find");
+
+    return next.counter;
+  }
+
+  /**
    * Get all the cases for a release including checkbox status down to specimen level.
    *
    * Depending on the role of the user this will return different sets of cases.

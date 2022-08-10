@@ -1,26 +1,14 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
-import { useEnvRelay } from "../../providers/env-relay-provider";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import React, { useState } from "react";
+import { useQuery } from "react-query";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { Dialog, Transition } from "@headlessui/react";
-import {
-  CodingType,
-  ReleaseDetailType,
-  ReleaseRemsSyncRequestType,
-  RemsApprovedApplicationType,
-} from "@umccr/elsa-types";
+import { ReleaseDetailType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
-import { useForm } from "react-hook-form";
-import { isNil } from "lodash";
-import {
-  axiosPostArgMutationFn,
-  makeReleaseTypeLocal,
-  REACT_QUERY_RELEASE_KEYS,
-} from "./detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "./detail/queries";
 import { ReleasesAddReleaseDialog } from "./releases-dashboard-add-release-dialog";
+import { useUiAllowed } from "../../hooks/ui-allowed";
+import { ALLOWED_CREATE_NEW_RELEASES } from "@umccr/elsa-constants";
 
 export const ReleasesPage: React.FC = () => {
   const { data: releaseData } = useQuery(
@@ -35,13 +23,15 @@ export const ReleasesPage: React.FC = () => {
 
   const [showingRemsDialog, setShowingRemsDialog] = useState(false);
 
+  const uiAllowed = useUiAllowed();
+
   return (
     <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
         {/* SYNCHRONISE DAC BOX */}
-        <Box heading="Synchronise Releases with DAC">
-          <div className="flex">
-            <VerticalTabs tabs={["REMS", "DUOS"]}>
+        {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
+          <Box heading="Synchronise Releases with DAC">
+            <VerticalTabs tabHeadings={["REMS", "DUOS"]}>
               <div className="flex flex-col gap-6">
                 <label className="block">
                   <span className="text-xs font-bold text-gray-700 uppercase">
@@ -54,7 +44,7 @@ export const ReleasesPage: React.FC = () => {
                   />
                 </label>
                 <button
-                  className="btn-blue w-60 h-8 rounded"
+                  className="btn-normal"
                   onClick={() => setShowingRemsDialog(true)}
                 >
                   Find New Applications
@@ -64,8 +54,8 @@ export const ReleasesPage: React.FC = () => {
                 <p>Fetch from DUOS</p>
               </form>
             </VerticalTabs>
-          </div>
-        </Box>
+          </Box>
+        )}
         <Box heading="Releases">
           {releaseData && (
             <table className="w-full text-sm text-left text-gray-500 light:text-gray-400">

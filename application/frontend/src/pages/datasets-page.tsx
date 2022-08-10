@@ -198,7 +198,7 @@ export const DatasetsPage: React.FC = () => {
                           rows={3}
                         ></textarea>
                       </label>
-                      <input type="submit" className="btn-blue w-60" />
+                      <input type="submit" className="btn-normal" />
                     </div>
                   </form>
                 </Tab.Panel>

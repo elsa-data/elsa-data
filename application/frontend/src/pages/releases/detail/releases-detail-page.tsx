@@ -16,6 +16,7 @@ import axios from "axios";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { MasterAccessControlBox } from "./master-access-control-box";
 import { LogsBox } from "./logs-box/logs-box";
+import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -98,18 +99,42 @@ export const ReleasesDetailPage: React.FC = () => {
             )}
 
             <Box heading="Access Data">
-              <div className="flex flex-row">
-                <VerticalTabs tabs={["AWS S3 PreSigned", "htsget"]}>
-                  <AwsS3PresignedForm releaseId={releaseId} />
-                  <form
-                    onSubmit={() =>
-                      axios.post(`/api/releases/${releaseId}/cfn`)
-                    }
-                  >
-                    <input type="submit" className="btn-blue w-60" />
-                  </form>
-                </VerticalTabs>
-              </div>
+              <VerticalTabs
+                tabHeadings={[
+                  "Manifest",
+                  "AWS S3 Presigned URL",
+                  "AWS S3 VPC Share",
+                  "GCP Cloud Storage Signed URL",
+                  "htsget",
+                ]}
+              >
+                <div className="prose">
+                  <p>Not implemented</p>
+                  <p>
+                    Will enable a downloading of a simple manifest with the
+                    current release entities (with no access to actual
+                    underlying data though)
+                  </p>
+                  <p>
+                    This functionality will always be enabled - as it reveals no
+                    more information than the Cases grid i.e. it is a TSV of the
+                    cases grid
+                  </p>
+                </div>
+                <AwsS3PresignedForm
+                  releaseId={releaseId}
+                  releaseData={releaseQuery.data}
+                />
+                <AwsS3VpcShareForm releaseId={releaseId} />
+                <div className="prose">
+                  <p>Not implemented</p>
+                  <p>Will enable a GCP sharing as per AWS S3</p>
+                </div>
+                <div className="prose">
+                  <p>Not implemented</p>
+                  <p>Will enable a htsget endpoint</p>
+                </div>
+              </VerticalTabs>
             </Box>
 
             <LogsBox releaseId={releaseId} pageSize={pageSize} />

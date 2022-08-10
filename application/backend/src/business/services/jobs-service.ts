@@ -94,16 +94,19 @@ export class JobsService {
       releaseId
     );
 
-    // TODO: allow audit event creation to also participate in the transaction below
-    const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-      user,
-      releaseId,
-      "E",
-      "Ran Dynamic Consent",
-      new Date()
-    );
-
     await this.startGenericJob(releaseId, async (tx) => {
+      // by placing the audit event in the transaction I guess we miss out on
+      // the ability to audit jobs that don't start at all - but maybe we do that
+      // some other way
+      const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
+        tx,
+        user,
+        releaseId,
+        "E",
+        "Ran Dynamic Consent",
+        new Date()
+      );
+
       // create a new select job entry
       await e
         .insert(e.job.SelectJob, {
@@ -397,8 +400,8 @@ export class JobsService {
         }
       }
 
-      // TODO - make this participate in tx
       await this.auditLogService.completeReleaseAuditEvent(
+        tx,
         selectJob.auditEntry.id,
         isCancellation ? 4 : 0,
         selectJob.started,

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { useEnvRelay } from "../providers/env-relay-provider";
-import { useQuery } from "react-query";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { LayoutBase } from "../layouts/layout-base";
 import { useCookies } from "react-cookie";
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
+  USER_ALLOWED_COOKIE_NAME,
 } from "@umccr/elsa-constants";
+import { useUiAllowed } from "../hooks/ui-allowed";
 
 export const HomePage: React.FC = () => {
   const envRelay = useEnvRelay();
@@ -16,6 +16,7 @@ export const HomePage: React.FC = () => {
 
   const [cookies, setCookie, removeCookie] = useCookies<any>([
     UI_PAGE_SIZE_COOKIE_NAME,
+    USER_ALLOWED_COOKIE_NAME,
   ]);
 
   const pageSizeFromCookie = parseInt(cookies[UI_PAGE_SIZE_COOKIE_NAME]);
@@ -30,31 +31,50 @@ export const HomePage: React.FC = () => {
     else removeCookie(UI_PAGE_SIZE_COOKIE_NAME, { path: "/" });
   };
 
+  const uiAllowed = useUiAllowed();
+
   return (
     <LayoutBase>
-      <p>Current page size literal from cookie is '{pageSizeFromCookie}'</p>
-      <p>Current page size in practice is therefore {pageSize}</p>
-      <div className="flex flex-row space-x-2">
-        <button className="btn-blue" onClick={() => mutatePageSizeCookie(5)}>
+      <p className="prose">
+        Current page size literal from cookie is '{pageSizeFromCookie}'
+      </p>
+      <p className="prose">
+        Current page size in practice is therefore {pageSize}
+      </p>
+      <div className="flex flex-row space-x-2 mt-2 mb-2">
+        <button className="btn-normal" onClick={() => mutatePageSizeCookie(5)}>
           Set page size 5
         </button>
-        <button className="btn-blue" onClick={() => mutatePageSizeCookie(10)}>
+        <button className="btn-normal" onClick={() => mutatePageSizeCookie(10)}>
           Set page size 10
         </button>
-        <button className="btn-blue" onClick={() => mutatePageSizeCookie(15)}>
+        <button className="btn-normal" onClick={() => mutatePageSizeCookie(15)}>
           Set page size 15
         </button>
-        <button className="btn-blue" onClick={() => mutatePageSizeCookie(20)}>
+        <button className="btn-normal" onClick={() => mutatePageSizeCookie(20)}>
           Set page size 20
         </button>
         <button
-          className="btn-blue"
+          className="btn-normal"
           onClick={() => mutatePageSizeCookie(undefined)}
         >
           Clear page size
         </button>
       </div>
-      <div className="w-20 h-20">
+      <p className="prose">
+        The UI is enabled for the following functionality codes
+        <ul>
+          {Array.from(uiAllowed.values()).map((v) => (
+            <li key={v}>{v}</li>
+          ))}
+        </ul>
+      </p>
+      <p className="prose">
+        The frontend was given the following settings via the backend
+        environment.
+        <pre>{JSON.stringify(envRelay, null, 2)}</pre>
+      </p>
+      <div className="w-20 h-20 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           version="1.1"

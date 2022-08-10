@@ -1,4 +1,5 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import * as edgedb from "edgedb";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
 import { AuditLogService } from "../../src/business/services/audit-log-service";
@@ -10,10 +11,16 @@ let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 let auditLogService: AuditLogService;
+let edgeDbClient: edgedb.Client;
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
-    await beforeEachCommon());
+  ({
+    testReleaseId,
+    allowedDataOwnerUser,
+    allowedPiUser,
+    notAllowedUser,
+    edgeDbClient,
+  } = await beforeEachCommon());
 
   const testContainer = await registerTypes();
 
@@ -27,6 +34,7 @@ it("audit stuff instant", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startReleaseAuditEvent(
+    edgeDbClient,
     allowedPiUser,
     testReleaseId,
     "C",
@@ -34,11 +42,19 @@ it("audit stuff instant", async () => {
     start
   );
 
-  await auditLogService.completeReleaseAuditEvent(aeId, 0, start, new Date(), {
-    field: "A field",
-  });
+  await auditLogService.completeReleaseAuditEvent(
+    edgeDbClient,
+    aeId,
+    0,
+    start,
+    new Date(),
+    {
+      field: "A field",
+    }
+  );
 
   const events = await auditLogService.getEntries(
+    edgeDbClient,
     allowedPiUser,
     testReleaseId,
     1000,
@@ -52,6 +68,7 @@ it("audit stuff duration", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startReleaseAuditEvent(
+    edgeDbClient,
     allowedPiUser,
     testReleaseId,
     "C",
@@ -60,6 +77,7 @@ it("audit stuff duration", async () => {
   );
 
   await auditLogService.completeReleaseAuditEvent(
+    edgeDbClient,
     aeId,
     0,
     start,
@@ -70,6 +88,7 @@ it("audit stuff duration", async () => {
   );
 
   const events = await auditLogService.getEntries(
+    edgeDbClient,
     allowedPiUser,
     testReleaseId,
     1000,
