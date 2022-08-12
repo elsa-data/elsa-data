@@ -11,7 +11,6 @@ import {
 import { useUiAllowed } from "../hooks/ui-allowed";
 
 export const HomePage: React.FC = () => {
-  const envRelay = useEnvRelay();
   const navigate = useNavigate();
 
   const [cookies, setCookie, removeCookie] = useCookies<any>([
@@ -69,11 +68,7 @@ export const HomePage: React.FC = () => {
           ))}
         </ul>
       </p>
-      <p className="prose">
-        The frontend was given the following settings via the backend
-        environment.
-        <pre>{JSON.stringify(envRelay, null, 2)}</pre>
-      </p>
+
       <div className="w-20 h-20 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"

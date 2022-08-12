@@ -8,7 +8,12 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
-import { TOKEN_PRIMARY } from "./auth-constants";
+import {
+  SESSION_DB_ID,
+  SESSION_DISPLAY_NAME,
+  SESSION_SUBJECT_ID,
+  SESSION_TOKEN_PRIMARY,
+} from "./auth-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";
@@ -34,7 +39,11 @@ export function getSecureSessionOptions(
     salt: settings.sessionSalt,
     cookieName: SECURE_COOKIE_NAME,
     cookie: {
+      // use across the entire site
       path: "/",
+      // even though the session cookie is strongly encrypted - we also mind as well restrict it to https
+      secure: true,
+      // the session cookie is for use by the backend - not by frontend code
       httpOnly: true,
     },
   };
@@ -55,9 +64,9 @@ const cookieForUI = (
   v: string
 ) => {
   return reply.setCookie(k, v, {
+    path: "/",
     secure: true,
     httpOnly: false,
-    path: "/",
   });
 };
 
@@ -125,6 +134,7 @@ export const authRoutes = async (
 
     reply.clearCookie(USER_SUBJECT_COOKIE_NAME);
     reply.clearCookie(USER_NAME_COOKIE_NAME);
+    reply.clearCookie(USER_ALLOWED_COOKIE_NAME);
 
     reply.redirect("/");
   });
@@ -158,7 +168,22 @@ export const authRoutes = async (
       // the secure session token is HTTP only - so its existence can't even be tracked in
       // the React code - it is made available to the backend that can use it as a
       // real access token
-      cookieForBackend(request, reply, TOKEN_PRIMARY, tokenSet.access_token!);
+      // we also make available all our AuthenticatedUser variables so we can make an
+      // auth user on each API call - without hitting the db
+      cookieForBackend(
+        request,
+        reply,
+        SESSION_TOKEN_PRIMARY,
+        tokenSet.access_token!
+      );
+      cookieForBackend(request, reply, SESSION_DB_ID, authUser.dbId);
+      cookieForBackend(request, reply, SESSION_SUBJECT_ID, authUser.subjectId);
+      cookieForBackend(
+        request,
+        reply,
+        SESSION_DISPLAY_NAME,
+        authUser.displayName
+      );
 
       // these cookies however are available to React - PURELY for UI/display purposes
       cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
@@ -193,18 +218,34 @@ export const authRoutes = async (
   });
 
   if (opts.includeTestUsers) {
+    const subject1 = await userService.getBySubjectId(TEST_SUBJECT_1);
+    const subject2 = await userService.getBySubjectId(TEST_SUBJECT_2);
+    const subject3 = await userService.getBySubjectId(TEST_SUBJECT_3);
+
+    if (!subject1 || !subject2 || !subject3)
+      throw new Error(
+        "Test users not setup correctly in database even though they are meant to be enabled"
+      );
+
     // register a login endpoint that sets a cookie without actual login
     // NOTE: this has to replicate all the real auth login steps (set the same cookies etc)
     const addTestUserRoute = (
       path: string,
+      dbId: string,
       subjectId: string,
       displayName: string,
       allowed: string[]
     ) => {
       fastify.post(path, async (request, reply) => {
-        cookieForBackend(request, reply, TOKEN_PRIMARY, {
-          id: subjectId,
-        });
+        cookieForBackend(
+          request,
+          reply,
+          SESSION_TOKEN_PRIMARY,
+          "Thiswouldneedtobearealbearertokenforexternaldata"
+        );
+        cookieForBackend(request, reply, SESSION_DB_ID, dbId);
+        cookieForBackend(request, reply, SESSION_SUBJECT_ID, subjectId);
+        cookieForBackend(request, reply, SESSION_DISPLAY_NAME, displayName);
 
         // these cookies however are available to React - PURELY for UI/display purposes
         cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, subjectId);
@@ -221,14 +262,28 @@ export const authRoutes = async (
     };
 
     // a test user that is in charge of a few datasets
-    addTestUserRoute("/auth/login-bypass-1", TEST_SUBJECT_1, "Test User 1", [
-      ALLOWED_CREATE_NEW_RELEASES,
-    ]);
+    addTestUserRoute(
+      "/auth/login-bypass-1",
+      subject1.dbId,
+      TEST_SUBJECT_1,
+      subject1.displayName,
+      [ALLOWED_CREATE_NEW_RELEASES]
+    );
     // a test user that is a PI in some releases
-    addTestUserRoute("/auth/login-bypass-2", TEST_SUBJECT_2, "Test User 2", []);
+    addTestUserRoute(
+      "/auth/login-bypass-2",
+      subject2.dbId,
+      TEST_SUBJECT_2,
+      subject2.displayName,
+      []
+    );
     // a test user that is a super admin equivalent
-    addTestUserRoute("/auth/login-bypass-3", TEST_SUBJECT_3, "Test User 3", [
-      ALLOWED_CHANGE_ADMINS,
-    ]);
+    addTestUserRoute(
+      "/auth/login-bypass-3",
+      subject3.dbId,
+      TEST_SUBJECT_3,
+      subject3.displayName,
+      [ALLOWED_CHANGE_ADMINS]
+    );
   }
 };

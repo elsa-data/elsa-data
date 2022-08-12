@@ -1,5 +1,10 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { TOKEN_PRIMARY } from "./auth-constants";
+import {
+  SESSION_DB_ID,
+  SESSION_DISPLAY_NAME,
+  SESSION_SUBJECT_ID,
+  SESSION_TOKEN_PRIMARY,
+} from "./auth-constants";
 import { UsersService } from "../business/services/users-service";
 import { ElsaSettings } from "../config/elsa-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
@@ -45,7 +50,7 @@ export function createAuthRouteHook(
       // session cookie - so we can simulate with Postman/Curl etc
       // TODO - the cookie will have to allow us as testers to set group info etc
       if (allowTestCookieEquals) {
-        const rawCookie = request.cookies[TOKEN_PRIMARY];
+        const rawCookie = request.cookies[SESSION_TOKEN_PRIMARY];
 
         if (rawCookie == allowTestCookieEquals) {
           // setup up the fake authed user
@@ -58,26 +63,33 @@ export function createAuthRouteHook(
 
       // TODO: get all the return codes correct
 
-      const sessionCookieData = request.session.get(TOKEN_PRIMARY);
+      const sessionTokenPrimary = request.session.get(SESSION_TOKEN_PRIMARY);
+      const sessionDbId = request.session.get(SESSION_DB_ID);
+      const sessionSubjectId = request.session.get(SESSION_SUBJECT_ID);
+      const sessionDisplayName = request.session.get(SESSION_DISPLAY_NAME);
 
-      if (!sessionCookieData) {
+      if (
+        !sessionTokenPrimary ||
+        !sessionDbId ||
+        !sessionSubjectId ||
+        !sessionDisplayName
+      ) {
         console.log("NO SESSSION COOKIE DATA PRESENT TO ENABLE AUTH");
         reply.code(403).send();
         return;
       }
 
-      const authedUser = await usersService.getBySubjectId(
-        sessionCookieData.id
-      );
+      const authedUser = new AuthenticatedUser({
+        id: sessionDbId,
+        subjectId: sessionSubjectId,
+        displayName: sessionDisplayName,
+      });
 
-      if (!authedUser) {
-        console.log(`NO AUTH USER FOUND FOR ${sessionCookieData.id}`);
-        reply.code(403).send();
-        return;
-      }
+      console.log(`Auth route hook for user ${authedUser}`);
 
       (request as any).user = authedUser;
     } catch (error) {
+      console.log(error);
       reply.code(403).send();
     }
   };

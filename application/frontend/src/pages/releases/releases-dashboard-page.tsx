@@ -33,22 +33,24 @@ export const ReleasesPage: React.FC = () => {
           <Box heading="Synchronise Releases with DAC">
             <VerticalTabs tabHeadings={["REMS", "DUOS"]}>
               <div className="flex flex-col gap-6">
-                <label className="block">
-                  <span className="text-xs font-bold text-gray-700 uppercase">
-                    Instance URL
-                  </span>
-                  <input
-                    type="text"
-                    defaultValue="https://hgpp-rems.dev.umccr.org"
-                    className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
-                  />
-                </label>
-                <button
-                  className="btn-normal"
-                  onClick={() => setShowingRemsDialog(true)}
-                >
-                  Find New Applications
-                </button>
+                <div className="prose">
+                  <label className="block">
+                    <span className="text-xs font-bold text-gray-700 uppercase">
+                      Instance URL
+                    </span>
+                    <input
+                      type="text"
+                      defaultValue="https://hgpp-rems.dev.umccr.org"
+                      className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                    />
+                  </label>
+                  <button
+                    className="btn-normal"
+                    onClick={() => setShowingRemsDialog(true)}
+                  >
+                    Find New Applications
+                  </button>
+                </div>
               </div>
               <form>
                 <p>Fetch from DUOS</p>

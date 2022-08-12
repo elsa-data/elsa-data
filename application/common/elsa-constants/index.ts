@@ -1,4 +1,4 @@
-export const SECURE_COOKIE_NAME = "elsa-data-bearer-tokens";
+export const SECURE_COOKIE_NAME = "elsa-data-id-and-bearer-tokens";
 
 export const USER_SUBJECT_COOKIE_NAME = "elsa-data-logged-in-subject";
 export const USER_NAME_COOKIE_NAME = "elsa-data-logged-in-name";

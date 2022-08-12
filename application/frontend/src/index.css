@@ -8,7 +8,7 @@ body {
 }
 
 .btn-base {
-  @apply font-bold p-3 rounded-xl min-w-[15em];
+  @apply font-bold p-3 rounded-xl min-w-[15em] disabled:opacity-25;
 }
 
 .btn-normal {

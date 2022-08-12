@@ -59,7 +59,7 @@ Ethics form XYZ.
         studyIsNotCommercial: true,
       }),
       releaseIdentifier: "MNRETQER",
-      releasePassword: "aeyePEWR", // pragma: allowlist secret
+      releasePassword: "abcd", // pragma: allowlist secret
       releaseStarted: new Date(2022, 1, 23),
       datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
       datasetCaseUrisOrderPreference: [""],

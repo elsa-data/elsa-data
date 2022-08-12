@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { releaseRoutes } from "./routes/release-routes";
 import { datasetRoutes } from "./routes/dataset-routes";
-import { TOKEN_PRIMARY } from "../auth/auth-constants";
+import { SESSION_TOKEN_PRIMARY } from "../auth/auth-constants";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,

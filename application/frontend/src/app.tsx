@@ -8,6 +8,7 @@ import { DatasetsSpecificPage } from "./pages/datasets-specific-page";
 import { LoginPage } from "./pages/login-page";
 import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
+import { LoginDevPage } from "./pages/login-dev-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -51,5 +52,12 @@ export const App: React.FC = () => {
         <Route path="*" element={<NoMatch />} />
       </Routes>
     );
-  } else return <LoginPage />;
+  } else
+    return (
+      <Routes>
+        {/* a page that we will get to disappear in production deployments */}
+        <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    );
 };
