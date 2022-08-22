@@ -1,11 +1,17 @@
 import React, { useEffect } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
+import { Box } from "../../../../components/boxes";
+import { ReleaseTypeLocal } from "../shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";
-import { HrDiv, LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
-import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "./queries";
+import {
+  HrDiv,
+  LeftDiv,
+  RightDiv,
+} from "../../../../components/rh/rh-structural";
+import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { isUndefined } from "lodash";
+import { ConsentSourcesBox } from "./consent-sources-box";
+import { VirtualCohortBox } from "./virtual-cohort-box";
 
 type Props = {
   releaseId: string;
@@ -21,7 +27,6 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (releaseData.runningJob) {
-        console.log("Refreshing running job status");
         queryClient.invalidateQueries(
           REACT_QUERY_RELEASE_KEYS.detail(releaseId)
         );
@@ -49,47 +54,14 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
 
   return (
     <Box heading="Bulk">
-      <div className="md:grid md:grid-cols-5 md:gap-6">
-        <LeftDiv
-          heading={"Consent Sources"}
-          extra={
-            "Datasets may include their own per case/patient/specimen consent preferences. Where overriding consent information is held externally, the URL for this service may be specified here"
-          }
-        />
-        <RightDiv>
-          <textarea>AA</textarea>
-        </RightDiv>
-      </div>
+      <ConsentSourcesBox releaseId={releaseId} />
       <HrDiv />
       <ApplicationCodedBox
         releaseId={releaseId}
         applicationCoded={releaseData.applicationCoded}
       />
       <HrDiv />
-      <div className="md:grid md:grid-cols-5 md:gap-6">
-        <LeftDiv
-          heading={"Virtual Cohort"}
-          extra={
-            "A virtual cohort may be layered over the base consent information - allowing the release to be limited to 'males under 25' for example"
-          }
-        />
-        <RightDiv>
-          <textarea
-            className="font-mono border-none w-full"
-            rows={10}
-            value={
-              "{\n" +
-              '  "requestParameters": {\n' +
-              '    "referenceName": "NC_000017.11",\n' +
-              '    "start": [ 5000000, 7676592 ],\n' +
-              '    "end": [ 7669607, 10000000 ],\n' +
-              '    "variantType": "DEL"\n' +
-              "  }\n" +
-              "}"
-            }
-          ></textarea>
-        </RightDiv>
-      </div>
+      <VirtualCohortBox releaseId={releaseId} />
       <HrDiv />
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv

@@ -7,6 +7,7 @@ import fastifyStatic from "@fastify/static";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyFormBody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
+import fastifyRateLimit from "@fastify/rate-limit";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
@@ -89,6 +90,12 @@ export class App {
       getSecureSessionOptions(this.settings)
     );
 
+    // NEEDING UPGRADE TO FASTIFY 4.x
+    // await this.server.register(fastifyRateLimit, {
+    //  max: 100,
+    //  timeWindow: "1 minute",
+    //});
+
     this.server.register(apiRoutes, {
       container: container,
       allowTestCookieEquals:
@@ -113,11 +120,39 @@ export class App {
     // our behaviour for React routed websites is that NotFound responses should be replaced
     // with serving up index.html
     this.server.setNotFoundHandler(async (request, reply) => {
+      // any misses that fall through in the API area should actually return 404
+      if (request.url.toLowerCase().startsWith("/api/")) {
+        reply
+          .code(404)
+          .type("application/problem+json")
+          .send({
+            type: "about:blank",
+            title: "Not Found",
+            status: 404,
+            detail: `API route ${request.url} does not exist`,
+          });
+
+        return;
+      }
+
       // our react routes should never have file suffixes so we don't serve up index.html in those cases
       // (this helps us not serving up index.html for random misplaced PNG requests etc)
-      if (request.url.includes(".")) reply.status(404).send();
-      // the user hit refresh at (for example) https://url/releases/a32gf24 - for this react route
-      // we actually want to send the index content (at which point react routing takes over)
+      if (request.url.includes(".")) {
+        reply
+          .code(404)
+          .type("application/problem+json")
+          .send({
+            type: "about:blank",
+            title: "Not Found",
+            status: 404,
+            detail: `File ${request.url} does not exist`,
+          });
+
+        return;
+      }
+
+      // the user hit refresh at (for example) https://ourwebsite.com/docs/a32gf24 - for react routes like
+      // this we actually want to send the index content (at which point react routing takes over)
       else
         await serveCustomIndexHtml(
           reply,

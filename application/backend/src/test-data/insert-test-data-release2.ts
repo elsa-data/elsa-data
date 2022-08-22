@@ -6,13 +6,11 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
-import { TENF_URI } from "./insert-test-data-10f";
+import { TENF_URI } from "./insert-test-data-10f-helpers";
 
 const edgeDbClient = edgedb.createClient();
 
 export async function insertRelease2() {
-  const mondoUri = "http://purl.obolibrary.org/obo/mondo.owl";
-
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Better Study of Limited Test Data",

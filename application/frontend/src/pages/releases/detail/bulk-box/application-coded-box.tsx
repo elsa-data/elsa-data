@@ -1,27 +1,27 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import axios, { AxiosError } from "axios";
-import {
-  CodingType,
-  ReleaseApplicationCodedType,
-  ReleaseDetailType,
-} from "@umccr/elsa-types";
-import { MondoChooser } from "../../../components/concept-chooser/mondo-chooser";
-import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
-import { RhSelect } from "../../../components/rh/rh-select";
-import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
-import {
-  axiosPostArgMutationFn,
-  makeReleaseTypeLocal,
-  REACT_QUERY_RELEASE_KEYS,
-} from "./queries";
-import { ReleaseTypeLocal } from "./shared-types";
+import { CodingType, ReleaseApplicationCodedType } from "@umccr/elsa-types";
+import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
+import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
+import { RhSelect } from "../../../../components/rh/rh-select";
+import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
+import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
+import { ReleaseTypeLocal } from "../shared-types";
 
 type Props = {
   releaseId: string;
   applicationCoded: ReleaseApplicationCodedType;
 };
 
+/**
+ * The application coded box allows the data admin to clarify/encode details they
+ * have found in the application - in preparation of running an algorithm over
+ * the datasets.
+ *
+ * @param releaseId
+ * @param applicationCoded
+ * @constructor
+ */
 export const ApplicationCodedBox: React.FC<Props> = ({
   releaseId,
   applicationCoded,

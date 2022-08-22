@@ -38,82 +38,92 @@ type KnownLimitationCodes =
   | "DUO:0000011"
   | "DUO:0000004";
 
-type KnownCodes = KnownLimitationCodes | KnownModifierCodes;
+export const DuoPublicationRequiredSchema = Type.Object({
+  code: Type.Literal("DUO:0000019"), // PUB
+});
 
-/**
- * Return the short mnemonic string for any DUO code - or null if not a known DUO code.
- * @param code
- */
-export function getStringFromDuoCode(code: string): string | undefined {
-  switch (code as KnownCodes) {
-    case "DUO:0000019":
-      return "PUB";
-    case "DUO:0000020":
-      return "COL";
-    case "DUO:0000046":
-      return "NCU";
-    case "DUO:0000018":
-      return "NPUNCU";
-    case "DUO:0000045":
-      return "NPU";
-  }
-}
+export const DuoNonCommercialUseOnlySchema = Type.Object({
+  code: Type.Literal("DUO:0000046"), // NCU
+});
+
+export const DuoNotForProfitNonCommercialUseOnlySchema = Type.Object({
+  code: Type.Literal("DUO:0000018"), // NPUNCU   NotForProfitNonCommercialUseOnlyCode
+});
+
+export const DuoCollaborationRequiredSchema = Type.Object({
+  code: Type.Literal("DUO:0000020"), // COL
+});
+
+export const DuoGeographicalRestrictionSchema = Type.Object({
+  code: Type.Literal("DUO:0000022"), //  GS GeographicalRestrictionCode
+  regions: Type.Array(Type.String()),
+});
+
+export const DuoNotForProfitUseOnlySchema = Type.Object({
+  code: Type.Literal("DUO:0000045"), // NPU  NotForProfitUseOnlyCode
+});
+
+export type DuoGeographicalRestrictionType = Static<
+  typeof DuoGeographicalRestrictionSchema
+>;
+export type DuoNonCommercialUseOnlyType = Static<
+  typeof DuoNonCommercialUseOnlySchema
+>;
+export type DuoNotForProfitNonCommercialUseOnlyType = Static<
+  typeof DuoNotForProfitNonCommercialUseOnlySchema
+>;
+export type DuoNotForProfitUseOnlyType = Static<
+  typeof DuoNotForProfitUseOnlySchema
+>;
+export type DuoPublicationRequiredType = Static<
+  typeof DuoPublicationRequiredSchema
+>;
+export type DuoCollaborationRequiredType = Static<
+  typeof DuoCollaborationRequiredSchema
+>;
 
 export const DuoModifierSchema = Type.Union(
   [
+    DuoPublicationRequiredSchema,
+    DuoCollaborationRequiredSchema,
+    DuoNonCommercialUseOnlySchema,
+    DuoNotForProfitNonCommercialUseOnlySchema,
+    DuoNotForProfitUseOnlySchema,
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000019"), // PUB
+      code: Type.Literal("DUO:0000024"), // MOR  PublicationMoratoriumCode
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000020"), // COL
+      code: Type.Literal("DUO:0000016"), // GSO  GeneticStudiesOnlyCode
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000046"), // NCU
-    }),
-    Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000018"), // NPUNCU   NotForProfitNonCommercialUseOnlyCode
-    }),
-    Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000045"), // NPU  NotForProfitUseOnlyCode
-    }),
-    Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000024"), // MOR  PublicationMoratoriumCode
-    }),
-    Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000016"), // GSO  GeneticStudiesOnlyCode
-    }),
-    Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000025"), // TS
+      code: Type.Literal("DUO:0000025"), // TS
       start: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
       end: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000029"), //  RTN  ReturnToDatabaseCode
+      code: Type.Literal("DUO:0000029"), //  RTN  ReturnToDatabaseCode
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000043"), //  CC ClinicalCareUseCode
+      code: Type.Literal("DUO:0000043"), //  CC ClinicalCareUseCode
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000015"), //  NMDS  NoGeneralMethodsCode
+      code: Type.Literal("DUO:0000015"), //  NMDS  NoGeneralMethodsCode
     }),
+    DuoGeographicalRestrictionSchema,
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000022"), //  GS GeographicalRestrictionCode
-      regions: Type.Array(Type.String()),
-    }),
-    Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000026"), //   US  SpecificUserCode
+      code: Type.Literal("DUO:0000026"), //   US  SpecificUserCode
       users: Type.Array(Type.String()),
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000006"), //   RS  SpecificResearcherTypeCode
+      code: Type.Literal("DUO:0000006"), //   RS  SpecificResearcherTypeCode
       types: Type.Array(Type.String()),
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000028"), //  IS   SpecificInstitutionCode
+      code: Type.Literal("DUO:0000028"), //  IS   SpecificInstitutionCode
       institutions: Type.Array(Type.String()),
     }),
     Type.Object({
-      code: Type.Literal<KnownModifierCodes>("DUO:0000027"), //  PS  SpecificProjectCode
+      code: Type.Literal("DUO:0000027"), //  PS  SpecificProjectCode
       projects: Type.Array(Type.String()),
     }),
   ],
@@ -127,29 +137,29 @@ export const DuoModifierSchema = Type.Union(
 // export const ModifierArrayReference = Type.Array(Type.Ref(DuoModifierSchema));
 
 export const DuoGeneralResearchUseSchema = Type.Object({
-  code: Type.Literal<KnownLimitationCodes>("DUO:0000042"), // GRU
+  code: Type.Literal("DUO:0000042"), // GRU
   modifiers: Type.Array(DuoModifierSchema),
 });
 
 export const DuoHealthMedicalBiomedicalResearchSchema = Type.Object({
-  code: Type.Literal<KnownLimitationCodes>("DUO:0000006"), // HMB
+  code: Type.Literal("DUO:0000006"), // HMB
   modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
 });
 
 export const DuoDiseaseSpecificResearchSchema = Type.Object({
-  code: Type.Literal<KnownLimitationCodes>("DUO:0000007"), // DS
-  //TODO: fix to a proper code system
-  disease: Type.String(),
+  code: Type.Literal("DUO:0000007"), // DS
+  diseaseSystem: Type.String(),
+  diseaseCode: Type.String(),
   modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
 });
 
 export const DuoPopulationAncestryResearchOnlySchema = Type.Object({
-  code: Type.Literal<KnownLimitationCodes>("DUO:0000011"), // POA
+  code: Type.Literal("DUO:0000011"), // POA
   modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
 });
 
 export const DuoNoRestrictionSchema = Type.Object({
-  code: Type.Literal<KnownLimitationCodes>("DUO:0000004"), // NRES
+  code: Type.Literal("DUO:0000004"), // NRES
   modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
 });
 
@@ -173,6 +183,20 @@ export const DuoLimitationCodedSchema = Type.Union([
 ]);
 
 export type DuoLimitationCodedType = Static<typeof DuoLimitationCodedSchema>;
+
+export type DuoGeneralResearchUseType = Static<
+  typeof DuoGeneralResearchUseSchema
+>;
+export type DuoHealthMedicalBiomedicalResearchType = Static<
+  typeof DuoHealthMedicalBiomedicalResearchSchema
+>;
+export type DuoDiseaseSpecificResearchType = Static<
+  typeof DuoDiseaseSpecificResearchSchema
+>;
+export type DuoPopulationAncestryResearchOnlyType = Static<
+  typeof DuoPopulationAncestryResearchOnlySchema
+>;
+export type DuoNoRestrictionType = Static<typeof DuoNoRestrictionSchema>;
 
 // for completeness, we include a DUO data use limitation that allows freetext - but for practical
 // computation we essentially never want these

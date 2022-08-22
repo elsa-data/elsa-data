@@ -5,6 +5,7 @@ import {
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
+  MONDO_SYSTEM_URI,
 } from "./test-data-helpers";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
 
@@ -120,7 +121,9 @@ export async function insert10G() {
           [
             {
               code: "DUO:0000007",
-              disease: "Diabetes",
+              // endocrine system disorder
+              diseaseSystem: MONDO_SYSTEM_URI,
+              diseaseCode: "MONDO:0005151",
               modifiers: [{ code: "DUO:0000045" }],
             },
           ]

@@ -51,10 +51,10 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
           {releaseData.accessEnabled && (
             <div className={classNames(alertBoxClasses, "border-green-400")}>
               <Trans>
-                <p>Data access is currently enabled</p>
+                <p>Data access is currently enabled.</p>
                 <p>Access will automatically cease</p>
                 <p title={i18n.date("2022-03-05")}>
-                  <b>in two months</b>
+                  <b>in six months.</b>
                 </p>
               </Trans>
             </div>

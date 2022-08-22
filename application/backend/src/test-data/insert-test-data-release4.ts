@@ -6,7 +6,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
-import { TENF_URI } from "./insert-test-data-10f";
+import { TENF_URI } from "./insert-test-data-10f-helpers";
 
 const edgeDbClient = edgedb.createClient();
 

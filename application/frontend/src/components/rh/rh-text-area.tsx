@@ -16,7 +16,7 @@ export const RhTextArea = React.forwardRef<HTMLTextAreaElement, Props>(
     const id = useId();
 
     return (
-      <div>
+      <div className="w-full">
         <label htmlFor={id} className="block text-sm font-medium text-gray-700">
           {props.label}
         </label>

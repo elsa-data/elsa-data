@@ -6,17 +6,16 @@ import { LayoutBase } from "../../../layouts/layout-base";
 import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
 import { AwsS3PresignedForm } from "./aws-s3-presigned-form";
-import { ApplicationCodedBox } from "./application-coded-box";
 import { InformationBox } from "./information-box";
 import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
-import { BulkBox } from "./bulk-box";
+import { BulkBox } from "./bulk-box/bulk-box";
 import { isUndefined } from "lodash";
 import { FutherRestrictionsBox } from "./further-restrictions-box";
-import axios from "axios";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { MasterAccessControlBox } from "./master-access-control-box";
 import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
+import { HtsgetForm } from "./htsget-form";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -130,10 +129,10 @@ export const ReleasesDetailPage: React.FC = () => {
                   <p>Not implemented</p>
                   <p>Will enable a GCP sharing as per AWS S3</p>
                 </div>
-                <div className="prose">
-                  <p>Not implemented</p>
-                  <p>Will enable a htsget endpoint</p>
-                </div>
+                <HtsgetForm
+                  releaseId={releaseId}
+                  releaseData={releaseQuery.data}
+                />
               </VerticalTabs>
             </Box>
 
