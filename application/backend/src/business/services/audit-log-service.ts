@@ -1,14 +1,10 @@
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { ReleaseSummaryType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable } from "tsyringe";
+import { injectable } from "tsyringe";
 import { UsersService } from "./users-service";
-import {
-  differenceInHours,
-  differenceInMinutes,
-  differenceInSeconds,
-} from "date-fns";
+import { differenceInSeconds } from "date-fns";
 import { AuditEntryType } from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
@@ -24,14 +20,23 @@ export class AuditLogService {
   private readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
-    @inject("Database") private edgeDbClient: edgedb.Client,
+    // NOTE: we don't define an edgeDbClient here as the audit log functionality
+    // is designed to work either standalone or in a transaction context
     private usersService: UsersService
   ) {}
 
   /**
+   * Start the entry for an audit event that occurs in a release context.
    *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param user
+   * @param releaseId
+   * @param actionCategory
+   * @param actionDescription
+   * @param start
    */
   public async startReleaseAuditEvent(
+    executor: Executor,
     user: AuthenticatedUser,
     releaseId: string,
     actionCategory: AuditEventAction,
@@ -41,8 +46,7 @@ export class AuditLogService {
     const auditEvent = await e
       .insert(e.audit.AuditEvent, {
         whoId: user.subjectId,
-        // TODO: users should have display names from OIDC
-        whoDisplayName: user.subjectId,
+        whoDisplayName: user.displayName,
         occurredDateTime: start,
         actionCategory: actionCategory,
         actionDescription: actionDescription,
@@ -53,7 +57,7 @@ export class AuditLogService {
           errorMessage: "Audit entry not completed",
         }),
       })
-      .run(this.edgeDbClient);
+      .run(executor);
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
@@ -68,12 +72,23 @@ export class AuditLogService {
           },
         },
       }))
-      .run(this.edgeDbClient);
+      .run(executor);
 
     return auditEvent.id;
   }
 
+  /**
+   * Complete the entry for an audit event that occurs in a release context.
+   *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param auditEventId
+   * @param outcome
+   * @param start
+   * @param end
+   * @param details
+   */
   public async completeReleaseAuditEvent(
+    executor: Executor,
     auditEventId: string,
     outcome: AuditEventOutcome,
     start: Date,
@@ -96,22 +111,23 @@ export class AuditLogService {
           updatedDateTime: e.datetime_current(),
         },
       }))
-      .run(this.edgeDbClient);
+      .run(executor);
   }
 
   public async getEntries(
+    executor: Executor,
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
     offset: number
   ): Promise<PagedResult<AuditEntryType>> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
-      this.edgeDbClient,
+      executor,
       { releaseId: releaseId }
     );
 
     const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery.run(
-      this.edgeDbClient,
+      executor,
       { releaseId: releaseId, limit: limit, offset: offset }
     );
 

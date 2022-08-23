@@ -9,7 +9,7 @@ import { Static, Type } from "@sinclair/typebox";
  */
 
 export const CodingSchema = Type.Object({
-  // a mandatory system URI or the empty string to indicate no system
+  // a mandatory system URI or the empty string (not undefined or null!) to indicate no system
   system: Type.String(),
 
   // I'd like to not have to deal with versioned codes if possible

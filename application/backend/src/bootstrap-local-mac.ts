@@ -5,31 +5,14 @@ import { App } from "./app";
 import { getSettings } from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
-import archiver from "archiver";
-import archiverZipEncrypted from "archiver-zip-encrypted";
 import Bree from "bree";
 import { container } from "tsyringe";
-import { Client } from "edgedb";
-import * as edgedb from "edgedb";
 import { registerTypes } from "./bootstrap-container";
 import path from "path";
-import i18n from "i18n";
-import { getConfig } from "./config/config-schema";
-import { ElsaSettings } from "./config/elsa-settings";
+import { ElsaEnvironment, ElsaSettings } from "./config/elsa-settings";
+import { oneOffCommonInitialiseSynchronous } from "./bootstrap-common-once";
 
-console.log("Creating Fastify app");
-
-// global settings for archiver
-{
-  // register format for archiver
-  // note: only do it once per Node.js process/application, as duplicate registration will throw an error
-  archiver.registerFormat("zip-encrypted", archiverZipEncrypted);
-}
-
-// global settings for bree (job scheduler)
-{
-  Bree.extend(require("@breejs/ts-worker"));
-}
+oneOffCommonInitialiseSynchronous();
 
 const bree = new Bree({
   root: path.resolve("jobs"),
@@ -42,24 +25,16 @@ const bree = new Bree({
   ],
 });
 
-/*i18n.configure({
-  locales: ['en', 'el'],
-  defaultLocale: 'en',
-  queryParameter: 'lang',
-  directory: path.join('./', 'locales'),
-  api: {
-    '__': 'translate',
-    '__n': 'translateN'
-  },
-}); */
-
 // global settings for DI
 registerTypes();
 
 const start = async () => {
-  console.log("Locating secrets/settings");
+  // other parts of the node env are going to trigger off this setting so to a certain
+  // extent we will too
+  const environment: ElsaEnvironment =
+    process.env.NODE_ENV === "production" ? "production" : "development";
 
-  const settings = await getSettings(["mac"]);
+  const settings = await getSettings(environment, "local-mac");
 
   container.register<ElsaSettings>("Settings", {
     useValue: settings,
@@ -72,14 +47,14 @@ const start = async () => {
 
   await bree.start();
 
-  const app = new App("local", () => ({ ...settings }));
+  const app = new App(settings);
 
   const server = await app.setupServer();
 
   console.log(`Listening on port ${settings.port}`);
 
   try {
-    await server.listen(settings.port);
+    await server.listen({ port: settings.port });
   } catch (err) {
     server.log.error(err);
     process.exit(1);

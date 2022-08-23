@@ -46,6 +46,9 @@ module job {
         # the database time this job ended with either success, failure or cancellation
         #
         optional property ended -> datetime;
+
+        # a link to the audit entry created for this job
+        required link auditEntry -> audit::AuditEvent;
     }
 
     # the premise here is a job that can gradually work through each case in the to do

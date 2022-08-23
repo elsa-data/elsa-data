@@ -7,17 +7,17 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
-import {
-  BART_SPECIMEN,
-  ELROY_SPECIMEN,
-  HOMER_SPECIMEN,
-  MARGE_SPECIMEN,
-  TENF_URI,
-} from "./insert-test-data-10f";
 import { TENG_URI } from "./insert-test-data-10g";
 import { TENC_URI } from "./insert-test-data-10c";
 import { Duration } from "edgedb";
 import { random } from "lodash";
+import {
+  BART_SPECIMEN,
+  HOMER_SPECIMEN,
+  MARGE_SPECIMEN,
+} from "./insert-test-data-10f-simpsons";
+import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
+import { TENF_URI } from "./insert-test-data-10f-helpers";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -59,8 +59,9 @@ Ethics form XYZ.
         studyIsNotCommercial: true,
       }),
       releaseIdentifier: "MNRETQER",
-      releasePassword: "aeyePEWR", // pragma: allowlist secret
+      releasePassword: "abcd", // pragma: allowlist secret
       releaseStarted: new Date(2022, 1, 23),
+      releaseEnded: new Date(2023, 1, 1),
       datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],

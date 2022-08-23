@@ -8,21 +8,19 @@ import { existsSync } from "fs";
  * Finds the location of the already built React/Vue/HTML website that we want to
  * be serving up. Handles relative locations of the files based on whether we
  * are in production or development mode.
- * Note: this function is *not* async because it runs in the constructor of
+ * Note: this function *cannot* be async (so it uses existsSync) because it runs in the constructor of
  * the web server.
  *
- * @param serverEnvironment
+ * @param allowFilesDirectFromSource whether to allow sourcing files direct from the frontend build folders
  */
-export function locateHtmlDirectory(
-  serverEnvironment: "production" | "development"
-) {
+export function locateHtmlDirectory(allowFilesDirectFromSource: boolean) {
   // first look for the existence of a production distribution right in our own folder
   // this should only happen in Docker builds - but we will prefer this location
   // irrespective of whether we are in development or production
   let staticFilesPath = resolve("client", "dist");
 
   if (!existsSync(staticFilesPath)) {
-    if (serverEnvironment === "development") {
+    if (allowFilesDirectFromSource) {
       // ONLY IN DEVELOPMENT try looking for the build folder directly in our working frontend dev area
       staticFilesPath = resolve("..", "frontend", "build");
     }
@@ -101,29 +99,3 @@ export async function strictServeRealFileIfPresent(
     index: false,
   });
 }
-
-/*
-async function looseServeRealFileOrIndex(requestPath: string, req: Request, res: Response, next: NextFunction) {
-    const requestBase = posix.basename(requestPath);
-
-    async function* walk(dir: string, matchBase: string) {
-        for await (const d of await fs.promises.opendir(dir)) {
-            const entry = join(dir, d.name);
-            if (d.isDirectory()) yield* walk(entry, matchBase);
-            else if (d.isFile()) {
-                if (d.name.localeCompare(matchBase, undefined, { sensitivity: 'base' }) === 0) yield entry;
-            }
-        }
-    }
-
-    let hasSent = false;
-
-    for await (const p of walk(this.staticFilesPath, requestBase)) {
-        res.sendFile(p, { etag: false, cacheControl: false });
-        hasSent = true;
-        break;
-    }
-
-    if (!hasSent) await this.serveCustomIndexHtml(req, res);
-}
-*/

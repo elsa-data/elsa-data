@@ -6,7 +6,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
-import { TENF_URI } from "./insert-test-data-10f";
+import { TENF_URI } from "./insert-test-data-10f-helpers";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -28,7 +28,7 @@ export async function insertRelease4() {
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
       releaseIdentifier: "TR",
-      releasePassword: "bbew75CZ", // pragma: allowlist secret
+      releasePassword: "go123", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       auditLog: e.set(
         e.insert(e.audit.AuditEvent, {

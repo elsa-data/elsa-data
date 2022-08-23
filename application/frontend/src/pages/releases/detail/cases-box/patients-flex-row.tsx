@@ -14,6 +14,7 @@ import axios from "axios";
 import { useQueryClient } from "react-query";
 import classNames from "classnames";
 import Popup from "reactjs-popup";
+import { ConsentPopup } from "./consent-popup";
 
 type Props = {
   releaseId: string;
@@ -75,11 +76,11 @@ export const PatientsFlexRow: React.FC<Props> = ({
     return (
       <div className={classNames(...patientClasses)}>
         <span>
-          {patientIcon} {patient.externalId}{" "}
+          {patient.externalId} {patientIcon}
           {patient.customConsent && (
             <>
-              {" "}
-              <FontAwesomeIcon icon={faUnlock} />
+              {"-"}
+              <ConsentPopup releaseId={releaseId} nodeId={patient.id} />
             </>
           )}
         </span>
@@ -90,13 +91,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
               {spec.customConsent && (
                 <>
                   {"-"}
-                  <Popup
-                    trigger={<FontAwesomeIcon icon={faUnlock} />}
-                    position={["top center", "bottom right", "bottom left"]}
-                    on={["hover", "focus"]}
-                  >
-                    Tooltip content
-                  </Popup>
+                  <ConsentPopup releaseId={releaseId} nodeId={spec.id} />
                 </>
               )}{" "}
               {showCheckboxes && (

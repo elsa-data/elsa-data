@@ -127,7 +127,7 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     releaseSelectedSpecimensQuery,
     releaseInfo,
     releaseInfoQuery,
-    //releaseExcluded,
+    datasetIdToUriMap,
     datasetUriToIdMap,
     releaseAllDatasetIdDbSet,
     releaseAllDatasetQuery,

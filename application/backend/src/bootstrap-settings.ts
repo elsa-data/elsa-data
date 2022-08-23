@@ -1,31 +1,27 @@
 import { Issuer } from "openid-client";
 import { writeFile } from "fs/promises";
 import * as temp from "temp";
-import { ElsaSettings } from "./config/elsa-settings";
+import {
+  ElsaEnvironment,
+  ElsaLocation,
+  ElsaSettings,
+} from "./config/elsa-settings";
 import { getConfigLocalMac } from "./config/config-local-mac";
 import { getConfigAwsSecretsManager } from "./config/config-aws-secrets-manager";
 import { getConfig } from "./config/config-schema";
-
-export type SettingSource = "mac" | "aws";
 
 /**
  * Converts out configuration files (which are at best primitive values like string/numbers)
  * into a settings object - which can be constructed Objects like Issuer etc.
  *
- * @param sources
+ * @param environment
+ * @param location
  */
 export async function getSettings(
-  sources: SettingSource[]
+  environment: ElsaEnvironment,
+  location: ElsaLocation
 ): Promise<ElsaSettings> {
-  const sourcesResolved = [];
-
-  for (const s of sources) {
-    if (s === "mac") sourcesResolved.push(await getConfigLocalMac());
-
-    if (s === "aws") sourcesResolved.push(await getConfigAwsSecretsManager());
-  }
-
-  const config = await getConfig(sourcesResolved);
+  const config = await getConfig(environment, location);
 
   console.log("The raw configuration found is");
   console.log(config.toString());
@@ -54,6 +50,8 @@ export async function getSettings(
   }
 
   return {
+    environment: environment,
+    location: location,
     port: config.get("port"),
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,

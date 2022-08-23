@@ -2,18 +2,9 @@ import * as edgedb from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import { insertCARDIAC } from "./insert-test-data-cardiac";
 import { insert10G } from "./insert-test-data-10g";
-import {
-  createTestUser,
-  findSpecimenQuery,
-  insertBlankDataset,
-  makeDoubleCodeArray,
-  makeEmptyCodeArray,
-  makeSingleCodeArray,
-  makeTripleCodeArray,
-} from "./test-data-helpers";
+import { createTestUser, insertBlankDataset } from "./test-data-helpers";
 import { insert10F } from "./insert-test-data-10f";
 import { insert10C } from "./insert-test-data-10c";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { insertRelease1 } from "./insert-test-data-release1";
 import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
@@ -22,12 +13,21 @@ import { ElsaSettings } from "../config/elsa-settings";
 
 const edgeDbClient = edgedb.createClient();
 
+// these are 3 constants for users that are created *only* in development/test mode
+// NOTE: when enabled - these subjects go beyond having some test data in the db - these
+// users are enabled in the APIs to do a variety of things
+// DON'T LEAVE ON TEST MODE IN AN INSTANCE NOT MEANT FOR TESTING!
+export const TEST_SUBJECT_1 = "http://subject1.com";
+export const TEST_SUBJECT_2 = "http://subject2.com";
+export const TEST_SUBJECT_3 = "http://subject3.com";
+
 export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
   await insert10G();
   await insert10F();
   await insert10C();
-  await insertCARDIAC();
+  // cardiac is disabled because we now have a unique filename restriction - need to sort out
+  // await insertCARDIAC();
 
   await insertBlankDataset(
     "BM",
@@ -78,21 +78,20 @@ export async function insertTestData(settings: ElsaSettings) {
     "urn:fdc:australiangenomics.org.au:2022:datasets/zz"
   );
 
-  await insertBlankDataset("BOWEL", "http://cci.org.au/datasets/BOWEL");
-
   const r1 = await insertRelease1();
   const r2 = await insertRelease2();
   const r3 = await insertRelease3();
   const r4 = await insertRelease4();
 
   await createTestUser(
-    "http://subject1.com",
+    TEST_SUBJECT_1,
     "Test User 1",
     [r1.id, r4.id],
     [r2.id],
     []
   );
-  await createTestUser("http://subject2.com", "Test User 2", [], [r1.id], []);
+  await createTestUser(TEST_SUBJECT_2, "Test User 2", [], [r1.id], []);
+  await createTestUser(TEST_SUBJECT_3, "Test User 3", [], [], []);
 
   console.log(
     `  Number of object artifacts present = ${await e

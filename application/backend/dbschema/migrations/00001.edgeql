@@ -1,4 +1,4 @@
-CREATE MIGRATION m1n6l3poidn24sdydfsrz5ehbxpvac4lp4k22rxzn7gshm3cgjzpaq
+CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -62,7 +62,11 @@ CREATE MIGRATION m1n6l3poidn24sdydfsrz5ehbxpvac4lp4k22rxzn7gshm3cgjzpaq
   CREATE TYPE storage::File {
       CREATE REQUIRED PROPERTY checksums -> array<tuple<type: storage::ChecksumType, value: std::str>>;
       CREATE REQUIRED PROPERTY size -> std::int64;
-      CREATE REQUIRED PROPERTY url -> std::str;
+      CREATE REQUIRED PROPERTY url -> std::str {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive ON (std::str_lower(__subject__));
+          CREATE CONSTRAINT std::min_len_value(5);
+      };
   };
   CREATE FUNCTION dataset::extractIdentifierValue(i: tuple<system: std::str, value: std::str>) ->  std::str USING (i.value);
   CREATE SCALAR TYPE audit::ActionType EXTENDING enum<C, R, U, D, E>;
@@ -87,6 +91,34 @@ CREATE MIGRATION m1n6l3poidn24sdydfsrz5ehbxpvac4lp4k22rxzn7gshm3cgjzpaq
       CREATE REQUIRED PROPERTY whoId -> std::str;
   };
   CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
+  CREATE ABSTRACT TYPE job::Job {
+      CREATE REQUIRED LINK auditEntry -> audit::AuditEvent;
+      CREATE REQUIRED PROPERTY created -> std::datetime {
+          SET default := (std::datetime_current());
+          SET readonly := true;
+      };
+      CREATE OPTIONAL PROPERTY ended -> std::datetime;
+      CREATE REQUIRED PROPERTY messages -> array<std::str>;
+      CREATE REQUIRED PROPERTY percentDone -> std::int16 {
+          CREATE CONSTRAINT std::max_value(100);
+          CREATE CONSTRAINT std::min_value(0);
+      };
+      CREATE REQUIRED PROPERTY requestedCancellation -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY started -> std::datetime;
+      CREATE REQUIRED PROPERTY status -> job::JobStatus;
+  };
+  CREATE TYPE job::SelectJob EXTENDING job::Job {
+      CREATE MULTI LINK todoQueue -> dataset::DatasetCase {
+          ON TARGET DELETE ALLOW;
+      };
+      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
+          ON TARGET DELETE ALLOW;
+      };
+      CREATE REQUIRED PROPERTY initialTodoCount -> std::int32;
+  };
+  CREATE SCALAR TYPE release::ReleaseCounterSequence EXTENDING std::sequence;
   CREATE TYPE release::Release {
       CREATE MULTI LINK auditLog -> audit::AuditEvent {
           ON SOURCE DELETE DELETE TARGET;
@@ -101,6 +133,9 @@ CREATE MIGRATION m1n6l3poidn24sdydfsrz5ehbxpvac4lp4k22rxzn7gshm3cgjzpaq
           CREATE CONSTRAINT std::exclusive;
       };
       CREATE REQUIRED PROPERTY applicationDacTitle -> std::str;
+      CREATE REQUIRED PROPERTY counter -> release::ReleaseCounterSequence {
+          CREATE CONSTRAINT std::exclusive;
+      };
       CREATE REQUIRED PROPERTY created -> std::datetime {
           SET default := (std::datetime_current());
           SET readonly := true;
@@ -168,34 +203,10 @@ CREATE MIGRATION m1n6l3poidn24sdydfsrz5ehbxpvac4lp4k22rxzn7gshm3cgjzpaq
   ALTER TYPE dataset::DatasetCase {
       CREATE OPTIONAL LINK pedigree := (pedigree::Pedigree);
   };
-  CREATE ABSTRACT TYPE job::Job {
+  ALTER TYPE job::Job {
       CREATE REQUIRED LINK forRelease -> release::Release {
           ON TARGET DELETE RESTRICT;
       };
-      CREATE REQUIRED PROPERTY created -> std::datetime {
-          SET default := (std::datetime_current());
-          SET readonly := true;
-      };
-      CREATE OPTIONAL PROPERTY ended -> std::datetime;
-      CREATE REQUIRED PROPERTY messages -> array<std::str>;
-      CREATE REQUIRED PROPERTY percentDone -> std::int16 {
-          CREATE CONSTRAINT std::max_value(100);
-          CREATE CONSTRAINT std::min_value(0);
-      };
-      CREATE REQUIRED PROPERTY requestedCancellation -> std::bool {
-          SET default := false;
-      };
-      CREATE REQUIRED PROPERTY started -> std::datetime;
-      CREATE REQUIRED PROPERTY status -> job::JobStatus;
-  };
-  CREATE TYPE job::SelectJob EXTENDING job::Job {
-      CREATE MULTI LINK todoQueue -> dataset::DatasetCase {
-          ON TARGET DELETE ALLOW;
-      };
-      CREATE MULTI LINK selectedSpecimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE ALLOW;
-      };
-      CREATE REQUIRED PROPERTY initialTodoCount -> std::int32;
   };
   ALTER TYPE release::Release {
       CREATE OPTIONAL LINK runningJob := (SELECT

@@ -13,6 +13,7 @@ import {
   DescribeStacksCommand,
   waitUntilStackCreateComplete,
 } from "@aws-sdk/client-cloudformation";
+import { AuditLogService } from "./audit-log-service";
 
 // need to be configuration eventually
 const BUCKET = "elsa-data-tmp";
@@ -26,9 +27,10 @@ export class AwsAccessPointService extends AwsBaseService {
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Database") edgeDbClient: edgedb.Client,
-    usersService: UsersService
+    usersService: UsersService,
+    auditLogService: AuditLogService
   ) {
-    super(edgeDbClient, usersService);
+    super(edgeDbClient, usersService, auditLogService);
   }
 
   private static getReleaseStackName(releaseId: string): string {

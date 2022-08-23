@@ -4,6 +4,8 @@ import { parentPort } from "worker_threads";
 import { container } from "tsyringe";
 import { JobsService } from "../src/business/services/jobs-service";
 import { registerTypes } from "../src/bootstrap-container";
+import { AuditLogService } from "../src/business/services/audit-log-service";
+import { UsersService } from "../src/business/services/users-service";
 
 // global settings for DI
 registerTypes();
@@ -32,9 +34,9 @@ if (parentPort)
     // first we cancel any that have indicated they want to be cancelled
     {
       const cancelResults = await Promise.all(
-        wantsCancelling.map((job) =>
-          jobsService.endSelectJob(job.jobId, false, true)
-        )
+        wantsCancelling.map((job) => {
+          return jobsService.endSelectJob(job.jobId, false, true);
+        })
       );
     }
 
@@ -48,8 +50,9 @@ if (parentPort)
       // but we need to understand our errors better (transient no access to CTRL etc)
 
       for (let i = 0; i < jobResults.length; i++) {
-        if (!jobResults[i])
+        if (!jobResults[i]) {
           await jobsService.endSelectJob(jobs[i].jobId, true, false);
+        }
       }
     }
   } else {

@@ -1,19 +1,23 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { releaseRoutes } from "./routes/release-routes";
 import { datasetRoutes } from "./routes/dataset-routes";
-import { TOKEN_PRIMARY } from "../auth/auth-strings";
+import { SESSION_TOKEN_PRIMARY } from "../auth/auth-constants";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
   PagedResult,
   TOTAL_COUNT_HEADER_NAME,
 } from "./api-pagination";
-import { container } from "tsyringe";
+import { container, DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";
 import { isEmpty, isNil, isString, trim } from "lodash";
 import { auditLogRoutes } from "./routes/audit-log-routes";
 import { dacRoutes } from "./routes/dac-routes";
 import { ElsaSettings } from "../config/elsa-settings";
+import {
+  createAuthRouteHook,
+  createSuperAdminAuthRouteHook,
+} from "../auth/auth-route-hook";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -126,66 +130,30 @@ export function sendPagedResult<T>(
  * @param fastify
  * @param opts
  */
-export const apiRoutes = async (fastify: FastifyInstance, opts: Opts) => {
+export const apiRoutes = async (
+  fastify: FastifyInstance,
+  opts: {
+    container: DependencyContainer;
+    allowTestCookieEquals?: string;
+  }
+) => {
   const usersService = container.resolve(UsersService);
+  const settings = container.resolve<ElsaSettings>("Settings");
 
   // TODO place any unauthenticated routes first here
 
+  const authHook = createAuthRouteHook(
+    usersService,
+    opts.allowTestCookieEquals
+  );
+
+  const superAdminAuthHook = createSuperAdminAuthRouteHook(settings);
+
   // now register the auth hook and then register all the rest of our routes nested within
-  fastify
-    .addHook(
-      "onRequest",
-      /**
-       * Enforce the minimum session auth access for our APIs
-       *
-       * @param request
-       * @param reply
-       */
-      async (request: FastifyRequest, reply: FastifyReply) => {
-        try {
-          // if we are in test mode - then we want to accept a manually constructed cookie in lieu of a real
-          // session cookie - so we can simulate with Postman/Curl etc
-          // TODO - the cookie will have to allow us as testers to set group info etc
-          if (opts.allowTestCookieEquals) {
-            const rawCookie = request.cookies[TOKEN_PRIMARY];
-
-            if (rawCookie == opts.allowTestCookieEquals) {
-              // setup up the fake authed user
-              (request as any).user = await usersService.getBySubjectId(
-                "http://subject1.com"
-              );
-              return;
-            }
-          }
-
-          const sessionCookieData = request.session.get(TOKEN_PRIMARY);
-
-          if (!sessionCookieData) {
-            console.log("NO SESSSION COOKIE DATA PRESENT TO ENABLE AUTH");
-            reply.code(403).send();
-            return;
-          }
-
-          const authedUser = await usersService.getBySubjectId(
-            sessionCookieData.id
-          );
-
-          if (!authedUser) {
-            console.log(`NO AUTH USER FOUND FOR ${sessionCookieData.id}`);
-            reply.code(403).send();
-            return;
-          }
-
-          (request as any).user = authedUser;
-        } catch (error) {
-          reply.code(403).send();
-        }
-      }
-    )
-    .after(() => {
-      fastify.register(auditLogRoutes);
-      fastify.register(releaseRoutes);
-      fastify.register(dacRoutes);
-      fastify.register(datasetRoutes);
-    });
+  fastify.addHook("onRequest", authHook).after(() => {
+    fastify.register(auditLogRoutes, opts);
+    fastify.register(releaseRoutes, opts);
+    fastify.register(dacRoutes, opts);
+    fastify.register(datasetRoutes, opts);
+  });
 };

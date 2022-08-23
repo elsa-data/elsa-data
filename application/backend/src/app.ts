@@ -7,6 +7,7 @@ import fastifyStatic from "@fastify/static";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyFormBody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
+import fastifyRateLimit from "@fastify/rate-limit";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
@@ -16,20 +17,20 @@ import { ErrorHandler } from "./api/errors/_error.handler";
 import { registerTestingRoutes } from "./api/routes/testing";
 import { apiRoutes } from "./api/api-routes";
 import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
-import { ElsaSettings } from "./config/elsa-settings";
+import {
+  ElsaSettings,
+  exposedToTheInternet,
+  hasAccessToTheSourceBuildFolders,
+} from "./config/elsa-settings";
+import { container } from "tsyringe";
 
 export class App {
   public server: FastifyInstance;
-  public serverEnvironment: "production" | "development";
-  public serverLocation: "local" | "server";
 
-  private readonly required_runtime_environment: string[] = [];
   private readonly optional_runtime_environment: string[] = [
     "SEMANTIC_VERSION",
     "BUILD_VERSION",
   ];
-
-  private readonly settings: ElsaSettings;
 
   // a absolute path to where static files are to be served from
   public staticFilesPath: string;
@@ -39,39 +40,30 @@ export class App {
    * (increasingly almost nothing). It should check settings and establish
    * anything that cannot be changed.
    *
-   * @param location whether this app is to be running local (i.e. localhost) or deployed
-   * @param settingsGenerator a generator function for making copies of the settings
+   * @param settings the settings
    */
-  constructor(
-    location: "local" | "server",
-    settingsGenerator: () => ElsaSettings
-  ) {
-    this.serverEnvironment =
-      process.env.NODE_ENV === "production" ? "production" : "development";
-
-    // this is for determining whether we are running local dev or deployed dev
-    // (it alters things like the use of SSL etc)
-    this.serverLocation = location;
-
+  constructor(private readonly settings: ElsaSettings) {
     if (
-      this.serverLocation === "local" &&
-      this.serverEnvironment !== "development"
+      settings.location === "local-mac" &&
+      settings.environment !== "development"
     )
       throw new Error(
         "Cannot run anything other than a development server on local"
       );
 
     // find where our website HTML is
-    this.staticFilesPath = locateHtmlDirectory(this.serverEnvironment);
-
-    this.settings = settingsGenerator();
+    this.staticFilesPath = locateHtmlDirectory(
+      hasAccessToTheSourceBuildFolders(settings.location)
+    );
 
     this.server = Fastify({ logger: true });
 
     // inject a copy of the Elsa settings into every request
     this.server.decorateRequest("settings", null);
     this.server.addHook("onRequest", async (req, reply) => {
-      (req as any).settings = settingsGenerator();
+      // we make a shallow copy of the settings on each fastify request to (somewhat)
+      // protect against routes doing mutations
+      (req as any).settings = { ...settings };
     });
   }
 
@@ -98,31 +90,69 @@ export class App {
       getSecureSessionOptions(this.settings)
     );
 
+    // NEEDING UPGRADE TO FASTIFY 4.x
+    // await this.server.register(fastifyRateLimit, {
+    //  max: 100,
+    //  timeWindow: "1 minute",
+    //});
+
     this.server.register(apiRoutes, {
+      container: container,
       allowTestCookieEquals:
-        this.serverEnvironment === "development" ? "hello" : undefined,
+        this.settings.environment === "development" ? "hello" : undefined,
     });
 
     this.server.register(authRoutes, {
-      settings: this.settings,
+      container: container,
       // TODO: need a better way for doing callback route discovery
       redirectUri:
-        this.serverLocation === "local"
+        this.settings.location === "local-mac"
           ? "http://localhost:3000/cb"
           : "https://elsa.dev.umccr.org/cb",
-      includeTestUsers: this.serverEnvironment === "development",
+      includeTestUsers: !exposedToTheInternet(this.settings.location),
     });
 
     registerTestingRoutes(
       this.server,
-      this.serverEnvironment === "development"
+      this.settings.environment === "development"
     );
 
-    // our behaviour for React routed websites is that NotFound responses might instead be replaced
+    // our behaviour for React routed websites is that NotFound responses should be replaced
     // with serving up index.html
     this.server.setNotFoundHandler(async (request, reply) => {
+      // any misses that fall through in the API area should actually return 404
+      if (request.url.toLowerCase().startsWith("/api/")) {
+        reply
+          .code(404)
+          .type("application/problem+json")
+          .send({
+            type: "about:blank",
+            title: "Not Found",
+            status: 404,
+            detail: `API route ${request.url} does not exist`,
+          });
+
+        return;
+      }
+
       // our react routes should never have file suffixes so we don't serve up index.html in those cases
-      if (request.url.includes(".")) reply.status(404).send();
+      // (this helps us not serving up index.html for random misplaced PNG requests etc)
+      if (request.url.includes(".")) {
+        reply
+          .code(404)
+          .type("application/problem+json")
+          .send({
+            type: "about:blank",
+            title: "Not Found",
+            status: 404,
+            detail: `File ${request.url} does not exist`,
+          });
+
+        return;
+      }
+
+      // the user hit refresh at (for example) https://ourwebsite.com/docs/a32gf24 - for react routes like
+      // this we actually want to send the index content (at which point react routing takes over)
       else
         await serveCustomIndexHtml(
           reply,
@@ -180,7 +210,7 @@ export class App {
       if (val) result[key.toLowerCase()] = val;
     };
 
-    for (const k of this.required_runtime_environment) addEnv(k, true);
+    // for (const k of this.required_runtime_environment) addEnv(k, true);
     for (const k of this.optional_runtime_environment) addEnv(k, false);
 
     let dataAttributes = "";
@@ -204,7 +234,7 @@ export class App {
       result.semantic_version || "undefined"
     );
     addAttribute("data-build-version", result.build_version || "unknown");
-    addAttribute("data-deployed-environment", this.serverEnvironment);
+    addAttribute("data-deployed-environment", this.settings.environment);
 
     result["data_attributes"] = dataAttributes;
 

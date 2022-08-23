@@ -37,8 +37,14 @@ export const MasterAccessControlBox: React.FC<Props> = ({
           }
         />
         <RightDiv>
-          <button className="bg-green-400 p-4 rounded">Start</button>
-          <button className="bg-red-400 p-4 rounded">Stop All Access</button>
+          <div className="flex flex-row gap-2">
+            {releaseData.accessEnabled && (
+              <button className="btn-danger">Stop All Access</button>
+            )}
+            {!releaseData.accessEnabled && (
+              <button className="btn-normal">Start</button>
+            )}
+          </div>
         </RightDiv>
       </div>
     </Box>

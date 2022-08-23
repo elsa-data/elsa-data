@@ -38,6 +38,7 @@ export async function beforeEachCommon() {
   const adminUser = new AuthenticatedUser({
     id: allowedPiUserInsert.id,
     subjectId: allowedPiSubject,
+    displayName: "Allowed PI",
   });
 
   return {

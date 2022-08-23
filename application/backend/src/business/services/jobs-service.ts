@@ -10,6 +10,7 @@ import { SelectService } from "./select-service";
 import { ReleaseService } from "./release-service";
 import { UsersService } from "./users-service";
 import { Transaction } from "edgedb/dist/transaction";
+import { AuditLogService } from "./audit-log-service";
 
 class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseId: string) {
@@ -27,6 +28,7 @@ export class JobsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService,
+    private auditLogService: AuditLogService,
     private releasesService: ReleaseService,
     private selectService: SelectService
   ) {}
@@ -93,6 +95,18 @@ export class JobsService {
     );
 
     await this.startGenericJob(releaseId, async (tx) => {
+      // by placing the audit event in the transaction I guess we miss out on
+      // the ability to audit jobs that don't start at all - but maybe we do that
+      // some other way
+      const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
+        tx,
+        user,
+        releaseId,
+        "E",
+        "Ran Dynamic Consent",
+        new Date()
+      );
+
       // create a new select job entry
       await e
         .insert(e.job.SelectJob, {
@@ -104,6 +118,11 @@ export class JobsService {
           initialTodoCount: e.count(releaseAllDatasetCasesQuery),
           todoQueue: releaseAllDatasetCasesQuery,
           selectedSpecimens: e.set(),
+          auditEntry: e
+            .select(e.audit.AuditEvent, (ae) => ({
+              filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
+            }))
+            .assert_single(),
         })
         .run(tx);
     });
@@ -169,6 +188,8 @@ export class JobsService {
         id: true,
         forRelease: { id: true },
         requestedCancellation: true,
+        auditEntry: true,
+        started: true,
         filter: e.op(sj.status, "=", e.job.JobStatus.running),
       }))
       .run(this.edgeDbClient);
@@ -176,6 +197,8 @@ export class JobsService {
     return jobsInProgress.map((j) => ({
       jobId: j.id,
       releaseId: j.forRelease.id,
+      auditEntryId: j.auditEntry.id,
+      auditEntryStarted: j.started,
       requestedCancellation: j.requestedCancellation,
     }));
   }
@@ -348,22 +371,24 @@ export class JobsService {
     wasSuccessful: boolean,
     isCancellation: boolean
   ): Promise<void> {
-    // we need to move the new results into the release - and close this job off
+    // basically the gist here is we need to move the new results into the release - and close this job off
     await this.edgeDbClient.transaction(async (tx) => {
       const selectJobQuery = e
         .select(e.job.SelectJob, (j) => ({
+          auditEntry: true,
+          started: true,
           filter: e.op(j.id, "=", e.uuid(jobId)),
         }))
         .assert_single();
 
-      if (!selectJobQuery)
-        throw new Error("Job id passed in was not a Select Job");
+      const selectJob = await selectJobQuery.run(this.edgeDbClient);
+
+      if (!selectJob) throw new Error("Job id passed in was not a Select Job");
 
       if (!isCancellation) {
         const selectJobReleaseQuery = e.select(selectJobQuery.forRelease);
 
         // selectSpecimens from the job move straight over into the release selectedSpecimens
-        // and blank out the runningJob (making the job now an orphan only gettable from getPreviousJob())
         if (wasSuccessful) {
           await e
             .update(selectJobReleaseQuery, (rq) => ({
@@ -374,6 +399,15 @@ export class JobsService {
             .run(tx);
         }
       }
+
+      await this.auditLogService.completeReleaseAuditEvent(
+        tx,
+        selectJob.auditEntry.id,
+        isCancellation ? 4 : 0,
+        selectJob.started,
+        new Date(),
+        { jobId: jobId }
+      );
 
       await e
         .update(selectJobQuery, (sj) => ({

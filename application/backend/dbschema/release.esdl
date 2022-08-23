@@ -1,5 +1,7 @@
 module release {
 
+    scalar type ReleaseCounterSequence extending sequence;
+
     # a release is the main artifact that encapsulates a particular release of data from
     # given dataset(s) to given user(s) with given restrictions/conditions
 
@@ -54,16 +56,25 @@ module release {
         );
 
         # an ordered array (first is most preferred) of URI systems to include in UI etc
-
+        #
         required property datasetCaseUrisOrderPreference -> array<str>;
         required property datasetIndividualUrisOrderPreference -> array<str>;
         required property datasetSpecimenUrisOrderPreference -> array<str>;
 
         # a auto generated random string that is used for encrypting download zips etc
         # can be re-generated at an admin level
-
+        #
         required property releasePassword -> str;
 
+        # the counter is used for any operations where the release would like a plausibly
+        # unique non clashing simple integer number - for instance - everytime something is downloaded the generated
+        # filename can use the counter in the name and then step the sequence.
+        # it should not be used as any form of secret i.e. where guessing the next number could
+        # give the attacker any advantage (as the sequence is shared across the entire instance)
+        #
+        required property counter -> ReleaseCounterSequence {
+            constraint exclusive;
+        }
 
         # the set of resources explicitly chosen for exclusion no matter what an automated
         # algorithm says

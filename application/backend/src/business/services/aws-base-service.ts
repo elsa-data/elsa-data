@@ -9,6 +9,7 @@ import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
+import { AuditLogService } from "./audit-log-service";
 
 export type ReleaseAwsFileRecord = {
   caseId: string;
@@ -34,7 +35,8 @@ export abstract class AwsBaseService {
 
   protected constructor(
     protected readonly edgeDbClient: edgedb.Client,
-    protected readonly usersService: UsersService
+    protected readonly usersService: UsersService,
+    protected readonly auditLogService: AuditLogService
   ) {
     // until we get proof our AWS commands have succeeded we assume AWS functionality is not available
     this.enabled = false;
@@ -182,10 +184,17 @@ export abstract class AwsBaseService {
 
         // decompose the S3 url into bucket and key
         const _match = result.s3Url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
-        if (!_match) throw new Error("Bad S3 URL format");
 
-        result.s3Bucket = _match[1];
-        result.s3Key = _match[2];
+        if (!_match) {
+          // TODO: whilst out test data is not actually in AWS we have a bunch of dud URLS - we fix rather than error
+          result.s3Url = "s3://bucket/key";
+          result.s3Bucket = "bucket";
+          result.s3Key = "key";
+          // throw new Error("Bad S3 URL format");
+        } else {
+          result.s3Bucket = _match[1];
+          result.s3Key = _match[2];
+        }
 
         rows.push(result as ReleaseAwsFileRecord);
       }

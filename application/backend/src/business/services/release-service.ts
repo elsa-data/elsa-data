@@ -1,6 +1,7 @@
 import * as edgedb from "edgedb";
 import e, { dataset } from "../../../dbschema/edgeql-js";
 import {
+  DuoLimitationCodedType,
   ReleaseCaseType,
   ReleaseDetailType,
   ReleaseNodeStatusType,
@@ -16,16 +17,12 @@ import {
   doRoleInReleaseCheck,
   getReleaseInfo,
 } from "./helpers";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { allReleasesSummaryByUserQuery } from "../db/release-queries";
-import { $scopify } from "edgedb/dist/reflection/index";
+import { $scopify } from "edgedb/dist/reflection";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
-
-// an internal string set that tells the service which generic field to alter
-// (this allows us to make a mega function that sets all array fields in the same way)
-type CodeArrayFields = "diseases" | "countries" | "type";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -99,6 +96,38 @@ export class ReleaseService extends ReleaseBaseService {
     const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseId);
 
     return releaseInfo.releasePassword;
+  }
+
+  /**
+   * Gets a value from the auto incrementing counter.
+   *
+   * @param user
+   * @param releaseId
+   */
+  public async getIncrementingCounter(
+    user: AuthenticatedUser,
+    releaseId: string
+  ): Promise<number> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    const { releaseQuery } = await getReleaseInfo(this.edgeDbClient, releaseId);
+
+    // TODO: this doesn't actually autoincrement .. I can't work out the typescript syntax though
+    // (I'm not sure its implemented in edgedb yet AP 10 Aug)
+    const next = await e
+      .select(releaseQuery, (r) => ({
+        counter: true,
+      }))
+      .assert_single()
+      .run(this.edgeDbClient);
+
+    if (!next) throw new Error("Couldn't find");
+
+    return next.counter;
   }
 
   /**
@@ -188,6 +217,7 @@ export class ReleaseService extends ReleaseBaseService {
 
     const caseSearchQuery = e.select(e.dataset.DatasetCase, (dsc) => ({
       ...e.dataset.DatasetCase["*"],
+      consent: true,
       dataset: {
         ...e.dataset.Dataset["*"],
       },
@@ -304,6 +334,75 @@ export class ReleaseService extends ReleaseBaseService {
       ),
       1000,
       limit
+    );
+  }
+
+  /**
+   * Return the set of consent statements present in the database for any given
+   * case/individual/biosample.
+   *
+   * @param user
+   * @param releaseId
+   * @param nodeId
+   */
+  public async getNodeConsent(
+    user: AuthenticatedUser,
+    releaseId: string,
+    nodeId: string
+  ): Promise<DuoLimitationCodedType[]> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    const { datasetIdToUriMap } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseId
+    );
+
+    const nodeFromValidDatasetsQuery = e
+      .select(e.dataset.DatasetShareable, (s) => ({
+        id: true,
+        datasetCase: s.is(e.dataset.DatasetCase).dataset,
+        datasetPatient: s.is(e.dataset.DatasetPatient).dataset,
+        datasetSpecimen: s.is(e.dataset.DatasetSpecimen).dataset,
+        consent: {
+          statements: {
+            ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
+          },
+        },
+        filter: e.op(s.id, "=", e.uuid(nodeId)),
+      }))
+      .assert_single();
+
+    const actualNode = await nodeFromValidDatasetsQuery.run(this.edgeDbClient);
+
+    // so we have picked the node and its consent from the db - but at this point we have
+    // not established the node consent is allowed to be viewed.. so we do some non-db
+    // logic here to work that out
+
+    // if the nodeId isn't even in the db then we get no result and can safely return
+    // empty consent TODO: consider error exception here
+    if (!actualNode) return [];
+
+    // it is not necessary that every node in a dataset actually has consent records - in
+    // which case we can just return nothing TODO: do we want to distinguish null from []?
+    if (!actualNode.consent) return [];
+
+    // it is possible that someone has send us a nodeId that isn't in this releases datasets..
+    // we shouldn't leak info
+    if (actualNode.datasetCase)
+      if (!datasetIdToUriMap.has(actualNode.datasetCase.id)) return [];
+
+    if (actualNode.datasetPatient)
+      if (!datasetIdToUriMap.has(actualNode.datasetPatient.id)) return [];
+
+    if (actualNode.datasetSpecimen)
+      if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
+
+    return actualNode.consent.statements.map(
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
     );
   }
 

@@ -4,7 +4,7 @@ export const LayoutBaseFooter: React.FC = () => {
   return (
     <>
       <footer className="bg-white border-t border-gray-400 shadow">
-        <div className="container max-w-md mx-auto flex py-8">
+        <div className="container max-w-md mx-auto flex py-2">
           <div className="w-full mx-auto flex flex-wrap">
             <div className="flex w-full md:w-1/2 ">
               <div className="px-8">

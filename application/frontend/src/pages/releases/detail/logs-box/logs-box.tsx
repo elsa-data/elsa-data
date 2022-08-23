@@ -7,6 +7,7 @@ import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { format } from "date-fns-tz";
 import * as duration from "duration-fns";
+import { parseISO } from "date-fns";
 
 type Props = {
   releaseId: string;
@@ -46,8 +47,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
     let viewLastDay = "";
 
     return data.map((row, rowIndex) => {
-      const when = new Date();
-      // TODO: replce above row.when
+      const when = parseISO(row.when as string);
 
       // TODO: get timezone from somewhere in config
 
@@ -98,7 +98,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
               baseColumnClasses,
               "w-40",
               "text-left",
-              "pl-2"
+              "pl-4"
             )}
           >
             {showDay && <p className="font-bold">{viewLastDay}</p>}
@@ -108,7 +108,14 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
           <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
             {row.actionDescription}
           </td>
-          <td className={classNames(baseColumnClasses, "text-left", "w-40")}>
+          <td
+            className={classNames(
+              baseColumnClasses,
+              "text-right",
+              "w-40",
+              "pr-4"
+            )}
+          >
             {row.whoDisplay}
           </td>
         </tr>

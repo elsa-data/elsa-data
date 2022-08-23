@@ -4,10 +4,12 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
+import * as edgedb from "edgedb";
 import { container } from "tsyringe";
 import { AuditLogService } from "../../business/services/audit-log-service";
 
 export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
+  const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const auditLogService = container.resolve(AuditLogService);
 
   fastify.get<{ Params: { rid: string }; Reply: AuditEntryType[] }>(
@@ -20,6 +22,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
       const releaseId = request.params.rid;
 
       const events = await auditLogService.getEntries(
+        edgeDbClient,
         authenticatedUser,
         releaseId,
         pageSize,

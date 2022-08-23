@@ -7,6 +7,7 @@ export type EnvRelay = {
   semanticVersion: string;
   buildVersion: string;
   deployedEnvironment: DeployedEnvironments;
+  deployedLocation: string;
 };
 
 /**

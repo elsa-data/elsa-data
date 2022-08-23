@@ -1,14 +1,17 @@
 import { FastifyInstance } from "fastify";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
-import { container } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import { RemsService } from "../../business/services/rems-service";
 
 // TODO: FIX ALL OF THIS - NEEDS THINKING ABOUT FROM MORE THAN JUST A REMS DAC
 // TODO: FIX ALL OF THE SECURITY HERE - NEEDS AUTH / ROLES (WHO CAN DO THIS?)
 
-export const dacRoutes = async (fastify: FastifyInstance, opts: any) => {
-  const remsService = container.resolve(RemsService);
+export const dacRoutes = async (
+  fastify: FastifyInstance,
+  opts: { container: DependencyContainer }
+) => {
+  const remsService = opts.container.resolve(RemsService);
 
   // TODO: think about these route names etc.. just hacking them in wherever at the moment
 

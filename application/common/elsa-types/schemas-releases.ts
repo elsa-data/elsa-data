@@ -79,6 +79,9 @@ export const ReleaseDetailSchema = Type.Object({
 
   runningJob: Type.Optional(ReleaseRunningJobSchema),
 
+  // if present, is the password used for all download artifacts (zip files etc)
+  downloadPassword: Type.Optional(Type.String()),
+
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
   permissionAccessData: Type.Optional(Type.Boolean()),

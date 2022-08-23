@@ -2,10 +2,8 @@ import React from "react";
 import { createCtx } from "./create-ctx";
 import { useCookies } from "react-cookie";
 import {
-  SECURE_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
-  USER_GROUPS_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 
 type LoggedInUser = {

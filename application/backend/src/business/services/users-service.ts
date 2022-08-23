@@ -2,6 +2,7 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
+import { isEmpty } from "lodash";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
@@ -36,6 +37,53 @@ export class UsersService {
     if (dbUser != null) return new AuthenticatedUser(dbUser);
 
     return null;
+  }
+
+  public async getServiceUser(): Promise<AuthenticatedUser> {
+    return new AuthenticatedUser({
+      id: "a",
+      subjectId: "A",
+      displayName: "Service User",
+    });
+  }
+
+  /**
+   * Inserts the user with default settings (if they don't exist) - or update
+   * their display name if they do.
+   *
+   * @param subjectId
+   * @param displayName
+   */
+  public async upsertUser(
+    subjectId: string,
+    displayName: string
+  ): Promise<AuthenticatedUser> {
+    if (isEmpty(displayName.trim())) throw Error("Display name was empty");
+
+    const dbUser = await e
+      .insert(e.permission.User, {
+        subjectId: subjectId,
+        displayName: displayName,
+      })
+      .unlessConflict((u) => ({
+        on: u.subjectId,
+        else: e.update(u, () => ({
+          set: {
+            displayName: displayName,
+          },
+        })),
+      }))
+      .assert_single()
+      .run(this.edgeDbClient);
+
+    if (dbUser != null)
+      return new AuthenticatedUser({
+        id: dbUser.id,
+        subjectId: subjectId,
+        displayName: displayName,
+      });
+
+    throw new Error("Couldn't create user");
   }
 
   /**
