@@ -52,6 +52,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     const s3Client = new S3Client({});
 
     const presign = async (s3url: string) => {
+      console.log(s3url);
       const _match = s3url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
       if (!_match) throw new Error("Bad format");
       const command = new GetObjectCommand({

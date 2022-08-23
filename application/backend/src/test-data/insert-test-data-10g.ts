@@ -42,7 +42,7 @@ export async function insert10G() {
                 statements: e.set(
                   ...patientConsentJsons.map((pc) =>
                     e.insert(e.consent.ConsentStatementDuo, {
-                      dataUseLimitation: JSON.stringify(pc),
+                      dataUseLimitation: pc,
                     })
                   )
                 ),
@@ -56,7 +56,7 @@ export async function insert10G() {
                   statements: e.set(
                     ...specimenConsentJsons.map((sc) =>
                       e.insert(e.consent.ConsentStatementDuo, {
-                        dataUseLimitation: JSON.stringify(sc),
+                        dataUseLimitation: sc,
                       })
                     )
                   ),

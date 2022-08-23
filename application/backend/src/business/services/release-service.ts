@@ -217,6 +217,7 @@ export class ReleaseService extends ReleaseBaseService {
 
     const caseSearchQuery = e.select(e.dataset.DatasetCase, (dsc) => ({
       ...e.dataset.DatasetCase["*"],
+      consent: true,
       dataset: {
         ...e.dataset.Dataset["*"],
       },
@@ -336,6 +337,14 @@ export class ReleaseService extends ReleaseBaseService {
     );
   }
 
+  /**
+   * Return the set of consent statements present in the database for any given
+   * case/individual/biosample.
+   *
+   * @param user
+   * @param releaseId
+   * @param nodeId
+   */
   public async getNodeConsent(
     user: AuthenticatedUser,
     releaseId: string,
@@ -393,8 +402,7 @@ export class ReleaseService extends ReleaseBaseService {
       if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
 
     return actualNode.consent.statements.map(
-      (stmt) =>
-        JSON.parse(stmt.dataUseLimitation as string) as DuoLimitationCodedType
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
     );
   }
 

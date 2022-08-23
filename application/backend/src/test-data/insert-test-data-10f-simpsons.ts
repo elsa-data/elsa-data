@@ -13,6 +13,7 @@ import {
   DuoGeneralResearchUseType,
   DuoGeographicalRestrictionType,
   DuoHealthMedicalBiomedicalResearchType,
+  DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
 } from "@umccr/elsa-types";
 
@@ -126,6 +127,10 @@ export async function makeSimpsonsTrio() {
           } as DuoGeographicalRestrictionType,
         ],
       } as DuoDiseaseSpecificResearchType,
+      {
+        code: "DUO:0000042",
+        modifiers: [{ code: "DUO:0000046" } as DuoNonCommercialUseOnlyType],
+      } as DuoGeneralResearchUseType,
     ],
     [],
     // Male	90 YR	White	Unknown
