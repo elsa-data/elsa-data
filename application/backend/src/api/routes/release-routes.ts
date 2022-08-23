@@ -1,12 +1,10 @@
 import { FastifyInstance } from "fastify";
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
 import {
   DuoLimitationCodedType,
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
   ReleaseDetailType,
-  ReleaseMasterAccessRequestSchema,
   ReleaseMasterAccessRequestType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
@@ -14,28 +12,19 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
-import { Readable, Stream } from "stream";
+import { Readable } from "stream";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs-service";
 import { ReleaseService } from "../../business/services/release-service";
-import LinkHeader from "http-link-header";
-import {
-  LAST_PAGE_HEADER_NAME,
-  PAGE_SIZE_HEADER_NAME,
-  TOTAL_COUNT_HEADER_NAME,
-} from "../api-pagination";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
-import fastifyFormBody from "@fastify/formbody";
-import { isEmpty, isString, trim } from "lodash";
 
 export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
   const jobsService = container.resolve(JobsService);
   const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
   const releasesService = container.resolve(ReleaseService);
-  const edgeDbClient = container.resolve<edgedb.Client>("Database");
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/api/releases",
@@ -100,12 +89,15 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     const releaseId = request.params.rid;
     const nodeId = request.params.nid;
 
-    // TODO: implement actual consent fetching service
+    const r = await releasesService.getNodeConsent(
+      authenticatedUser,
+      releaseId,
+      nodeId
+    );
 
-    reply.send([
-      { code: "DUO:0000006", modifiers: [] },
-      { code: "DUO:0000042", modifiers: [] },
-    ]);
+    console.log(r);
+
+    reply.send(r);
   });
 
   fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
@@ -185,7 +177,11 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       field: "diseases" | "countries";
       op: "add" | "remove";
     };
-    Body: any;
+    Body: {
+      type?: "HMB" | "DS" | "CC" | "GRU" | "POA";
+      system?: string;
+      code?: string;
+    };
   }>(
     "/api/releases/:rid/application-coded/:field/:op",
     {},
@@ -205,8 +201,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
             await releasesService.addDiseaseToApplicationCoded(
               authenticatedUser,
               releaseId,
-              body.system,
-              body.code
+              body.system!,
+              body.code!
             )
           );
           return;
@@ -215,8 +211,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
             await releasesService.removeDiseaseFromApplicationCoded(
               authenticatedUser,
               releaseId,
-              body.system,
-              body.code
+              body.system!,
+              body.code!
             )
           );
           return;
@@ -225,8 +221,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
             await releasesService.addCountryToApplicationCoded(
               authenticatedUser,
               releaseId,
-              body.system,
-              body.code
+              body.system!,
+              body.code!
             )
           );
           return;
@@ -235,13 +231,14 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
             await releasesService.removeCountryFromApplicationCoded(
               authenticatedUser,
               releaseId,
-              body.system,
-              body.code
+              body.system!,
+              body.code!
             )
           );
           return;
         case "type-set":
-          if (body.type === "AWS")
+          // an example of error handling - to be removed
+          if ((body.type as string) === "AWS")
             throw new Base7807Error(
               "Invalid research type",
               400,
@@ -251,7 +248,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
             await releasesService.setTypeOfApplicationCoded(
               authenticatedUser,
               releaseId,
-              body.type
+              body.type!
             )
           );
           return;

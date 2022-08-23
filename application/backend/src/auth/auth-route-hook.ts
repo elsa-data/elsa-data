@@ -64,7 +64,8 @@ export function createAuthRouteHook(
       // TODO: get all the return codes correct
 
       const sessionTokenPrimary = request.session.get(SESSION_TOKEN_PRIMARY);
-      const sessionDbId = request.session.get(SESSION_DB_ID);
+      // NOTE: in some test scenarios we need to correct this session db id - hence the let
+      let sessionDbId = request.session.get(SESSION_DB_ID);
       const sessionSubjectId = request.session.get(SESSION_SUBJECT_ID);
       const sessionDisplayName = request.session.get(SESSION_DISPLAY_NAME);
 
@@ -79,13 +80,36 @@ export function createAuthRouteHook(
         return;
       }
 
+      // if we are in testing mode - then on every request we take an *extra* step to
+      // 'correct' the database id of cookie user
+      // this is because when doing dev work - the underlying db user can change when the
+      // server restarts
+      // we obviously don't want to do this when connected to a real database
+      if (allowTestCookieEquals) {
+        const testDbUserDirectFromDb = await usersService.getBySubjectId(
+          sessionSubjectId
+        );
+        if (!testDbUserDirectFromDb)
+          throw new Error(
+            "Serious test scenario state error as the test subjects have disappeared"
+          );
+
+        if (testDbUserDirectFromDb?.dbId != sessionDbId) {
+          console.log(
+            `Did a test scenario correction of the database id of the logged in user ${sessionDbId} to ${testDbUserDirectFromDb?.dbId}`
+          );
+          request.session.set(SESSION_DB_ID, testDbUserDirectFromDb?.dbId);
+          sessionDbId = testDbUserDirectFromDb?.dbId;
+        }
+      }
+
       const authedUser = new AuthenticatedUser({
         id: sessionDbId,
         subjectId: sessionSubjectId,
         displayName: sessionDisplayName,
       });
 
-      console.log(`Auth route hook for user ${authedUser}`);
+      console.log(`Auth route hook for user ${JSON.stringify(authedUser)}`);
 
       (request as any).user = authedUser;
     } catch (error) {

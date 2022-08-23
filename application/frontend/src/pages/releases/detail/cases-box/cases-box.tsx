@@ -10,6 +10,7 @@ import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { BoxSearcher } from "../../../../components/box-searcher";
 import { isEmpty, trim } from "lodash";
+import { ConsentPopup } from "./consent-popup";
 
 type Props = {
   releaseId: string;
@@ -164,7 +165,13 @@ export const CasesBox: React.FC<Props> = ({
                         "w-40"
                       )}
                     >
-                      {row.externalId}
+                      {row.externalId}{" "}
+                      {row.customConsent && (
+                        <>
+                          {" "}
+                          <ConsentPopup releaseId={releaseId} nodeId={row.id} />
+                        </>
+                      )}
                     </td>
                     <td
                       className={classNames(
