@@ -306,7 +306,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     await awsAccessPointService.installCloudFormationAccessPointForRelease(
       authenticatedUser,
       releaseId,
-      ["409003025053"]
+      ["831090136584"],
+      "vpc-03d735d10b6cec468"
     );
   });
 

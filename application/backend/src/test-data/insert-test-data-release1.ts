@@ -18,12 +18,14 @@ import {
 } from "./insert-test-data-10f-simpsons";
 import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
+import {
+  ISO_COUNTRY_SYSTEM_URI,
+  MONDO_SYSTEM_URI,
+} from "@umccr/elsa-constants";
 
 const edgeDbClient = edgedb.createClient();
 
 export async function insertRelease1() {
-  const mondoUri = "http://purl.obolibrary.org/obo/mondo.owl";
-
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Study of Lots of Test Data",
@@ -48,11 +50,11 @@ Ethics form XYZ.
         `,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.DS,
-        countriesInvolved: makeSingleCodeArray("urn:iso:std:iso:3166", "AUS"),
+        countriesInvolved: makeSingleCodeArray(ISO_COUNTRY_SYSTEM_URI, "AUS"),
         diseasesOfStudy: makeDoubleCodeArray(
-          mondoUri,
+          MONDO_SYSTEM_URI,
           "MONDO:0008678",
-          mondoUri,
+          MONDO_SYSTEM_URI,
           "MONDO:0021531"
         ),
         studyAgreesToPublish: true,

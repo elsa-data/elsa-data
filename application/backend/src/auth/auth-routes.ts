@@ -1,3 +1,4 @@
+import * as edgedb from "edgedb";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ALLOWED_CHANGE_ADMINS,
@@ -9,10 +10,8 @@ import {
 } from "@umccr/elsa-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
 import {
-  SESSION_DB_ID,
-  SESSION_DISPLAY_NAME,
-  SESSION_SUBJECT_ID,
   SESSION_TOKEN_PRIMARY,
+  SESSION_USER_DB_OBJECT,
 } from "./auth-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
@@ -24,6 +23,8 @@ import {
   TEST_SUBJECT_2,
   TEST_SUBJECT_3,
 } from "../test-data/insert-test-data";
+import { AuditLogService } from "../business/services/audit-log-service";
+import { AuthenticatedUser } from "../business/authenticated-user";
 
 /**
  * Return a secure sessions plugin options object.
@@ -104,6 +105,8 @@ export const authRoutes = async (
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
   const userService = opts.container.resolve(UsersService);
+  const auditLogService = opts.container.resolve(AuditLogService);
+  const edgeDbClient = opts.container.resolve<edgedb.Client>("Database");
 
   const client = new settings.oidcIssuer.Client({
     client_id: settings.oidcClientId,
@@ -130,6 +133,7 @@ export const authRoutes = async (
   });
 
   fastify.post("/auth/logout", async (request, reply) => {
+    // delete all the backend session cookies
     request.session.delete();
 
     reply.clearCookie(USER_SUBJECT_COOKIE_NAME);
@@ -141,10 +145,12 @@ export const authRoutes = async (
 
   // the cb (callback) route is the route that is redirected to as part of the OIDC flow
   // it expects a 'code' parameter on the URL and uses that to get a token set
-  // from the oidc flow
+  // from the OIDC flow
   fastify.get("/cb", async (request, reply) => {
+    // extract raw params from the request
     const params = client.callbackParams(request.raw);
 
+    // process the callback in the oidc-client library
     const tokenSet = await client.callback(opts.redirectUri, params, {
       // nonce: request.session.get("nonce"),
     });
@@ -155,66 +161,63 @@ export const authRoutes = async (
     // TODO we don't save email yet - but we should
     const email = idClaims.email || "No Email";
 
-    const authUser = await userService.upsertUser(idClaims.sub, displayName);
+    const authUser = await userService.upsertUserForLogin(
+      idClaims.sub,
+      displayName
+    );
 
-    if (!authUser)
+    if (!authUser) {
       // TODO: redirect to a static error page?
       reply.redirect("/error");
-    else {
-      console.log(
-        `Login event for ${authUser.dbId} ${authUser.subjectId} ${authUser.displayName}`
-      );
-
-      // the secure session token is HTTP only - so its existence can't even be tracked in
-      // the React code - it is made available to the backend that can use it as a
-      // real access token
-      // we also make available all our AuthenticatedUser variables so we can make an
-      // auth user on each API call - without hitting the db
-      cookieForBackend(
-        request,
-        reply,
-        SESSION_TOKEN_PRIMARY,
-        tokenSet.access_token!
-      );
-      cookieForBackend(request, reply, SESSION_DB_ID, authUser.dbId);
-      cookieForBackend(request, reply, SESSION_SUBJECT_ID, authUser.subjectId);
-      cookieForBackend(
-        request,
-        reply,
-        SESSION_DISPLAY_NAME,
-        authUser.displayName
-      );
-
-      // these cookies however are available to React - PURELY for UI/display purposes
-      cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
-      cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
-
-      // NOTE: this is a UI cookie - the actual enforcement of this grouping at an API layer is elsewhere
-      // we do it this way so that we can centralise all permissions logic on the backend, and hand down
-      // simple "is allowed" decisions to the UI
-      // MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
-      const allowed = new Set<string>();
-
-      // the super admins are defined in settings/config - not in the db
-      // that is - they are a deployment instance level setting
-      const isa = isSuperAdmin(settings, authUser);
-
-      if (isa) allowed.add(ALLOWED_CHANGE_ADMINS);
-
-      // some garbage temporary logic for giving extra permissions to some people
-      // this would normally come via group info
-      if (email.endsWith("unimelb.edu.au"))
-        allowed.add(ALLOWED_CREATE_NEW_RELEASES);
-
-      cookieForUI(
-        request,
-        reply,
-        USER_ALLOWED_COOKIE_NAME,
-        Array.from(allowed.values()).join(",")
-      );
-
-      reply.redirect("/");
+      return;
     }
+
+    console.log(
+      `Login event for ${authUser.dbId} ${authUser.subjectId} ${authUser.displayName}`
+    );
+
+    // the secure session token is HTTP only - so its existence can't even be tracked in
+    // the React code - it is made available to the backend that can use it as a
+    // real access token
+    // we also make available a copy of the Authenticated user database object so
+    // we can recreate AuthenticatedUsers on every API call without hitting the database
+    cookieForBackend(
+      request,
+      reply,
+      SESSION_TOKEN_PRIMARY,
+      tokenSet.access_token!
+    );
+    cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
+
+    // these cookies however are available to React - PURELY for UI/display purposes
+    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
+    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
+
+    // NOTE: this is a UI cookie - the actual enforcement of this grouping at an API layer is elsewhere
+    // we do it this way so that we can centralise all permissions logic on the backend, and hand down
+    // simple "is allowed" decisions to the UI
+    // MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
+    const allowed = new Set<string>();
+
+    // the super admins are defined in settings/config - not in the db
+    // that is - they are a deployment instance level setting
+    const isa = isSuperAdmin(settings, authUser);
+
+    if (isa) allowed.add(ALLOWED_CHANGE_ADMINS);
+
+    // some garbage temporary logic for giving extra permissions to some people
+    // this would normally come via group info
+    if (email.endsWith("unimelb.edu.au"))
+      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
+
+    cookieForUI(
+      request,
+      reply,
+      USER_ALLOWED_COOKIE_NAME,
+      Array.from(allowed.values()).join(",")
+    );
+
+    reply.redirect("/");
   });
 
   if (opts.includeTestUsers) {
@@ -231,9 +234,7 @@ export const authRoutes = async (
     // NOTE: this has to replicate all the real auth login steps (set the same cookies etc)
     const addTestUserRoute = (
       path: string,
-      dbId: string,
-      subjectId: string,
-      displayName: string,
+      authUser: AuthenticatedUser,
       allowed: string[]
     ) => {
       fastify.post(path, async (request, reply) => {
@@ -243,13 +244,26 @@ export const authRoutes = async (
           SESSION_TOKEN_PRIMARY,
           "Thiswouldneedtobearealbearertokenforexternaldata"
         );
-        cookieForBackend(request, reply, SESSION_DB_ID, dbId);
-        cookieForBackend(request, reply, SESSION_SUBJECT_ID, subjectId);
-        cookieForBackend(request, reply, SESSION_DISPLAY_NAME, displayName);
+        cookieForBackend(
+          request,
+          reply,
+          SESSION_USER_DB_OBJECT,
+          authUser.asJson()
+        );
 
         // these cookies however are available to React - PURELY for UI/display purposes
-        cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, subjectId);
-        cookieForUI(request, reply, USER_NAME_COOKIE_NAME, displayName);
+        cookieForUI(
+          request,
+          reply,
+          USER_SUBJECT_COOKIE_NAME,
+          authUser.subjectId
+        );
+        cookieForUI(
+          request,
+          reply,
+          USER_NAME_COOKIE_NAME,
+          authUser.displayName
+        );
         cookieForUI(
           request,
           reply,
@@ -262,28 +276,12 @@ export const authRoutes = async (
     };
 
     // a test user that is in charge of a few datasets
-    addTestUserRoute(
-      "/auth/login-bypass-1",
-      subject1.dbId,
-      TEST_SUBJECT_1,
-      subject1.displayName,
-      [ALLOWED_CREATE_NEW_RELEASES]
-    );
+    addTestUserRoute("/auth/login-bypass-1", subject1, [
+      ALLOWED_CREATE_NEW_RELEASES,
+    ]);
     // a test user that is a PI in some releases
-    addTestUserRoute(
-      "/auth/login-bypass-2",
-      subject2.dbId,
-      TEST_SUBJECT_2,
-      subject2.displayName,
-      []
-    );
+    addTestUserRoute("/auth/login-bypass-2", subject2, []);
     // a test user that is a super admin equivalent
-    addTestUserRoute(
-      "/auth/login-bypass-3",
-      subject3.dbId,
-      TEST_SUBJECT_3,
-      subject3.displayName,
-      [ALLOWED_CHANGE_ADMINS]
-    );
+    addTestUserRoute("/auth/login-bypass-3", subject3, [ALLOWED_CHANGE_ADMINS]);
   }
 };

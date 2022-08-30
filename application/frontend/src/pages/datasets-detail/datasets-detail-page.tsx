@@ -1,12 +1,12 @@
 import React from "react";
-import { useEnvRelay } from "../providers/env-relay-provider";
+import { useEnvRelay } from "../../providers/env-relay-provider";
 import { useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "../components/boxes";
+import { Box } from "../../components/boxes";
 import { DatasetDeepType, ReleaseDetailType } from "@umccr/elsa-types";
-import { MyModal } from "../components/modals";
-import { LayoutBase } from "../layouts/layout-base";
+import { MyModal } from "../../components/modals";
+import { LayoutBase } from "../../layouts/layout-base";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -14,7 +14,7 @@ type DatasetsSpecificPageParams = {
 
 const DATASET_REACT_QUERY_KEY = "dataset";
 
-export const DatasetsSpecificPage: React.FC = () => {
+export const DatasetsDetailPage: React.FC = () => {
   const envRelay = useEnvRelay();
   const navigate = useNavigate();
 

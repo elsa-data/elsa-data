@@ -1,5 +1,9 @@
 import e from "../../../dbschema/edgeql-js";
 
+/**
+ * An EdgeDb query to count the audit log entries associated
+ * with a given release.
+ */
 export const countAuditLogEntriesForReleaseQuery = e.params(
   {
     releaseId: e.uuid,
@@ -17,7 +21,7 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
 );
 
 /**
- * An EdgeDb query for the audit log entries associated with
+ * A pageable EdgeDb query for the audit log entries associated with
  * a given release.
  */
 export const pageableAuditLogEntriesForReleaseQuery = e.params(

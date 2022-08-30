@@ -5,7 +5,7 @@ import { Box } from "../../components/boxes";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
-import { REACT_QUERY_RELEASE_KEYS } from "./detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
 import { ReleasesAddReleaseDialog } from "./releases-dashboard-add-release-dialog";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { ALLOWED_CREATE_NEW_RELEASES } from "@umccr/elsa-constants";

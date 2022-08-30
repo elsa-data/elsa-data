@@ -1,4 +1,4 @@
-import { createFile, MONDO_SYSTEM_URI } from "./test-data-helpers";
+import { createFile } from "./test-data-helpers";
 import {
   makeTrio,
   CORIELL_CELL_SYSTEM,
@@ -16,6 +16,7 @@ import {
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
 } from "@umccr/elsa-types";
+import { MONDO_SYSTEM_URI } from "@umccr/elsa-constants";
 
 // we make these identifers as external consts so they can be used as insertion values
 // but can also be in test suites for looking up know cases etc

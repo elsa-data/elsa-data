@@ -6,9 +6,38 @@ import { JobsService } from "../src/business/services/jobs-service";
 import { registerTypes } from "../src/bootstrap-container";
 import { AuditLogService } from "../src/business/services/audit-log-service";
 import { UsersService } from "../src/business/services/users-service";
+import {
+  ElsaEnvironment,
+  ElsaLocation,
+  ElsaSettings,
+} from "../src/config/elsa-settings";
+import { Issuer } from "openid-client";
 
 // global settings for DI
 registerTypes();
+
+// we need to work out what we are going to do here in the workers for establishing configuration
+// for the moment we seem to be fine because none of the services used in the worker needs
+// settings
+const fakeSettings: ElsaSettings = {
+  remsBotKey: "",
+  remsUrl: "",
+  sessionSalt: "",
+  sessionSecret: "",
+  remsBotUser: "",
+  oidcClientId: "",
+  oidcClientSecret: "",
+  oidcIssuer: new Issuer({ issuer: "" }),
+  ontoFhirUrl: "",
+  port: 3000,
+  environment: "development" as ElsaEnvironment,
+  superAdmins: [],
+  location: "local-mac" as ElsaLocation,
+};
+
+container.register<ElsaSettings>("Settings", {
+  useValue: fakeSettings,
+});
 
 // store boolean if the job is cancelled
 let isCancelled = false;

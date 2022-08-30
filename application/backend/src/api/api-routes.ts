@@ -14,10 +14,8 @@ import { isEmpty, isNil, isString, trim } from "lodash";
 import { auditLogRoutes } from "./routes/audit-log-routes";
 import { dacRoutes } from "./routes/dac-routes";
 import { ElsaSettings } from "../config/elsa-settings";
-import {
-  createAuthRouteHook,
-  createSuperAdminAuthRouteHook,
-} from "../auth/auth-route-hook";
+import { createAuthRouteHook } from "../auth/auth-route-hook";
+import { userRoutes } from "./routes/user-routes";
 
 type Opts = {
   allowTestCookieEquals?: string;
@@ -138,16 +136,15 @@ export const apiRoutes = async (
   }
 ) => {
   const usersService = container.resolve(UsersService);
-  const settings = container.resolve<ElsaSettings>("Settings");
+  //const settings = container.resolve<ElsaSettings>("Settings");
 
   // TODO place any unauthenticated routes first here
 
   const authHook = createAuthRouteHook(
     usersService,
+    opts.allowTestCookieEquals != null,
     opts.allowTestCookieEquals
   );
-
-  const superAdminAuthHook = createSuperAdminAuthRouteHook(settings);
 
   // now register the auth hook and then register all the rest of our routes nested within
   fastify.addHook("onRequest", authHook).after(() => {
@@ -155,5 +152,7 @@ export const apiRoutes = async (
     fastify.register(releaseRoutes, opts);
     fastify.register(dacRoutes, opts);
     fastify.register(datasetRoutes, opts);
+
+    fastify.register(userRoutes, opts);
   });
 };

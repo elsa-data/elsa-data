@@ -1,4 +1,4 @@
-CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
+CREATE MIGRATION m1bjuny2o7462whvvfvwmlwner3tgmjocg3jijavou2f7apf3hqwia
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -169,23 +169,6 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
       CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
       CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
   };
-  CREATE TYPE permission::User {
-      CREATE MULTI LINK datasetOwner -> dataset::Dataset {
-          ON TARGET DELETE ALLOW;
-      };
-      CREATE MULTI LINK releaseParticipant -> release::Release {
-          ON TARGET DELETE ALLOW;
-          CREATE PROPERTY role -> std::str {
-              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
-          };
-      };
-      CREATE PROPERTY displayName -> std::str;
-      CREATE REQUIRED PROPERTY subjectId -> std::str {
-          SET readonly := true;
-          CREATE CONSTRAINT std::exclusive;
-          CREATE CONSTRAINT std::min_len_value(6);
-      };
-  };
   CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE TYPE pedigree::PedigreeRelationship {
       CREATE REQUIRED LINK individual -> dataset::DatasetPatient;
@@ -257,5 +240,31 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
       };
       CREATE PROPERTY platform -> std::str;
       CREATE PROPERTY runDate -> std::datetime;
+  };
+  CREATE TYPE permission::User {
+      CREATE MULTI LINK releaseParticipant -> release::Release {
+          ON TARGET DELETE ALLOW;
+          CREATE PROPERTY role -> std::str {
+              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
+          };
+      };
+      CREATE REQUIRED PROPERTY allowedChangeReleaseDataOwner -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY allowedCreateRelease -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY allowedImportDataset -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY displayName -> std::str;
+      CREATE REQUIRED PROPERTY lastLoginDateTime -> std::datetime {
+          SET default := (std::datetime_current());
+      };
+      CREATE REQUIRED PROPERTY subjectId -> std::str {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+          CREATE CONSTRAINT std::min_len_value(6);
+      };
   };
 };

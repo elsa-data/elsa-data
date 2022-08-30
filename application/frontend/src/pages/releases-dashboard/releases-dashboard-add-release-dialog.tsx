@@ -5,7 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { useForm } from "react-hook-form";
 import { isNil } from "lodash";
-import { REACT_QUERY_RELEASE_KEYS } from "./detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
 
 type Props = {
   showing: boolean;
