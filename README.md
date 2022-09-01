@@ -1,6 +1,6 @@
 # elsa-data
 
-Genomic data sharing support software ("let your data go")
+Genomic data sharing support software ("let the data go")
 
 ## Dev
 
