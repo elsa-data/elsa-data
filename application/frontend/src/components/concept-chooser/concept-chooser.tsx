@@ -216,7 +216,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       </label>
 
       <div className="mt-1 p-2 rounded-md w-full border border-gray-300">
-        <ul className="flex flex-row flex-wrap space-x-2 space-y-2">
+        <ul className="flex flex-row flex-wrap gap-2">
           {!_.isEmpty(props.selected) && (
             <>
               {Object.values(props.selected).map((c, index) => (
