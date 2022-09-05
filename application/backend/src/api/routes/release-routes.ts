@@ -36,11 +36,11 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       const allForUser = await releasesService.getAll(
         authenticatedUser,
         pageSize,
-        offset,
+        offset
       );
 
       reply.send(allForUser);
-    },
+    }
   );
 
   fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
@@ -55,7 +55,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
 
       if (release) reply.send(release);
       else reply.status(400).send();
-    },
+    }
   );
 
   fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
@@ -72,11 +72,11 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
         releaseId,
         pageSize,
         (page - 1) * pageSize,
-        q,
+        q
       );
 
       sendPagedResult(reply, cases, page, `/api/releases/${releaseId}/cases?`);
-    },
+    }
   );
 
   fastify.get<{
@@ -92,7 +92,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     const r = await releasesService.getNodeConsent(
       authenticatedUser,
       releaseId,
-      nodeId,
+      nodeId
     );
 
     console.log(r);
@@ -113,11 +113,11 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       const setResult = await releasesService.setSelected(
         authenticatedUser,
         releaseId,
-        specs,
+        specs
       );
 
       reply.send("ok");
-    },
+    }
   );
 
   fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
@@ -133,11 +133,11 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       const unsetResult = await releasesService.setUnselected(
         authenticatedUser,
         releaseId,
-        specs,
+        specs
       );
 
       reply.send("ok");
-    },
+    }
   );
 
   fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
@@ -149,9 +149,9 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       const releaseId = request.params.rid;
 
       reply.send(
-        await jobsService.startSelectJob(authenticatedUser, releaseId),
+        await jobsService.startSelectJob(authenticatedUser, releaseId)
       );
-    },
+    }
   );
 
   fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
@@ -165,10 +165,10 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       reply.send(
         await jobsService.cancelInProgressSelectJob(
           authenticatedUser,
-          releaseId,
-        ),
+          releaseId
+        )
       );
-    },
+    }
   );
 
   fastify.post<{
@@ -202,8 +202,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
               authenticatedUser,
               releaseId,
               body.system!,
-              body.code!,
-            ),
+              body.code!
+            )
           );
           return;
         case "diseases-remove":
@@ -212,8 +212,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
               authenticatedUser,
               releaseId,
               body.system!,
-              body.code!,
-            ),
+              body.code!
+            )
           );
           return;
         case "countries-add":
@@ -222,8 +222,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
               authenticatedUser,
               releaseId,
               body.system!,
-              body.code!,
-            ),
+              body.code!
+            )
           );
           return;
         case "countries-remove":
@@ -232,8 +232,8 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
               authenticatedUser,
               releaseId,
               body.system!,
-              body.code!,
-            ),
+              body.code!
+            )
           );
           return;
         case "type-set":
@@ -242,21 +242,21 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
             throw new Base7807Error(
               "Invalid research type",
               400,
-              `The type ${body.type} is invalid`,
+              `The type ${body.type} is invalid`
             );
           reply.send(
             await releasesService.setTypeOfApplicationCoded(
               authenticatedUser,
               releaseId,
-              body.type!,
-            ),
+              body.type!
+            )
           );
           return;
         default:
           reply.status(400).send();
           return;
       }
-    },
+    }
   );
 
   /**
@@ -284,7 +284,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       authenticatedUser,
       releaseId,
       undefined, //isString(request.body.start) ? Date.parse(request.body.start) : request.body.start,
-      undefined, // request.body.end
+      undefined // request.body.end
     );
   });
 
@@ -300,14 +300,14 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
 
     if (!awsPresignedUrlsService.isEnabled)
       throw new Error(
-        "The AWS service was not started so AWS VPC sharing will not work",
+        "The AWS service was not started so AWS VPC sharing will not work"
       );
 
     await awsAccessPointService.installCloudFormationAccessPointForRelease(
       authenticatedUser,
       releaseId,
       ["831090136584"],
-      "vpc-03d735d10b6cec468",
+      "vpc-03d735d10b6cec468"
     );
   });
 
@@ -324,12 +324,12 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
 
       if (!awsPresignedUrlsService.isEnabled)
         throw new Error(
-          "The AWS service was not started so AWS S3 presign will not work",
+          "The AWS service was not started so AWS S3 presign will not work"
         );
 
       const presignResult = await awsPresignedUrlsService.getPresigned(
         authenticatedUser,
-        releaseId,
+        releaseId
       );
 
       // if (!awsFiles) throw new Error("Could not pre-sign S3 URLs");
@@ -340,6 +340,6 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
       });
 
       presignResult.archive.pipe(reply.raw);
-    },
+    }
   );
 };

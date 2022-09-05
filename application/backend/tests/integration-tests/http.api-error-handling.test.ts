@@ -85,7 +85,7 @@ describe("http API error handling tests", () => {
 
     expect(res.statusCode).toStrictEqual(400);
     expect(res.headers["content-type"]).toStrictEqual(
-      "application/problem+json; charset=utf-8",
+      "application/problem+json; charset=utf-8"
     );
 
     const errorResponse: Base7807Response = JSON.parse(res.body);

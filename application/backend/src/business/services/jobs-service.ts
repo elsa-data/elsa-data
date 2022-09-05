@@ -17,7 +17,7 @@ class NotAuthorisedToControlJob extends Base7807Error {
     super(
       "Not authorised to control jobs for this release",
       403,
-      `User is only a ${userRole} in the release ${releaseId}`,
+      `User is only a ${userRole} in the release ${releaseId}`
     );
   }
 }
@@ -30,12 +30,12 @@ export class JobsService {
     private usersService: UsersService,
     private auditLogService: AuditLogService,
     private releasesService: ReleaseService,
-    private selectService: SelectService,
+    private selectService: SelectService
   ) {}
 
   private async startGenericJob(
     releaseId: string,
-    finalJobStartStep: (tx: Transaction) => Promise<void>,
+    finalJobStartStep: (tx: Transaction) => Promise<void>
   ) {
     await this.edgeDbClient.transaction(async (tx) => {
       // we do not use the 'exclusive constraint's of edgedb because we want to
@@ -50,7 +50,7 @@ export class JobsService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.id, "=", e.uuid(releaseId)),
+            e.op(j.forRelease.id, "=", e.uuid(releaseId))
           ),
         }))
         .run(tx);
@@ -61,7 +61,7 @@ export class JobsService {
           400,
           `Job with id(s) ${oldJob
             .map((oj) => oj.id)
-            .join(" ")} have been found in the running state`,
+            .join(" ")} have been found in the running state`
         );
 
       await finalJobStartStep(tx);
@@ -78,12 +78,12 @@ export class JobsService {
    */
   public async startSelectJob(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseId: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId,
+      releaseId
     );
 
     if (userRole != "DataOwner")
@@ -91,7 +91,7 @@ export class JobsService {
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId,
+      releaseId
     );
 
     await this.startGenericJob(releaseId, async (tx) => {
@@ -104,7 +104,7 @@ export class JobsService {
         releaseId,
         "E",
         "Ran Dynamic Consent",
-        new Date(),
+        new Date()
       );
 
       // create a new select job entry
@@ -133,12 +133,12 @@ export class JobsService {
 
   public async cancelInProgressSelectJob(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseId: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId,
+      releaseId
     );
 
     if (userRole != "DataOwner")
@@ -146,7 +146,7 @@ export class JobsService {
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId,
+      releaseId
     );
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -156,7 +156,7 @@ export class JobsService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.id, "=", e.uuid(releaseId)),
+            e.op(j.forRelease.id, "=", e.uuid(releaseId))
           ),
         }))
         .assert_single()
@@ -212,7 +212,7 @@ export class JobsService {
    */
   public async doSelectJobWork(
     jobId: string,
-    roughlyMaxSeconds: number,
+    roughlyMaxSeconds: number
   ): Promise<number> {
     const selectJobQuery = e
       .select(e.job.SelectJob, (j) => ({
@@ -276,7 +276,7 @@ export class JobsService {
                   applicationCoded as any,
                   cas as any,
                   pat as any,
-                  spec as any,
+                  spec as any
                 )
               ) {
                 resultSpecimens.push(e.uuid(spec.id));
@@ -308,7 +308,7 @@ export class JobsService {
             filter: e.op(
               dc.id,
               "in",
-              e.set(...casesFromQueue.map((m) => e.uuid(m.id))),
+              e.set(...casesFromQueue.map((m) => e.uuid(m.id)))
             ),
           }));
 
@@ -332,17 +332,17 @@ export class JobsService {
                         e.op(
                           e.op(sj.initialTodoCount, "-", e.count(sj.todoQueue)),
                           "+",
-                          casesFromQueue.length,
+                          casesFromQueue.length
                         ),
                         "*",
                         // so we actually don't want this percentDone to ever get us to 100%...
                         // that step is reserved for the final end job step
-                        99.99,
+                        99.99
                       ),
                       "/",
-                      sj.initialTodoCount,
-                    ),
-                  ),
+                      sj.initialTodoCount
+                    )
+                  )
                 ),
               },
             }))
@@ -369,7 +369,7 @@ export class JobsService {
   public async endSelectJob(
     jobId: string,
     wasSuccessful: boolean,
-    isCancellation: boolean,
+    isCancellation: boolean
   ): Promise<void> {
     // basically the gist here is we need to move the new results into the release - and close this job off
     await this.edgeDbClient.transaction(async (tx) => {
@@ -406,7 +406,7 @@ export class JobsService {
         isCancellation ? 4 : 0,
         selectJob.started,
         new Date(),
-        { jobId: jobId },
+        { jobId: jobId }
       );
 
       await e
@@ -436,7 +436,7 @@ export class JobsService {
         filter: e.op(
           e.op(sj.status, "!=", e.job.JobStatus.running),
           "and",
-          e.op(sj.forRelease.id, "=", e.uuid(releaseId)),
+          e.op(sj.forRelease.id, "=", e.uuid(releaseId))
         ),
       }))
       .run(this.edgeDbClient);

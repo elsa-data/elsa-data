@@ -25,7 +25,7 @@ export const DatasetsDashboardPage: React.FC = () => {
         .get<DatasetLightType[]>(`/api/datasets`)
         .then((response) => response.data);
     },
-    {},
+    {}
   );
 
   const {
@@ -37,7 +37,7 @@ export const DatasetsDashboardPage: React.FC = () => {
   const onSubmit: SubmitHandler<DatasetGen3SyncRequestType> = async (data) => {
     const response = await axios.post<DatasetGen3SyncRequestType>(
       "/api/datasets",
-      data,
+      data
     );
 
     console.log(response.data);
@@ -64,7 +64,7 @@ export const DatasetsDashboardPage: React.FC = () => {
         {...register("uri", { required: true })}
         className={classNames(
           "mt-1 block rounded-md w-full bg-gray-50 border-transparent font-mono focus:border-gray-500 focus:bg-white focus:ring-0",
-          errors.uri ? "ring-2 ring-red-500" : "",
+          errors.uri ? "ring-2 ring-red-500" : ""
         )}
         placeholder="urn:fdc:domain.org:year:id"
       />
@@ -130,7 +130,7 @@ export const DatasetsDashboardPage: React.FC = () => {
                       "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
                       selected
                         ? "bg-white shadow"
-                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white",
+                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
                     )
                   }
                 >
@@ -143,7 +143,7 @@ export const DatasetsDashboardPage: React.FC = () => {
                       "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
                       selected
                         ? "bg-white shadow"
-                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white",
+                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
                     )
                   }
                 >
@@ -156,7 +156,7 @@ export const DatasetsDashboardPage: React.FC = () => {
                       "ring-white ring-opacity-60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2",
                       selected
                         ? "bg-white shadow"
-                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white",
+                        : "text-blue-100 hover:bg-white/[0.12] hover:text-white"
                     )
                   }
                 >

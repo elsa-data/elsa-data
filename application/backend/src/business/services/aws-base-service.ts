@@ -36,7 +36,7 @@ export abstract class AwsBaseService {
   protected constructor(
     protected readonly edgeDbClient: edgedb.Client,
     protected readonly usersService: UsersService,
-    protected readonly auditLogService: AuditLogService,
+    protected readonly auditLogService: AuditLogService
   ) {
     // until we get proof our AWS commands have succeeded we assume AWS functionality is not available
     this.enabled = false;
@@ -58,25 +58,25 @@ export abstract class AwsBaseService {
   protected enabledGuard() {
     if (!this.enabled)
       throw new Error(
-        "This service is not enabled due to lack of AWS credentials",
+        "This service is not enabled due to lack of AWS credentials"
       );
   }
 
   protected async getAllFileRecords(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseId: string
   ): Promise<ReleaseAwsFileRecord[]> {
     this.enabledGuard();
 
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId,
+      releaseId
     );
 
     const { releaseInfoQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId,
+      releaseId
     );
 
     const filesQuery = e.select(e.dataset.DatasetSpecimen, (rs) => ({

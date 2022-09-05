@@ -22,60 +22,60 @@ export const datasetAllSummaryQuery = e.params(
       summarySpecimenCount: e.count(ds.cases.patients.specimens),
       summaryArtifactCount: e.count(ds.cases.patients.specimens.artifacts),
       summaryBclCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl),
+        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl)
       ),
       summaryFastqCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair),
+        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
       ),
       summaryBamCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam),
+        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam)
       ),
       summaryCramCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram),
+        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
       ),
       summaryVcfCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf),
+        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf)
       ),
       // the byte size of all artifacts
       summaryArtifactBytes: e.sum(
         e.set(
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl).bclFile
-              .size,
+              .size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-              .forwardFile.size,
+              .forwardFile.size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-              .reverseFile.size,
+              .reverseFile.size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam).bamFile
-              .size,
+              .size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam).baiFile
-              .size,
+              .size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-              .cramFile.size,
+              .cramFile.size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-              .craiFile.size,
+              .craiFile.size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf).vcfFile
-              .size,
+              .size
           ),
           e.sum(
             ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf).tbiFile
-              .size,
-          ),
-        ),
+              .size
+          )
+        )
       ),
       order_by: [
         {
@@ -89,5 +89,5 @@ export const datasetAllSummaryQuery = e.params(
       ],
       limit: params.limit,
       offset: params.offset,
-    })),
+    }))
 );

@@ -21,10 +21,10 @@ const allReleaseDatasetsQuery = e.params({ releaseId: e.uuid }, (params) =>
           .select(e.release.Release, (r) => ({
             filter: e.op(r.id, "=", params.releaseId),
           }))
-          .assert_single().datasetUris,
-      ),
+          .assert_single().datasetUris
+      )
     ),
-  })),
+  }))
 );
 
 /**
@@ -46,7 +46,7 @@ export const allReleasesSummaryByUserQuery = e.params(
           filter: e.op(u.id, "=", params.userDbId),
           // got to work out how to extract the link property values.. this was broken in Edge pre 2.0
           // "@role": true
-        }),
+        })
       ),
-    })),
+    }))
 );

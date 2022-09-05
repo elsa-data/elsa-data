@@ -90,7 +90,7 @@ export namespace org {
            * @returns Phenopacket instance
            */
           public static create(
-            properties?: org.phenopackets.schema.v2.IPhenopacket,
+            properties?: org.phenopackets.schema.v2.IPhenopacket
           ): org.phenopackets.schema.v2.Phenopacket;
 
           /**
@@ -101,7 +101,7 @@ export namespace org {
            */
           public static encode(
             message: org.phenopackets.schema.v2.IPhenopacket,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -112,7 +112,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.phenopackets.schema.v2.IPhenopacket,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -125,7 +125,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.phenopackets.schema.v2.Phenopacket;
 
           /**
@@ -136,7 +136,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.phenopackets.schema.v2.Phenopacket;
 
           /**
@@ -163,7 +163,7 @@ export namespace org {
            */
           public static toObject(
             message: org.phenopackets.schema.v2.Phenopacket,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -239,7 +239,7 @@ export namespace org {
            * @returns Family instance
            */
           public static create(
-            properties?: org.phenopackets.schema.v2.IFamily,
+            properties?: org.phenopackets.schema.v2.IFamily
           ): org.phenopackets.schema.v2.Family;
 
           /**
@@ -250,7 +250,7 @@ export namespace org {
            */
           public static encode(
             message: org.phenopackets.schema.v2.IFamily,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -261,7 +261,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.phenopackets.schema.v2.IFamily,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -274,7 +274,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.phenopackets.schema.v2.Family;
 
           /**
@@ -285,7 +285,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.phenopackets.schema.v2.Family;
 
           /**
@@ -312,7 +312,7 @@ export namespace org {
            */
           public static toObject(
             message: org.phenopackets.schema.v2.Family,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -376,7 +376,7 @@ export namespace org {
            * @returns Cohort instance
            */
           public static create(
-            properties?: org.phenopackets.schema.v2.ICohort,
+            properties?: org.phenopackets.schema.v2.ICohort
           ): org.phenopackets.schema.v2.Cohort;
 
           /**
@@ -387,7 +387,7 @@ export namespace org {
            */
           public static encode(
             message: org.phenopackets.schema.v2.ICohort,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -398,7 +398,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.phenopackets.schema.v2.ICohort,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -411,7 +411,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.phenopackets.schema.v2.Cohort;
 
           /**
@@ -422,7 +422,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.phenopackets.schema.v2.Cohort;
 
           /**
@@ -449,7 +449,7 @@ export namespace org {
            */
           public static toObject(
             message: org.phenopackets.schema.v2.Cohort,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -484,7 +484,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IOntologyClass,
+              properties?: org.phenopackets.schema.v2.core.IOntologyClass
             );
 
             /** OntologyClass id. */
@@ -499,7 +499,7 @@ export namespace org {
              * @returns OntologyClass instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IOntologyClass,
+              properties?: org.phenopackets.schema.v2.core.IOntologyClass
             ): org.phenopackets.schema.v2.core.OntologyClass;
 
             /**
@@ -510,7 +510,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IOntologyClass,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -521,7 +521,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IOntologyClass,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -534,7 +534,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.OntologyClass;
 
             /**
@@ -545,7 +545,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.OntologyClass;
 
             /**
@@ -572,7 +572,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.OntologyClass,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -608,7 +608,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IExternalReference,
+              properties?: org.phenopackets.schema.v2.core.IExternalReference
             );
 
             /** ExternalReference id. */
@@ -626,7 +626,7 @@ export namespace org {
              * @returns ExternalReference instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IExternalReference,
+              properties?: org.phenopackets.schema.v2.core.IExternalReference
             ): org.phenopackets.schema.v2.core.ExternalReference;
 
             /**
@@ -637,7 +637,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IExternalReference,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -648,7 +648,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IExternalReference,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -661,7 +661,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.ExternalReference;
 
             /**
@@ -672,7 +672,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.ExternalReference;
 
             /**
@@ -699,7 +699,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.ExternalReference,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -745,7 +745,7 @@ export namespace org {
              * @returns Evidence instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IEvidence,
+              properties?: org.phenopackets.schema.v2.core.IEvidence
             ): org.phenopackets.schema.v2.core.Evidence;
 
             /**
@@ -756,7 +756,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IEvidence,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -767,7 +767,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IEvidence,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -780,7 +780,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Evidence;
 
             /**
@@ -791,7 +791,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Evidence;
 
             /**
@@ -818,7 +818,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Evidence,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -854,7 +854,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IProcedure,
+              properties?: org.phenopackets.schema.v2.core.IProcedure
             );
 
             /** Procedure code. */
@@ -872,7 +872,7 @@ export namespace org {
              * @returns Procedure instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IProcedure,
+              properties?: org.phenopackets.schema.v2.core.IProcedure
             ): org.phenopackets.schema.v2.core.Procedure;
 
             /**
@@ -883,7 +883,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IProcedure,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -894,7 +894,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IProcedure,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -907,7 +907,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Procedure;
 
             /**
@@ -918,7 +918,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Procedure;
 
             /**
@@ -945,7 +945,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Procedure,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -978,7 +978,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IGestationalAge,
+              properties?: org.phenopackets.schema.v2.core.IGestationalAge
             );
 
             /** GestationalAge weeks. */
@@ -993,7 +993,7 @@ export namespace org {
              * @returns GestationalAge instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IGestationalAge,
+              properties?: org.phenopackets.schema.v2.core.IGestationalAge
             ): org.phenopackets.schema.v2.core.GestationalAge;
 
             /**
@@ -1004,7 +1004,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IGestationalAge,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1015,7 +1015,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IGestationalAge,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1028,7 +1028,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.GestationalAge;
 
             /**
@@ -1039,7 +1039,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.GestationalAge;
 
             /**
@@ -1066,7 +1066,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.GestationalAge,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1106,7 +1106,7 @@ export namespace org {
              * @returns Age instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IAge,
+              properties?: org.phenopackets.schema.v2.core.IAge
             ): org.phenopackets.schema.v2.core.Age;
 
             /**
@@ -1117,7 +1117,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IAge,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1128,7 +1128,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IAge,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1141,7 +1141,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Age;
 
             /**
@@ -1152,7 +1152,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Age;
 
             /**
@@ -1179,7 +1179,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Age,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1225,7 +1225,7 @@ export namespace org {
              * @returns AgeRange instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IAgeRange,
+              properties?: org.phenopackets.schema.v2.core.IAgeRange
             ): org.phenopackets.schema.v2.core.AgeRange;
 
             /**
@@ -1236,7 +1236,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IAgeRange,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1247,7 +1247,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IAgeRange,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1260,7 +1260,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.AgeRange;
 
             /**
@@ -1271,7 +1271,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.AgeRange;
 
             /**
@@ -1298,7 +1298,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.AgeRange,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1331,7 +1331,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.ITimeInterval,
+              properties?: org.phenopackets.schema.v2.core.ITimeInterval
             );
 
             /** TimeInterval start. */
@@ -1346,7 +1346,7 @@ export namespace org {
              * @returns TimeInterval instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.ITimeInterval,
+              properties?: org.phenopackets.schema.v2.core.ITimeInterval
             ): org.phenopackets.schema.v2.core.TimeInterval;
 
             /**
@@ -1357,7 +1357,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.ITimeInterval,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1368,7 +1368,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.ITimeInterval,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1381,7 +1381,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.TimeInterval;
 
             /**
@@ -1392,7 +1392,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.TimeInterval;
 
             /**
@@ -1419,7 +1419,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.TimeInterval,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1464,7 +1464,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.ITimeElement,
+              properties?: org.phenopackets.schema.v2.core.ITimeElement
             );
 
             /** TimeElement gestationalAge. */
@@ -1500,7 +1500,7 @@ export namespace org {
              * @returns TimeElement instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.ITimeElement,
+              properties?: org.phenopackets.schema.v2.core.ITimeElement
             ): org.phenopackets.schema.v2.core.TimeElement;
 
             /**
@@ -1511,7 +1511,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.ITimeElement,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1522,7 +1522,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.ITimeElement,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1535,7 +1535,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.TimeElement;
 
             /**
@@ -1546,7 +1546,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.TimeElement;
 
             /**
@@ -1573,7 +1573,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.TimeElement,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1625,7 +1625,7 @@ export namespace org {
              * @returns File instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IFile,
+              properties?: org.phenopackets.schema.v2.core.IFile
             ): org.phenopackets.schema.v2.core.File;
 
             /**
@@ -1636,7 +1636,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IFile,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1647,7 +1647,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IFile,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1660,7 +1660,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.File;
 
             /**
@@ -1671,7 +1671,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.File;
 
             /**
@@ -1698,7 +1698,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.File,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1796,7 +1796,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IBiosample,
+              properties?: org.phenopackets.schema.v2.core.IBiosample
             );
 
             /** Biosample id. */
@@ -1868,7 +1868,7 @@ export namespace org {
              * @returns Biosample instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IBiosample,
+              properties?: org.phenopackets.schema.v2.core.IBiosample
             ): org.phenopackets.schema.v2.core.Biosample;
 
             /**
@@ -1879,7 +1879,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IBiosample,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1890,7 +1890,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IBiosample,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -1903,7 +1903,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Biosample;
 
             /**
@@ -1914,7 +1914,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Biosample;
 
             /**
@@ -1941,7 +1941,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Biosample,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -1986,7 +1986,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IMeasurement,
+              properties?: org.phenopackets.schema.v2.core.IMeasurement
             );
 
             /** Measurement description. */
@@ -2016,7 +2016,7 @@ export namespace org {
              * @returns Measurement instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IMeasurement,
+              properties?: org.phenopackets.schema.v2.core.IMeasurement
             ): org.phenopackets.schema.v2.core.Measurement;
 
             /**
@@ -2027,7 +2027,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IMeasurement,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2038,7 +2038,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IMeasurement,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2051,7 +2051,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Measurement;
 
             /**
@@ -2062,7 +2062,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Measurement;
 
             /**
@@ -2089,7 +2089,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Measurement,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2138,7 +2138,7 @@ export namespace org {
              * @returns Value instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IValue,
+              properties?: org.phenopackets.schema.v2.core.IValue
             ): org.phenopackets.schema.v2.core.Value;
 
             /**
@@ -2149,7 +2149,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IValue,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2160,7 +2160,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IValue,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2173,7 +2173,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Value;
 
             /**
@@ -2184,7 +2184,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Value;
 
             /**
@@ -2211,7 +2211,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Value,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2243,7 +2243,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IComplexValue,
+              properties?: org.phenopackets.schema.v2.core.IComplexValue
             );
 
             /** ComplexValue typedQuantities. */
@@ -2255,7 +2255,7 @@ export namespace org {
              * @returns ComplexValue instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IComplexValue,
+              properties?: org.phenopackets.schema.v2.core.IComplexValue
             ): org.phenopackets.schema.v2.core.ComplexValue;
 
             /**
@@ -2266,7 +2266,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IComplexValue,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2277,7 +2277,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IComplexValue,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2290,7 +2290,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.ComplexValue;
 
             /**
@@ -2301,7 +2301,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.ComplexValue;
 
             /**
@@ -2328,7 +2328,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.ComplexValue,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2380,7 +2380,7 @@ export namespace org {
              * @returns Quantity instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IQuantity,
+              properties?: org.phenopackets.schema.v2.core.IQuantity
             ): org.phenopackets.schema.v2.core.Quantity;
 
             /**
@@ -2391,7 +2391,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IQuantity,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2402,7 +2402,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IQuantity,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2415,7 +2415,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Quantity;
 
             /**
@@ -2426,7 +2426,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Quantity;
 
             /**
@@ -2453,7 +2453,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Quantity,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2486,7 +2486,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.ITypedQuantity,
+              properties?: org.phenopackets.schema.v2.core.ITypedQuantity
             );
 
             /** TypedQuantity type. */
@@ -2501,7 +2501,7 @@ export namespace org {
              * @returns TypedQuantity instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.ITypedQuantity,
+              properties?: org.phenopackets.schema.v2.core.ITypedQuantity
             ): org.phenopackets.schema.v2.core.TypedQuantity;
 
             /**
@@ -2512,7 +2512,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.ITypedQuantity,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2523,7 +2523,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.ITypedQuantity,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2536,7 +2536,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.TypedQuantity;
 
             /**
@@ -2547,7 +2547,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.TypedQuantity;
 
             /**
@@ -2574,7 +2574,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.TypedQuantity,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2610,7 +2610,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IReferenceRange,
+              properties?: org.phenopackets.schema.v2.core.IReferenceRange
             );
 
             /** ReferenceRange unit. */
@@ -2628,7 +2628,7 @@ export namespace org {
              * @returns ReferenceRange instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IReferenceRange,
+              properties?: org.phenopackets.schema.v2.core.IReferenceRange
             ): org.phenopackets.schema.v2.core.ReferenceRange;
 
             /**
@@ -2639,7 +2639,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IReferenceRange,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2650,7 +2650,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IReferenceRange,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2663,7 +2663,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.ReferenceRange;
 
             /**
@@ -2674,7 +2674,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.ReferenceRange;
 
             /**
@@ -2701,7 +2701,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.ReferenceRange,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2752,7 +2752,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IPhenotypicFeature,
+              properties?: org.phenopackets.schema.v2.core.IPhenotypicFeature
             );
 
             /** PhenotypicFeature description. */
@@ -2785,7 +2785,7 @@ export namespace org {
              * @returns PhenotypicFeature instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IPhenotypicFeature,
+              properties?: org.phenopackets.schema.v2.core.IPhenotypicFeature
             ): org.phenopackets.schema.v2.core.PhenotypicFeature;
 
             /**
@@ -2796,7 +2796,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IPhenotypicFeature,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2807,7 +2807,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IPhenotypicFeature,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2820,7 +2820,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.PhenotypicFeature;
 
             /**
@@ -2831,7 +2831,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.PhenotypicFeature;
 
             /**
@@ -2858,7 +2858,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.PhenotypicFeature,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -2944,7 +2944,7 @@ export namespace org {
              * @returns Disease instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IDisease,
+              properties?: org.phenopackets.schema.v2.core.IDisease
             ): org.phenopackets.schema.v2.core.Disease;
 
             /**
@@ -2955,7 +2955,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IDisease,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2966,7 +2966,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IDisease,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -2979,7 +2979,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Disease;
 
             /**
@@ -2990,7 +2990,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Disease;
 
             /**
@@ -3017,7 +3017,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Disease,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3056,7 +3056,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IInterpretation,
+              properties?: org.phenopackets.schema.v2.core.IInterpretation
             );
 
             /** Interpretation id. */
@@ -3077,7 +3077,7 @@ export namespace org {
              * @returns Interpretation instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IInterpretation,
+              properties?: org.phenopackets.schema.v2.core.IInterpretation
             ): org.phenopackets.schema.v2.core.Interpretation;
 
             /**
@@ -3088,7 +3088,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IInterpretation,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3099,7 +3099,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IInterpretation,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3112,7 +3112,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Interpretation;
 
             /**
@@ -3123,7 +3123,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Interpretation;
 
             /**
@@ -3150,7 +3150,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Interpretation,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3196,7 +3196,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IDiagnosis,
+              properties?: org.phenopackets.schema.v2.core.IDiagnosis
             );
 
             /** Diagnosis disease. */
@@ -3211,7 +3211,7 @@ export namespace org {
              * @returns Diagnosis instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IDiagnosis,
+              properties?: org.phenopackets.schema.v2.core.IDiagnosis
             ): org.phenopackets.schema.v2.core.Diagnosis;
 
             /**
@@ -3222,7 +3222,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IDiagnosis,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3233,7 +3233,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IDiagnosis,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3246,7 +3246,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Diagnosis;
 
             /**
@@ -3257,7 +3257,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Diagnosis;
 
             /**
@@ -3284,7 +3284,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Diagnosis,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3323,7 +3323,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IGenomicInterpretation,
+              properties?: org.phenopackets.schema.v2.core.IGenomicInterpretation
             );
 
             /** GenomicInterpretation subjectOrBiosampleId. */
@@ -3347,7 +3347,7 @@ export namespace org {
              * @returns GenomicInterpretation instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IGenomicInterpretation,
+              properties?: org.phenopackets.schema.v2.core.IGenomicInterpretation
             ): org.phenopackets.schema.v2.core.GenomicInterpretation;
 
             /**
@@ -3358,7 +3358,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IGenomicInterpretation,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3369,7 +3369,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IGenomicInterpretation,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3382,7 +3382,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.GenomicInterpretation;
 
             /**
@@ -3393,7 +3393,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.GenomicInterpretation;
 
             /**
@@ -3420,7 +3420,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.GenomicInterpretation,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3484,7 +3484,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IVariantInterpretation,
+              properties?: org.phenopackets.schema.v2.core.IVariantInterpretation
             );
 
             /** VariantInterpretation acmgPathogenicityClassification. */
@@ -3502,7 +3502,7 @@ export namespace org {
              * @returns VariantInterpretation instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IVariantInterpretation,
+              properties?: org.phenopackets.schema.v2.core.IVariantInterpretation
             ): org.phenopackets.schema.v2.core.VariantInterpretation;
 
             /**
@@ -3513,7 +3513,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IVariantInterpretation,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3524,7 +3524,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IVariantInterpretation,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3537,7 +3537,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.VariantInterpretation;
 
             /**
@@ -3548,7 +3548,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.VariantInterpretation;
 
             /**
@@ -3575,7 +3575,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.VariantInterpretation,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3629,7 +3629,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IIndividual,
+              properties?: org.phenopackets.schema.v2.core.IIndividual
             );
 
             /** Individual id. */
@@ -3665,7 +3665,7 @@ export namespace org {
              * @returns Individual instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IIndividual,
+              properties?: org.phenopackets.schema.v2.core.IIndividual
             ): org.phenopackets.schema.v2.core.Individual;
 
             /**
@@ -3676,7 +3676,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IIndividual,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3687,7 +3687,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IIndividual,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3700,7 +3700,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Individual;
 
             /**
@@ -3711,7 +3711,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Individual;
 
             /**
@@ -3738,7 +3738,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Individual,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3777,7 +3777,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IVitalStatus,
+              properties?: org.phenopackets.schema.v2.core.IVitalStatus
             );
 
             /** VitalStatus status. */
@@ -3798,7 +3798,7 @@ export namespace org {
              * @returns VitalStatus instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IVitalStatus,
+              properties?: org.phenopackets.schema.v2.core.IVitalStatus
             ): org.phenopackets.schema.v2.core.VitalStatus;
 
             /**
@@ -3809,7 +3809,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IVitalStatus,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3820,7 +3820,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IVitalStatus,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -3833,7 +3833,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.VitalStatus;
 
             /**
@@ -3844,7 +3844,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.VitalStatus;
 
             /**
@@ -3871,7 +3871,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.VitalStatus,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -3959,7 +3959,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IMedicalAction,
+              properties?: org.phenopackets.schema.v2.core.IMedicalAction
             );
 
             /** MedicalAction procedure. */
@@ -4002,7 +4002,7 @@ export namespace org {
              * @returns MedicalAction instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IMedicalAction,
+              properties?: org.phenopackets.schema.v2.core.IMedicalAction
             ): org.phenopackets.schema.v2.core.MedicalAction;
 
             /**
@@ -4013,7 +4013,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IMedicalAction,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4024,7 +4024,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IMedicalAction,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4037,7 +4037,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.MedicalAction;
 
             /**
@@ -4048,7 +4048,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.MedicalAction;
 
             /**
@@ -4075,7 +4075,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.MedicalAction,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4119,7 +4119,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.ITreatment,
+              properties?: org.phenopackets.schema.v2.core.ITreatment
             );
 
             /** Treatment agent. */
@@ -4143,7 +4143,7 @@ export namespace org {
              * @returns Treatment instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.ITreatment,
+              properties?: org.phenopackets.schema.v2.core.ITreatment
             ): org.phenopackets.schema.v2.core.Treatment;
 
             /**
@@ -4154,7 +4154,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.ITreatment,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4165,7 +4165,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.ITreatment,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4178,7 +4178,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Treatment;
 
             /**
@@ -4189,7 +4189,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Treatment;
 
             /**
@@ -4216,7 +4216,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Treatment,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4252,7 +4252,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IDoseInterval,
+              properties?: org.phenopackets.schema.v2.core.IDoseInterval
             );
 
             /** DoseInterval quantity. */
@@ -4270,7 +4270,7 @@ export namespace org {
              * @returns DoseInterval instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IDoseInterval,
+              properties?: org.phenopackets.schema.v2.core.IDoseInterval
             ): org.phenopackets.schema.v2.core.DoseInterval;
 
             /**
@@ -4281,7 +4281,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IDoseInterval,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4292,7 +4292,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IDoseInterval,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4305,7 +4305,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.DoseInterval;
 
             /**
@@ -4316,7 +4316,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.DoseInterval;
 
             /**
@@ -4343,7 +4343,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.DoseInterval,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4390,7 +4390,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.IRadiationTherapy,
+              properties?: org.phenopackets.schema.v2.core.IRadiationTherapy
             );
 
             /** RadiationTherapy modality. */
@@ -4411,7 +4411,7 @@ export namespace org {
              * @returns RadiationTherapy instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IRadiationTherapy,
+              properties?: org.phenopackets.schema.v2.core.IRadiationTherapy
             ): org.phenopackets.schema.v2.core.RadiationTherapy;
 
             /**
@@ -4422,7 +4422,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IRadiationTherapy,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4433,7 +4433,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IRadiationTherapy,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4446,7 +4446,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.RadiationTherapy;
 
             /**
@@ -4457,7 +4457,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.RadiationTherapy;
 
             /**
@@ -4484,7 +4484,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.RadiationTherapy,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4526,7 +4526,7 @@ export namespace org {
              * @param [properties] Properties to set
              */
             constructor(
-              properties?: org.phenopackets.schema.v2.core.ITherapeuticRegimen,
+              properties?: org.phenopackets.schema.v2.core.ITherapeuticRegimen
             );
 
             /** TherapeuticRegimen externalReference. */
@@ -4553,7 +4553,7 @@ export namespace org {
              * @returns TherapeuticRegimen instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.ITherapeuticRegimen,
+              properties?: org.phenopackets.schema.v2.core.ITherapeuticRegimen
             ): org.phenopackets.schema.v2.core.TherapeuticRegimen;
 
             /**
@@ -4564,7 +4564,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.ITherapeuticRegimen,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4575,7 +4575,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.ITherapeuticRegimen,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4588,7 +4588,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.TherapeuticRegimen;
 
             /**
@@ -4599,7 +4599,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.TherapeuticRegimen;
 
             /**
@@ -4626,7 +4626,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.TherapeuticRegimen,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4714,7 +4714,7 @@ export namespace org {
              * @returns MetaData instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IMetaData,
+              properties?: org.phenopackets.schema.v2.core.IMetaData
             ): org.phenopackets.schema.v2.core.MetaData;
 
             /**
@@ -4725,7 +4725,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IMetaData,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4736,7 +4736,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IMetaData,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4749,7 +4749,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.MetaData;
 
             /**
@@ -4760,7 +4760,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.MetaData;
 
             /**
@@ -4787,7 +4787,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.MetaData,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4857,7 +4857,7 @@ export namespace org {
              * @returns Resource instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IResource,
+              properties?: org.phenopackets.schema.v2.core.IResource
             ): org.phenopackets.schema.v2.core.Resource;
 
             /**
@@ -4868,7 +4868,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IResource,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4879,7 +4879,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IResource,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -4892,7 +4892,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Resource;
 
             /**
@@ -4903,7 +4903,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Resource;
 
             /**
@@ -4930,7 +4930,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Resource,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -4982,7 +4982,7 @@ export namespace org {
              * @returns Update instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IUpdate,
+              properties?: org.phenopackets.schema.v2.core.IUpdate
             ): org.phenopackets.schema.v2.core.Update;
 
             /**
@@ -4993,7 +4993,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IUpdate,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -5004,7 +5004,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IUpdate,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -5017,7 +5017,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Update;
 
             /**
@@ -5028,7 +5028,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Update;
 
             /**
@@ -5055,7 +5055,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Update,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -5095,7 +5095,7 @@ export namespace org {
              * @returns Pedigree instance
              */
             public static create(
-              properties?: org.phenopackets.schema.v2.core.IPedigree,
+              properties?: org.phenopackets.schema.v2.core.IPedigree
             ): org.phenopackets.schema.v2.core.Pedigree;
 
             /**
@@ -5106,7 +5106,7 @@ export namespace org {
              */
             public static encode(
               message: org.phenopackets.schema.v2.core.IPedigree,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -5117,7 +5117,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.phenopackets.schema.v2.core.IPedigree,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -5130,7 +5130,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.phenopackets.schema.v2.core.Pedigree;
 
             /**
@@ -5141,7 +5141,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.phenopackets.schema.v2.core.Pedigree;
 
             /**
@@ -5168,7 +5168,7 @@ export namespace org {
              */
             public static toObject(
               message: org.phenopackets.schema.v2.core.Pedigree,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -5214,7 +5214,7 @@ export namespace org {
                * @param [properties] Properties to set
                */
               constructor(
-                properties?: org.phenopackets.schema.v2.core.Pedigree.IPerson,
+                properties?: org.phenopackets.schema.v2.core.Pedigree.IPerson
               );
 
               /** Person familyId. */
@@ -5241,7 +5241,7 @@ export namespace org {
                * @returns Person instance
                */
               public static create(
-                properties?: org.phenopackets.schema.v2.core.Pedigree.IPerson,
+                properties?: org.phenopackets.schema.v2.core.Pedigree.IPerson
               ): org.phenopackets.schema.v2.core.Pedigree.Person;
 
               /**
@@ -5252,7 +5252,7 @@ export namespace org {
                */
               public static encode(
                 message: org.phenopackets.schema.v2.core.Pedigree.IPerson,
-                writer?: $protobuf.Writer,
+                writer?: $protobuf.Writer
               ): $protobuf.Writer;
 
               /**
@@ -5263,7 +5263,7 @@ export namespace org {
                */
               public static encodeDelimited(
                 message: org.phenopackets.schema.v2.core.Pedigree.IPerson,
-                writer?: $protobuf.Writer,
+                writer?: $protobuf.Writer
               ): $protobuf.Writer;
 
               /**
@@ -5276,7 +5276,7 @@ export namespace org {
                */
               public static decode(
                 reader: $protobuf.Reader | Uint8Array,
-                length?: number,
+                length?: number
               ): org.phenopackets.schema.v2.core.Pedigree.Person;
 
               /**
@@ -5287,7 +5287,7 @@ export namespace org {
                * @throws {$protobuf.util.ProtocolError} If required fields are missing
                */
               public static decodeDelimited(
-                reader: $protobuf.Reader | Uint8Array,
+                reader: $protobuf.Reader | Uint8Array
               ): org.phenopackets.schema.v2.core.Pedigree.Person;
 
               /**
@@ -5316,7 +5316,7 @@ export namespace org {
                */
               public static toObject(
                 message: org.phenopackets.schema.v2.core.Pedigree.Person,
-                options?: $protobuf.IConversionOptions,
+                options?: $protobuf.IConversionOptions
               ): { [k: string]: any };
 
               /**
@@ -5382,7 +5382,7 @@ export namespace org {
            * @returns Extension instance
            */
           public static create(
-            properties?: org.ga4gh.vrsatile.v1.IExtension,
+            properties?: org.ga4gh.vrsatile.v1.IExtension
           ): org.ga4gh.vrsatile.v1.Extension;
 
           /**
@@ -5393,7 +5393,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrsatile.v1.IExtension,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5404,7 +5404,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrsatile.v1.IExtension,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5417,7 +5417,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrsatile.v1.Extension;
 
           /**
@@ -5428,7 +5428,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrsatile.v1.Extension;
 
           /**
@@ -5455,7 +5455,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrsatile.v1.Extension,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -5507,7 +5507,7 @@ export namespace org {
            * @returns Expression instance
            */
           public static create(
-            properties?: org.ga4gh.vrsatile.v1.IExpression,
+            properties?: org.ga4gh.vrsatile.v1.IExpression
           ): org.ga4gh.vrsatile.v1.Expression;
 
           /**
@@ -5518,7 +5518,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrsatile.v1.IExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5529,7 +5529,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrsatile.v1.IExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5542,7 +5542,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrsatile.v1.Expression;
 
           /**
@@ -5553,7 +5553,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrsatile.v1.Expression;
 
           /**
@@ -5580,7 +5580,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrsatile.v1.Expression,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -5668,7 +5668,7 @@ export namespace org {
            * @returns VcfRecord instance
            */
           public static create(
-            properties?: org.ga4gh.vrsatile.v1.IVcfRecord,
+            properties?: org.ga4gh.vrsatile.v1.IVcfRecord
           ): org.ga4gh.vrsatile.v1.VcfRecord;
 
           /**
@@ -5679,7 +5679,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrsatile.v1.IVcfRecord,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5690,7 +5690,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrsatile.v1.IVcfRecord,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5703,7 +5703,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrsatile.v1.VcfRecord;
 
           /**
@@ -5714,7 +5714,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrsatile.v1.VcfRecord;
 
           /**
@@ -5741,7 +5741,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrsatile.v1.VcfRecord,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -5859,7 +5859,7 @@ export namespace org {
            * @returns VariationDescriptor instance
            */
           public static create(
-            properties?: org.ga4gh.vrsatile.v1.IVariationDescriptor,
+            properties?: org.ga4gh.vrsatile.v1.IVariationDescriptor
           ): org.ga4gh.vrsatile.v1.VariationDescriptor;
 
           /**
@@ -5870,7 +5870,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrsatile.v1.IVariationDescriptor,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5881,7 +5881,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrsatile.v1.IVariationDescriptor,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -5894,7 +5894,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrsatile.v1.VariationDescriptor;
 
           /**
@@ -5905,7 +5905,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrsatile.v1.VariationDescriptor;
 
           /**
@@ -5932,7 +5932,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrsatile.v1.VariationDescriptor,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6010,7 +6010,7 @@ export namespace org {
            * @returns GeneDescriptor instance
            */
           public static create(
-            properties?: org.ga4gh.vrsatile.v1.IGeneDescriptor,
+            properties?: org.ga4gh.vrsatile.v1.IGeneDescriptor
           ): org.ga4gh.vrsatile.v1.GeneDescriptor;
 
           /**
@@ -6021,7 +6021,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrsatile.v1.IGeneDescriptor,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6032,7 +6032,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrsatile.v1.IGeneDescriptor,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6045,7 +6045,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrsatile.v1.GeneDescriptor;
 
           /**
@@ -6056,7 +6056,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrsatile.v1.GeneDescriptor;
 
           /**
@@ -6083,7 +6083,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrsatile.v1.GeneDescriptor,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6161,7 +6161,7 @@ export namespace org {
            * @returns Variation instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IVariation,
+            properties?: org.ga4gh.vrs.v1.IVariation
           ): org.ga4gh.vrs.v1.Variation;
 
           /**
@@ -6172,7 +6172,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6183,7 +6183,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6196,7 +6196,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Variation;
 
           /**
@@ -6207,7 +6207,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Variation;
 
           /**
@@ -6234,7 +6234,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Variation,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6283,7 +6283,7 @@ export namespace org {
            * @returns MolecularVariation instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IMolecularVariation,
+            properties?: org.ga4gh.vrs.v1.IMolecularVariation
           ): org.ga4gh.vrs.v1.MolecularVariation;
 
           /**
@@ -6294,7 +6294,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IMolecularVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6305,7 +6305,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IMolecularVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6318,7 +6318,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.MolecularVariation;
 
           /**
@@ -6329,7 +6329,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.MolecularVariation;
 
           /**
@@ -6356,7 +6356,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.MolecularVariation,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6405,7 +6405,7 @@ export namespace org {
            * @returns UtilityVariation instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IUtilityVariation,
+            properties?: org.ga4gh.vrs.v1.IUtilityVariation
           ): org.ga4gh.vrs.v1.UtilityVariation;
 
           /**
@@ -6416,7 +6416,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IUtilityVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6427,7 +6427,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IUtilityVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6440,7 +6440,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.UtilityVariation;
 
           /**
@@ -6451,7 +6451,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.UtilityVariation;
 
           /**
@@ -6478,7 +6478,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.UtilityVariation,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6521,7 +6521,7 @@ export namespace org {
            * @returns SystemicVariation instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ISystemicVariation,
+            properties?: org.ga4gh.vrs.v1.ISystemicVariation
           ): org.ga4gh.vrs.v1.SystemicVariation;
 
           /**
@@ -6532,7 +6532,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ISystemicVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6543,7 +6543,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ISystemicVariation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6556,7 +6556,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.SystemicVariation;
 
           /**
@@ -6567,7 +6567,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.SystemicVariation;
 
           /**
@@ -6594,7 +6594,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.SystemicVariation,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6686,7 +6686,7 @@ export namespace org {
            * @returns Allele instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IAllele,
+            properties?: org.ga4gh.vrs.v1.IAllele
           ): org.ga4gh.vrs.v1.Allele;
 
           /**
@@ -6697,7 +6697,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IAllele,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6708,7 +6708,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IAllele,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6721,7 +6721,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Allele;
 
           /**
@@ -6732,7 +6732,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Allele;
 
           /**
@@ -6759,7 +6759,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Allele,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6805,7 +6805,7 @@ export namespace org {
            * @returns Haplotype instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IHaplotype,
+            properties?: org.ga4gh.vrs.v1.IHaplotype
           ): org.ga4gh.vrs.v1.Haplotype;
 
           /**
@@ -6816,7 +6816,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IHaplotype,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6827,7 +6827,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IHaplotype,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -6840,7 +6840,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Haplotype;
 
           /**
@@ -6851,7 +6851,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Haplotype;
 
           /**
@@ -6878,7 +6878,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Haplotype,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -6928,7 +6928,7 @@ export namespace org {
              * @returns Member instance
              */
             public static create(
-              properties?: org.ga4gh.vrs.v1.Haplotype.IMember,
+              properties?: org.ga4gh.vrs.v1.Haplotype.IMember
             ): org.ga4gh.vrs.v1.Haplotype.Member;
 
             /**
@@ -6939,7 +6939,7 @@ export namespace org {
              */
             public static encode(
               message: org.ga4gh.vrs.v1.Haplotype.IMember,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -6950,7 +6950,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.ga4gh.vrs.v1.Haplotype.IMember,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -6963,7 +6963,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.ga4gh.vrs.v1.Haplotype.Member;
 
             /**
@@ -6974,7 +6974,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.ga4gh.vrs.v1.Haplotype.Member;
 
             /**
@@ -7001,7 +7001,7 @@ export namespace org {
              */
             public static toObject(
               message: org.ga4gh.vrs.v1.Haplotype.Member,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -7048,7 +7048,7 @@ export namespace org {
            * @returns Text instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IText,
+            properties?: org.ga4gh.vrs.v1.IText
           ): org.ga4gh.vrs.v1.Text;
 
           /**
@@ -7059,7 +7059,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IText,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7070,7 +7070,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IText,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7083,7 +7083,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Text;
 
           /**
@@ -7094,7 +7094,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Text;
 
           /**
@@ -7121,7 +7121,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Text,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -7167,7 +7167,7 @@ export namespace org {
            * @returns VariationSet instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IVariationSet,
+            properties?: org.ga4gh.vrs.v1.IVariationSet
           ): org.ga4gh.vrs.v1.VariationSet;
 
           /**
@@ -7178,7 +7178,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IVariationSet,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7189,7 +7189,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IVariationSet,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7202,7 +7202,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.VariationSet;
 
           /**
@@ -7213,7 +7213,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.VariationSet;
 
           /**
@@ -7240,7 +7240,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.VariationSet,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -7320,7 +7320,7 @@ export namespace org {
              * @returns Member instance
              */
             public static create(
-              properties?: org.ga4gh.vrs.v1.VariationSet.IMember,
+              properties?: org.ga4gh.vrs.v1.VariationSet.IMember
             ): org.ga4gh.vrs.v1.VariationSet.Member;
 
             /**
@@ -7331,7 +7331,7 @@ export namespace org {
              */
             public static encode(
               message: org.ga4gh.vrs.v1.VariationSet.IMember,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -7342,7 +7342,7 @@ export namespace org {
              */
             public static encodeDelimited(
               message: org.ga4gh.vrs.v1.VariationSet.IMember,
-              writer?: $protobuf.Writer,
+              writer?: $protobuf.Writer
             ): $protobuf.Writer;
 
             /**
@@ -7355,7 +7355,7 @@ export namespace org {
              */
             public static decode(
               reader: $protobuf.Reader | Uint8Array,
-              length?: number,
+              length?: number
             ): org.ga4gh.vrs.v1.VariationSet.Member;
 
             /**
@@ -7366,7 +7366,7 @@ export namespace org {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             public static decodeDelimited(
-              reader: $protobuf.Reader | Uint8Array,
+              reader: $protobuf.Reader | Uint8Array
             ): org.ga4gh.vrs.v1.VariationSet.Member;
 
             /**
@@ -7393,7 +7393,7 @@ export namespace org {
              */
             public static toObject(
               message: org.ga4gh.vrs.v1.VariationSet.Member,
-              options?: $protobuf.IConversionOptions,
+              options?: $protobuf.IConversionOptions
             ): { [k: string]: any };
 
             /**
@@ -7437,7 +7437,7 @@ export namespace org {
            * @returns Abundance instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IAbundance,
+            properties?: org.ga4gh.vrs.v1.IAbundance
           ): org.ga4gh.vrs.v1.Abundance;
 
           /**
@@ -7448,7 +7448,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IAbundance,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7459,7 +7459,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IAbundance,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7472,7 +7472,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Abundance;
 
           /**
@@ -7483,7 +7483,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Abundance;
 
           /**
@@ -7510,7 +7510,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Abundance,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -7623,7 +7623,7 @@ export namespace org {
            * @returns CopyNumber instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ICopyNumber,
+            properties?: org.ga4gh.vrs.v1.ICopyNumber
           ): org.ga4gh.vrs.v1.CopyNumber;
 
           /**
@@ -7634,7 +7634,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ICopyNumber,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7645,7 +7645,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ICopyNumber,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7658,7 +7658,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.CopyNumber;
 
           /**
@@ -7669,7 +7669,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.CopyNumber;
 
           /**
@@ -7696,7 +7696,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.CopyNumber,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -7745,7 +7745,7 @@ export namespace org {
            * @returns Location instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ILocation,
+            properties?: org.ga4gh.vrs.v1.ILocation
           ): org.ga4gh.vrs.v1.Location;
 
           /**
@@ -7756,7 +7756,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ILocation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7767,7 +7767,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ILocation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7780,7 +7780,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Location;
 
           /**
@@ -7791,7 +7791,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Location;
 
           /**
@@ -7818,7 +7818,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Location,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -7876,7 +7876,7 @@ export namespace org {
            * @returns ChromosomeLocation instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IChromosomeLocation,
+            properties?: org.ga4gh.vrs.v1.IChromosomeLocation
           ): org.ga4gh.vrs.v1.ChromosomeLocation;
 
           /**
@@ -7887,7 +7887,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IChromosomeLocation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7898,7 +7898,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IChromosomeLocation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -7911,7 +7911,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.ChromosomeLocation;
 
           /**
@@ -7922,7 +7922,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.ChromosomeLocation;
 
           /**
@@ -7949,7 +7949,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.ChromosomeLocation,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8010,7 +8010,7 @@ export namespace org {
            * @returns SequenceLocation instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ISequenceLocation,
+            properties?: org.ga4gh.vrs.v1.ISequenceLocation
           ): org.ga4gh.vrs.v1.SequenceLocation;
 
           /**
@@ -8021,7 +8021,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ISequenceLocation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8032,7 +8032,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ISequenceLocation,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8045,7 +8045,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.SequenceLocation;
 
           /**
@@ -8056,7 +8056,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.SequenceLocation;
 
           /**
@@ -8083,7 +8083,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.SequenceLocation,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8162,7 +8162,7 @@ export namespace org {
            * @returns SequenceInterval instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ISequenceInterval,
+            properties?: org.ga4gh.vrs.v1.ISequenceInterval
           ): org.ga4gh.vrs.v1.SequenceInterval;
 
           /**
@@ -8173,7 +8173,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ISequenceInterval,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8184,7 +8184,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ISequenceInterval,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8197,7 +8197,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.SequenceInterval;
 
           /**
@@ -8208,7 +8208,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.SequenceInterval;
 
           /**
@@ -8235,7 +8235,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.SequenceInterval,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8281,7 +8281,7 @@ export namespace org {
            * @returns CytobandInterval instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ICytobandInterval,
+            properties?: org.ga4gh.vrs.v1.ICytobandInterval
           ): org.ga4gh.vrs.v1.CytobandInterval;
 
           /**
@@ -8292,7 +8292,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ICytobandInterval,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8303,7 +8303,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ICytobandInterval,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8316,7 +8316,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.CytobandInterval;
 
           /**
@@ -8327,7 +8327,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.CytobandInterval;
 
           /**
@@ -8354,7 +8354,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.CytobandInterval,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8412,7 +8412,7 @@ export namespace org {
            * @returns SequenceExpression instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ISequenceExpression,
+            properties?: org.ga4gh.vrs.v1.ISequenceExpression
           ): org.ga4gh.vrs.v1.SequenceExpression;
 
           /**
@@ -8423,7 +8423,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ISequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8434,7 +8434,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ISequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8447,7 +8447,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.SequenceExpression;
 
           /**
@@ -8458,7 +8458,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.SequenceExpression;
 
           /**
@@ -8485,7 +8485,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.SequenceExpression,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8525,7 +8525,7 @@ export namespace org {
            * @returns LiteralSequenceExpression instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ILiteralSequenceExpression,
+            properties?: org.ga4gh.vrs.v1.ILiteralSequenceExpression
           ): org.ga4gh.vrs.v1.LiteralSequenceExpression;
 
           /**
@@ -8536,7 +8536,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ILiteralSequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8547,7 +8547,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ILiteralSequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8560,7 +8560,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.LiteralSequenceExpression;
 
           /**
@@ -8571,7 +8571,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.LiteralSequenceExpression;
 
           /**
@@ -8598,7 +8598,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.LiteralSequenceExpression,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8644,7 +8644,7 @@ export namespace org {
            * @returns DerivedSequenceExpression instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IDerivedSequenceExpression,
+            properties?: org.ga4gh.vrs.v1.IDerivedSequenceExpression
           ): org.ga4gh.vrs.v1.DerivedSequenceExpression;
 
           /**
@@ -8655,7 +8655,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IDerivedSequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8666,7 +8666,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IDerivedSequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8679,7 +8679,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.DerivedSequenceExpression;
 
           /**
@@ -8690,7 +8690,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.DerivedSequenceExpression;
 
           /**
@@ -8717,7 +8717,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.DerivedSequenceExpression,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8761,7 +8761,7 @@ export namespace org {
            * @param [properties] Properties to set
            */
           constructor(
-            properties?: org.ga4gh.vrs.v1.IRepeatedSequenceExpression,
+            properties?: org.ga4gh.vrs.v1.IRepeatedSequenceExpression
           );
 
           /** RepeatedSequenceExpression literalSequenceExpression. */
@@ -8793,7 +8793,7 @@ export namespace org {
            * @returns RepeatedSequenceExpression instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IRepeatedSequenceExpression,
+            properties?: org.ga4gh.vrs.v1.IRepeatedSequenceExpression
           ): org.ga4gh.vrs.v1.RepeatedSequenceExpression;
 
           /**
@@ -8804,7 +8804,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IRepeatedSequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8815,7 +8815,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IRepeatedSequenceExpression,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8828,7 +8828,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.RepeatedSequenceExpression;
 
           /**
@@ -8839,7 +8839,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.RepeatedSequenceExpression;
 
           /**
@@ -8866,7 +8866,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.RepeatedSequenceExpression,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -8909,7 +8909,7 @@ export namespace org {
            * @returns Feature instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IFeature,
+            properties?: org.ga4gh.vrs.v1.IFeature
           ): org.ga4gh.vrs.v1.Feature;
 
           /**
@@ -8920,7 +8920,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IFeature,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8931,7 +8931,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IFeature,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -8944,7 +8944,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Feature;
 
           /**
@@ -8955,7 +8955,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Feature;
 
           /**
@@ -8982,7 +8982,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Feature,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9022,7 +9022,7 @@ export namespace org {
            * @returns Gene instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IGene,
+            properties?: org.ga4gh.vrs.v1.IGene
           ): org.ga4gh.vrs.v1.Gene;
 
           /**
@@ -9033,7 +9033,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IGene,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9044,7 +9044,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IGene,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9057,7 +9057,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Gene;
 
           /**
@@ -9068,7 +9068,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Gene;
 
           /**
@@ -9095,7 +9095,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Gene,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9135,7 +9135,7 @@ export namespace org {
            * @returns Number instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.INumber,
+            properties?: org.ga4gh.vrs.v1.INumber
           ): org.ga4gh.vrs.v1.Number;
 
           /**
@@ -9146,7 +9146,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.INumber,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9157,7 +9157,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.INumber,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9170,7 +9170,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.Number;
 
           /**
@@ -9181,7 +9181,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.Number;
 
           /**
@@ -9208,7 +9208,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.Number,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9254,7 +9254,7 @@ export namespace org {
            * @returns IndefiniteRange instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IIndefiniteRange,
+            properties?: org.ga4gh.vrs.v1.IIndefiniteRange
           ): org.ga4gh.vrs.v1.IndefiniteRange;
 
           /**
@@ -9265,7 +9265,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IIndefiniteRange,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9276,7 +9276,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IIndefiniteRange,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9289,7 +9289,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.IndefiniteRange;
 
           /**
@@ -9300,7 +9300,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.IndefiniteRange;
 
           /**
@@ -9327,7 +9327,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.IndefiniteRange,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9373,7 +9373,7 @@ export namespace org {
            * @returns DefiniteRange instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.IDefiniteRange,
+            properties?: org.ga4gh.vrs.v1.IDefiniteRange
           ): org.ga4gh.vrs.v1.DefiniteRange;
 
           /**
@@ -9384,7 +9384,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.IDefiniteRange,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9395,7 +9395,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.IDefiniteRange,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9408,7 +9408,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.DefiniteRange;
 
           /**
@@ -9419,7 +9419,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.DefiniteRange;
 
           /**
@@ -9446,7 +9446,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.DefiniteRange,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9486,7 +9486,7 @@ export namespace org {
            * @returns SequenceState instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ISequenceState,
+            properties?: org.ga4gh.vrs.v1.ISequenceState
           ): org.ga4gh.vrs.v1.SequenceState;
 
           /**
@@ -9497,7 +9497,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ISequenceState,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9508,7 +9508,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ISequenceState,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9521,7 +9521,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.SequenceState;
 
           /**
@@ -9532,7 +9532,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.SequenceState;
 
           /**
@@ -9559,7 +9559,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.SequenceState,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9605,7 +9605,7 @@ export namespace org {
            * @returns SimpleInterval instance
            */
           public static create(
-            properties?: org.ga4gh.vrs.v1.ISimpleInterval,
+            properties?: org.ga4gh.vrs.v1.ISimpleInterval
           ): org.ga4gh.vrs.v1.SimpleInterval;
 
           /**
@@ -9616,7 +9616,7 @@ export namespace org {
            */
           public static encode(
             message: org.ga4gh.vrs.v1.ISimpleInterval,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9627,7 +9627,7 @@ export namespace org {
            */
           public static encodeDelimited(
             message: org.ga4gh.vrs.v1.ISimpleInterval,
-            writer?: $protobuf.Writer,
+            writer?: $protobuf.Writer
           ): $protobuf.Writer;
 
           /**
@@ -9640,7 +9640,7 @@ export namespace org {
            */
           public static decode(
             reader: $protobuf.Reader | Uint8Array,
-            length?: number,
+            length?: number
           ): org.ga4gh.vrs.v1.SimpleInterval;
 
           /**
@@ -9651,7 +9651,7 @@ export namespace org {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           public static decodeDelimited(
-            reader: $protobuf.Reader | Uint8Array,
+            reader: $protobuf.Reader | Uint8Array
           ): org.ga4gh.vrs.v1.SimpleInterval;
 
           /**
@@ -9678,7 +9678,7 @@ export namespace org {
            */
           public static toObject(
             message: org.ga4gh.vrs.v1.SimpleInterval,
-            options?: $protobuf.IConversionOptions,
+            options?: $protobuf.IConversionOptions
           ): { [k: string]: any };
 
           /**
@@ -9732,7 +9732,7 @@ export namespace google {
        * @returns Timestamp instance
        */
       public static create(
-        properties?: google.protobuf.ITimestamp,
+        properties?: google.protobuf.ITimestamp
       ): google.protobuf.Timestamp;
 
       /**
@@ -9743,7 +9743,7 @@ export namespace google {
        */
       public static encode(
         message: google.protobuf.ITimestamp,
-        writer?: $protobuf.Writer,
+        writer?: $protobuf.Writer
       ): $protobuf.Writer;
 
       /**
@@ -9754,7 +9754,7 @@ export namespace google {
        */
       public static encodeDelimited(
         message: google.protobuf.ITimestamp,
-        writer?: $protobuf.Writer,
+        writer?: $protobuf.Writer
       ): $protobuf.Writer;
 
       /**
@@ -9767,7 +9767,7 @@ export namespace google {
        */
       public static decode(
         reader: $protobuf.Reader | Uint8Array,
-        length?: number,
+        length?: number
       ): google.protobuf.Timestamp;
 
       /**
@@ -9778,7 +9778,7 @@ export namespace google {
        * @throws {$protobuf.util.ProtocolError} If required fields are missing
        */
       public static decodeDelimited(
-        reader: $protobuf.Reader | Uint8Array,
+        reader: $protobuf.Reader | Uint8Array
       ): google.protobuf.Timestamp;
 
       /**
@@ -9805,7 +9805,7 @@ export namespace google {
        */
       public static toObject(
         message: google.protobuf.Timestamp,
-        options?: $protobuf.IConversionOptions,
+        options?: $protobuf.IConversionOptions
       ): { [k: string]: any };
 
       /**

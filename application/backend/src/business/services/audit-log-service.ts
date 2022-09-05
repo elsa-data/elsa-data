@@ -22,7 +22,7 @@ export class AuditLogService {
   constructor(
     // NOTE: we don't define an edgeDbClient here as the audit log functionality
     // is designed to work either standalone or in a transaction context
-    private usersService: UsersService,
+    private usersService: UsersService
   ) {}
 
   /**
@@ -41,7 +41,7 @@ export class AuditLogService {
     releaseId: string,
     actionCategory: AuditEventAction,
     actionDescription: string,
-    start: Date,
+    start: Date
   ): Promise<string> {
     const auditEvent = await e
       .insert(e.audit.ReleaseAuditEvent, {
@@ -93,7 +93,7 @@ export class AuditLogService {
     outcome: AuditEventOutcome,
     start: Date,
     end: Date,
-    details: any,
+    details: any
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
@@ -119,16 +119,16 @@ export class AuditLogService {
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
-    offset: number,
+    offset: number
   ): Promise<PagedResult<AuditEntryType>> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
-      { releaseId: releaseId },
+      { releaseId: releaseId }
     );
 
     const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery.run(
       executor,
-      { releaseId: releaseId, limit: limit, offset: offset },
+      { releaseId: releaseId, limit: limit, offset: offset }
     );
 
     return createPagedResult(
@@ -142,7 +142,7 @@ export class AuditLogService {
           : undefined,
       })),
       totalEntries,
-      limit,
+      limit
     );
   }
 }

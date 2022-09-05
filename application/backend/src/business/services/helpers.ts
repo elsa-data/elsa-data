@@ -25,13 +25,13 @@ export function collapseExternalIds(externals: any): string {
 export async function doRoleInReleaseCheck(
   usersService: UsersService,
   user: AuthenticatedUser,
-  releaseId: string,
+  releaseId: string
 ) {
   const userRole = await usersService.roleInRelease(user, releaseId);
 
   if (!userRole)
     throw new Error(
-      "Unauthenticated attempt to access release, or release does not exist",
+      "Unauthenticated attempt to access release, or release does not exist"
     );
 
   return {
@@ -56,7 +56,7 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
 
   // the set of selected specimens from the release
   const releaseSelectedSpecimensQuery = e.select(
-    releaseQuery.selectedSpecimens,
+    releaseQuery.selectedSpecimens
   );
 
   const releaseInfoQuery = e.select(releaseQuery, (r) => ({
@@ -71,7 +71,7 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     accessEnabled: e.op(
       e.op(e.datetime_current(), ">=", r.releaseStarted),
       "and",
-      e.op(e.datetime_current(), "<=", r.releaseEnded),
+      e.op(e.datetime_current(), "<=", r.releaseEnded)
     ),
     // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
     //manualExclusions: true,
@@ -88,15 +88,15 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
 
   if (!releaseInfo)
     throw new Error(
-      `Case fetch attempted on non-existent release ${releaseId}`,
+      `Case fetch attempted on non-existent release ${releaseId}`
     );
 
   const datasetUriToIdMap = new Map(
-    releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)]),
+    releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)])
   );
 
   const datasetIdToUriMap = new Map(
-    releaseInfo.datasetIds.map((d) => [d.id, d.uri]),
+    releaseInfo.datasetIds.map((d) => [d.id, d.uri])
   );
 
   const releaseAllDatasetIdDbSet =
@@ -119,7 +119,7 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     (dsc) => ({
       externalIdentifiers: true,
       filter: e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery),
-    }),
+    })
   );
 
   return {

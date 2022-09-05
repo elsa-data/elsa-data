@@ -19,12 +19,12 @@ export const MasterAccessControlBox: React.FC<Props> = ({
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-      result,
+      result
     );
   };
 
   const applyAllMutate = useMutation(
-    axiosPostArgMutationFn(`/api/releases/${releaseId}/masterAccess`),
+    axiosPostArgMutationFn(`/api/releases/${releaseId}/masterAccess`)
   );
 
   return (

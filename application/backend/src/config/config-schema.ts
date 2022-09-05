@@ -44,7 +44,7 @@ convict.addFormat({
  */
 export async function getConfig(
   environment: ElsaEnvironment,
-  location: ElsaLocation,
+  location: ElsaLocation
 ) {
   // setup our configuration schema
   const config = convict(
@@ -144,7 +144,7 @@ export async function getConfig(
         },
       },
     },
-    {},
+    {}
   );
 
   // first step is to identify the environment and load that

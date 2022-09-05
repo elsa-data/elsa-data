@@ -28,7 +28,7 @@ export async function insert10G() {
     vcfSize: number,
     vcfEtag: string,
     patientConsentJsons?: DuoLimitationCodedType[],
-    specimenConsentJsons?: DuoLimitationCodedType[],
+    specimenConsentJsons?: DuoLimitationCodedType[]
   ) => {
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
@@ -42,8 +42,8 @@ export async function insert10G() {
                   ...patientConsentJsons.map((pc) =>
                     e.insert(e.consent.ConsentStatementDuo, {
                       dataUseLimitation: pc,
-                    }),
-                  ),
+                    })
+                  )
                 ),
               })
             : undefined,
@@ -56,8 +56,8 @@ export async function insert10G() {
                     ...specimenConsentJsons.map((sc) =>
                       e.insert(e.consent.ConsentStatementDuo, {
                         dataUseLimitation: sc,
-                      }),
-                    ),
+                      })
+                    )
                   ),
                 })
               : undefined,
@@ -65,23 +65,23 @@ export async function insert10G() {
             createFile(
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
               vcfSize,
-              vcfEtag,
+              vcfEtag
             ),
             createFile(
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-              0,
+              0
             ),
             createFile(
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
               bamSize,
               bamEtag,
-              bamMd5,
+              bamMd5
             ),
             createFile(
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
-              0,
+              0
             ),
-            [],
+            []
           ),
         }),
       }),
@@ -104,7 +104,7 @@ export async function insert10G() {
           "63f2b3c6b87c66d114f1e9bae8c35091", // pragma: allowlist secret
           425745911,
           "",
-          [{ code: "DUO:0000006", modifiers: [{ code: "DUO:0000045" }] }],
+          [{ code: "DUO:0000006", modifiers: [{ code: "DUO:0000045" }] }]
         ),
         await makeCase(
           "SINGLETONMARY",
@@ -125,7 +125,7 @@ export async function insert10G() {
               diseaseCode: "MONDO:0005151",
               modifiers: [{ code: "DUO:0000045" }],
             },
-          ],
+          ]
         ),
         await makeCase(
           "SINGLETONJANE",
@@ -136,7 +136,7 @@ export async function insert10G() {
           "",
           "",
           438966719,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONKAARINA",
@@ -147,7 +147,7 @@ export async function insert10G() {
           "",
           "",
           437251295,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONANNELI",
@@ -158,7 +158,7 @@ export async function insert10G() {
           "",
           "",
           429780695,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONMARIA",
@@ -169,7 +169,7 @@ export async function insert10G() {
           "",
           "",
           434759056,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONMELE",
@@ -180,7 +180,7 @@ export async function insert10G() {
           "",
           "",
           419758367,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONPELANI",
@@ -191,7 +191,7 @@ export async function insert10G() {
           "",
           "",
           419339818,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONDEMBO",
@@ -202,7 +202,7 @@ export async function insert10G() {
           "",
           "",
           534880969,
-          "",
+          ""
         ),
         await makeCase(
           "SINGLETONPAKUTEH",
@@ -213,8 +213,8 @@ export async function insert10G() {
           "",
           "",
           540694003,
-          "",
-        ),
+          ""
+        )
       ),
     })
     .run(edgeDbClient);

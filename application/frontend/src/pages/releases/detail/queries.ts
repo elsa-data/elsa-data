@@ -16,7 +16,7 @@ export const REACT_QUERY_RELEASE_KEYS = {
 };
 
 export async function makeReleaseTypeLocal(
-  releaseData: ReleaseDetailType,
+  releaseData: ReleaseDetailType
 ): Promise<ReleaseTypeLocal> {
   // the release data comes with only terminology *codes* - so we need to lookup
   // the display terms for the UI
@@ -30,7 +30,7 @@ export async function makeReleaseTypeLocal(
   // we want to make an immutable map of letters (e.g. uri => A,B...)
   // just for some UI optimisations which is why this is strictly local
   (releaseData as ReleaseTypeLocal).datasetMap = createDatasetMap(
-    releaseData.datasetUris,
+    releaseData.datasetUris
   );
 
   return releaseData as ReleaseTypeLocal;

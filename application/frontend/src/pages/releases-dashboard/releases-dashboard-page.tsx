@@ -18,7 +18,7 @@ export const ReleasesPage: React.FC = () => {
         .get<ReleaseDetailType[]>(`/api/releases`)
         .then((response) => response.data);
     },
-    {},
+    {}
   );
 
   const [showingRemsDialog, setShowingRemsDialog] = useState(false);

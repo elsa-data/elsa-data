@@ -5,7 +5,7 @@ import e from "../../../dbschema/edgeql-js";
  * with any release (i.e the system entries like Login, Logout)
  */
 export const countAuditLogEntriesForSystemQuery = e.count(
-  e.select(e.audit.ReleaseAuditEvent),
+  e.select(e.audit.ReleaseAuditEvent)
 );
 
 /**
@@ -22,10 +22,10 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
         filter: e.op(
           ae["<auditLog[is release::Release]"].id,
           "=",
-          params.releaseId,
+          params.releaseId
         ),
-      })),
-    ),
+      }))
+    )
 );
 
 /**
@@ -44,7 +44,7 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
       filter: e.op(
         ae["<auditLog[is release::Release]"].id,
         "=",
-        params.releaseId,
+        params.releaseId
       ),
       order_by: {
         expression: ae.occurredDateTime,
@@ -52,5 +52,5 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
       },
       limit: params.limit,
       offset: params.offset,
-    })),
+    }))
 );

@@ -17,7 +17,7 @@ export const HrDiv: React.FC = () => {
 };
 
 export const LeftDiv: React.FC<{ heading: string; extra?: string }> = (
-  props,
+  props
 ) => {
   return (
     <div className="md:col-span-1">

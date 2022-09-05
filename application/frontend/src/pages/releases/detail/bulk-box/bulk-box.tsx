@@ -28,7 +28,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
     const interval = setInterval(() => {
       if (releaseData.runningJob) {
         queryClient.invalidateQueries(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+          REACT_QUERY_RELEASE_KEYS.detail(releaseId)
         );
       }
     }, 5000);
@@ -40,16 +40,16 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-      result,
+      result
     );
   };
 
   const applyAllMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/select`),
+    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/select`)
   );
 
   const cancelMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`),
+    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
   );
 
   return (

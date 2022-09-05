@@ -6,7 +6,7 @@ import React, { Provider } from "react";
  */
 export function createCtx<ContextType>(): readonly [
   () => ContextType,
-  Provider<ContextType | undefined>,
+  Provider<ContextType | undefined>
 ] {
   const ctx = React.createContext<ContextType | undefined>(undefined);
   function useCtx() {

@@ -46,7 +46,7 @@ export class S3CloudTrailLakeStack extends Stack {
         organizationEnabled: false,
         retentionPeriod: 2557, // Defined maximum number of days allowed (7 years)
         terminationProtectionEnabled: false,
-      },
+      }
     );
 
     // Output value

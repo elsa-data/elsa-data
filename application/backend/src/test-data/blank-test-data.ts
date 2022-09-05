@@ -59,7 +59,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`  ${analysesDeleted.length} lab analyses(s)`);
     console.log(`  ${runsDeleted.length} lab run(s)`);
     console.log(
-      `  ${submissionsBatchesDeleted.length} lab submission batch(s)`,
+      `  ${submissionsBatchesDeleted.length} lab submission batch(s)`
     );
 
     console.log(`  ${bclsDeleted.length} lab bcl(s)`);

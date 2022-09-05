@@ -17,7 +17,7 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
         <div
           className={classNames(
             "border-b p-3 bg-gradient-to-r",
-            headerFromColour,
+            headerFromColour
           )}
         >
           <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
@@ -39,7 +39,7 @@ export const BoxNoPad: React.FC<PropsWithChildren<BoxProps>> = ({
         <div
           className={classNames(
             "border-b p-3 bg-gradient-to-r",
-            headerFromColour,
+            headerFromColour
           )}
         >
           <h5 className="font-bold uppercase text-gray-600">{heading}</h5>

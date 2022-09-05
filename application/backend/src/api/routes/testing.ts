@@ -20,7 +20,7 @@ import { ApiRequestValidationError } from "../errors/api-request-validation-erro
  */
 export function registerTestingRoutes(
   fastify: FastifyInstance,
-  isDev: boolean,
+  isDev: boolean
 ) {
   /**
    * Add a health check route that just purely indicates connectivity to the HTTP server... should
@@ -33,7 +33,7 @@ export function registerTestingRoutes(
       reply.send({
         server: "Fastify",
       });
-    },
+    }
   );
 
   /**
@@ -55,7 +55,7 @@ export function registerTestingRoutes(
         reply.send({
           message: "yes!",
         });
-      },
+      }
     );
 
     fastify.get("/api/testing/get-thrown-error", {}, function (request, reply) {
@@ -70,9 +70,9 @@ export function registerTestingRoutes(
           "Error was thrown",
           406,
           "Asynchronous handler",
-          "i-12345",
+          "i-12345"
         );
-      },
+      }
     );
 
     fastify.get(
@@ -83,7 +83,7 @@ export function registerTestingRoutes(
         const val = undefined.something;
 
         reply.send(val);
-      },
+      }
     );
 
     fastify.post(
@@ -96,7 +96,7 @@ export function registerTestingRoutes(
         else {
           throw new ApiRequestValidationError(testingRequestValidate.errors!);
         }
-      },
+      }
     );
   }
 }

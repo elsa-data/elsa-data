@@ -16,7 +16,7 @@ export class PhenopacketsService {
 
   public async getPhenopacket(
     user: AuthenticatedUser,
-    individualId: string,
+    individualId: string
   ): Promise<Uint8Array> {
     throw new Error("Not implemented");
 

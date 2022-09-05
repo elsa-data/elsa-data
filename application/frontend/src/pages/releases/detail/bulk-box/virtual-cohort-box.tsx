@@ -32,7 +32,7 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-      result,
+      result
     );
     setLastMutateError(null);
   };
@@ -43,8 +43,8 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
 
   const ctrlUrlMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseId}/NEEDTODOTHIS`,
-    ),
+      `/api/releases/${releaseId}/NEEDTODOTHIS`
+    )
   );
 
   return (
@@ -92,7 +92,7 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
                     {
                       onSuccess: afterMutateUpdateQueryData,
                       onError: afterMutateError,
-                    },
+                    }
                   )
                 }
               />

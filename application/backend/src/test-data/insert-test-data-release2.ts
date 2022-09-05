@@ -38,7 +38,7 @@ export async function insertRelease2() {
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
-        }),
+        })
       ),
     })
     .run(edgeDbClient);

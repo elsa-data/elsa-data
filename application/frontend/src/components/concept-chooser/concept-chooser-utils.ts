@@ -10,7 +10,7 @@ import { CodingType } from "@umccr/elsa-types";
  */
 export function addToSelected(
   setSelected: Dispatch<React.SetStateAction<CodingType[]>>,
-  concept: CodingType,
+  concept: CodingType
 ) {
   const permanentConcept = _.cloneDeep(concept);
 
@@ -32,7 +32,7 @@ export function addToSelected(
 export function removeFromSelected(
   setSelected: Dispatch<React.SetStateAction<CodingType[]>>,
   system: string,
-  code: string,
+  code: string
 ) {
   setSelected((oldSelected) => {
     return oldSelected.filter(function (item) {

@@ -23,7 +23,7 @@ type CloudTrailInputQueryType = {
   endTimestamp?: string /* Unix time in 'YYYY-DD-MM 00:00:00.000', example: '2022-07-05 23:00:00.000' */;
 };
 async function requestS3CloudTrailLakeQuery(
-  props: CloudTrailInputQueryType,
+  props: CloudTrailInputQueryType
 ): Promise<string> {
   // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
   const requestedField =
@@ -62,7 +62,7 @@ type CloudTrailGetQueryResultParam = {
   eventDataStoreId: string;
 };
 async function getResultS3CloudTrailLakeQuery(
-  params: CloudTrailGetQueryResultParam,
+  params: CloudTrailGetQueryResultParam
 ): Promise<Record<string, string>[]> {
   // Setting up init variables
   let nextToken: undefined | string;
@@ -76,7 +76,7 @@ async function getResultS3CloudTrailLakeQuery(
       NextToken: nextToken,
     });
     const cloudtrail_query_result_response = await CLOUDTRAIL_CLIENT.send(
-      command,
+      command
     );
 
     for (const row of cloudtrail_query_result_response.QueryResultRows) {
@@ -112,7 +112,7 @@ async function getS3ObjectSize(params: S3ObjectLocationType): Promise<number> {
 type logsType = Record<string, string | number>;
 
 async function addS3MetadataToCloudTrailS3Logs(
-  s3CloudTrailLogs: Record<string, string>[],
+  s3CloudTrailLogs: Record<string, string>[]
 ): Promise<logsType[]> {
   const logsResult = [];
   /* Grab S3 object information and append to metadata */

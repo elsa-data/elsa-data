@@ -68,7 +68,7 @@ export const CasesBox: React.FC<Props> = ({
         .get<ReleaseCaseType[]>(u)
         .then((response) => response.data);
     },
-    { keepPreviousData: true },
+    { keepPreviousData: true }
   );
 
   const rowSpans: number[] = [];
@@ -149,7 +149,7 @@ export const CasesBox: React.FC<Props> = ({
                       className={classNames(
                         baseColumnClasses,
                         "w-12",
-                        "text-center",
+                        "text-center"
                       )}
                     >
                       <IndeterminateCheckbox
@@ -162,7 +162,7 @@ export const CasesBox: React.FC<Props> = ({
                       className={classNames(
                         baseColumnClasses,
                         "text-left",
-                        "w-40",
+                        "w-40"
                       )}
                     >
                       {row.externalId}{" "}
@@ -177,7 +177,7 @@ export const CasesBox: React.FC<Props> = ({
                       className={classNames(
                         baseColumnClasses,
                         "text-left",
-                        "pr-4",
+                        "pr-4"
                       )}
                     >
                       <PatientsFlexRow
@@ -195,7 +195,7 @@ export const CasesBox: React.FC<Props> = ({
                           "w-10",
                           "px-2",
                           "border-l",
-                          "border-red-500",
+                          "border-red-500"
                         )}
                         rowSpan={
                           rowSpans[rowIndex] == 1

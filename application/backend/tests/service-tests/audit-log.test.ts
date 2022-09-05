@@ -39,7 +39,7 @@ it("audit stuff instant", async () => {
     testReleaseId,
     "C",
     "Made User",
-    start,
+    start
   );
 
   await auditLogService.completeReleaseAuditEvent(
@@ -50,7 +50,7 @@ it("audit stuff instant", async () => {
     new Date(),
     {
       field: "A field",
-    },
+    }
   );
 
   const events = await auditLogService.getEntries(
@@ -58,7 +58,7 @@ it("audit stuff instant", async () => {
     allowedPiUser,
     testReleaseId,
     1000,
-    0,
+    0
   );
 
   console.log(JSON.stringify(events));
@@ -73,7 +73,7 @@ it("audit stuff duration", async () => {
     testReleaseId,
     "C",
     "Made User Over Time",
-    start,
+    start
   );
 
   await auditLogService.completeReleaseAuditEvent(
@@ -84,7 +84,7 @@ it("audit stuff duration", async () => {
     addSeconds(start, 96),
     {
       field: "A field",
-    },
+    }
   );
 
   const events = await auditLogService.getEntries(
@@ -92,7 +92,7 @@ it("audit stuff duration", async () => {
     allowedPiUser,
     testReleaseId,
     1000,
-    0,
+    0
   );
 
   console.log(JSON.stringify(events));

@@ -26,15 +26,15 @@ export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
         authenticatedUser,
         releaseId,
         pageSize,
-        (page - 1) * pageSize,
+        (page - 1) * pageSize
       );
 
       sendPagedResult(
         reply,
         events,
         page,
-        `/api/releases/${releaseId}/audit-log?`,
+        `/api/releases/${releaseId}/audit-log?`
       );
-    },
+    }
   );
 };

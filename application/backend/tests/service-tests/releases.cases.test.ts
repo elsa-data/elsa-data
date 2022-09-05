@@ -56,7 +56,7 @@ it("get all case level information from a release as a data owner", async () => 
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
-    DEFAULT_OFFSET,
+    DEFAULT_OFFSET
   );
 
   expect(pagedResult).not.toBeNull();
@@ -67,19 +67,19 @@ it("get all case level information from a release as a data owner", async () => 
   expect(pagedResult.data.length).toBe(14);
 
   expect(findSpecimen(pagedResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
-    "selected",
+    "selected"
   );
   expect(findSpecimen(pagedResult.data, HOMER_SPECIMEN)?.nodeStatus).toBe(
-    "selected",
+    "selected"
   );
   expect(findSpecimen(pagedResult.data, MARGE_SPECIMEN)?.nodeStatus).toBe(
-    "unselected",
+    "unselected"
   );
   expect(findSpecimen(pagedResult.data, ELROY_SPECIMEN)?.nodeStatus).toBe(
-    "unselected",
+    "unselected"
   );
   expect(findSpecimen(pagedResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
-    "selected",
+    "selected"
   );
 
   // expect nothing in the duck family to be selected
@@ -95,7 +95,7 @@ it("get limited case level information from a release as a PI", async () => {
     allowedPiUser,
     testReleaseId,
     DEFAULT_LIMIT,
-    DEFAULT_OFFSET,
+    DEFAULT_OFFSET
   );
 
   expect(pagedResult).not.toBeNull();
@@ -106,24 +106,24 @@ it("get limited case level information from a release as a PI", async () => {
 
   // because the PI has no concept of 'unselected' item - every node present is selected
   expect(findCase(pagedResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
-    "selected",
+    "selected"
   );
   expect(findCase(pagedResult.data, JETSONS_CASE)?.nodeStatus).toBe("selected");
 
   // the specimens that are shared
   expect(findSpecimen(pagedResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
-    "selected",
+    "selected"
   );
   expect(findSpecimen(pagedResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
-    "selected",
+    "selected"
   );
 
   // not expecting to find these specimens at all as they are not shared
   expect(
-    findSpecimen(pagedResult.data, MARGE_SPECIMEN)?.nodeStatus,
+    findSpecimen(pagedResult.data, MARGE_SPECIMEN)?.nodeStatus
   ).toBeUndefined();
   expect(
-    findSpecimen(pagedResult.data, ELROY_SPECIMEN)?.nodeStatus,
+    findSpecimen(pagedResult.data, ELROY_SPECIMEN)?.nodeStatus
   ).toBeUndefined();
   expect(findSpecimen(pagedResult.data, "HG90")?.nodeStatus).toBeUndefined();
 });
@@ -136,7 +136,7 @@ it("get patient/specimen level data fields", async () => {
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
-    DEFAULT_OFFSET,
+    DEFAULT_OFFSET
   );
 
   expect(pagedResult).not.toBeNull();
@@ -161,34 +161,34 @@ it("node status changes as leaves are selected and unselected", async () => {
       allowedDataOwnerUser,
       testReleaseId,
       DEFAULT_LIMIT,
-      DEFAULT_OFFSET,
+      DEFAULT_OFFSET
     );
 
     assert(initialResult != null);
 
     expect(findCase(initialResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
-      "indeterminate",
+      "indeterminate"
     );
     expect(findSpecimen(initialResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(initialResult.data, HOMER_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(initialResult.data, MARGE_SPECIMEN)?.nodeStatus).toBe(
-      "unselected",
+      "unselected"
     );
     expect(findCase(initialResult.data, JETSONS_CASE)?.nodeStatus).toBe(
-      "indeterminate",
+      "indeterminate"
     );
     expect(findSpecimen(initialResult.data, ELROY_SPECIMEN)?.nodeStatus).toBe(
-      "unselected",
+      "unselected"
     );
     expect(findSpecimen(initialResult.data, GEORGE_SPECIMEN)?.nodeStatus).toBe(
-      "unselected",
+      "unselected"
     );
     expect(findSpecimen(initialResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
   }
 
@@ -199,7 +199,7 @@ it("node status changes as leaves are selected and unselected", async () => {
       "HG00097",
       ELROY_SPECIMEN,
       GEORGE_SPECIMEN,
-    ]),
+    ])
   );
 
   {
@@ -207,46 +207,43 @@ it("node status changes as leaves are selected and unselected", async () => {
       allowedDataOwnerUser,
       testReleaseId,
       DEFAULT_LIMIT,
-      DEFAULT_OFFSET,
+      DEFAULT_OFFSET
     );
 
     expect(afterSetResult).not.toBeNull();
     assert(afterSetResult != null);
 
     expect(findCase(afterSetResult.data, "SIMPSONS")?.nodeStatus).toBe(
-      "indeterminate",
+      "indeterminate"
     );
     expect(findSpecimen(afterSetResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(afterSetResult.data, HOMER_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(afterSetResult.data, MARGE_SPECIMEN)?.nodeStatus).toBe(
-      "unselected",
+      "unselected"
     );
     // note this change which has occurred because the leaf node of HG4 and HG5 has changed
     expect(findCase(afterSetResult.data, "JETSONS")?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(afterSetResult.data, ELROY_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(afterSetResult.data, GEORGE_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
     expect(findSpecimen(afterSetResult.data, JUDY_SPECIMEN)?.nodeStatus).toBe(
-      "selected",
+      "selected"
     );
   }
 
   await releasesService.setUnselected(
     allowedDataOwnerUser,
     testReleaseId,
-    await findDatabaseSpecimenIds(edgeDbClient, [
-      BART_SPECIMEN,
-      HOMER_SPECIMEN,
-    ]),
+    await findDatabaseSpecimenIds(edgeDbClient, [BART_SPECIMEN, HOMER_SPECIMEN])
   );
 
   {
@@ -254,7 +251,7 @@ it("node status changes as leaves are selected and unselected", async () => {
       allowedDataOwnerUser,
       testReleaseId,
       DEFAULT_LIMIT,
-      DEFAULT_OFFSET,
+      DEFAULT_OFFSET
     );
 
     expect(afterUnsetResult).not.toBeNull();
@@ -262,16 +259,16 @@ it("node status changes as leaves are selected and unselected", async () => {
 
     // note this change due to all the leaves now being unset
     expect(findCase(afterUnsetResult.data, "SIMPSONS")?.nodeStatus).toBe(
-      "unselected",
+      "unselected"
     );
     expect(findSpecimen(afterUnsetResult.data, BART_SPECIMEN)?.nodeStatus).toBe(
-      "unselected",
+      "unselected"
     );
     expect(
-      findSpecimen(afterUnsetResult.data, HOMER_SPECIMEN)?.nodeStatus,
+      findSpecimen(afterUnsetResult.data, HOMER_SPECIMEN)?.nodeStatus
     ).toBe("unselected");
     expect(
-      findSpecimen(afterUnsetResult.data, MARGE_SPECIMEN)?.nodeStatus,
+      findSpecimen(afterUnsetResult.data, MARGE_SPECIMEN)?.nodeStatus
     ).toBe("unselected");
   }
 });
@@ -282,7 +279,7 @@ it("pass in specimen ids that are not valid", async () => {
       allowedPiUser,
       testReleaseId,
       // whilst this looks vaguely like a edgedb id it will never match
-      ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],
+      ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     );
   }).rejects.toThrow(Error);
 
@@ -312,7 +309,7 @@ it("test paging", async () => {
       allowedDataOwnerUser,
       testReleaseId,
       limit,
-      (page - 1) * limit,
+      (page - 1) * limit
     );
 
     expect(result).not.toBeNull();
@@ -333,7 +330,7 @@ it("test identifier searching with case level match", async () => {
     testReleaseId,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
-    "ASHKENAZIM",
+    "ASHKENAZIM"
   );
 
   expect(result).not.toBeNull();
@@ -351,7 +348,7 @@ it("test identifier searching with patient level match", async () => {
     testReleaseId,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
-    "HOMER",
+    "HOMER"
   );
 
   expect(result).not.toBeNull();
@@ -367,7 +364,7 @@ it("test identifier searching with specimen level match", async () => {
     testReleaseId,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
-    BART_SPECIMEN,
+    BART_SPECIMEN
   );
 
   expect(result).not.toBeNull();
@@ -384,7 +381,7 @@ it("test identifier searching with specimen level partial match (not supported)"
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
     // only part of a specimen id
-    BART_SPECIMEN.substring(0, 3),
+    BART_SPECIMEN.substring(0, 3)
   );
 
   expect(result).not.toBeNull();

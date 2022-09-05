@@ -37,7 +37,7 @@ it("basic add/remove of diseases from coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "AA",
-      "BB",
+      "BB"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -58,14 +58,14 @@ it("basic add/remove of diseases from coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "AA",
-      "CC",
+      "CC"
     );
 
     await releasesService.removeDiseaseFromApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "mondo",
-      "ABCD",
+      "ABCD"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -96,7 +96,7 @@ it("basic add/remove of countries from coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "AA",
-      "BB",
+      "BB"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -117,14 +117,14 @@ it("basic add/remove of countries from coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "AA",
-      "CC",
+      "CC"
     );
 
     await releasesService.removeCountryFromApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "iso",
-      "AU",
+      "AU"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -147,7 +147,7 @@ it("set like behaviour of disease/country in coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "iso",
-      "AU",
+      "AU"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -164,7 +164,7 @@ it("set like behaviour of disease/country in coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "mondo",
-      "ABCD",
+      "ABCD"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -182,7 +182,7 @@ it("set like behaviour of disease/country in coded application", async () => {
       allowedPiUser,
       testReleaseId,
       "mondoNOT",
-      "ABCD",
+      "ABCD"
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);

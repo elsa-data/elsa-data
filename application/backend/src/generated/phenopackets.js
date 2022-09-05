@@ -192,7 +192,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.Individual.encode(
                 message.subject,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.phenotypicFeatures != null &&
@@ -201,19 +201,19 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.phenotypicFeatures.length; ++i)
                 $root.org.phenopackets.schema.v2.core.PhenotypicFeature.encode(
                   message.phenotypicFeatures[i],
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
             if (message.measurements != null && message.measurements.length)
               for (let i = 0; i < message.measurements.length; ++i)
                 $root.org.phenopackets.schema.v2.core.Measurement.encode(
                   message.measurements[i],
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
             if (message.biosamples != null && message.biosamples.length)
               for (let i = 0; i < message.biosamples.length; ++i)
                 $root.org.phenopackets.schema.v2.core.Biosample.encode(
                   message.biosamples[i],
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
             if (
               message.interpretations != null &&
@@ -222,25 +222,25 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.interpretations.length; ++i)
                 $root.org.phenopackets.schema.v2.core.Interpretation.encode(
                   message.interpretations[i],
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
             if (message.diseases != null && message.diseases.length)
               for (let i = 0; i < message.diseases.length; ++i)
                 $root.org.phenopackets.schema.v2.core.Disease.encode(
                   message.diseases[i],
-                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
                 ).ldelim();
             if (message.medicalActions != null && message.medicalActions.length)
               for (let i = 0; i < message.medicalActions.length; ++i)
                 $root.org.phenopackets.schema.v2.core.MedicalAction.encode(
                   message.medicalActions[i],
-                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork(),
+                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork()
                 ).ldelim();
             if (message.files != null && message.files.length)
               for (let i = 0; i < message.files.length; ++i)
                 $root.org.phenopackets.schema.v2.core.File.encode(
                   message.files[i],
-                  writer.uint32(/* id 10, wireType 2 =*/ 82).fork(),
+                  writer.uint32(/* id 10, wireType 2 =*/ 82).fork()
                 ).ldelim();
             if (
               message.metaData != null &&
@@ -248,7 +248,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.MetaData.encode(
                 message.metaData,
-                writer.uint32(/* id 11, wireType 2 =*/ 90).fork(),
+                writer.uint32(/* id 11, wireType 2 =*/ 90).fork()
               ).ldelim();
             return writer;
           };
@@ -264,7 +264,7 @@ export const org = ($root.org = (() => {
            */
           Phenopacket.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -295,7 +295,7 @@ export const org = ($root.org = (() => {
                   message.subject =
                     $root.org.phenopackets.schema.v2.core.Individual.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -310,8 +310,8 @@ export const org = ($root.org = (() => {
                   message.phenotypicFeatures.push(
                     $root.org.phenopackets.schema.v2.core.PhenotypicFeature.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -321,8 +321,8 @@ export const org = ($root.org = (() => {
                   message.measurements.push(
                     $root.org.phenopackets.schema.v2.core.Measurement.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -332,8 +332,8 @@ export const org = ($root.org = (() => {
                   message.biosamples.push(
                     $root.org.phenopackets.schema.v2.core.Biosample.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -345,8 +345,8 @@ export const org = ($root.org = (() => {
                   message.interpretations.push(
                     $root.org.phenopackets.schema.v2.core.Interpretation.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -356,8 +356,8 @@ export const org = ($root.org = (() => {
                   message.diseases.push(
                     $root.org.phenopackets.schema.v2.core.Disease.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -369,8 +369,8 @@ export const org = ($root.org = (() => {
                   message.medicalActions.push(
                     $root.org.phenopackets.schema.v2.core.MedicalAction.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -380,8 +380,8 @@ export const org = ($root.org = (() => {
                   message.files.push(
                     $root.org.phenopackets.schema.v2.core.File.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -389,7 +389,7 @@ export const org = ($root.org = (() => {
                   message.metaData =
                     $root.org.phenopackets.schema.v2.core.MetaData.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -432,7 +432,7 @@ export const org = ($root.org = (() => {
             if (message.subject != null && message.hasOwnProperty("subject")) {
               let error =
                 $root.org.phenopackets.schema.v2.core.Individual.verify(
-                  message.subject,
+                  message.subject
                 );
               if (error) return "subject." + error;
             }
@@ -445,7 +445,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.phenotypicFeatures.length; ++i) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.PhenotypicFeature.verify(
-                    message.phenotypicFeatures[i],
+                    message.phenotypicFeatures[i]
                   );
                 if (error) return "phenotypicFeatures." + error;
               }
@@ -459,7 +459,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.measurements.length; ++i) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Measurement.verify(
-                    message.measurements[i],
+                    message.measurements[i]
                   );
                 if (error) return "measurements." + error;
               }
@@ -473,7 +473,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.biosamples.length; ++i) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Biosample.verify(
-                    message.biosamples[i],
+                    message.biosamples[i]
                   );
                 if (error) return "biosamples." + error;
               }
@@ -487,7 +487,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.interpretations.length; ++i) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Interpretation.verify(
-                    message.interpretations[i],
+                    message.interpretations[i]
                   );
                 if (error) return "interpretations." + error;
               }
@@ -501,7 +501,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.diseases.length; ++i) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Disease.verify(
-                    message.diseases[i],
+                    message.diseases[i]
                   );
                 if (error) return "diseases." + error;
               }
@@ -515,7 +515,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.medicalActions.length; ++i) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.MedicalAction.verify(
-                    message.medicalActions[i],
+                    message.medicalActions[i]
                   );
                 if (error) return "medicalActions." + error;
               }
@@ -524,7 +524,7 @@ export const org = ($root.org = (() => {
               if (!Array.isArray(message.files)) return "files: array expected";
               for (let i = 0; i < message.files.length; ++i) {
                 let error = $root.org.phenopackets.schema.v2.core.File.verify(
-                  message.files[i],
+                  message.files[i]
                 );
                 if (error) return "files." + error;
               }
@@ -534,7 +534,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("metaData")
             ) {
               let error = $root.org.phenopackets.schema.v2.core.MetaData.verify(
-                message.metaData,
+                message.metaData
               );
               if (error) return "metaData." + error;
             }
@@ -557,140 +557,140 @@ export const org = ($root.org = (() => {
             if (object.subject != null) {
               if (typeof object.subject !== "object")
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.subject: object expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.subject: object expected"
                 );
               message.subject =
                 $root.org.phenopackets.schema.v2.core.Individual.fromObject(
-                  object.subject,
+                  object.subject
                 );
             }
             if (object.phenotypicFeatures) {
               if (!Array.isArray(object.phenotypicFeatures))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.phenotypicFeatures: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.phenotypicFeatures: array expected"
                 );
               message.phenotypicFeatures = [];
               for (let i = 0; i < object.phenotypicFeatures.length; ++i) {
                 if (typeof object.phenotypicFeatures[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.phenotypicFeatures: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.phenotypicFeatures: object expected"
                   );
                 message.phenotypicFeatures[i] =
                   $root.org.phenopackets.schema.v2.core.PhenotypicFeature.fromObject(
-                    object.phenotypicFeatures[i],
+                    object.phenotypicFeatures[i]
                   );
               }
             }
             if (object.measurements) {
               if (!Array.isArray(object.measurements))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.measurements: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.measurements: array expected"
                 );
               message.measurements = [];
               for (let i = 0; i < object.measurements.length; ++i) {
                 if (typeof object.measurements[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.measurements: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.measurements: object expected"
                   );
                 message.measurements[i] =
                   $root.org.phenopackets.schema.v2.core.Measurement.fromObject(
-                    object.measurements[i],
+                    object.measurements[i]
                   );
               }
             }
             if (object.biosamples) {
               if (!Array.isArray(object.biosamples))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.biosamples: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.biosamples: array expected"
                 );
               message.biosamples = [];
               for (let i = 0; i < object.biosamples.length; ++i) {
                 if (typeof object.biosamples[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.biosamples: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.biosamples: object expected"
                   );
                 message.biosamples[i] =
                   $root.org.phenopackets.schema.v2.core.Biosample.fromObject(
-                    object.biosamples[i],
+                    object.biosamples[i]
                   );
               }
             }
             if (object.interpretations) {
               if (!Array.isArray(object.interpretations))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.interpretations: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.interpretations: array expected"
                 );
               message.interpretations = [];
               for (let i = 0; i < object.interpretations.length; ++i) {
                 if (typeof object.interpretations[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.interpretations: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.interpretations: object expected"
                   );
                 message.interpretations[i] =
                   $root.org.phenopackets.schema.v2.core.Interpretation.fromObject(
-                    object.interpretations[i],
+                    object.interpretations[i]
                   );
               }
             }
             if (object.diseases) {
               if (!Array.isArray(object.diseases))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.diseases: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.diseases: array expected"
                 );
               message.diseases = [];
               for (let i = 0; i < object.diseases.length; ++i) {
                 if (typeof object.diseases[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.diseases: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.diseases: object expected"
                   );
                 message.diseases[i] =
                   $root.org.phenopackets.schema.v2.core.Disease.fromObject(
-                    object.diseases[i],
+                    object.diseases[i]
                   );
               }
             }
             if (object.medicalActions) {
               if (!Array.isArray(object.medicalActions))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.medicalActions: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.medicalActions: array expected"
                 );
               message.medicalActions = [];
               for (let i = 0; i < object.medicalActions.length; ++i) {
                 if (typeof object.medicalActions[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.medicalActions: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.medicalActions: object expected"
                   );
                 message.medicalActions[i] =
                   $root.org.phenopackets.schema.v2.core.MedicalAction.fromObject(
-                    object.medicalActions[i],
+                    object.medicalActions[i]
                   );
               }
             }
             if (object.files) {
               if (!Array.isArray(object.files))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.files: array expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.files: array expected"
                 );
               message.files = [];
               for (let i = 0; i < object.files.length; ++i) {
                 if (typeof object.files[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Phenopacket.files: object expected",
+                    ".org.phenopackets.schema.v2.Phenopacket.files: object expected"
                   );
                 message.files[i] =
                   $root.org.phenopackets.schema.v2.core.File.fromObject(
-                    object.files[i],
+                    object.files[i]
                   );
               }
             }
             if (object.metaData != null) {
               if (typeof object.metaData !== "object")
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Phenopacket.metaData: object expected",
+                  ".org.phenopackets.schema.v2.Phenopacket.metaData: object expected"
                 );
               message.metaData =
                 $root.org.phenopackets.schema.v2.core.MetaData.fromObject(
-                  object.metaData,
+                  object.metaData
                 );
             }
             return message;
@@ -728,7 +728,7 @@ export const org = ($root.org = (() => {
               object.subject =
                 $root.org.phenopackets.schema.v2.core.Individual.toObject(
                   message.subject,
-                  options,
+                  options
                 );
             if (
               message.phenotypicFeatures &&
@@ -739,7 +739,7 @@ export const org = ($root.org = (() => {
                 object.phenotypicFeatures[j] =
                   $root.org.phenopackets.schema.v2.core.PhenotypicFeature.toObject(
                     message.phenotypicFeatures[j],
-                    options,
+                    options
                   );
             }
             if (message.measurements && message.measurements.length) {
@@ -748,7 +748,7 @@ export const org = ($root.org = (() => {
                 object.measurements[j] =
                   $root.org.phenopackets.schema.v2.core.Measurement.toObject(
                     message.measurements[j],
-                    options,
+                    options
                   );
             }
             if (message.biosamples && message.biosamples.length) {
@@ -757,7 +757,7 @@ export const org = ($root.org = (() => {
                 object.biosamples[j] =
                   $root.org.phenopackets.schema.v2.core.Biosample.toObject(
                     message.biosamples[j],
-                    options,
+                    options
                   );
             }
             if (message.interpretations && message.interpretations.length) {
@@ -766,7 +766,7 @@ export const org = ($root.org = (() => {
                 object.interpretations[j] =
                   $root.org.phenopackets.schema.v2.core.Interpretation.toObject(
                     message.interpretations[j],
-                    options,
+                    options
                   );
             }
             if (message.diseases && message.diseases.length) {
@@ -775,7 +775,7 @@ export const org = ($root.org = (() => {
                 object.diseases[j] =
                   $root.org.phenopackets.schema.v2.core.Disease.toObject(
                     message.diseases[j],
-                    options,
+                    options
                   );
             }
             if (message.medicalActions && message.medicalActions.length) {
@@ -784,7 +784,7 @@ export const org = ($root.org = (() => {
                 object.medicalActions[j] =
                   $root.org.phenopackets.schema.v2.core.MedicalAction.toObject(
                     message.medicalActions[j],
-                    options,
+                    options
                   );
             }
             if (message.files && message.files.length) {
@@ -793,14 +793,14 @@ export const org = ($root.org = (() => {
                 object.files[j] =
                   $root.org.phenopackets.schema.v2.core.File.toObject(
                     message.files[j],
-                    options,
+                    options
                   );
             }
             if (message.metaData != null && message.hasOwnProperty("metaData"))
               object.metaData =
                 $root.org.phenopackets.schema.v2.core.MetaData.toObject(
                   message.metaData,
-                  options,
+                  options
                 );
             return object;
           };
@@ -815,7 +815,7 @@ export const org = ($root.org = (() => {
           Phenopacket.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -959,13 +959,13 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.Phenopacket.encode(
                 message.proband,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (message.relatives != null && message.relatives.length)
               for (let i = 0; i < message.relatives.length; ++i)
                 $root.org.phenopackets.schema.v2.Phenopacket.encode(
                   message.relatives[i],
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
             if (
               message.pedigree != null &&
@@ -973,13 +973,13 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.Pedigree.encode(
                 message.pedigree,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             if (message.files != null && message.files.length)
               for (let i = 0; i < message.files.length; ++i)
                 $root.org.phenopackets.schema.v2.core.File.encode(
                   message.files[i],
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
             if (
               message.metaData != null &&
@@ -987,7 +987,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.MetaData.encode(
                 message.metaData,
-                writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
               ).ldelim();
             if (
               message.consanguinousParents != null &&
@@ -1038,7 +1038,7 @@ export const org = ($root.org = (() => {
                   message.proband =
                     $root.org.phenopackets.schema.v2.Phenopacket.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -1048,8 +1048,8 @@ export const org = ($root.org = (() => {
                   message.relatives.push(
                     $root.org.phenopackets.schema.v2.Phenopacket.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -1061,7 +1061,7 @@ export const org = ($root.org = (() => {
                   message.pedigree =
                     $root.org.phenopackets.schema.v2.core.Pedigree.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -1071,8 +1071,8 @@ export const org = ($root.org = (() => {
                   message.files.push(
                     $root.org.phenopackets.schema.v2.core.File.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -1080,7 +1080,7 @@ export const org = ($root.org = (() => {
                   message.metaData =
                     $root.org.phenopackets.schema.v2.core.MetaData.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -1122,7 +1122,7 @@ export const org = ($root.org = (() => {
               if (!$util.isString(message.id)) return "id: string expected";
             if (message.proband != null && message.hasOwnProperty("proband")) {
               let error = $root.org.phenopackets.schema.v2.Phenopacket.verify(
-                message.proband,
+                message.proband
               );
               if (error) return "proband." + error;
             }
@@ -1134,7 +1134,7 @@ export const org = ($root.org = (() => {
                 return "relatives: array expected";
               for (let i = 0; i < message.relatives.length; ++i) {
                 let error = $root.org.phenopackets.schema.v2.Phenopacket.verify(
-                  message.relatives[i],
+                  message.relatives[i]
                 );
                 if (error) return "relatives." + error;
               }
@@ -1150,7 +1150,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("pedigree")
             ) {
               let error = $root.org.phenopackets.schema.v2.core.Pedigree.verify(
-                message.pedigree,
+                message.pedigree
               );
               if (error) return "pedigree." + error;
             }
@@ -1158,7 +1158,7 @@ export const org = ($root.org = (() => {
               if (!Array.isArray(message.files)) return "files: array expected";
               for (let i = 0; i < message.files.length; ++i) {
                 let error = $root.org.phenopackets.schema.v2.core.File.verify(
-                  message.files[i],
+                  message.files[i]
                 );
                 if (error) return "files." + error;
               }
@@ -1168,7 +1168,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("metaData")
             ) {
               let error = $root.org.phenopackets.schema.v2.core.MetaData.verify(
-                message.metaData,
+                message.metaData
               );
               if (error) return "metaData." + error;
             }
@@ -1191,69 +1191,69 @@ export const org = ($root.org = (() => {
             if (object.proband != null) {
               if (typeof object.proband !== "object")
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Family.proband: object expected",
+                  ".org.phenopackets.schema.v2.Family.proband: object expected"
                 );
               message.proband =
                 $root.org.phenopackets.schema.v2.Phenopacket.fromObject(
-                  object.proband,
+                  object.proband
                 );
             }
             if (object.relatives) {
               if (!Array.isArray(object.relatives))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Family.relatives: array expected",
+                  ".org.phenopackets.schema.v2.Family.relatives: array expected"
                 );
               message.relatives = [];
               for (let i = 0; i < object.relatives.length; ++i) {
                 if (typeof object.relatives[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Family.relatives: object expected",
+                    ".org.phenopackets.schema.v2.Family.relatives: object expected"
                   );
                 message.relatives[i] =
                   $root.org.phenopackets.schema.v2.Phenopacket.fromObject(
-                    object.relatives[i],
+                    object.relatives[i]
                   );
               }
             }
             if (object.consanguinousParents != null)
               message.consanguinousParents = Boolean(
-                object.consanguinousParents,
+                object.consanguinousParents
               );
             if (object.pedigree != null) {
               if (typeof object.pedigree !== "object")
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Family.pedigree: object expected",
+                  ".org.phenopackets.schema.v2.Family.pedigree: object expected"
                 );
               message.pedigree =
                 $root.org.phenopackets.schema.v2.core.Pedigree.fromObject(
-                  object.pedigree,
+                  object.pedigree
                 );
             }
             if (object.files) {
               if (!Array.isArray(object.files))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Family.files: array expected",
+                  ".org.phenopackets.schema.v2.Family.files: array expected"
                 );
               message.files = [];
               for (let i = 0; i < object.files.length; ++i) {
                 if (typeof object.files[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Family.files: object expected",
+                    ".org.phenopackets.schema.v2.Family.files: object expected"
                   );
                 message.files[i] =
                   $root.org.phenopackets.schema.v2.core.File.fromObject(
-                    object.files[i],
+                    object.files[i]
                   );
               }
             }
             if (object.metaData != null) {
               if (typeof object.metaData !== "object")
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Family.metaData: object expected",
+                  ".org.phenopackets.schema.v2.Family.metaData: object expected"
                 );
               message.metaData =
                 $root.org.phenopackets.schema.v2.core.MetaData.fromObject(
-                  object.metaData,
+                  object.metaData
                 );
             }
             return message;
@@ -1288,7 +1288,7 @@ export const org = ($root.org = (() => {
               object.proband =
                 $root.org.phenopackets.schema.v2.Phenopacket.toObject(
                   message.proband,
-                  options,
+                  options
                 );
             if (message.relatives && message.relatives.length) {
               object.relatives = [];
@@ -1296,14 +1296,14 @@ export const org = ($root.org = (() => {
                 object.relatives[j] =
                   $root.org.phenopackets.schema.v2.Phenopacket.toObject(
                     message.relatives[j],
-                    options,
+                    options
                   );
             }
             if (message.pedigree != null && message.hasOwnProperty("pedigree"))
               object.pedigree =
                 $root.org.phenopackets.schema.v2.core.Pedigree.toObject(
                   message.pedigree,
-                  options,
+                  options
                 );
             if (message.files && message.files.length) {
               object.files = [];
@@ -1311,14 +1311,14 @@ export const org = ($root.org = (() => {
                 object.files[j] =
                   $root.org.phenopackets.schema.v2.core.File.toObject(
                     message.files[j],
-                    options,
+                    options
                   );
             }
             if (message.metaData != null && message.hasOwnProperty("metaData"))
               object.metaData =
                 $root.org.phenopackets.schema.v2.core.MetaData.toObject(
                   message.metaData,
-                  options,
+                  options
                 );
             if (
               message.consanguinousParents != null &&
@@ -1338,7 +1338,7 @@ export const org = ($root.org = (() => {
           Family.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -1469,13 +1469,13 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.members.length; ++i)
                 $root.org.phenopackets.schema.v2.Phenopacket.encode(
                   message.members[i],
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
             if (message.files != null && message.files.length)
               for (let i = 0; i < message.files.length; ++i)
                 $root.org.phenopackets.schema.v2.core.File.encode(
                   message.files[i],
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
             if (
               message.metaData != null &&
@@ -1483,7 +1483,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.MetaData.encode(
                 message.metaData,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             return writer;
           };
@@ -1533,8 +1533,8 @@ export const org = ($root.org = (() => {
                   message.members.push(
                     $root.org.phenopackets.schema.v2.Phenopacket.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -1544,8 +1544,8 @@ export const org = ($root.org = (() => {
                   message.files.push(
                     $root.org.phenopackets.schema.v2.core.File.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -1553,7 +1553,7 @@ export const org = ($root.org = (() => {
                   message.metaData =
                     $root.org.phenopackets.schema.v2.core.MetaData.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -1604,7 +1604,7 @@ export const org = ($root.org = (() => {
                 return "members: array expected";
               for (let i = 0; i < message.members.length; ++i) {
                 let error = $root.org.phenopackets.schema.v2.Phenopacket.verify(
-                  message.members[i],
+                  message.members[i]
                 );
                 if (error) return "members." + error;
               }
@@ -1613,7 +1613,7 @@ export const org = ($root.org = (() => {
               if (!Array.isArray(message.files)) return "files: array expected";
               for (let i = 0; i < message.files.length; ++i) {
                 let error = $root.org.phenopackets.schema.v2.core.File.verify(
-                  message.files[i],
+                  message.files[i]
                 );
                 if (error) return "files." + error;
               }
@@ -1623,7 +1623,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("metaData")
             ) {
               let error = $root.org.phenopackets.schema.v2.core.MetaData.verify(
-                message.metaData,
+                message.metaData
               );
               if (error) return "metaData." + error;
             }
@@ -1648,45 +1648,45 @@ export const org = ($root.org = (() => {
             if (object.members) {
               if (!Array.isArray(object.members))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Cohort.members: array expected",
+                  ".org.phenopackets.schema.v2.Cohort.members: array expected"
                 );
               message.members = [];
               for (let i = 0; i < object.members.length; ++i) {
                 if (typeof object.members[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Cohort.members: object expected",
+                    ".org.phenopackets.schema.v2.Cohort.members: object expected"
                   );
                 message.members[i] =
                   $root.org.phenopackets.schema.v2.Phenopacket.fromObject(
-                    object.members[i],
+                    object.members[i]
                   );
               }
             }
             if (object.files) {
               if (!Array.isArray(object.files))
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Cohort.files: array expected",
+                  ".org.phenopackets.schema.v2.Cohort.files: array expected"
                 );
               message.files = [];
               for (let i = 0; i < object.files.length; ++i) {
                 if (typeof object.files[i] !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.Cohort.files: object expected",
+                    ".org.phenopackets.schema.v2.Cohort.files: object expected"
                   );
                 message.files[i] =
                   $root.org.phenopackets.schema.v2.core.File.fromObject(
-                    object.files[i],
+                    object.files[i]
                   );
               }
             }
             if (object.metaData != null) {
               if (typeof object.metaData !== "object")
                 throw TypeError(
-                  ".org.phenopackets.schema.v2.Cohort.metaData: object expected",
+                  ".org.phenopackets.schema.v2.Cohort.metaData: object expected"
                 );
               message.metaData =
                 $root.org.phenopackets.schema.v2.core.MetaData.fromObject(
-                  object.metaData,
+                  object.metaData
                 );
             }
             return message;
@@ -1726,7 +1726,7 @@ export const org = ($root.org = (() => {
                 object.members[j] =
                   $root.org.phenopackets.schema.v2.Phenopacket.toObject(
                     message.members[j],
-                    options,
+                    options
                   );
             }
             if (message.files && message.files.length) {
@@ -1735,14 +1735,14 @@ export const org = ($root.org = (() => {
                 object.files[j] =
                   $root.org.phenopackets.schema.v2.core.File.toObject(
                     message.files[j],
-                    options,
+                    options
                   );
             }
             if (message.metaData != null && message.hasOwnProperty("metaData"))
               object.metaData =
                 $root.org.phenopackets.schema.v2.core.MetaData.toObject(
                   message.metaData,
-                  options,
+                  options
                 );
             return object;
           };
@@ -1757,7 +1757,7 @@ export const org = ($root.org = (() => {
           Cohort.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -1878,7 +1878,7 @@ export const org = ($root.org = (() => {
              */
             OntologyClass.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -2006,7 +2006,7 @@ export const org = ($root.org = (() => {
             OntologyClass.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -2139,7 +2139,7 @@ export const org = ($root.org = (() => {
              */
             ExternalReference.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -2194,7 +2194,7 @@ export const org = ($root.org = (() => {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             ExternalReference.decodeDelimited = function decodeDelimited(
-              reader,
+              reader
             ) {
               if (!(reader instanceof $Reader)) reader = new $Reader(reader);
               return this.decode(reader, reader.uint32());
@@ -2294,7 +2294,7 @@ export const org = ($root.org = (() => {
             ExternalReference.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -2392,7 +2392,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.evidenceCode,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.reference != null &&
@@ -2400,7 +2400,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.ExternalReference.encode(
                   message.reference,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               return writer;
             };
@@ -2416,7 +2416,7 @@ export const org = ($root.org = (() => {
              */
             Evidence.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -2443,7 +2443,7 @@ export const org = ($root.org = (() => {
                     message.evidenceCode =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -2451,7 +2451,7 @@ export const org = ($root.org = (() => {
                     message.reference =
                       $root.org.phenopackets.schema.v2.core.ExternalReference.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -2495,7 +2495,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.evidenceCode,
+                    message.evidenceCode
                   );
                 if (error) return "evidenceCode." + error;
               }
@@ -2505,7 +2505,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.ExternalReference.verify(
-                    message.reference,
+                    message.reference
                   );
                 if (error) return "reference." + error;
               }
@@ -2530,21 +2530,21 @@ export const org = ($root.org = (() => {
               if (object.evidenceCode != null) {
                 if (typeof object.evidenceCode !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Evidence.evidenceCode: object expected",
+                    ".org.phenopackets.schema.v2.core.Evidence.evidenceCode: object expected"
                   );
                 message.evidenceCode =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.evidenceCode,
+                    object.evidenceCode
                   );
               }
               if (object.reference != null) {
                 if (typeof object.reference !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Evidence.reference: object expected",
+                    ".org.phenopackets.schema.v2.core.Evidence.reference: object expected"
                   );
                 message.reference =
                   $root.org.phenopackets.schema.v2.core.ExternalReference.fromObject(
-                    object.reference,
+                    object.reference
                   );
               }
               return message;
@@ -2573,7 +2573,7 @@ export const org = ($root.org = (() => {
                 object.evidenceCode =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.evidenceCode,
-                    options,
+                    options
                   );
               if (
                 message.reference != null &&
@@ -2582,7 +2582,7 @@ export const org = ($root.org = (() => {
                 object.reference =
                   $root.org.phenopackets.schema.v2.core.ExternalReference.toObject(
                     message.reference,
-                    options,
+                    options
                   );
               return object;
             };
@@ -2597,7 +2597,7 @@ export const org = ($root.org = (() => {
             Evidence.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -2703,7 +2703,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.code,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.bodySite != null &&
@@ -2711,7 +2711,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.bodySite,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.performed != null &&
@@ -2719,7 +2719,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.performed,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               return writer;
             };
@@ -2735,7 +2735,7 @@ export const org = ($root.org = (() => {
              */
             Procedure.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -2762,7 +2762,7 @@ export const org = ($root.org = (() => {
                     message.code =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -2770,7 +2770,7 @@ export const org = ($root.org = (() => {
                     message.bodySite =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -2778,7 +2778,7 @@ export const org = ($root.org = (() => {
                     message.performed =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -2819,7 +2819,7 @@ export const org = ($root.org = (() => {
               if (message.code != null && message.hasOwnProperty("code")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.code,
+                    message.code
                   );
                 if (error) return "code." + error;
               }
@@ -2829,7 +2829,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.bodySite,
+                    message.bodySite
                   );
                 if (error) return "bodySite." + error;
               }
@@ -2839,7 +2839,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.performed,
+                    message.performed
                   );
                 if (error) return "performed." + error;
               }
@@ -2865,31 +2865,31 @@ export const org = ($root.org = (() => {
               if (object.code != null) {
                 if (typeof object.code !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Procedure.code: object expected",
+                    ".org.phenopackets.schema.v2.core.Procedure.code: object expected"
                   );
                 message.code =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.code,
+                    object.code
                   );
               }
               if (object.bodySite != null) {
                 if (typeof object.bodySite !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Procedure.bodySite: object expected",
+                    ".org.phenopackets.schema.v2.core.Procedure.bodySite: object expected"
                   );
                 message.bodySite =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.bodySite,
+                    object.bodySite
                   );
               }
               if (object.performed != null) {
                 if (typeof object.performed !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Procedure.performed: object expected",
+                    ".org.phenopackets.schema.v2.core.Procedure.performed: object expected"
                   );
                 message.performed =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.performed,
+                    object.performed
                   );
               }
               return message;
@@ -2916,7 +2916,7 @@ export const org = ($root.org = (() => {
                 object.code =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.code,
-                    options,
+                    options
                   );
               if (
                 message.bodySite != null &&
@@ -2925,7 +2925,7 @@ export const org = ($root.org = (() => {
                 object.bodySite =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.bodySite,
-                    options,
+                    options
                   );
               if (
                 message.performed != null &&
@@ -2934,7 +2934,7 @@ export const org = ($root.org = (() => {
                 object.performed =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.performed,
-                    options,
+                    options
                   );
               return object;
             };
@@ -2949,7 +2949,7 @@ export const org = ($root.org = (() => {
             Procedure.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -3064,7 +3064,7 @@ export const org = ($root.org = (() => {
              */
             GestationalAge.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -3193,7 +3193,7 @@ export const org = ($root.org = (() => {
             GestationalAge.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -3412,7 +3412,7 @@ export const org = ($root.org = (() => {
             Age.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -3507,7 +3507,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Age.encode(
                   message.start,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.end != null &&
@@ -3515,7 +3515,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Age.encode(
                   message.end,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               return writer;
             };
@@ -3531,7 +3531,7 @@ export const org = ($root.org = (() => {
              */
             AgeRange.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -3558,7 +3558,7 @@ export const org = ($root.org = (() => {
                     message.start =
                       $root.org.phenopackets.schema.v2.core.Age.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -3566,7 +3566,7 @@ export const org = ($root.org = (() => {
                     message.end =
                       $root.org.phenopackets.schema.v2.core.Age.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -3606,13 +3606,13 @@ export const org = ($root.org = (() => {
                 return "object expected";
               if (message.start != null && message.hasOwnProperty("start")) {
                 let error = $root.org.phenopackets.schema.v2.core.Age.verify(
-                  message.start,
+                  message.start
                 );
                 if (error) return "start." + error;
               }
               if (message.end != null && message.hasOwnProperty("end")) {
                 let error = $root.org.phenopackets.schema.v2.core.Age.verify(
-                  message.end,
+                  message.end
                 );
                 if (error) return "end." + error;
               }
@@ -3637,21 +3637,21 @@ export const org = ($root.org = (() => {
               if (object.start != null) {
                 if (typeof object.start !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.AgeRange.start: object expected",
+                    ".org.phenopackets.schema.v2.core.AgeRange.start: object expected"
                   );
                 message.start =
                   $root.org.phenopackets.schema.v2.core.Age.fromObject(
-                    object.start,
+                    object.start
                   );
               }
               if (object.end != null) {
                 if (typeof object.end !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.AgeRange.end: object expected",
+                    ".org.phenopackets.schema.v2.core.AgeRange.end: object expected"
                   );
                 message.end =
                   $root.org.phenopackets.schema.v2.core.Age.fromObject(
-                    object.end,
+                    object.end
                   );
               }
               return message;
@@ -3677,12 +3677,12 @@ export const org = ($root.org = (() => {
                 object.start =
                   $root.org.phenopackets.schema.v2.core.Age.toObject(
                     message.start,
-                    options,
+                    options
                   );
               if (message.end != null && message.hasOwnProperty("end"))
                 object.end = $root.org.phenopackets.schema.v2.core.Age.toObject(
                   message.end,
-                  options,
+                  options
                 );
               return object;
             };
@@ -3697,7 +3697,7 @@ export const org = ($root.org = (() => {
             AgeRange.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -3794,7 +3794,7 @@ export const org = ($root.org = (() => {
               )
                 $root.google.protobuf.Timestamp.encode(
                   message.start,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.end != null &&
@@ -3802,7 +3802,7 @@ export const org = ($root.org = (() => {
               )
                 $root.google.protobuf.Timestamp.encode(
                   message.end,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               return writer;
             };
@@ -3818,7 +3818,7 @@ export const org = ($root.org = (() => {
              */
             TimeInterval.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -3845,14 +3845,14 @@ export const org = ($root.org = (() => {
                   case 1: {
                     message.start = $root.google.protobuf.Timestamp.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
                   case 2: {
                     message.end = $root.google.protobuf.Timestamp.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -3892,7 +3892,7 @@ export const org = ($root.org = (() => {
                 return "object expected";
               if (message.start != null && message.hasOwnProperty("start")) {
                 let error = $root.google.protobuf.Timestamp.verify(
-                  message.start,
+                  message.start
                 );
                 if (error) return "start." + error;
               }
@@ -3922,19 +3922,19 @@ export const org = ($root.org = (() => {
               if (object.start != null) {
                 if (typeof object.start !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeInterval.start: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeInterval.start: object expected"
                   );
                 message.start = $root.google.protobuf.Timestamp.fromObject(
-                  object.start,
+                  object.start
                 );
               }
               if (object.end != null) {
                 if (typeof object.end !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeInterval.end: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeInterval.end: object expected"
                   );
                 message.end = $root.google.protobuf.Timestamp.fromObject(
-                  object.end,
+                  object.end
                 );
               }
               return message;
@@ -3959,12 +3959,12 @@ export const org = ($root.org = (() => {
               if (message.start != null && message.hasOwnProperty("start"))
                 object.start = $root.google.protobuf.Timestamp.toObject(
                   message.start,
-                  options,
+                  options
                 );
               if (message.end != null && message.hasOwnProperty("end"))
                 object.end = $root.google.protobuf.Timestamp.toObject(
                   message.end,
-                  options,
+                  options
                 );
               return object;
             };
@@ -3979,7 +3979,7 @@ export const org = ($root.org = (() => {
             TimeInterval.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -4101,7 +4101,7 @@ export const org = ($root.org = (() => {
                   "ontologyClass",
                   "timestamp",
                   "interval",
-                ]),
+                ])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -4135,7 +4135,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Age.encode(
                   message.age,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.ageRange != null &&
@@ -4143,7 +4143,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.AgeRange.encode(
                   message.ageRange,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.ontologyClass != null &&
@@ -4151,7 +4151,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.ontologyClass,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.timestamp != null &&
@@ -4159,7 +4159,7 @@ export const org = ($root.org = (() => {
               )
                 $root.google.protobuf.Timestamp.encode(
                   message.timestamp,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (
                 message.interval != null &&
@@ -4167,7 +4167,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeInterval.encode(
                   message.interval,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               if (
                 message.gestationalAge != null &&
@@ -4175,7 +4175,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.GestationalAge.encode(
                   message.gestationalAge,
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
               return writer;
             };
@@ -4191,7 +4191,7 @@ export const org = ($root.org = (() => {
              */
             TimeElement.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -4219,7 +4219,7 @@ export const org = ($root.org = (() => {
                     message.gestationalAge =
                       $root.org.phenopackets.schema.v2.core.GestationalAge.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -4227,7 +4227,7 @@ export const org = ($root.org = (() => {
                     message.age =
                       $root.org.phenopackets.schema.v2.core.Age.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -4235,7 +4235,7 @@ export const org = ($root.org = (() => {
                     message.ageRange =
                       $root.org.phenopackets.schema.v2.core.AgeRange.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -4243,14 +4243,14 @@ export const org = ($root.org = (() => {
                     message.ontologyClass =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
                   case 4: {
                     message.timestamp = $root.google.protobuf.Timestamp.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -4258,7 +4258,7 @@ export const org = ($root.org = (() => {
                     message.interval =
                       $root.org.phenopackets.schema.v2.core.TimeInterval.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -4305,7 +4305,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.GestationalAge.verify(
-                      message.gestationalAge,
+                      message.gestationalAge
                     );
                   if (error) return "gestationalAge." + error;
                 }
@@ -4315,7 +4315,7 @@ export const org = ($root.org = (() => {
                 properties.element = 1;
                 {
                   let error = $root.org.phenopackets.schema.v2.core.Age.verify(
-                    message.age,
+                    message.age
                   );
                   if (error) return "age." + error;
                 }
@@ -4329,7 +4329,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.AgeRange.verify(
-                      message.ageRange,
+                      message.ageRange
                     );
                   if (error) return "ageRange." + error;
                 }
@@ -4343,7 +4343,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.ontologyClass,
+                      message.ontologyClass
                     );
                   if (error) return "ontologyClass." + error;
                 }
@@ -4356,7 +4356,7 @@ export const org = ($root.org = (() => {
                 properties.element = 1;
                 {
                   let error = $root.google.protobuf.Timestamp.verify(
-                    message.timestamp,
+                    message.timestamp
                   );
                   if (error) return "timestamp." + error;
                 }
@@ -4370,7 +4370,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.TimeInterval.verify(
-                      message.interval,
+                      message.interval
                     );
                   if (error) return "interval." + error;
                 }
@@ -4397,60 +4397,60 @@ export const org = ($root.org = (() => {
               if (object.gestationalAge != null) {
                 if (typeof object.gestationalAge !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeElement.gestationalAge: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeElement.gestationalAge: object expected"
                   );
                 message.gestationalAge =
                   $root.org.phenopackets.schema.v2.core.GestationalAge.fromObject(
-                    object.gestationalAge,
+                    object.gestationalAge
                   );
               }
               if (object.age != null) {
                 if (typeof object.age !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeElement.age: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeElement.age: object expected"
                   );
                 message.age =
                   $root.org.phenopackets.schema.v2.core.Age.fromObject(
-                    object.age,
+                    object.age
                   );
               }
               if (object.ageRange != null) {
                 if (typeof object.ageRange !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeElement.ageRange: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeElement.ageRange: object expected"
                   );
                 message.ageRange =
                   $root.org.phenopackets.schema.v2.core.AgeRange.fromObject(
-                    object.ageRange,
+                    object.ageRange
                   );
               }
               if (object.ontologyClass != null) {
                 if (typeof object.ontologyClass !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeElement.ontologyClass: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeElement.ontologyClass: object expected"
                   );
                 message.ontologyClass =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.ontologyClass,
+                    object.ontologyClass
                   );
               }
               if (object.timestamp != null) {
                 if (typeof object.timestamp !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeElement.timestamp: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeElement.timestamp: object expected"
                   );
                 message.timestamp = $root.google.protobuf.Timestamp.fromObject(
-                  object.timestamp,
+                  object.timestamp
                 );
               }
               if (object.interval != null) {
                 if (typeof object.interval !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TimeElement.interval: object expected",
+                    ".org.phenopackets.schema.v2.core.TimeElement.interval: object expected"
                   );
                 message.interval =
                   $root.org.phenopackets.schema.v2.core.TimeInterval.fromObject(
-                    object.interval,
+                    object.interval
                   );
               }
               return message;
@@ -4471,7 +4471,7 @@ export const org = ($root.org = (() => {
               if (message.age != null && message.hasOwnProperty("age")) {
                 object.age = $root.org.phenopackets.schema.v2.core.Age.toObject(
                   message.age,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.element = "age";
               }
@@ -4482,7 +4482,7 @@ export const org = ($root.org = (() => {
                 object.ageRange =
                   $root.org.phenopackets.schema.v2.core.AgeRange.toObject(
                     message.ageRange,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.element = "ageRange";
               }
@@ -4493,7 +4493,7 @@ export const org = ($root.org = (() => {
                 object.ontologyClass =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.ontologyClass,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.element = "ontologyClass";
               }
@@ -4503,7 +4503,7 @@ export const org = ($root.org = (() => {
               ) {
                 object.timestamp = $root.google.protobuf.Timestamp.toObject(
                   message.timestamp,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.element = "timestamp";
               }
@@ -4514,7 +4514,7 @@ export const org = ($root.org = (() => {
                 object.interval =
                   $root.org.phenopackets.schema.v2.core.TimeInterval.toObject(
                     message.interval,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.element = "interval";
               }
@@ -4525,7 +4525,7 @@ export const org = ($root.org = (() => {
                 object.gestationalAge =
                   $root.org.phenopackets.schema.v2.core.GestationalAge.toObject(
                     message.gestationalAge,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.element = "gestationalAge";
               }
@@ -4542,7 +4542,7 @@ export const org = ($root.org = (() => {
             TimeElement.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -4653,7 +4653,7 @@ export const org = ($root.org = (() => {
                 message.individualToFileIdentifiers != null &&
                 Object.hasOwnProperty.call(
                   message,
-                  "individualToFileIdentifiers",
+                  "individualToFileIdentifiers"
                 )
               )
                 for (
@@ -4854,7 +4854,7 @@ export const org = ($root.org = (() => {
               if (object.individualToFileIdentifiers) {
                 if (typeof object.individualToFileIdentifiers !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.File.individualToFileIdentifiers: object expected",
+                    ".org.phenopackets.schema.v2.core.File.individualToFileIdentifiers: object expected"
                   );
                 message.individualToFileIdentifiers = {};
                 for (
@@ -4864,13 +4864,13 @@ export const org = ($root.org = (() => {
                   ++i
                 )
                   message.individualToFileIdentifiers[keys[i]] = String(
-                    object.individualToFileIdentifiers[keys[i]],
+                    object.individualToFileIdentifiers[keys[i]]
                   );
               }
               if (object.fileAttributes) {
                 if (typeof object.fileAttributes !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.File.fileAttributes: object expected",
+                    ".org.phenopackets.schema.v2.core.File.fileAttributes: object expected"
                   );
                 message.fileAttributes = {};
                 for (
@@ -4879,7 +4879,7 @@ export const org = ($root.org = (() => {
                   ++i
                 )
                   message.fileAttributes[keys[i]] = String(
-                    object.fileAttributes[keys[i]],
+                    object.fileAttributes[keys[i]]
                   );
               }
               return message;
@@ -4937,7 +4937,7 @@ export const org = ($root.org = (() => {
             File.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -5234,7 +5234,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.sampledTissue,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               if (
                 message.sampleType != null &&
@@ -5242,7 +5242,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.sampleType,
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
               if (
                 message.phenotypicFeatures != null &&
@@ -5251,13 +5251,13 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.phenotypicFeatures.length; ++i)
                   $root.org.phenopackets.schema.v2.core.PhenotypicFeature.encode(
                     message.phenotypicFeatures[i],
-                    writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                    writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
                   ).ldelim();
               if (message.measurements != null && message.measurements.length)
                 for (let i = 0; i < message.measurements.length; ++i)
                   $root.org.phenopackets.schema.v2.core.Measurement.encode(
                     message.measurements[i],
-                    writer.uint32(/* id 8, wireType 2 =*/ 66).fork(),
+                    writer.uint32(/* id 8, wireType 2 =*/ 66).fork()
                   ).ldelim();
               if (
                 message.taxonomy != null &&
@@ -5265,7 +5265,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.taxonomy,
-                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork(),
+                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork()
                 ).ldelim();
               if (
                 message.timeOfCollection != null &&
@@ -5273,7 +5273,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.timeOfCollection,
-                  writer.uint32(/* id 10, wireType 2 =*/ 82).fork(),
+                  writer.uint32(/* id 10, wireType 2 =*/ 82).fork()
                 ).ldelim();
               if (
                 message.histologicalDiagnosis != null &&
@@ -5281,7 +5281,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.histologicalDiagnosis,
-                  writer.uint32(/* id 11, wireType 2 =*/ 90).fork(),
+                  writer.uint32(/* id 11, wireType 2 =*/ 90).fork()
                 ).ldelim();
               if (
                 message.tumorProgression != null &&
@@ -5289,7 +5289,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.tumorProgression,
-                  writer.uint32(/* id 12, wireType 2 =*/ 98).fork(),
+                  writer.uint32(/* id 12, wireType 2 =*/ 98).fork()
                 ).ldelim();
               if (
                 message.tumorGrade != null &&
@@ -5297,7 +5297,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.tumorGrade,
-                  writer.uint32(/* id 13, wireType 2 =*/ 106).fork(),
+                  writer.uint32(/* id 13, wireType 2 =*/ 106).fork()
                 ).ldelim();
               if (
                 message.pathologicalStage != null &&
@@ -5305,7 +5305,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.pathologicalStage,
-                  writer.uint32(/* id 14, wireType 2 =*/ 114).fork(),
+                  writer.uint32(/* id 14, wireType 2 =*/ 114).fork()
                 ).ldelim();
               if (
                 message.pathologicalTnmFinding != null &&
@@ -5314,7 +5314,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.pathologicalTnmFinding.length; ++i)
                   $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                     message.pathologicalTnmFinding[i],
-                    writer.uint32(/* id 15, wireType 2 =*/ 122).fork(),
+                    writer.uint32(/* id 15, wireType 2 =*/ 122).fork()
                   ).ldelim();
               if (
                 message.diagnosticMarkers != null &&
@@ -5323,7 +5323,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.diagnosticMarkers.length; ++i)
                   $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                     message.diagnosticMarkers[i],
-                    writer.uint32(/* id 16, wireType 2 =*/ 130).fork(),
+                    writer.uint32(/* id 16, wireType 2 =*/ 130).fork()
                   ).ldelim();
               if (
                 message.procedure != null &&
@@ -5331,13 +5331,13 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Procedure.encode(
                   message.procedure,
-                  writer.uint32(/* id 17, wireType 2 =*/ 138).fork(),
+                  writer.uint32(/* id 17, wireType 2 =*/ 138).fork()
                 ).ldelim();
               if (message.files != null && message.files.length)
                 for (let i = 0; i < message.files.length; ++i)
                   $root.org.phenopackets.schema.v2.core.File.encode(
                     message.files[i],
-                    writer.uint32(/* id 18, wireType 2 =*/ 146).fork(),
+                    writer.uint32(/* id 18, wireType 2 =*/ 146).fork()
                   ).ldelim();
               if (
                 message.materialSample != null &&
@@ -5345,7 +5345,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.materialSample,
-                  writer.uint32(/* id 19, wireType 2 =*/ 154).fork(),
+                  writer.uint32(/* id 19, wireType 2 =*/ 154).fork()
                 ).ldelim();
               if (
                 message.sampleProcessing != null &&
@@ -5353,7 +5353,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.sampleProcessing,
-                  writer.uint32(/* id 20, wireType 2 =*/ 162).fork(),
+                  writer.uint32(/* id 20, wireType 2 =*/ 162).fork()
                 ).ldelim();
               if (
                 message.sampleStorage != null &&
@@ -5361,7 +5361,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.sampleStorage,
-                  writer.uint32(/* id 21, wireType 2 =*/ 170).fork(),
+                  writer.uint32(/* id 21, wireType 2 =*/ 170).fork()
                 ).ldelim();
               return writer;
             };
@@ -5377,7 +5377,7 @@ export const org = ($root.org = (() => {
              */
             Biosample.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -5420,7 +5420,7 @@ export const org = ($root.org = (() => {
                     message.sampledTissue =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5428,7 +5428,7 @@ export const org = ($root.org = (() => {
                     message.sampleType =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5443,8 +5443,8 @@ export const org = ($root.org = (() => {
                     message.phenotypicFeatures.push(
                       $root.org.phenopackets.schema.v2.core.PhenotypicFeature.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -5454,8 +5454,8 @@ export const org = ($root.org = (() => {
                     message.measurements.push(
                       $root.org.phenopackets.schema.v2.core.Measurement.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -5463,7 +5463,7 @@ export const org = ($root.org = (() => {
                     message.taxonomy =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5471,7 +5471,7 @@ export const org = ($root.org = (() => {
                     message.timeOfCollection =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5479,7 +5479,7 @@ export const org = ($root.org = (() => {
                     message.histologicalDiagnosis =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5487,7 +5487,7 @@ export const org = ($root.org = (() => {
                     message.tumorProgression =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5495,7 +5495,7 @@ export const org = ($root.org = (() => {
                     message.tumorGrade =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5503,7 +5503,7 @@ export const org = ($root.org = (() => {
                     message.pathologicalStage =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5518,8 +5518,8 @@ export const org = ($root.org = (() => {
                     message.pathologicalTnmFinding.push(
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -5534,8 +5534,8 @@ export const org = ($root.org = (() => {
                     message.diagnosticMarkers.push(
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -5543,7 +5543,7 @@ export const org = ($root.org = (() => {
                     message.procedure =
                       $root.org.phenopackets.schema.v2.core.Procedure.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5553,8 +5553,8 @@ export const org = ($root.org = (() => {
                     message.files.push(
                       $root.org.phenopackets.schema.v2.core.File.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -5562,7 +5562,7 @@ export const org = ($root.org = (() => {
                     message.materialSample =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5570,7 +5570,7 @@ export const org = ($root.org = (() => {
                     message.sampleProcessing =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5578,7 +5578,7 @@ export const org = ($root.org = (() => {
                     message.sampleStorage =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -5642,7 +5642,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.sampledTissue,
+                    message.sampledTissue
                   );
                 if (error) return "sampledTissue." + error;
               }
@@ -5652,7 +5652,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.sampleType,
+                    message.sampleType
                   );
                 if (error) return "sampleType." + error;
               }
@@ -5665,7 +5665,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.phenotypicFeatures.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.PhenotypicFeature.verify(
-                      message.phenotypicFeatures[i],
+                      message.phenotypicFeatures[i]
                     );
                   if (error) return "phenotypicFeatures." + error;
                 }
@@ -5679,7 +5679,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.measurements.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Measurement.verify(
-                      message.measurements[i],
+                      message.measurements[i]
                     );
                   if (error) return "measurements." + error;
                 }
@@ -5690,7 +5690,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.taxonomy,
+                    message.taxonomy
                   );
                 if (error) return "taxonomy." + error;
               }
@@ -5700,7 +5700,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.timeOfCollection,
+                    message.timeOfCollection
                   );
                 if (error) return "timeOfCollection." + error;
               }
@@ -5710,7 +5710,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.histologicalDiagnosis,
+                    message.histologicalDiagnosis
                   );
                 if (error) return "histologicalDiagnosis." + error;
               }
@@ -5720,7 +5720,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.tumorProgression,
+                    message.tumorProgression
                   );
                 if (error) return "tumorProgression." + error;
               }
@@ -5730,7 +5730,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.tumorGrade,
+                    message.tumorGrade
                   );
                 if (error) return "tumorGrade." + error;
               }
@@ -5740,7 +5740,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.pathologicalStage,
+                    message.pathologicalStage
                   );
                 if (error) return "pathologicalStage." + error;
               }
@@ -5757,7 +5757,7 @@ export const org = ($root.org = (() => {
                 ) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.pathologicalTnmFinding[i],
+                      message.pathologicalTnmFinding[i]
                     );
                   if (error) return "pathologicalTnmFinding." + error;
                 }
@@ -5771,7 +5771,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.diagnosticMarkers.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.diagnosticMarkers[i],
+                      message.diagnosticMarkers[i]
                     );
                   if (error) return "diagnosticMarkers." + error;
                 }
@@ -5782,7 +5782,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Procedure.verify(
-                    message.procedure,
+                    message.procedure
                   );
                 if (error) return "procedure." + error;
               }
@@ -5791,7 +5791,7 @@ export const org = ($root.org = (() => {
                   return "files: array expected";
                 for (let i = 0; i < message.files.length; ++i) {
                   let error = $root.org.phenopackets.schema.v2.core.File.verify(
-                    message.files[i],
+                    message.files[i]
                   );
                   if (error) return "files." + error;
                 }
@@ -5802,7 +5802,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.materialSample,
+                    message.materialSample
                   );
                 if (error) return "materialSample." + error;
               }
@@ -5812,7 +5812,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.sampleProcessing,
+                    message.sampleProcessing
                   );
                 if (error) return "sampleProcessing." + error;
               }
@@ -5822,7 +5822,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.sampleStorage,
+                    message.sampleStorage
                   );
                 if (error) return "sampleStorage." + error;
               }
@@ -5855,206 +5855,206 @@ export const org = ($root.org = (() => {
               if (object.sampledTissue != null) {
                 if (typeof object.sampledTissue !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.sampledTissue: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.sampledTissue: object expected"
                   );
                 message.sampledTissue =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.sampledTissue,
+                    object.sampledTissue
                   );
               }
               if (object.sampleType != null) {
                 if (typeof object.sampleType !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.sampleType: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.sampleType: object expected"
                   );
                 message.sampleType =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.sampleType,
+                    object.sampleType
                   );
               }
               if (object.phenotypicFeatures) {
                 if (!Array.isArray(object.phenotypicFeatures))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.phenotypicFeatures: array expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.phenotypicFeatures: array expected"
                   );
                 message.phenotypicFeatures = [];
                 for (let i = 0; i < object.phenotypicFeatures.length; ++i) {
                   if (typeof object.phenotypicFeatures[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Biosample.phenotypicFeatures: object expected",
+                      ".org.phenopackets.schema.v2.core.Biosample.phenotypicFeatures: object expected"
                     );
                   message.phenotypicFeatures[i] =
                     $root.org.phenopackets.schema.v2.core.PhenotypicFeature.fromObject(
-                      object.phenotypicFeatures[i],
+                      object.phenotypicFeatures[i]
                     );
                 }
               }
               if (object.measurements) {
                 if (!Array.isArray(object.measurements))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.measurements: array expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.measurements: array expected"
                   );
                 message.measurements = [];
                 for (let i = 0; i < object.measurements.length; ++i) {
                   if (typeof object.measurements[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Biosample.measurements: object expected",
+                      ".org.phenopackets.schema.v2.core.Biosample.measurements: object expected"
                     );
                   message.measurements[i] =
                     $root.org.phenopackets.schema.v2.core.Measurement.fromObject(
-                      object.measurements[i],
+                      object.measurements[i]
                     );
                 }
               }
               if (object.taxonomy != null) {
                 if (typeof object.taxonomy !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.taxonomy: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.taxonomy: object expected"
                   );
                 message.taxonomy =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.taxonomy,
+                    object.taxonomy
                   );
               }
               if (object.timeOfCollection != null) {
                 if (typeof object.timeOfCollection !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.timeOfCollection: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.timeOfCollection: object expected"
                   );
                 message.timeOfCollection =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.timeOfCollection,
+                    object.timeOfCollection
                   );
               }
               if (object.histologicalDiagnosis != null) {
                 if (typeof object.histologicalDiagnosis !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.histologicalDiagnosis: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.histologicalDiagnosis: object expected"
                   );
                 message.histologicalDiagnosis =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.histologicalDiagnosis,
+                    object.histologicalDiagnosis
                   );
               }
               if (object.tumorProgression != null) {
                 if (typeof object.tumorProgression !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.tumorProgression: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.tumorProgression: object expected"
                   );
                 message.tumorProgression =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.tumorProgression,
+                    object.tumorProgression
                   );
               }
               if (object.tumorGrade != null) {
                 if (typeof object.tumorGrade !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.tumorGrade: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.tumorGrade: object expected"
                   );
                 message.tumorGrade =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.tumorGrade,
+                    object.tumorGrade
                   );
               }
               if (object.pathologicalStage != null) {
                 if (typeof object.pathologicalStage !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.pathologicalStage: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.pathologicalStage: object expected"
                   );
                 message.pathologicalStage =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.pathologicalStage,
+                    object.pathologicalStage
                   );
               }
               if (object.pathologicalTnmFinding) {
                 if (!Array.isArray(object.pathologicalTnmFinding))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.pathologicalTnmFinding: array expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.pathologicalTnmFinding: array expected"
                   );
                 message.pathologicalTnmFinding = [];
                 for (let i = 0; i < object.pathologicalTnmFinding.length; ++i) {
                   if (typeof object.pathologicalTnmFinding[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Biosample.pathologicalTnmFinding: object expected",
+                      ".org.phenopackets.schema.v2.core.Biosample.pathologicalTnmFinding: object expected"
                     );
                   message.pathologicalTnmFinding[i] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                      object.pathologicalTnmFinding[i],
+                      object.pathologicalTnmFinding[i]
                     );
                 }
               }
               if (object.diagnosticMarkers) {
                 if (!Array.isArray(object.diagnosticMarkers))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.diagnosticMarkers: array expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.diagnosticMarkers: array expected"
                   );
                 message.diagnosticMarkers = [];
                 for (let i = 0; i < object.diagnosticMarkers.length; ++i) {
                   if (typeof object.diagnosticMarkers[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Biosample.diagnosticMarkers: object expected",
+                      ".org.phenopackets.schema.v2.core.Biosample.diagnosticMarkers: object expected"
                     );
                   message.diagnosticMarkers[i] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                      object.diagnosticMarkers[i],
+                      object.diagnosticMarkers[i]
                     );
                 }
               }
               if (object.procedure != null) {
                 if (typeof object.procedure !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.procedure: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.procedure: object expected"
                   );
                 message.procedure =
                   $root.org.phenopackets.schema.v2.core.Procedure.fromObject(
-                    object.procedure,
+                    object.procedure
                   );
               }
               if (object.files) {
                 if (!Array.isArray(object.files))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.files: array expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.files: array expected"
                   );
                 message.files = [];
                 for (let i = 0; i < object.files.length; ++i) {
                   if (typeof object.files[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Biosample.files: object expected",
+                      ".org.phenopackets.schema.v2.core.Biosample.files: object expected"
                     );
                   message.files[i] =
                     $root.org.phenopackets.schema.v2.core.File.fromObject(
-                      object.files[i],
+                      object.files[i]
                     );
                 }
               }
               if (object.materialSample != null) {
                 if (typeof object.materialSample !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.materialSample: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.materialSample: object expected"
                   );
                 message.materialSample =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.materialSample,
+                    object.materialSample
                   );
               }
               if (object.sampleProcessing != null) {
                 if (typeof object.sampleProcessing !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.sampleProcessing: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.sampleProcessing: object expected"
                   );
                 message.sampleProcessing =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.sampleProcessing,
+                    object.sampleProcessing
                   );
               }
               if (object.sampleStorage != null) {
                 if (typeof object.sampleStorage !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Biosample.sampleStorage: object expected",
+                    ".org.phenopackets.schema.v2.core.Biosample.sampleStorage: object expected"
                   );
                 message.sampleStorage =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.sampleStorage,
+                    object.sampleStorage
                   );
               }
               return message;
@@ -6121,7 +6121,7 @@ export const org = ($root.org = (() => {
                 object.sampledTissue =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.sampledTissue,
-                    options,
+                    options
                   );
               if (
                 message.sampleType != null &&
@@ -6130,7 +6130,7 @@ export const org = ($root.org = (() => {
                 object.sampleType =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.sampleType,
-                    options,
+                    options
                   );
               if (
                 message.phenotypicFeatures &&
@@ -6141,7 +6141,7 @@ export const org = ($root.org = (() => {
                   object.phenotypicFeatures[j] =
                     $root.org.phenopackets.schema.v2.core.PhenotypicFeature.toObject(
                       message.phenotypicFeatures[j],
-                      options,
+                      options
                     );
               }
               if (message.measurements && message.measurements.length) {
@@ -6150,7 +6150,7 @@ export const org = ($root.org = (() => {
                   object.measurements[j] =
                     $root.org.phenopackets.schema.v2.core.Measurement.toObject(
                       message.measurements[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -6160,7 +6160,7 @@ export const org = ($root.org = (() => {
                 object.taxonomy =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.taxonomy,
-                    options,
+                    options
                   );
               if (
                 message.timeOfCollection != null &&
@@ -6169,7 +6169,7 @@ export const org = ($root.org = (() => {
                 object.timeOfCollection =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.timeOfCollection,
-                    options,
+                    options
                   );
               if (
                 message.histologicalDiagnosis != null &&
@@ -6178,7 +6178,7 @@ export const org = ($root.org = (() => {
                 object.histologicalDiagnosis =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.histologicalDiagnosis,
-                    options,
+                    options
                   );
               if (
                 message.tumorProgression != null &&
@@ -6187,7 +6187,7 @@ export const org = ($root.org = (() => {
                 object.tumorProgression =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.tumorProgression,
-                    options,
+                    options
                   );
               if (
                 message.tumorGrade != null &&
@@ -6196,7 +6196,7 @@ export const org = ($root.org = (() => {
                 object.tumorGrade =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.tumorGrade,
-                    options,
+                    options
                   );
               if (
                 message.pathologicalStage != null &&
@@ -6205,7 +6205,7 @@ export const org = ($root.org = (() => {
                 object.pathologicalStage =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.pathologicalStage,
-                    options,
+                    options
                   );
               if (
                 message.pathologicalTnmFinding &&
@@ -6216,7 +6216,7 @@ export const org = ($root.org = (() => {
                   object.pathologicalTnmFinding[j] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                       message.pathologicalTnmFinding[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -6228,7 +6228,7 @@ export const org = ($root.org = (() => {
                   object.diagnosticMarkers[j] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                       message.diagnosticMarkers[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -6238,7 +6238,7 @@ export const org = ($root.org = (() => {
                 object.procedure =
                   $root.org.phenopackets.schema.v2.core.Procedure.toObject(
                     message.procedure,
-                    options,
+                    options
                   );
               if (message.files && message.files.length) {
                 object.files = [];
@@ -6246,7 +6246,7 @@ export const org = ($root.org = (() => {
                   object.files[j] =
                     $root.org.phenopackets.schema.v2.core.File.toObject(
                       message.files[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -6256,7 +6256,7 @@ export const org = ($root.org = (() => {
                 object.materialSample =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.materialSample,
-                    options,
+                    options
                   );
               if (
                 message.sampleProcessing != null &&
@@ -6265,7 +6265,7 @@ export const org = ($root.org = (() => {
                 object.sampleProcessing =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.sampleProcessing,
-                    options,
+                    options
                   );
               if (
                 message.sampleStorage != null &&
@@ -6274,7 +6274,7 @@ export const org = ($root.org = (() => {
                 object.sampleStorage =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.sampleStorage,
-                    options,
+                    options
                   );
               return object;
             };
@@ -6289,7 +6289,7 @@ export const org = ($root.org = (() => {
             Biosample.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -6404,7 +6404,7 @@ export const org = ($root.org = (() => {
              */
             Object.defineProperty(Measurement.prototype, "measurementValue", {
               get: $util.oneOfGetter(
-                ($oneOfFields = ["value", "complexValue"]),
+                ($oneOfFields = ["value", "complexValue"])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -6445,7 +6445,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.assay,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.value != null &&
@@ -6453,7 +6453,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Value.encode(
                   message.value,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.complexValue != null &&
@@ -6461,7 +6461,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.ComplexValue.encode(
                   message.complexValue,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (
                 message.timeObserved != null &&
@@ -6469,7 +6469,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.timeObserved,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               if (
                 message.procedure != null &&
@@ -6477,7 +6477,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Procedure.encode(
                   message.procedure,
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
               return writer;
             };
@@ -6493,7 +6493,7 @@ export const org = ($root.org = (() => {
              */
             Measurement.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -6525,7 +6525,7 @@ export const org = ($root.org = (() => {
                     message.assay =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -6533,7 +6533,7 @@ export const org = ($root.org = (() => {
                     message.value =
                       $root.org.phenopackets.schema.v2.core.Value.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -6541,7 +6541,7 @@ export const org = ($root.org = (() => {
                     message.complexValue =
                       $root.org.phenopackets.schema.v2.core.ComplexValue.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -6549,7 +6549,7 @@ export const org = ($root.org = (() => {
                     message.timeObserved =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -6557,7 +6557,7 @@ export const org = ($root.org = (() => {
                     message.procedure =
                       $root.org.phenopackets.schema.v2.core.Procedure.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -6605,7 +6605,7 @@ export const org = ($root.org = (() => {
               if (message.assay != null && message.hasOwnProperty("assay")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.assay,
+                    message.assay
                   );
                 if (error) return "assay." + error;
               }
@@ -6614,7 +6614,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Value.verify(
-                      message.value,
+                      message.value
                     );
                   if (error) return "value." + error;
                 }
@@ -6629,7 +6629,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.ComplexValue.verify(
-                      message.complexValue,
+                      message.complexValue
                     );
                   if (error) return "complexValue." + error;
                 }
@@ -6640,7 +6640,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.timeObserved,
+                    message.timeObserved
                   );
                 if (error) return "timeObserved." + error;
               }
@@ -6650,7 +6650,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Procedure.verify(
-                    message.procedure,
+                    message.procedure
                   );
                 if (error) return "procedure." + error;
               }
@@ -6678,51 +6678,51 @@ export const org = ($root.org = (() => {
               if (object.assay != null) {
                 if (typeof object.assay !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Measurement.assay: object expected",
+                    ".org.phenopackets.schema.v2.core.Measurement.assay: object expected"
                   );
                 message.assay =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.assay,
+                    object.assay
                   );
               }
               if (object.value != null) {
                 if (typeof object.value !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Measurement.value: object expected",
+                    ".org.phenopackets.schema.v2.core.Measurement.value: object expected"
                   );
                 message.value =
                   $root.org.phenopackets.schema.v2.core.Value.fromObject(
-                    object.value,
+                    object.value
                   );
               }
               if (object.complexValue != null) {
                 if (typeof object.complexValue !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Measurement.complexValue: object expected",
+                    ".org.phenopackets.schema.v2.core.Measurement.complexValue: object expected"
                   );
                 message.complexValue =
                   $root.org.phenopackets.schema.v2.core.ComplexValue.fromObject(
-                    object.complexValue,
+                    object.complexValue
                   );
               }
               if (object.timeObserved != null) {
                 if (typeof object.timeObserved !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Measurement.timeObserved: object expected",
+                    ".org.phenopackets.schema.v2.core.Measurement.timeObserved: object expected"
                   );
                 message.timeObserved =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.timeObserved,
+                    object.timeObserved
                   );
               }
               if (object.procedure != null) {
                 if (typeof object.procedure !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Measurement.procedure: object expected",
+                    ".org.phenopackets.schema.v2.core.Measurement.procedure: object expected"
                   );
                 message.procedure =
                   $root.org.phenopackets.schema.v2.core.Procedure.fromObject(
-                    object.procedure,
+                    object.procedure
                   );
               }
               return message;
@@ -6755,13 +6755,13 @@ export const org = ($root.org = (() => {
                 object.assay =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.assay,
-                    options,
+                    options
                   );
               if (message.value != null && message.hasOwnProperty("value")) {
                 object.value =
                   $root.org.phenopackets.schema.v2.core.Value.toObject(
                     message.value,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.measurementValue = "value";
               }
@@ -6772,7 +6772,7 @@ export const org = ($root.org = (() => {
                 object.complexValue =
                   $root.org.phenopackets.schema.v2.core.ComplexValue.toObject(
                     message.complexValue,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.measurementValue = "complexValue";
               }
@@ -6783,7 +6783,7 @@ export const org = ($root.org = (() => {
                 object.timeObserved =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.timeObserved,
-                    options,
+                    options
                   );
               if (
                 message.procedure != null &&
@@ -6792,7 +6792,7 @@ export const org = ($root.org = (() => {
                 object.procedure =
                   $root.org.phenopackets.schema.v2.core.Procedure.toObject(
                     message.procedure,
-                    options,
+                    options
                   );
               return object;
             };
@@ -6807,7 +6807,7 @@ export const org = ($root.org = (() => {
             Measurement.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -6886,7 +6886,7 @@ export const org = ($root.org = (() => {
              */
             Object.defineProperty(Value.prototype, "value", {
               get: $util.oneOfGetter(
-                ($oneOfFields = ["quantity", "ontologyClass"]),
+                ($oneOfFields = ["quantity", "ontologyClass"])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -6920,7 +6920,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Quantity.encode(
                   message.quantity,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.ontologyClass != null &&
@@ -6928,7 +6928,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.ontologyClass,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               return writer;
             };
@@ -6968,7 +6968,7 @@ export const org = ($root.org = (() => {
                     message.quantity =
                       $root.org.phenopackets.schema.v2.core.Quantity.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -6976,7 +6976,7 @@ export const org = ($root.org = (() => {
                     message.ontologyClass =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -7023,7 +7023,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Quantity.verify(
-                      message.quantity,
+                      message.quantity
                     );
                   if (error) return "quantity." + error;
                 }
@@ -7037,7 +7037,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.ontologyClass,
+                      message.ontologyClass
                     );
                   if (error) return "ontologyClass." + error;
                 }
@@ -7060,21 +7060,21 @@ export const org = ($root.org = (() => {
               if (object.quantity != null) {
                 if (typeof object.quantity !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Value.quantity: object expected",
+                    ".org.phenopackets.schema.v2.core.Value.quantity: object expected"
                   );
                 message.quantity =
                   $root.org.phenopackets.schema.v2.core.Quantity.fromObject(
-                    object.quantity,
+                    object.quantity
                   );
               }
               if (object.ontologyClass != null) {
                 if (typeof object.ontologyClass !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Value.ontologyClass: object expected",
+                    ".org.phenopackets.schema.v2.core.Value.ontologyClass: object expected"
                   );
                 message.ontologyClass =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.ontologyClass,
+                    object.ontologyClass
                   );
               }
               return message;
@@ -7099,7 +7099,7 @@ export const org = ($root.org = (() => {
                 object.quantity =
                   $root.org.phenopackets.schema.v2.core.Quantity.toObject(
                     message.quantity,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.value = "quantity";
               }
@@ -7110,7 +7110,7 @@ export const org = ($root.org = (() => {
                 object.ontologyClass =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.ontologyClass,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.value = "ontologyClass";
               }
@@ -7127,7 +7127,7 @@ export const org = ($root.org = (() => {
             Value.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -7215,7 +7215,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.typedQuantities.length; ++i)
                   $root.org.phenopackets.schema.v2.core.TypedQuantity.encode(
                     message.typedQuantities[i],
-                    writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                    writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                   ).ldelim();
               return writer;
             };
@@ -7231,7 +7231,7 @@ export const org = ($root.org = (() => {
              */
             ComplexValue.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -7266,8 +7266,8 @@ export const org = ($root.org = (() => {
                     message.typedQuantities.push(
                       $root.org.phenopackets.schema.v2.core.TypedQuantity.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -7314,7 +7314,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.typedQuantities.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.TypedQuantity.verify(
-                      message.typedQuantities[i],
+                      message.typedQuantities[i]
                     );
                   if (error) return "typedQuantities." + error;
                 }
@@ -7341,17 +7341,17 @@ export const org = ($root.org = (() => {
               if (object.typedQuantities) {
                 if (!Array.isArray(object.typedQuantities))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.ComplexValue.typedQuantities: array expected",
+                    ".org.phenopackets.schema.v2.core.ComplexValue.typedQuantities: array expected"
                   );
                 message.typedQuantities = [];
                 for (let i = 0; i < object.typedQuantities.length; ++i) {
                   if (typeof object.typedQuantities[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.ComplexValue.typedQuantities: object expected",
+                      ".org.phenopackets.schema.v2.core.ComplexValue.typedQuantities: object expected"
                     );
                   message.typedQuantities[i] =
                     $root.org.phenopackets.schema.v2.core.TypedQuantity.fromObject(
-                      object.typedQuantities[i],
+                      object.typedQuantities[i]
                     );
                 }
               }
@@ -7378,7 +7378,7 @@ export const org = ($root.org = (() => {
                   object.typedQuantities[j] =
                     $root.org.phenopackets.schema.v2.core.TypedQuantity.toObject(
                       message.typedQuantities[j],
-                      options,
+                      options
                     );
               }
               return object;
@@ -7394,7 +7394,7 @@ export const org = ($root.org = (() => {
             ComplexValue.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -7500,7 +7500,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.unit,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.value != null &&
@@ -7513,7 +7513,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.ReferenceRange.encode(
                   message.referenceRange,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               return writer;
             };
@@ -7529,7 +7529,7 @@ export const org = ($root.org = (() => {
              */
             Quantity.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -7556,7 +7556,7 @@ export const org = ($root.org = (() => {
                     message.unit =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -7568,7 +7568,7 @@ export const org = ($root.org = (() => {
                     message.referenceRange =
                       $root.org.phenopackets.schema.v2.core.ReferenceRange.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -7609,7 +7609,7 @@ export const org = ($root.org = (() => {
               if (message.unit != null && message.hasOwnProperty("unit")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.unit,
+                    message.unit
                   );
                 if (error) return "unit." + error;
               }
@@ -7622,7 +7622,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.ReferenceRange.verify(
-                    message.referenceRange,
+                    message.referenceRange
                   );
                 if (error) return "referenceRange." + error;
               }
@@ -7647,22 +7647,22 @@ export const org = ($root.org = (() => {
               if (object.unit != null) {
                 if (typeof object.unit !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Quantity.unit: object expected",
+                    ".org.phenopackets.schema.v2.core.Quantity.unit: object expected"
                   );
                 message.unit =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.unit,
+                    object.unit
                   );
               }
               if (object.value != null) message.value = Number(object.value);
               if (object.referenceRange != null) {
                 if (typeof object.referenceRange !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Quantity.referenceRange: object expected",
+                    ".org.phenopackets.schema.v2.core.Quantity.referenceRange: object expected"
                   );
                 message.referenceRange =
                   $root.org.phenopackets.schema.v2.core.ReferenceRange.fromObject(
-                    object.referenceRange,
+                    object.referenceRange
                   );
               }
               return message;
@@ -7689,7 +7689,7 @@ export const org = ($root.org = (() => {
                 object.unit =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.unit,
-                    options,
+                    options
                   );
               if (message.value != null && message.hasOwnProperty("value"))
                 object.value =
@@ -7703,7 +7703,7 @@ export const org = ($root.org = (() => {
                 object.referenceRange =
                   $root.org.phenopackets.schema.v2.core.ReferenceRange.toObject(
                     message.referenceRange,
-                    options,
+                    options
                   );
               return object;
             };
@@ -7718,7 +7718,7 @@ export const org = ($root.org = (() => {
             Quantity.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -7815,7 +7815,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.type,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.quantity != null &&
@@ -7823,7 +7823,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Quantity.encode(
                   message.quantity,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               return writer;
             };
@@ -7839,7 +7839,7 @@ export const org = ($root.org = (() => {
              */
             TypedQuantity.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -7867,7 +7867,7 @@ export const org = ($root.org = (() => {
                     message.type =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -7875,7 +7875,7 @@ export const org = ($root.org = (() => {
                     message.quantity =
                       $root.org.phenopackets.schema.v2.core.Quantity.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -7916,7 +7916,7 @@ export const org = ($root.org = (() => {
               if (message.type != null && message.hasOwnProperty("type")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.type,
+                    message.type
                   );
                 if (error) return "type." + error;
               }
@@ -7926,7 +7926,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Quantity.verify(
-                    message.quantity,
+                    message.quantity
                   );
                 if (error) return "quantity." + error;
               }
@@ -7952,21 +7952,21 @@ export const org = ($root.org = (() => {
               if (object.type != null) {
                 if (typeof object.type !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TypedQuantity.type: object expected",
+                    ".org.phenopackets.schema.v2.core.TypedQuantity.type: object expected"
                   );
                 message.type =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.type,
+                    object.type
                   );
               }
               if (object.quantity != null) {
                 if (typeof object.quantity !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TypedQuantity.quantity: object expected",
+                    ".org.phenopackets.schema.v2.core.TypedQuantity.quantity: object expected"
                   );
                 message.quantity =
                   $root.org.phenopackets.schema.v2.core.Quantity.fromObject(
-                    object.quantity,
+                    object.quantity
                   );
               }
               return message;
@@ -7992,7 +7992,7 @@ export const org = ($root.org = (() => {
                 object.type =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.type,
-                    options,
+                    options
                   );
               if (
                 message.quantity != null &&
@@ -8001,7 +8001,7 @@ export const org = ($root.org = (() => {
                 object.quantity =
                   $root.org.phenopackets.schema.v2.core.Quantity.toObject(
                     message.quantity,
-                    options,
+                    options
                   );
               return object;
             };
@@ -8016,7 +8016,7 @@ export const org = ($root.org = (() => {
             TypedQuantity.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -8122,7 +8122,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.unit,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.low != null &&
@@ -8148,7 +8148,7 @@ export const org = ($root.org = (() => {
              */
             ReferenceRange.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -8176,7 +8176,7 @@ export const org = ($root.org = (() => {
                     message.unit =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -8225,7 +8225,7 @@ export const org = ($root.org = (() => {
               if (message.unit != null && message.hasOwnProperty("unit")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.unit,
+                    message.unit
                   );
                 if (error) return "unit." + error;
               }
@@ -8257,11 +8257,11 @@ export const org = ($root.org = (() => {
               if (object.unit != null) {
                 if (typeof object.unit !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.ReferenceRange.unit: object expected",
+                    ".org.phenopackets.schema.v2.core.ReferenceRange.unit: object expected"
                   );
                 message.unit =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.unit,
+                    object.unit
                   );
               }
               if (object.low != null) message.low = Number(object.low);
@@ -8290,7 +8290,7 @@ export const org = ($root.org = (() => {
                 object.unit =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.unit,
-                    options,
+                    options
                   );
               if (message.low != null && message.hasOwnProperty("low"))
                 object.low =
@@ -8315,7 +8315,7 @@ export const org = ($root.org = (() => {
             ReferenceRange.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -8476,7 +8476,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.type,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.excluded != null &&
@@ -8491,13 +8491,13 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.severity,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (message.modifiers != null && message.modifiers.length)
                 for (let i = 0; i < message.modifiers.length; ++i)
                   $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                     message.modifiers[i],
-                    writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                    writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                   ).ldelim();
               if (
                 message.onset != null &&
@@ -8505,7 +8505,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.onset,
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
               if (
                 message.resolution != null &&
@@ -8513,13 +8513,13 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.resolution,
-                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
                 ).ldelim();
               if (message.evidence != null && message.evidence.length)
                 for (let i = 0; i < message.evidence.length; ++i)
                   $root.org.phenopackets.schema.v2.core.Evidence.encode(
                     message.evidence[i],
-                    writer.uint32(/* id 8, wireType 2 =*/ 66).fork(),
+                    writer.uint32(/* id 8, wireType 2 =*/ 66).fork()
                   ).ldelim();
               return writer;
             };
@@ -8535,7 +8535,7 @@ export const org = ($root.org = (() => {
              */
             PhenotypicFeature.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -8567,7 +8567,7 @@ export const org = ($root.org = (() => {
                     message.type =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -8579,7 +8579,7 @@ export const org = ($root.org = (() => {
                     message.severity =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -8589,8 +8589,8 @@ export const org = ($root.org = (() => {
                     message.modifiers.push(
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -8598,7 +8598,7 @@ export const org = ($root.org = (() => {
                     message.onset =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -8606,7 +8606,7 @@ export const org = ($root.org = (() => {
                     message.resolution =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -8616,8 +8616,8 @@ export const org = ($root.org = (() => {
                     message.evidence.push(
                       $root.org.phenopackets.schema.v2.core.Evidence.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -8640,7 +8640,7 @@ export const org = ($root.org = (() => {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             PhenotypicFeature.decodeDelimited = function decodeDelimited(
-              reader,
+              reader
             ) {
               if (!(reader instanceof $Reader)) reader = new $Reader(reader);
               return this.decode(reader, reader.uint32());
@@ -8666,7 +8666,7 @@ export const org = ($root.org = (() => {
               if (message.type != null && message.hasOwnProperty("type")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.type,
+                    message.type
                   );
                 if (error) return "type." + error;
               }
@@ -8682,7 +8682,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.severity,
+                    message.severity
                   );
                 if (error) return "severity." + error;
               }
@@ -8695,7 +8695,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.modifiers.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.modifiers[i],
+                      message.modifiers[i]
                     );
                   if (error) return "modifiers." + error;
                 }
@@ -8703,7 +8703,7 @@ export const org = ($root.org = (() => {
               if (message.onset != null && message.hasOwnProperty("onset")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.onset,
+                    message.onset
                   );
                 if (error) return "onset." + error;
               }
@@ -8713,7 +8713,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.resolution,
+                    message.resolution
                   );
                 if (error) return "resolution." + error;
               }
@@ -8726,7 +8726,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.evidence.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Evidence.verify(
-                      message.evidence[i],
+                      message.evidence[i]
                     );
                   if (error) return "evidence." + error;
                 }
@@ -8755,11 +8755,11 @@ export const org = ($root.org = (() => {
               if (object.type != null) {
                 if (typeof object.type !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.type: object expected",
+                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.type: object expected"
                   );
                 message.type =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.type,
+                    object.type
                   );
               }
               if (object.excluded != null)
@@ -8767,64 +8767,64 @@ export const org = ($root.org = (() => {
               if (object.severity != null) {
                 if (typeof object.severity !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.severity: object expected",
+                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.severity: object expected"
                   );
                 message.severity =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.severity,
+                    object.severity
                   );
               }
               if (object.modifiers) {
                 if (!Array.isArray(object.modifiers))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.modifiers: array expected",
+                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.modifiers: array expected"
                   );
                 message.modifiers = [];
                 for (let i = 0; i < object.modifiers.length; ++i) {
                   if (typeof object.modifiers[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.PhenotypicFeature.modifiers: object expected",
+                      ".org.phenopackets.schema.v2.core.PhenotypicFeature.modifiers: object expected"
                     );
                   message.modifiers[i] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                      object.modifiers[i],
+                      object.modifiers[i]
                     );
                 }
               }
               if (object.onset != null) {
                 if (typeof object.onset !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.onset: object expected",
+                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.onset: object expected"
                   );
                 message.onset =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.onset,
+                    object.onset
                   );
               }
               if (object.resolution != null) {
                 if (typeof object.resolution !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.resolution: object expected",
+                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.resolution: object expected"
                   );
                 message.resolution =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.resolution,
+                    object.resolution
                   );
               }
               if (object.evidence) {
                 if (!Array.isArray(object.evidence))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.evidence: array expected",
+                    ".org.phenopackets.schema.v2.core.PhenotypicFeature.evidence: array expected"
                   );
                 message.evidence = [];
                 for (let i = 0; i < object.evidence.length; ++i) {
                   if (typeof object.evidence[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.PhenotypicFeature.evidence: object expected",
+                      ".org.phenopackets.schema.v2.core.PhenotypicFeature.evidence: object expected"
                     );
                   message.evidence[i] =
                     $root.org.phenopackets.schema.v2.core.Evidence.fromObject(
-                      object.evidence[i],
+                      object.evidence[i]
                     );
                 }
               }
@@ -8864,7 +8864,7 @@ export const org = ($root.org = (() => {
                 object.type =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.type,
-                    options,
+                    options
                   );
               if (
                 message.excluded != null &&
@@ -8878,7 +8878,7 @@ export const org = ($root.org = (() => {
                 object.severity =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.severity,
-                    options,
+                    options
                   );
               if (message.modifiers && message.modifiers.length) {
                 object.modifiers = [];
@@ -8886,14 +8886,14 @@ export const org = ($root.org = (() => {
                   object.modifiers[j] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                       message.modifiers[j],
-                      options,
+                      options
                     );
               }
               if (message.onset != null && message.hasOwnProperty("onset"))
                 object.onset =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.onset,
-                    options,
+                    options
                   );
               if (
                 message.resolution != null &&
@@ -8902,7 +8902,7 @@ export const org = ($root.org = (() => {
                 object.resolution =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.resolution,
-                    options,
+                    options
                   );
               if (message.evidence && message.evidence.length) {
                 object.evidence = [];
@@ -8910,7 +8910,7 @@ export const org = ($root.org = (() => {
                   object.evidence[j] =
                     $root.org.phenopackets.schema.v2.core.Evidence.toObject(
                       message.evidence[j],
-                      options,
+                      options
                     );
               }
               return object;
@@ -8926,7 +8926,7 @@ export const org = ($root.org = (() => {
             PhenotypicFeature.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -9080,7 +9080,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.term,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.excluded != null &&
@@ -9095,7 +9095,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.onset,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.resolution != null &&
@@ -9103,13 +9103,13 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.resolution,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (message.diseaseStage != null && message.diseaseStage.length)
                 for (let i = 0; i < message.diseaseStage.length; ++i)
                   $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                     message.diseaseStage[i],
-                    writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                    writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                   ).ldelim();
               if (
                 message.clinicalTnmFinding != null &&
@@ -9118,7 +9118,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.clinicalTnmFinding.length; ++i)
                   $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                     message.clinicalTnmFinding[i],
-                    writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                    writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                   ).ldelim();
               if (
                 message.primarySite != null &&
@@ -9126,7 +9126,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.primarySite,
-                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
                 ).ldelim();
               if (
                 message.laterality != null &&
@@ -9134,7 +9134,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.laterality,
-                  writer.uint32(/* id 8, wireType 2 =*/ 66).fork(),
+                  writer.uint32(/* id 8, wireType 2 =*/ 66).fork()
                 ).ldelim();
               return writer;
             };
@@ -9150,7 +9150,7 @@ export const org = ($root.org = (() => {
              */
             Disease.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -9177,7 +9177,7 @@ export const org = ($root.org = (() => {
                     message.term =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -9189,7 +9189,7 @@ export const org = ($root.org = (() => {
                     message.onset =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -9197,7 +9197,7 @@ export const org = ($root.org = (() => {
                     message.resolution =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -9207,8 +9207,8 @@ export const org = ($root.org = (() => {
                     message.diseaseStage.push(
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -9223,8 +9223,8 @@ export const org = ($root.org = (() => {
                     message.clinicalTnmFinding.push(
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -9232,7 +9232,7 @@ export const org = ($root.org = (() => {
                     message.primarySite =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -9240,7 +9240,7 @@ export const org = ($root.org = (() => {
                     message.laterality =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -9281,7 +9281,7 @@ export const org = ($root.org = (() => {
               if (message.term != null && message.hasOwnProperty("term")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.term,
+                    message.term
                   );
                 if (error) return "term." + error;
               }
@@ -9294,7 +9294,7 @@ export const org = ($root.org = (() => {
               if (message.onset != null && message.hasOwnProperty("onset")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.onset,
+                    message.onset
                   );
                 if (error) return "onset." + error;
               }
@@ -9304,7 +9304,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.resolution,
+                    message.resolution
                   );
                 if (error) return "resolution." + error;
               }
@@ -9317,7 +9317,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.diseaseStage.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.diseaseStage[i],
+                      message.diseaseStage[i]
                     );
                   if (error) return "diseaseStage." + error;
                 }
@@ -9331,7 +9331,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.clinicalTnmFinding.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.clinicalTnmFinding[i],
+                      message.clinicalTnmFinding[i]
                     );
                   if (error) return "clinicalTnmFinding." + error;
                 }
@@ -9342,7 +9342,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.primarySite,
+                    message.primarySite
                   );
                 if (error) return "primarySite." + error;
               }
@@ -9352,7 +9352,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.laterality,
+                    message.laterality
                   );
                 if (error) return "laterality." + error;
               }
@@ -9376,11 +9376,11 @@ export const org = ($root.org = (() => {
               if (object.term != null) {
                 if (typeof object.term !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.term: object expected",
+                    ".org.phenopackets.schema.v2.core.Disease.term: object expected"
                   );
                 message.term =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.term,
+                    object.term
                   );
               }
               if (object.excluded != null)
@@ -9388,75 +9388,75 @@ export const org = ($root.org = (() => {
               if (object.onset != null) {
                 if (typeof object.onset !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.onset: object expected",
+                    ".org.phenopackets.schema.v2.core.Disease.onset: object expected"
                   );
                 message.onset =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.onset,
+                    object.onset
                   );
               }
               if (object.resolution != null) {
                 if (typeof object.resolution !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.resolution: object expected",
+                    ".org.phenopackets.schema.v2.core.Disease.resolution: object expected"
                   );
                 message.resolution =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.resolution,
+                    object.resolution
                   );
               }
               if (object.diseaseStage) {
                 if (!Array.isArray(object.diseaseStage))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.diseaseStage: array expected",
+                    ".org.phenopackets.schema.v2.core.Disease.diseaseStage: array expected"
                   );
                 message.diseaseStage = [];
                 for (let i = 0; i < object.diseaseStage.length; ++i) {
                   if (typeof object.diseaseStage[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Disease.diseaseStage: object expected",
+                      ".org.phenopackets.schema.v2.core.Disease.diseaseStage: object expected"
                     );
                   message.diseaseStage[i] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                      object.diseaseStage[i],
+                      object.diseaseStage[i]
                     );
                 }
               }
               if (object.clinicalTnmFinding) {
                 if (!Array.isArray(object.clinicalTnmFinding))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.clinicalTnmFinding: array expected",
+                    ".org.phenopackets.schema.v2.core.Disease.clinicalTnmFinding: array expected"
                   );
                 message.clinicalTnmFinding = [];
                 for (let i = 0; i < object.clinicalTnmFinding.length; ++i) {
                   if (typeof object.clinicalTnmFinding[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Disease.clinicalTnmFinding: object expected",
+                      ".org.phenopackets.schema.v2.core.Disease.clinicalTnmFinding: object expected"
                     );
                   message.clinicalTnmFinding[i] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                      object.clinicalTnmFinding[i],
+                      object.clinicalTnmFinding[i]
                     );
                 }
               }
               if (object.primarySite != null) {
                 if (typeof object.primarySite !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.primarySite: object expected",
+                    ".org.phenopackets.schema.v2.core.Disease.primarySite: object expected"
                   );
                 message.primarySite =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.primarySite,
+                    object.primarySite
                   );
               }
               if (object.laterality != null) {
                 if (typeof object.laterality !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Disease.laterality: object expected",
+                    ".org.phenopackets.schema.v2.core.Disease.laterality: object expected"
                   );
                 message.laterality =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.laterality,
+                    object.laterality
                   );
               }
               return message;
@@ -9490,7 +9490,7 @@ export const org = ($root.org = (() => {
                 object.term =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.term,
-                    options,
+                    options
                   );
               if (
                 message.excluded != null &&
@@ -9501,7 +9501,7 @@ export const org = ($root.org = (() => {
                 object.onset =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.onset,
-                    options,
+                    options
                   );
               if (
                 message.resolution != null &&
@@ -9510,7 +9510,7 @@ export const org = ($root.org = (() => {
                 object.resolution =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.resolution,
-                    options,
+                    options
                   );
               if (message.diseaseStage && message.diseaseStage.length) {
                 object.diseaseStage = [];
@@ -9518,7 +9518,7 @@ export const org = ($root.org = (() => {
                   object.diseaseStage[j] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                       message.diseaseStage[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -9530,7 +9530,7 @@ export const org = ($root.org = (() => {
                   object.clinicalTnmFinding[j] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                       message.clinicalTnmFinding[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -9540,7 +9540,7 @@ export const org = ($root.org = (() => {
                 object.primarySite =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.primarySite,
-                    options,
+                    options
                   );
               if (
                 message.laterality != null &&
@@ -9549,7 +9549,7 @@ export const org = ($root.org = (() => {
                 object.laterality =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.laterality,
-                    options,
+                    options
                   );
               return object;
             };
@@ -9564,7 +9564,7 @@ export const org = ($root.org = (() => {
             Disease.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -9689,7 +9689,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Diagnosis.encode(
                   message.diagnosis,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.summary != null &&
@@ -9712,7 +9712,7 @@ export const org = ($root.org = (() => {
              */
             Interpretation.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -9748,7 +9748,7 @@ export const org = ($root.org = (() => {
                     message.diagnosis =
                       $root.org.phenopackets.schema.v2.core.Diagnosis.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -9812,7 +9812,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Diagnosis.verify(
-                    message.diagnosis,
+                    message.diagnosis
                   );
                 if (error) return "diagnosis." + error;
               }
@@ -9864,11 +9864,11 @@ export const org = ($root.org = (() => {
               if (object.diagnosis != null) {
                 if (typeof object.diagnosis !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Interpretation.diagnosis: object expected",
+                    ".org.phenopackets.schema.v2.core.Interpretation.diagnosis: object expected"
                   );
                 message.diagnosis =
                   $root.org.phenopackets.schema.v2.core.Diagnosis.fromObject(
-                    object.diagnosis,
+                    object.diagnosis
                   );
               }
               if (object.summary != null)
@@ -9913,7 +9913,7 @@ export const org = ($root.org = (() => {
                 object.diagnosis =
                   $root.org.phenopackets.schema.v2.core.Diagnosis.toObject(
                     message.diagnosis,
-                    options,
+                    options
                   );
               if (message.summary != null && message.hasOwnProperty("summary"))
                 object.summary = message.summary;
@@ -9930,7 +9930,7 @@ export const org = ($root.org = (() => {
             Interpretation.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -10050,7 +10050,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.disease,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.genomicInterpretations != null &&
@@ -10059,7 +10059,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.genomicInterpretations.length; ++i)
                   $root.org.phenopackets.schema.v2.core.GenomicInterpretation.encode(
                     message.genomicInterpretations[i],
-                    writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                    writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                   ).ldelim();
               return writer;
             };
@@ -10075,7 +10075,7 @@ export const org = ($root.org = (() => {
              */
             Diagnosis.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -10102,7 +10102,7 @@ export const org = ($root.org = (() => {
                     message.disease =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -10117,8 +10117,8 @@ export const org = ($root.org = (() => {
                     message.genomicInterpretations.push(
                       $root.org.phenopackets.schema.v2.core.GenomicInterpretation.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -10162,7 +10162,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.disease,
+                    message.disease
                   );
                 if (error) return "disease." + error;
               }
@@ -10179,7 +10179,7 @@ export const org = ($root.org = (() => {
                 ) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.GenomicInterpretation.verify(
-                      message.genomicInterpretations[i],
+                      message.genomicInterpretations[i]
                     );
                   if (error) return "genomicInterpretations." + error;
                 }
@@ -10206,27 +10206,27 @@ export const org = ($root.org = (() => {
               if (object.disease != null) {
                 if (typeof object.disease !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Diagnosis.disease: object expected",
+                    ".org.phenopackets.schema.v2.core.Diagnosis.disease: object expected"
                   );
                 message.disease =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.disease,
+                    object.disease
                   );
               }
               if (object.genomicInterpretations) {
                 if (!Array.isArray(object.genomicInterpretations))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Diagnosis.genomicInterpretations: array expected",
+                    ".org.phenopackets.schema.v2.core.Diagnosis.genomicInterpretations: array expected"
                   );
                 message.genomicInterpretations = [];
                 for (let i = 0; i < object.genomicInterpretations.length; ++i) {
                   if (typeof object.genomicInterpretations[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Diagnosis.genomicInterpretations: object expected",
+                      ".org.phenopackets.schema.v2.core.Diagnosis.genomicInterpretations: object expected"
                     );
                   message.genomicInterpretations[i] =
                     $root.org.phenopackets.schema.v2.core.GenomicInterpretation.fromObject(
-                      object.genomicInterpretations[i],
+                      object.genomicInterpretations[i]
                     );
                 }
               }
@@ -10252,7 +10252,7 @@ export const org = ($root.org = (() => {
                 object.disease =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.disease,
-                    options,
+                    options
                   );
               if (
                 message.genomicInterpretations &&
@@ -10263,7 +10263,7 @@ export const org = ($root.org = (() => {
                   object.genomicInterpretations[j] =
                     $root.org.phenopackets.schema.v2.core.GenomicInterpretation.toObject(
                       message.genomicInterpretations[j],
-                      options,
+                      options
                     );
               }
               return object;
@@ -10279,7 +10279,7 @@ export const org = ($root.org = (() => {
             Diagnosis.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -10376,7 +10376,7 @@ export const org = ($root.org = (() => {
              */
             Object.defineProperty(GenomicInterpretation.prototype, "call", {
               get: $util.oneOfGetter(
-                ($oneOfFields = ["gene", "variantInterpretation"]),
+                ($oneOfFields = ["gene", "variantInterpretation"])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -10424,7 +10424,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrsatile.v1.GeneDescriptor.encode(
                   message.gene,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.variantInterpretation != null &&
@@ -10432,7 +10432,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.VariantInterpretation.encode(
                   message.variantInterpretation,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               return writer;
             };
@@ -10448,7 +10448,7 @@ export const org = ($root.org = (() => {
              */
             GenomicInterpretation.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -10484,7 +10484,7 @@ export const org = ($root.org = (() => {
                     message.gene =
                       $root.org.ga4gh.vrsatile.v1.GeneDescriptor.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -10492,7 +10492,7 @@ export const org = ($root.org = (() => {
                     message.variantInterpretation =
                       $root.org.phenopackets.schema.v2.core.VariantInterpretation.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -10515,7 +10515,7 @@ export const org = ($root.org = (() => {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             GenomicInterpretation.decodeDelimited = function decodeDelimited(
-              reader,
+              reader
             ) {
               if (!(reader instanceof $Reader)) reader = new $Reader(reader);
               return this.decode(reader, reader.uint32());
@@ -10557,7 +10557,7 @@ export const org = ($root.org = (() => {
                 properties.call = 1;
                 {
                   let error = $root.org.ga4gh.vrsatile.v1.GeneDescriptor.verify(
-                    message.gene,
+                    message.gene
                   );
                   if (error) return "gene." + error;
                 }
@@ -10571,7 +10571,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.VariantInterpretation.verify(
-                      message.variantInterpretation,
+                      message.variantInterpretation
                     );
                   if (error) return "variantInterpretation." + error;
                 }
@@ -10597,7 +10597,7 @@ export const org = ($root.org = (() => {
                 new $root.org.phenopackets.schema.v2.core.GenomicInterpretation();
               if (object.subjectOrBiosampleId != null)
                 message.subjectOrBiosampleId = String(
-                  object.subjectOrBiosampleId,
+                  object.subjectOrBiosampleId
                 );
               switch (object.interpretationStatus) {
                 case "UNKNOWN_STATUS":
@@ -10624,21 +10624,21 @@ export const org = ($root.org = (() => {
               if (object.gene != null) {
                 if (typeof object.gene !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.GenomicInterpretation.gene: object expected",
+                    ".org.phenopackets.schema.v2.core.GenomicInterpretation.gene: object expected"
                   );
                 message.gene =
                   $root.org.ga4gh.vrsatile.v1.GeneDescriptor.fromObject(
-                    object.gene,
+                    object.gene
                   );
               }
               if (object.variantInterpretation != null) {
                 if (typeof object.variantInterpretation !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.GenomicInterpretation.variantInterpretation: object expected",
+                    ".org.phenopackets.schema.v2.core.GenomicInterpretation.variantInterpretation: object expected"
                   );
                 message.variantInterpretation =
                   $root.org.phenopackets.schema.v2.core.VariantInterpretation.fromObject(
-                    object.variantInterpretation,
+                    object.variantInterpretation
                   );
               }
               return message;
@@ -10655,7 +10655,7 @@ export const org = ($root.org = (() => {
              */
             GenomicInterpretation.toObject = function toObject(
               message,
-              options,
+              options
             ) {
               if (!options) options = {};
               let object = {};
@@ -10684,7 +10684,7 @@ export const org = ($root.org = (() => {
                 object.gene =
                   $root.org.ga4gh.vrsatile.v1.GeneDescriptor.toObject(
                     message.gene,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.call = "gene";
               }
@@ -10695,7 +10695,7 @@ export const org = ($root.org = (() => {
                 object.variantInterpretation =
                   $root.org.phenopackets.schema.v2.core.VariantInterpretation.toObject(
                     message.variantInterpretation,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.call = "variantInterpretation";
               }
@@ -10712,7 +10712,7 @@ export const org = ($root.org = (() => {
             GenomicInterpretation.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -10725,7 +10725,7 @@ export const org = ($root.org = (() => {
              * @returns {string} The default type url
              */
             GenomicInterpretation.getTypeUrl = function getTypeUrl(
-              typeUrlPrefix,
+              typeUrlPrefix
             ) {
               if (typeUrlPrefix === undefined) {
                 typeUrlPrefix = "type.googleapis.com";
@@ -10880,7 +10880,7 @@ export const org = ($root.org = (() => {
                 message.acmgPathogenicityClassification != null &&
                 Object.hasOwnProperty.call(
                   message,
-                  "acmgPathogenicityClassification",
+                  "acmgPathogenicityClassification"
                 )
               )
                 writer
@@ -10899,7 +10899,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrsatile.v1.VariationDescriptor.encode(
                   message.variationDescriptor,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               return writer;
             };
@@ -10915,7 +10915,7 @@ export const org = ($root.org = (() => {
              */
             VariantInterpretation.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -10951,7 +10951,7 @@ export const org = ($root.org = (() => {
                     message.variationDescriptor =
                       $root.org.ga4gh.vrsatile.v1.VariationDescriptor.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -10974,7 +10974,7 @@ export const org = ($root.org = (() => {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             VariantInterpretation.decodeDelimited = function decodeDelimited(
-              reader,
+              reader
             ) {
               if (!(reader instanceof $Reader)) reader = new $Reader(reader);
               return this.decode(reader, reader.uint32());
@@ -11024,7 +11024,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.ga4gh.vrsatile.v1.VariationDescriptor.verify(
-                    message.variationDescriptor,
+                    message.variationDescriptor
                   );
                 if (error) return "variationDescriptor." + error;
               }
@@ -11090,11 +11090,11 @@ export const org = ($root.org = (() => {
               if (object.variationDescriptor != null) {
                 if (typeof object.variationDescriptor !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.VariantInterpretation.variationDescriptor: object expected",
+                    ".org.phenopackets.schema.v2.core.VariantInterpretation.variationDescriptor: object expected"
                   );
                 message.variationDescriptor =
                   $root.org.ga4gh.vrsatile.v1.VariationDescriptor.fromObject(
-                    object.variationDescriptor,
+                    object.variationDescriptor
                   );
               }
               return message;
@@ -11111,7 +11111,7 @@ export const org = ($root.org = (() => {
              */
             VariantInterpretation.toObject = function toObject(
               message,
-              options,
+              options
             ) {
               if (!options) options = {};
               let object = {};
@@ -11151,7 +11151,7 @@ export const org = ($root.org = (() => {
                 object.variationDescriptor =
                   $root.org.ga4gh.vrsatile.v1.VariationDescriptor.toObject(
                     message.variationDescriptor,
-                    options,
+                    options
                   );
               return object;
             };
@@ -11166,7 +11166,7 @@ export const org = ($root.org = (() => {
             VariantInterpretation.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -11179,7 +11179,7 @@ export const org = ($root.org = (() => {
              * @returns {string} The default type url
              */
             VariantInterpretation.getTypeUrl = function getTypeUrl(
-              typeUrlPrefix,
+              typeUrlPrefix
             ) {
               if (typeUrlPrefix === undefined) {
                 typeUrlPrefix = "type.googleapis.com";
@@ -11340,7 +11340,7 @@ export const org = ($root.org = (() => {
               )
                 $root.google.protobuf.Timestamp.encode(
                   message.dateOfBirth,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.timeAtLastEncounter != null &&
@@ -11348,7 +11348,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.timeAtLastEncounter,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (
                 message.vitalStatus != null &&
@@ -11356,7 +11356,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.VitalStatus.encode(
                   message.vitalStatus,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               if (
                 message.sex != null &&
@@ -11376,7 +11376,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.gender,
-                  writer.uint32(/* id 8, wireType 2 =*/ 66).fork(),
+                  writer.uint32(/* id 8, wireType 2 =*/ 66).fork()
                 ).ldelim();
               if (
                 message.taxonomy != null &&
@@ -11384,7 +11384,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.taxonomy,
-                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork(),
+                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork()
                 ).ldelim();
               return writer;
             };
@@ -11400,7 +11400,7 @@ export const org = ($root.org = (() => {
              */
             Individual.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -11438,7 +11438,7 @@ export const org = ($root.org = (() => {
                     message.dateOfBirth =
                       $root.google.protobuf.Timestamp.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -11446,7 +11446,7 @@ export const org = ($root.org = (() => {
                     message.timeAtLastEncounter =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -11454,7 +11454,7 @@ export const org = ($root.org = (() => {
                     message.vitalStatus =
                       $root.org.phenopackets.schema.v2.core.VitalStatus.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -11470,7 +11470,7 @@ export const org = ($root.org = (() => {
                     message.gender =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -11478,7 +11478,7 @@ export const org = ($root.org = (() => {
                     message.taxonomy =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -11533,7 +11533,7 @@ export const org = ($root.org = (() => {
                 message.hasOwnProperty("dateOfBirth")
               ) {
                 let error = $root.google.protobuf.Timestamp.verify(
-                  message.dateOfBirth,
+                  message.dateOfBirth
                 );
                 if (error) return "dateOfBirth." + error;
               }
@@ -11543,7 +11543,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.timeAtLastEncounter,
+                    message.timeAtLastEncounter
                   );
                 if (error) return "timeAtLastEncounter." + error;
               }
@@ -11553,7 +11553,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.VitalStatus.verify(
-                    message.vitalStatus,
+                    message.vitalStatus
                   );
                 if (error) return "vitalStatus." + error;
               }
@@ -11590,7 +11590,7 @@ export const org = ($root.org = (() => {
               if (message.gender != null && message.hasOwnProperty("gender")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.gender,
+                    message.gender
                   );
                 if (error) return "gender." + error;
               }
@@ -11600,7 +11600,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.taxonomy,
+                    message.taxonomy
                   );
                 if (error) return "taxonomy." + error;
               }
@@ -11627,7 +11627,7 @@ export const org = ($root.org = (() => {
               if (object.alternateIds) {
                 if (!Array.isArray(object.alternateIds))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Individual.alternateIds: array expected",
+                    ".org.phenopackets.schema.v2.core.Individual.alternateIds: array expected"
                   );
                 message.alternateIds = [];
                 for (let i = 0; i < object.alternateIds.length; ++i)
@@ -11636,31 +11636,31 @@ export const org = ($root.org = (() => {
               if (object.dateOfBirth != null) {
                 if (typeof object.dateOfBirth !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Individual.dateOfBirth: object expected",
+                    ".org.phenopackets.schema.v2.core.Individual.dateOfBirth: object expected"
                   );
                 message.dateOfBirth =
                   $root.google.protobuf.Timestamp.fromObject(
-                    object.dateOfBirth,
+                    object.dateOfBirth
                   );
               }
               if (object.timeAtLastEncounter != null) {
                 if (typeof object.timeAtLastEncounter !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Individual.timeAtLastEncounter: object expected",
+                    ".org.phenopackets.schema.v2.core.Individual.timeAtLastEncounter: object expected"
                   );
                 message.timeAtLastEncounter =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.timeAtLastEncounter,
+                    object.timeAtLastEncounter
                   );
               }
               if (object.vitalStatus != null) {
                 if (typeof object.vitalStatus !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Individual.vitalStatus: object expected",
+                    ".org.phenopackets.schema.v2.core.Individual.vitalStatus: object expected"
                   );
                 message.vitalStatus =
                   $root.org.phenopackets.schema.v2.core.VitalStatus.fromObject(
-                    object.vitalStatus,
+                    object.vitalStatus
                   );
               }
               switch (object.sex) {
@@ -11730,21 +11730,21 @@ export const org = ($root.org = (() => {
               if (object.gender != null) {
                 if (typeof object.gender !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Individual.gender: object expected",
+                    ".org.phenopackets.schema.v2.core.Individual.gender: object expected"
                   );
                 message.gender =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.gender,
+                    object.gender
                   );
               }
               if (object.taxonomy != null) {
                 if (typeof object.taxonomy !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Individual.taxonomy: object expected",
+                    ".org.phenopackets.schema.v2.core.Individual.taxonomy: object expected"
                   );
                 message.taxonomy =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.taxonomy,
+                    object.taxonomy
                   );
               }
               return message;
@@ -11787,7 +11787,7 @@ export const org = ($root.org = (() => {
               )
                 object.dateOfBirth = $root.google.protobuf.Timestamp.toObject(
                   message.dateOfBirth,
-                  options,
+                  options
                 );
               if (
                 message.timeAtLastEncounter != null &&
@@ -11796,7 +11796,7 @@ export const org = ($root.org = (() => {
                 object.timeAtLastEncounter =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.timeAtLastEncounter,
-                    options,
+                    options
                   );
               if (
                 message.vitalStatus != null &&
@@ -11805,7 +11805,7 @@ export const org = ($root.org = (() => {
                 object.vitalStatus =
                   $root.org.phenopackets.schema.v2.core.VitalStatus.toObject(
                     message.vitalStatus,
-                    options,
+                    options
                   );
               if (message.sex != null && message.hasOwnProperty("sex"))
                 object.sex =
@@ -11826,7 +11826,7 @@ export const org = ($root.org = (() => {
                 object.gender =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.gender,
-                    options,
+                    options
                   );
               if (
                 message.taxonomy != null &&
@@ -11835,7 +11835,7 @@ export const org = ($root.org = (() => {
                 object.taxonomy =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.taxonomy,
-                    options,
+                    options
                   );
               return object;
             };
@@ -11850,7 +11850,7 @@ export const org = ($root.org = (() => {
             Individual.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -11970,7 +11970,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.timeOfDeath,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.causeOfDeath != null &&
@@ -11978,7 +11978,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.causeOfDeath,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.survivalTimeInDays != null &&
@@ -12001,7 +12001,7 @@ export const org = ($root.org = (() => {
              */
             VitalStatus.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -12033,7 +12033,7 @@ export const org = ($root.org = (() => {
                     message.timeOfDeath =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12041,7 +12041,7 @@ export const org = ($root.org = (() => {
                     message.causeOfDeath =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12098,7 +12098,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.timeOfDeath,
+                    message.timeOfDeath
                   );
                 if (error) return "timeOfDeath." + error;
               }
@@ -12108,7 +12108,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.causeOfDeath,
+                    message.causeOfDeath
                   );
                 if (error) return "causeOfDeath." + error;
               }
@@ -12154,21 +12154,21 @@ export const org = ($root.org = (() => {
               if (object.timeOfDeath != null) {
                 if (typeof object.timeOfDeath !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.VitalStatus.timeOfDeath: object expected",
+                    ".org.phenopackets.schema.v2.core.VitalStatus.timeOfDeath: object expected"
                   );
                 message.timeOfDeath =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.timeOfDeath,
+                    object.timeOfDeath
                   );
               }
               if (object.causeOfDeath != null) {
                 if (typeof object.causeOfDeath !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.VitalStatus.causeOfDeath: object expected",
+                    ".org.phenopackets.schema.v2.core.VitalStatus.causeOfDeath: object expected"
                   );
                 message.causeOfDeath =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.causeOfDeath,
+                    object.causeOfDeath
                   );
               }
               if (object.survivalTimeInDays != null)
@@ -12208,7 +12208,7 @@ export const org = ($root.org = (() => {
                 object.timeOfDeath =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.timeOfDeath,
-                    options,
+                    options
                   );
               if (
                 message.causeOfDeath != null &&
@@ -12217,7 +12217,7 @@ export const org = ($root.org = (() => {
                 object.causeOfDeath =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.causeOfDeath,
-                    options,
+                    options
                   );
               if (
                 message.survivalTimeInDays != null &&
@@ -12237,7 +12237,7 @@ export const org = ($root.org = (() => {
             VitalStatus.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -12454,7 +12454,7 @@ export const org = ($root.org = (() => {
                   "treatment",
                   "radiationTherapy",
                   "therapeuticRegimen",
-                ]),
+                ])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -12488,7 +12488,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Procedure.encode(
                   message.procedure,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.treatment != null &&
@@ -12496,7 +12496,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Treatment.encode(
                   message.treatment,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.radiationTherapy != null &&
@@ -12504,7 +12504,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.RadiationTherapy.encode(
                   message.radiationTherapy,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.therapeuticRegimen != null &&
@@ -12512,7 +12512,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TherapeuticRegimen.encode(
                   message.therapeuticRegimen,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (
                 message.treatmentTarget != null &&
@@ -12520,7 +12520,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.treatmentTarget,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               if (
                 message.treatmentIntent != null &&
@@ -12528,7 +12528,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.treatmentIntent,
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
               if (
                 message.responseToTreatment != null &&
@@ -12536,24 +12536,24 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.responseToTreatment,
-                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                  writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
                 ).ldelim();
               if (message.adverseEvents != null && message.adverseEvents.length)
                 for (let i = 0; i < message.adverseEvents.length; ++i)
                   $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                     message.adverseEvents[i],
-                    writer.uint32(/* id 8, wireType 2 =*/ 66).fork(),
+                    writer.uint32(/* id 8, wireType 2 =*/ 66).fork()
                   ).ldelim();
               if (
                 message.treatmentTerminationReason != null &&
                 Object.hasOwnProperty.call(
                   message,
-                  "treatmentTerminationReason",
+                  "treatmentTerminationReason"
                 )
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.treatmentTerminationReason,
-                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork(),
+                  writer.uint32(/* id 9, wireType 2 =*/ 74).fork()
                 ).ldelim();
               return writer;
             };
@@ -12569,7 +12569,7 @@ export const org = ($root.org = (() => {
              */
             MedicalAction.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -12597,7 +12597,7 @@ export const org = ($root.org = (() => {
                     message.procedure =
                       $root.org.phenopackets.schema.v2.core.Procedure.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12605,7 +12605,7 @@ export const org = ($root.org = (() => {
                     message.treatment =
                       $root.org.phenopackets.schema.v2.core.Treatment.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12613,7 +12613,7 @@ export const org = ($root.org = (() => {
                     message.radiationTherapy =
                       $root.org.phenopackets.schema.v2.core.RadiationTherapy.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12621,7 +12621,7 @@ export const org = ($root.org = (() => {
                     message.therapeuticRegimen =
                       $root.org.phenopackets.schema.v2.core.TherapeuticRegimen.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12629,7 +12629,7 @@ export const org = ($root.org = (() => {
                     message.treatmentTarget =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12637,7 +12637,7 @@ export const org = ($root.org = (() => {
                     message.treatmentIntent =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12645,7 +12645,7 @@ export const org = ($root.org = (() => {
                     message.responseToTreatment =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12657,8 +12657,8 @@ export const org = ($root.org = (() => {
                     message.adverseEvents.push(
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -12666,7 +12666,7 @@ export const org = ($root.org = (() => {
                     message.treatmentTerminationReason =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -12713,7 +12713,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Procedure.verify(
-                      message.procedure,
+                      message.procedure
                     );
                   if (error) return "procedure." + error;
                 }
@@ -12727,7 +12727,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Treatment.verify(
-                      message.treatment,
+                      message.treatment
                     );
                   if (error) return "treatment." + error;
                 }
@@ -12741,7 +12741,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.RadiationTherapy.verify(
-                      message.radiationTherapy,
+                      message.radiationTherapy
                     );
                   if (error) return "radiationTherapy." + error;
                 }
@@ -12755,7 +12755,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.TherapeuticRegimen.verify(
-                      message.therapeuticRegimen,
+                      message.therapeuticRegimen
                     );
                   if (error) return "therapeuticRegimen." + error;
                 }
@@ -12766,7 +12766,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.treatmentTarget,
+                    message.treatmentTarget
                   );
                 if (error) return "treatmentTarget." + error;
               }
@@ -12776,7 +12776,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.treatmentIntent,
+                    message.treatmentIntent
                   );
                 if (error) return "treatmentIntent." + error;
               }
@@ -12786,7 +12786,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.responseToTreatment,
+                    message.responseToTreatment
                   );
                 if (error) return "responseToTreatment." + error;
               }
@@ -12799,7 +12799,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.adverseEvents.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.adverseEvents[i],
+                      message.adverseEvents[i]
                     );
                   if (error) return "adverseEvents." + error;
                 }
@@ -12810,7 +12810,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.treatmentTerminationReason,
+                    message.treatmentTerminationReason
                   );
                 if (error) return "treatmentTerminationReason." + error;
               }
@@ -12836,98 +12836,98 @@ export const org = ($root.org = (() => {
               if (object.procedure != null) {
                 if (typeof object.procedure !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.procedure: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.procedure: object expected"
                   );
                 message.procedure =
                   $root.org.phenopackets.schema.v2.core.Procedure.fromObject(
-                    object.procedure,
+                    object.procedure
                   );
               }
               if (object.treatment != null) {
                 if (typeof object.treatment !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.treatment: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.treatment: object expected"
                   );
                 message.treatment =
                   $root.org.phenopackets.schema.v2.core.Treatment.fromObject(
-                    object.treatment,
+                    object.treatment
                   );
               }
               if (object.radiationTherapy != null) {
                 if (typeof object.radiationTherapy !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.radiationTherapy: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.radiationTherapy: object expected"
                   );
                 message.radiationTherapy =
                   $root.org.phenopackets.schema.v2.core.RadiationTherapy.fromObject(
-                    object.radiationTherapy,
+                    object.radiationTherapy
                   );
               }
               if (object.therapeuticRegimen != null) {
                 if (typeof object.therapeuticRegimen !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.therapeuticRegimen: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.therapeuticRegimen: object expected"
                   );
                 message.therapeuticRegimen =
                   $root.org.phenopackets.schema.v2.core.TherapeuticRegimen.fromObject(
-                    object.therapeuticRegimen,
+                    object.therapeuticRegimen
                   );
               }
               if (object.treatmentTarget != null) {
                 if (typeof object.treatmentTarget !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.treatmentTarget: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.treatmentTarget: object expected"
                   );
                 message.treatmentTarget =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.treatmentTarget,
+                    object.treatmentTarget
                   );
               }
               if (object.treatmentIntent != null) {
                 if (typeof object.treatmentIntent !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.treatmentIntent: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.treatmentIntent: object expected"
                   );
                 message.treatmentIntent =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.treatmentIntent,
+                    object.treatmentIntent
                   );
               }
               if (object.responseToTreatment != null) {
                 if (typeof object.responseToTreatment !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.responseToTreatment: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.responseToTreatment: object expected"
                   );
                 message.responseToTreatment =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.responseToTreatment,
+                    object.responseToTreatment
                   );
               }
               if (object.adverseEvents) {
                 if (!Array.isArray(object.adverseEvents))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.adverseEvents: array expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.adverseEvents: array expected"
                   );
                 message.adverseEvents = [];
                 for (let i = 0; i < object.adverseEvents.length; ++i) {
                   if (typeof object.adverseEvents[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.MedicalAction.adverseEvents: object expected",
+                      ".org.phenopackets.schema.v2.core.MedicalAction.adverseEvents: object expected"
                     );
                   message.adverseEvents[i] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                      object.adverseEvents[i],
+                      object.adverseEvents[i]
                     );
                 }
               }
               if (object.treatmentTerminationReason != null) {
                 if (typeof object.treatmentTerminationReason !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MedicalAction.treatmentTerminationReason: object expected",
+                    ".org.phenopackets.schema.v2.core.MedicalAction.treatmentTerminationReason: object expected"
                   );
                 message.treatmentTerminationReason =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.treatmentTerminationReason,
+                    object.treatmentTerminationReason
                   );
               }
               return message;
@@ -12959,7 +12959,7 @@ export const org = ($root.org = (() => {
                 object.procedure =
                   $root.org.phenopackets.schema.v2.core.Procedure.toObject(
                     message.procedure,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.action = "procedure";
               }
@@ -12970,7 +12970,7 @@ export const org = ($root.org = (() => {
                 object.treatment =
                   $root.org.phenopackets.schema.v2.core.Treatment.toObject(
                     message.treatment,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.action = "treatment";
               }
@@ -12981,7 +12981,7 @@ export const org = ($root.org = (() => {
                 object.radiationTherapy =
                   $root.org.phenopackets.schema.v2.core.RadiationTherapy.toObject(
                     message.radiationTherapy,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.action = "radiationTherapy";
               }
@@ -12992,7 +12992,7 @@ export const org = ($root.org = (() => {
                 object.therapeuticRegimen =
                   $root.org.phenopackets.schema.v2.core.TherapeuticRegimen.toObject(
                     message.therapeuticRegimen,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.action = "therapeuticRegimen";
               }
@@ -13003,7 +13003,7 @@ export const org = ($root.org = (() => {
                 object.treatmentTarget =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.treatmentTarget,
-                    options,
+                    options
                   );
               if (
                 message.treatmentIntent != null &&
@@ -13012,7 +13012,7 @@ export const org = ($root.org = (() => {
                 object.treatmentIntent =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.treatmentIntent,
-                    options,
+                    options
                   );
               if (
                 message.responseToTreatment != null &&
@@ -13021,7 +13021,7 @@ export const org = ($root.org = (() => {
                 object.responseToTreatment =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.responseToTreatment,
-                    options,
+                    options
                   );
               if (message.adverseEvents && message.adverseEvents.length) {
                 object.adverseEvents = [];
@@ -13029,7 +13029,7 @@ export const org = ($root.org = (() => {
                   object.adverseEvents[j] =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                       message.adverseEvents[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -13039,7 +13039,7 @@ export const org = ($root.org = (() => {
                 object.treatmentTerminationReason =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.treatmentTerminationReason,
-                    options,
+                    options
                   );
               return object;
             };
@@ -13054,7 +13054,7 @@ export const org = ($root.org = (() => {
             MedicalAction.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -13179,7 +13179,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.agent,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.routeOfAdministration != null &&
@@ -13187,13 +13187,13 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.routeOfAdministration,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (message.doseIntervals != null && message.doseIntervals.length)
                 for (let i = 0; i < message.doseIntervals.length; ++i)
                   $root.org.phenopackets.schema.v2.core.DoseInterval.encode(
                     message.doseIntervals[i],
-                    writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                    writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                   ).ldelim();
               if (
                 message.drugType != null &&
@@ -13208,7 +13208,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Quantity.encode(
                   message.cumulativeDose,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               return writer;
             };
@@ -13224,7 +13224,7 @@ export const org = ($root.org = (() => {
              */
             Treatment.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -13251,7 +13251,7 @@ export const org = ($root.org = (() => {
                     message.agent =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -13259,7 +13259,7 @@ export const org = ($root.org = (() => {
                     message.routeOfAdministration =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -13271,8 +13271,8 @@ export const org = ($root.org = (() => {
                     message.doseIntervals.push(
                       $root.org.phenopackets.schema.v2.core.DoseInterval.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -13284,7 +13284,7 @@ export const org = ($root.org = (() => {
                     message.cumulativeDose =
                       $root.org.phenopackets.schema.v2.core.Quantity.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -13325,7 +13325,7 @@ export const org = ($root.org = (() => {
               if (message.agent != null && message.hasOwnProperty("agent")) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.agent,
+                    message.agent
                   );
                 if (error) return "agent." + error;
               }
@@ -13335,7 +13335,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.routeOfAdministration,
+                    message.routeOfAdministration
                   );
                 if (error) return "routeOfAdministration." + error;
               }
@@ -13348,7 +13348,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.doseIntervals.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.DoseInterval.verify(
-                      message.doseIntervals[i],
+                      message.doseIntervals[i]
                     );
                   if (error) return "doseIntervals." + error;
                 }
@@ -13372,7 +13372,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Quantity.verify(
-                    message.cumulativeDose,
+                    message.cumulativeDose
                   );
                 if (error) return "cumulativeDose." + error;
               }
@@ -13398,37 +13398,37 @@ export const org = ($root.org = (() => {
               if (object.agent != null) {
                 if (typeof object.agent !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Treatment.agent: object expected",
+                    ".org.phenopackets.schema.v2.core.Treatment.agent: object expected"
                   );
                 message.agent =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.agent,
+                    object.agent
                   );
               }
               if (object.routeOfAdministration != null) {
                 if (typeof object.routeOfAdministration !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Treatment.routeOfAdministration: object expected",
+                    ".org.phenopackets.schema.v2.core.Treatment.routeOfAdministration: object expected"
                   );
                 message.routeOfAdministration =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.routeOfAdministration,
+                    object.routeOfAdministration
                   );
               }
               if (object.doseIntervals) {
                 if (!Array.isArray(object.doseIntervals))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Treatment.doseIntervals: array expected",
+                    ".org.phenopackets.schema.v2.core.Treatment.doseIntervals: array expected"
                   );
                 message.doseIntervals = [];
                 for (let i = 0; i < object.doseIntervals.length; ++i) {
                   if (typeof object.doseIntervals[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Treatment.doseIntervals: object expected",
+                      ".org.phenopackets.schema.v2.core.Treatment.doseIntervals: object expected"
                     );
                   message.doseIntervals[i] =
                     $root.org.phenopackets.schema.v2.core.DoseInterval.fromObject(
-                      object.doseIntervals[i],
+                      object.doseIntervals[i]
                     );
                 }
               }
@@ -13453,11 +13453,11 @@ export const org = ($root.org = (() => {
               if (object.cumulativeDose != null) {
                 if (typeof object.cumulativeDose !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Treatment.cumulativeDose: object expected",
+                    ".org.phenopackets.schema.v2.core.Treatment.cumulativeDose: object expected"
                   );
                 message.cumulativeDose =
                   $root.org.phenopackets.schema.v2.core.Quantity.fromObject(
-                    object.cumulativeDose,
+                    object.cumulativeDose
                   );
               }
               return message;
@@ -13487,7 +13487,7 @@ export const org = ($root.org = (() => {
                 object.agent =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.agent,
-                    options,
+                    options
                   );
               if (
                 message.routeOfAdministration != null &&
@@ -13496,7 +13496,7 @@ export const org = ($root.org = (() => {
                 object.routeOfAdministration =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.routeOfAdministration,
-                    options,
+                    options
                   );
               if (message.doseIntervals && message.doseIntervals.length) {
                 object.doseIntervals = [];
@@ -13504,7 +13504,7 @@ export const org = ($root.org = (() => {
                   object.doseIntervals[j] =
                     $root.org.phenopackets.schema.v2.core.DoseInterval.toObject(
                       message.doseIntervals[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -13524,7 +13524,7 @@ export const org = ($root.org = (() => {
                 object.cumulativeDose =
                   $root.org.phenopackets.schema.v2.core.Quantity.toObject(
                     message.cumulativeDose,
-                    options,
+                    options
                   );
               return object;
             };
@@ -13539,7 +13539,7 @@ export const org = ($root.org = (() => {
             Treatment.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -13645,7 +13645,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.Quantity.encode(
                   message.quantity,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.scheduleFrequency != null &&
@@ -13653,7 +13653,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.scheduleFrequency,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.interval != null &&
@@ -13661,7 +13661,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeInterval.encode(
                   message.interval,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               return writer;
             };
@@ -13677,7 +13677,7 @@ export const org = ($root.org = (() => {
              */
             DoseInterval.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -13705,7 +13705,7 @@ export const org = ($root.org = (() => {
                     message.quantity =
                       $root.org.phenopackets.schema.v2.core.Quantity.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -13713,7 +13713,7 @@ export const org = ($root.org = (() => {
                     message.scheduleFrequency =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -13721,7 +13721,7 @@ export const org = ($root.org = (() => {
                     message.interval =
                       $root.org.phenopackets.schema.v2.core.TimeInterval.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -13765,7 +13765,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.Quantity.verify(
-                    message.quantity,
+                    message.quantity
                   );
                 if (error) return "quantity." + error;
               }
@@ -13775,7 +13775,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.scheduleFrequency,
+                    message.scheduleFrequency
                   );
                 if (error) return "scheduleFrequency." + error;
               }
@@ -13785,7 +13785,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeInterval.verify(
-                    message.interval,
+                    message.interval
                   );
                 if (error) return "interval." + error;
               }
@@ -13811,31 +13811,31 @@ export const org = ($root.org = (() => {
               if (object.quantity != null) {
                 if (typeof object.quantity !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.DoseInterval.quantity: object expected",
+                    ".org.phenopackets.schema.v2.core.DoseInterval.quantity: object expected"
                   );
                 message.quantity =
                   $root.org.phenopackets.schema.v2.core.Quantity.fromObject(
-                    object.quantity,
+                    object.quantity
                   );
               }
               if (object.scheduleFrequency != null) {
                 if (typeof object.scheduleFrequency !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.DoseInterval.scheduleFrequency: object expected",
+                    ".org.phenopackets.schema.v2.core.DoseInterval.scheduleFrequency: object expected"
                   );
                 message.scheduleFrequency =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.scheduleFrequency,
+                    object.scheduleFrequency
                   );
               }
               if (object.interval != null) {
                 if (typeof object.interval !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.DoseInterval.interval: object expected",
+                    ".org.phenopackets.schema.v2.core.DoseInterval.interval: object expected"
                   );
                 message.interval =
                   $root.org.phenopackets.schema.v2.core.TimeInterval.fromObject(
-                    object.interval,
+                    object.interval
                   );
               }
               return message;
@@ -13865,7 +13865,7 @@ export const org = ($root.org = (() => {
                 object.quantity =
                   $root.org.phenopackets.schema.v2.core.Quantity.toObject(
                     message.quantity,
-                    options,
+                    options
                   );
               if (
                 message.scheduleFrequency != null &&
@@ -13874,7 +13874,7 @@ export const org = ($root.org = (() => {
                 object.scheduleFrequency =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.scheduleFrequency,
-                    options,
+                    options
                   );
               if (
                 message.interval != null &&
@@ -13883,7 +13883,7 @@ export const org = ($root.org = (() => {
                 object.interval =
                   $root.org.phenopackets.schema.v2.core.TimeInterval.toObject(
                     message.interval,
-                    options,
+                    options
                   );
               return object;
             };
@@ -13898,7 +13898,7 @@ export const org = ($root.org = (() => {
             DoseInterval.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -14032,7 +14032,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.modality,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.bodySite != null &&
@@ -14040,7 +14040,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.bodySite,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.dosage != null &&
@@ -14068,7 +14068,7 @@ export const org = ($root.org = (() => {
              */
             RadiationTherapy.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -14096,7 +14096,7 @@ export const org = ($root.org = (() => {
                     message.modality =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -14104,7 +14104,7 @@ export const org = ($root.org = (() => {
                     message.bodySite =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -14135,7 +14135,7 @@ export const org = ($root.org = (() => {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             RadiationTherapy.decodeDelimited = function decodeDelimited(
-              reader,
+              reader
             ) {
               if (!(reader instanceof $Reader)) reader = new $Reader(reader);
               return this.decode(reader, reader.uint32());
@@ -14158,7 +14158,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.modality,
+                    message.modality
                   );
                 if (error) return "modality." + error;
               }
@@ -14168,7 +14168,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                    message.bodySite,
+                    message.bodySite
                   );
                 if (error) return "bodySite." + error;
               }
@@ -14203,21 +14203,21 @@ export const org = ($root.org = (() => {
               if (object.modality != null) {
                 if (typeof object.modality !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.RadiationTherapy.modality: object expected",
+                    ".org.phenopackets.schema.v2.core.RadiationTherapy.modality: object expected"
                   );
                 message.modality =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.modality,
+                    object.modality
                   );
               }
               if (object.bodySite != null) {
                 if (typeof object.bodySite !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.RadiationTherapy.bodySite: object expected",
+                    ".org.phenopackets.schema.v2.core.RadiationTherapy.bodySite: object expected"
                   );
                 message.bodySite =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.bodySite,
+                    object.bodySite
                   );
               }
               if (object.dosage != null) message.dosage = object.dosage | 0;
@@ -14251,7 +14251,7 @@ export const org = ($root.org = (() => {
                 object.modality =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.modality,
-                    options,
+                    options
                   );
               if (
                 message.bodySite != null &&
@@ -14260,7 +14260,7 @@ export const org = ($root.org = (() => {
                 object.bodySite =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.bodySite,
-                    options,
+                    options
                   );
               if (message.dosage != null && message.hasOwnProperty("dosage"))
                 object.dosage = message.dosage;
@@ -14282,7 +14282,7 @@ export const org = ($root.org = (() => {
             RadiationTherapy.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -14389,7 +14389,7 @@ export const org = ($root.org = (() => {
              */
             Object.defineProperty(TherapeuticRegimen.prototype, "identifier", {
               get: $util.oneOfGetter(
-                ($oneOfFields = ["externalReference", "ontologyClass"]),
+                ($oneOfFields = ["externalReference", "ontologyClass"])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -14423,7 +14423,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.ExternalReference.encode(
                   message.externalReference,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.ontologyClass != null &&
@@ -14431,7 +14431,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                   message.ontologyClass,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.startTime != null &&
@@ -14439,7 +14439,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.startTime,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.endTime != null &&
@@ -14447,7 +14447,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.phenopackets.schema.v2.core.TimeElement.encode(
                   message.endTime,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (
                 message.regimenStatus != null &&
@@ -14470,7 +14470,7 @@ export const org = ($root.org = (() => {
              */
             TherapeuticRegimen.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -14498,7 +14498,7 @@ export const org = ($root.org = (() => {
                     message.externalReference =
                       $root.org.phenopackets.schema.v2.core.ExternalReference.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -14506,7 +14506,7 @@ export const org = ($root.org = (() => {
                     message.ontologyClass =
                       $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -14514,7 +14514,7 @@ export const org = ($root.org = (() => {
                     message.startTime =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -14522,7 +14522,7 @@ export const org = ($root.org = (() => {
                     message.endTime =
                       $root.org.phenopackets.schema.v2.core.TimeElement.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -14549,7 +14549,7 @@ export const org = ($root.org = (() => {
              * @throws {$protobuf.util.ProtocolError} If required fields are missing
              */
             TherapeuticRegimen.decodeDelimited = function decodeDelimited(
-              reader,
+              reader
             ) {
               if (!(reader instanceof $Reader)) reader = new $Reader(reader);
               return this.decode(reader, reader.uint32());
@@ -14575,7 +14575,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.ExternalReference.verify(
-                      message.externalReference,
+                      message.externalReference
                     );
                   if (error) return "externalReference." + error;
                 }
@@ -14590,7 +14590,7 @@ export const org = ($root.org = (() => {
                 {
                   let error =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                      message.ontologyClass,
+                      message.ontologyClass
                     );
                   if (error) return "ontologyClass." + error;
                 }
@@ -14601,7 +14601,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.startTime,
+                    message.startTime
                   );
                 if (error) return "startTime." + error;
               }
@@ -14611,7 +14611,7 @@ export const org = ($root.org = (() => {
               ) {
                 let error =
                   $root.org.phenopackets.schema.v2.core.TimeElement.verify(
-                    message.endTime,
+                    message.endTime
                   );
                 if (error) return "endTime." + error;
               }
@@ -14650,41 +14650,41 @@ export const org = ($root.org = (() => {
               if (object.externalReference != null) {
                 if (typeof object.externalReference !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.externalReference: object expected",
+                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.externalReference: object expected"
                   );
                 message.externalReference =
                   $root.org.phenopackets.schema.v2.core.ExternalReference.fromObject(
-                    object.externalReference,
+                    object.externalReference
                   );
               }
               if (object.ontologyClass != null) {
                 if (typeof object.ontologyClass !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.ontologyClass: object expected",
+                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.ontologyClass: object expected"
                   );
                 message.ontologyClass =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                    object.ontologyClass,
+                    object.ontologyClass
                   );
               }
               if (object.startTime != null) {
                 if (typeof object.startTime !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.startTime: object expected",
+                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.startTime: object expected"
                   );
                 message.startTime =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.startTime,
+                    object.startTime
                   );
               }
               if (object.endTime != null) {
                 if (typeof object.endTime !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.endTime: object expected",
+                    ".org.phenopackets.schema.v2.core.TherapeuticRegimen.endTime: object expected"
                   );
                 message.endTime =
                   $root.org.phenopackets.schema.v2.core.TimeElement.fromObject(
-                    object.endTime,
+                    object.endTime
                   );
               }
               switch (object.regimenStatus) {
@@ -14733,7 +14733,7 @@ export const org = ($root.org = (() => {
                 object.externalReference =
                   $root.org.phenopackets.schema.v2.core.ExternalReference.toObject(
                     message.externalReference,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.identifier = "externalReference";
               }
@@ -14744,7 +14744,7 @@ export const org = ($root.org = (() => {
                 object.ontologyClass =
                   $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                     message.ontologyClass,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.identifier = "ontologyClass";
               }
@@ -14755,13 +14755,13 @@ export const org = ($root.org = (() => {
                 object.startTime =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.startTime,
-                    options,
+                    options
                   );
               if (message.endTime != null && message.hasOwnProperty("endTime"))
                 object.endTime =
                   $root.org.phenopackets.schema.v2.core.TimeElement.toObject(
                     message.endTime,
-                    options,
+                    options
                   );
               if (
                 message.regimenStatus != null &&
@@ -14785,7 +14785,7 @@ export const org = ($root.org = (() => {
             TherapeuticRegimen.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -14950,7 +14950,7 @@ export const org = ($root.org = (() => {
               )
                 $root.google.protobuf.Timestamp.encode(
                   message.created,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.createdBy != null &&
@@ -14970,13 +14970,13 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.resources.length; ++i)
                   $root.org.phenopackets.schema.v2.core.Resource.encode(
                     message.resources[i],
-                    writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                    writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                   ).ldelim();
               if (message.updates != null && message.updates.length)
                 for (let i = 0; i < message.updates.length; ++i)
                   $root.org.phenopackets.schema.v2.core.Update.encode(
                     message.updates[i],
-                    writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                    writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                   ).ldelim();
               if (
                 message.phenopacketSchemaVersion != null &&
@@ -14992,7 +14992,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.externalReferences.length; ++i)
                   $root.org.phenopackets.schema.v2.core.ExternalReference.encode(
                     message.externalReferences[i],
-                    writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                    writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
                   ).ldelim();
               return writer;
             };
@@ -15008,7 +15008,7 @@ export const org = ($root.org = (() => {
              */
             MetaData.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -15034,7 +15034,7 @@ export const org = ($root.org = (() => {
                   case 1: {
                     message.created = $root.google.protobuf.Timestamp.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -15052,8 +15052,8 @@ export const org = ($root.org = (() => {
                     message.resources.push(
                       $root.org.phenopackets.schema.v2.core.Resource.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -15063,8 +15063,8 @@ export const org = ($root.org = (() => {
                     message.updates.push(
                       $root.org.phenopackets.schema.v2.core.Update.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -15083,8 +15083,8 @@ export const org = ($root.org = (() => {
                     message.externalReferences.push(
                       $root.org.phenopackets.schema.v2.core.ExternalReference.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -15127,7 +15127,7 @@ export const org = ($root.org = (() => {
                 message.hasOwnProperty("created")
               ) {
                 let error = $root.google.protobuf.Timestamp.verify(
-                  message.created,
+                  message.created
                 );
                 if (error) return "created." + error;
               }
@@ -15152,7 +15152,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.resources.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Resource.verify(
-                      message.resources[i],
+                      message.resources[i]
                     );
                   if (error) return "resources." + error;
                 }
@@ -15166,7 +15166,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.updates.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Update.verify(
-                      message.updates[i],
+                      message.updates[i]
                     );
                   if (error) return "updates." + error;
                 }
@@ -15186,7 +15186,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.externalReferences.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.ExternalReference.verify(
-                      message.externalReferences[i],
+                      message.externalReferences[i]
                     );
                   if (error) return "externalReferences." + error;
                 }
@@ -15212,10 +15212,10 @@ export const org = ($root.org = (() => {
               if (object.created != null) {
                 if (typeof object.created !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MetaData.created: object expected",
+                    ".org.phenopackets.schema.v2.core.MetaData.created: object expected"
                   );
                 message.created = $root.google.protobuf.Timestamp.fromObject(
-                  object.created,
+                  object.created
                 );
               }
               if (object.createdBy != null)
@@ -15225,55 +15225,55 @@ export const org = ($root.org = (() => {
               if (object.resources) {
                 if (!Array.isArray(object.resources))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MetaData.resources: array expected",
+                    ".org.phenopackets.schema.v2.core.MetaData.resources: array expected"
                   );
                 message.resources = [];
                 for (let i = 0; i < object.resources.length; ++i) {
                   if (typeof object.resources[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.MetaData.resources: object expected",
+                      ".org.phenopackets.schema.v2.core.MetaData.resources: object expected"
                     );
                   message.resources[i] =
                     $root.org.phenopackets.schema.v2.core.Resource.fromObject(
-                      object.resources[i],
+                      object.resources[i]
                     );
                 }
               }
               if (object.updates) {
                 if (!Array.isArray(object.updates))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MetaData.updates: array expected",
+                    ".org.phenopackets.schema.v2.core.MetaData.updates: array expected"
                   );
                 message.updates = [];
                 for (let i = 0; i < object.updates.length; ++i) {
                   if (typeof object.updates[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.MetaData.updates: object expected",
+                      ".org.phenopackets.schema.v2.core.MetaData.updates: object expected"
                     );
                   message.updates[i] =
                     $root.org.phenopackets.schema.v2.core.Update.fromObject(
-                      object.updates[i],
+                      object.updates[i]
                     );
                 }
               }
               if (object.phenopacketSchemaVersion != null)
                 message.phenopacketSchemaVersion = String(
-                  object.phenopacketSchemaVersion,
+                  object.phenopacketSchemaVersion
                 );
               if (object.externalReferences) {
                 if (!Array.isArray(object.externalReferences))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.MetaData.externalReferences: array expected",
+                    ".org.phenopackets.schema.v2.core.MetaData.externalReferences: array expected"
                   );
                 message.externalReferences = [];
                 for (let i = 0; i < object.externalReferences.length; ++i) {
                   if (typeof object.externalReferences[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.MetaData.externalReferences: object expected",
+                      ".org.phenopackets.schema.v2.core.MetaData.externalReferences: object expected"
                     );
                   message.externalReferences[i] =
                     $root.org.phenopackets.schema.v2.core.ExternalReference.fromObject(
-                      object.externalReferences[i],
+                      object.externalReferences[i]
                     );
                 }
               }
@@ -15306,7 +15306,7 @@ export const org = ($root.org = (() => {
               if (message.created != null && message.hasOwnProperty("created"))
                 object.created = $root.google.protobuf.Timestamp.toObject(
                   message.created,
-                  options,
+                  options
                 );
               if (
                 message.createdBy != null &&
@@ -15324,7 +15324,7 @@ export const org = ($root.org = (() => {
                   object.resources[j] =
                     $root.org.phenopackets.schema.v2.core.Resource.toObject(
                       message.resources[j],
-                      options,
+                      options
                     );
               }
               if (message.updates && message.updates.length) {
@@ -15333,7 +15333,7 @@ export const org = ($root.org = (() => {
                   object.updates[j] =
                     $root.org.phenopackets.schema.v2.core.Update.toObject(
                       message.updates[j],
-                      options,
+                      options
                     );
               }
               if (
@@ -15351,7 +15351,7 @@ export const org = ($root.org = (() => {
                   object.externalReferences[j] =
                     $root.org.phenopackets.schema.v2.core.ExternalReference.toObject(
                       message.externalReferences[j],
-                      options,
+                      options
                     );
               }
               return object;
@@ -15367,7 +15367,7 @@ export const org = ($root.org = (() => {
             MetaData.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -15544,7 +15544,7 @@ export const org = ($root.org = (() => {
              */
             Resource.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -15728,7 +15728,7 @@ export const org = ($root.org = (() => {
             Resource.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -15834,7 +15834,7 @@ export const org = ($root.org = (() => {
               )
                 $root.google.protobuf.Timestamp.encode(
                   message.timestamp,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.updatedBy != null &&
@@ -15887,7 +15887,7 @@ export const org = ($root.org = (() => {
                   case 1: {
                     message.timestamp = $root.google.protobuf.Timestamp.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -15938,7 +15938,7 @@ export const org = ($root.org = (() => {
                 message.hasOwnProperty("timestamp")
               ) {
                 let error = $root.google.protobuf.Timestamp.verify(
-                  message.timestamp,
+                  message.timestamp
                 );
                 if (error) return "timestamp." + error;
               }
@@ -15971,10 +15971,10 @@ export const org = ($root.org = (() => {
               if (object.timestamp != null) {
                 if (typeof object.timestamp !== "object")
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Update.timestamp: object expected",
+                    ".org.phenopackets.schema.v2.core.Update.timestamp: object expected"
                   );
                 message.timestamp = $root.google.protobuf.Timestamp.fromObject(
-                  object.timestamp,
+                  object.timestamp
                 );
               }
               if (object.updatedBy != null)
@@ -16007,7 +16007,7 @@ export const org = ($root.org = (() => {
               )
                 object.timestamp = $root.google.protobuf.Timestamp.toObject(
                   message.timestamp,
-                  options,
+                  options
                 );
               if (
                 message.updatedBy != null &&
@@ -16029,7 +16029,7 @@ export const org = ($root.org = (() => {
             Update.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -16114,7 +16114,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.persons.length; ++i)
                   $root.org.phenopackets.schema.v2.core.Pedigree.Person.encode(
                     message.persons[i],
-                    writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                    writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                   ).ldelim();
               return writer;
             };
@@ -16130,7 +16130,7 @@ export const org = ($root.org = (() => {
              */
             Pedigree.encodeDelimited = function encodeDelimited(
               message,
-              writer,
+              writer
             ) {
               return this.encode(message, writer).ldelim();
             };
@@ -16159,8 +16159,8 @@ export const org = ($root.org = (() => {
                     message.persons.push(
                       $root.org.phenopackets.schema.v2.core.Pedigree.Person.decode(
                         reader,
-                        reader.uint32(),
-                      ),
+                        reader.uint32()
+                      )
                     );
                     break;
                   }
@@ -16207,7 +16207,7 @@ export const org = ($root.org = (() => {
                 for (let i = 0; i < message.persons.length; ++i) {
                   let error =
                     $root.org.phenopackets.schema.v2.core.Pedigree.Person.verify(
-                      message.persons[i],
+                      message.persons[i]
                     );
                   if (error) return "persons." + error;
                 }
@@ -16233,17 +16233,17 @@ export const org = ($root.org = (() => {
               if (object.persons) {
                 if (!Array.isArray(object.persons))
                   throw TypeError(
-                    ".org.phenopackets.schema.v2.core.Pedigree.persons: array expected",
+                    ".org.phenopackets.schema.v2.core.Pedigree.persons: array expected"
                   );
                 message.persons = [];
                 for (let i = 0; i < object.persons.length; ++i) {
                   if (typeof object.persons[i] !== "object")
                     throw TypeError(
-                      ".org.phenopackets.schema.v2.core.Pedigree.persons: object expected",
+                      ".org.phenopackets.schema.v2.core.Pedigree.persons: object expected"
                     );
                   message.persons[i] =
                     $root.org.phenopackets.schema.v2.core.Pedigree.Person.fromObject(
-                      object.persons[i],
+                      object.persons[i]
                     );
                 }
               }
@@ -16269,7 +16269,7 @@ export const org = ($root.org = (() => {
                   object.persons[j] =
                     $root.org.phenopackets.schema.v2.core.Pedigree.Person.toObject(
                       message.persons[j],
-                      options,
+                      options
                     );
               }
               return object;
@@ -16285,7 +16285,7 @@ export const org = ($root.org = (() => {
             Pedigree.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -16463,7 +16463,7 @@ export const org = ($root.org = (() => {
                */
               Person.encodeDelimited = function encodeDelimited(
                 message,
-                writer,
+                writer
               ) {
                 return this.encode(message, writer).ldelim();
               };
@@ -16723,7 +16723,7 @@ export const org = ($root.org = (() => {
               Person.prototype.toJSON = function toJSON() {
                 return this.constructor.toObject(
                   this,
-                  $protobuf.util.toJSONOptions,
+                  $protobuf.util.toJSONOptions
                 );
               };
 
@@ -16895,7 +16895,7 @@ export const org = ($root.org = (() => {
            */
           Extension.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -17018,7 +17018,7 @@ export const org = ($root.org = (() => {
           Extension.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -17145,7 +17145,7 @@ export const org = ($root.org = (() => {
            */
           Expression.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -17281,7 +17281,7 @@ export const org = ($root.org = (() => {
           Expression.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -17493,7 +17493,7 @@ export const org = ($root.org = (() => {
            */
           VcfRecord.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -17639,7 +17639,7 @@ export const org = ($root.org = (() => {
             if (object.pos != null)
               if ($util.Long)
                 (message.pos = $util.Long.fromValue(
-                  object.pos,
+                  object.pos
                 )).unsigned = true;
               else if (typeof object.pos === "string")
                 message.pos = parseInt(object.pos, 10);
@@ -17647,7 +17647,7 @@ export const org = ($root.org = (() => {
               else if (typeof object.pos === "object")
                 message.pos = new $util.LongBits(
                   object.pos.low >>> 0,
-                  object.pos.high >>> 0,
+                  object.pos.high >>> 0
                 ).toNumber(true);
             if (object.id != null) message.id = String(object.id);
             if (object.ref != null) message.ref = String(object.ref);
@@ -17707,7 +17707,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.pos.low >>> 0,
-                        message.pos.high >>> 0,
+                        message.pos.high >>> 0
                       ).toNumber(true)
                     : message.pos;
             if (message.id != null && message.hasOwnProperty("id"))
@@ -17735,7 +17735,7 @@ export const org = ($root.org = (() => {
           VcfRecord.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -17944,7 +17944,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Variation.encode(
                 message.variation,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.label != null &&
@@ -17964,13 +17964,13 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrsatile.v1.GeneDescriptor.encode(
                 message.geneContext,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             if (message.expressions != null && message.expressions.length)
               for (let i = 0; i < message.expressions.length; ++i)
                 $root.org.ga4gh.vrsatile.v1.Expression.encode(
                   message.expressions[i],
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
             if (
               message.vcfRecord != null &&
@@ -17978,7 +17978,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrsatile.v1.VcfRecord.encode(
                 message.vcfRecord,
-                writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
               ).ldelim();
             if (message.xrefs != null && message.xrefs.length)
               for (let i = 0; i < message.xrefs.length; ++i)
@@ -17997,7 +17997,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.extensions.length; ++i)
                 $root.org.ga4gh.vrsatile.v1.Extension.encode(
                   message.extensions[i],
-                  writer.uint32(/* id 10, wireType 2 =*/ 82).fork(),
+                  writer.uint32(/* id 10, wireType 2 =*/ 82).fork()
                 ).ldelim();
             if (
               message.moleculeContext != null &&
@@ -18012,7 +18012,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                 message.structuralType,
-                writer.uint32(/* id 12, wireType 2 =*/ 98).fork(),
+                writer.uint32(/* id 12, wireType 2 =*/ 98).fork()
               ).ldelim();
             if (
               message.vrsRefAlleleSeq != null &&
@@ -18027,7 +18027,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.phenopackets.schema.v2.core.OntologyClass.encode(
                 message.allelicState,
-                writer.uint32(/* id 14, wireType 2 =*/ 114).fork(),
+                writer.uint32(/* id 14, wireType 2 =*/ 114).fork()
               ).ldelim();
             return writer;
           };
@@ -18043,7 +18043,7 @@ export const org = ($root.org = (() => {
            */
           VariationDescriptor.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -18073,7 +18073,7 @@ export const org = ($root.org = (() => {
                 case 2: {
                   message.variation = $root.org.ga4gh.vrs.v1.Variation.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -18089,7 +18089,7 @@ export const org = ($root.org = (() => {
                   message.geneContext =
                     $root.org.ga4gh.vrsatile.v1.GeneDescriptor.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -18099,8 +18099,8 @@ export const org = ($root.org = (() => {
                   message.expressions.push(
                     $root.org.ga4gh.vrsatile.v1.Expression.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -18108,7 +18108,7 @@ export const org = ($root.org = (() => {
                   message.vcfRecord =
                     $root.org.ga4gh.vrsatile.v1.VcfRecord.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -18132,8 +18132,8 @@ export const org = ($root.org = (() => {
                   message.extensions.push(
                     $root.org.ga4gh.vrsatile.v1.Extension.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -18145,7 +18145,7 @@ export const org = ($root.org = (() => {
                   message.structuralType =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -18157,7 +18157,7 @@ export const org = ($root.org = (() => {
                   message.allelicState =
                     $root.org.phenopackets.schema.v2.core.OntologyClass.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -18180,7 +18180,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           VariationDescriptor.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -18204,7 +18204,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("variation")
             ) {
               let error = $root.org.ga4gh.vrs.v1.Variation.verify(
-                message.variation,
+                message.variation
               );
               if (error) return "variation." + error;
             }
@@ -18222,7 +18222,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("geneContext")
             ) {
               let error = $root.org.ga4gh.vrsatile.v1.GeneDescriptor.verify(
-                message.geneContext,
+                message.geneContext
               );
               if (error) return "geneContext." + error;
             }
@@ -18234,7 +18234,7 @@ export const org = ($root.org = (() => {
                 return "expressions: array expected";
               for (let i = 0; i < message.expressions.length; ++i) {
                 let error = $root.org.ga4gh.vrsatile.v1.Expression.verify(
-                  message.expressions[i],
+                  message.expressions[i]
                 );
                 if (error) return "expressions." + error;
               }
@@ -18244,7 +18244,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("vcfRecord")
             ) {
               let error = $root.org.ga4gh.vrsatile.v1.VcfRecord.verify(
-                message.vcfRecord,
+                message.vcfRecord
               );
               if (error) return "vcfRecord." + error;
             }
@@ -18272,7 +18272,7 @@ export const org = ($root.org = (() => {
                 return "extensions: array expected";
               for (let i = 0; i < message.extensions.length; ++i) {
                 let error = $root.org.ga4gh.vrsatile.v1.Extension.verify(
-                  message.extensions[i],
+                  message.extensions[i]
                 );
                 if (error) return "extensions." + error;
               }
@@ -18296,7 +18296,7 @@ export const org = ($root.org = (() => {
             ) {
               let error =
                 $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                  message.structuralType,
+                  message.structuralType
                 );
               if (error) return "structuralType." + error;
             }
@@ -18312,7 +18312,7 @@ export const org = ($root.org = (() => {
             ) {
               let error =
                 $root.org.phenopackets.schema.v2.core.OntologyClass.verify(
-                  message.allelicState,
+                  message.allelicState
                 );
               if (error) return "allelicState." + error;
             }
@@ -18337,10 +18337,10 @@ export const org = ($root.org = (() => {
             if (object.variation != null) {
               if (typeof object.variation !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.variation: object expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.variation: object expected"
                 );
               message.variation = $root.org.ga4gh.vrs.v1.Variation.fromObject(
-                object.variation,
+                object.variation
               );
             }
             if (object.label != null) message.label = String(object.label);
@@ -18349,44 +18349,44 @@ export const org = ($root.org = (() => {
             if (object.geneContext != null) {
               if (typeof object.geneContext !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.geneContext: object expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.geneContext: object expected"
                 );
               message.geneContext =
                 $root.org.ga4gh.vrsatile.v1.GeneDescriptor.fromObject(
-                  object.geneContext,
+                  object.geneContext
                 );
             }
             if (object.expressions) {
               if (!Array.isArray(object.expressions))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.expressions: array expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.expressions: array expected"
                 );
               message.expressions = [];
               for (let i = 0; i < object.expressions.length; ++i) {
                 if (typeof object.expressions[i] !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrsatile.v1.VariationDescriptor.expressions: object expected",
+                    ".org.ga4gh.vrsatile.v1.VariationDescriptor.expressions: object expected"
                   );
                 message.expressions[i] =
                   $root.org.ga4gh.vrsatile.v1.Expression.fromObject(
-                    object.expressions[i],
+                    object.expressions[i]
                   );
               }
             }
             if (object.vcfRecord != null) {
               if (typeof object.vcfRecord !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.vcfRecord: object expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.vcfRecord: object expected"
                 );
               message.vcfRecord =
                 $root.org.ga4gh.vrsatile.v1.VcfRecord.fromObject(
-                  object.vcfRecord,
+                  object.vcfRecord
                 );
             }
             if (object.xrefs) {
               if (!Array.isArray(object.xrefs))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.xrefs: array expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.xrefs: array expected"
                 );
               message.xrefs = [];
               for (let i = 0; i < object.xrefs.length; ++i)
@@ -18395,7 +18395,7 @@ export const org = ($root.org = (() => {
             if (object.alternateLabels) {
               if (!Array.isArray(object.alternateLabels))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.alternateLabels: array expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.alternateLabels: array expected"
                 );
               message.alternateLabels = [];
               for (let i = 0; i < object.alternateLabels.length; ++i)
@@ -18404,17 +18404,17 @@ export const org = ($root.org = (() => {
             if (object.extensions) {
               if (!Array.isArray(object.extensions))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.extensions: array expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.extensions: array expected"
                 );
               message.extensions = [];
               for (let i = 0; i < object.extensions.length; ++i) {
                 if (typeof object.extensions[i] !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrsatile.v1.VariationDescriptor.extensions: object expected",
+                    ".org.ga4gh.vrsatile.v1.VariationDescriptor.extensions: object expected"
                   );
                 message.extensions[i] =
                   $root.org.ga4gh.vrsatile.v1.Extension.fromObject(
-                    object.extensions[i],
+                    object.extensions[i]
                   );
               }
             }
@@ -18439,11 +18439,11 @@ export const org = ($root.org = (() => {
             if (object.structuralType != null) {
               if (typeof object.structuralType !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.structuralType: object expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.structuralType: object expected"
                 );
               message.structuralType =
                 $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                  object.structuralType,
+                  object.structuralType
                 );
             }
             if (object.vrsRefAlleleSeq != null)
@@ -18451,11 +18451,11 @@ export const org = ($root.org = (() => {
             if (object.allelicState != null) {
               if (typeof object.allelicState !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.allelicState: object expected",
+                  ".org.ga4gh.vrsatile.v1.VariationDescriptor.allelicState: object expected"
                 );
               message.allelicState =
                 $root.org.phenopackets.schema.v2.core.OntologyClass.fromObject(
-                  object.allelicState,
+                  object.allelicState
                 );
             }
             return message;
@@ -18500,7 +18500,7 @@ export const org = ($root.org = (() => {
             )
               object.variation = $root.org.ga4gh.vrs.v1.Variation.toObject(
                 message.variation,
-                options,
+                options
               );
             if (message.label != null && message.hasOwnProperty("label"))
               object.label = message.label;
@@ -18516,7 +18516,7 @@ export const org = ($root.org = (() => {
               object.geneContext =
                 $root.org.ga4gh.vrsatile.v1.GeneDescriptor.toObject(
                   message.geneContext,
-                  options,
+                  options
                 );
             if (message.expressions && message.expressions.length) {
               object.expressions = [];
@@ -18524,7 +18524,7 @@ export const org = ($root.org = (() => {
                 object.expressions[j] =
                   $root.org.ga4gh.vrsatile.v1.Expression.toObject(
                     message.expressions[j],
-                    options,
+                    options
                   );
             }
             if (
@@ -18533,7 +18533,7 @@ export const org = ($root.org = (() => {
             )
               object.vcfRecord = $root.org.ga4gh.vrsatile.v1.VcfRecord.toObject(
                 message.vcfRecord,
-                options,
+                options
               );
             if (message.xrefs && message.xrefs.length) {
               object.xrefs = [];
@@ -18551,7 +18551,7 @@ export const org = ($root.org = (() => {
                 object.extensions[j] =
                   $root.org.ga4gh.vrsatile.v1.Extension.toObject(
                     message.extensions[j],
-                    options,
+                    options
                   );
             }
             if (
@@ -18571,7 +18571,7 @@ export const org = ($root.org = (() => {
               object.structuralType =
                 $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                   message.structuralType,
-                  options,
+                  options
                 );
             if (
               message.vrsRefAlleleSeq != null &&
@@ -18585,7 +18585,7 @@ export const org = ($root.org = (() => {
               object.allelicState =
                 $root.org.phenopackets.schema.v2.core.OntologyClass.toObject(
                   message.allelicState,
-                  options,
+                  options
                 );
             return object;
           };
@@ -18600,7 +18600,7 @@ export const org = ($root.org = (() => {
           VariationDescriptor.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -18796,7 +18796,7 @@ export const org = ($root.org = (() => {
            */
           GeneDescriptor.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -18949,7 +18949,7 @@ export const org = ($root.org = (() => {
             if (object.alternateIds) {
               if (!Array.isArray(object.alternateIds))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.GeneDescriptor.alternateIds: array expected",
+                  ".org.ga4gh.vrsatile.v1.GeneDescriptor.alternateIds: array expected"
                 );
               message.alternateIds = [];
               for (let i = 0; i < object.alternateIds.length; ++i)
@@ -18958,18 +18958,18 @@ export const org = ($root.org = (() => {
             if (object.alternateSymbols) {
               if (!Array.isArray(object.alternateSymbols))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.GeneDescriptor.alternateSymbols: array expected",
+                  ".org.ga4gh.vrsatile.v1.GeneDescriptor.alternateSymbols: array expected"
                 );
               message.alternateSymbols = [];
               for (let i = 0; i < object.alternateSymbols.length; ++i)
                 message.alternateSymbols[i] = String(
-                  object.alternateSymbols[i],
+                  object.alternateSymbols[i]
                 );
             }
             if (object.xrefs) {
               if (!Array.isArray(object.xrefs))
                 throw TypeError(
-                  ".org.ga4gh.vrsatile.v1.GeneDescriptor.xrefs: array expected",
+                  ".org.ga4gh.vrsatile.v1.GeneDescriptor.xrefs: array expected"
                 );
               message.xrefs = [];
               for (let i = 0; i < object.xrefs.length; ++i)
@@ -19037,7 +19037,7 @@ export const org = ($root.org = (() => {
           GeneDescriptor.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -19169,7 +19169,7 @@ export const org = ($root.org = (() => {
                 "copyNumber",
                 "text",
                 "variationSet",
-              ]),
+              ])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -19203,7 +19203,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Allele.encode(
                 message.allele,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.haplotype != null &&
@@ -19211,7 +19211,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Haplotype.encode(
                 message.haplotype,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.copyNumber != null &&
@@ -19219,7 +19219,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.CopyNumber.encode(
                 message.copyNumber,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             if (
               message.text != null &&
@@ -19227,7 +19227,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Text.encode(
                 message.text,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             if (
               message.variationSet != null &&
@@ -19235,7 +19235,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.VariationSet.encode(
                 message.variationSet,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             return writer;
           };
@@ -19251,7 +19251,7 @@ export const org = ($root.org = (() => {
            */
           Variation.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -19277,28 +19277,28 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.allele = $root.org.ga4gh.vrs.v1.Allele.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
                 case 2: {
                   message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
                 case 3: {
                   message.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
                 case 4: {
                   message.text = $root.org.ga4gh.vrs.v1.Text.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -19306,7 +19306,7 @@ export const org = ($root.org = (() => {
                   message.variationSet =
                     $root.org.ga4gh.vrs.v1.VariationSet.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -19349,7 +19349,7 @@ export const org = ($root.org = (() => {
               properties.variation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Allele.verify(
-                  message.allele,
+                  message.allele
                 );
                 if (error) return "allele." + error;
               }
@@ -19363,7 +19363,7 @@ export const org = ($root.org = (() => {
               properties.variation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Haplotype.verify(
-                  message.haplotype,
+                  message.haplotype
                 );
                 if (error) return "haplotype." + error;
               }
@@ -19377,7 +19377,7 @@ export const org = ($root.org = (() => {
               properties.variation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.CopyNumber.verify(
-                  message.copyNumber,
+                  message.copyNumber
                 );
                 if (error) return "copyNumber." + error;
               }
@@ -19400,7 +19400,7 @@ export const org = ($root.org = (() => {
               properties.variation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.VariationSet.verify(
-                  message.variationSet,
+                  message.variationSet
                 );
                 if (error) return "variationSet." + error;
               }
@@ -19423,47 +19423,47 @@ export const org = ($root.org = (() => {
             if (object.allele != null) {
               if (typeof object.allele !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Variation.allele: object expected",
+                  ".org.ga4gh.vrs.v1.Variation.allele: object expected"
                 );
               message.allele = $root.org.ga4gh.vrs.v1.Allele.fromObject(
-                object.allele,
+                object.allele
               );
             }
             if (object.haplotype != null) {
               if (typeof object.haplotype !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Variation.haplotype: object expected",
+                  ".org.ga4gh.vrs.v1.Variation.haplotype: object expected"
                 );
               message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.fromObject(
-                object.haplotype,
+                object.haplotype
               );
             }
             if (object.copyNumber != null) {
               if (typeof object.copyNumber !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Variation.copyNumber: object expected",
+                  ".org.ga4gh.vrs.v1.Variation.copyNumber: object expected"
                 );
               message.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.fromObject(
-                object.copyNumber,
+                object.copyNumber
               );
             }
             if (object.text != null) {
               if (typeof object.text !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Variation.text: object expected",
+                  ".org.ga4gh.vrs.v1.Variation.text: object expected"
                 );
               message.text = $root.org.ga4gh.vrs.v1.Text.fromObject(
-                object.text,
+                object.text
               );
             }
             if (object.variationSet != null) {
               if (typeof object.variationSet !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Variation.variationSet: object expected",
+                  ".org.ga4gh.vrs.v1.Variation.variationSet: object expected"
                 );
               message.variationSet =
                 $root.org.ga4gh.vrs.v1.VariationSet.fromObject(
-                  object.variationSet,
+                  object.variationSet
                 );
             }
             return message;
@@ -19484,7 +19484,7 @@ export const org = ($root.org = (() => {
             if (message.allele != null && message.hasOwnProperty("allele")) {
               object.allele = $root.org.ga4gh.vrs.v1.Allele.toObject(
                 message.allele,
-                options,
+                options
               );
               if (options.oneofs) object.variation = "allele";
             }
@@ -19494,7 +19494,7 @@ export const org = ($root.org = (() => {
             ) {
               object.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.toObject(
                 message.haplotype,
-                options,
+                options
               );
               if (options.oneofs) object.variation = "haplotype";
             }
@@ -19504,14 +19504,14 @@ export const org = ($root.org = (() => {
             ) {
               object.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.toObject(
                 message.copyNumber,
-                options,
+                options
               );
               if (options.oneofs) object.variation = "copyNumber";
             }
             if (message.text != null && message.hasOwnProperty("text")) {
               object.text = $root.org.ga4gh.vrs.v1.Text.toObject(
                 message.text,
-                options,
+                options
               );
               if (options.oneofs) object.variation = "text";
             }
@@ -19522,7 +19522,7 @@ export const org = ($root.org = (() => {
               object.variationSet =
                 $root.org.ga4gh.vrs.v1.VariationSet.toObject(
                   message.variationSet,
-                  options,
+                  options
                 );
               if (options.oneofs) object.variation = "variationSet";
             }
@@ -19539,7 +19539,7 @@ export const org = ($root.org = (() => {
           Variation.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -19620,7 +19620,7 @@ export const org = ($root.org = (() => {
             {
               get: $util.oneOfGetter(($oneOfFields = ["allele", "haplotype"])),
               set: $util.oneOfSetter($oneOfFields),
-            },
+            }
           );
 
           /**
@@ -19652,7 +19652,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Allele.encode(
                 message.allele,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.haplotype != null &&
@@ -19660,7 +19660,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Haplotype.encode(
                 message.haplotype,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             return writer;
           };
@@ -19676,7 +19676,7 @@ export const org = ($root.org = (() => {
            */
           MolecularVariation.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -19702,14 +19702,14 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.allele = $root.org.ga4gh.vrs.v1.Allele.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
                 case 2: {
                   message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -19732,7 +19732,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           MolecularVariation.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -19754,7 +19754,7 @@ export const org = ($root.org = (() => {
               properties.molecularVariation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Allele.verify(
-                  message.allele,
+                  message.allele
                 );
                 if (error) return "allele." + error;
               }
@@ -19768,7 +19768,7 @@ export const org = ($root.org = (() => {
               properties.molecularVariation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Haplotype.verify(
-                  message.haplotype,
+                  message.haplotype
                 );
                 if (error) return "haplotype." + error;
               }
@@ -19791,19 +19791,19 @@ export const org = ($root.org = (() => {
             if (object.allele != null) {
               if (typeof object.allele !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.MolecularVariation.allele: object expected",
+                  ".org.ga4gh.vrs.v1.MolecularVariation.allele: object expected"
                 );
               message.allele = $root.org.ga4gh.vrs.v1.Allele.fromObject(
-                object.allele,
+                object.allele
               );
             }
             if (object.haplotype != null) {
               if (typeof object.haplotype !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.MolecularVariation.haplotype: object expected",
+                  ".org.ga4gh.vrs.v1.MolecularVariation.haplotype: object expected"
                 );
               message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.fromObject(
-                object.haplotype,
+                object.haplotype
               );
             }
             return message;
@@ -19824,7 +19824,7 @@ export const org = ($root.org = (() => {
             if (message.allele != null && message.hasOwnProperty("allele")) {
               object.allele = $root.org.ga4gh.vrs.v1.Allele.toObject(
                 message.allele,
-                options,
+                options
               );
               if (options.oneofs) object.molecularVariation = "allele";
             }
@@ -19834,7 +19834,7 @@ export const org = ($root.org = (() => {
             ) {
               object.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.toObject(
                 message.haplotype,
-                options,
+                options
               );
               if (options.oneofs) object.molecularVariation = "haplotype";
             }
@@ -19851,7 +19851,7 @@ export const org = ($root.org = (() => {
           MolecularVariation.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -19932,7 +19932,7 @@ export const org = ($root.org = (() => {
             {
               get: $util.oneOfGetter(($oneOfFields = ["text", "variationSet"])),
               set: $util.oneOfSetter($oneOfFields),
-            },
+            }
           );
 
           /**
@@ -19964,7 +19964,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Text.encode(
                 message.text,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.variationSet != null &&
@@ -19972,7 +19972,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.VariationSet.encode(
                 message.variationSet,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             return writer;
           };
@@ -19988,7 +19988,7 @@ export const org = ($root.org = (() => {
            */
           UtilityVariation.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -20014,7 +20014,7 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.text = $root.org.ga4gh.vrs.v1.Text.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -20022,7 +20022,7 @@ export const org = ($root.org = (() => {
                   message.variationSet =
                     $root.org.ga4gh.vrs.v1.VariationSet.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20077,7 +20077,7 @@ export const org = ($root.org = (() => {
               properties.utilityVariation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.VariationSet.verify(
-                  message.variationSet,
+                  message.variationSet
                 );
                 if (error) return "variationSet." + error;
               }
@@ -20100,20 +20100,20 @@ export const org = ($root.org = (() => {
             if (object.text != null) {
               if (typeof object.text !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.UtilityVariation.text: object expected",
+                  ".org.ga4gh.vrs.v1.UtilityVariation.text: object expected"
                 );
               message.text = $root.org.ga4gh.vrs.v1.Text.fromObject(
-                object.text,
+                object.text
               );
             }
             if (object.variationSet != null) {
               if (typeof object.variationSet !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.UtilityVariation.variationSet: object expected",
+                  ".org.ga4gh.vrs.v1.UtilityVariation.variationSet: object expected"
                 );
               message.variationSet =
                 $root.org.ga4gh.vrs.v1.VariationSet.fromObject(
-                  object.variationSet,
+                  object.variationSet
                 );
             }
             return message;
@@ -20134,7 +20134,7 @@ export const org = ($root.org = (() => {
             if (message.text != null && message.hasOwnProperty("text")) {
               object.text = $root.org.ga4gh.vrs.v1.Text.toObject(
                 message.text,
-                options,
+                options
               );
               if (options.oneofs) object.utilityVariation = "text";
             }
@@ -20145,7 +20145,7 @@ export const org = ($root.org = (() => {
               object.variationSet =
                 $root.org.ga4gh.vrs.v1.VariationSet.toObject(
                   message.variationSet,
-                  options,
+                  options
                 );
               if (options.oneofs) object.utilityVariation = "variationSet";
             }
@@ -20162,7 +20162,7 @@ export const org = ($root.org = (() => {
           UtilityVariation.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -20234,7 +20234,7 @@ export const org = ($root.org = (() => {
             {
               get: $util.oneOfGetter(($oneOfFields = ["copyNumber"])),
               set: $util.oneOfSetter($oneOfFields),
-            },
+            }
           );
 
           /**
@@ -20266,7 +20266,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.CopyNumber.encode(
                 message.copyNumber,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             return writer;
           };
@@ -20282,7 +20282,7 @@ export const org = ($root.org = (() => {
            */
           SystemicVariation.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -20308,7 +20308,7 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -20354,7 +20354,7 @@ export const org = ($root.org = (() => {
               properties.systemicVariation = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.CopyNumber.verify(
-                  message.copyNumber,
+                  message.copyNumber
                 );
                 if (error) return "copyNumber." + error;
               }
@@ -20377,10 +20377,10 @@ export const org = ($root.org = (() => {
             if (object.copyNumber != null) {
               if (typeof object.copyNumber !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SystemicVariation.copyNumber: object expected",
+                  ".org.ga4gh.vrs.v1.SystemicVariation.copyNumber: object expected"
                 );
               message.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.fromObject(
-                object.copyNumber,
+                object.copyNumber
               );
             }
             return message;
@@ -20404,7 +20404,7 @@ export const org = ($root.org = (() => {
             ) {
               object.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.toObject(
                 message.copyNumber,
-                options,
+                options
               );
               if (options.oneofs) object.systemicVariation = "copyNumber";
             }
@@ -20421,7 +20421,7 @@ export const org = ($root.org = (() => {
           SystemicVariation.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -20556,7 +20556,7 @@ export const org = ($root.org = (() => {
                 "curie",
                 "chromosomeLocation",
                 "sequenceLocation",
-              ]),
+              ])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -20574,7 +20574,7 @@ export const org = ($root.org = (() => {
                 "literalSequenceExpression",
                 "derivedSequenceExpression",
                 "repeatedSequenceExpression",
-              ]),
+              ])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -20618,7 +20618,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.ChromosomeLocation.encode(
                 message.chromosomeLocation,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             if (
               message.sequenceLocation != null &&
@@ -20626,7 +20626,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.SequenceLocation.encode(
                 message.sequenceLocation,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             if (
               message.literalSequenceExpression != null &&
@@ -20634,7 +20634,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.encode(
                 message.literalSequenceExpression,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             if (
               message.derivedSequenceExpression != null &&
@@ -20642,7 +20642,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.encode(
                 message.derivedSequenceExpression,
-                writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
               ).ldelim();
             if (
               message.repeatedSequenceExpression != null &&
@@ -20650,7 +20650,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.encode(
                 message.repeatedSequenceExpression,
-                writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
               ).ldelim();
             if (
               message.sequenceState != null &&
@@ -20658,7 +20658,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.SequenceState.encode(
                 message.sequenceState,
-                writer.uint32(/* id 100, wireType 2 =*/ 802).fork(),
+                writer.uint32(/* id 100, wireType 2 =*/ 802).fork()
               ).ldelim();
             return writer;
           };
@@ -20706,7 +20706,7 @@ export const org = ($root.org = (() => {
                   message.chromosomeLocation =
                     $root.org.ga4gh.vrs.v1.ChromosomeLocation.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20714,7 +20714,7 @@ export const org = ($root.org = (() => {
                   message.sequenceLocation =
                     $root.org.ga4gh.vrs.v1.SequenceLocation.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20722,7 +20722,7 @@ export const org = ($root.org = (() => {
                   message.sequenceState =
                     $root.org.ga4gh.vrs.v1.SequenceState.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20730,7 +20730,7 @@ export const org = ($root.org = (() => {
                   message.literalSequenceExpression =
                     $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20738,7 +20738,7 @@ export const org = ($root.org = (() => {
                   message.derivedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20746,7 +20746,7 @@ export const org = ($root.org = (() => {
                   message.repeatedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -20800,7 +20800,7 @@ export const org = ($root.org = (() => {
               properties.location = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.ChromosomeLocation.verify(
-                  message.chromosomeLocation,
+                  message.chromosomeLocation
                 );
                 if (error) return "chromosomeLocation." + error;
               }
@@ -20813,7 +20813,7 @@ export const org = ($root.org = (() => {
               properties.location = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.SequenceLocation.verify(
-                  message.sequenceLocation,
+                  message.sequenceLocation
                 );
                 if (error) return "sequenceLocation." + error;
               }
@@ -20825,7 +20825,7 @@ export const org = ($root.org = (() => {
               properties.state = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.SequenceState.verify(
-                  message.sequenceState,
+                  message.sequenceState
                 );
                 if (error) return "sequenceState." + error;
               }
@@ -20839,7 +20839,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.verify(
-                    message.literalSequenceExpression,
+                    message.literalSequenceExpression
                   );
                 if (error) return "literalSequenceExpression." + error;
               }
@@ -20853,7 +20853,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.verify(
-                    message.derivedSequenceExpression,
+                    message.derivedSequenceExpression
                   );
                 if (error) return "derivedSequenceExpression." + error;
               }
@@ -20867,7 +20867,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.verify(
-                    message.repeatedSequenceExpression,
+                    message.repeatedSequenceExpression
                   );
                 if (error) return "repeatedSequenceExpression." + error;
               }
@@ -20891,61 +20891,61 @@ export const org = ($root.org = (() => {
             if (object.chromosomeLocation != null) {
               if (typeof object.chromosomeLocation !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Allele.chromosomeLocation: object expected",
+                  ".org.ga4gh.vrs.v1.Allele.chromosomeLocation: object expected"
                 );
               message.chromosomeLocation =
                 $root.org.ga4gh.vrs.v1.ChromosomeLocation.fromObject(
-                  object.chromosomeLocation,
+                  object.chromosomeLocation
                 );
             }
             if (object.sequenceLocation != null) {
               if (typeof object.sequenceLocation !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Allele.sequenceLocation: object expected",
+                  ".org.ga4gh.vrs.v1.Allele.sequenceLocation: object expected"
                 );
               message.sequenceLocation =
                 $root.org.ga4gh.vrs.v1.SequenceLocation.fromObject(
-                  object.sequenceLocation,
+                  object.sequenceLocation
                 );
             }
             if (object.sequenceState != null) {
               if (typeof object.sequenceState !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Allele.sequenceState: object expected",
+                  ".org.ga4gh.vrs.v1.Allele.sequenceState: object expected"
                 );
               message.sequenceState =
                 $root.org.ga4gh.vrs.v1.SequenceState.fromObject(
-                  object.sequenceState,
+                  object.sequenceState
                 );
             }
             if (object.literalSequenceExpression != null) {
               if (typeof object.literalSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Allele.literalSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.Allele.literalSequenceExpression: object expected"
                 );
               message.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.fromObject(
-                  object.literalSequenceExpression,
+                  object.literalSequenceExpression
                 );
             }
             if (object.derivedSequenceExpression != null) {
               if (typeof object.derivedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Allele.derivedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.Allele.derivedSequenceExpression: object expected"
                 );
               message.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.fromObject(
-                  object.derivedSequenceExpression,
+                  object.derivedSequenceExpression
                 );
             }
             if (object.repeatedSequenceExpression != null) {
               if (typeof object.repeatedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Allele.repeatedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.Allele.repeatedSequenceExpression: object expected"
                 );
               message.repeatedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.fromObject(
-                  object.repeatedSequenceExpression,
+                  object.repeatedSequenceExpression
                 );
             }
             return message;
@@ -20977,7 +20977,7 @@ export const org = ($root.org = (() => {
               object.chromosomeLocation =
                 $root.org.ga4gh.vrs.v1.ChromosomeLocation.toObject(
                   message.chromosomeLocation,
-                  options,
+                  options
                 );
               if (options.oneofs) object.location = "chromosomeLocation";
             }
@@ -20988,7 +20988,7 @@ export const org = ($root.org = (() => {
               object.sequenceLocation =
                 $root.org.ga4gh.vrs.v1.SequenceLocation.toObject(
                   message.sequenceLocation,
-                  options,
+                  options
                 );
               if (options.oneofs) object.location = "sequenceLocation";
             }
@@ -20999,7 +20999,7 @@ export const org = ($root.org = (() => {
               object.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.toObject(
                   message.literalSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.state = "literalSequenceExpression";
             }
@@ -21010,7 +21010,7 @@ export const org = ($root.org = (() => {
               object.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.toObject(
                   message.derivedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.state = "derivedSequenceExpression";
             }
@@ -21021,7 +21021,7 @@ export const org = ($root.org = (() => {
               object.repeatedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.toObject(
                   message.repeatedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.state = "repeatedSequenceExpression";
             }
@@ -21032,7 +21032,7 @@ export const org = ($root.org = (() => {
               object.sequenceState =
                 $root.org.ga4gh.vrs.v1.SequenceState.toObject(
                   message.sequenceState,
-                  options,
+                  options
                 );
               if (options.oneofs) object.state = "sequenceState";
             }
@@ -21049,7 +21049,7 @@ export const org = ($root.org = (() => {
           Allele.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -21148,7 +21148,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.members.length; ++i)
                 $root.org.ga4gh.vrs.v1.Haplotype.Member.encode(
                   message.members[i],
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
             return writer;
           };
@@ -21164,7 +21164,7 @@ export const org = ($root.org = (() => {
            */
           Haplotype.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -21197,8 +21197,8 @@ export const org = ($root.org = (() => {
                   message.members.push(
                     $root.org.ga4gh.vrs.v1.Haplotype.Member.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -21243,7 +21243,7 @@ export const org = ($root.org = (() => {
                 return "members: array expected";
               for (let i = 0; i < message.members.length; ++i) {
                 let error = $root.org.ga4gh.vrs.v1.Haplotype.Member.verify(
-                  message.members[i],
+                  message.members[i]
                 );
                 if (error) return "members." + error;
               }
@@ -21267,17 +21267,17 @@ export const org = ($root.org = (() => {
             if (object.members) {
               if (!Array.isArray(object.members))
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Haplotype.members: array expected",
+                  ".org.ga4gh.vrs.v1.Haplotype.members: array expected"
                 );
               message.members = [];
               for (let i = 0; i < object.members.length; ++i) {
                 if (typeof object.members[i] !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.Haplotype.members: object expected",
+                    ".org.ga4gh.vrs.v1.Haplotype.members: object expected"
                   );
                 message.members[i] =
                   $root.org.ga4gh.vrs.v1.Haplotype.Member.fromObject(
-                    object.members[i],
+                    object.members[i]
                   );
               }
             }
@@ -21306,7 +21306,7 @@ export const org = ($root.org = (() => {
                 object.members[j] =
                   $root.org.ga4gh.vrs.v1.Haplotype.Member.toObject(
                     message.members[j],
-                    options,
+                    options
                   );
             }
             return object;
@@ -21322,7 +21322,7 @@ export const org = ($root.org = (() => {
           Haplotype.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -21428,7 +21428,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrs.v1.Allele.encode(
                   message.allele,
-                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                  writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
                 ).ldelim();
               if (
                 message.curie != null &&
@@ -21472,7 +21472,7 @@ export const org = ($root.org = (() => {
                   case 1: {
                     message.allele = $root.org.ga4gh.vrs.v1.Allele.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -21519,7 +21519,7 @@ export const org = ($root.org = (() => {
                 properties.value = 1;
                 {
                   let error = $root.org.ga4gh.vrs.v1.Allele.verify(
-                    message.allele,
+                    message.allele
                   );
                   if (error) return "allele." + error;
                 }
@@ -21548,10 +21548,10 @@ export const org = ($root.org = (() => {
               if (object.allele != null) {
                 if (typeof object.allele !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.Haplotype.Member.allele: object expected",
+                    ".org.ga4gh.vrs.v1.Haplotype.Member.allele: object expected"
                   );
                 message.allele = $root.org.ga4gh.vrs.v1.Allele.fromObject(
-                  object.allele,
+                  object.allele
                 );
               }
               if (object.curie != null) message.curie = String(object.curie);
@@ -21573,7 +21573,7 @@ export const org = ($root.org = (() => {
               if (message.allele != null && message.hasOwnProperty("allele")) {
                 object.allele = $root.org.ga4gh.vrs.v1.Allele.toObject(
                   message.allele,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.value = "allele";
               }
@@ -21594,7 +21594,7 @@ export const org = ($root.org = (() => {
             Member.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -21838,7 +21838,7 @@ export const org = ($root.org = (() => {
           Text.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -21937,7 +21937,7 @@ export const org = ($root.org = (() => {
               for (let i = 0; i < message.members.length; ++i)
                 $root.org.ga4gh.vrs.v1.VariationSet.Member.encode(
                   message.members[i],
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
             return writer;
           };
@@ -21953,7 +21953,7 @@ export const org = ($root.org = (() => {
            */
           VariationSet.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -21986,8 +21986,8 @@ export const org = ($root.org = (() => {
                   message.members.push(
                     $root.org.ga4gh.vrs.v1.VariationSet.Member.decode(
                       reader,
-                      reader.uint32(),
-                    ),
+                      reader.uint32()
+                    )
                   );
                   break;
                 }
@@ -22032,7 +22032,7 @@ export const org = ($root.org = (() => {
                 return "members: array expected";
               for (let i = 0; i < message.members.length; ++i) {
                 let error = $root.org.ga4gh.vrs.v1.VariationSet.Member.verify(
-                  message.members[i],
+                  message.members[i]
                 );
                 if (error) return "members." + error;
               }
@@ -22056,17 +22056,17 @@ export const org = ($root.org = (() => {
             if (object.members) {
               if (!Array.isArray(object.members))
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.VariationSet.members: array expected",
+                  ".org.ga4gh.vrs.v1.VariationSet.members: array expected"
                 );
               message.members = [];
               for (let i = 0; i < object.members.length; ++i) {
                 if (typeof object.members[i] !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.VariationSet.members: object expected",
+                    ".org.ga4gh.vrs.v1.VariationSet.members: object expected"
                   );
                 message.members[i] =
                   $root.org.ga4gh.vrs.v1.VariationSet.Member.fromObject(
-                    object.members[i],
+                    object.members[i]
                   );
               }
             }
@@ -22095,7 +22095,7 @@ export const org = ($root.org = (() => {
                 object.members[j] =
                   $root.org.ga4gh.vrs.v1.VariationSet.Member.toObject(
                     message.members[j],
-                    options,
+                    options
                   );
             }
             return object;
@@ -22111,7 +22111,7 @@ export const org = ($root.org = (() => {
           VariationSet.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -22228,7 +22228,7 @@ export const org = ($root.org = (() => {
                   "copyNumber",
                   "text",
                   "variationSet",
-                ]),
+                ])
               ),
               set: $util.oneOfSetter($oneOfFields),
             });
@@ -22267,7 +22267,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrs.v1.Allele.encode(
                   message.allele,
-                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                  writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
                 ).ldelim();
               if (
                 message.haplotype != null &&
@@ -22275,7 +22275,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrs.v1.Haplotype.encode(
                   message.haplotype,
-                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                  writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
                 ).ldelim();
               if (
                 message.copyNumber != null &&
@@ -22283,7 +22283,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrs.v1.CopyNumber.encode(
                   message.copyNumber,
-                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                  writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
                 ).ldelim();
               if (
                 message.text != null &&
@@ -22291,7 +22291,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrs.v1.Text.encode(
                   message.text,
-                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                  writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
                 ).ldelim();
               if (
                 message.variationSet != null &&
@@ -22299,7 +22299,7 @@ export const org = ($root.org = (() => {
               )
                 $root.org.ga4gh.vrs.v1.VariationSet.encode(
                   message.variationSet,
-                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                  writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
                 ).ldelim();
               return writer;
             };
@@ -22342,14 +22342,14 @@ export const org = ($root.org = (() => {
                   case 2: {
                     message.allele = $root.org.ga4gh.vrs.v1.Allele.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
                   case 3: {
                     message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -22357,14 +22357,14 @@ export const org = ($root.org = (() => {
                     message.copyNumber =
                       $root.org.ga4gh.vrs.v1.CopyNumber.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
                   case 5: {
                     message.text = $root.org.ga4gh.vrs.v1.Text.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                     break;
                   }
@@ -22372,7 +22372,7 @@ export const org = ($root.org = (() => {
                     message.variationSet =
                       $root.org.ga4gh.vrs.v1.VariationSet.decode(
                         reader,
-                        reader.uint32(),
+                        reader.uint32()
                       );
                     break;
                   }
@@ -22421,7 +22421,7 @@ export const org = ($root.org = (() => {
                 properties.value = 1;
                 {
                   let error = $root.org.ga4gh.vrs.v1.Allele.verify(
-                    message.allele,
+                    message.allele
                   );
                   if (error) return "allele." + error;
                 }
@@ -22434,7 +22434,7 @@ export const org = ($root.org = (() => {
                 properties.value = 1;
                 {
                   let error = $root.org.ga4gh.vrs.v1.Haplotype.verify(
-                    message.haplotype,
+                    message.haplotype
                   );
                   if (error) return "haplotype." + error;
                 }
@@ -22447,7 +22447,7 @@ export const org = ($root.org = (() => {
                 properties.value = 1;
                 {
                   let error = $root.org.ga4gh.vrs.v1.CopyNumber.verify(
-                    message.copyNumber,
+                    message.copyNumber
                   );
                   if (error) return "copyNumber." + error;
                 }
@@ -22468,7 +22468,7 @@ export const org = ($root.org = (() => {
                 properties.value = 1;
                 {
                   let error = $root.org.ga4gh.vrs.v1.VariationSet.verify(
-                    message.variationSet,
+                    message.variationSet
                   );
                   if (error) return "variationSet." + error;
                 }
@@ -22492,48 +22492,48 @@ export const org = ($root.org = (() => {
               if (object.allele != null) {
                 if (typeof object.allele !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.VariationSet.Member.allele: object expected",
+                    ".org.ga4gh.vrs.v1.VariationSet.Member.allele: object expected"
                   );
                 message.allele = $root.org.ga4gh.vrs.v1.Allele.fromObject(
-                  object.allele,
+                  object.allele
                 );
               }
               if (object.haplotype != null) {
                 if (typeof object.haplotype !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.VariationSet.Member.haplotype: object expected",
+                    ".org.ga4gh.vrs.v1.VariationSet.Member.haplotype: object expected"
                   );
                 message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.fromObject(
-                  object.haplotype,
+                  object.haplotype
                 );
               }
               if (object.copyNumber != null) {
                 if (typeof object.copyNumber !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.VariationSet.Member.copyNumber: object expected",
+                    ".org.ga4gh.vrs.v1.VariationSet.Member.copyNumber: object expected"
                   );
                 message.copyNumber =
                   $root.org.ga4gh.vrs.v1.CopyNumber.fromObject(
-                    object.copyNumber,
+                    object.copyNumber
                   );
               }
               if (object.text != null) {
                 if (typeof object.text !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.VariationSet.Member.text: object expected",
+                    ".org.ga4gh.vrs.v1.VariationSet.Member.text: object expected"
                   );
                 message.text = $root.org.ga4gh.vrs.v1.Text.fromObject(
-                  object.text,
+                  object.text
                 );
               }
               if (object.variationSet != null) {
                 if (typeof object.variationSet !== "object")
                   throw TypeError(
-                    ".org.ga4gh.vrs.v1.VariationSet.Member.variationSet: object expected",
+                    ".org.ga4gh.vrs.v1.VariationSet.Member.variationSet: object expected"
                   );
                 message.variationSet =
                   $root.org.ga4gh.vrs.v1.VariationSet.fromObject(
-                    object.variationSet,
+                    object.variationSet
                   );
               }
               return message;
@@ -22558,7 +22558,7 @@ export const org = ($root.org = (() => {
               if (message.allele != null && message.hasOwnProperty("allele")) {
                 object.allele = $root.org.ga4gh.vrs.v1.Allele.toObject(
                   message.allele,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.value = "allele";
               }
@@ -22568,7 +22568,7 @@ export const org = ($root.org = (() => {
               ) {
                 object.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.toObject(
                   message.haplotype,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.value = "haplotype";
               }
@@ -22578,14 +22578,14 @@ export const org = ($root.org = (() => {
               ) {
                 object.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.toObject(
                   message.copyNumber,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.value = "copyNumber";
               }
               if (message.text != null && message.hasOwnProperty("text")) {
                 object.text = $root.org.ga4gh.vrs.v1.Text.toObject(
                   message.text,
-                  options,
+                  options
                 );
                 if (options.oneofs) object.value = "text";
               }
@@ -22596,7 +22596,7 @@ export const org = ($root.org = (() => {
                 object.variationSet =
                   $root.org.ga4gh.vrs.v1.VariationSet.toObject(
                     message.variationSet,
-                    options,
+                    options
                   );
                 if (options.oneofs) object.value = "variationSet";
               }
@@ -22613,7 +22613,7 @@ export const org = ($root.org = (() => {
             Member.prototype.toJSON = function toJSON() {
               return this.constructor.toObject(
                 this,
-                $protobuf.util.toJSONOptions,
+                $protobuf.util.toJSONOptions
               );
             };
 
@@ -22716,7 +22716,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.CopyNumber.encode(
                 message.copyNumber,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             return writer;
           };
@@ -22732,7 +22732,7 @@ export const org = ($root.org = (() => {
            */
           Abundance.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -22758,7 +22758,7 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -22804,7 +22804,7 @@ export const org = ($root.org = (() => {
               properties.abundance = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.CopyNumber.verify(
-                  message.copyNumber,
+                  message.copyNumber
                 );
                 if (error) return "copyNumber." + error;
               }
@@ -22827,10 +22827,10 @@ export const org = ($root.org = (() => {
             if (object.copyNumber != null) {
               if (typeof object.copyNumber !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Abundance.copyNumber: object expected",
+                  ".org.ga4gh.vrs.v1.Abundance.copyNumber: object expected"
                 );
               message.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.fromObject(
-                object.copyNumber,
+                object.copyNumber
               );
             }
             return message;
@@ -22854,7 +22854,7 @@ export const org = ($root.org = (() => {
             ) {
               object.copyNumber = $root.org.ga4gh.vrs.v1.CopyNumber.toObject(
                 message.copyNumber,
-                options,
+                options
               );
               if (options.oneofs) object.abundance = "copyNumber";
             }
@@ -22871,7 +22871,7 @@ export const org = ($root.org = (() => {
           Abundance.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -23037,7 +23037,7 @@ export const org = ($root.org = (() => {
                 "derivedSequenceExpression",
                 "repeatedSequenceExpression",
                 "curie",
-              ]),
+              ])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -23050,7 +23050,7 @@ export const org = ($root.org = (() => {
            */
           Object.defineProperty(CopyNumber.prototype, "copies", {
             get: $util.oneOfGetter(
-              ($oneOfFields = ["number", "indefiniteRange", "definiteRange"]),
+              ($oneOfFields = ["number", "indefiniteRange", "definiteRange"])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -23089,7 +23089,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Allele.encode(
                 message.allele,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.haplotype != null &&
@@ -23097,7 +23097,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Haplotype.encode(
                 message.haplotype,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             if (
               message.gene != null &&
@@ -23105,7 +23105,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Gene.encode(
                 message.gene,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             if (
               message.literalSequenceExpression != null &&
@@ -23113,7 +23113,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.encode(
                 message.literalSequenceExpression,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             if (
               message.derivedSequenceExpression != null &&
@@ -23121,7 +23121,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.encode(
                 message.derivedSequenceExpression,
-                writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
               ).ldelim();
             if (
               message.repeatedSequenceExpression != null &&
@@ -23129,7 +23129,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.encode(
                 message.repeatedSequenceExpression,
-                writer.uint32(/* id 7, wireType 2 =*/ 58).fork(),
+                writer.uint32(/* id 7, wireType 2 =*/ 58).fork()
               ).ldelim();
             if (
               message.curie != null &&
@@ -23142,7 +23142,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Number.encode(
                 message.number,
-                writer.uint32(/* id 9, wireType 2 =*/ 74).fork(),
+                writer.uint32(/* id 9, wireType 2 =*/ 74).fork()
               ).ldelim();
             if (
               message.indefiniteRange != null &&
@@ -23150,7 +23150,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.IndefiniteRange.encode(
                 message.indefiniteRange,
-                writer.uint32(/* id 10, wireType 2 =*/ 82).fork(),
+                writer.uint32(/* id 10, wireType 2 =*/ 82).fork()
               ).ldelim();
             if (
               message.definiteRange != null &&
@@ -23158,7 +23158,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DefiniteRange.encode(
                 message.definiteRange,
-                writer.uint32(/* id 11, wireType 2 =*/ 90).fork(),
+                writer.uint32(/* id 11, wireType 2 =*/ 90).fork()
               ).ldelim();
             return writer;
           };
@@ -23174,7 +23174,7 @@ export const org = ($root.org = (() => {
            */
           CopyNumber.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -23204,21 +23204,21 @@ export const org = ($root.org = (() => {
                 case 2: {
                   message.allele = $root.org.ga4gh.vrs.v1.Allele.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
                 case 3: {
                   message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
                 case 4: {
                   message.gene = $root.org.ga4gh.vrs.v1.Gene.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -23226,7 +23226,7 @@ export const org = ($root.org = (() => {
                   message.literalSequenceExpression =
                     $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23234,7 +23234,7 @@ export const org = ($root.org = (() => {
                   message.derivedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23242,7 +23242,7 @@ export const org = ($root.org = (() => {
                   message.repeatedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23253,7 +23253,7 @@ export const org = ($root.org = (() => {
                 case 9: {
                   message.number = $root.org.ga4gh.vrs.v1.Number.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -23261,7 +23261,7 @@ export const org = ($root.org = (() => {
                   message.indefiniteRange =
                     $root.org.ga4gh.vrs.v1.IndefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23269,7 +23269,7 @@ export const org = ($root.org = (() => {
                   message.definiteRange =
                     $root.org.ga4gh.vrs.v1.DefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23314,7 +23314,7 @@ export const org = ($root.org = (() => {
               properties.subject = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Allele.verify(
-                  message.allele,
+                  message.allele
                 );
                 if (error) return "allele." + error;
               }
@@ -23327,7 +23327,7 @@ export const org = ($root.org = (() => {
               properties.subject = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Haplotype.verify(
-                  message.haplotype,
+                  message.haplotype
                 );
                 if (error) return "haplotype." + error;
               }
@@ -23349,7 +23349,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.verify(
-                    message.literalSequenceExpression,
+                    message.literalSequenceExpression
                   );
                 if (error) return "literalSequenceExpression." + error;
               }
@@ -23363,7 +23363,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.verify(
-                    message.derivedSequenceExpression,
+                    message.derivedSequenceExpression
                   );
                 if (error) return "derivedSequenceExpression." + error;
               }
@@ -23377,7 +23377,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.verify(
-                    message.repeatedSequenceExpression,
+                    message.repeatedSequenceExpression
                   );
                 if (error) return "repeatedSequenceExpression." + error;
               }
@@ -23392,7 +23392,7 @@ export const org = ($root.org = (() => {
               properties.copies = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Number.verify(
-                  message.number,
+                  message.number
                 );
                 if (error) return "number." + error;
               }
@@ -23405,7 +23405,7 @@ export const org = ($root.org = (() => {
               properties.copies = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.IndefiniteRange.verify(
-                  message.indefiniteRange,
+                  message.indefiniteRange
                 );
                 if (error) return "indefiniteRange." + error;
               }
@@ -23418,7 +23418,7 @@ export const org = ($root.org = (() => {
               properties.copies = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.DefiniteRange.verify(
-                  message.definiteRange,
+                  message.definiteRange
                 );
                 if (error) return "definiteRange." + error;
               }
@@ -23442,88 +23442,88 @@ export const org = ($root.org = (() => {
             if (object.allele != null) {
               if (typeof object.allele !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.allele: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.allele: object expected"
                 );
               message.allele = $root.org.ga4gh.vrs.v1.Allele.fromObject(
-                object.allele,
+                object.allele
               );
             }
             if (object.haplotype != null) {
               if (typeof object.haplotype !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.haplotype: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.haplotype: object expected"
                 );
               message.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.fromObject(
-                object.haplotype,
+                object.haplotype
               );
             }
             if (object.gene != null) {
               if (typeof object.gene !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.gene: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.gene: object expected"
                 );
               message.gene = $root.org.ga4gh.vrs.v1.Gene.fromObject(
-                object.gene,
+                object.gene
               );
             }
             if (object.literalSequenceExpression != null) {
               if (typeof object.literalSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.literalSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.literalSequenceExpression: object expected"
                 );
               message.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.fromObject(
-                  object.literalSequenceExpression,
+                  object.literalSequenceExpression
                 );
             }
             if (object.derivedSequenceExpression != null) {
               if (typeof object.derivedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.derivedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.derivedSequenceExpression: object expected"
                 );
               message.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.fromObject(
-                  object.derivedSequenceExpression,
+                  object.derivedSequenceExpression
                 );
             }
             if (object.repeatedSequenceExpression != null) {
               if (typeof object.repeatedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.repeatedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.repeatedSequenceExpression: object expected"
                 );
               message.repeatedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.fromObject(
-                  object.repeatedSequenceExpression,
+                  object.repeatedSequenceExpression
                 );
             }
             if (object.curie != null) message.curie = String(object.curie);
             if (object.number != null) {
               if (typeof object.number !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.number: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.number: object expected"
                 );
               message.number = $root.org.ga4gh.vrs.v1.Number.fromObject(
-                object.number,
+                object.number
               );
             }
             if (object.indefiniteRange != null) {
               if (typeof object.indefiniteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.indefiniteRange: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.indefiniteRange: object expected"
                 );
               message.indefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.fromObject(
-                  object.indefiniteRange,
+                  object.indefiniteRange
                 );
             }
             if (object.definiteRange != null) {
               if (typeof object.definiteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.CopyNumber.definiteRange: object expected",
+                  ".org.ga4gh.vrs.v1.CopyNumber.definiteRange: object expected"
                 );
               message.definiteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.fromObject(
-                  object.definiteRange,
+                  object.definiteRange
                 );
             }
             return message;
@@ -23547,7 +23547,7 @@ export const org = ($root.org = (() => {
             if (message.allele != null && message.hasOwnProperty("allele")) {
               object.allele = $root.org.ga4gh.vrs.v1.Allele.toObject(
                 message.allele,
-                options,
+                options
               );
               if (options.oneofs) object.subject = "allele";
             }
@@ -23557,14 +23557,14 @@ export const org = ($root.org = (() => {
             ) {
               object.haplotype = $root.org.ga4gh.vrs.v1.Haplotype.toObject(
                 message.haplotype,
-                options,
+                options
               );
               if (options.oneofs) object.subject = "haplotype";
             }
             if (message.gene != null && message.hasOwnProperty("gene")) {
               object.gene = $root.org.ga4gh.vrs.v1.Gene.toObject(
                 message.gene,
-                options,
+                options
               );
               if (options.oneofs) object.subject = "gene";
             }
@@ -23575,7 +23575,7 @@ export const org = ($root.org = (() => {
               object.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.toObject(
                   message.literalSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.subject = "literalSequenceExpression";
             }
@@ -23586,7 +23586,7 @@ export const org = ($root.org = (() => {
               object.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.toObject(
                   message.derivedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.subject = "derivedSequenceExpression";
             }
@@ -23597,7 +23597,7 @@ export const org = ($root.org = (() => {
               object.repeatedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.toObject(
                   message.repeatedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.subject = "repeatedSequenceExpression";
             }
@@ -23608,7 +23608,7 @@ export const org = ($root.org = (() => {
             if (message.number != null && message.hasOwnProperty("number")) {
               object.number = $root.org.ga4gh.vrs.v1.Number.toObject(
                 message.number,
-                options,
+                options
               );
               if (options.oneofs) object.copies = "number";
             }
@@ -23619,7 +23619,7 @@ export const org = ($root.org = (() => {
               object.indefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.toObject(
                   message.indefiniteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.copies = "indefiniteRange";
             }
@@ -23630,7 +23630,7 @@ export const org = ($root.org = (() => {
               object.definiteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.toObject(
                   message.definiteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.copies = "definiteRange";
             }
@@ -23647,7 +23647,7 @@ export const org = ($root.org = (() => {
           CopyNumber.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -23724,7 +23724,7 @@ export const org = ($root.org = (() => {
            */
           Object.defineProperty(Location.prototype, "location", {
             get: $util.oneOfGetter(
-              ($oneOfFields = ["chromosomeLocation", "sequenceLocation"]),
+              ($oneOfFields = ["chromosomeLocation", "sequenceLocation"])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -23758,7 +23758,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.ChromosomeLocation.encode(
                 message.chromosomeLocation,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.sequenceLocation != null &&
@@ -23766,7 +23766,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.SequenceLocation.encode(
                 message.sequenceLocation,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             return writer;
           };
@@ -23806,7 +23806,7 @@ export const org = ($root.org = (() => {
                   message.chromosomeLocation =
                     $root.org.ga4gh.vrs.v1.ChromosomeLocation.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23814,7 +23814,7 @@ export const org = ($root.org = (() => {
                   message.sequenceLocation =
                     $root.org.ga4gh.vrs.v1.SequenceLocation.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -23860,7 +23860,7 @@ export const org = ($root.org = (() => {
               properties.location = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.ChromosomeLocation.verify(
-                  message.chromosomeLocation,
+                  message.chromosomeLocation
                 );
                 if (error) return "chromosomeLocation." + error;
               }
@@ -23873,7 +23873,7 @@ export const org = ($root.org = (() => {
               properties.location = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.SequenceLocation.verify(
-                  message.sequenceLocation,
+                  message.sequenceLocation
                 );
                 if (error) return "sequenceLocation." + error;
               }
@@ -23896,21 +23896,21 @@ export const org = ($root.org = (() => {
             if (object.chromosomeLocation != null) {
               if (typeof object.chromosomeLocation !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Location.chromosomeLocation: object expected",
+                  ".org.ga4gh.vrs.v1.Location.chromosomeLocation: object expected"
                 );
               message.chromosomeLocation =
                 $root.org.ga4gh.vrs.v1.ChromosomeLocation.fromObject(
-                  object.chromosomeLocation,
+                  object.chromosomeLocation
                 );
             }
             if (object.sequenceLocation != null) {
               if (typeof object.sequenceLocation !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Location.sequenceLocation: object expected",
+                  ".org.ga4gh.vrs.v1.Location.sequenceLocation: object expected"
                 );
               message.sequenceLocation =
                 $root.org.ga4gh.vrs.v1.SequenceLocation.fromObject(
-                  object.sequenceLocation,
+                  object.sequenceLocation
                 );
             }
             return message;
@@ -23935,7 +23935,7 @@ export const org = ($root.org = (() => {
               object.chromosomeLocation =
                 $root.org.ga4gh.vrs.v1.ChromosomeLocation.toObject(
                   message.chromosomeLocation,
-                  options,
+                  options
                 );
               if (options.oneofs) object.location = "chromosomeLocation";
             }
@@ -23946,7 +23946,7 @@ export const org = ($root.org = (() => {
               object.sequenceLocation =
                 $root.org.ga4gh.vrs.v1.SequenceLocation.toObject(
                   message.sequenceLocation,
-                  options,
+                  options
                 );
               if (options.oneofs) object.location = "sequenceLocation";
             }
@@ -23963,7 +23963,7 @@ export const org = ($root.org = (() => {
           Location.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -24093,7 +24093,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.CytobandInterval.encode(
                 message.interval,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             return writer;
           };
@@ -24109,7 +24109,7 @@ export const org = ($root.org = (() => {
            */
           ChromosomeLocation.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -24148,7 +24148,7 @@ export const org = ($root.org = (() => {
                   message.interval =
                     $root.org.ga4gh.vrs.v1.CytobandInterval.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -24171,7 +24171,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           ChromosomeLocation.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -24203,7 +24203,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("interval")
             ) {
               let error = $root.org.ga4gh.vrs.v1.CytobandInterval.verify(
-                message.interval,
+                message.interval
               );
               if (error) return "interval." + error;
             }
@@ -24229,11 +24229,11 @@ export const org = ($root.org = (() => {
             if (object.interval != null) {
               if (typeof object.interval !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.ChromosomeLocation.interval: object expected",
+                  ".org.ga4gh.vrs.v1.ChromosomeLocation.interval: object expected"
                 );
               message.interval =
                 $root.org.ga4gh.vrs.v1.CytobandInterval.fromObject(
-                  object.interval,
+                  object.interval
                 );
             }
             return message;
@@ -24270,7 +24270,7 @@ export const org = ($root.org = (() => {
               object.interval =
                 $root.org.ga4gh.vrs.v1.CytobandInterval.toObject(
                   message.interval,
-                  options,
+                  options
                 );
             return object;
           };
@@ -24285,7 +24285,7 @@ export const org = ($root.org = (() => {
           ChromosomeLocation.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -24380,7 +24380,7 @@ export const org = ($root.org = (() => {
            */
           Object.defineProperty(SequenceLocation.prototype, "interval", {
             get: $util.oneOfGetter(
-              ($oneOfFields = ["sequenceInterval", "simpleInterval"]),
+              ($oneOfFields = ["sequenceInterval", "simpleInterval"])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -24426,7 +24426,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.SequenceInterval.encode(
                 message.sequenceInterval,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             if (
               message.simpleInterval != null &&
@@ -24434,7 +24434,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.SimpleInterval.encode(
                 message.simpleInterval,
-                writer.uint32(/* id 100, wireType 2 =*/ 802).fork(),
+                writer.uint32(/* id 100, wireType 2 =*/ 802).fork()
               ).ldelim();
             return writer;
           };
@@ -24450,7 +24450,7 @@ export const org = ($root.org = (() => {
            */
           SequenceLocation.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -24485,7 +24485,7 @@ export const org = ($root.org = (() => {
                   message.sequenceInterval =
                     $root.org.ga4gh.vrs.v1.SequenceInterval.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -24493,7 +24493,7 @@ export const org = ($root.org = (() => {
                   message.simpleInterval =
                     $root.org.ga4gh.vrs.v1.SimpleInterval.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -24547,7 +24547,7 @@ export const org = ($root.org = (() => {
               properties.interval = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.SequenceInterval.verify(
-                  message.sequenceInterval,
+                  message.sequenceInterval
                 );
                 if (error) return "sequenceInterval." + error;
               }
@@ -24560,7 +24560,7 @@ export const org = ($root.org = (() => {
               properties.interval = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.SimpleInterval.verify(
-                  message.simpleInterval,
+                  message.simpleInterval
                 );
                 if (error) return "simpleInterval." + error;
               }
@@ -24586,21 +24586,21 @@ export const org = ($root.org = (() => {
             if (object.sequenceInterval != null) {
               if (typeof object.sequenceInterval !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceLocation.sequenceInterval: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceLocation.sequenceInterval: object expected"
                 );
               message.sequenceInterval =
                 $root.org.ga4gh.vrs.v1.SequenceInterval.fromObject(
-                  object.sequenceInterval,
+                  object.sequenceInterval
                 );
             }
             if (object.simpleInterval != null) {
               if (typeof object.simpleInterval !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceLocation.simpleInterval: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceLocation.simpleInterval: object expected"
                 );
               message.simpleInterval =
                 $root.org.ga4gh.vrs.v1.SimpleInterval.fromObject(
-                  object.simpleInterval,
+                  object.simpleInterval
                 );
             }
             return message;
@@ -24636,7 +24636,7 @@ export const org = ($root.org = (() => {
               object.sequenceInterval =
                 $root.org.ga4gh.vrs.v1.SequenceInterval.toObject(
                   message.sequenceInterval,
-                  options,
+                  options
                 );
               if (options.oneofs) object.interval = "sequenceInterval";
             }
@@ -24647,7 +24647,7 @@ export const org = ($root.org = (() => {
               object.simpleInterval =
                 $root.org.ga4gh.vrs.v1.SimpleInterval.toObject(
                   message.simpleInterval,
-                  options,
+                  options
                 );
               if (options.oneofs) object.interval = "simpleInterval";
             }
@@ -24664,7 +24664,7 @@ export const org = ($root.org = (() => {
           SequenceLocation.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -24781,7 +24781,7 @@ export const org = ($root.org = (() => {
                 "startNumber",
                 "startIndefiniteRange",
                 "startDefiniteRange",
-              ]),
+              ])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -24798,7 +24798,7 @@ export const org = ($root.org = (() => {
                 "endNumber",
                 "endIndefiniteRange",
                 "endDefiniteRange",
-              ]),
+              ])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -24832,7 +24832,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Number.encode(
                 message.startNumber,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.startIndefiniteRange != null &&
@@ -24840,7 +24840,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.IndefiniteRange.encode(
                 message.startIndefiniteRange,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.startDefiniteRange != null &&
@@ -24848,7 +24848,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DefiniteRange.encode(
                 message.startDefiniteRange,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             if (
               message.endNumber != null &&
@@ -24856,7 +24856,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Number.encode(
                 message.endNumber,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             if (
               message.endIndefiniteRange != null &&
@@ -24864,7 +24864,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.IndefiniteRange.encode(
                 message.endIndefiniteRange,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             if (
               message.endDefiniteRange != null &&
@@ -24872,7 +24872,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DefiniteRange.encode(
                 message.endDefiniteRange,
-                writer.uint32(/* id 6, wireType 2 =*/ 50).fork(),
+                writer.uint32(/* id 6, wireType 2 =*/ 50).fork()
               ).ldelim();
             return writer;
           };
@@ -24888,7 +24888,7 @@ export const org = ($root.org = (() => {
            */
           SequenceInterval.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -24914,7 +24914,7 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.startNumber = $root.org.ga4gh.vrs.v1.Number.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -24922,7 +24922,7 @@ export const org = ($root.org = (() => {
                   message.startIndefiniteRange =
                     $root.org.ga4gh.vrs.v1.IndefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -24930,14 +24930,14 @@ export const org = ($root.org = (() => {
                   message.startDefiniteRange =
                     $root.org.ga4gh.vrs.v1.DefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
                 case 4: {
                   message.endNumber = $root.org.ga4gh.vrs.v1.Number.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -24945,7 +24945,7 @@ export const org = ($root.org = (() => {
                   message.endIndefiniteRange =
                     $root.org.ga4gh.vrs.v1.IndefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -24953,7 +24953,7 @@ export const org = ($root.org = (() => {
                   message.endDefiniteRange =
                     $root.org.ga4gh.vrs.v1.DefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -24999,7 +24999,7 @@ export const org = ($root.org = (() => {
               properties.start = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Number.verify(
-                  message.startNumber,
+                  message.startNumber
                 );
                 if (error) return "startNumber." + error;
               }
@@ -25012,7 +25012,7 @@ export const org = ($root.org = (() => {
               properties.start = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.IndefiniteRange.verify(
-                  message.startIndefiniteRange,
+                  message.startIndefiniteRange
                 );
                 if (error) return "startIndefiniteRange." + error;
               }
@@ -25025,7 +25025,7 @@ export const org = ($root.org = (() => {
               properties.start = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.DefiniteRange.verify(
-                  message.startDefiniteRange,
+                  message.startDefiniteRange
                 );
                 if (error) return "startDefiniteRange." + error;
               }
@@ -25037,7 +25037,7 @@ export const org = ($root.org = (() => {
               properties.end = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Number.verify(
-                  message.endNumber,
+                  message.endNumber
                 );
                 if (error) return "endNumber." + error;
               }
@@ -25050,7 +25050,7 @@ export const org = ($root.org = (() => {
               properties.end = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.IndefiniteRange.verify(
-                  message.endIndefiniteRange,
+                  message.endIndefiniteRange
                 );
                 if (error) return "endIndefiniteRange." + error;
               }
@@ -25063,7 +25063,7 @@ export const org = ($root.org = (() => {
               properties.end = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.DefiniteRange.verify(
-                  message.endDefiniteRange,
+                  message.endDefiniteRange
                 );
                 if (error) return "endDefiniteRange." + error;
               }
@@ -25086,59 +25086,59 @@ export const org = ($root.org = (() => {
             if (object.startNumber != null) {
               if (typeof object.startNumber !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceInterval.startNumber: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceInterval.startNumber: object expected"
                 );
               message.startNumber = $root.org.ga4gh.vrs.v1.Number.fromObject(
-                object.startNumber,
+                object.startNumber
               );
             }
             if (object.startIndefiniteRange != null) {
               if (typeof object.startIndefiniteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceInterval.startIndefiniteRange: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceInterval.startIndefiniteRange: object expected"
                 );
               message.startIndefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.fromObject(
-                  object.startIndefiniteRange,
+                  object.startIndefiniteRange
                 );
             }
             if (object.startDefiniteRange != null) {
               if (typeof object.startDefiniteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceInterval.startDefiniteRange: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceInterval.startDefiniteRange: object expected"
                 );
               message.startDefiniteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.fromObject(
-                  object.startDefiniteRange,
+                  object.startDefiniteRange
                 );
             }
             if (object.endNumber != null) {
               if (typeof object.endNumber !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceInterval.endNumber: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceInterval.endNumber: object expected"
                 );
               message.endNumber = $root.org.ga4gh.vrs.v1.Number.fromObject(
-                object.endNumber,
+                object.endNumber
               );
             }
             if (object.endIndefiniteRange != null) {
               if (typeof object.endIndefiniteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceInterval.endIndefiniteRange: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceInterval.endIndefiniteRange: object expected"
                 );
               message.endIndefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.fromObject(
-                  object.endIndefiniteRange,
+                  object.endIndefiniteRange
                 );
             }
             if (object.endDefiniteRange != null) {
               if (typeof object.endDefiniteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceInterval.endDefiniteRange: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceInterval.endDefiniteRange: object expected"
                 );
               message.endDefiniteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.fromObject(
-                  object.endDefiniteRange,
+                  object.endDefiniteRange
                 );
             }
             return message;
@@ -25162,7 +25162,7 @@ export const org = ($root.org = (() => {
             ) {
               object.startNumber = $root.org.ga4gh.vrs.v1.Number.toObject(
                 message.startNumber,
-                options,
+                options
               );
               if (options.oneofs) object.start = "startNumber";
             }
@@ -25173,7 +25173,7 @@ export const org = ($root.org = (() => {
               object.startIndefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.toObject(
                   message.startIndefiniteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.start = "startIndefiniteRange";
             }
@@ -25184,7 +25184,7 @@ export const org = ($root.org = (() => {
               object.startDefiniteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.toObject(
                   message.startDefiniteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.start = "startDefiniteRange";
             }
@@ -25194,7 +25194,7 @@ export const org = ($root.org = (() => {
             ) {
               object.endNumber = $root.org.ga4gh.vrs.v1.Number.toObject(
                 message.endNumber,
-                options,
+                options
               );
               if (options.oneofs) object.end = "endNumber";
             }
@@ -25205,7 +25205,7 @@ export const org = ($root.org = (() => {
               object.endIndefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.toObject(
                   message.endIndefiniteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.end = "endIndefiniteRange";
             }
@@ -25216,7 +25216,7 @@ export const org = ($root.org = (() => {
               object.endDefiniteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.toObject(
                   message.endDefiniteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.end = "endDefiniteRange";
             }
@@ -25233,7 +25233,7 @@ export const org = ($root.org = (() => {
           SequenceInterval.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -25346,7 +25346,7 @@ export const org = ($root.org = (() => {
            */
           CytobandInterval.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -25469,7 +25469,7 @@ export const org = ($root.org = (() => {
           CytobandInterval.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -25562,10 +25562,10 @@ export const org = ($root.org = (() => {
                   "literalSequenceExpression",
                   "derivedSequenceExpression",
                   "repeatedSequenceExpression",
-                ]),
+                ])
               ),
               set: $util.oneOfSetter($oneOfFields),
-            },
+            }
           );
 
           /**
@@ -25597,7 +25597,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.encode(
                 message.literalSequenceExpression,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.derivedSequenceExpression != null &&
@@ -25605,7 +25605,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.encode(
                 message.derivedSequenceExpression,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.repeatedSequenceExpression != null &&
@@ -25613,7 +25613,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.encode(
                 message.repeatedSequenceExpression,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             return writer;
           };
@@ -25629,7 +25629,7 @@ export const org = ($root.org = (() => {
            */
           SequenceExpression.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -25656,7 +25656,7 @@ export const org = ($root.org = (() => {
                   message.literalSequenceExpression =
                     $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -25664,7 +25664,7 @@ export const org = ($root.org = (() => {
                   message.derivedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -25672,7 +25672,7 @@ export const org = ($root.org = (() => {
                   message.repeatedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -25695,7 +25695,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           SequenceExpression.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -25721,7 +25721,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.verify(
-                    message.literalSequenceExpression,
+                    message.literalSequenceExpression
                   );
                 if (error) return "literalSequenceExpression." + error;
               }
@@ -25736,7 +25736,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.verify(
-                    message.derivedSequenceExpression,
+                    message.derivedSequenceExpression
                   );
                 if (error) return "derivedSequenceExpression." + error;
               }
@@ -25751,7 +25751,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.verify(
-                    message.repeatedSequenceExpression,
+                    message.repeatedSequenceExpression
                   );
                 if (error) return "repeatedSequenceExpression." + error;
               }
@@ -25774,31 +25774,31 @@ export const org = ($root.org = (() => {
             if (object.literalSequenceExpression != null) {
               if (typeof object.literalSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceExpression.literalSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceExpression.literalSequenceExpression: object expected"
                 );
               message.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.fromObject(
-                  object.literalSequenceExpression,
+                  object.literalSequenceExpression
                 );
             }
             if (object.derivedSequenceExpression != null) {
               if (typeof object.derivedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceExpression.derivedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceExpression.derivedSequenceExpression: object expected"
                 );
               message.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.fromObject(
-                  object.derivedSequenceExpression,
+                  object.derivedSequenceExpression
                 );
             }
             if (object.repeatedSequenceExpression != null) {
               if (typeof object.repeatedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.SequenceExpression.repeatedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.SequenceExpression.repeatedSequenceExpression: object expected"
                 );
               message.repeatedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.fromObject(
-                  object.repeatedSequenceExpression,
+                  object.repeatedSequenceExpression
                 );
             }
             return message;
@@ -25823,7 +25823,7 @@ export const org = ($root.org = (() => {
               object.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.toObject(
                   message.literalSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs)
                 object.sequenceExpression = "literalSequenceExpression";
@@ -25835,7 +25835,7 @@ export const org = ($root.org = (() => {
               object.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.toObject(
                   message.derivedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs)
                 object.sequenceExpression = "derivedSequenceExpression";
@@ -25847,7 +25847,7 @@ export const org = ($root.org = (() => {
               object.repeatedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.RepeatedSequenceExpression.toObject(
                   message.repeatedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs)
                 object.sequenceExpression = "repeatedSequenceExpression";
@@ -25865,7 +25865,7 @@ export const org = ($root.org = (() => {
           SequenceExpression.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -25966,7 +25966,7 @@ export const org = ($root.org = (() => {
            */
           LiteralSequenceExpression.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -26012,7 +26012,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           LiteralSequenceExpression.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -26066,7 +26066,7 @@ export const org = ($root.org = (() => {
            */
           LiteralSequenceExpression.toObject = function toObject(
             message,
-            options,
+            options
           ) {
             if (!options) options = {};
             let object = {};
@@ -26086,7 +26086,7 @@ export const org = ($root.org = (() => {
           LiteralSequenceExpression.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -26099,7 +26099,7 @@ export const org = ($root.org = (() => {
            * @returns {string} The default type url
            */
           LiteralSequenceExpression.getTypeUrl = function getTypeUrl(
-            typeUrlPrefix,
+            typeUrlPrefix
           ) {
             if (typeUrlPrefix === undefined) {
               typeUrlPrefix = "type.googleapis.com";
@@ -26185,7 +26185,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.SequenceLocation.encode(
                 message.location,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.reverseComplement != null &&
@@ -26208,7 +26208,7 @@ export const org = ($root.org = (() => {
            */
           DerivedSequenceExpression.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -26235,7 +26235,7 @@ export const org = ($root.org = (() => {
                   message.location =
                     $root.org.ga4gh.vrs.v1.SequenceLocation.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -26262,7 +26262,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           DerivedSequenceExpression.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -26284,7 +26284,7 @@ export const org = ($root.org = (() => {
               message.hasOwnProperty("location")
             ) {
               let error = $root.org.ga4gh.vrs.v1.SequenceLocation.verify(
-                message.location,
+                message.location
               );
               if (error) return "location." + error;
             }
@@ -26315,11 +26315,11 @@ export const org = ($root.org = (() => {
             if (object.location != null) {
               if (typeof object.location !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.DerivedSequenceExpression.location: object expected",
+                  ".org.ga4gh.vrs.v1.DerivedSequenceExpression.location: object expected"
                 );
               message.location =
                 $root.org.ga4gh.vrs.v1.SequenceLocation.fromObject(
-                  object.location,
+                  object.location
                 );
             }
             if (object.reverseComplement != null)
@@ -26338,7 +26338,7 @@ export const org = ($root.org = (() => {
            */
           DerivedSequenceExpression.toObject = function toObject(
             message,
-            options,
+            options
           ) {
             if (!options) options = {};
             let object = {};
@@ -26350,7 +26350,7 @@ export const org = ($root.org = (() => {
               object.location =
                 $root.org.ga4gh.vrs.v1.SequenceLocation.toObject(
                   message.location,
-                  options,
+                  options
                 );
             if (
               message.reverseComplement != null &&
@@ -26370,7 +26370,7 @@ export const org = ($root.org = (() => {
           DerivedSequenceExpression.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -26383,7 +26383,7 @@ export const org = ($root.org = (() => {
            * @returns {string} The default type url
            */
           DerivedSequenceExpression.getTypeUrl = function getTypeUrl(
-            typeUrlPrefix,
+            typeUrlPrefix
           ) {
             if (typeUrlPrefix === undefined) {
               typeUrlPrefix = "type.googleapis.com";
@@ -26484,10 +26484,10 @@ export const org = ($root.org = (() => {
                 ($oneOfFields = [
                   "literalSequenceExpression",
                   "derivedSequenceExpression",
-                ]),
+                ])
               ),
               set: $util.oneOfSetter($oneOfFields),
-            },
+            }
           );
 
           /**
@@ -26498,7 +26498,7 @@ export const org = ($root.org = (() => {
            */
           Object.defineProperty(RepeatedSequenceExpression.prototype, "count", {
             get: $util.oneOfGetter(
-              ($oneOfFields = ["number", "indefiniteRange", "definiteRange"]),
+              ($oneOfFields = ["number", "indefiniteRange", "definiteRange"])
             ),
             set: $util.oneOfSetter($oneOfFields),
           });
@@ -26532,7 +26532,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.encode(
                 message.literalSequenceExpression,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             if (
               message.derivedSequenceExpression != null &&
@@ -26540,7 +26540,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.encode(
                 message.derivedSequenceExpression,
-                writer.uint32(/* id 2, wireType 2 =*/ 18).fork(),
+                writer.uint32(/* id 2, wireType 2 =*/ 18).fork()
               ).ldelim();
             if (
               message.number != null &&
@@ -26548,7 +26548,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Number.encode(
                 message.number,
-                writer.uint32(/* id 3, wireType 2 =*/ 26).fork(),
+                writer.uint32(/* id 3, wireType 2 =*/ 26).fork()
               ).ldelim();
             if (
               message.indefiniteRange != null &&
@@ -26556,7 +26556,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.IndefiniteRange.encode(
                 message.indefiniteRange,
-                writer.uint32(/* id 4, wireType 2 =*/ 34).fork(),
+                writer.uint32(/* id 4, wireType 2 =*/ 34).fork()
               ).ldelim();
             if (
               message.definiteRange != null &&
@@ -26564,7 +26564,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.DefiniteRange.encode(
                 message.definiteRange,
-                writer.uint32(/* id 5, wireType 2 =*/ 42).fork(),
+                writer.uint32(/* id 5, wireType 2 =*/ 42).fork()
               ).ldelim();
             return writer;
           };
@@ -26580,7 +26580,7 @@ export const org = ($root.org = (() => {
            */
           RepeatedSequenceExpression.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -26607,7 +26607,7 @@ export const org = ($root.org = (() => {
                   message.literalSequenceExpression =
                     $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -26615,14 +26615,14 @@ export const org = ($root.org = (() => {
                   message.derivedSequenceExpression =
                     $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
                 case 3: {
                   message.number = $root.org.ga4gh.vrs.v1.Number.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -26630,7 +26630,7 @@ export const org = ($root.org = (() => {
                   message.indefiniteRange =
                     $root.org.ga4gh.vrs.v1.IndefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -26638,7 +26638,7 @@ export const org = ($root.org = (() => {
                   message.definiteRange =
                     $root.org.ga4gh.vrs.v1.DefiniteRange.decode(
                       reader,
-                      reader.uint32(),
+                      reader.uint32()
                     );
                   break;
                 }
@@ -26661,7 +26661,7 @@ export const org = ($root.org = (() => {
            * @throws {$protobuf.util.ProtocolError} If required fields are missing
            */
           RepeatedSequenceExpression.decodeDelimited = function decodeDelimited(
-            reader,
+            reader
           ) {
             if (!(reader instanceof $Reader)) reader = new $Reader(reader);
             return this.decode(reader, reader.uint32());
@@ -26687,7 +26687,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.verify(
-                    message.literalSequenceExpression,
+                    message.literalSequenceExpression
                   );
                 if (error) return "literalSequenceExpression." + error;
               }
@@ -26701,7 +26701,7 @@ export const org = ($root.org = (() => {
               {
                 let error =
                   $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.verify(
-                    message.derivedSequenceExpression,
+                    message.derivedSequenceExpression
                   );
                 if (error) return "derivedSequenceExpression." + error;
               }
@@ -26710,7 +26710,7 @@ export const org = ($root.org = (() => {
               properties.count = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.Number.verify(
-                  message.number,
+                  message.number
                 );
                 if (error) return "number." + error;
               }
@@ -26723,7 +26723,7 @@ export const org = ($root.org = (() => {
               properties.count = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.IndefiniteRange.verify(
-                  message.indefiniteRange,
+                  message.indefiniteRange
                 );
                 if (error) return "indefiniteRange." + error;
               }
@@ -26736,7 +26736,7 @@ export const org = ($root.org = (() => {
               properties.count = 1;
               {
                 let error = $root.org.ga4gh.vrs.v1.DefiniteRange.verify(
-                  message.definiteRange,
+                  message.definiteRange
                 );
                 if (error) return "definiteRange." + error;
               }
@@ -26763,50 +26763,50 @@ export const org = ($root.org = (() => {
             if (object.literalSequenceExpression != null) {
               if (typeof object.literalSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.literalSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.literalSequenceExpression: object expected"
                 );
               message.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.fromObject(
-                  object.literalSequenceExpression,
+                  object.literalSequenceExpression
                 );
             }
             if (object.derivedSequenceExpression != null) {
               if (typeof object.derivedSequenceExpression !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.derivedSequenceExpression: object expected",
+                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.derivedSequenceExpression: object expected"
                 );
               message.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.fromObject(
-                  object.derivedSequenceExpression,
+                  object.derivedSequenceExpression
                 );
             }
             if (object.number != null) {
               if (typeof object.number !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.number: object expected",
+                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.number: object expected"
                 );
               message.number = $root.org.ga4gh.vrs.v1.Number.fromObject(
-                object.number,
+                object.number
               );
             }
             if (object.indefiniteRange != null) {
               if (typeof object.indefiniteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.indefiniteRange: object expected",
+                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.indefiniteRange: object expected"
                 );
               message.indefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.fromObject(
-                  object.indefiniteRange,
+                  object.indefiniteRange
                 );
             }
             if (object.definiteRange != null) {
               if (typeof object.definiteRange !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.definiteRange: object expected",
+                  ".org.ga4gh.vrs.v1.RepeatedSequenceExpression.definiteRange: object expected"
                 );
               message.definiteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.fromObject(
-                  object.definiteRange,
+                  object.definiteRange
                 );
             }
             return message;
@@ -26823,7 +26823,7 @@ export const org = ($root.org = (() => {
            */
           RepeatedSequenceExpression.toObject = function toObject(
             message,
-            options,
+            options
           ) {
             if (!options) options = {};
             let object = {};
@@ -26834,7 +26834,7 @@ export const org = ($root.org = (() => {
               object.literalSequenceExpression =
                 $root.org.ga4gh.vrs.v1.LiteralSequenceExpression.toObject(
                   message.literalSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.seqExpr = "literalSequenceExpression";
             }
@@ -26845,14 +26845,14 @@ export const org = ($root.org = (() => {
               object.derivedSequenceExpression =
                 $root.org.ga4gh.vrs.v1.DerivedSequenceExpression.toObject(
                   message.derivedSequenceExpression,
-                  options,
+                  options
                 );
               if (options.oneofs) object.seqExpr = "derivedSequenceExpression";
             }
             if (message.number != null && message.hasOwnProperty("number")) {
               object.number = $root.org.ga4gh.vrs.v1.Number.toObject(
                 message.number,
-                options,
+                options
               );
               if (options.oneofs) object.count = "number";
             }
@@ -26863,7 +26863,7 @@ export const org = ($root.org = (() => {
               object.indefiniteRange =
                 $root.org.ga4gh.vrs.v1.IndefiniteRange.toObject(
                   message.indefiniteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.count = "indefiniteRange";
             }
@@ -26874,7 +26874,7 @@ export const org = ($root.org = (() => {
               object.definiteRange =
                 $root.org.ga4gh.vrs.v1.DefiniteRange.toObject(
                   message.definiteRange,
-                  options,
+                  options
                 );
               if (options.oneofs) object.count = "definiteRange";
             }
@@ -26891,7 +26891,7 @@ export const org = ($root.org = (() => {
           RepeatedSequenceExpression.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -26904,7 +26904,7 @@ export const org = ($root.org = (() => {
            * @returns {string} The default type url
            */
           RepeatedSequenceExpression.getTypeUrl = function getTypeUrl(
-            typeUrlPrefix,
+            typeUrlPrefix
           ) {
             if (typeUrlPrefix === undefined) {
               typeUrlPrefix = "type.googleapis.com";
@@ -26995,7 +26995,7 @@ export const org = ($root.org = (() => {
             )
               $root.org.ga4gh.vrs.v1.Gene.encode(
                 message.gene,
-                writer.uint32(/* id 1, wireType 2 =*/ 10).fork(),
+                writer.uint32(/* id 1, wireType 2 =*/ 10).fork()
               ).ldelim();
             return writer;
           };
@@ -27034,7 +27034,7 @@ export const org = ($root.org = (() => {
                 case 1: {
                   message.gene = $root.org.ga4gh.vrs.v1.Gene.decode(
                     reader,
-                    reader.uint32(),
+                    reader.uint32()
                   );
                   break;
                 }
@@ -27097,10 +27097,10 @@ export const org = ($root.org = (() => {
             if (object.gene != null) {
               if (typeof object.gene !== "object")
                 throw TypeError(
-                  ".org.ga4gh.vrs.v1.Feature.gene: object expected",
+                  ".org.ga4gh.vrs.v1.Feature.gene: object expected"
                 );
               message.gene = $root.org.ga4gh.vrs.v1.Gene.fromObject(
-                object.gene,
+                object.gene
               );
             }
             return message;
@@ -27121,7 +27121,7 @@ export const org = ($root.org = (() => {
             if (message.gene != null && message.hasOwnProperty("gene")) {
               object.gene = $root.org.ga4gh.vrs.v1.Gene.toObject(
                 message.gene,
-                options,
+                options
               );
               if (options.oneofs) object.feature = "gene";
             }
@@ -27138,7 +27138,7 @@ export const org = ($root.org = (() => {
           Feature.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -27344,7 +27344,7 @@ export const org = ($root.org = (() => {
           Gene.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -27530,7 +27530,7 @@ export const org = ($root.org = (() => {
             if (object.value != null)
               if ($util.Long)
                 (message.value = $util.Long.fromValue(
-                  object.value,
+                  object.value
                 )).unsigned = true;
               else if (typeof object.value === "string")
                 message.value = parseInt(object.value, 10);
@@ -27539,7 +27539,7 @@ export const org = ($root.org = (() => {
               else if (typeof object.value === "object")
                 message.value = new $util.LongBits(
                   object.value.low >>> 0,
-                  object.value.high >>> 0,
+                  object.value.high >>> 0
                 ).toNumber(true);
             return message;
           };
@@ -27579,7 +27579,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.value.low >>> 0,
-                        message.value.high >>> 0,
+                        message.value.high >>> 0
                       ).toNumber(true)
                     : message.value;
             return object;
@@ -27595,7 +27595,7 @@ export const org = ($root.org = (() => {
           Number.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -27712,7 +27712,7 @@ export const org = ($root.org = (() => {
            */
           IndefiniteRange.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -27811,7 +27811,7 @@ export const org = ($root.org = (() => {
             if (object.value != null)
               if ($util.Long)
                 (message.value = $util.Long.fromValue(
-                  object.value,
+                  object.value
                 )).unsigned = true;
               else if (typeof object.value === "string")
                 message.value = parseInt(object.value, 10);
@@ -27820,7 +27820,7 @@ export const org = ($root.org = (() => {
               else if (typeof object.value === "object")
                 message.value = new $util.LongBits(
                   object.value.low >>> 0,
-                  object.value.high >>> 0,
+                  object.value.high >>> 0
                 ).toNumber(true);
             if (object.comparator != null)
               message.comparator = String(object.comparator);
@@ -27864,7 +27864,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.value.low >>> 0,
-                        message.value.high >>> 0,
+                        message.value.high >>> 0
                       ).toNumber(true)
                     : message.value;
             if (
@@ -27885,7 +27885,7 @@ export const org = ($root.org = (() => {
           IndefiniteRange.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -28002,7 +28002,7 @@ export const org = ($root.org = (() => {
            */
           DefiniteRange.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -28105,7 +28105,7 @@ export const org = ($root.org = (() => {
             if (object.min != null)
               if ($util.Long)
                 (message.min = $util.Long.fromValue(
-                  object.min,
+                  object.min
                 )).unsigned = true;
               else if (typeof object.min === "string")
                 message.min = parseInt(object.min, 10);
@@ -28113,12 +28113,12 @@ export const org = ($root.org = (() => {
               else if (typeof object.min === "object")
                 message.min = new $util.LongBits(
                   object.min.low >>> 0,
-                  object.min.high >>> 0,
+                  object.min.high >>> 0
                 ).toNumber(true);
             if (object.max != null)
               if ($util.Long)
                 (message.max = $util.Long.fromValue(
-                  object.max,
+                  object.max
                 )).unsigned = true;
               else if (typeof object.max === "string")
                 message.max = parseInt(object.max, 10);
@@ -28126,7 +28126,7 @@ export const org = ($root.org = (() => {
               else if (typeof object.max === "object")
                 message.max = new $util.LongBits(
                   object.max.low >>> 0,
-                  object.max.high >>> 0,
+                  object.max.high >>> 0
                 ).toNumber(true);
             return message;
           };
@@ -28174,7 +28174,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.min.low >>> 0,
-                        message.min.high >>> 0,
+                        message.min.high >>> 0
                       ).toNumber(true)
                     : message.min;
             if (message.max != null && message.hasOwnProperty("max"))
@@ -28188,7 +28188,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.max.low >>> 0,
-                        message.max.high >>> 0,
+                        message.max.high >>> 0
                       ).toNumber(true)
                     : message.max;
             return object;
@@ -28204,7 +28204,7 @@ export const org = ($root.org = (() => {
           DefiniteRange.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -28305,7 +28305,7 @@ export const org = ($root.org = (() => {
            */
           SequenceState.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -28417,7 +28417,7 @@ export const org = ($root.org = (() => {
           SequenceState.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -28534,7 +28534,7 @@ export const org = ($root.org = (() => {
            */
           SimpleInterval.encodeDelimited = function encodeDelimited(
             message,
-            writer,
+            writer
           ) {
             return this.encode(message, writer).ldelim();
           };
@@ -28637,7 +28637,7 @@ export const org = ($root.org = (() => {
             if (object.start != null)
               if ($util.Long)
                 (message.start = $util.Long.fromValue(
-                  object.start,
+                  object.start
                 )).unsigned = true;
               else if (typeof object.start === "string")
                 message.start = parseInt(object.start, 10);
@@ -28646,12 +28646,12 @@ export const org = ($root.org = (() => {
               else if (typeof object.start === "object")
                 message.start = new $util.LongBits(
                   object.start.low >>> 0,
-                  object.start.high >>> 0,
+                  object.start.high >>> 0
                 ).toNumber(true);
             if (object.end != null)
               if ($util.Long)
                 (message.end = $util.Long.fromValue(
-                  object.end,
+                  object.end
                 )).unsigned = true;
               else if (typeof object.end === "string")
                 message.end = parseInt(object.end, 10);
@@ -28659,7 +28659,7 @@ export const org = ($root.org = (() => {
               else if (typeof object.end === "object")
                 message.end = new $util.LongBits(
                   object.end.low >>> 0,
-                  object.end.high >>> 0,
+                  object.end.high >>> 0
                 ).toNumber(true);
             return message;
           };
@@ -28709,7 +28709,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.start.low >>> 0,
-                        message.start.high >>> 0,
+                        message.start.high >>> 0
                       ).toNumber(true)
                     : message.start;
             if (message.end != null && message.hasOwnProperty("end"))
@@ -28723,7 +28723,7 @@ export const org = ($root.org = (() => {
                     : options.longs === Number
                     ? new $util.LongBits(
                         message.end.low >>> 0,
-                        message.end.high >>> 0,
+                        message.end.high >>> 0
                       ).toNumber(true)
                     : message.end;
             return object;
@@ -28739,7 +28739,7 @@ export const org = ($root.org = (() => {
           SimpleInterval.prototype.toJSON = function toJSON() {
             return this.constructor.toObject(
               this,
-              $protobuf.util.toJSONOptions,
+              $protobuf.util.toJSONOptions
             );
           };
 
@@ -28969,7 +28969,7 @@ export const google = ($root.google = (() => {
         if (object.seconds != null)
           if ($util.Long)
             (message.seconds = $util.Long.fromValue(
-              object.seconds,
+              object.seconds
             )).unsigned = false;
           else if (typeof object.seconds === "string")
             message.seconds = parseInt(object.seconds, 10);
@@ -28978,7 +28978,7 @@ export const google = ($root.google = (() => {
           else if (typeof object.seconds === "object")
             message.seconds = new $util.LongBits(
               object.seconds.low >>> 0,
-              object.seconds.high >>> 0,
+              object.seconds.high >>> 0
             ).toNumber();
         if (object.nanos != null) message.nanos = object.nanos | 0;
         return message;
@@ -29021,7 +29021,7 @@ export const google = ($root.google = (() => {
                 : options.longs === Number
                 ? new $util.LongBits(
                     message.seconds.low >>> 0,
-                    message.seconds.high >>> 0,
+                    message.seconds.high >>> 0
                   ).toNumber()
                 : message.seconds;
         if (message.nanos != null && message.hasOwnProperty("nanos"))

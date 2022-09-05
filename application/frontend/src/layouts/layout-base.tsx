@@ -15,7 +15,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
     label: string,
     textClass: string,
     borderClass: string,
-    hoverClass: string,
+    hoverClass: string
   ) => {
     const always =
       "block py-1 md:py-3 pl-1 align-middle no-underline border-b-2";
@@ -110,7 +110,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "Home",
                     "text-orange-600",
                     "border-orange-600",
-                    "hover:border-orange-600",
+                    "hover:border-orange-600"
                   )}
                 </li>
                 <li className="mr-6 my-2 md:my-0">
@@ -119,7 +119,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "Releases",
                     "text-purple-500",
                     "border-purple-500",
-                    "hover:border-purple-500",
+                    "hover:border-purple-500"
                   )}
                 </li>
                 <li className="mr-6 my-2 md:my-0">
@@ -128,7 +128,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "Datasets",
                     "text-green-500",
                     "border-green-500",
-                    "hover:border-green-500",
+                    "hover:border-green-500"
                   )}
                 </li>
                 <li className="mr-6 my-2 md:my-0">
@@ -137,7 +137,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "Users",
                     "text-rose-500",
                     "border-rose-500",
-                    "hover:border-rose-500",
+                    "hover:border-rose-500"
                   )}
                 </li>
               </ul>
@@ -151,7 +151,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "Login",
                     "text-gray-500",
                     "border-gray-500",
-                    "hover:border-gray-500",
+                    "hover:border-gray-500"
                   )}
                 </li>
               </ul>

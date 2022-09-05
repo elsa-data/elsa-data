@@ -15,7 +15,7 @@ export class SelectService {
     applicationContext: release.ApplicationCoded,
     caseContext: dataset.DatasetCase,
     patientContext: dataset.DatasetPatient,
-    specimenContext: dataset.DatasetSpecimen,
+    specimenContext: dataset.DatasetSpecimen
   ): Promise<boolean> {
     const STUPID_STRING_WE_ARE_LOOKING_FOR_IN_ID_FOR_DEMO = "7";
 
@@ -27,7 +27,7 @@ export class SelectService {
         if (patientContext.externalIdentifiers[0].value) {
           if (
             patientContext.externalIdentifiers[0].value.includes(
-              STUPID_STRING_WE_ARE_LOOKING_FOR_IN_ID_FOR_DEMO,
+              STUPID_STRING_WE_ARE_LOOKING_FOR_IN_ID_FOR_DEMO
             )
           )
             return true;
@@ -49,7 +49,7 @@ export class SelectService {
 
           if (
             specimenContext.externalIdentifiers[0].value.includes(
-              STUPID_STRING_WE_ARE_LOOKING_FOR_IN_ID_FOR_DEMO,
+              STUPID_STRING_WE_ARE_LOOKING_FOR_IN_ID_FOR_DEMO
             )
           )
             return true;

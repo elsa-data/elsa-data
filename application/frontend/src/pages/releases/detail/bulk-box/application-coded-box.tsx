@@ -36,7 +36,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-      result,
+      result
     );
     setLastMutateError(null);
   };
@@ -50,20 +50,20 @@ export const ApplicationCodedBox: React.FC<Props> = ({
 
   const diseaseAddMutate = useMutation(
     axiosPostArgMutationFn<CodingType>(
-      `/api/releases/${releaseId}/application-coded/diseases/add`,
-    ),
+      `/api/releases/${releaseId}/application-coded/diseases/add`
+    )
   );
 
   const diseaseRemoveMutate = useMutation(
     axiosPostArgMutationFn<CodingType>(
-      `/api/releases/${releaseId}/application-coded/diseases/remove`,
-    ),
+      `/api/releases/${releaseId}/application-coded/diseases/remove`
+    )
   );
 
   const typeSetMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseId}/application-coded/type/set`,
-    ),
+      `/api/releases/${releaseId}/application-coded/type/set`
+    )
   );
 
   const typeRadio = (label: string, value: string) => (
@@ -77,7 +77,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
           {
             onSuccess: afterMutateUpdateQueryData,
             onError: afterMutateError,
-          },
+          }
         )
       }
     />

@@ -87,14 +87,14 @@ export async function makeSimpsonsTrio() {
         7732022,
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
-        "05d0e321052ae1c59eda9ce9e6691304dbafc214", // pragma: allowlist secret
+        "05d0e321052ae1c59eda9ce9e6691304dbafc214" // pragma: allowlist secret
       ),
       createFile(
         SIMPSONS_JOINT_VCF_CSI_S3,
         294561,
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
-        "c317a8d655556b65f01abc8efd0218f244617330", // pragma: allowlist secret
+        "c317a8d655556b65f01abc8efd0218f244617330" // pragma: allowlist secret
       ),
     ],
     [
@@ -103,14 +103,14 @@ export async function makeSimpsonsTrio() {
         10339494500,
         "9496f3e08943da4639b6abd9825e43d9-602", // pragma: allowlist secret
         "2395ff505be3c38744e0473f6daf1389", // pragma: allowlist secret
-        "33461fd2288e50b1ab9a04eb5f9436d148a8d5ea", // pragma: allowlist secret
+        "33461fd2288e50b1ab9a04eb5f9436d148a8d5ea" // pragma: allowlist secret
       ),
       createFile(
         BART_BAI_S3,
         3694104,
         "3e883b2d65c81ef9d206413a96b291f7", // pragma: allowlist secret
         "3e883b2d65c81ef9d206413a96b291f7", // pragma: allowlist secret
-        "405d09e0d303293832564f20d79619cfb67e06a9", // pragma: allowlist secret
+        "405d09e0d303293832564f20d79619cfb67e06a9" // pragma: allowlist secret
       ),
     ],
     [
@@ -150,14 +150,14 @@ export async function makeSimpsonsTrio() {
         7732022,
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
-        "05d0e321052ae1c59eda9ce9e6691304dbafc214", // pragma: allowlist secret
+        "05d0e321052ae1c59eda9ce9e6691304dbafc214" // pragma: allowlist secret
       ),
       createFile(
         "HOMER" + SIMPSONS_JOINT_VCF_CSI_S3,
         294561,
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
-        "c317a8d655556b65f01abc8efd0218f244617330", // pragma: allowlist secret
+        "c317a8d655556b65f01abc8efd0218f244617330" // pragma: allowlist secret
       ),
     ],
     [
@@ -166,14 +166,14 @@ export async function makeSimpsonsTrio() {
         8969726632,
         "9b2fed11bfcadcb906cfd3536e6448cf-523", // pragma: allowlist secret
         "471ba823e7778c0533c3b12d244a6c17", // pragma: allowlist secret
-        "b4569180234276ec31016abe6170ea65afa8db53", // pragma: allowlist secret
+        "b4569180234276ec31016abe6170ea65afa8db53" // pragma: allowlist secret
       ),
       createFile(
         HOMER_BAI_S3,
         3577848,
         "3d86247fbec93b9ae05ef2f00482a988", // pragma: allowlist secret
         "3d86247fbec93b9ae05ef2f00482a988", // pragma: allowlist secret
-        "9c7d43f98dbea84a836b1edb02ce5c769ae0254e", // pragma: allowlist secret
+        "9c7d43f98dbea84a836b1edb02ce5c769ae0254e" // pragma: allowlist secret
       ),
     ],
     [],
@@ -194,14 +194,14 @@ export async function makeSimpsonsTrio() {
         7732022,
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
-        "05d0e321052ae1c59eda9ce9e6691304dbafc214", // pragma: allowlist secret
+        "05d0e321052ae1c59eda9ce9e6691304dbafc214" // pragma: allowlist secret
       ),
       createFile(
         "MARGE" + SIMPSONS_JOINT_VCF_CSI_S3,
         294561,
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
-        "c317a8d655556b65f01abc8efd0218f244617330", // pragma: allowlist secret
+        "c317a8d655556b65f01abc8efd0218f244617330" // pragma: allowlist secret
       ),
     ],
     [
@@ -210,17 +210,17 @@ export async function makeSimpsonsTrio() {
         10188721080,
         "6f01f2b51e2012a70647bbaa6f783301-594", // pragma: allowlist secret
         "bdbab239182fbb42f8e2c1134269d8ba", // pragma: allowlist secret
-        "f31fe537f5dcd99dce30d760308a2c9f50e5185d", // pragma: allowlist secret
+        "f31fe537f5dcd99dce30d760308a2c9f50e5185d" // pragma: allowlist secret
       ),
       createFile(
         MARGE_BAI_S3,
         3681456,
         "fe73771153d3282cc0558dfd772b6c76", // pragma: allowlist secret
         "fe73771153d3282cc0558dfd772b6c76", // pragma: allowlist secret
-        "0961940743e8bc9863518d8010947093ac439ae3", // pragma: allowlist secret
+        "0961940743e8bc9863518d8010947093ac439ae3" // pragma: allowlist secret
       ),
     ],
     [],
-    [],
+    []
   );
 }

@@ -29,7 +29,7 @@ export const ReleasesDetailPage: React.FC = () => {
 
   if (!releaseId)
     throw new Error(
-      "This component should not be rendered outside a route with a releaseId param",
+      "This component should not be rendered outside a route with a releaseId param"
     );
 
   const pageSize = usePageSizer();

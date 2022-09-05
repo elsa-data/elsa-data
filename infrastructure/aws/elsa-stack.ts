@@ -19,17 +19,17 @@ export class ElsaStack extends Stack {
     const vpc = smartVpcConstruct(this, "VPC", "main-vpc");
     const hostedZoneName = ssm.StringParameter.valueFromLookup(
       this,
-      "/hosted_zone/umccr/name",
+      "/hosted_zone/umccr/name"
     );
     const hostedZoneId = ssm.StringParameter.valueFromLookup(
       this,
-      "/hosted_zone/umccr/id",
+      "/hosted_zone/umccr/id"
     );
 
     const hostedZone = route53.HostedZone.fromHostedZoneAttributes(
       this,
       "HostedZone",
-      { hostedZoneId: hostedZoneId, zoneName: hostedZoneName },
+      { hostedZoneId: hostedZoneId, zoneName: hostedZoneName }
     );
 
     /**

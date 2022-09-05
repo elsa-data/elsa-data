@@ -33,12 +33,12 @@ export const userRoutes = async (fastify: FastifyInstance, opts: any) => {
       const users = await userService.getUsers(
         authenticatedUser,
         pageSize,
-        (page - 1) * pageSize,
+        (page - 1) * pageSize
       );
 
       console.log(users);
 
       sendPagedResult(reply, users, page, `/api/users?`);
-    },
+    }
   );
 };

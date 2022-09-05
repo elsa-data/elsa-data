@@ -54,7 +54,7 @@ export class DockerServiceWithHttpsLoadBalancerConstruct extends Construct {
     const certificate = Certificate.fromCertificateArn(
       this,
       "SslCert",
-      props.hostedZoneCertArn,
+      props.hostedZoneCertArn
     );
     const domainZone = HostedZone.fromLookup(this, "Zone", {
       domainName: props.hostedZoneName,

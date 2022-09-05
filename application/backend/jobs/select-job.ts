@@ -65,14 +65,14 @@ if (parentPort)
       const cancelResults = await Promise.all(
         wantsCancelling.map((job) => {
           return jobsService.endSelectJob(job.jobId, false, true);
-        }),
+        })
       );
     }
 
     // otherwise we progress some work from each that wants work done
     {
       const jobResults = await Promise.all(
-        wantsWorking.map((job) => jobsService.doSelectJobWork(job.jobId, 10)),
+        wantsWorking.map((job) => jobsService.doSelectJobWork(job.jobId, 10))
       );
 
       // TODO: better error handling logic here.. at the moment we finish whenever we process 0

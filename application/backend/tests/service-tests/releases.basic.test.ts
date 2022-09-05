@@ -49,7 +49,7 @@ it("basic release data is present for PI", async () => {
   expect(result.applicationDacTitle).toBe("A Study in Many Parts");
   expect(result.runningJob).toBeUndefined();
   expect(result.applicationDacDetails).toBe(
-    "So this is all that we have brought over not coded",
+    "So this is all that we have brought over not coded"
   );
   // as the PI we will only see cases already selected
   expect(result.visibleCasesCount).toBe(6);
@@ -64,7 +64,7 @@ it("basic release data is present for data owner", async () => {
   expect(result.applicationDacTitle).toBe("A Study in Many Parts");
   expect(result.runningJob).toBeUndefined();
   expect(result.applicationDacDetails).toBe(
-    "So this is all that we have brought over not coded",
+    "So this is all that we have brought over not coded"
   );
   // as the PI we will only see cases already selected
   expect(result.visibleCasesCount).toBe(14);

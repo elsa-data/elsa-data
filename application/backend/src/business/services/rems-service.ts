@@ -16,7 +16,7 @@ export class RemsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
-    private usersService: UsersService,
+    private usersService: UsersService
   ) {}
 
   public async detectNewReleases(): Promise<RemsApprovedApplicationType[]> {
@@ -28,7 +28,7 @@ export class RemsService {
           "x-rems-api-key": this.settings.remsBotKey,
           "x-rems-user-id": this.settings.remsBotUser,
         },
-      },
+      }
     );
 
     // eventually we might need to put a date range on this but let's see if we can get away
@@ -40,10 +40,10 @@ export class RemsService {
           filter: e.op(
             r.applicationDacIdentifier.system,
             "=",
-            this.settings.remsUrl,
+            this.settings.remsUrl
           ),
         }))
-        .applicationDacIdentifier.value.run(this.edgeDbClient),
+        .applicationDacIdentifier.value.run(this.edgeDbClient)
     );
 
     console.log(currentReleaseIdentifiers);
@@ -87,7 +87,7 @@ export class RemsService {
           "x-rems-api-key": this.settings.remsBotKey,
           "x-rems-user-id": this.settings.remsBotUser,
         },
-      },
+      }
     );
 
     const application = appData.data;
@@ -112,7 +112,7 @@ export class RemsService {
         if (matchDs && matchDs.length > 0) {
           if (matchDs.length > 1)
             throw new Error(
-              `Too many matching datasets on record for ${remsDatasetUri}`,
+              `Too many matching datasets on record for ${remsDatasetUri}`
             );
           else resourceToDatasetMap[remsDatasetUri] = matchDs[0].id;
         } else {
@@ -172,7 +172,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           releasePassword: randomUUID(),
           datasetUris: e.literal(
             e.array(e.str),
-            Object.keys(resourceToDatasetMap),
+            Object.keys(resourceToDatasetMap)
           ),
           // NOTE: this is slightly non-standard as the audit event here is not created as part of the
           // audit service - however this allows us to make it all a single db operation
@@ -185,7 +185,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
               whoDisplayName: user.displayName,
               whoId: user.subjectId,
               occurredDateTime: e.datetime_current(),
-            }),
+            })
           ),
         })
         .run(this.edgeDbClient);
@@ -193,7 +193,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
       await this.usersService.registerRoleInRelease(
         user,
         newRelease.id,
-        "DataOwner",
+        "DataOwner"
       );
     });
 

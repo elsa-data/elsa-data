@@ -76,7 +76,7 @@ export async function beforeEachCommon() {
         findSpecimenQuery("HG03433"),
         findSpecimenQuery(BART_SPECIMEN),
         findSpecimenQuery(HOMER_SPECIMEN),
-        findSpecimenQuery(JUDY_SPECIMEN),
+        findSpecimenQuery(JUDY_SPECIMEN)
       ),
       auditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
@@ -86,7 +86,7 @@ export async function beforeEachCommon() {
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
-        }),
+        })
       ),
     })
     .run(edgeDbClient);

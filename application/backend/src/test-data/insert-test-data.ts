@@ -31,51 +31,51 @@ export async function insertTestData(settings: ElsaSettings) {
 
   await insertBlankDataset(
     "BM",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/bm",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/bm"
   );
   await insertBlankDataset(
     "MITO",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/mito",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/mito"
   );
   await insertBlankDataset(
     "BOW",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/bow",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/bow"
   );
   await insertBlankDataset(
     "RR",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/rr",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/rr"
   );
   await insertBlankDataset(
     "SS",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/ss",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/ss"
   );
   await insertBlankDataset(
     "TT",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/tt",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/tt"
   );
   await insertBlankDataset(
     "UU",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/uu",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/uu"
   );
   await insertBlankDataset(
     "VV",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/vv",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/vv"
   );
   await insertBlankDataset(
     "WW",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/ww",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/ww"
   );
   await insertBlankDataset(
     "XX",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/xx",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/xx"
   );
   await insertBlankDataset(
     "YY",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/yy",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/yy"
   );
   await insertBlankDataset(
     "ZZ",
-    "urn:fdc:australiangenomics.org.au:2022:datasets/zz",
+    "urn:fdc:australiangenomics.org.au:2022:datasets/zz"
   );
 
   const r1 = await insertRelease1();
@@ -88,7 +88,7 @@ export async function insertTestData(settings: ElsaSettings) {
     "Test User 1",
     [r1.id, r4.id],
     [r2.id],
-    [],
+    []
   );
   await createTestUser(TEST_SUBJECT_2, "Test User 2", [], [r1.id], []);
   await createTestUser(TEST_SUBJECT_3, "Test User 3", [], [], []);
@@ -96,20 +96,20 @@ export async function insertTestData(settings: ElsaSettings) {
   console.log(
     `  Number of object artifacts present = ${await e
       .count(e.lab.ArtifactBase)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
   console.log(
     `  Number of users present = ${await e
       .count(e.permission.User)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
   console.log(
-    `  Number of runs present = ${await e.count(e.lab.Run).run(edgeDbClient)}`,
+    `  Number of runs present = ${await e.count(e.lab.Run).run(edgeDbClient)}`
   );
   console.log(
     `  Number of releases present = ${await e
       .count(e.release.Release)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
 
   const eachDs = e.for(e.dataset.Dataset, (ds) => {

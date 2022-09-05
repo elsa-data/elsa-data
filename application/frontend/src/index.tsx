@@ -65,6 +65,6 @@ if (root != null) {
         </I18nProvider>
       </EnvRelayProvider>
     </React.StrictMode>,
-    document.getElementById("root"),
+    document.getElementById("root")
   );
 }

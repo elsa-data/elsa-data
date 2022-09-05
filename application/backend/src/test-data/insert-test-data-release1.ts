@@ -55,7 +55,7 @@ Ethics form XYZ.
           MONDO_SYSTEM_URI,
           "MONDO:0008678",
           MONDO_SYSTEM_URI,
-          "MONDO:0021531",
+          "MONDO:0021531"
         ),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
@@ -74,7 +74,7 @@ Ethics form XYZ.
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(MARGE_SPECIMEN),
         // and just the proband of another trio
-        findSpecimenQuery(ELROY_SPECIMEN),
+        findSpecimenQuery(ELROY_SPECIMEN)
       ),
       auditLog: makeSytheticAuditLog(),
     })
@@ -91,7 +91,7 @@ function makeSytheticAuditLog() {
     occurredDateTime: e.op(
       e.datetime_current(),
       "-",
-      e.duration(new Duration(0, 0, 0, 0, 1, 2, 3)),
+      e.duration(new Duration(0, 0, 0, 0, 1, 2, 3))
     ),
   });
 
@@ -104,7 +104,7 @@ function makeSytheticAuditLog() {
     occurredDateTime: e.op(
       e.datetime_current(),
       "-",
-      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59))),
+      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
     ),
   });
 
@@ -117,7 +117,7 @@ function makeSytheticAuditLog() {
     occurredDateTime: e.op(
       e.datetime_current(),
       "-",
-      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59))),
+      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
     ),
   });
 
@@ -130,10 +130,10 @@ function makeSytheticAuditLog() {
     occurredDateTime: e.op(
       e.datetime_current(),
       "-",
-      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59))),
+      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
     ),
     occurredDuration: e.duration(
-      new Duration(0, 0, 0, 0, 0, random(59), random(59)),
+      new Duration(0, 0, 0, 0, 0, random(59), random(59))
     ),
   });
 
@@ -148,7 +148,7 @@ function makeSytheticAuditLog() {
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(
       e.audit.ReleaseAuditEvent,
-      makeLongOperation("Ran Dynamic Consent"),
+      makeLongOperation("Ran Dynamic Consent")
     ),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
@@ -157,6 +157,6 @@ function makeSytheticAuditLog() {
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead())
   );
 }

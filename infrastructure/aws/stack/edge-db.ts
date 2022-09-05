@@ -84,7 +84,7 @@ export class EdgeDbStack extends NestedStack {
       databaseName: config.rds.dbName,
       instanceType: InstanceType.of(
         InstanceClass.BURSTABLE4_GRAVITON,
-        InstanceSize.SMALL,
+        InstanceSize.SMALL
       ),
       deletionProtection: false, // For DEV purposes
       vpc: vpc,
@@ -142,7 +142,7 @@ export class EdgeDbStack extends NestedStack {
       assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(
-          "service-role/AmazonECSTaskExecutionRolePolicy",
+          "service-role/AmazonECSTaskExecutionRolePolicy"
         ),
       ],
     });
@@ -159,19 +159,19 @@ export class EdgeDbStack extends NestedStack {
         generateSecretString: {
           excludePunctuation: true,
         },
-      },
+      }
     );
 
     const tlsSecretCert = secretsmanager.Secret.fromSecretNameV2(
       this,
       "elsaTlsSecretManagerCert",
-      config.edgedb.tlsCertSecretManagerName,
+      config.edgedb.tlsCertSecretManagerName
     );
 
     const tlsSecretKey = secretsmanager.Secret.fromSecretNameV2(
       this,
       "elsaTlsSecretManagerKey",
-      config.edgedb.tlsKeySecretManagerName,
+      config.edgedb.tlsKeySecretManagerName
     );
 
     const ecsElsaFargateService = new ecs_p.NetworkLoadBalancedFargateService(
@@ -199,7 +199,7 @@ export class EdgeDbStack extends NestedStack {
           secrets: {
             // By default cdk will grant read access in ecsExecutionRole to read the Secret Manager
             EDGEDB_SERVER_PASSWORD: ecs.Secret.fromSecretsManager(
-              edgeDBServerPasswordSecret,
+              edgeDBServerPasswordSecret
             ),
             EDGEDB_SERVER_TLS_KEY: ecs.Secret.fromSecretsManager(tlsSecretKey),
             EDGEDB_SERVER_TLS_CERT:
@@ -213,7 +213,7 @@ export class EdgeDbStack extends NestedStack {
             logGroup: clusterLogGroup,
           }),
         },
-      },
+      }
     );
 
     // Configure healthcheck
@@ -230,7 +230,7 @@ export class EdgeDbStack extends NestedStack {
     //rdsCluster.connections.allowDefaultPortFrom(ecsElsaFargateService.service);
     rdsInstance.connections.allowDefaultPortFrom(ecsElsaFargateService.service);
     ecsElsaFargateService.service.connections.allowFromAnyIpv4(
-      ec2.Port.tcp(config.ecs.port),
+      ec2.Port.tcp(config.ecs.port)
     );
 
     // Adding custom hostname to UMCCR route53
