@@ -39,6 +39,7 @@
     "@fastify/jwt": "6.3.2",
     "@fastify/rate-limit": "7.3.0",
     "@fastify/secure-session": "5.2.0",
+    "@fastify/sensible": "^5.1.1",
     "@fastify/static": "6.5.0",
     "@sinclair/typebox": "0.24.28",
     "@umccr/elsa-constants": "file:../common/elsa-constants",

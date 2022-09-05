@@ -1,12 +1,24 @@
 import e from "../../../dbschema/edgeql-js";
 
+/**
+ * An EdgeDb query to count the audit log entries not associated
+ * with any release (i.e the system entries like Login, Logout)
+ */
+export const countAuditLogEntriesForSystemQuery = e.count(
+  e.select(e.audit.ReleaseAuditEvent)
+);
+
+/**
+ * An EdgeDb query to count the audit log entries associated
+ * with a given release.
+ */
 export const countAuditLogEntriesForReleaseQuery = e.params(
   {
     releaseId: e.uuid,
   },
   (params) =>
     e.count(
-      e.select(e.audit.AuditEvent, (ae) => ({
+      e.select(e.audit.ReleaseAuditEvent, (ae) => ({
         filter: e.op(
           ae["<auditLog[is release::Release]"].id,
           "=",
@@ -17,7 +29,7 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
 );
 
 /**
- * An EdgeDb query for the audit log entries associated with
+ * A pageable EdgeDb query for the audit log entries associated with
  * a given release.
  */
 export const pageableAuditLogEntriesForReleaseQuery = e.params(
@@ -27,8 +39,8 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
     offset: e.optional(e.int64),
   },
   (params) =>
-    e.select(e.audit.AuditEvent, (ae) => ({
-      ...e.audit.AuditEvent["*"],
+    e.select(e.audit.ReleaseAuditEvent, (ae) => ({
+      ...e.audit.ReleaseAuditEvent["*"],
       filter: e.op(
         ae["<auditLog[is release::Release]"].id,
         "=",

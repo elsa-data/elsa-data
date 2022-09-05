@@ -17,7 +17,9 @@ type Props = {
 };
 
 export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
+  // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
+
   // very briefly whilst the first page is downloaded we estimate that we have only one entry
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 

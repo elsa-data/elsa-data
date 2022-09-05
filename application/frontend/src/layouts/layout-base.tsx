@@ -131,6 +131,15 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-green-500"
                   )}
                 </li>
+                <li className="mr-6 my-2 md:my-0">
+                  {navLink(
+                    "/users",
+                    "Users",
+                    "text-rose-500",
+                    "border-rose-500",
+                    "hover:border-rose-500"
+                  )}
+                </li>
               </ul>
             )}
 

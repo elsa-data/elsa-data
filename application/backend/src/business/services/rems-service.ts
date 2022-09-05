@@ -178,7 +178,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           // audit service - however this allows us to make it all a single db operation
           // make sure the audit code here keeps in sync with the basic add audit event
           auditLog: e.set(
-            e.insert(e.audit.AuditEvent, {
+            e.insert(e.audit.ReleaseAuditEvent, {
               actionCategory: "C",
               actionDescription: "Created Release",
               outcome: 0,

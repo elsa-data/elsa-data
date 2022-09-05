@@ -1,12 +1,12 @@
 import e from "../../../dbschema/edgeql-js";
 
 /**
- * An edgedb query for counting datasets.
+ * An EdgeDb query for counting datasets.
  */
 export const datasetAllCountQuery = e.count(e.dataset.Dataset);
 
 /**
- * An edgedb query for all our summary dataset info + counts/calcs. It *does not*
+ * A pageable EdgeDb query for all our summary dataset info + counts/calcs. It *does not*
  * however recurse deep into the dataset structures for all the sub cases/patients etc - those
  * query elements need to be added elsewhere
  */

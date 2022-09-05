@@ -3,10 +3,6 @@ import e, { lab, storage } from "../../dbschema/edgeql-js";
 
 const edgeDbClient = createClient();
 
-export const MONDO_SYSTEM_URI = "http://purl.obolibrary.org/obo/mondo.owl";
-export const HPO_SYSTEM_URI = "http://human-phenotype-ontology.org";
-export const ISO_COUNTRY_SYSTEM_URI = "urn:iso:std:iso:3166";
-
 export function makeDictionaryIdentifierArray(dict: { [k: string]: string }) {
   const asArrayEntries = Array.from(
     Object.entries(dict).map((ent) => ({ system: ent[0], value: ent[1] }))
@@ -104,6 +100,9 @@ export async function createTestUser(
     .insert(e.permission.User, {
       subjectId: subjectId,
       displayName: displayName,
+      allowedChangeReleaseDataOwner: false,
+      allowedCreateRelease: false,
+      allowedImportDataset: false,
     })
     .run(edgeDbClient);
 

@@ -119,7 +119,7 @@ export class JobsService {
           todoQueue: releaseAllDatasetCasesQuery,
           selectedSpecimens: e.set(),
           auditEntry: e
-            .select(e.audit.AuditEvent, (ae) => ({
+            .select(e.audit.ReleaseAuditEvent, (ae) => ({
               filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
             }))
             .assert_single(),
