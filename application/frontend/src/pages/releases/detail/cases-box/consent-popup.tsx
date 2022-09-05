@@ -41,7 +41,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
     setDuos(
       await axios
         .get<DuoLimitationCodedType[]>(u)
-        .then((response) => response.data)
+        .then((response) => response.data),
     );
   };
 

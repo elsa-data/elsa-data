@@ -30,11 +30,11 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
       const datasetsPagedResult = await datasetsService.getAll(
         authenticatedUser,
         pageSize,
-        offset
+        offset,
       );
 
       sendPagedResult(reply, datasetsPagedResult, page, "/api/datasets?");
-    }
+    },
   );
 
   fastify.get<{ Params: { did: string }; Reply: DatasetDeepType }>(
@@ -51,7 +51,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
 
       if (result) reply.send(result);
       else reply.status(403).send();
-    }
+    },
   );
 
   fastify.post<{

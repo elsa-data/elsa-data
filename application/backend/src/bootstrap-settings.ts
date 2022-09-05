@@ -19,7 +19,7 @@ import { getConfig } from "./config/config-schema";
  */
 export async function getSettings(
   environment: ElsaEnvironment,
-  location: ElsaLocation
+  location: ElsaLocation,
 ): Promise<ElsaSettings> {
   const config = await getConfig(environment, location);
 
@@ -41,7 +41,7 @@ export async function getSettings(
     const rootCaLocation = temp.path();
 
     console.log(
-      `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`
+      `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`,
     );
 
     await writeFile(rootCaLocation, rootCa);

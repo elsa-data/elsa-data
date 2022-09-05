@@ -32,21 +32,21 @@ export async function insert10F() {
     familyId: string,
     patientId: string,
     specimenId: string,
-    sex: "male" | "female" | "other"
+    sex: "male" | "female" | "other",
   ) => {
     const arts = await createArtifacts(
       blankFile(),
       blankFile(),
       blankFile(),
       blankFile(),
-      []
+      [],
     );
     await e
       .update(e.dataset.DatasetCase, (dc) => ({
         filter: e.op(
           makeSystemlessIdentifier(familyId),
           "in",
-          e.set(e.array_unpack(dc.externalIdentifiers))
+          e.set(e.array_unpack(dc.externalIdentifiers)),
         ),
         set: {
           patients: {
@@ -70,7 +70,7 @@ export async function insert10F() {
         filter: e.op(
           makeSystemlessIdentifier(patientId),
           "in",
-          e.set(e.array_unpack(dp.externalIdentifiers))
+          e.set(e.array_unpack(dp.externalIdentifiers)),
         ),
       }))
       .run(edgeDbClient);
@@ -106,7 +106,7 @@ export async function insert10F() {
           [blankFile(), blankFile()],
           [blankFile(), blankFile()],
           [],
-          []
+          [],
           // PUGSLEY
           // UNCLE FESTER - brother of GOMEZ
           // Esmeralda ADDAMS (Grandmama) - mother of MORITICIA
@@ -134,13 +134,13 @@ export async function insert10F() {
           [blankFile(), blankFile()],
           [blankFile(), blankFile()],
           [],
-          []
+          [],
           // DELLA and DONALD are twins
           // DELLA is mother of
           // HUEY, DEWEY and LOUIE (triplets)
           // SCROOGE in there too
           // DAISY DUCK .. girlfield to donald
-        )
+        ),
       ),
     })
     .run(edgeDbClient);

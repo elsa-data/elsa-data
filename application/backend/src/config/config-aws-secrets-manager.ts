@@ -16,12 +16,12 @@ export async function getConfigAwsSecretsManager() {
   const client = new SecretsManagerClient({});
 
   const secretResult = await client.send(
-    new GetSecretValueCommand({ SecretId: SECRET_ID })
+    new GetSecretValueCommand({ SecretId: SECRET_ID }),
   );
 
   if (secretResult.SecretBinary || !secretResult.SecretString) {
     throw new Error(
-      "We expect the Elsa secret to be a secret string (as JSON key/values) - not a SecretBinary"
+      "We expect the Elsa secret to be a secret string (as JSON key/values) - not a SecretBinary",
     );
   }
 
@@ -38,6 +38,6 @@ export async function getConfigAwsSecretsManager() {
   // convert the flat object to a nested object that is compatible with convict
   return Object.entries(flatSecretObject).reduce(
     (o, entry) => set(o, entry[0], entry[1]),
-    {}
+    {},
   );
 }

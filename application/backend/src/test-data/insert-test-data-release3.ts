@@ -33,14 +33,14 @@ export async function insertRelease3() {
       releaseIdentifier: "B",
       selectedSpecimens: e.set(),
       auditLog: e.set(
-        e.insert(e.audit.AuditEvent, {
+        e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",
           actionDescription: "Created Release",
           outcome: 0,
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
-        })
+        }),
       ),
     })
     .run(edgeDbClient);

@@ -9,7 +9,7 @@ import { RemsService } from "../../business/services/rems-service";
 
 export const dacRoutes = async (
   fastify: FastifyInstance,
-  opts: { container: DependencyContainer }
+  opts: { container: DependencyContainer },
 ) => {
   const remsService = opts.container.resolve(RemsService);
 
@@ -33,7 +33,7 @@ export const dacRoutes = async (
 
     await remsService.startNewRelease(
       authenticatedUser,
-      parseInt(request.params.nid)
+      parseInt(request.params.nid),
     );
 
     reply.send({});

@@ -48,12 +48,12 @@ export class App {
       settings.environment !== "development"
     )
       throw new Error(
-        "Cannot run anything other than a development server on local"
+        "Cannot run anything other than a development server on local",
       );
 
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(
-      hasAccessToTheSourceBuildFolders(settings.location)
+      hasAccessToTheSourceBuildFolders(settings.location),
     );
 
     this.server = Fastify({ logger: true });
@@ -87,7 +87,7 @@ export class App {
 
     await this.server.register(
       fastifySecureSession,
-      getSecureSessionOptions(this.settings)
+      getSecureSessionOptions(this.settings),
     );
 
     // NEEDING UPGRADE TO FASTIFY 4.x
@@ -114,7 +114,7 @@ export class App {
 
     registerTestingRoutes(
       this.server,
-      this.settings.environment === "development"
+      this.settings.environment === "development",
     );
 
     // our behaviour for React routed websites is that NotFound responses should be replaced
@@ -157,7 +157,7 @@ export class App {
         await serveCustomIndexHtml(
           reply,
           this.staticFilesPath,
-          this.buildSafeEnvironment()
+          this.buildSafeEnvironment(),
         );
     });
 
@@ -169,7 +169,7 @@ export class App {
         return await serveCustomIndexHtml(
           reply,
           this.staticFilesPath,
-          this.buildSafeEnvironment()
+          this.buildSafeEnvironment(),
         );
       }
 
@@ -204,7 +204,7 @@ export class App {
 
       if (required && !val)
         throw new Error(
-          `Our environment for index.html templating requires a variable named ${key}`
+          `Our environment for index.html templating requires a variable named ${key}`,
         );
 
       if (val) result[key.toLowerCase()] = val;
@@ -218,7 +218,7 @@ export class App {
     const addAttribute = (k: string, v: string) => {
       if (!v)
         throw new Error(
-          `The index.html generator must have access to a valid value to set for ${k}`
+          `The index.html generator must have access to a valid value to set for ${k}`,
         );
 
       dataAttributes = dataAttributes + `\t\t${k}="${v}"\n`;
@@ -231,7 +231,7 @@ export class App {
     // passed into the React app.
     addAttribute(
       "data-semantic-version",
-      result.semantic_version || "undefined"
+      result.semantic_version || "undefined",
     );
     addAttribute("data-build-version", result.build_version || "unknown");
     addAttribute("data-deployed-environment", this.settings.environment);

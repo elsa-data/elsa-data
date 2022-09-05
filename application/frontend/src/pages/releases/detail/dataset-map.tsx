@@ -8,7 +8,7 @@
  */
 export function createDatasetMap(uris: string[]) {
   return new Map(
-    uris.sort().map((duri, index) => [duri, createSquareIcon(index)])
+    uris.sort().map((duri, index) => [duri, createSquareIcon(index)]),
   );
 }
 

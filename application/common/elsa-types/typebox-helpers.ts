@@ -14,7 +14,7 @@ export type IntoStringUnion<T> = {
 };
 
 export function StringUnion<T extends string[]>(
-  values: [...T]
+  values: [...T],
 ): TUnion<IntoStringUnion<T>> {
   return { enum: values } as any;
 }

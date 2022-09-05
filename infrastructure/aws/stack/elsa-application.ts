@@ -45,11 +45,11 @@ export class ElsaApplicationStack extends NestedStack {
 
     const hostedZoneName = StringParameter.valueFromLookup(
       this,
-      "hosted_zone_name"
+      "hosted_zone_name",
     );
     const certApse2Arn = StringParameter.valueFromLookup(
       this,
-      "cert_apse2_arn"
+      "cert_apse2_arn",
     );
 
     const dockerImageFolder = path.join(__dirname, "../../../application");
@@ -79,7 +79,7 @@ export class ElsaApplicationStack extends NestedStack {
           environment: {
             EDGEDB_DSN: config.edgeDbUrl,
           },
-        }
+        },
       );
 
     privateServiceWithLoadBalancer.service.taskDefinition.taskRole.attachInlinePolicy(
@@ -90,7 +90,7 @@ export class ElsaApplicationStack extends NestedStack {
             resources: ["arn:aws:secretsmanager:*:*:secret:Elsa-??????"],
           }),
         ],
-      })
+      }),
     );
 
     new CfnOutput(this, "ElsaDeployUrl", {

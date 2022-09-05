@@ -82,6 +82,6 @@ export async function makeJetsonsTrio() {
       createFile(s3base + `HHHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
     ],
     [],
-    []
+    [],
   );
 }

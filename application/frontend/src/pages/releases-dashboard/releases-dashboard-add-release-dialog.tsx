@@ -25,7 +25,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
   const cancelButtonRef = useRef(null);
 
   const [newReleases, setNewReleases] = useState<RemsApprovedApplicationType[]>(
-    []
+    [],
   );
 
   const [lastMutateError, setLastMutateError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
   const createNewReleaseMutate = useMutation((n: number) =>
     axios
       .post<RemsApprovedApplicationType[]>(`/api/dac/rems/new/${n}`, {})
-      .then((response) => response.data)
+      .then((response) => response.data),
   );
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
                         onSuccess: () => {
                           // we do not need to wait for this... just trigger the async
                           queryClient.invalidateQueries(
-                            REACT_QUERY_RELEASE_KEYS.all
+                            REACT_QUERY_RELEASE_KEYS.all,
                           );
                           // now close the dialog
                           cancelShowing();

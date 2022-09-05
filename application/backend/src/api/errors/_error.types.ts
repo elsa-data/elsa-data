@@ -52,7 +52,7 @@ export class Base7807Error extends Error {
     title: string,
     public status: number,
     public detail?: string,
-    public instance?: string
+    public instance?: string,
   ) {
     super();
     this.name = this.constructor.name;

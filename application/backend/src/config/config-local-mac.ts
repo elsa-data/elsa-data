@@ -14,19 +14,19 @@ export async function getConfigLocalMac() {
      security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty123'
      */
   const { stdout: clientIdStdout, stderr: clientIdStderr } = await execPromise(
-    `security find-generic-password -s "Elsa Client Id Dev" -w`
+    `security find-generic-password -s "Elsa Client Id Dev" -w`,
   );
   const { stdout: clientSecretStdout, stderr: clientSecretStderr } =
     await execPromise(
-      `security find-generic-password -s "Elsa Client Secret Dev" -w`
+      `security find-generic-password -s "Elsa Client Secret Dev" -w`,
     );
 
   const { stdout: remsUserStdout, stderr: remsUserStderr } = await execPromise(
-    `security find-generic-password -s "Elsa REMS Bot User Dev" -w`
+    `security find-generic-password -s "Elsa REMS Bot User Dev" -w`,
   );
 
   const { stdout: remsKeyStdout, stderr: remsKeyStderr } = await execPromise(
-    `security find-generic-password -s "Elsa REMS Bot Key Dev" -w`
+    `security find-generic-password -s "Elsa REMS Bot Key Dev" -w`,
   );
 
   // note: these key names need to be kept in sync with the overall configuration schema

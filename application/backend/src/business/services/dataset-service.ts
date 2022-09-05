@@ -14,7 +14,7 @@ import {
 @singleton()
 export class DatasetService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
   ) {}
 
   /**
@@ -27,7 +27,7 @@ export class DatasetService {
   public async getAll(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<PagedResult<DatasetLightType>> {
     if (limit <= 0 || offset < 0) throw new BadLimitOffset(limit, offset);
 
@@ -66,7 +66,7 @@ export class DatasetService {
 
   public async get(
     user: AuthenticatedUser,
-    datasetId: string
+    datasetId: string,
   ): Promise<DatasetDeepType | null> {
     const singleDataset = await e
       .select(e.dataset.Dataset, (ds) => ({
@@ -129,7 +129,7 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetId: string,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<any | null> {
     const pageCases = await e
       .select(e.dataset.DatasetCase, (dsc) => ({

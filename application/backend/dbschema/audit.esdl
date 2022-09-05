@@ -2,7 +2,7 @@ module audit {
 
     scalar type ActionType extending enum<'C', 'R', 'U', 'D', 'E'>;
 
-    type AuditEvent {
+    abstract type AuditEvent {
         # who initiated the action being audited
 
         required property whoId -> str;
@@ -44,7 +44,7 @@ module audit {
 
         # Code	Display	Definition
         #    0	Success	The operation completed successfully (whether with warnings or not).
-        #    4	Minor failure	The action was not successful due to some kind of minor failure (often equivalent to an HTTP 400 response).
+        #    4	Minor failure	The action was not successful due to some kind of minor failure (often equivalent to an HTTP 400 response) - this includes things like logins failing, missing auth etc.
         #    8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
         #    12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
 
@@ -56,4 +56,13 @@ module audit {
 
         property details -> json;
     }
+
+    type ReleaseAuditEvent extending AuditEvent {
+
+    }
+
+    type SystemAuditEvent extending AuditEvent {
+
+    }
+
 }

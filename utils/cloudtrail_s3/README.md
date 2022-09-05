@@ -5,6 +5,7 @@ This will query cloudTrailLake and S3 object api to see if object is being acces
 Temporarly would fill up the `CONST_PARAMETER` near the bottom of `src/main.ts` to get the parameter needed.
 
 Parameter
+
 ```json
 eventDataStoreId: string;
 awsAccessKeyId: string;
@@ -14,11 +15,13 @@ endTimestamp?: string /* Unix time in 'YYYY-DD-MM 00:00:00.000', example: '2022-
 ```
 
 To install
+
 ```
 npm i
 ```
 
 To run
+
 ```
 npm run run_main
 ```
@@ -29,7 +32,8 @@ In order to run the query, CloudTrail Lake should be deployed into the AWS accou
 
 At the `infrastructure/bin/infrastructure.ts` configure/replace bucketArn with the prefix to the data. (e.g. `arn:aws:s3:::example/store/`)
 
-Deploy it by 
+Deploy it by
+
 ```bash
 npm run cdk-deploy
 ```

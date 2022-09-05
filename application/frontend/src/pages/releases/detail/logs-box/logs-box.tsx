@@ -28,7 +28,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
     async () => {
       return await axios
         .get<AuditEntryType[]>(
-          `/api/releases/${releaseId}/audit-log?page=${currentPage}`
+          `/api/releases/${releaseId}/audit-log?page=${currentPage}`,
         )
         .then((response) => {
           // as we page - the backend relays to us an accurate total count so we then use that
@@ -40,7 +40,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
           return response.data;
         });
     },
-    { keepPreviousData: true }
+    { keepPreviousData: true },
   );
 
   const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
@@ -100,7 +100,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
               baseColumnClasses,
               "w-40",
               "text-left",
-              "pl-4"
+              "pl-4",
             )}
           >
             {showDay && <p className="font-bold">{viewLastDay}</p>}
@@ -115,7 +115,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
               baseColumnClasses,
               "text-right",
               "w-40",
-              "pr-4"
+              "pr-4",
             )}
           >
             {row.whoDisplay}

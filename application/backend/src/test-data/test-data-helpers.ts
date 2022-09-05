@@ -5,7 +5,7 @@ const edgeDbClient = createClient();
 
 export function makeDictionaryIdentifierArray(dict: { [k: string]: string }) {
   const asArrayEntries = Array.from(
-    Object.entries(dict).map((ent) => ({ system: ent[0], value: ent[1] }))
+    Object.entries(dict).map((ent) => ({ system: ent[0], value: ent[1] })),
   );
 
   const tupleArrayType = e.array(e.tuple({ system: e.str, value: e.str }));
@@ -56,7 +56,7 @@ export function makeDoubleCodeArray(
   system1: string,
   code1: string,
   system2: string,
-  code2: string
+  code2: string,
 ) {
   return e.array([
     e.tuple({ system: system1, code: code1 }),
@@ -70,7 +70,7 @@ export function makeTripleCodeArray(
   system2: string,
   code2: string,
   system3: string,
-  code3: string
+  code3: string,
 ) {
   return e.array([
     e.tuple({ system: system1, code: code1 }),
@@ -93,7 +93,7 @@ export async function createTestUser(
   displayName: string,
   releasesAsDataOwner: string[],
   releasesAsPI: string[],
-  releasesAsMember: string[]
+  releasesAsMember: string[],
 ) {
   // create the user
   const newUser = await e
@@ -109,7 +109,7 @@ export async function createTestUser(
   // a helper to update the role this users has with a release
   const insertRole = async (
     releaseId: string,
-    role: "DataOwner" | "PI" | "Member"
+    role: "DataOwner" | "PI" | "Member",
   ) => {
     await e
       .update(e.permission.User, (user) => ({
@@ -163,7 +163,7 @@ export function findCase(id: string) {
       filter: e.op(
         id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers).value)
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
       ),
     }))
     .assert_single();
@@ -175,7 +175,7 @@ export function findPatient(id: string) {
       filter: e.op(
         id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers).value)
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
       ),
     }))
     .assert_single();
@@ -187,7 +187,7 @@ export function findSpecimenQuery(id: string) {
       filter: e.op(
         id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers).value)
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
       ),
     }))
     .assert_single();
@@ -209,7 +209,7 @@ export function createFile(
   etag?: string,
   md5?: string,
   sha1?: string,
-  sha256?: string
+  sha256?: string,
 ): File {
   const f: File = {
     url: name,
@@ -280,7 +280,7 @@ export async function createArtifacts(
   vcfIndex: File,
   bam: File,
   bamIndex: File,
-  fastqs: File[][]
+  fastqs: File[][],
 ) {
   const fastqPair = fastqs.map((fq) =>
     e.insert(e.lab.ArtifactFastqPair, {
@@ -294,7 +294,7 @@ export async function createArtifacts(
         size: fq[1].size,
         checksums: fq[1].checksums,
       }),
-    })
+    }),
   );
 
   // we insert all the fastq pairs as if they are owned by a pseudo-run
@@ -337,7 +337,7 @@ export async function createArtifacts(
             size: bamIndex.size,
             checksums: bamIndex.checksums,
           }),
-        })
+        }),
       ),
     })
     .run(edgeDbClient);

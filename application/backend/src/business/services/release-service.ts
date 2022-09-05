@@ -28,7 +28,7 @@ import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    usersService: UsersService
+    usersService: UsersService,
   ) {
     super(edgeDbClient, usersService);
   }
@@ -36,11 +36,11 @@ export class ReleaseService extends ReleaseBaseService {
   public async getAll(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<ReleaseSummaryType[]> {
     const allReleasesByUser = await allReleasesSummaryByUserQuery.run(
       this.edgeDbClient,
-      { userDbId: user.dbId }
+      { userDbId: user.dbId },
     );
 
     return allReleasesByUser
@@ -64,12 +64,12 @@ export class ReleaseService extends ReleaseBaseService {
    */
   public async get(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<ReleaseDetailType | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     return this.getBase(releaseId, userRole);
@@ -85,12 +85,12 @@ export class ReleaseService extends ReleaseBaseService {
    */
   public async getPassword(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<string | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseId);
@@ -106,12 +106,12 @@ export class ReleaseService extends ReleaseBaseService {
    */
   public async getIncrementingCounter(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<number> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     const { releaseQuery } = await getReleaseInfo(this.edgeDbClient, releaseId);
@@ -148,12 +148,12 @@ export class ReleaseService extends ReleaseBaseService {
     releaseId: string,
     limit: number,
     offset: number,
-    identifierSearchText?: string
+    identifierSearchText?: string,
   ): Promise<PagedResult<ReleaseCaseType> | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     const {
@@ -183,12 +183,13 @@ export class ReleaseService extends ReleaseBaseService {
             e.set(
               e.str_upper(e.array_unpack(dsc.externalIdentifiers).value),
               e.str_upper(
-                e.array_unpack(dsc.patients.externalIdentifiers).value
+                e.array_unpack(dsc.patients.externalIdentifiers).value,
               ),
               e.str_upper(
-                e.array_unpack(dsc.patients.specimens.externalIdentifiers).value
-              )
-            )
+                e.array_unpack(dsc.patients.specimens.externalIdentifiers)
+                  .value,
+              ),
+            ),
           ),
           "and",
           e.op(
@@ -197,9 +198,9 @@ export class ReleaseService extends ReleaseBaseService {
             e.op(
               e.bool(userRole === "DataOwner"),
               "or",
-              e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-            )
-          )
+              e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery),
+            ),
+          ),
         );
       } else {
         // with no identifier text to search for we can return a simpler filter
@@ -209,8 +210,8 @@ export class ReleaseService extends ReleaseBaseService {
           e.op(
             e.bool(userRole === "DataOwner"),
             "or",
-            e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-          )
+            e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery),
+          ),
         );
       }
     };
@@ -227,7 +228,7 @@ export class ReleaseService extends ReleaseBaseService {
         filter: e.op(
           e.bool(userRole === "DataOwner"),
           "or",
-          e.op(p.specimens, "in", releaseSelectedSpecimensQuery)
+          e.op(p.specimens, "in", releaseSelectedSpecimensQuery),
         ),
         specimens: (s) => ({
           ...e.dataset.DatasetSpecimen["*"],
@@ -236,7 +237,7 @@ export class ReleaseService extends ReleaseBaseService {
           filter: e.op(
             e.bool(userRole === "DataOwner"),
             "or",
-            e.op(s, "in", releaseSelectedSpecimensQuery)
+            e.op(s, "in", releaseSelectedSpecimensQuery),
           ),
         }),
       }),
@@ -266,7 +267,7 @@ export class ReleaseService extends ReleaseBaseService {
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
     const calcNodeStatus = (
-      nodes: { nodeStatus: ReleaseNodeStatusType }[]
+      nodes: { nodeStatus: ReleaseNodeStatusType }[],
     ): ReleaseNodeStatusType => {
       const isAllSelected = nodes.every((s) => s.nodeStatus === "selected");
       const isNoneSelected = nodes.every((s) => s.nodeStatus === "unselected");
@@ -280,7 +281,7 @@ export class ReleaseService extends ReleaseBaseService {
     };
 
     const createSpecimenMap = (
-      spec: dataset.DatasetSpecimen
+      spec: dataset.DatasetSpecimen,
     ): ReleaseSpecimenType => {
       return {
         id: spec.id,
@@ -293,10 +294,10 @@ export class ReleaseService extends ReleaseBaseService {
     };
 
     const createPatientMap = (
-      pat: dataset.DatasetPatient
+      pat: dataset.DatasetPatient,
     ): ReleasePatientType => {
       const specimensMapped = Array.from<ReleaseSpecimenType>(
-        pat.specimens.map(createSpecimenMap)
+        pat.specimens.map(createSpecimenMap),
       );
 
       return {
@@ -312,7 +313,7 @@ export class ReleaseService extends ReleaseBaseService {
 
     const createCaseMap = (cas: dataset.DatasetCase): ReleaseCaseType => {
       const patientsMapped = Array.from<ReleasePatientType>(
-        cas.patients.map(createPatientMap)
+        cas.patients.map(createPatientMap),
       );
 
       return {
@@ -330,10 +331,10 @@ export class ReleaseService extends ReleaseBaseService {
     // TODO: remove the paged result from this
     return createPagedResult(
       pageCases.map((pc) =>
-        createCaseMap(pc as unknown as dataset.DatasetCase)
+        createCaseMap(pc as unknown as dataset.DatasetCase),
       ),
       1000,
-      limit
+      limit,
     );
   }
 
@@ -348,17 +349,17 @@ export class ReleaseService extends ReleaseBaseService {
   public async getNodeConsent(
     user: AuthenticatedUser,
     releaseId: string,
-    nodeId: string
+    nodeId: string,
   ): Promise<DuoLimitationCodedType[]> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     const { datasetIdToUriMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseId,
     );
 
     const nodeFromValidDatasetsQuery = e
@@ -402,7 +403,7 @@ export class ReleaseService extends ReleaseBaseService {
       if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
 
     return actualNode.consent.statements.map(
-      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType,
     );
   }
 
@@ -410,13 +411,13 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     start?: Date,
-    end?: Date
+    end?: Date,
   ): Promise<void> {}
 
   public async setSelected(
     user: AuthenticatedUser,
     releaseId: string,
-    specimenIds: string[]
+    specimenIds: string[],
   ): Promise<any | null> {
     return await this.setSelectedStatus(user, releaseId, specimenIds, true);
   }
@@ -424,7 +425,7 @@ export class ReleaseService extends ReleaseBaseService {
   public async setUnselected(
     user: AuthenticatedUser,
     releaseId: string,
-    specimenIds: string[]
+    specimenIds: string[],
   ): Promise<any | null> {
     return await this.setSelectedStatus(user, releaseId, specimenIds, false);
   }
@@ -433,12 +434,12 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     await this.alterApplicationCodedArrayEntry(
@@ -447,7 +448,7 @@ export class ReleaseService extends ReleaseBaseService {
       "diseases",
       system,
       code,
-      false
+      false,
     );
 
     return await this.getBase(releaseId, userRole);
@@ -457,12 +458,12 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     await this.alterApplicationCodedArrayEntry(
@@ -471,7 +472,7 @@ export class ReleaseService extends ReleaseBaseService {
       "diseases",
       system,
       code,
-      true
+      true,
     );
 
     return await this.getBase(releaseId, userRole);
@@ -481,12 +482,12 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     await this.alterApplicationCodedArrayEntry(
@@ -495,7 +496,7 @@ export class ReleaseService extends ReleaseBaseService {
       "countries",
       system,
       code,
-      false
+      false,
     );
 
     return await this.getBase(releaseId, userRole);
@@ -505,12 +506,12 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     await this.alterApplicationCodedArrayEntry(
@@ -519,7 +520,7 @@ export class ReleaseService extends ReleaseBaseService {
       "countries",
       system,
       code,
-      true
+      true,
     );
 
     return await this.getBase(releaseId, userRole);
@@ -528,12 +529,12 @@ export class ReleaseService extends ReleaseBaseService {
   public async setTypeOfApplicationCoded(
     user: AuthenticatedUser,
     releaseId: string,
-    type: "HMB" | "DS" | "CC" | "GRU" | "POA"
+    type: "HMB" | "DS" | "CC" | "GRU" | "POA",
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -553,7 +554,7 @@ export class ReleaseService extends ReleaseBaseService {
 
       if (!releaseWithAppCoded)
         throw new Error(
-          `Release ${releaseId} that existed just before this code has now disappeared!`
+          `Release ${releaseId} that existed just before this code has now disappeared!`,
         );
 
       await e
@@ -561,7 +562,7 @@ export class ReleaseService extends ReleaseBaseService {
           filter: e.op(
             ac.id,
             "=",
-            e.uuid(releaseWithAppCoded.applicationCoded.id)
+            e.uuid(releaseWithAppCoded.applicationCoded.id),
           ),
           set: {
             studyType: type,

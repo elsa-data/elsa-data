@@ -28,7 +28,7 @@ export class AwsAccessPointService extends AwsBaseService {
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Database") edgeDbClient: edgedb.Client,
     usersService: UsersService,
-    auditLogService: AuditLogService
+    auditLogService: AuditLogService,
   ) {
     super(edgeDbClient, usersService, auditLogService);
   }
@@ -47,14 +47,14 @@ export class AwsAccessPointService extends AwsBaseService {
 
   public async deleteCloudFormationAccessPointForRelease(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<void> {
     this.enabledGuard();
   }
 
   public async getCloudFormationAccessPointForReleaseDetails(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<void> {
     this.enabledGuard();
 
@@ -65,7 +65,7 @@ export class AwsAccessPointService extends AwsBaseService {
       const releaseReleaseStack = await this.cfnClient.send(
         new DescribeStackResourcesCommand({
           StackName: releaseStackName,
-        })
+        }),
       );
       console.log(releaseReleaseStack);
     } catch (e) {
@@ -77,7 +77,7 @@ export class AwsAccessPointService extends AwsBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     accountIds: string[],
-    vpcId?: string
+    vpcId?: string,
   ): Promise<void> {
     this.enabledGuard();
 
@@ -88,12 +88,12 @@ export class AwsAccessPointService extends AwsBaseService {
       const releaseReleaseStack = await this.cfnClient.send(
         new DescribeStackResourcesCommand({
           StackName: releaseStackName,
-        })
+        }),
       );
       console.log(releaseReleaseStack);
     } catch (e) {
       console.log(
-        "Stack for this release does not exist - installing new stack"
+        "Stack for this release does not exist - installing new stack",
       );
     }
 
@@ -155,7 +155,7 @@ export class AwsAccessPointService extends AwsBaseService {
             Key: `${stackId}/${subStackAccessPointName}.template`,
             ContentType: "application/json",
             Body: Buffer.from(JSON.stringify(subStackCurrent)),
-          })
+          }),
         );
       }
     };
@@ -229,7 +229,7 @@ export class AwsAccessPointService extends AwsBaseService {
 
       for (const file of filesByBucket[bucket]) {
         subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[0].Resource.push(
-          `arn:aws:s3:ap-southeast-2:843407916570:accesspoint/${subStackAccessPointName}/object/${file.s3Key}*`
+          `arn:aws:s3:ap-southeast-2:843407916570:accesspoint/${subStackAccessPointName}/object/${file.s3Key}*`,
         );
       }
     }
@@ -242,7 +242,7 @@ export class AwsAccessPointService extends AwsBaseService {
         Key: `${stackId}/install.template`,
         ContentType: "application/json",
         Body: Buffer.from(JSON.stringify(rootStack)),
-      })
+      }),
     );
 
     const newReleaseStack = await this.cfnClient.send(
@@ -252,20 +252,20 @@ export class AwsAccessPointService extends AwsBaseService {
         TemplateURL: `https://${BUCKET}.s3.ap-southeast-2.amazonaws.com/${stackId}/install.template`,
         Capabilities: ["CAPABILITY_IAM"],
         OnFailure: "DELETE",
-      })
+      }),
     );
 
     await waitUntilStackCreateComplete(
       { client: this.cfnClient, maxWaitTime: 300 },
       {
         StackName: releaseStackName,
-      }
+      },
     );
 
     const madeReleaseStack = await this.cfnClient.send(
       new DescribeStacksCommand({
         StackName: releaseStackName,
-      })
+      }),
     );
 
     if (

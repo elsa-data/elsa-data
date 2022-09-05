@@ -24,7 +24,7 @@ function consentsAsInsertOrUndefined(consents: DuoLimitationCodedType[]) {
   if (!consents || consents.length <= 0) return undefined;
 
   const duoInserts = consents.map((c) =>
-    e.insert(e.consent.ConsentStatementDuo, { dataUseLimitation: c })
+    e.insert(e.consent.ConsentStatementDuo, { dataUseLimitation: c }),
   );
 
   return e.insert(e.consent.Consent, {
@@ -53,7 +53,7 @@ export async function makeTrio(
   motherVcf: [File, File],
   motherBam: [File, File],
   motherConsents: DuoLimitationCodedType[],
-  motherSpecimenConsents: DuoLimitationCodedType[]
+  motherSpecimenConsents: DuoLimitationCodedType[],
 ) {
   return e.insert(e.dataset.DatasetCase, {
     externalIdentifiers: makeDictionaryIdentifierArray(familyId),
@@ -71,7 +71,7 @@ export async function makeTrio(
             probandVcf[1],
             probandBam[0],
             probandBam[1],
-            []
+            [],
           ),
         }),
       }),
@@ -87,7 +87,7 @@ export async function makeTrio(
             fatherVcf[1],
             fatherBam[0],
             fatherBam[1],
-            []
+            [],
           ),
         }),
       }),
@@ -103,10 +103,10 @@ export async function makeTrio(
             motherVcf[1],
             motherBam[0],
             motherBam[1],
-            []
+            [],
           ),
         }),
-      })
+      }),
     ),
   });
 }

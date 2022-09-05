@@ -38,7 +38,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
         .get<UserSummaryType[]>(`/api/users?page=${currentPage}`)
         .then((response) => {
           const usersWithoutMe = response.data.filter(
-            (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
+            (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME],
           );
 
           // as we page - the backend relays to us an accurate total count so we then use that in the UI
@@ -50,7 +50,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
           return usersWithoutMe;
         });
     },
-    { keepPreviousData: true }
+    { keepPreviousData: true },
   );
 
   const [searchText, setSearchText] = useState("");
@@ -84,7 +84,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "text-left",
               "pl-4",
-              "w-auto"
+              "w-auto",
             )}
           >
             {row.subjectIdentifier}
@@ -101,7 +101,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "w-40",
               "text-right",
-              "pr-4"
+              "pr-4",
             )}
           >
             {localDay} {localTime}

@@ -17,7 +17,7 @@ export class AuthenticatedUser {
       isNil(this.dbUser.allowedImportDataset)
     )
       throw new UnexpectedStateInternalServerError(
-        "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
+        "Cannot instantiate an AuthenticatedUser without being passed a complete user database record",
       );
   }
 

@@ -31,14 +31,14 @@ export async function insertRelease2() {
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       auditLog: e.set(
-        e.insert(e.audit.AuditEvent, {
+        e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",
           actionDescription: "Created Release",
           outcome: 0,
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
-        })
+        }),
       ),
     })
     .run(edgeDbClient);

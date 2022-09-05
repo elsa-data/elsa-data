@@ -11,7 +11,7 @@ export const singleUserBySubjectIdQuery = e.params(
         ...e.permission.User["*"],
         filter: e.op(params.subjectId, "=", u.subjectId),
       }))
-      .assert_single()
+      .assert_single(),
 );
 
 export type SingleUserBySubjectIdType = $infer<
@@ -38,7 +38,7 @@ export const pageableAllUserQuery = e.params(
           expression: e.op(
             e.op(u.allowedImportDataset, "or", u.allowedCreateRelease),
             "or",
-            u.allowedChangeReleaseDataOwner
+            u.allowedChangeReleaseDataOwner,
           ),
           direction: e.DESC,
         },
@@ -53,5 +53,5 @@ export const pageableAllUserQuery = e.params(
       ],
       limit: params.limit,
       offset: params.offset,
-    }))
+    })),
 );

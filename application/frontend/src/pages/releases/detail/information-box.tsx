@@ -74,7 +74,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
                   <span className="mr-6 font-mono">{uri}</span>
                   <span className="w-6 h-6">{vis}</span>
                 </li>
-              )
+              ),
             )}
           </ul>
         </div>

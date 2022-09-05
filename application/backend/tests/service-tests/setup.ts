@@ -25,11 +25,11 @@ export async function registerTypes() {
   });
 
   const { stdout: remsUserStdout, stderr: remsUserStderr } = await execPromise(
-    `security find-generic-password -s "Elsa REMS Bot User Dev" -w`
+    `security find-generic-password -s "Elsa REMS Bot User Dev" -w`,
   );
 
   const { stdout: remsKeyStdout, stderr: remsKeyStderr } = await execPromise(
-    `security find-generic-password -s "Elsa REMS Bot Key Dev" -w`
+    `security find-generic-password -s "Elsa REMS Bot Key Dev" -w`,
   );
 
   testContainer.register<ElsaSettings>("Settings", {

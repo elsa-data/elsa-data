@@ -19,7 +19,7 @@ type CodeArrayFields = "diseases" | "countries" | "type";
 export abstract class ReleaseBaseService {
   protected constructor(
     protected readonly edgeDbClient: edgedb.Client,
-    protected readonly usersService: UsersService
+    protected readonly usersService: UsersService,
   ) {}
 
   /* TODO move helpers.ts getReleaseInfo to here
@@ -107,7 +107,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseId: string,
-    userRole: string
+    userRole: string,
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
@@ -117,7 +117,7 @@ export abstract class ReleaseBaseService {
 
     if (!releaseInfo)
       throw new Error(
-        "getBase is meant for use only where the release and user role are already established"
+        "getBase is meant for use only where the release and user role are already established",
       );
 
     // the visible cases depend on what roles you have
@@ -131,7 +131,7 @@ export abstract class ReleaseBaseService {
 
     if (releaseInfo.runningJob && releaseInfo.runningJob.length > 1)
       throw new Error(
-        "There should only be one running job (if any job is running)"
+        "There should only be one running job (if any job is running)",
       );
 
     return {
@@ -185,12 +185,12 @@ export abstract class ReleaseBaseService {
     user: AuthenticatedUser,
     releaseId: string,
     specimenIds: string[],
-    statusToSet: boolean
+    statusToSet: boolean,
   ): Promise<void> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseId,
     );
 
     if (specimenIds.length === 0)
@@ -201,7 +201,7 @@ export abstract class ReleaseBaseService {
     // (which we wouldn't get away with if say there were 1 million datasets!)
     const { releaseAllDatasetIdDbSet } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseId,
     );
 
     // we make a query that returns specimens of only where the input specimen ids belong
@@ -216,18 +216,18 @@ export abstract class ReleaseBaseService {
         filter: e.op(
           e.op(s.dataset.id, "in", releaseAllDatasetIdDbSet),
           "and",
-          e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a))))
+          e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a)))),
         ),
-      })
+      }),
     );
 
     const actualSpecimens = await specimensFromValidDatasetsQuery.run(
-      this.edgeDbClient
+      this.edgeDbClient,
     );
 
     if (actualSpecimens.length != specimenIds.length)
       throw Error(
-        "Mismatch between the specimens that we passed in and those that are allowed specimens in this release"
+        "Mismatch between the specimens that we passed in and those that are allowed specimens in this release",
       );
 
     if (statusToSet) {
@@ -276,11 +276,11 @@ export abstract class ReleaseBaseService {
     field: CodeArrayFields,
     system: string,
     code: string,
-    removeRatherThanAdd: boolean = false
+    removeRatherThanAdd: boolean = false,
   ): Promise<boolean> {
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseId,
     );
 
     // we need to get/set the Coded Application all within a transaction context
@@ -301,7 +301,7 @@ export abstract class ReleaseBaseService {
 
       if (!releaseWithAppCoded)
         throw new Error(
-          `Release ${releaseId} that existed just before this code has now disappeared!`
+          `Release ${releaseId} that existed just before this code has now disappeared!`,
         );
 
       let newArray: { system: string; code: string }[];
@@ -312,14 +312,14 @@ export abstract class ReleaseBaseService {
         newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
       else
         throw new Error(
-          `Field instruction of ${field} was not a known field for array alteration`
+          `Field instruction of ${field} was not a known field for array alteration`,
         );
 
       const commonFilter = (ac: any) => {
         return e.op(
           ac.id,
           "=",
-          e.uuid(releaseWithAppCoded.applicationCoded.id)
+          e.uuid(releaseWithAppCoded.applicationCoded.id),
         );
       };
 
@@ -329,7 +329,7 @@ export abstract class ReleaseBaseService {
         // we want to remove any entries with the same system/code from our array
         // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
         newArray = newArray.filter(
-          (tup) => tup.system !== system || tup.code !== code
+          (tup) => tup.system !== system || tup.code !== code,
         );
 
         // nothing to mutate - return false
@@ -355,7 +355,7 @@ export abstract class ReleaseBaseService {
             .run(tx);
         else
           throw new Error(
-            `Field instruction of ${field} was not handled in the remove operation`
+            `Field instruction of ${field} was not handled in the remove operation`,
           );
       } else {
         // only do an insert if the entry is not already present
@@ -364,7 +364,7 @@ export abstract class ReleaseBaseService {
         if (
           // if the entry already exists - we can return - nothing to do
           newArray.findIndex(
-            (tup) => tup.system === system && tup.code === code
+            (tup) => tup.system === system && tup.code === code,
           ) > -1
         )
           return false;
@@ -390,14 +390,14 @@ export abstract class ReleaseBaseService {
                 countriesInvolved: e.op(
                   ac.countriesInvolved,
                   "++",
-                  commonAddition
+                  commonAddition,
                 ),
               },
             }))
             .run(tx);
         else
           throw new Error(
-            `Field instruction of ${field} was not handled in the add operation`
+            `Field instruction of ${field} was not handled in the add operation`,
           );
       }
     });

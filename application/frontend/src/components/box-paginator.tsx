@@ -56,19 +56,19 @@ export const BoxPaginator: React.FC<Props> = (props) => {
         aria-current="page"
         className={classNames(
           i == props.currentPage ? currentClasses : notCurrentClasses,
-          "relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+          "relative inline-flex items-center px-4 py-2 border text-sm font-medium",
         )}
         onClick={() => props.setPage(i)}
       >
         {i.toString()}
-      </a>
+      </a>,
     );
   }
 
   const from = (props.currentPage - 1) * props.rowsPerPage + 1;
   const to = Math.min(
     (props.currentPage - 1) * props.rowsPerPage + props.rowsPerPage,
-    props.rowCount
+    props.rowCount,
   );
 
   return (

@@ -41,7 +41,7 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
     // we should never ever get to this - but if for some reason our plumbing has gone wrong
     // then we need to stop this progressing any further
     throw new Error(
-      "Inside authenticated route body but no authenticated user data"
+      "Inside authenticated route body but no authenticated user data",
     );
 
   const qRaw = (request.query as any).q;
@@ -74,7 +74,7 @@ export function sendPagedResult<T>(
   reply: FastifyReply,
   pr: PagedResult<T> | null,
   currentPage: number,
-  basePath: string
+  basePath: string,
 ) {
   // our services can indicate a lack of permissions, or an unknown identifier - by returning
   // null as a PagedResult
@@ -84,7 +84,7 @@ export function sendPagedResult<T>(
   else {
     if (!basePath.endsWith("?") && !basePath.endsWith("&"))
       throw Error(
-        "The basePath for returnPagedResult must end with ? or & so that we can create the paging links"
+        "The basePath for returnPagedResult must end with ? or & so that we can create the paging links",
       );
 
     // TBH - we don't really use RFC 8288 at the client so no point to this
@@ -133,7 +133,7 @@ export const apiRoutes = async (
   opts: {
     container: DependencyContainer;
     allowTestCookieEquals?: string;
-  }
+  },
 ) => {
   const usersService = container.resolve(UsersService);
   //const settings = container.resolve<ElsaSettings>("Settings");
@@ -143,7 +143,7 @@ export const apiRoutes = async (
   const authHook = createAuthRouteHook(
     usersService,
     opts.allowTestCookieEquals != null,
-    opts.allowTestCookieEquals
+    opts.allowTestCookieEquals,
   );
 
   // now register the auth hook and then register all the rest of our routes nested within

@@ -40,7 +40,7 @@ import { Base7807Error, Base7807Response } from "./_error.types";
 export function ErrorHandler(
   error: Error,
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   // because we are in an error handler - we obviously have to be very careful about
   // creating our own errors in the error handler!
@@ -65,7 +65,7 @@ export function ErrorHandler(
     }
   } else {
     request.log.error(
-      "Undefined error object encountered in Fastify error handler - responded with generic 500 error"
+      "Undefined error object encountered in Fastify error handler - responded with generic 500 error",
     );
   }
 

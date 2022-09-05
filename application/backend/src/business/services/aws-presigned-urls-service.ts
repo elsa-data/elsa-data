@@ -19,7 +19,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     @inject("Database") edgeDbClient: edgedb.Client,
     private releaseService: ReleaseService,
     usersService: UsersService,
-    auditLogService: AuditLogService
+    auditLogService: AuditLogService,
   ) {
     super(edgeDbClient, usersService, auditLogService);
   }
@@ -33,7 +33,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
    */
   public async getPresigned(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<any> {
     // abort immediately if we don't have AWS enabled
     this.enabledGuard();
@@ -46,7 +46,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       releaseId,
       "E",
       "Created AWS S3 Presigned Zip",
-      now
+      now,
     );
 
     const s3Client = new S3Client({});
@@ -92,7 +92,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     const password = await this.releaseService.getPassword(user, releaseId);
     const counter = await this.releaseService.getIncrementingCounter(
       user,
-      releaseId
+      releaseId,
     );
 
     const filename = `release-${releaseId.replaceAll("-", "")}-${counter}.zip`;
@@ -114,7 +114,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       0,
       now,
       new Date(),
-      { numUrls: allFiles.length, filename: filename }
+      { numUrls: allFiles.length, filename: filename },
     );
 
     return {

@@ -48,7 +48,7 @@ export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
 export function createAuthRouteHook(
   usersService: UsersService,
   allowSessionCookieUserNotMatchingDb: boolean,
-  allowTestCookieEquals?: string
+  allowTestCookieEquals?: string,
 ) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -61,7 +61,7 @@ export function createAuthRouteHook(
         if (rawCookie == allowTestCookieEquals) {
           // setup up the fake authed user
           (request as any).user = await usersService.getBySubjectId(
-            "http://subject1.com"
+            "http://subject1.com",
           );
           return;
         }
@@ -71,7 +71,7 @@ export function createAuthRouteHook(
 
       // NOTE: in some dev scenarios we need to correct this session object - hence the let, not const
       let sessionDbObject: SingleUserBySubjectIdType = request.session.get(
-        SESSION_USER_DB_OBJECT
+        SESSION_USER_DB_OBJECT,
       );
 
       // TODO: consider do we really need this check? This is really a bearer token *out* into the passport/visa
@@ -91,16 +91,16 @@ export function createAuthRouteHook(
       // we obviously don't want to do this when connected to a real database
       if (allowSessionCookieUserNotMatchingDb) {
         const testDbUserDirectFromDb = await usersService.getBySubjectId(
-          sessionDbObject.subjectId
+          sessionDbObject.subjectId,
         );
         if (!testDbUserDirectFromDb)
           throw new Error(
-            "Serious test scenario state error as the test subjects have disappeared"
+            "Serious test scenario state error as the test subjects have disappeared",
           );
 
         if (testDbUserDirectFromDb?.dbId != sessionDbObject.id) {
           console.log(
-            `Did a test scenario correction of the database id of the logged in user ${sessionDbObject.id} to ${testDbUserDirectFromDb?.dbId}`
+            `Did a test scenario correction of the database id of the logged in user ${sessionDbObject.id} to ${testDbUserDirectFromDb?.dbId}`,
           );
           sessionDbObject = testDbUserDirectFromDb.asJson();
           request.session.set(SESSION_USER_DB_OBJECT, sessionDbObject);

@@ -31,7 +31,7 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 /**

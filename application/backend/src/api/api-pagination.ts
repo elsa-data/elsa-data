@@ -50,7 +50,7 @@ export type PagedResult<T> = {
 export function createPagedResult<T>(
   data: T[],
   total: number,
-  pageSize: number
+  pageSize: number,
 ): PagedResult<T> {
   return {
     data: data,

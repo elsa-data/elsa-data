@@ -32,5 +32,5 @@ export const RhInput = React.forwardRef<HTMLInputElement, Props>(
         )}
       </div>
     );
-  }
+  },
 );

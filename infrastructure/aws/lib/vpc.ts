@@ -14,7 +14,7 @@ import { IVpc } from "aws-cdk-lib/aws-ec2";
 export function smartVpcConstruct(
   scope: Construct,
   id: string,
-  vpcNameOrDefaultOrNull: string | null
+  vpcNameOrDefaultOrNull: string | null,
 ): IVpc {
   // if not vpc details are given then we construct a new VPC
   if (!vpcNameOrDefaultOrNull) {

@@ -33,7 +33,7 @@ import { AuthenticatedUser } from "../business/authenticated-user";
  * @param settings
  */
 export function getSecureSessionOptions(
-  settings: ElsaSettings
+  settings: ElsaSettings,
 ): SecureSessionPluginOptions {
   return {
     secret: settings.sessionSecret,
@@ -62,7 +62,7 @@ const cookieForUI = (
   request: FastifyRequest,
   reply: FastifyReply,
   k: string,
-  v: string
+  v: string,
 ) => {
   return reply.setCookie(k, v, {
     path: "/",
@@ -83,7 +83,7 @@ const cookieForBackend = (
   request: FastifyRequest,
   reply: FastifyReply,
   k: string,
-  v: any
+  v: any,
 ) => {
   request.session.set(k, v);
 };
@@ -101,7 +101,7 @@ export const authRoutes = async (
     container: DependencyContainer;
     redirectUri: string;
     includeTestUsers: boolean;
-  }
+  },
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
   const userService = opts.container.resolve(UsersService);
@@ -163,7 +163,7 @@ export const authRoutes = async (
 
     const authUser = await userService.upsertUserForLogin(
       idClaims.sub,
-      displayName
+      displayName,
     );
 
     if (!authUser) {
@@ -173,7 +173,7 @@ export const authRoutes = async (
     }
 
     console.log(
-      `Login event for ${authUser.dbId} ${authUser.subjectId} ${authUser.displayName}`
+      `Login event for ${authUser.dbId} ${authUser.subjectId} ${authUser.displayName}`,
     );
 
     // the secure session token is HTTP only - so its existence can't even be tracked in
@@ -185,7 +185,7 @@ export const authRoutes = async (
       request,
       reply,
       SESSION_TOKEN_PRIMARY,
-      tokenSet.access_token!
+      tokenSet.access_token!,
     );
     cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
 
@@ -214,7 +214,7 @@ export const authRoutes = async (
       request,
       reply,
       USER_ALLOWED_COOKIE_NAME,
-      Array.from(allowed.values()).join(",")
+      Array.from(allowed.values()).join(","),
     );
 
     reply.redirect("/");
@@ -227,7 +227,7 @@ export const authRoutes = async (
 
     if (!subject1 || !subject2 || !subject3)
       throw new Error(
-        "Test users not setup correctly in database even though they are meant to be enabled"
+        "Test users not setup correctly in database even though they are meant to be enabled",
       );
 
     // register a login endpoint that sets a cookie without actual login
@@ -235,20 +235,20 @@ export const authRoutes = async (
     const addTestUserRoute = (
       path: string,
       authUser: AuthenticatedUser,
-      allowed: string[]
+      allowed: string[],
     ) => {
       fastify.post(path, async (request, reply) => {
         cookieForBackend(
           request,
           reply,
           SESSION_TOKEN_PRIMARY,
-          "Thiswouldneedtobearealbearertokenforexternaldata"
+          "Thiswouldneedtobearealbearertokenforexternaldata",
         );
         cookieForBackend(
           request,
           reply,
           SESSION_USER_DB_OBJECT,
-          authUser.asJson()
+          authUser.asJson(),
         );
 
         // these cookies however are available to React - PURELY for UI/display purposes
@@ -256,19 +256,19 @@ export const authRoutes = async (
           request,
           reply,
           USER_SUBJECT_COOKIE_NAME,
-          authUser.subjectId
+          authUser.subjectId,
         );
         cookieForUI(
           request,
           reply,
           USER_NAME_COOKIE_NAME,
-          authUser.displayName
+          authUser.displayName,
         );
         cookieForUI(
           request,
           reply,
           USER_ALLOWED_COOKIE_NAME,
-          allowed.join(",")
+          allowed.join(","),
         );
 
         reply.redirect("/");

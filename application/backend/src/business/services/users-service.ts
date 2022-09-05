@@ -19,7 +19,7 @@ export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
 export class UsersService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Settings") private settings: ElsaSettings,
   ) {}
 
   /**
@@ -32,7 +32,7 @@ export class UsersService {
   public async getUsers(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<PagedResult<UserSummaryType>> {
     const totalEntries = await countAllUserQuery.run(this.edgeDbClient);
 
@@ -52,7 +52,7 @@ export class UsersService {
         allowedChangeReleaseDataOwner: a.allowedChangeReleaseDataOwner,
       })),
       totalEntries,
-      limit
+      limit,
     );
   }
 
@@ -63,7 +63,7 @@ export class UsersService {
    * @param subjectId
    */
   public async getBySubjectId(
-    subjectId: string
+    subjectId: string,
   ): Promise<AuthenticatedUser | null> {
     const dbUser = await singleUserBySubjectIdQuery.run(this.edgeDbClient, {
       subjectId: subjectId,
@@ -84,7 +84,7 @@ export class UsersService {
    */
   public async upsertUserForLogin(
     subjectId: string,
-    displayName: string
+    displayName: string,
   ): Promise<AuthenticatedUser> {
     // this should be handled before hand - but bad things will go
     // wrong if we get passed in empty params
@@ -135,7 +135,7 @@ export class UsersService {
   public async registerRoleInRelease(
     user: AuthenticatedUser,
     releaseId: string,
-    role: ReleaseRoleStrings
+    role: ReleaseRoleStrings,
   ) {
     await e
       .update(e.permission.User, (u) => ({
@@ -161,7 +161,7 @@ export class UsersService {
    */
   public async roleInRelease(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
   ): Promise<ReleaseRoleStrings | null> {
     // TODO: check that releaseId is a valid UUID structure
     // given this is a boundary check function for our routes - we need to protect against being

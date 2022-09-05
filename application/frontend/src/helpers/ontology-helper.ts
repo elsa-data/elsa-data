@@ -21,7 +21,7 @@ export function makeCacheEntry(system: string, code: string) {
 export async function doBatchLookup(
   ontoUrl: string,
   codes: CodingType[],
-  forceAllRefresh: boolean = false
+  forceAllRefresh: boolean = false,
 ): Promise<CodingType[]> {
   // console.log(`Doing a code lookup of ${JSON.stringify(codes)}`);
 
@@ -113,7 +113,7 @@ export async function doBatchLookup(
         if (param?.name === "display") {
           const cacheEntry = makeCacheEntry(
             entryToCodeMap[entryCount].system,
-            entryToCodeMap[entryCount].code
+            entryToCodeMap[entryCount].code,
           );
           ontologyLookupCache[cacheEntry] = param?.valueString;
           entryToCodeMap[entryCount].display = param?.valueString;
@@ -121,7 +121,7 @@ export async function doBatchLookup(
       }
     } else {
       console.log(
-        `Dropping code ${codes[entryCount]} as the lookup of it resulted in ${entry?.response}`
+        `Dropping code ${codes[entryCount]} as the lookup of it resulted in ${entry?.response}`,
       );
     }
     entryCount++;
