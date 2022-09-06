@@ -73,4 +73,14 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
       error: undefined,
     });
   });
+
+  fastify.post<{ Body: { flagship: string } }>(
+    "/api/datasets/import",
+    {},
+    async function (request, reply) {
+      const body = request.body;
+
+      console.log("reqBody:", request.body);
+    }
+  );
 };
