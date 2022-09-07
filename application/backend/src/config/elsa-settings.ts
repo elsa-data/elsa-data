@@ -1,4 +1,5 @@
 import { Issuer } from "openid-client";
+import { RateLimitPluginOptions } from "@fastify/rate-limit";
 
 /**
  * The environment controls elements of the build process and features. It is
@@ -53,4 +54,7 @@ export type ElsaSettings = {
   ontoFhirUrl: string;
 
   superAdmins: { id: string; email: string }[];
+
+  // options to pass into the rate limiter
+  rateLimit: RateLimitPluginOptions;
 };

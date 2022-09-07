@@ -100,6 +100,31 @@ export async function getConfig(
           nullable: false,
         },
       },
+      // the rate limiting options are basically a pass through to the Fastify rate limit plugin
+      // for the moment we have picked only a subset of the full configuration items
+      rateLimit: {
+        max: {
+          doc: "The maximum number of API calls allowed from a single IP in the time window",
+          format: "int",
+          sensitive: false,
+          default: 1000,
+          nullable: false,
+        },
+        timeWindow: {
+          doc: "The number of milliseconds in the time window in which rate limit events are measured",
+          format: "int",
+          sensitive: false,
+          default: 60 * 1000,
+          nullable: false,
+        },
+        allowList: {
+          doc: "The IP addresses of any clients allowed to bypass rate limiting",
+          format: Array,
+          sensitive: false,
+          default: [],
+          nullable: false,
+        },
+      },
       rems: {
         botUser: {
           doc: "The REMS user",

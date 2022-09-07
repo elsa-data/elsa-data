@@ -63,5 +63,13 @@ export async function getSettings(
     remsUrl: "https://hgpp-rems.dev.umccr.org",
     ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
     superAdmins: (config.get("superAdmins") as any[]) ?? [],
+    rateLimit: {
+      // for the moment we set up the rate limiting across the entire Elsa Data surface
+      // (includes APIs and HTML/CSS fetches etc)
+      global: true,
+      max: config.get("rateLimit.max"),
+      timeWindow: config.get("rateLimit.timeWindow"),
+      allowList: config.get("rateLimit.allowList"),
+    },
   };
 }

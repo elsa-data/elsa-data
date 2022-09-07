@@ -90,11 +90,10 @@ export class App {
       getSecureSessionOptions(this.settings)
     );
 
-    // NEEDING UPGRADE TO FASTIFY 4.x
-    // await this.server.register(fastifyRateLimit, {
-    //  max: 100,
-    //  timeWindow: "1 minute",
-    //});
+    // set rate limits across the entire app surface - including APIs and HTML
+    // NOTE: this rate limit is also applied in the NotFound handler
+    // NOTE: we may need to consider moving this only to the /api section
+    await this.server.register(fastifyRateLimit, this.settings.rateLimit);
 
     this.server.register(apiRoutes, {
       container: container,
@@ -119,47 +118,51 @@ export class App {
 
     // our behaviour for React routed websites is that NotFound responses should be replaced
     // with serving up index.html
-    this.server.setNotFoundHandler(async (request, reply) => {
-      // any misses that fall through in the API area should actually return 404
-      if (request.url.toLowerCase().startsWith("/api/")) {
-        reply
-          .code(404)
-          .type("application/problem+json")
-          .send({
-            type: "about:blank",
-            title: "Not Found",
-            status: 404,
-            detail: `API route ${request.url} does not exist`,
-          });
+    this.server.setNotFoundHandler(
+      // note we rate limit our not found handler too
+      { preHandler: this.server.rateLimit() },
+      async (request, reply) => {
+        // any misses that fall through in the API area should actually return 404
+        if (request.url.toLowerCase().startsWith("/api/")) {
+          reply
+            .code(404)
+            .type("application/problem+json")
+            .send({
+              type: "about:blank",
+              title: "Not Found",
+              status: 404,
+              detail: `API route ${request.url} does not exist`,
+            });
 
-        return;
+          return;
+        }
+
+        // our react routes should never have file suffixes so we don't serve up index.html in those cases
+        // (this helps us not serving up index.html for random misplaced PNG requests etc)
+        if (request.url.includes(".")) {
+          reply
+            .code(404)
+            .type("application/problem+json")
+            .send({
+              type: "about:blank",
+              title: "Not Found",
+              status: 404,
+              detail: `File ${request.url} does not exist`,
+            });
+
+          return;
+        }
+
+        // the user hit refresh at (for example) https://ourwebsite.com/docs/a32gf24 - for react routes like
+        // this we actually want to send the index content (at which point react routing takes over)
+        else
+          await serveCustomIndexHtml(
+            reply,
+            this.staticFilesPath,
+            this.buildSafeEnvironment()
+          );
       }
-
-      // our react routes should never have file suffixes so we don't serve up index.html in those cases
-      // (this helps us not serving up index.html for random misplaced PNG requests etc)
-      if (request.url.includes(".")) {
-        reply
-          .code(404)
-          .type("application/problem+json")
-          .send({
-            type: "about:blank",
-            title: "Not Found",
-            status: 404,
-            detail: `File ${request.url} does not exist`,
-          });
-
-        return;
-      }
-
-      // the user hit refresh at (for example) https://ourwebsite.com/docs/a32gf24 - for react routes like
-      // this we actually want to send the index content (at which point react routing takes over)
-      else
-        await serveCustomIndexHtml(
-          reply,
-          this.staticFilesPath,
-          this.buildSafeEnvironment()
-        );
-    });
+    );
 
     this.server.get("*", async (request, reply) => {
       const requestPath = request.url;
