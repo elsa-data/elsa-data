@@ -1,3 +1,5 @@
+import getUnicodeFlagIcon from 'country-flag-icons/unicode';
+import { hasFlag } from 'country-flag-icons';
 import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -23,6 +25,31 @@ type Props = {
   releaseId: string;
   nodeId: string;
 };
+
+type FlagsProps = {
+  regions: string[];
+};
+
+const Flags: React.FC<FlagsProps> = ({ regions }) => {
+  if (regions.length === 0) {
+    return <></>
+  } else
+    return (
+      <>
+        (
+        <ul className="inline-list comma-list">
+          {regions.map((region) => (
+            <li>
+              <span title={region}>
+                {hasFlag(region) ? getUnicodeFlagIcon(region) : `(${region})`}
+              </span>
+            </li>
+          ))}
+        </ul>
+        )
+      </>
+    )
+}
 
 /**
  * The consent popup is a delayed effect popup that can show details of consent
@@ -52,10 +79,46 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
-      <div className="flex flex-row divide-x divide-blue-500 bg-white text-xs border rounded drop-shadow-lg">
-        {duos.map((duo) => (
-          <pre>{JSON.stringify(duo, null, 1)}</pre>
-        ))}
+      <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
+        {duos.map(function(duo: DuoLimitationCodedType) {
+          const diseaseCode = (duo as any)?.diseaseCode;
+          const diseaseSystem = (duo as any)?.diseaseSystem;
+          return (<div>
+            <div>
+              <b>Code:</b>{" "}{duo.code}
+            </div>
+            {duo.modifiers &&
+              <div>
+                <b>Modifiers:</b>
+                {" "}
+                <ul className="inline-list comma-list">
+                  {duo.modifiers.map(function(modifier) {
+                    const regions: string[] = (modifier as any)?.regions;
+                    return <li>
+                      {modifier.code}
+                      {regions &&
+                        <>
+                          {" "}
+                          <Flags regions={regions}/>
+                        </>
+                      }
+                    </li>
+                  })}
+                </ul>
+              </div>
+            }
+            {diseaseCode &&
+              <div>
+                <b>Disease Code:</b>{" "}{diseaseCode}
+              </div>
+            }
+            {diseaseSystem &&
+              <div>
+                <b>Disease System:</b>{" "}{diseaseSystem}
+              </div>
+            }
+          </div>)
+        })}
       </div>
     </Popup>
   );
