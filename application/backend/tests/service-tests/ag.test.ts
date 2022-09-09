@@ -5,33 +5,107 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
+import e, { storage } from "../../dbschema/edgeql-js";
 import { container } from "tsyringe";
 import { mockClient } from "aws-sdk-client-mock";
+import { File } from "../../src/business/db/lab-queries";
+import { blankTestData } from "../../src/test-data/blank-test-data";
 
-const MOCK_CARDIAC_OBJECT_LIST = {
-  $metadata: {
-    httpStatusCode: 200,
-    requestId: undefined,
-    extendedRequestId: "XXX/=",
-    cfId: undefined,
-    attempts: 1,
-    totalRetryDelay: 0,
+const MOCK_CARDIAC_S3_OBJECT_LIST = [
+  {
+    key: "Cardiac/2019-11-21/FILE_L001_R1.fastq.gz",
+    eTag: '"ETAG_FASTQ_R1"',
+    size: 24791400277,
   },
-  CommonPrefixes: undefined,
+  {
+    key: "Cardiac/2019-11-21/FILE_L001_R2.fastq.gz",
+    eTag: '"ETAG_FASTQ_R2"',
+    size: 24791400277,
+  },
+  {
+    key: "Cardiac/2019-11-21/manifest.txt",
+    eTag: '"ETAG_MANIFEST"',
+    size: 24791400277,
+  },
+];
+
+const MOCK_CARDIAC_MANIFEST =
+  `checksum\tfilename\tagha_study_id\n` +
+  `CHECKSUM_FASTQ_R2\tFILE_L001_R1.fastq.gz\tA0000001\n` +
+  `CHECKSUM_FASTQ_R1\tFILE_L001_R2.fastq.gz\tA0000001\n`;
+
+const MOCK_MANIFEST_OBJECT = [
+  {
+    checksum: "CHECKSUM_FASTQ_R2",
+    filename: "FILE_L001_R1.fastq.gz",
+    agha_study_id: "A0000001",
+  },
+  {
+    checksum: "CHECKSUM_FASTQ_R1",
+    filename: "FILE_L001_R2.fastq.gz",
+    agha_study_id: "A0000001",
+  },
+];
+
+const MOCK_FASTQ_PAIR_FILE_SET = [
+  {
+    url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/FILE_L001_R1.fastq.gz",
+    size: 24791400277,
+    checksums: [
+      {
+        type: storage.ChecksumType.MD5,
+        value: "CHECKSUM_FASTQ_R2",
+      },
+    ],
+  },
+  {
+    url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/FILE_L001_R2.fastq.gz",
+    size: 24791400277,
+    checksums: [
+      {
+        type: storage.ChecksumType.MD5,
+        value: "CHECKSUM_FASTQ_R1",
+      },
+    ],
+  },
+];
+const MOCK_BAM_FILE_SET = [
+  {
+    url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/A0000001.bam",
+    size: 10,
+    checksums: [
+      {
+        type: storage.ChecksumType.MD5,
+        value: "BAMCHECKSUM",
+      },
+    ],
+  },
+  {
+    url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/A0000001.bam.bai",
+    size: 1,
+    checksums: [
+      {
+        type: storage.ChecksumType.MD5,
+        value: "BAICHECKSUM",
+      },
+    ],
+  },
+];
+const MOCK_S3_LIST_BUCKET_CLIENT = {
   Contents: [
     {
-      Key: "Cardiac/2019-11-21/FILE_1.fastq.gz",
+      Key: "Cardiac/2019-11-21/FILE_L001_R1.fastq.gz",
       LastModified: new Date(),
-      ETag: '"686897696a7c876b7e001"',
+      ETag: '"ETAG_FASTQ_R1"',
       ChecksumAlgorithm: undefined,
       Size: 24791400277,
       StorageClass: "INTELLIGENT_TIERING",
       Owner: undefined,
     },
     {
-      Key: "Cardiac/2019-11-21/FILE_2.fastq.gz",
+      Key: "Cardiac/2019-11-21/FILE_L001_R2.fastq.gz",
       LastModified: new Date(),
-      ETag: '"686897696a7c876b7e002"',
+      ETag: '"ETAG_FASTQ_R2"',
       ChecksumAlgorithm: undefined,
       Size: 24791400277,
       StorageClass: "INTELLIGENT_TIERING",
@@ -40,7 +114,7 @@ const MOCK_CARDIAC_OBJECT_LIST = {
     {
       Key: "Cardiac/2019-11-21/manifest.txt",
       LastModified: new Date(),
-      ETag: '"686897696a7c876b7e003"',
+      ETag: '"ETAG_MANIFEST"',
       ChecksumAlgorithm: undefined,
       Size: 24791400277,
       StorageClass: "INTELLIGENT_TIERING",
@@ -59,25 +133,8 @@ const MOCK_CARDIAC_OBJECT_LIST = {
   StartAfter: undefined,
 };
 
-const MOCK_CARDIAC_MANIFEST =
-  `checksum\tfilename\tagha_study_id\n` +
-  `d3c7a143235748ae4c655ffa06636f5b\tFILE_1_L002_R1.fastq.gz\tA0000001\n` +
-  `c0362446078f0d02dbd8862d06bb1838\tFILE_1_L002_R2.fastq.gz\tA0000001\n`;
-
-const MOCK_MANIFEST_OBJECT = [
-  {
-    checksum: "d3c7a143235748ae4c655ffa06636f5b",
-    filename: "FILE_1_L002_R1.fastq.gz",
-    agha_study_id: "A0000001",
-  },
-  {
-    checksum: "c0362446078f0d02dbd8862d06bb1838",
-    filename: "FILE_1_L002_R2.fastq.gz",
-    agha_study_id: "A0000001",
-  },
-];
-
-// const s3ClientMock = mockClient(S3Client);
+const edgedbClient = edgedb.createClient();
+const s3ClientMock = mockClient(S3Client);
 
 describe("AWS s3 client", () => {
   beforeAll(() => {
@@ -85,62 +142,90 @@ describe("AWS s3 client", () => {
       useFactory: () => new S3Client({}),
     });
     container.register<edgedb.Client>("Database", {
-      useFactory: () => edgedb.createClient(),
+      useFactory: () => edgedbClient,
     });
   });
 
-  beforeEach(() => {
-    // s3ClientMock.reset();
+  beforeEach(async () => {
+    s3ClientMock.reset();
+    await blankTestData();
   });
 
-  it.skip("Test list manifest key from key prefix", async () => {
-    // s3ClientMock.on(ListObjectsV2Command).resolves(MOCK_CARDIAC_OBJECT_LIST);
-
+  it("Test getManifestKetFromS3ObjectList", async () => {
     const agService = container.resolve(AGService);
-
-    const manifestObjectList = await agService.getManifestListFromS3KeyPrefix(
-      "Cardiac"
+    const manifestObjectList = agService.getManifestKeyFromS3ObjectList(
+      MOCK_CARDIAC_S3_OBJECT_LIST
     );
-
-    expect(manifestObjectList).toEqual([
-      {
-        Key: "Cardiac/2019-11-21/manifest.txt",
-        ETag: '"686897696a7c876b7e003"',
-        Size: 24791400277,
-      },
-    ]);
+    expect(manifestObjectList).toEqual(["Cardiac/2019-11-21/manifest.txt"]);
   });
 
-  it.skip("Test Convert TSV to JSON", async () => {
+  it("Test Convert TSV to JSON", async () => {
     const agService = container.resolve(AGService);
-
-    const manifestString = agService.convertTsvToJson(MOCK_CARDIAC_MANIFEST);
-    console.log(manifestString);
-
-    // expect(manifestString).toEqual(MOCK_CARDIAC_MANIFEST);
+    const jsonManifest = agService.convertTsvToJson(MOCK_CARDIAC_MANIFEST);
+    expect(jsonManifest).toEqual(MOCK_MANIFEST_OBJECT);
   });
 
-  it.skip("Test read manifest", async () => {
-    // s3ClientMock.on(GetObjectCommand).resolves({});
-
+  it("Test group groupArtifactContent", async () => {
     const agService = container.resolve(AGService);
 
-    const manifestString = await agService.readFileFromS3Key(
-      "Cardiac/2019-11-21/manifest.txt"
-    );
-
-    console.log(manifestString);
-    console.log(manifestString?.split("\t"));
-    // expect(manifestString).toEqual(MOCK_CARDIAC_MANIFEST);
-  });
-
-  it.skip("Test group files by artifact type function", async () => {
-    const agService = container.resolve(AGService);
+    const fileRecordListedInManifest: File[] = [
+      ...MOCK_FASTQ_PAIR_FILE_SET,
+      ...MOCK_BAM_FILE_SET,
+    ];
 
     const groupArtifactContent =
-      agService.groupManifestFileByArtifactType(MOCK_MANIFEST_OBJECT);
-    expect(groupArtifactContent.artifactFastq["FILE_1_L002"]).toEqual(
+      agService.groupManifestFileByArtifactTypeAndFilename(
+        fileRecordListedInManifest
+      );
+    expect(groupArtifactContent.artifactFastq["FILE_L001"]).toEqual(
+      MOCK_FASTQ_PAIR_FILE_SET
+    );
+    expect(groupArtifactContent.artifactBam["A0000001"]).toEqual(
+      MOCK_BAM_FILE_SET
+    );
+  });
+
+  it("Test queryFileDbFromS3Prefix ", async () => {
+    const agService = container.resolve(AGService);
+    const s3UrlPrefix = "s3://agha-gdr-store-2.0/Cardiac/2022-01-01/";
+    const mockInsertUrl =
+      "s3://agha-gdr-store-2.0/Cardiac/2022-01-01/19W001134.bam";
+
+    // Startup
+    const insertQuery = e.insert(e.storage.File, {
+      url: mockInsertUrl,
+      size: 0,
+      checksums: [
+        {
+          type: storage.ChecksumType.MD5,
+          value: "abcde",
+        },
+      ],
+    });
+    await insertQuery.run(edgedbClient);
+
+    // Test
+    const dbResult = await agService.checkDbDifferenceFromManifest(
+      s3UrlPrefix,
       MOCK_MANIFEST_OBJECT
     );
+    expect(dbResult.missing).toEqual(MOCK_MANIFEST_OBJECT);
+  });
+
+  it("Test sync manifest to DB", async () => {
+    s3ClientMock.on(ListObjectsV2Command).resolves(MOCK_S3_LIST_BUCKET_CLIENT);
+    const agService = container.resolve(AGService);
+    jest
+      .spyOn(agService, "readFileFromS3Key")
+      .mockImplementation(async () => MOCK_CARDIAC_MANIFEST);
+
+    await agService.syncDbFromS3KeyPrefix("Cardiac");
+
+    const queryNewInsertedFile = e.select(e.storage.File, (file) => ({
+      url: true,
+      filter: e.op(file.url, "ilike", MOCK_FASTQ_PAIR_FILE_SET[0].url),
+    }));
+    const result = await queryNewInsertedFile.run(edgedbClient);
+    expect(result[0].url).toEqual(MOCK_FASTQ_PAIR_FILE_SET[0].url);
   });
 });

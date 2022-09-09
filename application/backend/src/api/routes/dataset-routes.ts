@@ -8,6 +8,7 @@ import {
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
 import { container } from "tsyringe";
 import { DatasetService } from "../../business/services/dataset-service";
+import { AGService } from "../../business/services/ag-service";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
@@ -16,6 +17,7 @@ import { ElsaSettings } from "../../config/elsa-settings";
 
 export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
   const datasetsService = container.resolve(DatasetService);
+  const agService = container.resolve(AGService);
 
   /**
    * Pageable fetching of top-level dataset information (summary level info)
@@ -74,13 +76,15 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     });
   });
 
-  fastify.post<{ Body: { flagship: string } }>(
-    "/api/datasets/import",
+  fastify.post<{ Body: { keyPrefix: string } }>(
+    "/api/datasets/ag/import",
     {},
     async function (request, reply) {
       const body = request.body;
+      const keyPrefix = body.keyPrefix;
 
-      console.log("reqBody:", request.body);
+      agService.syncDbFromS3KeyPrefix(keyPrefix);
+      reply.send("ok");
     }
   );
 };

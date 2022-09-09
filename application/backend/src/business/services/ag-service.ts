@@ -4,73 +4,72 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
+import e, { storage } from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
-import { UsersService } from "./users-service";
-import { has } from "lodash";
-import { AuditLogService } from "./audit-log-service";
-import path from "path";
+import { S3ObjectMetadata, awsListObjects } from "./aws-helper";
+import {
+  File,
+  insertArtifactFastqPairQuery,
+  insertArtifactBamQuery,
+  insertArtifactVcfQuery,
+  insertArtifactCramQuery,
+} from "../db/lab-queries";
+import {
+  makeEmptyIdentifierArray,
+  makeSystemlessIdentifierArray,
+} from "../db/helper";
 
 // need to be configuration eventually
 const BUCKET = "elsa-data-tmp";
 const REGION = "ap-southeast-2";
 const AG_BUCKET = "agha-gdr-store-2.0";
 
-interface manifestType {
+type manifestType = {
   checksum: string;
   filename: string;
   agha_study_id: string;
-}
+};
+
+/**
+ * Problem to note:
+ * - What if manifest removed? nothing triggered on re-sync as manifest key does not exist
+ */
+
+/**
+ * To be moved to utils so could be used wide
+ *
+ */
+const getMd5 = (checksums: any[]): string => {
+  for (const c of checksums || []) {
+    if (c.type === "MD5") return c.value;
+  }
+  return "NONE";
+};
 
 @injectable()
 @singleton()
 export class AGService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,
-    @inject("Database") edgeDbClient: edgedb.Client
+    @inject("Database") private edgeDbClient: edgedb.Client
   ) {}
 
-  async getManifestListFromS3KeyPrefix(
-    s3KeyPrefix: string
-  ): Promise<Record<string, string | number | undefined>[]> {
-    let manifestKeyList: Record<string, string | number | undefined>[] = [];
-    let continuationToken: string | undefined = undefined;
-
-    do {
-      try {
-        const s3ClientInput: ListObjectsV2Command = new ListObjectsV2Command({
-          Bucket: AG_BUCKET,
-          Prefix: s3KeyPrefix,
-          ContinuationToken: continuationToken,
-        });
-        const listObjOutput = await this.s3Client.send(s3ClientInput);
-
-        continuationToken = listObjOutput.NextContinuationToken;
-        const listContent = listObjOutput.Contents;
-
-        if (listContent) {
-          for (const objContent of listContent) {
-            const key = objContent.Key;
-
-            // Only interested in manifest file
-            if (key?.endsWith("manifest.txt")) {
-              manifestKeyList.push({
-                ETag: objContent.ETag,
-                Key: objContent.Key,
-                Size: objContent.Size,
-              });
-            }
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    } while (continuationToken);
-
-    return manifestKeyList;
+  async getS3ObjectListFromKeyPrefix(s3KeyPrefix: string) {
+    return await awsListObjects(this.s3Client, AG_BUCKET, s3KeyPrefix);
   }
 
-  async readFileFromS3Key(manifestKey: string): Promise<string | undefined> {
+  getManifestKeyFromS3ObjectList(s3ListMetadata: S3ObjectMetadata[]): string[] {
+    const manifestKeys: string[] = [];
+    for (const s3Metadata of s3ListMetadata) {
+      if (s3Metadata.key.endsWith("manifest.txt")) {
+        manifestKeys.push(s3Metadata.key);
+      }
+    }
+
+    return manifestKeys;
+  }
+
+  async readFileFromS3Key(manifestKey: string): Promise<string> {
     try {
       const s3ClientInput: GetObjectCommand = new GetObjectCommand({
         Bucket: AG_BUCKET,
@@ -83,9 +82,13 @@ export class AGService {
     } catch (e) {
       console.error(e);
     }
+    return "";
   }
 
-  convertTsvToJson(tsvString: string): Record<string, string>[] {
+  /**********************************
+   * Util
+   */
+  convertTsvToJson(tsvString: string): unknown[] {
     tsvString = tsvString.trimEnd();
 
     const lines = tsvString.split("\n");
@@ -106,7 +109,7 @@ export class AGService {
     return result;
   }
 
-  groupManifestTypeByStudyId(
+  groupManifestByStudyId(
     manifestContentList: manifestType[]
   ): Record<string, manifestType[]> {
     const studyIdGroup: Record<string, manifestType[]> = {};
@@ -122,15 +125,15 @@ export class AGService {
     return studyIdGroup;
   }
 
-  groupManifestFileByArtifactType(
-    manifestContentList: manifestType[]
-  ): Record<string, Record<string, manifestType[]>> {
-    const groupFiletype: Record<string, Record<string, manifestType[]>> = {};
+  groupManifestFileByArtifactTypeAndFilename(
+    fileRecordListedInManifest: File[]
+  ): Record<string, Record<string, File[]>> {
+    const groupFiletype: Record<string, Record<string, File[]>> = {};
 
     function addOrCreateNewArtifactGroup(
       artifactType: string,
       filenameId: string,
-      manifestObj: manifestType
+      manifestObj: File
     ) {
       if (!groupFiletype[artifactType]) {
         groupFiletype[artifactType] = {};
@@ -142,9 +145,12 @@ export class AGService {
       }
     }
 
-    for (const manifestObj of manifestContentList) {
-      // Removing compressed extention for pairing purposes
-      const filename = manifestObj.filename.replace(/.gz$/, "");
+    for (const manifestObj of fileRecordListedInManifest) {
+      // Removing compressed extension for pairing purposes
+      const lastSlashIndex = manifestObj.url.lastIndexOf("/") + 1;
+      const filename = manifestObj.url
+        .substring(lastSlashIndex)
+        .replace(/.gz$/, "");
 
       // FASTQ Artifact
       if (filename.endsWith("fastq") || filename.endsWith("fq")) {
@@ -154,20 +160,305 @@ export class AGService {
 
         // BAM Artifact
       } else if (filename.endsWith("bam") || filename.endsWith("bai")) {
-        const filenameId = path.parse(filename).name;
+        const firstIndexOfDot = filename.indexOf(".");
+        const filenameId = filename.substring(0, firstIndexOfDot);
         addOrCreateNewArtifactGroup("artifactBam", filenameId, manifestObj);
 
         // VCF Artifact
       } else if (filename.endsWith("vcf") || filename.endsWith("tbi")) {
-        const filenameId = path.parse(filename).name;
+        const firstIndexOfDot = filename.indexOf(".");
+        const filenameId = filename.substring(0, firstIndexOfDot);
         addOrCreateNewArtifactGroup("artifactVcf", filenameId, manifestObj);
 
         // CRAM Artifact
       } else if (filename.endsWith("cram") || filename.endsWith("crai")) {
-        const filenameId = path.parse(filename).name;
+        const firstIndexOfDot = filename.indexOf(".");
+        const filenameId = filename.substring(0, firstIndexOfDot);
         addOrCreateNewArtifactGroup("artifactCram", filenameId, manifestObj);
       }
     }
     return groupFiletype;
+  }
+
+  async checkDbDifferenceFromManifest(
+    s3UrlPrefix: string,
+    manifestObjList: manifestType[]
+  ): Promise<Record<string, manifestType[]>> {
+    const result: Record<string, manifestType[]> = {
+      missing: [],
+      diff: [],
+    };
+
+    for (const manifestObj of manifestObjList) {
+      const filenameS3Uri = `${s3UrlPrefix}${manifestObj.filename}`;
+
+      const queryFilename = e.select(e.storage.File, (file) => ({
+        url: true,
+        checksums: true,
+        filter: e.op(file.url, "ilike", `${filenameS3Uri}`),
+      }));
+
+      const queryResult = await queryFilename.run(this.edgeDbClient);
+
+      if (queryResult.length) {
+        // It should only contain one value so index 0 should be it
+        const md5Recorded = getMd5(queryResult[0].checksums);
+        if (md5Recorded !== manifestObj.checksum) {
+          result.diff.push(manifestObj);
+        }
+      } else {
+        result.missing.push(manifestObj);
+      }
+    }
+    return result;
+  }
+
+  async updateFileRecordFromManifest(
+    s3UrlPrefix: string,
+    manifestRecord: manifestType
+  ) {
+    const s3Url = `${s3UrlPrefix}${manifestRecord.filename}`;
+
+    const updateQuery = e.update(e.storage.File, (file) => ({
+      filter: e.op(file.url, "ilike", s3Url),
+      set: {
+        // NOTE: it will replace the entire checksum field
+        checksums: [
+          {
+            type: storage.ChecksumType.MD5,
+            value: manifestRecord.checksum,
+          },
+        ],
+      },
+    }));
+    await updateQuery.run(this.edgeDbClient);
+  }
+
+  async insertNewArtifact(
+    artifactTypeRecord: Record<string, Record<string, File[]>>
+  ) {
+    /**
+     * Sorting url function to identify which is forward/reversed/indexed file
+     * Index 0 is Forward file or base file
+     * Index 1 if Reverse file or index file
+     */
+    const sortFileRec = (fileSet: File[]) =>
+      fileSet.sort((a, b) =>
+        a.url.toLowerCase() > b.url.toLowerCase() ? 1 : -1
+      );
+
+    // Inserting Fastq as lab output
+    let r1: any;
+    const fastqArtifact = artifactTypeRecord["artifactFastq"];
+    if (fastqArtifact) {
+      const fastqInsertQuery: any[] = [];
+
+      for (const filenameId in fastqArtifact) {
+        const fileSet = sortFileRec(fastqArtifact[filenameId]);
+        const insertQuery = insertArtifactFastqPairQuery(
+          fileSet[0],
+          fileSet[1]
+        );
+
+        fastqInsertQuery.push(insertQuery);
+      }
+      r1 = await e
+        .insert(e.lab.Run, {
+          artifactsProduced: e.set(...fastqInsertQuery),
+        })
+        .run(this.edgeDbClient);
+    }
+    const r1select = e.select(e.lab.Run.artifactsProduced, (ab) => ({
+      filter: e.op(
+        e.uuid(r1.id),
+        "=",
+        ab["<artifactsProduced[is lab::Run]"].id
+      ),
+    }));
+
+    // Analyses output
+    const analysesOutputArtifactQuery: any[] = [];
+
+    const artifactBam = artifactTypeRecord["artifactBam"];
+    if (artifactBam) {
+      for (const filenameId in artifactBam) {
+        const fileSet = sortFileRec(artifactBam[filenameId]);
+        analysesOutputArtifactQuery.push(
+          insertArtifactBamQuery(fileSet[0], fileSet[1])
+        );
+      }
+    }
+
+    const artifactCram = artifactTypeRecord["artifactCram"];
+    if (artifactCram) {
+      for (const filenameId in artifactCram) {
+        const fileSet = sortFileRec(artifactCram[filenameId]);
+        analysesOutputArtifactQuery.push(
+          insertArtifactCramQuery(fileSet[0], fileSet[1])
+        );
+      }
+    }
+
+    const artifactVcf = artifactTypeRecord["artifactVcf"];
+    if (artifactVcf) {
+      for (const filenameId in artifactVcf) {
+        const fileSet = sortFileRec(artifactVcf[filenameId]);
+        analysesOutputArtifactQuery.push(
+          insertArtifactVcfQuery(fileSet[0], fileSet[1])
+        );
+      }
+    }
+
+    const a1 = await e
+      .insert(e.lab.Analyses, {
+        pipeline: "New pipeline",
+        input: r1select,
+        output: e.set(...analysesOutputArtifactQuery),
+      })
+      .run(this.edgeDbClient);
+
+    const a1select = e.select(e.lab.Analyses.output, (ab) => ({
+      filter: e.op(e.uuid(a1.id), "=", ab["<output[is lab::Analyses]"].id),
+    }));
+
+    return e.op(r1select, "union", a1select);
+  }
+
+  convertManifestTypeToFileRecord(
+    s3KeyPrefix: string,
+    manifestRecordList: manifestType[],
+    s3MetadataList: S3ObjectMetadata[]
+  ): File[] {
+    const result: File[] = [];
+
+    const s3MetadataDict: Record<string, S3ObjectMetadata> = {};
+    for (const s3Metadata of s3MetadataList) {
+      s3MetadataDict[s3Metadata.key] = s3Metadata;
+    }
+    // TODO: If undefined/list not found
+    // print something saying file in manifest not found in the s3 list
+    for (const manifestRecord of manifestRecordList) {
+      const s3Key: string = `${s3KeyPrefix}/${manifestRecord.filename}`;
+      result.push({
+        url: `s3://${AG_BUCKET}/${s3Key}`,
+        size: s3MetadataDict[s3Key].size,
+        checksums: [
+          {
+            type: storage.ChecksumType.MD5,
+            value: manifestRecord.checksum,
+          },
+        ],
+      });
+    }
+
+    return result;
+  }
+  insertDatasetCase(studyId: string, artifacts: any) {
+    const queryInsertDatasetCase = e.insert(e.dataset.DatasetCase, {
+      externalIdentifiers: makeEmptyIdentifierArray(),
+      patients: e.insert(e.dataset.DatasetPatient, {
+        externalIdentifiers: makeSystemlessIdentifierArray(studyId),
+        specimens: e.set(
+          e.insert(e.dataset.DatasetSpecimen, {
+            externalIdentifiers: makeEmptyIdentifierArray(),
+            artifacts: artifacts,
+          })
+        ),
+      }),
+    });
+    return queryInsertDatasetCase;
+  }
+
+  async insertDataset(datasetCases: any) {
+    // A more dynamic datasetUri and FlagShip are expected here
+    const datasetUri =
+      "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac";
+    const someFlaghsip = "CARDIAC";
+
+    try {
+      const queryInsertDataset = e.insert(e.dataset.Dataset, {
+        uri: datasetUri,
+        description: "Australian Genomics cardiac flagship",
+        externalIdentifiers: makeSystemlessIdentifierArray(someFlaghsip),
+        cases: e.set(datasetCases),
+      });
+      await queryInsertDataset.run(this.edgeDbClient);
+
+      console.log("UPDATE");
+    } catch (error) {
+      const queryUpdateDataset = e.update(e.dataset.Dataset, (dataset) => ({
+        filter: e.op(dataset.uri, "ilike", datasetUri),
+        set: {
+          cases: { "+=": datasetCases },
+        },
+      }));
+      await queryUpdateDataset.run(this.edgeDbClient);
+      console.log("INSERT");
+    }
+  }
+
+  // Should be controller or main()
+  async syncDbFromS3KeyPrefix(s3KeyPrefix: string) {
+    // Searching match prefix with data in store bucket
+    const s3MetadataList = await this.getS3ObjectListFromKeyPrefix(s3KeyPrefix);
+    const manifestKeyList = this.getManifestKeyFromS3ObjectList(s3MetadataList);
+
+    for (const manifestS3Key of manifestKeyList) {
+      const manifestLastSlashIndex = manifestS3Key.lastIndexOf("/");
+      const manifestS3Prefix = manifestS3Key.substring(
+        0,
+        manifestLastSlashIndex
+      );
+      const s3UrlPrefix = `s3://${AG_BUCKET}/${manifestS3Prefix}/`;
+
+      const manifestTsvContent = await this.readFileFromS3Key(manifestS3Key);
+
+      const manifestObjContentList = <manifestType[]>(
+        this.convertTsvToJson(manifestTsvContent)
+      );
+
+      const comparedRecords = await this.checkDbDifferenceFromManifest(
+        s3UrlPrefix,
+        manifestObjContentList
+      );
+
+      if (comparedRecords.diff) {
+        for (const rec of comparedRecords.diff) {
+          await this.updateFileRecordFromManifest(s3UrlPrefix, rec);
+        }
+      }
+
+      // Adding the missing record to db
+      if (comparedRecords.missing) {
+        const groupedRecByStudyId = this.groupManifestByStudyId(
+          comparedRecords.missing
+        );
+        const listOfStudyId = Object.keys(groupedRecByStudyId);
+        for (const studyId of listOfStudyId) {
+          const manifestRecord = groupedRecByStudyId[studyId];
+
+          // Convert to FILE record
+          const fileRecordList = this.convertManifestTypeToFileRecord(
+            manifestS3Prefix,
+            manifestRecord,
+            s3MetadataList
+          );
+
+          const groupArtifactType =
+            this.groupManifestFileByArtifactTypeAndFilename(fileRecordList);
+
+          // Insert Artifact
+          const artifactsSpeciment = await this.insertNewArtifact(
+            groupArtifactType
+          );
+
+          // Insert DatasetCase
+          const dataset = this.insertDatasetCase(studyId, artifactsSpeciment);
+
+          // Insert to FlagShip
+          await this.insertDataset(dataset);
+        }
+      }
+    }
   }
 }
