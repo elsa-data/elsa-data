@@ -1,12 +1,12 @@
-import {
-  ListObjectsV2Command,
-  S3Client,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e, { storage } from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
-import { S3ObjectMetadata, awsListObjects } from "./aws-helper";
+import {
+  S3ObjectMetadata,
+  awsListObjects,
+  readObjectToStringFromS3Key,
+} from "./aws-helper";
 import {
   File,
   insertArtifactFastqPairQuery,
@@ -17,6 +17,7 @@ import {
 import {
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
+  getMd5FromChecksumsArray,
 } from "../db/helper";
 
 // need to be configuration eventually
@@ -34,17 +35,6 @@ type manifestType = {
  * Problem to note:
  * - What if manifest removed? nothing triggered on re-sync as manifest key does not exist
  */
-
-/**
- * To be moved to utils so could be used wide
- *
- */
-const getMd5 = (checksums: any[]): string => {
-  for (const c of checksums || []) {
-    if (c.type === "MD5") return c.value;
-  }
-  return "NONE";
-};
 
 @injectable()
 @singleton()
@@ -69,25 +59,6 @@ export class AGService {
     return manifestKeys;
   }
 
-  async readFileFromS3Key(manifestKey: string): Promise<string> {
-    try {
-      const s3ClientInput: GetObjectCommand = new GetObjectCommand({
-        Bucket: AG_BUCKET,
-        Key: manifestKey,
-      });
-      const getObjOutput = await this.s3Client.send(s3ClientInput);
-      const bodyBuffer = await getObjOutput.Body.toArray();
-
-      return bodyBuffer.toString("utf-8");
-    } catch (e) {
-      console.error(e);
-    }
-    return "";
-  }
-
-  /**********************************
-   * Util
-   */
   convertTsvToJson(tsvString: string): unknown[] {
     tsvString = tsvString.trimEnd();
 
@@ -109,6 +80,11 @@ export class AGService {
     return result;
   }
 
+  /**
+   * To group manifest object list based on study Id
+   * @param manifestContentList Manifest Type list
+   * @returns An object where key is studyId and value is a list of manifest type
+   */
   groupManifestByStudyId(
     manifestContentList: manifestType[]
   ): Record<string, manifestType[]> {
@@ -188,9 +164,10 @@ export class AGService {
       missing: [],
       diff: [],
     };
+    const trimSlashS3uriPrefix = s3UrlPrefix.replace(/\/$/, "");
 
     for (const manifestObj of manifestObjList) {
-      const filenameS3Uri = `${s3UrlPrefix}${manifestObj.filename}`;
+      const filenameS3Uri = `${trimSlashS3uriPrefix}/${manifestObj.filename}`;
 
       const queryFilename = e.select(e.storage.File, (file) => ({
         url: true,
@@ -202,7 +179,8 @@ export class AGService {
 
       if (queryResult.length) {
         // It should only contain one value so index 0 should be it
-        const md5Recorded = getMd5(queryResult[0].checksums);
+        // (The query is `ilike` which only match with one value)
+        const md5Recorded = getMd5FromChecksumsArray(queryResult[0].checksums);
         if (md5Recorded !== manifestObj.checksum) {
           result.diff.push(manifestObj);
         }
@@ -213,6 +191,11 @@ export class AGService {
     return result;
   }
 
+  /**
+   * Update current db to updated version
+   * @param s3UrlPrefix A prefix of the file
+   * @param manifestRecord The updated manifest file
+   */
   async updateFileRecordFromManifest(
     s3UrlPrefix: string,
     manifestRecord: manifestType
@@ -234,6 +217,11 @@ export class AGService {
     await updateQuery.run(this.edgeDbClient);
   }
 
+  /**
+   * Inserting new artifacts to records
+   * @param artifactTypeRecord A File grouped of artifact type and studyId . E.g. {artifactFastq : { A00001 : [File1, File2] } }
+   * @returns
+   */
   async insertNewArtifact(
     artifactTypeRecord: Record<string, Record<string, File[]>>
   ) {
@@ -323,9 +311,15 @@ export class AGService {
 
     return e.op(r1select, "union", a1select);
   }
-
+  /**
+   * Convert manifest record to a File record as file Db is stored as file record.
+   * @param s3UriSubmissionPrefix
+   * @param manifestRecordList A list of manifestType record
+   * @param s3MetadataList An S3ObjectMetadata list for the particular manifest. (This will populate the size value)
+   * @returns
+   */
   convertManifestTypeToFileRecord(
-    s3KeyPrefix: string,
+    s3UriSubmissionPrefix: string,
     manifestRecordList: manifestType[],
     s3MetadataList: S3ObjectMetadata[]
   ): File[] {
@@ -333,15 +327,22 @@ export class AGService {
 
     const s3MetadataDict: Record<string, S3ObjectMetadata> = {};
     for (const s3Metadata of s3MetadataList) {
-      s3MetadataDict[s3Metadata.key] = s3Metadata;
+      const s3uri = `s3://${AG_BUCKET}/${s3Metadata.key}`;
+      s3MetadataDict[s3uri] = s3Metadata;
     }
+    const trimSlashS3uriPrefix = s3UriSubmissionPrefix.replace(/\/$/, "");
     // TODO: If undefined/list not found
     // print something saying file in manifest not found in the s3 list
     for (const manifestRecord of manifestRecordList) {
-      const s3Key: string = `${s3KeyPrefix}/${manifestRecord.filename}`;
+      const s3Uri = `${trimSlashS3uriPrefix}/${manifestRecord.filename}`;
+      const fileSize = s3MetadataDict[s3Uri].size;
+
+      if (!fileSize) {
+        console.log(`No File foiund (${s3Uri})`);
+      }
       result.push({
-        url: `s3://${AG_BUCKET}/${s3Key}`,
-        size: s3MetadataDict[s3Key].size,
+        url: s3Uri,
+        size: fileSize,
         checksums: [
           {
             type: storage.ChecksumType.MD5,
@@ -369,6 +370,10 @@ export class AGService {
     return queryInsertDatasetCase;
   }
 
+  /**
+   *
+   * @param datasetCases A query of dataset case to be linked to dataset
+   */
   async insertDataset(datasetCases: any) {
     // A more dynamic datasetUri and FlagShip are expected here
     const datasetUri =
@@ -411,7 +416,11 @@ export class AGService {
       );
       const s3UrlPrefix = `s3://${AG_BUCKET}/${manifestS3Prefix}/`;
 
-      const manifestTsvContent = await this.readFileFromS3Key(manifestS3Key);
+      const manifestTsvContent = await readObjectToStringFromS3Key(
+        this.s3Client,
+        AG_BUCKET,
+        manifestS3Key
+      );
 
       const manifestObjContentList = <manifestType[]>(
         this.convertTsvToJson(manifestTsvContent)

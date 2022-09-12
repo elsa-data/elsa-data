@@ -54,3 +54,23 @@ export async function awsListObjects(
 
   return s3ObjectList;
 }
+
+export async function readObjectToStringFromS3Key(
+  s3Client: S3Client,
+  bucketName: string,
+  objectKey: string
+): Promise<string> {
+  try {
+    const s3ClientInput: GetObjectCommand = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: objectKey,
+    });
+    const getObjOutput = await s3Client.send(s3ClientInput);
+    const bodyBuffer = await getObjOutput.Body.toArray();
+
+    return bodyBuffer.toString("utf-8");
+  } catch (e) {
+    console.error(e);
+  }
+  return "";
+}

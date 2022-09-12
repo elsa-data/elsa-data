@@ -22,3 +22,10 @@ export function makeEmptyIdentifierArray() {
 
   return e.cast(tupleArrayType, e.literal(tupleArrayType, []));
 }
+
+export function getMd5FromChecksumsArray(checksums: any[]): string {
+  for (const c of checksums || []) {
+    if (c.type === "MD5") return c.value;
+  }
+  return "NONE";
+}
