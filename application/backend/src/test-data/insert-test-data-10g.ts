@@ -2,12 +2,11 @@ import * as edgedb from "edgedb";
 import e, { lab } from "../../dbschema/edgeql-js";
 import {
   createArtifacts,
-  makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
-  MONDO_SYSTEM_URI,
 } from "./test-data-helpers";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
+import { MONDO_SYSTEM_URI } from "@umccr/elsa-constants";
 
 const edgeDbClient = edgedb.createClient();
 

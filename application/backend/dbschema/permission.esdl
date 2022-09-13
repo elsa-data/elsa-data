@@ -9,13 +9,26 @@ module permission {
             readonly := true;
         }
 
-        property displayName -> str;
+        required property displayName -> str;
 
-        multi link datasetOwner -> dataset::Dataset {
-            # allow datasets to be removed - all that happens for the user is they lose permissions to that dataset
-            # (in general datasets won't be deleted anyway)
-            on target delete allow;
+        required property lastLoginDateTime -> datetime {
+            default := datetime_current();
         }
+
+        # these are the set of administrator level permissions that can be given
+        # to a user
+
+        required property allowedCreateRelease -> bool {
+            default := false;
+        };
+        required property allowedImportDataset -> bool {
+           default := false;
+        };
+        required property allowedChangeReleaseDataOwner -> bool {
+            default := false;
+        };
+
+        # whether this user is a participant in a release
 
         multi link releaseParticipant -> release::Release {
             property role -> str {

@@ -1,4 +1,4 @@
-CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
+CREATE MIGRATION m1mp63vssm4p2d3sceplp3tuv6izp52yq7mkklt2xs3ys34fv3prbq
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -45,18 +45,21 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
           CREATE CONSTRAINT std::exclusive;
       };
   };
+  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
+  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
+  };
+  ALTER TYPE dataset::DatasetCase {
+      CREATE MULTI LINK patients -> dataset::DatasetPatient {
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
+  };
   CREATE ABSTRACT TYPE lab::ArtifactBase;
   CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE MULTI LINK artifacts -> lab::ArtifactBase;
       CREATE OPTIONAL PROPERTY sampleType -> std::str;
-  };
-  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
-  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
-          ON TARGET DELETE ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
   };
   CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE storage::File {
@@ -70,7 +73,7 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
   };
   CREATE FUNCTION dataset::extractIdentifierValue(i: tuple<system: std::str, value: std::str>) ->  std::str USING (i.value);
   CREATE SCALAR TYPE audit::ActionType EXTENDING enum<C, R, U, D, E>;
-  CREATE TYPE audit::AuditEvent {
+  CREATE ABSTRACT TYPE audit::AuditEvent {
       CREATE REQUIRED PROPERTY updatedDateTime -> std::datetime {
           SET default := (std::datetime_current());
       };
@@ -90,6 +93,8 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
       CREATE REQUIRED PROPERTY whoDisplayName -> std::str;
       CREATE REQUIRED PROPERTY whoId -> std::str;
   };
+  CREATE TYPE audit::ReleaseAuditEvent EXTENDING audit::AuditEvent;
+  CREATE TYPE audit::SystemAuditEvent EXTENDING audit::AuditEvent;
   CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
   CREATE ABSTRACT TYPE job::Job {
       CREATE REQUIRED LINK auditEntry -> audit::AuditEvent;
@@ -120,7 +125,7 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
   };
   CREATE SCALAR TYPE release::ReleaseCounterSequence EXTENDING std::sequence;
   CREATE TYPE release::Release {
-      CREATE MULTI LINK auditLog -> audit::AuditEvent {
+      CREATE MULTI LINK auditLog -> audit::ReleaseAuditEvent {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE RESTRICT;
       };
@@ -154,37 +159,17 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation -> std::json;
   };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK patients -> dataset::DatasetPatient {
+  ALTER TYPE dataset::DatasetPatient {
+      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
-  };
-  ALTER TYPE dataset::DatasetPatient {
-      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
       CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
       CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
-  };
-  CREATE TYPE permission::User {
-      CREATE MULTI LINK datasetOwner -> dataset::Dataset {
-          ON TARGET DELETE ALLOW;
-      };
-      CREATE MULTI LINK releaseParticipant -> release::Release {
-          ON TARGET DELETE ALLOW;
-          CREATE PROPERTY role -> std::str {
-              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
-          };
-      };
-      CREATE PROPERTY displayName -> std::str;
-      CREATE REQUIRED PROPERTY subjectId -> std::str {
-          SET readonly := true;
-          CREATE CONSTRAINT std::exclusive;
-          CREATE CONSTRAINT std::min_len_value(6);
-      };
   };
   CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE TYPE pedigree::PedigreeRelationship {
@@ -257,5 +242,31 @@ CREATE MIGRATION m1ob2no5xxcvncbfwqj3oyuodgdymyl6cgguvqtokyjlar4aigc4aa
       };
       CREATE PROPERTY platform -> std::str;
       CREATE PROPERTY runDate -> std::datetime;
+  };
+  CREATE TYPE permission::User {
+      CREATE MULTI LINK releaseParticipant -> release::Release {
+          ON TARGET DELETE ALLOW;
+          CREATE PROPERTY role -> std::str {
+              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
+          };
+      };
+      CREATE REQUIRED PROPERTY allowedChangeReleaseDataOwner -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY allowedCreateRelease -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY allowedImportDataset -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY displayName -> std::str;
+      CREATE REQUIRED PROPERTY lastLoginDateTime -> std::datetime {
+          SET default := (std::datetime_current());
+      };
+      CREATE REQUIRED PROPERTY subjectId -> std::str {
+          SET readonly := true;
+          CREATE CONSTRAINT std::exclusive;
+          CREATE CONSTRAINT std::min_len_value(6);
+      };
   };
 };

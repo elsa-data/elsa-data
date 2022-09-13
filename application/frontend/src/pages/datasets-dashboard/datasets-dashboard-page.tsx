@@ -1,9 +1,9 @@
 import React, { Fragment } from "react";
-import { useEnvRelay } from "../providers/env-relay-provider";
+import { useEnvRelay } from "../../providers/env-relay-provider";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box } from "../components/boxes";
+import { Box } from "../../components/boxes";
 import {
   DatasetGen3SyncRequestType,
   DatasetLightType,
@@ -12,9 +12,9 @@ import { fileSize } from "humanize-plus";
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { LayoutBase } from "../layouts/layout-base";
+import { LayoutBase } from "../../layouts/layout-base";
 
-export const DatasetsPage: React.FC = () => {
+export const DatasetsDashboardPage: React.FC = () => {
   const envRelay = useEnvRelay();
   const navigate = useNavigate();
 

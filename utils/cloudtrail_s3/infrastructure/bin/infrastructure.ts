@@ -4,7 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { S3CloudTrailLakeStack } from "../lib/s3-cloud-trail-lake-stack";
 
 const props = {
-  bucketArn: "arn:aws:s3:::example/store/",  // >>> CONFIGURE HERE <<<
+  bucketArn: "arn:aws:s3:::example/store/", // >>> CONFIGURE HERE <<<
 };
 
 const stackTags = {

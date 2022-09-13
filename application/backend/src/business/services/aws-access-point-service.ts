@@ -92,7 +92,9 @@ export class AwsAccessPointService extends AwsBaseService {
       );
       console.log(releaseReleaseStack);
     } catch (e) {
-      console.log("Stack for this release does not exist");
+      console.log(
+        "Stack for this release does not exist - installing new stack"
+      );
     }
 
     // find all the files encompassed by this release as a flat array of S3 URLs
@@ -109,6 +111,8 @@ export class AwsAccessPointService extends AwsBaseService {
 
       filesByBucket[af.s3Bucket].push(af);
     }
+
+    console.log(JSON.stringify(filesByBucket));
 
     // for our S3 paths we want to make sure every time we do this it is in someway unique
     const stackId = randomBytes(8).toString("hex");
@@ -209,13 +213,14 @@ export class AwsAccessPointService extends AwsBaseService {
           },
         },
       };
-    };
 
-    if (vpcId) {
-      subStackCurrent.Resources.S3AccessPoint.Properties["VpcConfiguration"] = {
-        VpcId: vpcId,
-      };
-    }
+      if (vpcId) {
+        subStackCurrent.Resources.S3AccessPoint.Properties["VpcConfiguration"] =
+          {
+            VpcId: vpcId,
+          };
+      }
+    };
 
     for (const bucket of Object.keys(filesByBucket)) {
       await closeStack();

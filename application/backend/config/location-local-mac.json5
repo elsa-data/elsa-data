@@ -3,5 +3,91 @@
   // the OIDC secrets are stored in our local secret store, but the issuer can be public
   oidc: {
     issuerUrl: "https://test.cilogon.org",
+    /*issuerOpenIdConfiguration: {
+      "issuer": "https://test.cilogon.org",
+      "authorization_endpoint": "https://test.cilogon.org/authorize",
+      "device_authorization_endpoint": "https://test.cilogon.org/oauth2/device_authorization",
+      "registration_endpoint": "https://test.cilogon.org/oauth2/oidc-cm",
+      "token_endpoint": "https://test.cilogon.org/oauth2/token",
+      "userinfo_endpoint": "https://test.cilogon.org/oauth2/userinfo",
+      "introspection_endpoint": "https://test.cilogon.org/oauth2/introspect",
+      "revocation_endpoint": "https://test.cilogon.org/oauth2/revoke",
+      "jwks_uri": "https://test.cilogon.org/oauth2/certs",
+      "service_documentation": "https://www.cilogon.org/oidc",
+      "response_types_supported": [
+        "code",
+        "id_token"
+      ],
+      "response_modes_supported": [
+        "query",
+        "fragment",
+        "form_post"
+      ],
+      "grant_types_supported": [
+        "authorization_code",
+        "refresh_token",
+        "urn:ietf:params:oauth:grant-type:token-exchange",
+        "urn:ietf:params:oauth:grant-type:device_code"
+      ],
+      "subject_types_supported": [
+        "public"
+      ],
+      "id_token_signing_alg_values_supported": [
+        "RS256",
+        "RS384",
+        "RS512"
+      ],
+      "scopes_supported": [
+        "openid",
+        "email",
+        "profile",
+        "org.cilogon.userinfo",
+        "edu.uiuc.ncsa.myproxy.getcert",
+        "offline_access"
+      ],
+      "token_endpoint_auth_methods_supported": [
+        "client_secret_basic",
+        "client_secret_post"
+      ],
+      "code_challenge_methods_supported": [
+        "plain",
+        "S256"
+      ],
+      "claims_supported" : [
+        "acr",
+        "affiliation",
+        "amr",
+        "aud",
+        "auth_time",
+        "cert_subject_dn",
+        "email",
+        "entitlement",
+        "eppn",
+        "eptid",
+        "eduPersonOrcid",
+        "exp",
+        "family_name",
+        "given_name",
+        "iat",
+        "idp",
+        "idp_name",
+        "isMemberOf",
+        "iss",
+        "itrustuin",
+        "name",
+        "nonce",
+        "oidc",
+        "openid",
+        "ou",
+        "pairwise_id",
+        "preferred_username",
+        "sub",
+        "subject_id",
+        "token_id",
+        "uid",
+        "uidNumber",
+        "voPersonExternalID"
+      ]
+    }*/
   },
 }

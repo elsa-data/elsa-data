@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { LayoutBase } from "../layouts/layout-base";
 import { useCookies } from "react-cookie";
 import {
+  debugAllowedDescription,
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
   USER_ALLOWED_COOKIE_NAME,
@@ -31,6 +32,32 @@ export const HomePage: React.FC = () => {
   };
 
   const uiAllowed = useUiAllowed();
+
+  if (uiAllowed.size == 0)
+    return (
+      <LayoutBase>
+        <p className="prose">
+          You are currently not listed as a researcher or data custodian of any
+          release or dataset in this Elsa Data instance.
+        </p>
+        <p className="prose">
+          If you believe that you are a custodian for some datasets, then you
+          need to contact the overall system administrator to add you to the
+          list of known custodians.
+        </p>
+        <p className="prose">
+          If you believe that you are a researcher that is involved in a data
+          release controlled by this instance of Elsa Data - then first check
+          with the PI or other researchers who should be able to see the list of
+          users associated with any data release. Otherwise, you should raise an
+          issue with the overall system administrator.
+        </p>
+        <p className="prose">
+          If you are neither of the above then welcome to Elsa Data but there is
+          not much we can do for you!
+        </p>
+      </LayoutBase>
+    );
 
   return (
     <LayoutBase>
@@ -60,15 +87,7 @@ export const HomePage: React.FC = () => {
           Clear page size
         </button>
       </div>
-      <p className="prose">
-        The UI is enabled for the following functionality codes
-        <ul>
-          {Array.from(uiAllowed.values()).map((v) => (
-            <li key={v}>{v}</li>
-          ))}
-        </ul>
-      </p>
-
+      {/*
       <div className="w-20 h-20 mt-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -113,7 +132,7 @@ export const HomePage: React.FC = () => {
             />
           </g>
         </svg>
-      </div>
+      </div>*/}
     </LayoutBase>
   );
 };

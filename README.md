@@ -1,6 +1,6 @@
 # elsa-data
 
-Genomic data sharing support software ("let your data go")
+Genomic data sharing support software ("let the data go")
 
 ## Dev
 
@@ -13,23 +13,27 @@ The following are assumed to be installed
 
 Then
 
-1. In folder `application/common`
+1. In each folder containing a `package.json` file, run `npm install`:
 
 ```shell
-npm install
+while IFS= read -r -d '' file; do
+    dirname=$(dirname "$file")
+    (
+      cd "$dirname"
+      npm install
+    ) || exit 1
+done < <(find . -name package.json -type f ! -path "*/node_modules/*" -print0)
 ```
 
 2. In folder `application/frontend`
 
 ```shell
-npm install
 npm run build:dev
 ```
 
 3. In folder `application/backend`
 
 ```shell
-npm install
 edgedb project init
 npm run edgetypes
 ```

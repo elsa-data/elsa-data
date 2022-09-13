@@ -1,7 +1,11 @@
-import React, { PropsWithChildren } from "react";
+import { Menu, Transition } from "@headlessui/react";
+import React, { Fragment, PropsWithChildren } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseFooter } from "./layout-base-footer";
+import classNames from "classnames";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 
 type Props = {};
 
@@ -51,55 +55,28 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
           </div>
           <div className="w-1/2 pr-0">
             <div className="flex relative inline-block float-right">
-              {loggedInUser && (
-                <form id="logoutForm" action="/auth/logout" method="POST">
-                  <div className="relative text-sm">
-                    <button id="userButton" className="mr-3">
-                      {" "}
-                      <span className="hidden md:inline-block">
-                        Hi, {loggedInUser.displayName}
-                      </span>
-                    </button>
-                    <button type="submit" className="btn-blue">
-                      Logout
-                    </button>
-                  </div>
-                </form>
-              )}
-              {!loggedInUser && (
-                <div className="relative text-sm">
-                  <button
-                    id="userButton"
-                    className="flex items-center focus:outline-none mr-3"
-                  >
-                    {" "}
-                    <span className="hidden md:inline-block">
-                      You are logged out{" "}
-                    </span>
-                  </button>
-                </div>
-              )}
+              {loggedInUser && <LayoutBaseHeaderUser user={loggedInUser} />}
+            </div>
 
-              <div className="block lg:hidden pr-4">
-                <button
-                  id="nav-toggle"
-                  className="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-900 hover:border-teal-500 appearance-none focus:outline-none"
+            <div className="block lg:hidden pr-4">
+              <button
+                id="nav-toggle"
+                className="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-900 hover:border-teal-500 appearance-none focus:outline-none"
+              >
+                <svg
+                  className="fill-current h-3 w-3"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <svg
-                    className="fill-current h-3 w-3"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <title>Menu</title>
-                    <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
-                  </svg>
-                </button>
-              </div>
+                  <title>Menu</title>
+                  <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+                </svg>
+              </button>
             </div>
           </div>
 
           <div
-            className="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden lg:block mt-2 lg:mt-0 bg-white z-20"
+            className="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden lg:block mt-2 lg:mt-0 bg-white"
             id="nav-content"
           >
             {loggedInUser && (
@@ -129,6 +106,15 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "text-green-500",
                     "border-green-500",
                     "hover:border-green-500"
+                  )}
+                </li>
+                <li className="mr-6 my-2 md:my-0">
+                  {navLink(
+                    "/users",
+                    "Users",
+                    "text-rose-500",
+                    "border-rose-500",
+                    "hover:border-rose-500"
                   )}
                 </li>
               </ul>

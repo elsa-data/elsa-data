@@ -44,7 +44,7 @@ export class AuditLogService {
     start: Date
   ): Promise<string> {
     const auditEvent = await e
-      .insert(e.audit.AuditEvent, {
+      .insert(e.audit.ReleaseAuditEvent, {
         whoId: user.subjectId,
         whoDisplayName: user.displayName,
         occurredDateTime: start,
@@ -66,7 +66,7 @@ export class AuditLogService {
         filter: e.op(e.uuid(releaseId), "=", r.id),
         set: {
           auditLog: {
-            "+=": e.select(e.audit.AuditEvent, (ae) => ({
+            "+=": e.select(e.audit.ReleaseAuditEvent, (ae) => ({
               filter: e.op(e.uuid(auditEvent.id), "=", ae.id).assert_single(),
             })),
           },
@@ -99,7 +99,7 @@ export class AuditLogService {
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
 
     const ae = await e
-      .update(e.audit.AuditEvent, (ae) => ({
+      .update(e.audit.ReleaseAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
           outcome: outcome,

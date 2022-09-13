@@ -8,14 +8,14 @@ import {
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "../../src/test-data/test-data-helpers";
+import { insert10F } from "../../src/test-data/insert-test-data-10f";
+import { findSpecimen } from "./utils";
+import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
-  insert10F,
-  JUDY_SPECIMEN,
-  TENF_URI,
-} from "../../src/test-data/insert-test-data-10f";
-import { findSpecimen } from "./utils";
+} from "../../src/test-data/insert-test-data-10f-simpsons";
+import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -79,7 +79,7 @@ export async function beforeEachCommon() {
         findSpecimenQuery(JUDY_SPECIMEN)
       ),
       auditLog: e.set(
-        e.insert(e.audit.AuditEvent, {
+        e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",
           actionDescription: "Created Release",
           outcome: 0,
@@ -116,6 +116,10 @@ export async function beforeEachCommon() {
       id: allowedDataOwnerUserInsert.id,
       subjectId: allowedDataOwnerSubject,
       displayName: allowedDisplayName,
+      lastLoginDateTime: new Date(),
+      allowedImportDataset: false,
+      allowedChangeReleaseDataOwner: false,
+      allowedCreateRelease: false,
     });
   }
 
@@ -139,6 +143,10 @@ export async function beforeEachCommon() {
       id: allowedPiUserInsert.id,
       subjectId: allowedPiSubject,
       displayName: allowedDisplayName,
+      lastLoginDateTime: new Date(),
+      allowedImportDataset: false,
+      allowedChangeReleaseDataOwner: false,
+      allowedCreateRelease: false,
     });
   }
 
@@ -158,6 +166,10 @@ export async function beforeEachCommon() {
       id: notAllowedUserInsert.id,
       subjectId: notAllowedSubject,
       displayName: notAllowedDisplayName,
+      lastLoginDateTime: new Date(),
+      allowedImportDataset: false,
+      allowedChangeReleaseDataOwner: false,
+      allowedCreateRelease: false,
     });
   }
 
