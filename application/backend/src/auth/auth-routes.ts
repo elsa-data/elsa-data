@@ -5,6 +5,7 @@ import {
   ALLOWED_CREATE_NEW_RELEASES,
   SECURE_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
+  USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
@@ -106,7 +107,6 @@ export const authRoutes = async (
   const settings = opts.container.resolve<ElsaSettings>("Settings");
   const userService = opts.container.resolve(UsersService);
   const auditLogService = opts.container.resolve(AuditLogService);
-  const edgeDbClient = opts.container.resolve<edgedb.Client>("Database");
 
   const client = new settings.oidcIssuer.Client({
     client_id: settings.oidcClientId,
@@ -132,15 +132,31 @@ export const authRoutes = async (
     reply.redirect(redirectUrl);
   });
 
-  fastify.post("/auth/logout", async (request, reply) => {
+  // clean *our* cookies - meaning the browser is no longer authorised into Elsa Data for
+  // web browsing or API calls
+  const clearOurLoginState = (request: FastifyRequest, reply: FastifyReply) => {
     // delete all the backend session cookies
     request.session.delete();
 
     reply.clearCookie(USER_SUBJECT_COOKIE_NAME);
     reply.clearCookie(USER_NAME_COOKIE_NAME);
+    reply.clearCookie(USER_EMAIL_COOKIE_NAME);
     reply.clearCookie(USER_ALLOWED_COOKIE_NAME);
+  };
 
+  fastify.post("/auth/logout", async (request, reply) => {
+    clearOurLoginState(request, reply);
     reply.redirect("/");
+  });
+
+  fastify.post("/auth/logout-completely", async (request, reply) => {
+    clearOurLoginState(request, reply);
+
+    // TODO: this probably needs to be configurable per OIDC setup - but given we are setting
+    // up firstly for CILogon - it can wait till after that
+
+    // CILogon has a special page to visit that clears CILogon cookie state
+    reply.redirect("https://cilogon.org/logout");
   });
 
   // the cb (callback) route is the route that is redirected to as part of the OIDC flow
@@ -192,6 +208,7 @@ export const authRoutes = async (
     // these cookies however are available to React - PURELY for UI/display purposes
     cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
     cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
+    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, email); // TODO: save this in backend too.. (if needed?)
 
     // NOTE: this is a UI cookie - the actual enforcement of this grouping at an API layer is elsewhere
     // we do it this way so that we can centralise all permissions logic on the backend, and hand down
@@ -264,6 +281,7 @@ export const authRoutes = async (
           USER_NAME_COOKIE_NAME,
           authUser.displayName
         );
+        cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, "user@email.com");
         cookieForUI(
           request,
           reply,
