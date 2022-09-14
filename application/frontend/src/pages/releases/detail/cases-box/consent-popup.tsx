@@ -15,6 +15,8 @@ import {
   DuoLimitationCodedType,
   ReleaseCaseType,
   ReleasePatientType,
+  duoCodeToDescription,
+  isKnownDuoCode,
 } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQueryClient } from "react-query";
@@ -83,6 +85,17 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
         {duos.map(function(duo: DuoLimitationCodedType) {
           const diseaseCode = (duo as any)?.diseaseCode;
           const diseaseSystem = (duo as any)?.diseaseSystem;
+
+          const description
+            = isKnownDuoCode(diseaseCode)
+            ? duoCodeToDescription[diseaseCode]
+            : null;
+
+          const resolvedDiseaseCode
+            = description
+            ? `${description} (${diseaseCode})`
+            : diseaseCode;
+
           return (<div>
             <div>
               <b>Code:</b>{" "}{duo.code}
@@ -107,9 +120,9 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
                 </ul>
               </div>
             }
-            {diseaseCode &&
+            {resolvedDiseaseCode &&
               <div>
-                <b>Disease Code:</b>{" "}{diseaseCode}
+                <b>Disease Code:</b>{" "}{resolvedDiseaseCode}
               </div>
             }
             {diseaseSystem &&
