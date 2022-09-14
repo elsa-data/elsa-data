@@ -9,10 +9,17 @@ import {
 } from "./aws-helper";
 import {
   File,
+  ArtifactType,
   insertArtifactFastqPairQuery,
   insertArtifactBamQuery,
   insertArtifactVcfQuery,
   insertArtifactCramQuery,
+  ArtifactStudyIdAndFileIdByDatasetUriQueryType,
+  fastqArtifactStudyIdAndFileIdByDatasetUriQuery,
+  bamArtifactStudyIdAndFileIdByDatasetUriQuery,
+  vcfArtifactStudyIdAndFileIdByDatasetUriQuery,
+  cramArtifactStudyIdAndFileIdByDatasetUriQuery,
+  fileByFileIdQuery,
 } from "../db/lab-queries";
 import {
   makeEmptyIdentifierArray,
@@ -25,16 +32,15 @@ const BUCKET = "elsa-data-tmp";
 const REGION = "ap-southeast-2";
 const AG_BUCKET = "agha-gdr-store-2.0";
 
+/**
+ * Manifest Type as what current AG manifest data will look like
+ */
 type manifestType = {
   checksum: string;
-  filename: string;
   agha_study_id: string;
+  s3Url: string;
 };
-
-/**
- * Problem to note:
- * - What if manifest removed? nothing triggered on re-sync as manifest key does not exist
- */
+type manifestDict = Record<string, manifestType>;
 
 @injectable()
 @singleton()
@@ -44,10 +50,20 @@ export class AGService {
     @inject("Database") private edgeDbClient: edgedb.Client
   ) {}
 
-  async getS3ObjectListFromKeyPrefix(s3KeyPrefix: string) {
+  /**
+   * @param s3KeyPrefix Prefix to search
+   * @returns A list of S3 object metadata for AG bucket matching key prefix
+   */
+  async getS3ObjectListFromKeyPrefix(
+    s3KeyPrefix: string
+  ): Promise<S3ObjectMetadata[]> {
     return await awsListObjects(this.s3Client, AG_BUCKET, s3KeyPrefix);
   }
 
+  /**
+   * @param s3ListMetadata
+   * @returns A list of manifest string
+   */
   getManifestKeyFromS3ObjectList(s3ListMetadata: S3ObjectMetadata[]): string[] {
     const manifestKeys: string[] = [];
     for (const s3Metadata of s3ListMetadata) {
@@ -55,10 +71,14 @@ export class AGService {
         manifestKeys.push(s3Metadata.key);
       }
     }
-
     return manifestKeys;
   }
 
+  /**
+   * Mostly used for parsing the manifest file in TSV format
+   * @param tsvString string with tsv format
+   * @returns
+   */
   convertTsvToJson(tsvString: string): unknown[] {
     tsvString = tsvString.trimEnd();
 
@@ -101,11 +121,20 @@ export class AGService {
     return studyIdGroup;
   }
 
+  /**
+   * To group file in their artifact type and filename
+   * @param fileRecordListedInManifest
+   * @returns A nested json of artifactType
+   * E.g. {artifactFastq : { A00001 : [File1, File2] } }
+   */
   groupManifestFileByArtifactTypeAndFilename(
     fileRecordListedInManifest: File[]
   ): Record<string, Record<string, File[]>> {
     const groupFiletype: Record<string, Record<string, File[]>> = {};
 
+    /**
+     * A helper function to fill the result above
+     */
     function addOrCreateNewArtifactGroup(
       artifactType: string,
       filenameId: string,
@@ -132,75 +161,40 @@ export class AGService {
       if (filename.endsWith("fastq") || filename.endsWith("fq")) {
         const lastIndexOfUnderScore = filename.lastIndexOf("_");
         const filenameId = filename.substring(0, lastIndexOfUnderScore);
-        addOrCreateNewArtifactGroup("artifactFastq", filenameId, manifestObj);
+        addOrCreateNewArtifactGroup(
+          ArtifactType.FASTQ,
+          filenameId,
+          manifestObj
+        );
 
         // BAM Artifact
       } else if (filename.endsWith("bam") || filename.endsWith("bai")) {
         const firstIndexOfDot = filename.indexOf(".");
         const filenameId = filename.substring(0, firstIndexOfDot);
-        addOrCreateNewArtifactGroup("artifactBam", filenameId, manifestObj);
+        addOrCreateNewArtifactGroup(ArtifactType.BAM, filenameId, manifestObj);
 
         // VCF Artifact
       } else if (filename.endsWith("vcf") || filename.endsWith("tbi")) {
         const firstIndexOfDot = filename.indexOf(".");
         const filenameId = filename.substring(0, firstIndexOfDot);
-        addOrCreateNewArtifactGroup("artifactVcf", filenameId, manifestObj);
+        addOrCreateNewArtifactGroup(ArtifactType.VCF, filenameId, manifestObj);
 
         // CRAM Artifact
       } else if (filename.endsWith("cram") || filename.endsWith("crai")) {
         const firstIndexOfDot = filename.indexOf(".");
         const filenameId = filename.substring(0, firstIndexOfDot);
-        addOrCreateNewArtifactGroup("artifactCram", filenameId, manifestObj);
+        addOrCreateNewArtifactGroup(ArtifactType.CRAM, filenameId, manifestObj);
       }
     }
     return groupFiletype;
   }
 
-  async checkDbDifferenceFromManifest(
-    s3UrlPrefix: string,
-    manifestObjList: manifestType[]
-  ): Promise<Record<string, manifestType[]>> {
-    const result: Record<string, manifestType[]> = {
-      missing: [],
-      diff: [],
-    };
-    const trimSlashS3uriPrefix = s3UrlPrefix.replace(/\/$/, "");
-
-    for (const manifestObj of manifestObjList) {
-      const filenameS3Uri = `${trimSlashS3uriPrefix}/${manifestObj.filename}`;
-
-      const queryFilename = e.select(e.storage.File, (file) => ({
-        url: true,
-        checksums: true,
-        filter: e.op(file.url, "ilike", `${filenameS3Uri}`),
-      }));
-
-      const queryResult = await queryFilename.run(this.edgeDbClient);
-
-      if (queryResult.length) {
-        // It should only contain one value so index 0 should be it
-        // (The query is `ilike` which only match with one value)
-        const md5Recorded = getMd5FromChecksumsArray(queryResult[0].checksums);
-        if (md5Recorded !== manifestObj.checksum) {
-          result.diff.push(manifestObj);
-        }
-      } else {
-        result.missing.push(manifestObj);
-      }
-    }
-    return result;
-  }
-
   /**
    * Update current db to updated version
-   * @param s3UrlPrefix A prefix of the file
    * @param manifestRecord The updated manifest file
    */
-  async updateFileRecordFromManifest(
-    s3UrlPrefix: string,
-    manifestRecord: manifestType
-  ) {
-    const s3Url = `${s3UrlPrefix}${manifestRecord.filename}`;
+  async updateFileRecordFromManifest(manifestRecord: manifestType) {
+    const s3Url = manifestRecord.s3Url;
 
     const updateQuery = e.update(e.storage.File, (file) => ({
       filter: e.op(file.url, "ilike", s3Url),
@@ -237,7 +231,7 @@ export class AGService {
 
     // Inserting Fastq as lab output
     let r1: any;
-    const fastqArtifact = artifactTypeRecord["artifactFastq"];
+    const fastqArtifact = artifactTypeRecord[ArtifactType.FASTQ];
     if (fastqArtifact) {
       const fastqInsertQuery: any[] = [];
 
@@ -267,7 +261,7 @@ export class AGService {
     // Analyses output
     const analysesOutputArtifactQuery: any[] = [];
 
-    const artifactBam = artifactTypeRecord["artifactBam"];
+    const artifactBam = artifactTypeRecord[ArtifactType.BAM];
     if (artifactBam) {
       for (const filenameId in artifactBam) {
         const fileSet = sortFileRec(artifactBam[filenameId]);
@@ -277,7 +271,7 @@ export class AGService {
       }
     }
 
-    const artifactCram = artifactTypeRecord["artifactCram"];
+    const artifactCram = artifactTypeRecord[ArtifactType.CRAM];
     if (artifactCram) {
       for (const filenameId in artifactCram) {
         const fileSet = sortFileRec(artifactCram[filenameId]);
@@ -287,7 +281,7 @@ export class AGService {
       }
     }
 
-    const artifactVcf = artifactTypeRecord["artifactVcf"];
+    const artifactVcf = artifactTypeRecord[ArtifactType.VCF];
     if (artifactVcf) {
       for (const filenameId in artifactVcf) {
         const fileSet = sortFileRec(artifactVcf[filenameId]);
@@ -313,13 +307,11 @@ export class AGService {
   }
   /**
    * Convert manifest record to a File record as file Db is stored as file record.
-   * @param s3UriSubmissionPrefix
    * @param manifestRecordList A list of manifestType record
    * @param s3MetadataList An S3ObjectMetadata list for the particular manifest. (This will populate the size value)
    * @returns
    */
   convertManifestTypeToFileRecord(
-    s3UriSubmissionPrefix: string,
     manifestRecordList: manifestType[],
     s3MetadataList: S3ObjectMetadata[]
   ): File[] {
@@ -327,21 +319,21 @@ export class AGService {
 
     const s3MetadataDict: Record<string, S3ObjectMetadata> = {};
     for (const s3Metadata of s3MetadataList) {
-      const s3uri = `s3://${AG_BUCKET}/${s3Metadata.key}`;
-      s3MetadataDict[s3uri] = s3Metadata;
+      const s3url = `s3://${AG_BUCKET}/${s3Metadata.key}`;
+      s3MetadataDict[s3url] = s3Metadata;
     }
-    const trimSlashS3uriPrefix = s3UriSubmissionPrefix.replace(/\/$/, "");
+
     // TODO: If undefined/list not found
     // print something saying file in manifest not found in the s3 list
     for (const manifestRecord of manifestRecordList) {
-      const s3Uri = `${trimSlashS3uriPrefix}/${manifestRecord.filename}`;
-      const fileSize = s3MetadataDict[s3Uri].size;
+      const s3Url = manifestRecord.s3Url;
+      const fileSize = s3MetadataDict[s3Url].size;
 
       if (!fileSize) {
-        console.log(`No File foiund (${s3Uri})`);
+        console.log(`No File foiund (${s3Url})`);
       }
       result.push({
-        url: s3Uri,
+        url: s3Url,
         size: fileSize,
         checksums: [
           {
@@ -372,10 +364,10 @@ export class AGService {
 
   /**
    *
-   * @param datasetCases A query of dataset case to be linked to dataset
+   * @param datasetCases A query of datasetCase to be linked to dataset
    */
   async insertDataset(datasetCases: any) {
-    // A more dynamic datasetUri and FlagShip are expected here
+    // A more dynamic datasetUrl and FlagShip are expected here
     const datasetUri =
       "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac";
     const someFlaghsip = "CARDIAC";
@@ -402,9 +394,11 @@ export class AGService {
     }
   }
 
-  // Should be controller or main()
-  async syncDbFromS3KeyPrefix(s3KeyPrefix: string) {
-    // Searching match prefix with data in store bucket
+  async getS3ManifestObjectListByS3KeyPrefix(
+    s3KeyPrefix: string
+  ): Promise<manifestDict> {
+    const s3UrlManifestObj: manifestDict = {};
+
     const s3MetadataList = await this.getS3ObjectListFromKeyPrefix(s3KeyPrefix);
     const manifestKeyList = this.getManifestKeyFromS3ObjectList(s3MetadataList);
 
@@ -422,51 +416,194 @@ export class AGService {
         manifestS3Key
       );
 
-      const manifestObjContentList = <manifestType[]>(
-        this.convertTsvToJson(manifestTsvContent)
-      );
-
-      const comparedRecords = await this.checkDbDifferenceFromManifest(
-        s3UrlPrefix,
-        manifestObjContentList
-      );
-
-      if (comparedRecords.diff) {
-        for (const rec of comparedRecords.diff) {
-          await this.updateFileRecordFromManifest(s3UrlPrefix, rec);
-        }
+      // The manifest will contain a filename only, but for the purpose of uniquness and how we stored in db.
+      // We would append the filename with the s3 Url prefix.
+      for (const manifestObj of manifestObjContentList) {
+        const s3Url = `${s3UrlPrefix}${manifestObj.filename}`;
+        s3UrlManifestObj[s3Url] = {
+          s3Url: `${s3UrlPrefix}${manifestObj.filename}`,
+          checksum: manifestObj.checksum,
+          agha_study_id: manifestObj.agha_study_id,
+        };
       }
+    }
 
-      // Adding the missing record to db
-      if (comparedRecords.missing) {
-        const groupedRecByStudyId = this.groupManifestByStudyId(
-          comparedRecords.missing
-        );
-        const listOfStudyId = Object.keys(groupedRecByStudyId);
-        for (const studyId of listOfStudyId) {
-          const manifestRecord = groupedRecByStudyId[studyId];
+    return s3UrlManifestObj;
+  }
 
-          // Convert to FILE record
-          const fileRecordList = this.convertManifestTypeToFileRecord(
-            manifestS3Prefix,
-            manifestRecord,
-            s3MetadataList
-          );
+  async getDbManifestObjectListByDatasetUri(
+    datasetUri: string
+  ): Promise<manifestDict> {
+    const s3UrlManifestObj: manifestDict = {};
 
-          const groupArtifactType =
-            this.groupManifestFileByArtifactTypeAndFilename(fileRecordList);
+    const artifactList = [];
 
-          // Insert Artifact
-          const artifactsSpeciment = await this.insertNewArtifact(
-            groupArtifactType
-          );
-
-          // Insert DatasetCase
-          const dataset = this.insertDatasetCase(studyId, artifactsSpeciment);
-
-          // Insert to FlagShip
-          await this.insertDataset(dataset);
+    // Fetching all related artifacts with the datasetUri
+    const fastqArtifact =
+      await fastqArtifactStudyIdAndFileIdByDatasetUriQuery.run(
+        this.edgeDbClient,
+        {
+          datasetUri: datasetUri,
         }
+      );
+    console.log(datasetUri);
+    artifactList.push(...fastqArtifact);
+    const bamArtifact = await bamArtifactStudyIdAndFileIdByDatasetUriQuery.run(
+      this.edgeDbClient,
+      {
+        datasetUri: datasetUri,
+      }
+    );
+    artifactList.push(...bamArtifact);
+    const cramArtifact =
+      await cramArtifactStudyIdAndFileIdByDatasetUriQuery.run(
+        this.edgeDbClient,
+        {
+          datasetUri: datasetUri,
+        }
+      );
+    artifactList.push(...cramArtifact);
+    const vcfArtifact = await vcfArtifactStudyIdAndFileIdByDatasetUriQuery.run(
+      this.edgeDbClient,
+      {
+        datasetUri: datasetUri,
+      }
+    );
+    artifactList.push(...vcfArtifact);
+    // Turning artifacts to manifestType object
+    for (const artifact of artifactList) {
+      // One studyId is expected at this point.
+      const agha_study_id = artifact.studyIdList[0][0].value;
+
+      for (const studyId of artifact.fileIdList) {
+        // Finding matching files object fields from fileId
+        const file = await fileByFileIdQuery.run(this.edgeDbClient, {
+          uuid: studyId,
+        });
+
+        if (!file) {
+          continue; // Mostly not going here
+        }
+        s3UrlManifestObj[file.url] = {
+          s3Url: file.url,
+          checksum: getMd5FromChecksumsArray(file.checksums),
+          agha_study_id: agha_study_id,
+        };
+      }
+    }
+
+    return s3UrlManifestObj;
+  }
+
+  /**
+   * Will compare for missing/different studyId
+   * set(set(manifestAlpha) - set(manifestBeta))
+   * @param manifestAlpha
+   * @param manifestBeta
+   * @returns
+   */
+  diffManifestAplhaAndManifestBeta(
+    manifestAlpha: manifestDict,
+    manifestBeta: manifestDict
+  ): manifestType[] {
+    const result: manifestType[] = [];
+
+    for (const key in manifestAlpha) {
+      const valueAlpha = manifestAlpha[key];
+      const valueBeta = manifestBeta[key];
+
+      // Check if alpha exist in Beta
+      if (!valueBeta) {
+        result.push(valueAlpha);
+
+        // Check if studyId change
+      } else if (valueAlpha["agha_study_id"] != valueBeta["agha_study_id"]) {
+        result.push(valueAlpha);
+      }
+    }
+    return result;
+  }
+
+  checkDiffChecksumRecordBetweenManifestDict(
+    manifestAlpha: manifestDict,
+    manifestBeta: manifestDict
+  ): string[] {
+    const result: string[] = [];
+
+    for (const key in manifestAlpha) {
+      const valueAlpha = manifestAlpha[key];
+      const valueBeta = manifestBeta[key];
+
+      // Check if alpha exist in Beta
+      if (valueAlpha["checksum"] != valueBeta["checksum"]) {
+        result.push(key);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Function to be called on the API layer
+   * @param s3KeyPrefix s3 key to sync the files
+   */
+  async syncDbFromS3KeyPrefix(s3KeyPrefix: string) {
+    // CARDIC URI
+    const CARDIAC_URI = "urn:fdc:umccr.org:2021:datasets/CARDIAC";
+
+    // Searching match prefix with data in store bucket
+    const s3MetadataList = await this.getS3ObjectListFromKeyPrefix(s3KeyPrefix);
+    const manifestKeyList = this.getManifestKeyFromS3ObjectList(s3MetadataList);
+
+    // GRAB all manifestType object from all manifest file in s3
+    const s3ManifestTypeObjectDict =
+      await this.getS3ManifestObjectListByS3KeyPrefix(s3KeyPrefix);
+
+    // Grab all manifestType object from edgedDB here
+    const dbManifestTypeObjectDict =
+      await this.getDbManifestObjectListByDatasetUri(CARDIAC_URI);
+
+    // Do comparison which and have report of which exist more or less
+    const missingFileFromDb = this.diffManifestAplhaAndManifestBeta(
+      s3ManifestTypeObjectDict,
+      dbManifestTypeObjectDict
+    );
+    const toBeDeletedFromDb = this.diffManifestAplhaAndManifestBeta(
+      dbManifestTypeObjectDict,
+      s3ManifestTypeObjectDict
+    );
+    const differentChecksum = this.checkDiffChecksumRecordBetweenManifestDict(
+      dbManifestTypeObjectDict,
+      s3ManifestTypeObjectDict
+    );
+
+    // Insert missing files to DB
+    if (missingFileFromDb.length) {
+      const groupedMissingRecByStudyId =
+        this.groupManifestByStudyId(missingFileFromDb);
+
+      const listOfStudyId = Object.keys(groupedMissingRecByStudyId);
+      for (const studyId of listOfStudyId) {
+        const manifestRecord = groupedMissingRecByStudyId[studyId];
+
+        // Convert to FILE record
+        const fileRecordList = this.convertManifestTypeToFileRecord(
+          manifestRecord,
+          s3MetadataList
+        );
+
+        const groupArtifactType =
+          this.groupManifestFileByArtifactTypeAndFilename(fileRecordList);
+
+        // Insert Artifact
+        const artifactsSpeciment = await this.insertNewArtifact(
+          groupArtifactType
+        );
+
+        // Insert DatasetCase
+        const dataset = this.insertDatasetCase(studyId, artifactsSpeciment);
+
+        // Insert to FlagShip
+        await this.insertDataset(dataset);
       }
     }
   }

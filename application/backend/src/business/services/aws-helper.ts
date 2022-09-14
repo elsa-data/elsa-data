@@ -20,7 +20,7 @@ export async function awsListObjects(
   s3Client: S3Client,
   bucketName: string,
   s3KeyPrefix: string
-) {
+): Promise<S3ObjectMetadata[]> {
   let s3ObjectList: S3ObjectMetadata[] = [];
   let continuationToken: string | undefined = undefined;
 
