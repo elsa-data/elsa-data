@@ -416,12 +416,16 @@ export class AGService {
         manifestS3Key
       );
 
+      const manifestObjContentList = <manifestType[]>(
+        this.convertTsvToJson(manifestTsvContent)
+      );
+
       // The manifest will contain a filename only, but for the purpose of uniquness and how we stored in db.
       // We would append the filename with the s3 Url prefix.
       for (const manifestObj of manifestObjContentList) {
-        const s3Url = `${s3UrlPrefix}${manifestObj.filename}`;
+        const s3Url = manifestObj.s3Url;
         s3UrlManifestObj[s3Url] = {
-          s3Url: `${s3UrlPrefix}${manifestObj.filename}`,
+          s3Url: s3Url,
           checksum: manifestObj.checksum,
           agha_study_id: manifestObj.agha_study_id,
         };
