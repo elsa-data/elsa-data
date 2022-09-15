@@ -1,5 +1,5 @@
-import getUnicodeFlagIcon from 'country-flag-icons/unicode';
-import { hasFlag } from 'country-flag-icons';
+import getUnicodeFlagIcon from "country-flag-icons/unicode";
+import { hasFlag } from "country-flag-icons";
 import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,13 +15,12 @@ import {
   DuoLimitationCodedType,
   ReleaseCaseType,
   ReleasePatientType,
-  duoCodeToDescription,
-  isKnownDuoCode,
 } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQueryClient } from "react-query";
 import classNames from "classnames";
 import Popup from "reactjs-popup";
+import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 
 type Props = {
   releaseId: string;
@@ -34,7 +33,7 @@ type FlagsProps = {
 
 const Flags: React.FC<FlagsProps> = ({ regions }) => {
   if (regions.length === 0) {
-    return <></>
+    return <></>;
   } else
     return (
       <>
@@ -50,8 +49,8 @@ const Flags: React.FC<FlagsProps> = ({ regions }) => {
         </ul>
         )
       </>
-    )
-}
+    );
+};
 
 /**
  * The consent popup is a delayed effect popup that can show details of consent
@@ -82,55 +81,56 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       onOpen={onOpenHandler}
     >
       <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
-        {duos.map(function(duo: DuoLimitationCodedType) {
+        {duos.map(function (duo: DuoLimitationCodedType) {
           const diseaseCode = (duo as any)?.diseaseCode;
           const diseaseSystem = (duo as any)?.diseaseSystem;
 
-          const description
-            = isKnownDuoCode(diseaseCode)
+          const description = isKnownDuoCode(diseaseCode)
             ? duoCodeToDescription[diseaseCode]
             : null;
 
-          const resolvedDiseaseCode
-            = description
+          const resolvedDiseaseCode = description
             ? `${description} (${diseaseCode})`
             : diseaseCode;
 
-          return (<div>
+          return (
             <div>
-              <b>Code:</b>{" "}{duo.code}
+              <div>
+                <b>Code:</b> {duo.code}
+              </div>
+              {duo.modifiers && (
+                <div>
+                  <b>Modifiers:</b>{" "}
+                  <ul className="inline-list comma-list">
+                    {duo.modifiers.map(function (modifier) {
+                      const regions: string[] = (modifier as any)?.regions;
+                      return (
+                        <li>
+                          {modifier.code}
+                          {regions && (
+                            <>
+                              {" "}
+                              <Flags regions={regions} />
+                            </>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+              {resolvedDiseaseCode && (
+                <div>
+                  <b>Disease Code:</b> {resolvedDiseaseCode}
+                </div>
+              )}
+              {diseaseSystem && (
+                <div>
+                  <b>Disease System:</b> {diseaseSystem}
+                </div>
+              )}
             </div>
-            {duo.modifiers &&
-              <div>
-                <b>Modifiers:</b>
-                {" "}
-                <ul className="inline-list comma-list">
-                  {duo.modifiers.map(function(modifier) {
-                    const regions: string[] = (modifier as any)?.regions;
-                    return <li>
-                      {modifier.code}
-                      {regions &&
-                        <>
-                          {" "}
-                          <Flags regions={regions}/>
-                        </>
-                      }
-                    </li>
-                  })}
-                </ul>
-              </div>
-            }
-            {resolvedDiseaseCode &&
-              <div>
-                <b>Disease Code:</b>{" "}{resolvedDiseaseCode}
-              </div>
-            }
-            {diseaseSystem &&
-              <div>
-                <b>Disease System:</b>{" "}{diseaseSystem}
-              </div>
-            }
-          </div>)
+          );
         })}
       </div>
     </Popup>
