@@ -1,17 +1,21 @@
 import React, { PropsWithChildren } from "react";
-import { SubmitHandler, UseFormReturn } from "react-hook-form";
+import {
+  DeepPartial,
+  SubmitHandler,
+  UnpackNestedValue,
+  useForm,
+  UseFormReturn,
+} from "react-hook-form";
 
-/*
 type Props<TFormValues> = {
   onSubmit: SubmitHandler<TFormValues>;
   methods: UseFormReturn<TFormValues>;
   children: (methods: UseFormReturn<TFormValues>) => React.ReactNode;
 };
 
-// disabled due to compile error with newer Typescript
-// but we aren't currently doing Form input this way so deferring until we maybe
-// have complex forms
-
+/**
+ * A react-hook-form that contains other form inputs and a save button
+ */
 export const RhFormWithSaveButton = <TFormValues extends Record<string, any>>({
   onSubmit,
   methods,
@@ -35,4 +39,3 @@ export const RhFormWithSaveButton = <TFormValues extends Record<string, any>>({
     </form>
   );
 };
-*/
