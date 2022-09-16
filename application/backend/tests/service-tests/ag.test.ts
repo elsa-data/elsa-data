@@ -7,33 +7,44 @@ import { mockClient } from "aws-sdk-client-mock";
 import {
   File,
   ArtifactType,
-  fileByUrlQuery,
+  insertArtifactBamQuery,
 } from "../../src/business/db/lab-queries";
+import { fileByUrlQuery } from "../../src/business/db/storage-queries";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import {
-  MOCK_CARDIAC_MANIFEST,
-  MOCK_S3_LIST_BUCKET_CLIENT,
-  MOCK_CARDIAC_S3_OBJECT_LIST,
-  MOCK_MANIFEST_OBJECT,
+  MOCK_DATASET_URI,
   MOCK_BAM_FILE_SET,
   MOCK_FASTQ_PAIR_FILE_SET,
   MOCK_VCF_FILE_SET,
-  MOCK_S3URL_MANIFEST_OBJECT,
+  MOCK_1_CARDIAC_MANIFEST,
+  MOCK_1_CARDIAC_S3_OBJECT_LIST,
+  MOCK_1_MANIFEST_OBJECT,
+  MOCK_1_S3URL_MANIFEST_OBJECT,
+  MOCK_1_CARDIAC_FASTQ1_FILENAME,
+  MOCK_1_CARDIAC_FASTQ2_FILENAME,
+  MOCK_1_STUDY_ID,
+  MOCK_2_STUDY_ID,
+  MOCK_2_CARDIAC_S3_OBJECT_LIST,
+  MOCK_2_CARDIAC_MANIFEST,
+  MOCK_2_BAM_FILE_RECORD,
+  MOCK_2_BAI_FILE_RECORD,
+  MOCK_3_CARDIAC_S3_OBJECT_LIST,
+  MOCK_3_CARDIAC_MANIFEST,
 } from "./ag.common";
-import { getMd5FromChecksumsArray } from "../../src/business/db/helper";
+import * as awsHelper from "../../src/business/services/aws-helper";
+import {
+  getMd5FromChecksumsArray,
+  makeSystemlessIdentifierArray,
+  makeEmptyIdentifierArray,
+} from "../../src/business/db/helper";
 
 const util = require("util");
 
 const edgedbClient = edgedb.createClient();
 const s3ClientMock = mockClient(S3Client);
 
-jest.mock("../../src/business/services/aws-helper", () => ({
-  readObjectToStringFromS3Key: async () => MOCK_CARDIAC_MANIFEST,
-  awsListObjects: async () => MOCK_CARDIAC_S3_OBJECT_LIST,
-}));
-
 describe("AWS s3 client", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     container.register<S3Client>("S3Client", {
       useFactory: () => new S3Client({}),
     });
@@ -45,34 +56,45 @@ describe("AWS s3 client", () => {
   beforeEach(async () => {
     s3ClientMock.reset();
     await blankTestData();
+    await e
+      .insert(e.dataset.Dataset, {
+        uri: MOCK_DATASET_URI,
+        description: "a mock cardiac test",
+        cases: e.insert(e.dataset.DatasetCase, {}),
+      })
+      .run(edgedbClient);
   });
 
-  it.skip("Test getManifestKeyFromS3ObjectList", async () => {
+  afterEach(async () => {
+    await blankTestData();
+  });
+
+  it("Test getManifestKeyFromS3ObjectList", async () => {
     const agService = container.resolve(AGService);
     const manifestObjectList = agService.getManifestKeyFromS3ObjectList(
-      MOCK_CARDIAC_S3_OBJECT_LIST
+      MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
     expect(manifestObjectList).toEqual(["Cardiac/2019-11-21/manifest.txt"]);
   });
 
-  it.skip("Test convertTsvToJson", async () => {
+  it("Test convertTsvToJson", async () => {
     const agService = container.resolve(AGService);
-    const jsonManifest = agService.convertTsvToJson(MOCK_CARDIAC_MANIFEST);
-    expect(jsonManifest).toEqual(MOCK_MANIFEST_OBJECT);
+    const jsonManifest = agService.convertTsvToJson(MOCK_1_CARDIAC_MANIFEST);
+    expect(jsonManifest).toEqual(MOCK_1_MANIFEST_OBJECT);
   });
 
-  it.skip("Test groupManifestByStudyId", async () => {
+  it("Test groupManifestByStudyId", async () => {
     const agService = container.resolve(AGService);
 
     const groupArtifactContent = agService.groupManifestByStudyId(
-      MOCK_S3URL_MANIFEST_OBJECT
+      MOCK_1_S3URL_MANIFEST_OBJECT
     );
     expect(groupArtifactContent["A0000001"]).toEqual(
-      MOCK_S3URL_MANIFEST_OBJECT
+      MOCK_1_S3URL_MANIFEST_OBJECT
     );
   });
 
-  it.skip("Test groupManifestFileByArtifactTypeAndFilename", async () => {
+  it("Test groupManifestFileByArtifactTypeAndFilename", async () => {
     const agService = container.resolve(AGService);
 
     const fileRecordListedInManifest: File[] = [
@@ -95,7 +117,7 @@ describe("AWS s3 client", () => {
     ).toEqual(MOCK_VCF_FILE_SET);
   });
 
-  it.skip("Test updateFileRecordFromManifest", async () => {
+  it("Test updateFileRecordFromManifest", async () => {
     const agService = container.resolve(AGService);
 
     const mockInsertUrl = "s3://bucket/FILE_L001_R1.fastq.gz";
@@ -170,43 +192,190 @@ describe("AWS s3 client", () => {
     expect(fileList.length).toEqual(6);
   });
 
-  it.skip("Test converts3ManifestTypeToFileRecord", async () => {
+  it("Test converts3ManifestTypeToFileRecord", async () => {
     const agService = container.resolve(AGService);
 
     const newFileRec = agService.converts3ManifestTypeToFileRecord(
-      MOCK_S3URL_MANIFEST_OBJECT,
-      MOCK_CARDIAC_S3_OBJECT_LIST
+      MOCK_1_S3URL_MANIFEST_OBJECT,
+      MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
 
     expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
-  it.skip("Test converts3ManifestTypeToFileRecord", async () => {
+  it("Test converts3ManifestTypeToFileRecord", async () => {
     const agService = container.resolve(AGService);
 
     const newFileRec = agService.converts3ManifestTypeToFileRecord(
-      MOCK_S3URL_MANIFEST_OBJECT,
-      MOCK_CARDIAC_S3_OBJECT_LIST
+      MOCK_1_S3URL_MANIFEST_OBJECT,
+      MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
 
     expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
-  it.skip("Test converts3ManifestTypeToFileRecord", async () => {
+  it("Test converts3ManifestTypeToFileRecord", async () => {
     const agService = container.resolve(AGService);
 
     const newFileRec = agService.converts3ManifestTypeToFileRecord(
-      MOCK_S3URL_MANIFEST_OBJECT,
-      MOCK_CARDIAC_S3_OBJECT_LIST
+      MOCK_1_S3URL_MANIFEST_OBJECT,
+      MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
 
     expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
-  it("Test sync manifest to DB", async () => {
-    const agService = container.resolve(AGService);
+  it("Test MOCK 1 insert new Cardiac from s3Key", async () => {
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => MOCK_1_CARDIAC_S3_OBJECT_LIST);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Key")
+      .mockImplementation(async () => MOCK_1_CARDIAC_MANIFEST);
 
+    const agService = container.resolve(AGService);
     await agService.syncDbFromS3KeyPrefix("Cardiac");
+
+    // FILE schema expected values
+    const totalFileList = await e
+      .select(e.storage.File, () => ({
+        url: true,
+      }))
+      .run(edgedbClient);
+    expect(totalFileList.length).toEqual(2);
+    const expected = [
+      {
+        url: `s3://agha-gdr-store-2.0/Cardiac/2019-11-21/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
+      },
+      {
+        url: `s3://agha-gdr-store-2.0/Cardiac/2019-11-21/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
+      },
+    ];
+    expect(totalFileList).toEqual(expect.arrayContaining(expected));
+
+    const totalDatasetPatent = await e
+      .select(e.dataset.DatasetPatient, () => ({
+        externalIdentifiers: true,
+      }))
+      .run(edgedbClient);
+    expect(totalDatasetPatent.length).toEqual(1);
+    expect(totalDatasetPatent).toEqual([
+      { externalIdentifiers: [{ system: "", value: MOCK_1_STUDY_ID }] },
+    ]);
+  });
+
+  it("Test MOCK 2 Updating Checksum", async () => {
+    // Current DB already exist with outdated data
+    const bamInsertArtifact = insertArtifactBamQuery(
+      MOCK_2_BAM_FILE_RECORD,
+      MOCK_2_BAI_FILE_RECORD
+    );
+    const preExistingData = e.insert(e.dataset.DatasetPatient, {
+      externalIdentifiers: makeSystemlessIdentifierArray(MOCK_2_STUDY_ID),
+      specimens: e.set(
+        e.insert(e.dataset.DatasetSpecimen, {
+          externalIdentifiers: makeEmptyIdentifierArray(),
+          artifacts: e.set(bamInsertArtifact),
+        })
+      ),
+    });
+    const linkDatapatientQuery = e.update(
+      e.dataset.DatasetCase,
+      (datasetCase) => ({
+        set: {
+          patients: {
+            "+=": preExistingData,
+          },
+        },
+        filter: e.op(datasetCase.dataset.uri, "ilike", MOCK_DATASET_URI),
+      })
+    );
+    await linkDatapatientQuery.run(edgedbClient);
+
+    // MOCK data from S3
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => MOCK_2_CARDIAC_S3_OBJECT_LIST);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Key")
+      .mockImplementation(async () => MOCK_2_CARDIAC_MANIFEST);
+    const agService = container.resolve(AGService);
+    await agService.syncDbFromS3KeyPrefix("Cardiac");
+
+    // FILE schema expected values
+    const totalFileList = await e
+      .select(e.storage.File, () => ({
+        url: true,
+        checksums: true,
+      }))
+      .run(edgedbClient);
+    expect(totalFileList.length).toEqual(2);
+    const expected = [
+      {
+        url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
+        checksums: [{ type: "MD5", value: "UPDATED_CHECKSUM" }],
+      },
+      {
+        url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
+        checksums: [{ type: "MD5", value: "UPDATED_CHECKSUM" }],
+      },
+    ];
+    expect(totalFileList).toEqual(expect.arrayContaining(expected));
+  });
+
+  it("Test MOCK 3 Warning to delete data", async () => {
+    // Current DB already exist with outdated data
+    const bamInsertArtifact = insertArtifactBamQuery(
+      MOCK_2_BAM_FILE_RECORD,
+      MOCK_2_BAI_FILE_RECORD
+    );
+    const preExistingData = e.insert(e.dataset.DatasetPatient, {
+      externalIdentifiers: makeSystemlessIdentifierArray(MOCK_2_STUDY_ID),
+      specimens: e.set(
+        e.insert(e.dataset.DatasetSpecimen, {
+          externalIdentifiers: makeEmptyIdentifierArray(),
+          artifacts: e.set(bamInsertArtifact),
+        })
+      ),
+    });
+    const linkDatapatientQuery = e.update(
+      e.dataset.DatasetCase,
+      (datasetCase) => ({
+        set: {
+          patients: {
+            "+=": preExistingData,
+          },
+        },
+        filter: e.op(datasetCase.dataset.uri, "ilike", MOCK_DATASET_URI),
+      })
+    );
+    await linkDatapatientQuery.run(edgedbClient);
+
+    // MOCK data from S3
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => MOCK_3_CARDIAC_S3_OBJECT_LIST);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Key")
+      .mockImplementation(async () => MOCK_3_CARDIAC_MANIFEST);
+    const consoleText = jest.spyOn(console, "log");
+
+    const agService = container.resolve(AGService);
+    await agService.syncDbFromS3KeyPrefix("Cardiac");
+
+    const hel = [
+      {
+        s3Url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
+        checksum: "RANDOMCHECKSUM",
+        agha_study_id: "A0000002",
+      },
+      {
+        s3Url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
+        checksum: "RANDOMCHECKSUM",
+        agha_study_id: "A0000002",
+      },
+    ];
+    expect(consoleText).toHaveBeenCalledWith(`Data to be deleted: ${hel}`);
   });
 });
 

@@ -1,5 +1,4 @@
 import e, { storage } from "../../../dbschema/edgeql-js";
-import { uuid } from "../../../dbschema/edgeql-js/modules/std";
 
 export enum ArtifactType {
   FASTQ = "FASTQ",
@@ -17,78 +16,54 @@ export type File = {
   }[];
 };
 
+function insertFile(file: File) {
+  return e.insert(e.storage.File, {
+    url: file.url,
+    size: file.size,
+    checksums: file.checksums,
+  });
+}
+
 export function insertArtifactFastqPairQuery(
   forwardFile: File,
-  reverseFileFile: File
+  reverseFile: File
 ) {
   return e.insert(e.lab.ArtifactFastqPair, {
-    forwardFile: e.insert(e.storage.File, {
-      url: forwardFile.url,
-      size: forwardFile.size,
-      checksums: forwardFile.checksums,
-    }),
-    reverseFile: e.insert(e.storage.File, {
-      url: reverseFileFile.url,
-      size: reverseFileFile.size,
-      checksums: reverseFileFile.checksums,
-    }),
+    forwardFile: insertFile(forwardFile),
+    reverseFile: insertFile(reverseFile),
   });
 }
 
 export function insertArtifactBamQuery(bamFile: File, baiFile: File) {
   return e.insert(e.lab.ArtifactBam, {
-    bamFile: e.insert(e.storage.File, {
-      url: bamFile.url,
-      size: bamFile.size,
-      checksums: bamFile.checksums,
-    }),
-    baiFile: e.insert(e.storage.File, {
-      url: baiFile.url,
-      size: baiFile.size,
-      checksums: baiFile.checksums,
-    }),
+    bamFile: insertFile(bamFile),
+    baiFile: insertFile(baiFile),
   });
 }
 
 export function insertArtifactVcfQuery(vcfFile: File, tbiFile: File) {
   return e.insert(e.lab.ArtifactVcf, {
-    vcfFile: e.insert(e.storage.File, {
-      url: vcfFile.url,
-      size: vcfFile.size,
-      checksums: vcfFile.checksums,
-    }),
-    tbiFile: e.insert(e.storage.File, {
-      url: tbiFile.url,
-      size: tbiFile.size,
-      checksums: tbiFile.checksums,
-    }),
+    vcfFile: insertFile(vcfFile),
+    tbiFile: insertFile(tbiFile),
   });
 }
 
 export function insertArtifactCramQuery(cramFile: File, craiFile: File) {
   return e.insert(e.lab.ArtifactCram, {
-    cramFile: e.insert(e.storage.File, {
-      url: cramFile.url,
-      size: cramFile.size,
-      checksums: cramFile.checksums,
-    }),
-    craiFile: e.insert(e.storage.File, {
-      url: craiFile.url,
-      size: craiFile.size,
-      checksums: craiFile.checksums,
-    }),
+    cramFile: insertFile(cramFile),
+    craiFile: insertFile(craiFile),
   });
 }
 
 /**
  * SELECT function queries
  */
-export type ArtifactStudyIdAndFileIdByDatasetUriQueryType = {
+export type ArtifactStudyIdAndFileIdByDatasetCaseIdQueryType = {
   fileIdList: number[];
   studyIdList: { system: string; value: string }[][];
 };
-export const fastqArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
-  { datasetUri: e.str },
+export const fastqArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
+  { datasetCaseId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactFastqPair, (fastqArtifact) => {
       // const vcfForwardFileQuery = e.select(e.storage.File, (file) => ({
@@ -109,16 +84,16 @@ export const fastqArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
           fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.uri,
+          fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
           "=",
-          params.datasetUri
+          params.datasetCaseId
         ),
       };
     })
 );
 
-export const bamArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
-  { datasetUri: e.str },
+export const bamArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
+  { datasetCaseId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactBam, (bamArtifact) => {
       return {
@@ -127,16 +102,16 @@ export const bamArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
           bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.uri,
+          bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
           "=",
-          params.datasetUri
+          params.datasetCaseId
         ),
       };
     })
 );
 
-export const cramArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
-  { datasetUri: e.str },
+export const cramArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
+  { datasetCaseId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactCram, (cramArtifact) => {
       return {
@@ -145,16 +120,16 @@ export const cramArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
           cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.uri,
+          cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
           "=",
-          params.datasetUri
+          params.datasetCaseId
         ),
       };
     })
 );
 
-export const vcfArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
-  { datasetUri: e.str },
+export const vcfArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
+  { datasetCaseId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactVcf, (vcfArtifact) => {
       return {
@@ -163,24 +138,10 @@ export const vcfArtifactStudyIdAndFileIdByDatasetUriQuery = e.params(
           vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.uri,
+          vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
           "=",
-          params.datasetUri
+          params.datasetCaseId
         ),
       };
     })
-);
-
-export const fileByFileIdQuery = e.params({ uuid: e.uuid }, (params) =>
-  e.select(e.storage.File, (file) => ({
-    ...e.storage.File["*"],
-    filter: e.op(file.id, "=", params.uuid),
-  }))
-);
-
-export const fileByUrlQuery = e.params({ url: e.str }, (params) =>
-  e.select(e.storage.File, (file) => ({
-    ...e.storage.File["*"],
-    filter: e.op(file.url, "ilike", params.url),
-  }))
 );
