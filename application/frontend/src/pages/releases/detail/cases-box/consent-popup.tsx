@@ -1,3 +1,5 @@
+import getUnicodeFlagIcon from "country-flag-icons/unicode";
+import { hasFlag } from "country-flag-icons";
 import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,10 +20,36 @@ import axios from "axios";
 import { useQueryClient } from "react-query";
 import classNames from "classnames";
 import Popup from "reactjs-popup";
+import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 
 type Props = {
   releaseId: string;
   nodeId: string;
+};
+
+type FlagsProps = {
+  regions: string[];
+};
+
+const Flags: React.FC<FlagsProps> = ({ regions }) => {
+  if (regions.length === 0) {
+    return <></>;
+  } else
+    return (
+      <>
+        (
+        <ul className="inline-list comma-list">
+          {regions.map((region) => (
+            <li>
+              <span title={region}>
+                {hasFlag(region) ? getUnicodeFlagIcon(region) : `(${region})`}
+              </span>
+            </li>
+          ))}
+        </ul>
+        )
+      </>
+    );
 };
 
 /**
@@ -52,10 +80,58 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
-      <div className="flex flex-row divide-x divide-blue-500 bg-white text-xs border rounded drop-shadow-lg">
-        {duos.map((duo) => (
-          <pre>{JSON.stringify(duo, null, 1)}</pre>
-        ))}
+      <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
+        {duos.map(function (duo: DuoLimitationCodedType) {
+          const diseaseCode = (duo as any)?.diseaseCode;
+          const diseaseSystem = (duo as any)?.diseaseSystem;
+
+          const description = isKnownDuoCode(diseaseCode)
+            ? duoCodeToDescription[diseaseCode]
+            : null;
+
+          const resolvedDiseaseCode = description
+            ? `${description} (${diseaseCode})`
+            : diseaseCode;
+
+          return (
+            <div>
+              <div>
+                <b>Code:</b> {duo.code}
+              </div>
+              {duo.modifiers && (
+                <div>
+                  <b>Modifiers:</b>{" "}
+                  <ul className="inline-list comma-list">
+                    {duo.modifiers.map(function (modifier) {
+                      const regions: string[] = (modifier as any)?.regions;
+                      return (
+                        <li>
+                          {modifier.code}
+                          {regions && (
+                            <>
+                              {" "}
+                              <Flags regions={regions} />
+                            </>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+              {resolvedDiseaseCode && (
+                <div>
+                  <b>Disease Code:</b> {resolvedDiseaseCode}
+                </div>
+              )}
+              {diseaseSystem && (
+                <div>
+                  <b>Disease System:</b> {diseaseSystem}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </Popup>
   );

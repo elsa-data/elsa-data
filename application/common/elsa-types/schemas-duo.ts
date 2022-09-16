@@ -13,30 +13,40 @@ import { Static, Type } from "@sinclair/typebox";
  * that is needed to make sense of the codes (i.e. GS needs somewhere to put the list of country codes)
  */
 
-type KnownModifierCodes =
-  | "DUO:0000019"
-  | "DUO:0000020"
-  | "DUO:0000046"
-  | "DUO:0000018"
-  | "DUO:0000045"
-  | "DUO:0000024"
-  | "DUO:0000016"
-  | "DUO:0000025"
-  | "DUO:0000029"
-  | "DUO:0000043"
-  | "DUO:0000015"
-  | "DUO:0000022"
-  | "DUO:0000026"
-  | "DUO:0000006"
-  | "DUO:0000028"
-  | "DUO:0000027";
+const KnownModifierCodes = [
+  "DUO:0000019",
+  "DUO:0000020",
+  "DUO:0000046",
+  "DUO:0000018",
+  "DUO:0000045",
+  "DUO:0000024",
+  "DUO:0000016",
+  "DUO:0000025",
+  "DUO:0000029",
+  "DUO:0000043",
+  "DUO:0000015",
+  "DUO:0000022",
+  "DUO:0000026",
+  "DUO:0000006",
+  "DUO:0000028",
+  "DUO:0000027",
+] as const;
 
-type KnownLimitationCodes =
-  | "DUO:0000042"
-  | "DUO:0000006"
-  | "DUO:0000007"
-  | "DUO:0000011"
-  | "DUO:0000004";
+const KnownLimitationCodes = [
+  "DUO:0000042",
+  "DUO:0000006",
+  "DUO:0000007",
+  "DUO:0000011",
+  "DUO:0000004",
+] as const;
+
+const KnownDuoCodes = [...KnownModifierCodes, ...KnownLimitationCodes] as const;
+
+export type KnownModifierCode = typeof KnownModifierCodes[number];
+
+export type KnownLimitationCode = typeof KnownLimitationCodes[number];
+
+export type KnownDuoCode = typeof KnownDuoCodes[number];
 
 export const DuoPublicationRequiredSchema = Type.Object({
   code: Type.Literal("DUO:0000019"), // PUB
