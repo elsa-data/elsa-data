@@ -82,21 +82,23 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
     >
       <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
         {duos.map(function (duo: DuoLimitationCodedType) {
+          const duoCode = (duo as any)?.code;
+
           const diseaseCode = (duo as any)?.diseaseCode;
           const diseaseSystem = (duo as any)?.diseaseSystem;
 
-          const description = isKnownDuoCode(diseaseCode)
-            ? duoCodeToDescription[diseaseCode]
+          const duoDescription = isKnownDuoCode(duoCode)
+            ? duoCodeToDescription[duoCode]
             : null;
 
-          const resolvedDiseaseCode = description
-            ? `${description} (${diseaseCode})`
-            : diseaseCode;
+          const resolvedDuoCode = duoDescription
+            ? `${duoCode} (${duoDescription})`
+            : duoCode;
 
           return (
             <div>
               <div>
-                <b>Code:</b> {duo.code}
+                <b>Code:</b> {resolvedDuoCode}
               </div>
               {duo.modifiers && (
                 <div>
@@ -119,9 +121,9 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
                   </ul>
                 </div>
               )}
-              {resolvedDiseaseCode && (
+              {diseaseCode && (
                 <div>
-                  <b>Disease Code:</b> {resolvedDiseaseCode}
+                  <b>Disease Code:</b> {diseaseCode}
                 </div>
               )}
               {diseaseSystem && (
