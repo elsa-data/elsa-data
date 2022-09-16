@@ -51,7 +51,6 @@ export async function awsListObjects(
       console.error(e);
     }
   } while (continuationToken);
-  console.log("s3ObjectList", s3ObjectList);
   return s3ObjectList;
 }
 
