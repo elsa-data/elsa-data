@@ -216,8 +216,7 @@ export class AGService {
         .replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
       // FASTQ Artifact
       if (filename.endsWith(".fastq") || filename.endsWith(".fq")) {
-        const lastIndexOfUnderScore = filename.lastIndexOf("_");
-        const filenameId = filename.substring(0, lastIndexOfUnderScore);
+        const filenameId = filename.replaceAll(/_R1|_R2/g, "");
         addOrCreateNewArtifactGroup(
           ArtifactType.FASTQ,
           filenameId,
