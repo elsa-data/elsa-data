@@ -67,14 +67,6 @@ const DATASET_1: DataSet = {
     ],
     [
       createMockFileFromName(
-        "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R1.fastq.gz"
-      ),
-      createMockFileFromName(
-        "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L001_R2.fastq.gz"
-      ),
-    ],
-    [
-      createMockFileFromName(
         "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/191011_A00692_0028_TL1909260_19W001062_MAN-20190926_NEXTERAFLEXWGS_L003_R1.fastq.gz"
       ),
       createMockFileFromName(

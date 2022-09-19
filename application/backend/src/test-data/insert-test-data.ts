@@ -26,8 +26,7 @@ export async function insertTestData(settings: ElsaSettings) {
   await insert10G();
   await insert10F();
   await insert10C();
-  // cardiac is disabled because we now have a unique filename restriction - need to sort out
-  // await insertCARDIAC();
+  await insertCARDIAC();
 
   await insertBlankDataset(
     "BM",
