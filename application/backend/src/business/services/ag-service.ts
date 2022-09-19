@@ -210,10 +210,8 @@ export class AGService {
 
     for (const manifestObj of fileRecordListedInManifest) {
       // Removing compressed extension for pairing purposes
-      const lastSlashIndex = manifestObj.url.lastIndexOf("/") + 1;
-      const filename = manifestObj.url
-        .substring(lastSlashIndex)
-        .replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
+      const filename = manifestObj.url.replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
+
       // FASTQ Artifact
       if (filename.endsWith(".fastq") || filename.endsWith(".fq")) {
         const filenameId = filename.replaceAll(/_R1|_R2/g, "");
