@@ -363,7 +363,7 @@ describe("AWS s3 client", () => {
     const agService = container.resolve(AGService);
     await agService.syncDbFromS3KeyPrefix("Cardiac");
 
-    const hel = [
+    const expected = [
       {
         s3Url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
         checksum: "RANDOMCHECKSUM",
@@ -375,7 +375,7 @@ describe("AWS s3 client", () => {
         agha_study_id: "A0000002",
       },
     ];
-    expect(consoleText).toHaveBeenCalledWith(`Data to be deleted: ${hel}`);
+    expect(consoleText).toHaveBeenCalledWith(`Data to be deleted: ${expected}`);
   });
 });
 

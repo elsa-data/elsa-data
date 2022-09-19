@@ -58,10 +58,6 @@ export function insertArtifactCramQuery(cramFile: File, craiFile: File) {
 /**
  * SELECT function queries
  */
-export type ArtifactStudyIdAndFileIdByDatasetCaseIdQueryType = {
-  fileIdList: string[];
-  studyIdList: { system: string; value: string }[][];
-};
 export const fastqArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
   { datasetCaseId: e.uuid },
   (params) =>
