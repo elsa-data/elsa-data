@@ -121,7 +121,8 @@ export async function doBatchLookup(
       }
     } else {
       console.log(
-        `Dropping code ${codes[entryCount]} as the lookup of it resulted in ${entry?.response}`
+        `Dropping code ${JSON.stringify(codes[entryCount])} as the lookup of ` +
+        `it resulted in ${JSON.stringify(entry?.response)}`
       );
     }
     entryCount++;

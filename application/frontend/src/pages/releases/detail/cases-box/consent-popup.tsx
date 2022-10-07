@@ -12,7 +12,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
+  CodingType,
   DuoLimitationCodedType,
+  DuoModifierType,
   ReleaseCaseType,
   ReleasePatientType,
 } from "@umccr/elsa-types";
@@ -21,6 +23,11 @@ import { useQueryClient } from "react-query";
 import classNames from "classnames";
 import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
+import {
+  doBatchLookup,
+  makeCacheEntry,
+  ontologyLookupCache,
+} from "../../../../helpers/ontology-helper";
 
 type Props = {
   releaseId: string;
@@ -30,6 +37,13 @@ type Props = {
 type FlagsProps = {
   regions: string[];
 };
+
+type ResolvedDuo = {
+  resolvedCode: string;
+  resolvedDiseaseCode?: string;
+  diseaseSystem?: string;
+  modifiers: DuoModifierType[];
+}
 
 const Flags: React.FC<FlagsProps> = ({ regions }) => {
   if (regions.length === 0) {
@@ -52,6 +66,38 @@ const Flags: React.FC<FlagsProps> = ({ regions }) => {
     );
 };
 
+const resolveDuoCode = function(duoCode: string): string {
+  const duoDescription = isKnownDuoCode(duoCode)
+    ? duoCodeToDescription[duoCode]
+    : null;
+
+  return duoDescription ? `${duoCode} (${duoDescription})` : duoCode;
+}
+
+const resolveDiseaseCode = async function(
+  mondoSystem: string | undefined,
+  mondoCode: string | undefined
+): Promise<string | undefined> {
+  if (mondoSystem === undefined) {
+    return undefined;
+  }
+  if (mondoCode === undefined) {
+    return undefined;
+  }
+
+  const oldCodes: CodingType[] = [{system: mondoSystem, code: mondoCode}];
+  const newCodes = await doBatchLookup(
+    "https://onto.prod.umccr.org/fhir",
+    oldCodes,
+  );
+
+  const mondoDescription = newCodes.length > 0 && newCodes[0].display
+    ? newCodes[0].display
+    : null;
+
+  return mondoDescription ? `${mondoCode} (${mondoDescription})` : mondoCode;
+}
+
 /**
  * The consent popup is a delayed effect popup that can show details of consent
  * for any node.
@@ -61,16 +107,40 @@ const Flags: React.FC<FlagsProps> = ({ regions }) => {
  * @constructor
  */
 export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
-  const [duos, setDuos] = useState<DuoLimitationCodedType[]>([]);
+  const [duos, setDuos] = useState<ResolvedDuo[]>([]);
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
-    setDuos(
-      await axios
+    const duos = await axios
         .get<DuoLimitationCodedType[]>(u)
-        .then((response) => response.data)
+        .then((response) => response.data);
+
+    const resolvedDuos = await Promise.all(
+      duos.map(async function(duo: DuoLimitationCodedType): Promise<ResolvedDuo> {
+        const duoCode: string = (duo as any)?.code;
+
+        const diseaseCode: string | undefined = (duo as any)?.diseaseCode;
+        const diseaseSystem: string | undefined = (duo as any)?.diseaseSystem;
+
+        const resolvedDuoCode: string = resolveDuoCode(duoCode);
+        const resolvedDiseaseCode: string | undefined = await resolveDiseaseCode(
+          diseaseSystem,
+          diseaseCode,
+        );
+
+        const modifiers: DuoModifierType[] = (duo as any)?.modifiers;
+
+        return {
+          resolvedCode: resolvedDuoCode,
+          resolvedDiseaseCode: resolvedDiseaseCode,
+          diseaseSystem: diseaseSystem,
+          modifiers: modifiers,
+        };
+      })
     );
+
+    setDuos(resolvedDuos);
   };
 
   return (
@@ -81,30 +151,19 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       onOpen={onOpenHandler}
     >
       <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
-        {duos.map(function (duo: DuoLimitationCodedType) {
-          const duoCode = (duo as any)?.code;
-
-          const diseaseCode = (duo as any)?.diseaseCode;
-          const diseaseSystem = (duo as any)?.diseaseSystem;
-
-          const duoDescription = isKnownDuoCode(duoCode)
-            ? duoCodeToDescription[duoCode]
-            : null;
-
-          const resolvedDuoCode = duoDescription
-            ? `${duoCode} (${duoDescription})`
-            : duoCode;
-
+        {duos.map(function (resolvedDuo: ResolvedDuo) {
           return (
             <div>
               <div>
-                <b>Code:</b> {resolvedDuoCode}
+                <b>Code:</b>
+                {" "}
+                <span className="capitalize">{resolvedDuo.resolvedCode}</span>
               </div>
-              {duo.modifiers && (
+              {resolvedDuo.modifiers && (
                 <div>
                   <b>Modifiers:</b>{" "}
                   <ul className="inline-list comma-list">
-                    {duo.modifiers.map(function (modifier) {
+                    {resolvedDuo.modifiers.map(function (modifier) {
                       const regions: string[] = (modifier as any)?.regions;
                       return (
                         <li>
@@ -121,14 +180,16 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
                   </ul>
                 </div>
               )}
-              {diseaseCode && (
+              {resolvedDuo.resolvedDiseaseCode && (
                 <div>
-                  <b>Disease Code:</b> {diseaseCode}
+                  <b>Disease Code:</b>
+                  {" "}
+                  <span className="capitalize">{resolvedDuo.resolvedDiseaseCode}</span>
                 </div>
               )}
-              {diseaseSystem && (
+              {resolvedDuo.diseaseSystem && (
                 <div>
-                  <b>Disease System:</b> {diseaseSystem}
+                  <b>Disease System:</b> {resolvedDuo.diseaseSystem}
                 </div>
               )}
             </div>
