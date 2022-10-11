@@ -8,17 +8,17 @@
     "cdk-deploy": "tsc && cdk deploy --all"
   },
   "devDependencies": {
-    "@types/node": "16.11.47",
-    "@types/prettier": "2.6.4",
-    "aws-cdk": "2.35.0",
+    "@types/node": "18.8.3",
+    "@types/prettier": "2.7.1",
+    "aws-cdk": "2.45.0",
     "ts-node": "10.9.1"
   },
   "dependencies": {
     "@tsconfig/node16": "1.0.3",
-    "aws-cdk-lib": "2.35.0",
+    "aws-cdk-lib": "2.45.0",
     "cdk-edgedb": "1.0.2",
-    "constructs": "10.1.65",
+    "constructs": "10.1.127",
     "source-map-support": "^0.5.21",
-    "typescript": "4.7.4"
+    "typescript": "4.8.4"
   }
 }

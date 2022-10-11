@@ -1,23 +1,11 @@
 import {
   aws_ec2 as ec2,
-  aws_ecs as ecs,
-  aws_ecs_patterns as ecs_p,
-  aws_elasticloadbalancingv2 as elbv2,
-  aws_iam as iam,
-  aws_logs as logs,
-  aws_rds as rds,
   aws_route53 as route53,
-  aws_secretsmanager as secretsmanager,
   CfnOutput,
-  Duration,
   NestedStack,
-  RemovalPolicy,
-  Stack,
   StackProps,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { PostgresEngineVersion } from "aws-cdk-lib/aws-rds";
-import { InstanceClass, InstanceSize, InstanceType } from "aws-cdk-lib/aws-ec2";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import path from "path";
 import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
