@@ -10,7 +10,7 @@ import { AuditLogService } from "../../business/services/audit-log-service";
 
 export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
-  const auditLogService = container.resolve(AuditLogService);
+  //const auditLogService = container.resolve<AuditLogService>(AuditLogService);
 
   fastify.get<{ Params: { rid: string }; Reply: AuditEntryType[] }>(
     "/api/releases/:rid/audit-log",
@@ -21,7 +21,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
 
       const releaseId = request.params.rid;
 
-      const events = await auditLogService.getEntries(
+      /* const events = await auditLogService.getEntries(
         edgeDbClient,
         authenticatedUser,
         releaseId,
@@ -34,7 +34,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, opts: any) => {
         events,
         page,
         `/api/releases/${releaseId}/audit-log?`
-      );
+      ); */
     }
   );
 };

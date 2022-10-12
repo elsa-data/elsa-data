@@ -32,7 +32,7 @@ export async function getSettings(
   // a corresponding env variable.
   const issuer = await Issuer.discover(config.get("oidc.issuerUrl")!);
 
-  const rootCa = config.get("edgeDb.tlsRootCa");
+  const rootCa: string | undefined = config.get("edgeDb.tlsRootCa");
 
   if (rootCa) {
     // edge db requires a TLS connection - and so we need to construct our own
@@ -43,6 +43,7 @@ export async function getSettings(
     console.log(
       `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`
     );
+    console.log(rootCa);
 
     await writeFile(rootCaLocation, rootCa);
 

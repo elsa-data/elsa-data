@@ -4,7 +4,7 @@
 #
 FROM amazonlinux:2022 AS backend-builder
 
-RUN dnf install -y nodejs
+RUN dnf install -y nodejs npm
 
 WORKDIR /build
 
@@ -39,24 +39,41 @@ FROM amazonlinux:2022
 
 WORKDIR /app
 
-RUN dnf install -y nodejs
+RUN dnf install -y nodejs npm
+RUN npm install ts-node
 
 COPY backend/src/favicon.ico ./
 
 # we carefully craft the runtime structure from bits and pieces of the build
 
+# TODO: careful crafting has broken stuff.. for the moment just throwing everything together
+
+COPY --from=backend-builder /build/common/ /common/
+
+
 # bring in any node_modules incompatible with bundling
-COPY --from=backend-builder /build/backend/node_modules/node-gyp-build/ ./node_modules/node-gyp-build/
-COPY --from=backend-builder /build/backend/node_modules/sodium-native/ ./node_modules/sodium-native/
+#COPY --from=backend-builder /build/backend/node_modules/node-gyp-build/ ./node_modules/node-gyp-build/
+#COPY --from=backend-builder /build/backend/node_modules/sodium-native/ ./node_modules/sodium-native/
+
+
+COPY --from=backend-builder /build/backend/node_modules/ ./node_modules/
 
 # the configurations and translations
 COPY --from=backend-builder /build/backend/config/ ./config/
 COPY --from=backend-builder /build/backend/locales/ ./locales/
 
+# aargs
+COPY --from=backend-builder /build/backend/dbschema/ ./dbschema/
+COPY --from=backend-builder /build/backend/jobs/ ./jobs/
+COPY --from=backend-builder /build/backend/src/ ./src/
+
 COPY --from=backend-builder /build/backend/package.json ./
+COPY --from=backend-builder /build/backend/tsconfig.json ./
 
 # the react front end bundled into a dist directory
 COPY --from=backend-builder /build/frontend/build ./client/dist/
+
+
 
 # each Bree job gets built/bundled as a standalone
 COPY --from=backend-builder /build/backend/*-job.js ./
@@ -66,4 +83,4 @@ COPY --from=backend-builder /build/backend/elsa.cjs ./
 
 EXPOSE 80
 
-CMD [ "node", "elsa.cjs" ]
+ENTRYPOINT [ "node", "elsa.cjs" ]

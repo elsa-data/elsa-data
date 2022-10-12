@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
-import { injectable } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
 import { AuditEntryType } from "@umccr/elsa-types/schemas-audit";
@@ -11,6 +11,7 @@ import {
   countAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForReleaseQuery,
 } from "../db/audit-log-queries";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -20,6 +21,7 @@ export class AuditLogService {
   private readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
+    @inject("Settings") private settings: ElsaSettings,
     // NOTE: we don't define an edgeDbClient here as the audit log functionality
     // is designed to work either standalone or in a transaction context
     private usersService: UsersService
