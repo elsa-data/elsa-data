@@ -6,5 +6,11 @@ export abstract class BaseDatabase extends Construct {
     super(scope, id);
   }
 
+  public abstract get dsn(): string;
+
+  public abstract get hostname(): string;
+
+  public abstract get port(): number;
+
   public abstract connections(): ec2.Connections;
 }

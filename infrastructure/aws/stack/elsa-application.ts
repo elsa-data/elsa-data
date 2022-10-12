@@ -1,5 +1,6 @@
 import {
   aws_ec2 as ec2,
+  aws_ecs as ecs,
   aws_route53 as route53,
   CfnOutput,
   NestedStack,
@@ -11,12 +12,14 @@ import path from "path";
 import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { DockerServiceWithHttpsLoadBalancerConstruct } from "../lib/docker-service-with-https-load-balancer-construct";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
 
 interface Props extends StackProps {
   vpc: ec2.IVpc;
   hostedZone: route53.IHostedZone;
   config: {
-    edgeDbUrl: string;
+    edgeDbDsnNoPassword: string;
+    edgeDbPasswordSecret: ISecret;
   };
 }
 
@@ -54,7 +57,6 @@ export class ElsaApplicationStack extends NestedStack {
         "PrivateServiceWithLb",
         {
           vpc: props.vpc,
-          //securityGroups: [],
           hostedPrefix: hostedPrefix,
           hostedZoneName: hostedZoneName,
           hostedZoneCertArn: certApse2Arn,
@@ -65,11 +67,18 @@ export class ElsaApplicationStack extends NestedStack {
           containerName: "elsa",
           healthCheckPath: "/",
           environment: {
-            EDGEDB_DSN: config.edgeDbUrl,
+            EDGEDB_DSN: config.edgeDbDsnNoPassword,
+          },
+          secrets: {
+            EDGEDB_PASSWORD: ecs.Secret.fromSecretsManager(
+              config.edgeDbPasswordSecret
+            ),
           },
         }
       );
 
+    // the running container gets its settings from a secret (independant of the secrets used to actually
+    // spin up the container)
     privateServiceWithLoadBalancer.service.taskDefinition.taskRole.attachInlinePolicy(
       new Policy(this, "FargateServiceTaskPolicy", {
         statements: [

@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "aws-cdk-lib";
+import { aws_ecs as ecs, Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import {
   aws_ec2 as ec2,
@@ -8,6 +8,7 @@ import {
 import { EdgeDbStack } from "./stack/edge-db";
 import { smartVpcConstruct } from "./lib/vpc";
 import { ElsaApplicationStack } from "./stack/elsa-application";
+import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 
 export class ElsaStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -32,6 +33,28 @@ export class ElsaStack extends Stack {
       { hostedZoneId: hostedZoneId, zoneName: hostedZoneName }
     );
 
+    // TODO: clean this up - ideally we would have all the certs in the master Elsa settings secrets
+    // const elsaSecret = Secret.fromSecretNameV2(this, "ElsaSecret", "Elsa");
+
+    const edgeDbCa = Secret.fromSecretNameV2(
+      this,
+      "CaSecret",
+      "elsa/tls/rootCA"
+    );
+    const edgeDbKey = Secret.fromSecretNameV2(
+      this,
+      "KeySecret",
+      "elsa/tls/key"
+    );
+    const edgeDbCert = Secret.fromSecretNameV2(
+      this,
+      "CertSecret",
+      "elsa/tls/cert"
+    );
+
+    const elsaEdgeDbCert = ecs.Secret.fromSecretsManager(edgeDbCert);
+    const elsaEdgeDbKey = ecs.Secret.fromSecretsManager(edgeDbKey); // ecs.Secret.fromSecretsManager(elsaSecret, "edgeDb.tlsKey");
+
     /**
      * Creating DB and DB server
      */
@@ -50,9 +73,12 @@ export class ElsaStack extends Stack {
           desiredCount: 1,
           cpu: 1024,
           memory: 2048,
+          cert: elsaEdgeDbCert,
+          key: elsaEdgeDbKey,
         },
         edgeDbLoadBalancer: {
           port: 4000,
+          uiPort: 4001,
         },
       },
       env: {
@@ -61,12 +87,15 @@ export class ElsaStack extends Stack {
       },
     });
 
-    /*const elsa = new ElsaApplicationStack(this, "Elsa", {
+    console.log(edgeDb.dsnForEnvironmentVariable);
+
+    const elsa = new ElsaApplicationStack(this, "Elsa", {
       vpc: vpc,
       hostedZone: hostedZone,
       config: {
-        edgeDbUrl: edgeDb.dsnForEnvironmentVariable,
+        edgeDbDsnNoPassword: edgeDb.dsnForEnvironmentVariable,
+        edgeDbPasswordSecret: edgeDb.edgeDbPasswordSecret,
       },
-    });*/
+    });
   }
 }

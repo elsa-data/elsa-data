@@ -20,8 +20,8 @@ interface ServerlessBaseDatabaseProps {
  * case representing a V2 Serverless Aurora (in postgres mode).
  */
 export class ServerlessBaseDatabase extends BaseDatabase {
-  private readonly cluster: ServerlessCluster;
-  private readonly dsnString: string;
+  private readonly _cluster: ServerlessCluster;
+  private readonly _dsn: string;
 
   constructor(
     scope: Construct,
@@ -30,7 +30,7 @@ export class ServerlessBaseDatabase extends BaseDatabase {
   ) {
     super(scope, id);
 
-    this.cluster = new ServerlessCluster(this, "ServerlessCluster", {
+    this._cluster = new ServerlessCluster(this, "ServerlessCluster", {
       vpc: props.vpc,
       vpcSubnets: {
         subnetType: props.isDevelopment
@@ -56,7 +56,7 @@ export class ServerlessBaseDatabase extends BaseDatabase {
     // temporary fix to broken CDK constructs
     // https://github.com/aws/aws-cdk/issues/20197#issuecomment-1272360016
     {
-      const cfnDBCluster = this.cluster.node.children.find(
+      const cfnDBCluster = this._cluster.node.children.find(
         (node) => node instanceof rds.CfnDBCluster
       ) as rds.CfnDBCluster;
       cfnDBCluster.serverlessV2ScalingConfiguration = {
@@ -68,37 +68,37 @@ export class ServerlessBaseDatabase extends BaseDatabase {
 
     const writerInstance = new rds.CfnDBInstance(this, "Writer", {
       dbInstanceClass: "db.serverless",
-      dbClusterIdentifier: this.cluster.clusterIdentifier,
+      dbClusterIdentifier: this._cluster.clusterIdentifier,
       engine: "aurora-postgresql",
       publiclyAccessible: !!props.isDevelopment,
     });
 
-    this.dsnString =
+    this._dsn =
       `postgres://` +
       `${props.secret.secretValueFromJson("username").unsafeUnwrap()}` +
       `:` +
       `${props.secret.secretValueFromJson("password").unsafeUnwrap()}` +
       `@` +
-      `${this.cluster.clusterEndpoint.hostname}` +
+      `${this._cluster.clusterEndpoint.hostname}` +
       `:` +
-      `${this.cluster.clusterEndpoint.port}` +
+      `${this._cluster.clusterEndpoint.port}` +
       `/` +
-      `${props.secret.secretValueFromJson("dbname").unsafeUnwrap()}`;
+      `${props.databaseName}`;
   }
 
-  public get dsn() {
-    return this.dsnString;
+  public get dsn(): string {
+    return this._dsn;
   }
 
-  public get hostname() {
-    return this.cluster.clusterEndpoint.hostname;
+  public get hostname(): string {
+    return this._cluster.clusterEndpoint.hostname;
   }
 
-  public get port() {
-    return this.cluster.clusterEndpoint.port;
+  public get port(): number {
+    return this._cluster.clusterEndpoint.port;
   }
 
-  public connections() {
-    return this.cluster.connections;
+  public connections(): ec2.Connections {
+    return this._cluster.connections;
   }
 }

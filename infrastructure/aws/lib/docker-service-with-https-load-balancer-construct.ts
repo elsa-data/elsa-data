@@ -12,6 +12,7 @@ import {
   FargateTaskDefinition,
   LogDrivers,
   OperatingSystemFamily,
+  Secret,
 } from "aws-cdk-lib/aws-ecs";
 import { LogGroup, RetentionDays } from "aws-cdk-lib/aws-logs";
 
@@ -29,6 +30,9 @@ type Props = {
 
   // env variables to pass to the Docker image
   environment: { [p: string]: string };
+
+  // secrets that can be expanded out in the environment on spin up (hidden from AWS console) NOTE: ecs Secrets, not Secret Manager secrets
+  secrets: { [p: string]: Secret };
 
   // details of the fargate
   memoryLimitMiB: number;
@@ -89,6 +93,7 @@ export class DockerServiceWithHttpsLoadBalancerConstruct extends Construct {
       cpu: props.cpu,
       memoryLimitMiB: props.memoryLimitMiB,
       environment: props.environment,
+      secrets: props.secrets,
       logging: LogDrivers.awsLogs({
         streamPrefix: "elsa",
         logGroup: this.clusterLogGroup,
