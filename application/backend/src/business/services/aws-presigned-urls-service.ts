@@ -33,13 +33,13 @@ export class AwsPresignedUrlsService extends AwsBaseService {
    */
   public async getPresigned(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseId: string,
+    presignHeader: string[]
   ): Promise<any> {
     // abort immediately if we don't have AWS enabled
     this.enabledGuard();
 
     const now = new Date();
-
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,
       user,
@@ -52,7 +52,6 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     const s3Client = new S3Client({});
 
     const presign = async (s3url: string) => {
-      console.log(s3url);
       const _match = s3url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
       if (!_match) throw new Error("Bad format");
       const command = new GetObjectCommand({
@@ -70,23 +69,20 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     for (const af of allFiles) af.s3Signed = await presign(af.s3Url!);
 
     // setup a TSV stream
+    const stringifyColumnOptions = [];
+    for (const header of presignHeader) {
+      stringifyColumnOptions.push({
+        key: header,
+        header: header.toUpperCase(),
+      });
+    }
     const stringifier = stringify({
       header: true,
-      columns: [
-        { key: "s3", header: "S3" },
-        { key: "fileType", header: "FILETYPE" },
-        { key: "md5", header: "MD5" },
-        { key: "size", header: "SIZE" },
-        { key: "caseId", header: "CASEID" },
-        { key: "patientId", header: "PATIENTID" },
-        { key: "specimenId", header: "SPECIMENID" },
-        { key: "s3Signed", header: "S3SIGNED" },
-      ],
+      columns: stringifyColumnOptions,
       delimiter: "\t",
     });
 
     const readableStream = Readable.from(allFiles);
-
     const buf = await streamConsumers.text(readableStream.pipe(stringifier));
 
     const password = await this.releaseService.getPassword(user, releaseId);

@@ -26,8 +26,26 @@ export const ReleaseRemsSyncRequestSchema = Type.Object({
   remsKey: Type.String(),
 });
 
+const awsFileRecordHeader = [
+  "caseId",
+  "patientId",
+  "specimenId",
+  "fileType",
+  "size",
+  "s3Url",
+  "s3Bucket",
+  "s3Key",
+  "s3Signed",
+  "md5",
+];
+
 export const ReleaseAwsS3PresignRequestSchema = Type.Object({
   // id: Type.String(),
+  presignHeader: Type.Array(
+    Type.Union(
+      awsFileRecordHeader.map((header: string) => Type.Literal(header))
+    )
+  ),
 });
 
 export const ReleaseAwsS3PresignResponseSchema = Type.Object({
