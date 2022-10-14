@@ -42,7 +42,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
                   "focus-visible:border-l-2 focus-visible:border-blue-300 focus-visible:ring-0",
                   "focus:outline-0",
                   {
-                    "z-20 border-l-2 transform translate-x-2 border-blue-500 font-bold":
+                    "border-l-2 transform translate-x-2 border-blue-500 font-bold":
                       selected,
                     "transform -translate-x-2": !selected,
                   }
