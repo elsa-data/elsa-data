@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "aws-cdk-lib";
+import { StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { IVpc } from "aws-cdk-lib/aws-ec2";
@@ -9,19 +9,19 @@ import { IVpc } from "aws-cdk-lib/aws-ec2";
  *
  * @param scope
  * @param id
- * @param vpcNameOrDefaultOrNull
+ * @param vpcNameOrDefaultOrNull either an existing VPC id, the string "default", or null to indicate a new VPC should be created
  */
 export function smartVpcConstruct(
   scope: Construct,
   id: string,
-  vpcNameOrDefaultOrNull: string | null
+  vpcNameOrDefaultOrNull: string | "default" | null
 ): IVpc {
   // if not vpc details are given then we construct a new VPC
   if (!vpcNameOrDefaultOrNull) {
     return new NatVPC(scope, id);
   }
 
-  // if they ask for the special name default then we use the VPC defaulting mechanism
+  // if they ask for the special name default then we use the VPC defaulting mechanism (via CDK lookup)
   if (vpcNameOrDefaultOrNull === "default")
     return ec2.Vpc.fromLookup(scope, id, {
       isDefault: true,
@@ -45,7 +45,7 @@ class NatVPC extends ec2.Vpc {
         },
         {
           name: "application",
-          subnetType: ec2.SubnetType.PRIVATE_WITH_NAT,
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         },
         {
           name: "database",
