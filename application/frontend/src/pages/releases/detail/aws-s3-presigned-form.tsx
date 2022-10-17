@@ -8,11 +8,11 @@ type Props = {
 
 const FILE_RECORD_HEADER: FileRecordHeaderType[] = [
   "md5",
-  "specimenId",
+  "patientId",
   "s3Signed",
   "caseId",
-  "patientId",
   "fileType",
+  "specimenId",
   "size",
   "s3Url",
   "s3Bucket",
@@ -36,7 +36,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
 
   const [haederSelected, setHaederSelected] = useState<string[]>([
     "md5",
-    "specimenId",
+    "patientId",
     "s3Signed",
   ]);
 
@@ -109,7 +109,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               )}
             </span>
           </div>
-          <div className={`pt-6 ${isHeaderSelectionOpen ? "" : "hidden"}`}>
+          <div className={`${isHeaderSelectionOpen ? "" : "hidden"}`}>
             <div className="space-y-4">
               {FILE_RECORD_HEADER.map((field: string, fieldIdx: number) => (
                 <div key={field} className="flex items-center">
@@ -132,7 +132,6 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               ))}
             </div>
           </div>
-
           <label className="prose">
             <span className="text-xs font-bold text-gray-700 uppercase">
               Current Password
