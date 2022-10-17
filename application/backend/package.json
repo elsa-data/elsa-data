@@ -58,7 +58,7 @@
     "dotenv": "9.0.2",
     "edgedb": "0.21.3",
     "esbuild": "0.15.5",
-    "fastify": "4.5.2",
+    "fastify": "4.8.1",
     "fastify-favicon": "4.1.0",
     "http-link-header": "1.0.5",
     "humanize-plus": "1.8.2",
