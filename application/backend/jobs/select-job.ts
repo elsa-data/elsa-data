@@ -33,6 +33,7 @@ const fakeSettings: ElsaSettings = {
   environment: "development" as ElsaEnvironment,
   superAdmins: [],
   location: "local-mac" as ElsaLocation,
+  rateLimit: {},
 };
 
 container.register<ElsaSettings>("Settings", {

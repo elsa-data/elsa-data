@@ -23,6 +23,7 @@ import {
   hasAccessToTheSourceBuildFolders,
 } from "./config/elsa-settings";
 import { container } from "tsyringe";
+import fastifyTraps from "@dnlup/fastify-traps";
 
 export class App {
   public server: FastifyInstance;
@@ -68,6 +69,7 @@ export class App {
   }
 
   public async setupServer(): Promise<FastifyInstance> {
+    await this.server.register(fastifyTraps);
     await this.server.register(fastifyFormBody);
 
     await this.server.register(fastifyHelmet, { contentSecurityPolicy: false });
