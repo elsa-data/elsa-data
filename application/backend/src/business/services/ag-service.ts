@@ -488,7 +488,7 @@ export class AGService {
         });
 
         if (!file) {
-          continue; // Should not going here
+          continue; // Should not go here
         }
 
         s3UrlManifestObj[file.url] = {
