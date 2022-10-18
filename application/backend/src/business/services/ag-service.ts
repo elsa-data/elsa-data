@@ -565,7 +565,7 @@ export class AGService {
     const datasetId = await this.getDatasetIdByS3KeyPrefix(s3KeyPrefix);
     if (!datasetId) {
       console.warn("No Dataset URI found from given key prefix.");
-      console.warn("Please register the key prefix before running it though this function.");
+      console.warn("Please register the key prefix before running it through this function.");
       return;
     }
 
