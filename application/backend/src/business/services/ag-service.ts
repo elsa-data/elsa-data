@@ -564,8 +564,8 @@ export class AGService {
   async syncDbFromS3KeyPrefix(s3KeyPrefix: string) {
     const datasetId = await this.getDatasetIdByS3KeyPrefix(s3KeyPrefix);
     if (!datasetId) {
-      console.log("No DataCase found for this prefix.");
-      console.log("Please insert a new datacase before running this function");
+      console.warn("No Dataset URI found from given key prefix.");
+      console.warn("Please register the key prefix before running it though this function.");
       return;
     }
 
