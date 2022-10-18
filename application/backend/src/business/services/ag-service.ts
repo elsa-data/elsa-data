@@ -14,10 +14,10 @@ import {
   insertArtifactBamQuery,
   insertArtifactVcfQuery,
   insertArtifactCramQuery,
-  fastqArtifactStudyIdAndFileIdByDatasetCaseIdQuery,
-  bamArtifactStudyIdAndFileIdByDatasetCaseIdQuery,
-  vcfArtifactStudyIdAndFileIdByDatasetCaseIdQuery,
-  cramArtifactStudyIdAndFileIdByDatasetCaseIdQuery,
+  fastqArtifactStudyIdAndFileIdByDatasetIdQuery,
+  bamArtifactStudyIdAndFileIdByDatasetIdQuery,
+  vcfArtifactStudyIdAndFileIdByDatasetIdQuery,
+  cramArtifactStudyIdAndFileIdByDatasetIdQuery,
 } from "../db/lab-queries";
 import { fileByFileIdQuery, fileByUrlQuery } from "../db/storage-queries";
 import {
@@ -29,6 +29,11 @@ const util = require("util");
 
 // need to be configuration eventually
 const AG_BUCKET = "agha-gdr-store-2.0";
+
+// Static Mapping of AG bucket prefix and DatasetURI
+const BUCKET_PREFIX_AND_URI_MAPPING: Record<string, string> = {
+  cardiac: "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
+};
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -53,23 +58,31 @@ export class AGService {
     @inject("Database") private edgeDbClient: edgedb.Client
   ) {}
 
-  async getDatasetCaseIdByS3KeyPrefix(
+  async getDatasetIdByS3KeyPrefix(
     s3KeyPrefix: string
   ): Promise<string | undefined> {
-    let datasetUri = "";
+    const flagshipPrefix = s3KeyPrefix.toLowerCase().split("/")[0];
+    let datasetUri = BUCKET_PREFIX_AND_URI_MAPPING[flagshipPrefix];
 
-    if (s3KeyPrefix.toLocaleLowerCase().startsWith("cardiac")) {
-      datasetUri = "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac";
-    }
+    if (!datasetUri) return;
 
-    const dasetCaseIdQuery = e.select(e.dataset.DatasetCase, (dc) => ({
+    const selectDatasetIdQuery = e.select(e.dataset.Dataset, (d) => ({
       id: true,
-      filter: e.op(dc.dataset.uri, "ilike", datasetUri),
+      filter: e.op(d.uri, "ilike", datasetUri),
     }));
 
-    // Assuming DatasetURI is unique
-    const datasetCaseIdArray = await dasetCaseIdQuery.run(this.edgeDbClient);
-    return datasetCaseIdArray[0]?.id;
+    // Find current Dataset
+    const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
+    const datasetId = datasetIdArray[0]?.id;
+    if (datasetId) return datasetId;
+
+    // Else, create new dataset
+    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
+      uri: datasetUri,
+      description: `A ${flagshipPrefix} flagship.`,
+    });
+    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
+    return newDataset.id;
   }
 
   /**
@@ -145,7 +158,6 @@ export class AGService {
 
     const s3MetadataList = await this.getS3ObjectListFromKeyPrefix(s3KeyPrefix);
     const manifestKeyList = this.getManifestKeyFromS3ObjectList(s3MetadataList);
-
     for (const manifestS3Key of manifestKeyList) {
       const manifestLastSlashIndex = manifestS3Key.lastIndexOf("/");
       const manifestS3Prefix = manifestS3Key.substring(
@@ -214,7 +226,7 @@ export class AGService {
 
       // FASTQ Artifact
       if (filename.endsWith(".fastq") || filename.endsWith(".fq")) {
-        const filenameId = filename.replaceAll(/_R1|_R2/g, "");
+        const filenameId = filename.replaceAll(/_R1|_R2|.R1|.R2/g, "");
         addOrCreateNewArtifactGroup(
           ArtifactType.FASTQ,
           filenameId,
@@ -391,13 +403,13 @@ export class AGService {
 
   /**
    * Inserting artifacts query to appropriate datacase
-   * @param datasetCaseId
+   * @param datasetId
    * @param studyId
    * @param insertArtifactListQuery
    * @returns
    */
-  async insertNewDatsetPatientByDatasetCaseId(
-    datasetCaseId: string,
+  async insertNewDatsetPatientByDatasetId(
+    datasetId: string,
     studyId: string,
     insertArtifactListQuery: any
   ) {
@@ -410,22 +422,24 @@ export class AGService {
         })
       ),
     });
-    const linkDatapatientQuery = e.update(
-      e.dataset.DatasetCase,
-      (datasetCase) => ({
-        set: {
-          patients: {
-            "+=": insertDatasetPatientQuery,
-          },
+    const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
+      externalIdentifiers: makeSystemlessIdentifierArray(studyId),
+      patients: e.set(insertDatasetPatientQuery),
+    });
+
+    const linkDatasetQuery = e.update(e.dataset.Dataset, (dataset) => ({
+      set: {
+        cases: {
+          "+=": insertDatasetCaseQuery,
         },
-        filter: e.op(datasetCase.id, "=", e.uuid(datasetCaseId)),
-      })
-    );
-    await linkDatapatientQuery.run(this.edgeDbClient);
+      },
+      filter: e.op(dataset.id, "=", e.uuid(datasetId)),
+    }));
+    await linkDatasetQuery.run(this.edgeDbClient);
   }
 
-  async getDbManifestObjectListByDatasetCaseId(
-    datasetCaseId: string
+  async getDbManifestObjectListByDatasetId(
+    datasetId: string
   ): Promise<manifestDict> {
     const s3UrlManifestObj: manifestDict = {};
 
@@ -433,36 +447,33 @@ export class AGService {
 
     // Fetching all related artifacts with the datasetUri
     const fastqArtifact =
-      await fastqArtifactStudyIdAndFileIdByDatasetCaseIdQuery.run(
+      await fastqArtifactStudyIdAndFileIdByDatasetIdQuery.run(
         this.edgeDbClient,
         {
-          datasetCaseId: datasetCaseId,
+          datasetId: datasetId,
         }
       );
     artifactList.push(...fastqArtifact);
-    const bamArtifact =
-      await bamArtifactStudyIdAndFileIdByDatasetCaseIdQuery.run(
-        this.edgeDbClient,
-        {
-          datasetCaseId: datasetCaseId,
-        }
-      );
+    const bamArtifact = await bamArtifactStudyIdAndFileIdByDatasetIdQuery.run(
+      this.edgeDbClient,
+      {
+        datasetId: datasetId,
+      }
+    );
     artifactList.push(...bamArtifact);
-    const cramArtifact =
-      await cramArtifactStudyIdAndFileIdByDatasetCaseIdQuery.run(
-        this.edgeDbClient,
-        {
-          datasetCaseId: datasetCaseId,
-        }
-      );
+    const cramArtifact = await cramArtifactStudyIdAndFileIdByDatasetIdQuery.run(
+      this.edgeDbClient,
+      {
+        datasetId: datasetId,
+      }
+    );
     artifactList.push(...cramArtifact);
-    const vcfArtifact =
-      await vcfArtifactStudyIdAndFileIdByDatasetCaseIdQuery.run(
-        this.edgeDbClient,
-        {
-          datasetCaseId: datasetCaseId,
-        }
-      );
+    const vcfArtifact = await vcfArtifactStudyIdAndFileIdByDatasetIdQuery.run(
+      this.edgeDbClient,
+      {
+        datasetId: datasetId,
+      }
+    );
     artifactList.push(...vcfArtifact);
 
     // Turning artifact records to s3ManifestType object
@@ -477,8 +488,9 @@ export class AGService {
         });
 
         if (!file) {
-          continue; // Mostly not going here
+          continue; // Should not going here
         }
+
         s3UrlManifestObj[file.url] = {
           s3Url: file.url,
           checksum: getMd5FromChecksumsArray(file.checksums),
@@ -550,9 +562,8 @@ export class AGService {
    * @param s3KeyPrefix s3 key to sync the files
    */
   async syncDbFromS3KeyPrefix(s3KeyPrefix: string) {
-    const datasetCaseId = await this.getDatasetCaseIdByS3KeyPrefix(s3KeyPrefix);
-
-    if (!datasetCaseId) {
+    const datasetId = await this.getDatasetIdByS3KeyPrefix(s3KeyPrefix);
+    if (!datasetId) {
       console.log("No DataCase found for this prefix.");
       console.log("Please insert a new datacase before running this function");
       return;
@@ -567,8 +578,7 @@ export class AGService {
 
     // Grab all s3ManifestType object from current edgedb
     const dbs3ManifestTypeObjectDict =
-      await this.getDbManifestObjectListByDatasetCaseId(datasetCaseId);
-
+      await this.getDbManifestObjectListByDatasetId(datasetId);
     // Do comparison for data retreive from s3 and with current edgedb data
     const missingFileFromDb = this.diffManifestAplhaAndManifestBeta(
       s3ManifestTypeObjectDict,
@@ -633,8 +643,8 @@ export class AGService {
           );
         } else {
           // Insert New DatasetPatient
-          await this.insertNewDatsetPatientByDatasetCaseId(
-            datasetCaseId,
+          await this.insertNewDatsetPatientByDatasetId(
+            datasetId,
             studyId,
             insertArtifactListQuery
           );
