@@ -6,6 +6,7 @@ import e, { storage } from "../../dbschema/edgeql-js";
 
 export const MOCK_DATASET_URI =
   "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac";
+export const S3_URL_PREFIX = "s3://agha-gdr-store-2.0/Cardiac/2019-11-21";
 
 function createS3ObjectList(key = "S3_KEY", etag = "AWS_ETAG", size = 1) {
   return {
@@ -28,7 +29,7 @@ function createManifestObject(
 }
 
 function createS3UrlManifestObject(
-  s3Url = "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/FILE_L001_R1.fastq.gz",
+  s3Url = `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
   agha_study_id = "A0000001",
   checksum = "RANDOMCHECKSUM"
 ) {
@@ -81,10 +82,10 @@ export const MOCK_1_MANIFEST_OBJECT = [
 
 export const MOCK_1_S3URL_MANIFEST_OBJECT = [
   createS3UrlManifestObject(
-    `s3://agha-gdr-store-2.0/Cardiac/2019-11-21/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`
+    `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`
   ),
   createS3UrlManifestObject(
-    `s3://agha-gdr-store-2.0/Cardiac/2019-11-21/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`
+    `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`
   ),
 ];
 
@@ -150,11 +151,11 @@ export const MOCK_3_CARDIAC_MANIFEST = `checksum\tfilename\tagha_study_id\n`;
 
 export const MOCK_FASTQ_FORWARD_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/FILE_L001_R1.fastq.gz",
+  url: `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
 };
 export const MOCK_FASTQ_REVERSE_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/FILE_L001_R2.fastq.gz",
+  url: `${S3_URL_PREFIX}/FILE_L001_R2.fastq.gz`,
 };
 
 export const MOCK_FASTQ_PAIR_FILE_SET = [
@@ -164,22 +165,22 @@ export const MOCK_FASTQ_PAIR_FILE_SET = [
 
 export const MOCK_BAM_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/A0000001.bam",
+  url: `${S3_URL_PREFIX}/A0000001.bam`,
 };
 export const MOCK_BAI_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/A0000001.bam.bai",
+  url: `${S3_URL_PREFIX}/A0000001.bam.bai`,
 };
 
 export const MOCK_BAM_FILE_SET = [MOCK_BAM_FILE_RECORD, MOCK_BAI_FILE_RECORD];
 
 export const MOCK_VCF_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.individual.norm.vcf.gz",
+  url: `${S3_URL_PREFIX}/19W001062.individual.norm.vcf.gz`,
 };
 export const MOCK_TBI_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: "s3://agha-gdr-store-2.0/Cardiac/2020-01-22/19W001062.individual.norm.vcf.gz.tbi",
+  url: `${S3_URL_PREFIX}/19W001062.individual.norm.vcf.gz.tbi`,
 };
 
 export const MOCK_VCF_FILE_SET = [MOCK_VCF_FILE_RECORD, MOCK_TBI_FILE_RECORD];

@@ -30,6 +30,7 @@ import {
   MOCK_2_BAI_FILE_RECORD,
   MOCK_3_CARDIAC_S3_OBJECT_LIST,
   MOCK_3_CARDIAC_MANIFEST,
+  S3_URL_PREFIX,
 } from "./ag.common";
 import * as awsHelper from "../../src/business/services/aws-helper";
 import {
@@ -106,14 +107,19 @@ describe("AWS s3 client", () => {
       agService.groupManifestFileByArtifactTypeAndFilename(
         fileRecordListedInManifest
       );
-    expect(groupArtifactContent[ArtifactType.FASTQ]["FILE_L001"]).toEqual(
-      MOCK_FASTQ_PAIR_FILE_SET
-    );
-    expect(groupArtifactContent[ArtifactType.BAM]["A0000001.bam"]).toEqual(
-      MOCK_BAM_FILE_SET
-    );
+
     expect(
-      groupArtifactContent[ArtifactType.VCF]["19W001062.individual.norm.vcf"]
+      groupArtifactContent[ArtifactType.FASTQ][
+        `${S3_URL_PREFIX}/FILE_L001.fastq`
+      ]
+    ).toEqual(MOCK_FASTQ_PAIR_FILE_SET);
+    expect(
+      groupArtifactContent[ArtifactType.BAM][`${S3_URL_PREFIX}/A0000001.bam`]
+    ).toEqual(MOCK_BAM_FILE_SET);
+    expect(
+      groupArtifactContent[ArtifactType.VCF][
+        `${S3_URL_PREFIX}/19W001062.individual.norm.vcf`
+      ]
     ).toEqual(MOCK_VCF_FILE_SET);
   });
 
@@ -245,10 +251,10 @@ describe("AWS s3 client", () => {
     expect(totalFileList.length).toEqual(2);
     const expected = [
       {
-        url: `s3://agha-gdr-store-2.0/Cardiac/2019-11-21/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
+        url: `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
       },
       {
-        url: `s3://agha-gdr-store-2.0/Cardiac/2019-11-21/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
+        url: `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
       },
     ];
     expect(totalFileList).toEqual(expect.arrayContaining(expected));

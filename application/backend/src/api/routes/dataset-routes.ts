@@ -84,7 +84,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
       const keyPrefix = body.keyPrefix;
 
       agService.syncDbFromS3KeyPrefix(keyPrefix);
-      reply.send("ok");
+      reply.send("OK! \nTo prevent API timeout, returning the OK value while the script is still running. ");
     }
   );
 };
