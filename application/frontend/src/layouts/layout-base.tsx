@@ -1,10 +1,7 @@
-import { Menu, Transition } from "@headlessui/react";
-import React, { Fragment, PropsWithChildren } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, PropsWithChildren } from "react";
+import { NavLink } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseFooter } from "./layout-base-footer";
-import classNames from "classnames";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 
 type Props = {};
@@ -14,6 +11,8 @@ type Props = {};
 export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
   children,
 }) => {
+  const [isMenuBarOpen, setIsMenuBarOpen] = useState<boolean>(false);
+
   const navLink = (
     to: string,
     label: string,
@@ -43,23 +42,15 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
   return (
     <>
       {/* NAV START */}
-      <nav id="header" className="bg-white fixed w-full z-10 top-0 shadow">
-        <div className="w-full container mx-auto flex flex-wrap items-center mt-0 pt-3 pb-3 md:pb-0">
-          <div className="w-1/2 pl-2 md:pl-0">
-            <a
-              className="text-gray-900 text-base xl:text-xl no-underline hover:no-underline font-bold"
-              href="/"
-            >
-              Elsa Data
-            </a>
-          </div>
-          <div className="w-1/2 pr-0">
-            <div className="flex relative inline-block float-right">
-              {loggedInUser && <LayoutBaseHeaderUser user={loggedInUser} />}
-            </div>
-
+      <nav
+        id="header"
+        className="bg-white fixed w-full z-10 top-0 shadow min-w-max"
+      >
+        <div className="w-full container mx-auto">
+          <div className="w-full justify-between flex flex-wrap items-center mt-0 pt-3 pb-3 lg:pb-0">
             <div className="block lg:hidden pr-4">
               <button
+                onClick={() => setIsMenuBarOpen((prev: boolean) => !prev)}
                 id="nav-toggle"
                 className="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-900 hover:border-teal-500 appearance-none focus:outline-none"
               >
@@ -73,14 +64,28 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </svg>
               </button>
             </div>
+
+            <div className="pl-2 md:pl-0">
+              <a
+                className="text-gray-900 text-base xl:text-xl no-underline hover:no-underline font-bold"
+                href="/"
+              >
+                Elsa Data
+              </a>
+            </div>
+            <div className="flex relative float-right">
+              {loggedInUser && <LayoutBaseHeaderUser user={loggedInUser} />}
+            </div>
           </div>
 
           <div
-            className="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden lg:block mt-2 lg:mt-0 bg-white"
+            className={`w-full flex-grow lg:flex lg:items-center lg:w-auto mt-2 lg:mt-0 bg-white ${
+              isMenuBarOpen ? "" : "hidden"
+            }`}
             id="nav-content"
           >
-            {loggedInUser && (
-              <ul className="list-reset lg:flex flex-1 items-center px-4 md:px-0">
+            {loggedInUser ? (
+              <ul className="list-reset lg:flex flex-1 items-center px-4 md:px-0 pb-4 lg:pb-0">
                 <li className="mr-6 my-2 md:my-0">
                   {navLink(
                     "/",
@@ -118,9 +123,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   )}
                 </li>
               </ul>
-            )}
-
-            {!loggedInUser && (
+            ) : (
               <ul className="list-reset lg:flex flex-1 items-center px-4 md:px-0">
                 <li className="mr-6 my-2 md:my-0">
                   {navLink(
@@ -146,7 +149,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       </nav>
       {/* NAV END */}
 
-      <div className="container w-full mx-auto pt-20 grow">
+      <div className="container w-full mx-auto pt-10 lg:pt-20 grow">
         <div className="w-full mt-8 mb-8 text-gray-800 leading-normal">
           {children}
         </div>
