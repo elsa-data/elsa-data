@@ -121,9 +121,9 @@ export class AGService {
     const headers = lines[0].split("\t");
     for (let i = 1; i < lines.length; i++) {
       const obj: Record<string, string> = {};
-      const currentline = lines[i].split("\t");
+      const currentLine = lines[i].split("\t");
       for (let j = 0; j < headers.length; j++) {
-        obj[headers[j]] = currentline[j];
+        obj[headers[j]] = currentLine[j];
       }
       result.push(obj);
     }
@@ -176,7 +176,7 @@ export class AGService {
         this.convertTsvToJson(manifestTsvContent)
       );
 
-      // The manifest will contain a filename only, but for the purpose of uniquness and how we stored in db.
+      // The manifest will contain a filename only, but for the purpose of uniqueness and how we stored in db.
       // We would append the filename with the s3 Url prefix.
       for (const manifestObj of manifestObjContentList) {
         const s3Url = `${s3UrlPrefix}/${manifestObj.filename}`;
@@ -192,7 +192,7 @@ export class AGService {
 
   /**
    * To group file in their artifact type and filename.
-   * The function will determine artifacttype by
+   * The function will determine artifact type by
    * @param fileRecordListedInManifest
    * @returns A nested json of artifactType AND filenameId
    * E.g. From {FASTQ : { A00001 : [File1, File2] } }
@@ -373,7 +373,7 @@ export class AGService {
     datasetPatientId: string,
     insertArtifactListQuery: any
   ) {
-    const updateDatapatientQuery = e.update(
+    const updateDataPatientQuery = e.update(
       e.dataset.DatasetSpecimen,
       (specimen) => ({
         set: {
@@ -384,7 +384,7 @@ export class AGService {
         filter: e.op(specimen.patient.id, "=", e.uuid(datasetPatientId)),
       })
     );
-    await updateDatapatientQuery.run(this.edgeDbClient);
+    await updateDataPatientQuery.run(this.edgeDbClient);
   }
 
   async getDatasetPatientByStudyId(studyId: string) {
@@ -402,13 +402,13 @@ export class AGService {
   }
 
   /**
-   * Inserting artifacts query to appropriate datacase
+   * Inserting artifacts query to appropriate dataset
    * @param datasetId
    * @param studyId
    * @param insertArtifactListQuery
    * @returns
    */
-  async insertNewDatsetPatientByDatasetId(
+  async insertNewDatasetPatientByDatasetId(
     datasetId: string,
     studyId: string,
     insertArtifactListQuery: any
@@ -509,7 +509,7 @@ export class AGService {
    * @param manifestBeta
    * @returns
    */
-  diffManifestAplhaAndManifestBeta(
+  diffManifestAlphaAndManifestBeta(
     manifestAlpha: manifestDict,
     manifestBeta: manifestDict
   ): s3ManifestType[] {
@@ -579,12 +579,12 @@ export class AGService {
     // Grab all s3ManifestType object from current edgedb
     const dbs3ManifestTypeObjectDict =
       await this.getDbManifestObjectListByDatasetId(datasetId);
-    // Do comparison for data retreive from s3 and with current edgedb data
-    const missingFileFromDb = this.diffManifestAplhaAndManifestBeta(
+    // Do comparison for data retrieve from s3 and with current edgedb data
+    const missingFileFromDb = this.diffManifestAlphaAndManifestBeta(
       s3ManifestTypeObjectDict,
       dbs3ManifestTypeObjectDict
     );
-    const toBeDeletedFromDb = this.diffManifestAplhaAndManifestBeta(
+    const toBeDeletedFromDb = this.diffManifestAlphaAndManifestBeta(
       dbs3ManifestTypeObjectDict,
       s3ManifestTypeObjectDict
     );
@@ -643,7 +643,7 @@ export class AGService {
           );
         } else {
           // Insert New DatasetPatient
-          await this.insertNewDatsetPatientByDatasetId(
+          await this.insertNewDatasetPatientByDatasetId(
             datasetId,
             studyId,
             insertArtifactListQuery
