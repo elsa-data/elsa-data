@@ -34,7 +34,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
   const [isHeaderSelectionOpen, setIsHeaderSelectionOpen] =
     useState<boolean>(false);
 
-  const [haederSelected, setHaederSelected] = useState<string[]>([
+  const [headerSelected, setHeaderSelected] = useState<string[]>([
     "md5",
     "patientId",
     "s3Signed",
@@ -47,7 +47,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
     const currentTextSelection = Array.from(checkedValueElementList).map(
       (elem: HTMLInputElement) => elem.value
     );
-    setHaederSelected(currentTextSelection);
+    setHeaderSelected(currentTextSelection);
   };
   return (
     <>
@@ -55,8 +55,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
             form POSTS can be converted natively into a browser file save dialog
              i.e. if the POST returned a Content-Disposition header */}
       <form
-        // onSubmit={handleSubmit}
-        action={`http://localhost:3000/api/releases/${releaseId}/aws-s3-presigned`}
+        action={`/api/releases/${releaseId}/aws-s3-presigned`}
         method="POST"
       >
         <div className="flex flex-col gap-6">
@@ -97,7 +96,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
                 {`TSV Header: `}
               </span>
               <span className="uppercase font-normal text-gray-900">
-                {`${haederSelected.join(", ")}`}
+                {`${headerSelected.join(", ")}`}
               </span>
             </span>
 
@@ -114,7 +113,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               {FILE_RECORD_HEADER.map((field: string, fieldIdx: number) => (
                 <div key={field} className="flex items-center">
                   <input
-                    defaultChecked={haederSelected.includes(field)}
+                    defaultChecked={headerSelected.includes(field)}
                     onChange={updateText}
                     name={"presignHeader"}
                     id={`chx`}
