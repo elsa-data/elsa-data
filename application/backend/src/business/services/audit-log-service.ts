@@ -24,7 +24,7 @@ export class AuditLogService {
     @inject("Settings") private settings: ElsaSettings,
     // NOTE: we don't define an edgeDbClient here as the audit log functionality
     // is designed to work either standalone or in a transaction context
-    private usersService: UsersService
+    private _usersService: UsersService
   ) {}
 
   /**
@@ -63,7 +63,7 @@ export class AuditLogService {
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
-    const updatedRelease = await e
+    await e
       .update(e.release.Release, (r) => ({
         filter: e.op(e.uuid(releaseId), "=", r.id),
         set: {
@@ -99,8 +99,7 @@ export class AuditLogService {
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
-
-    const ae = await e
+    await e
       .update(e.audit.ReleaseAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
@@ -134,14 +133,18 @@ export class AuditLogService {
     );
 
     return createPagedResult(
-      pageOfEntries.map((a) => ({
-        whoDisplay: a.whoDisplayName,
-        when: a.occurredDateTime,
-        actionCategory: a.actionCategory,
-        actionDescription: a.actionDescription,
-        duration: a.occurredDuration
-          ? a.occurredDuration.toString()
+      pageOfEntries.map((entry) => ({
+        whoId: entry.whoId,
+        whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory.toString(),
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime,
+        occurredDuration: entry.occurredDuration
+          ? entry.occurredDuration.toString()
           : undefined,
+        outcome: entry.outcome,
       })),
       totalEntries,
       limit

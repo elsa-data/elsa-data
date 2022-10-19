@@ -1,7 +1,7 @@
-import React, { ReactNode, useState } from "react";
+import React, { useState } from "react";
 import { AuditEntryType } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import classNames from "classnames";
 import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
@@ -47,9 +47,10 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
 
   const createRows = (data: AuditEntryType[]) => {
     let viewLastDay = "";
+    console.log(data);
 
     return data.map((row, rowIndex) => {
-      const when = parseISO(row.when as string);
+      const when = parseISO(row.occurredDateTime as string);
 
       // TODO: get timezone from somewhere in config
 
@@ -62,7 +63,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
 
       let showDay = false;
 
-      if (localDay != viewLastDay) {
+      if (localDay !== viewLastDay) {
         showDay = true;
         viewLastDay = localDay;
       }
@@ -70,8 +71,8 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
       let showDuration = false;
       let localDuration = "";
 
-      if (row.duration) {
-        const parsedDuration = duration.parse(row.duration);
+      if (row.occurredDuration) {
+        const parsedDuration = duration.parse(row.occurredDuration);
 
         if (
           parsedDuration.days > 0 ||
@@ -80,7 +81,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
           parsedDuration.years
         )
           // not at all expecting this to happen - if so - just show the entire duration string
-          localDuration = `for ${row.duration}`;
+          localDuration = `for ${row.occurredDuration}`;
         else if (parsedDuration.hours > 0)
           // even hr long activities are unlikely - but we can show that
           localDuration = `for ${parsedDuration.hours} hr(s)`;
@@ -118,7 +119,7 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
               "pr-4"
             )}
           >
-            {row.whoDisplay}
+            {row.whoDisplayName}
           </td>
         </tr>
       );

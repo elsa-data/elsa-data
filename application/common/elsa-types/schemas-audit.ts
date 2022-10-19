@@ -3,13 +3,13 @@ import { TypeDate } from "./typebox-helpers";
 
 export const AuditEntrySchema = Type.Object({
   whoId: Type.String(),
-  whoDisplay: Type.String(),
+  whoDisplayName: Type.String(),
   actionCategory: Type.String(),
   actionDescription: Type.String(),
   recordedDateTime: TypeDate,
   updatedDateTime: TypeDate,
-  when: TypeDate,
-  duration: Type.Optional(Type.String()),
+  occurredDateTime: TypeDate,
+  occurredDuration: Type.Optional(Type.String()),
   outcome: Type.Integer(),
 });
 
