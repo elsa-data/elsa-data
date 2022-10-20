@@ -49,6 +49,11 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">
+        <table className="w-full text-sm text-left text-gray-500 table-fixed">
+          <tbody>
+            {dataQuery.isSuccess && createRows({ data: dataQuery.data })}
+          </tbody>
+        </table>
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
@@ -56,11 +61,6 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
           rowsPerPage={pageSize}
           rowWord="log entries"
         />
-        <table className="w-full text-sm text-left text-gray-500 table-fixed">
-          <tbody>
-            {dataQuery.isSuccess && createRows({ data: dataQuery.data })}
-          </tbody>
-        </table>
       </div>
     </BoxNoPad>
   );
