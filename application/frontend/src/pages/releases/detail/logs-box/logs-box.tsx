@@ -9,14 +9,17 @@ import { format } from "date-fns-tz";
 import * as duration from "duration-fns";
 import { parseISO } from "date-fns";
 
-type Props = {
+type LogsBoxProps = {
   releaseId: string;
-
   // the (max) number of log items shown on any single page
   pageSize: number;
 };
 
-export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
+type RowProps = {
+  data: AuditEntryType[];
+};
+
+export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -43,89 +46,6 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
     { keepPreviousData: true }
   );
 
-  const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
-
-  const createRows = (data: AuditEntryType[]) => {
-    let viewLastDay = "";
-    console.log(data);
-
-    return data.map((row, rowIndex) => {
-      const when = parseISO(row.occurredDateTime as string);
-
-      // TODO: get timezone from somewhere in config
-
-      const localDay = format(when, "d/M/yyyy", {
-        timeZone: "Australia/Melbourne",
-      });
-      const localTime = format(when, "HH:mm:ss", {
-        timeZone: "Australia/Melbourne",
-      });
-
-      let showDay = false;
-
-      if (localDay !== viewLastDay) {
-        showDay = true;
-        viewLastDay = localDay;
-      }
-
-      let showDuration = false;
-      let localDuration = "";
-
-      if (row.occurredDuration) {
-        const parsedDuration = duration.parse(row.occurredDuration);
-
-        if (
-          parsedDuration.days > 0 ||
-          parsedDuration.weeks > 0 ||
-          parsedDuration.months > 0 ||
-          parsedDuration.years
-        )
-          // not at all expecting this to happen - if so - just show the entire duration string
-          localDuration = `for ${row.occurredDuration}`;
-        else if (parsedDuration.hours > 0)
-          // even hr long activities are unlikely - but we can show that
-          localDuration = `for ${parsedDuration.hours} hr(s)`;
-        else if (parsedDuration.minutes > 0)
-          localDuration = `for ${parsedDuration.minutes} min(s)`;
-        else if (parsedDuration.seconds > 0)
-          localDuration = `for ${parsedDuration.seconds} sec(s)`;
-        else localDuration = "";
-
-        showDuration = true;
-      }
-
-      return (
-        <tr key={rowIndex} className="border-b pl-2 pr-2">
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "w-40",
-              "text-left",
-              "pl-4"
-            )}
-          >
-            {showDay && <p className="font-bold">{viewLastDay}</p>}
-            <p>{localTime}</p>
-            {showDuration && <p className="text-xs">{localDuration}</p>}
-          </td>
-          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-            {row.actionDescription}
-          </td>
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "text-right",
-              "w-40",
-              "pr-4"
-            )}
-          >
-            {row.whoDisplayName}
-          </td>
-        </tr>
-      );
-    });
-  };
-
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">
@@ -137,9 +57,88 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
           rowWord="log entries"
         />
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
-          <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
+          <tbody>
+            {dataQuery.isSuccess && createRows({ data: dataQuery.data })}
+          </tbody>
         </table>
       </div>
     </BoxNoPad>
   );
+};
+
+export const createRows = ({ data }: RowProps): JSX.Element[] => {
+  const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
+  let viewLastDay = "";
+  console.log(data);
+
+  return data.map((row, rowIndex) => {
+    const when = parseISO(row.occurredDateTime as string);
+
+    // TODO: get timezone from somewhere in config
+
+    const localDay = format(when, "d/M/yyyy", {
+      timeZone: "Australia/Melbourne",
+    });
+    const localTime = format(when, "HH:mm:ss", {
+      timeZone: "Australia/Melbourne",
+    });
+
+    let showDay = false;
+
+    if (localDay !== viewLastDay) {
+      showDay = true;
+      viewLastDay = localDay;
+    }
+
+    let showDuration = false;
+    let localDuration = "";
+
+    if (row.occurredDuration) {
+      const parsedDuration = duration.parse(row.occurredDuration);
+
+      if (
+        parsedDuration.days > 0 ||
+        parsedDuration.weeks > 0 ||
+        parsedDuration.months > 0 ||
+        parsedDuration.years
+      )
+        // not at all expecting this to happen - if so - just show the entire duration string
+        localDuration = `for ${row.occurredDuration}`;
+      else if (parsedDuration.hours > 0)
+        // even hr long activities are unlikely - but we can show that
+        localDuration = `for ${parsedDuration.hours} hr(s)`;
+      else if (parsedDuration.minutes > 0)
+        localDuration = `for ${parsedDuration.minutes} min(s)`;
+      else if (parsedDuration.seconds > 0)
+        localDuration = `for ${parsedDuration.seconds} sec(s)`;
+      else localDuration = "";
+
+      showDuration = true;
+    }
+
+    return (
+      <tr key={rowIndex} className="border-b pl-2 pr-2">
+        <td
+          className={classNames(baseColumnClasses, "w-40", "text-left", "pl-4")}
+        >
+          {showDay && <p className="font-bold">{viewLastDay}</p>}
+          <p>{localTime}</p>
+          {showDuration && <p className="text-xs">{localDuration}</p>}
+        </td>
+        <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
+          {row.actionDescription}
+        </td>
+        <td
+          className={classNames(
+            baseColumnClasses,
+            "text-right",
+            "w-40",
+            "pr-4"
+          )}
+        >
+          {row.whoDisplayName}
+        </td>
+      </tr>
+    );
+  });
 };
