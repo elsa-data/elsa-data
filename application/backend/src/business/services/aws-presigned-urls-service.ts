@@ -1,7 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
 import { AwsBaseService } from "./aws-base-service";
@@ -11,6 +10,11 @@ import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "./release-service";
+import { HttpRequest } from "@aws-sdk/protocol-http";
+import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
+import { parseUrl } from "@aws-sdk/url-parser";
+import { Hash } from "@aws-sdk/hash-node";
+import { formatUrl } from "@aws-sdk/util-format-url";
 
 @injectable()
 @singleton()
@@ -49,18 +53,31 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       now
     );
 
-    const s3Client = new S3Client({});
-
     const presign = async (s3url: string) => {
+      const s3Client = new S3Client({});
+      const awsCredentials = s3Client.config.credentials;
+      const awsRegion = await s3Client.config.region();
+
       const _match = s3url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
       if (!_match) throw new Error("Bad format");
-      const command = new GetObjectCommand({
-        Bucket: _match[1],
-        Key: _match[2],
+      const s3ObjectUrl = parseUrl(
+        `https://${_match[1]}.s3.${awsRegion}.amazonaws.com/${_match[2]}`
+      );
+      s3ObjectUrl.query = {
+        "x-releaseId": releaseId,
+      };
+
+      const presigner = new S3RequestPresigner({
+        credentials: awsCredentials,
+        region: awsRegion,
+        sha256: Hash.bind(null, "sha256"),
       });
-      return await getSignedUrl(s3Client, command, {
-        expiresIn: 60 * 60 * 24 * 7,
-      });
+      const url = formatUrl(
+        await presigner.presign(new HttpRequest(s3ObjectUrl), {
+          expiresIn: 60 * 60 * 24 * 7, // 7 days
+        })
+      );
+      return url;
     };
 
     const allFiles = await this.getAllFileRecords(user, releaseId);
