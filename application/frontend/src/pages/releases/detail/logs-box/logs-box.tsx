@@ -46,6 +46,10 @@ export const LogsBox: React.FC<Props> = ({ releaseId, pageSize }) => {
   const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
 
   const createRows = (data: AuditEntryType[]) => {
+    // whilst it shouldn't happen in real life - in dev we can occasionally have
+    // releases with no audit entries - so we need to handle that safely
+    if (!data) return [];
+
     let viewLastDay = "";
 
     return data.map((row, rowIndex) => {
