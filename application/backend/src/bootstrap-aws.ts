@@ -13,12 +13,12 @@ import { oneOffCommonInitialiseSynchronous } from "./bootstrap-common-once";
 oneOffCommonInitialiseSynchronous();
 
 const bree = new Bree({
-  root: path.resolve("."),
+  root: path.resolve("jobs"),
   jobs: [
     {
-      name: "select-job.js",
+      name: "select-job.ts",
       timeout: "5s",
-      interval: "20s",
+      interval: "60s",
     },
   ],
 });
