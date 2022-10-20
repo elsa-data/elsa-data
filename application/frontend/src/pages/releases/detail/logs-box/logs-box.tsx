@@ -71,6 +71,8 @@ export const createRows = ({ data }: RowProps): JSX.Element[] => {
   let viewLastDay = "";
   console.log(data);
 
+  if (!data) return [];
+
   return data.map((row, rowIndex) => {
     const when = parseISO(row.occurredDateTime as string);
 

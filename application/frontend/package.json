@@ -6,7 +6,8 @@
     "//frontend": "Serves the frontend files up using a built in web server - but without the custom backend or APIs - this is generally not useable",
     "frontend": "react-scripts start",
     "//build:dev": "Builds a dev build in the frontend/build/ folder where it can be found by the backend in dev mode",
-    "build:dev": "react-scripts build",
+    "build:dev": "dotenv -e .env.development react-scripts build",
+    "build:prod": "react-scripts build",
     "extract": "lingui extract",
     "compile": "lingui compile"
   },
@@ -64,6 +65,8 @@
     "@types/react-table": "^7.7.12",
     "autoprefixer": "^10.4.7",
     "babel-plugin-macros": "^3.1.0",
+    "dotenv": "16.0.3",
+    "dotenv-cli": "^6.0.0",
     "postcss": "8.4.16",
     "prettier": "2.7.1",
     "react-scripts": "5.0.1",
