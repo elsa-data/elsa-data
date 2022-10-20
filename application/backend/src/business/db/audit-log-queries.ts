@@ -54,3 +54,32 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
       offset: params.offset,
     }))
 );
+
+/**
+ * A pageable EdgeDb query for the audit log entry details associated with
+ * a given release.
+ */
+export const pageableAuditLogEntryDetailsForReleaseQuery = e.params(
+    {
+        releaseId: e.uuid,
+        limit: e.optional(e.int64),
+        offset: e.optional(e.int64),
+        start: e.optional(e.int64),
+        end: e.optional(e.int64)
+    },
+    (params) =>
+        e.select(e.audit.ReleaseAuditEvent, auditEvent => ({
+            detailsStr: e.to_str(auditEvent.details).slice(params.start, params.end),
+            filter: e.op(
+                auditEvent["<auditLog[is release::Release]"].id,
+                "=",
+                params.releaseId
+            ),
+            order_by: {
+                expression: auditEvent.occurredDateTime,
+                direction: e.DESC,
+            },
+            limit: params.limit,
+            offset: params.offset,
+        }))
+);
