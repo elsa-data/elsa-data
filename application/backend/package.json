@@ -56,7 +56,7 @@
     "csv-stringify": "6.1.3",
     "date-fns": "2.29.2",
     "dotenv": "9.0.2",
-    "edgedb": "0.21.3",
+    "edgedb": "0.22.8",
     "esbuild": "0.15.5",
     "fastify": "4.5.2",
     "fastify-favicon": "4.1.0",
