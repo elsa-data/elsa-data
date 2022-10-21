@@ -155,8 +155,8 @@ export class AuditLogService {
     releaseId: string,
     limit: number,
     offset: number,
-    start: number,
-    end: number
+    start?: number,
+    end?: number
   ): Promise<PagedResult<AuditEntryDetailsType>> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
