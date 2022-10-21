@@ -51,7 +51,7 @@ const start = async () => {
   console.log(`Listening on port ${settings.port}`);
 
   try {
-    await server.listen(settings.port, "0.0.0.0");
+    await server.listen({ port: settings.port, host: "0.0.0.0" });
   } catch (err) {
     server.log.error(err);
     process.exit(1);
