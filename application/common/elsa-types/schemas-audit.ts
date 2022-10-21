@@ -1,7 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
-export const AuditEntrySchema = Type.Object({
+export const AuditEntryDefinedSchema = Type.Object({
   whoId: Type.String(),
   whoDisplayName: Type.String(),
   actionCategory: Type.String(),
@@ -13,10 +13,17 @@ export const AuditEntrySchema = Type.Object({
   outcome: Type.Integer(),
 });
 
-export type AuditEntryType = Static<typeof AuditEntrySchema>;
+export type AuditEntryType = Static<typeof AuditEntryDefinedSchema>;
 
 export const AuditEntryDetailsSchema = Type.Object({
   details: Type.Optional(Type.String())
 });
 
 export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;
+
+export const AuditEntrySchema = Type.Object({
+  defined: Type.Optional(AuditEntryDefinedSchema),
+  details: Type.Optional(AuditEntryDetailsSchema)
+});
+
+export type AuditEntrySchemaType = Static<typeof AuditEntrySchema>;
