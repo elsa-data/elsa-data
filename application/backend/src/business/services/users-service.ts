@@ -51,8 +51,7 @@ export class UsersService {
         allowedCreateRelease: a.allowedCreateRelease,
         allowedChangeReleaseDataOwner: a.allowedChangeReleaseDataOwner,
       })),
-      totalEntries,
-      limit
+      totalEntries
     );
   }
 

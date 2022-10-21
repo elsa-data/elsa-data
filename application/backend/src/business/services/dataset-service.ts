@@ -61,7 +61,7 @@ export class DatasetService {
       };
     });
 
-    return createPagedResult(converted, fullCount, limit);
+    return createPagedResult(converted, fullCount);
   }
 
   public async get(

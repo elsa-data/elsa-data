@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from "react";
-import { ReleaseCaseType } from "@umccr/elsa-types";
+import { AuditEntryType, ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, useQueryClient } from "react-query";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
@@ -18,9 +18,6 @@ type Props = {
   // a map of every dataset uri we will encounter mapped to a single letter
   datasetMap: Map<string, ReactNode>;
 
-  // the total number of cases that we will be scrolling/paging through
-  casesCount: number;
-
   // the (max) number of case items shown on any single page
   pageSize: number;
 
@@ -31,18 +28,16 @@ type Props = {
 export const CasesBox: React.FC<Props> = ({
   releaseId,
   datasetMap,
-  casesCount,
   pageSize,
   isEditable,
 }) => {
   const queryClient = useQueryClient();
 
-  const paginator = usePagination({
-    totalItems: casesCount,
-    perPage: pageSize,
-    maxLinks: 5,
-    initialPage: 1,
-  });
+  // our internal state for which page we are on
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const [searchText, setSearchText] = useState("");
 
@@ -54,19 +49,24 @@ export const CasesBox: React.FC<Props> = ({
   };
 
   const dataQuery = useQuery(
-    ["releases-cases", paginator.page, searchText, releaseId],
+    ["releases-cases", currentPage, searchText, releaseId],
     async () => {
       const urlParams = new URLSearchParams();
-      urlParams.append("page", paginator.page.toString());
+      urlParams.append("page", currentPage.toString());
       const useableSearchText = makeUseableSearchText(searchText);
       if (useableSearchText) {
         urlParams.append("q", useableSearchText);
       }
       const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
-      console.log(u);
-      return await axios
-        .get<ReleaseCaseType[]>(u)
-        .then((response) => response.data);
+      return await axios.get<ReleaseCaseType[]>(u).then((response) => {
+        // as we page - the backend relays to us an accurate total count so we then use that
+        // in the UI
+        const newTotal = parseInt(response.headers["elsa-total-count"]);
+
+        if (isFinite(newTotal)) setCurrentTotal(newTotal);
+
+        return response.data;
+      });
     },
     { keepPreviousData: true }
   );
@@ -104,21 +104,15 @@ export const CasesBox: React.FC<Props> = ({
     <BoxNoPad heading="Cases">
       <div className="flex flex-col">
         <BoxPaginator
-          {...paginator}
-          currentPage={1}
+          currentPage={currentPage}
+          setPage={(n) => setCurrentPage(n)}
+          rowCount={currentTotal}
           rowsPerPage={pageSize}
           rowWord="cases"
-          rowCount={casesCount}
           currentSearchText={searchText}
           setSearchText={setSearchText}
           clearSearchText={clearSearchText}
         />
-        {/*<BoxSearcher
-          rowWord="cases"
-          currentSearchText={searchText}
-          setSearchText={setSearchText}
-          clearSearchText={clearSearchText}
-        /> */}
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
         )}
@@ -131,7 +125,7 @@ export const CasesBox: React.FC<Props> = ({
               </p>
             </div>
           )}
-        {dataQuery.data && dataQuery.data.length === 0 && casesCount > 0 && (
+        {dataQuery.data && dataQuery.data.length === 0 && currentTotal > 0 && (
           <div className={classNames(baseMessageDivClasses)}>
             <p>
               No cases are being displayed due to the identifier filter you have
