@@ -4,31 +4,21 @@ import axios from "axios";
 import classNames from "classnames";
 import _ from "lodash";
 import { CodingType } from "@umccr/elsa-types";
-import {
-  doBatchLookup,
-  makeCacheEntry,
-  ontologyLookupCache,
-} from "../../helpers/ontology-helper";
+import { doLookup } from "../../helpers/ontology-helper";
 
 const Chip: React.FC<{
   c: CodingType;
   removeFromSelected: (c: CodingType) => void;
 }> = ({ c, removeFromSelected }) => {
-  const initialDisplay =
-    c.display ||
-    (makeCacheEntry(c.system, c.code) in ontologyLookupCache
-      ? ontologyLookupCache[makeCacheEntry(c.system, c.code)]
-      : null);
-
-  const [display, setDisplay] = useState<string | null>(initialDisplay);
+  const [display, setDisplay] = useState<string | null>(null);
 
   React.useEffect(() => {
     const fetchData = async () => {
-      const newCodes = await doBatchLookup("https://onto.prod.umccr.org/fhir", [
-        c,
-      ]);
-      if (newCodes.length > 0 && newCodes[0].display)
-        setDisplay(newCodes[0].display);
+      const newCode = await doLookup(c);
+      if (newCode !== undefined) {
+        c.display = newCode.display;
+        setDisplay(newCode.display);
+      }
     };
     fetchData().catch();
   }, [c]);

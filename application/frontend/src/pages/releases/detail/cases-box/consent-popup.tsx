@@ -24,9 +24,7 @@ import classNames from "classnames";
 import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import {
-  doBatchLookup,
-  makeCacheEntry,
-  ontologyLookupCache,
+  doLookup,
 } from "../../../../helpers/ontology-helper";
 
 type Props = {
@@ -85,15 +83,9 @@ const resolveDiseaseCode = async function(
     return undefined;
   }
 
-  const oldCodes: CodingType[] = [{system: mondoSystem, code: mondoCode}];
-  const newCodes = await doBatchLookup(
-    "https://onto.prod.umccr.org/fhir",
-    oldCodes,
-  );
+  const newCode = await doLookup({system: mondoSystem, code: mondoCode});
 
-  const mondoDescription = newCodes.length > 0 && newCodes[0].display
-    ? newCodes[0].display
-    : null;
+  const mondoDescription = newCode && newCode.display;
 
   return mondoDescription ? `${mondoCode} (${mondoDescription})` : mondoCode;
 }
