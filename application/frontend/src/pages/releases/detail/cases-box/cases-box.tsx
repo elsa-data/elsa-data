@@ -59,11 +59,12 @@ export const CasesBox: React.FC<Props> = ({
       }
       const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
       return await axios.get<ReleaseCaseType[]>(u).then((response) => {
-        // as we page - the backend relays to us an accurate total count so we then use that
-        // in the UI
-        const newTotal = parseInt(response.headers["elsa-total-count"]);
-
-        if (isFinite(newTotal)) setCurrentTotal(newTotal);
+        if (!useableSearchText) {
+          // as we page - the backend relays to us an accurate total count so we then use that
+          // in the UI - we however only want to set it if we are not in 'search' mode
+          const newTotal = parseInt(response.headers["elsa-total-count"]);
+          if (isFinite(newTotal)) setCurrentTotal(newTotal);
+        }
 
         return response.data;
       });
