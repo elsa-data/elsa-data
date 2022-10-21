@@ -5,11 +5,11 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
-import { AuditEntryType } from "@umccr/elsa-types/schemas-audit";
+import {AuditEntryDetailsType, AuditEntryType} from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
   countAuditLogEntriesForReleaseQuery,
-  pageableAuditLogEntriesForReleaseQuery,
+  pageableAuditLogEntriesForReleaseQuery, pageableAuditLogEntryDetailsForReleaseQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 
@@ -141,10 +141,36 @@ export class AuditLogService {
         recordedDateTime: entry.recordedDateTime,
         updatedDateTime: entry.updatedDateTime,
         occurredDateTime: entry.occurredDateTime,
-        occurredDuration: entry.occurredDuration
-          ? entry.occurredDuration.toString()
-          : undefined,
+        occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
+      })),
+      totalEntries,
+      limit
+    );
+  }
+
+  public async getEntryDetails(
+    executor: Executor,
+    user: AuthenticatedUser,
+    releaseId: string,
+    limit: number,
+    offset: number,
+    start: number,
+    end: number
+  ): Promise<PagedResult<AuditEntryDetailsType>> {
+    const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
+      executor,
+      { releaseId }
+    );
+
+    const pageOfEntries = await pageableAuditLogEntryDetailsForReleaseQuery.run(
+      executor,
+      { releaseId, limit, offset, start, end }
+    );
+
+    return createPagedResult(
+      pageOfEntries.map((entry) => ({
+        details: entry.detailsStr ?? undefined
       })),
       totalEntries,
       limit

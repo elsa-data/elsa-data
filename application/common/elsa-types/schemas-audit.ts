@@ -16,7 +16,7 @@ export const AuditEntrySchema = Type.Object({
 export type AuditEntryType = Static<typeof AuditEntrySchema>;
 
 export const AuditEntryDetailsSchema = Type.Object({
-  whodId: Type.String(),
+  details: Type.Optional(Type.String())
 });
 
 export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;
