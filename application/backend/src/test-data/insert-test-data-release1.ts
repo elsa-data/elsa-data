@@ -94,6 +94,7 @@ function makeSytheticAuditLog() {
       "-",
       e.duration(new Duration(0, 0, 0, 0, 1, 2, 3))
     ),
+    details: MOCK_JSON,
   });
 
   const makeRead = () => ({
@@ -107,7 +108,6 @@ function makeSytheticAuditLog() {
       "-",
       e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
     ),
-    details: MOCK_JSON,
   });
 
   const makeOperation = (op: string) => ({
