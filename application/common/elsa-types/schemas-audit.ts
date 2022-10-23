@@ -11,12 +11,7 @@ export const AuditEntrySchema = Type.Object({
   occurredDateTime: TypeDate,
   occurredDuration: Type.Optional(Type.String()),
   outcome: Type.Integer(),
+  details: Type.Optional(Type.String()),
 });
 
 export type AuditEntryType = Static<typeof AuditEntrySchema>;
-
-export const AuditEntryDetailsSchema = Type.Object({
-  details: Type.Optional(Type.String())
-});
-
-export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;

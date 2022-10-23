@@ -69,7 +69,6 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 export const createRows = ({ data }: RowProps): JSX.Element[] => {
   const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
   let viewLastDay = "";
-  console.log(data);
 
   if (!data) return [];
 
