@@ -22,6 +22,7 @@ import {
   ISO_COUNTRY_SYSTEM_URI,
   MONDO_SYSTEM_URI,
 } from "@umccr/elsa-constants";
+import * as MOCK_JSON from "./mock-json.json";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -106,6 +107,7 @@ function makeSytheticAuditLog() {
       "-",
       e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
     ),
+    details: MOCK_JSON,
   });
 
   const makeOperation = (op: string) => ({
@@ -135,6 +137,7 @@ function makeSytheticAuditLog() {
     occurredDuration: e.duration(
       new Duration(0, 0, 0, 0, 0, random(59), random(59))
     ),
+    details: MOCK_JSON,
   });
 
   return e.set(
