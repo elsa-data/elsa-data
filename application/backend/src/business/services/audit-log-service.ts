@@ -135,8 +135,6 @@ export class AuditLogService {
       { releaseId, limit, offset, includeDetails, start, end }
     );
 
-    console.log(pageOfEntries);
-
     return createPagedResult(
       pageOfEntries.map((entry) => ({
         whoId: entry.whoId,
@@ -148,7 +146,7 @@ export class AuditLogService {
         occurredDateTime: entry.occurredDateTime,
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
-        details: entry.detailsStr ?? undefined,
+        details: entry.detailsStr || undefined,
       })),
       totalEntries,
       limit

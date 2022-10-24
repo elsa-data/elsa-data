@@ -57,7 +57,7 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
         "if",
         params.includeDetails,
         "else",
-        e.str("")
+        ""
       ),
       filter: e.op(
         auditEvent["<auditLog[is release::Release]"].id,

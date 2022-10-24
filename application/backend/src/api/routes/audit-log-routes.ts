@@ -38,7 +38,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-      const { details = true, start = 0, end = -1 } = request.query;
+      const { details = false, start = 0, end = -1 } = request.query;
 
       const events = await auditLogService.getEntries(
         edgeDbClient,
