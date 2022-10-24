@@ -122,8 +122,8 @@ export class AuditLogService {
     limit: number,
     offset: number,
     includeDetails: boolean,
-    start?: number,
-    end?: number
+    start: number,
+    end: number
   ): Promise<PagedResult<AuditEntryType>> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
@@ -134,6 +134,8 @@ export class AuditLogService {
       executor,
       { releaseId, limit, offset, includeDetails, start, end }
     );
+
+    console.log(pageOfEntries);
 
     return createPagedResult(
       pageOfEntries.map((entry) => ({
