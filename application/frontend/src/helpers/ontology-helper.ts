@@ -7,7 +7,6 @@ import {
   countriesEnglishNames,
   ISO3166_SYTEM_URI,
 } from "../ontology/countries";
-;
 
 export type ResolvedCodingType = Omit<CodingType, "display"> & {
   display: string
