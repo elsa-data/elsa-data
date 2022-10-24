@@ -10,18 +10,15 @@ const Chip: React.FC<{
   c: CodingType;
   removeFromSelected: (c: CodingType) => void;
 }> = ({ c, removeFromSelected }) => {
-  const [display, setDisplay] = useState<string | null>(null);
+  const [display, setDisplay] = useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     const fetchData = async () => {
-      const newCode = await doLookup(c);
-      if (newCode !== undefined) {
-        c.display = newCode.display;
-        setDisplay(newCode.display);
-      }
+      const display = (await doLookup(c))?.display;
+      setDisplay(display);
     };
     fetchData().catch();
-  }, [c]);
+  });
 
   return (
     <li className="px-4 py-2 rounded-full text-gray-500 bg-gray-200 text-sm flex-none flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease">
