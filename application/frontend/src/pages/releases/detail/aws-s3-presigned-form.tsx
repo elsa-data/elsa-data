@@ -1,13 +1,23 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
-import { ReleaseTypeLocal } from "./shared-types";
-
+import React, { useState } from "react";
+import { FileRecordHeaderType } from "@umccr/elsa-types";
+import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
 type Props = {
   releaseId: string;
-  releaseData: ReleaseTypeLocal;
+  releaseData: any;
 };
 
+const FILE_RECORD_HEADER: FileRecordHeaderType[] = [
+  "md5",
+  "patientId",
+  "s3Signed",
+  "caseId",
+  "fileType",
+  "specimenId",
+  "size",
+  "s3Url",
+  "s3Bucket",
+  "s3Key",
+];
 /**
  * A form that is used to ask for AWS S3
  * presigned URLS.
@@ -21,6 +31,24 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
 }) => {
   const displayPassword = releaseData.downloadPassword ?? "(ask PI)";
 
+  const [isHeaderSelectionOpen, setIsHeaderSelectionOpen] =
+    useState<boolean>(false);
+
+  const [headerSelected, setHeaderSelected] = useState<string[]>([
+    "md5",
+    "patientId",
+    "s3Signed",
+  ]);
+
+  const updateText = () => {
+    const checkedValueElementList: NodeListOf<HTMLInputElement> =
+      document.querySelectorAll("#chx:checked");
+
+    const currentTextSelection = Array.from(checkedValueElementList).map(
+      (elem: HTMLInputElement) => elem.value
+    );
+    setHeaderSelected(currentTextSelection);
+  };
   return (
     <>
       {/* we use a POST form action here (rather than a onSubmit handler) because
@@ -58,6 +86,51 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               </a>
             </p>
           </article>
+
+          <div
+            onClick={() => setIsHeaderSelectionOpen((prev) => !prev)}
+            className="flex rounded -my-3 w-full items-center justify-between bg-white py-3 text-sm cursor-pointer hover:bg-gray-100"
+          >
+            <span>
+              <span className="font-medium text-gray-900">
+                {`TSV Header: `}
+              </span>
+              <span className="uppercase font-normal text-gray-900">
+                {`${headerSelected.join(", ")}`}
+              </span>
+            </span>
+
+            <span className="ml-6 flex items-center">
+              {isHeaderSelectionOpen ? (
+                <MinusIcon className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <PlusIcon className="h-5 w-5" aria-hidden="true" />
+              )}
+            </span>
+          </div>
+          <div className={`${isHeaderSelectionOpen ? "" : "hidden"}`}>
+            <div className="space-y-4">
+              {FILE_RECORD_HEADER.map((field: string, fieldIdx: number) => (
+                <div key={field} className="flex items-center">
+                  <input
+                    defaultChecked={headerSelected.includes(field)}
+                    onChange={updateText}
+                    name={"presignHeader"}
+                    id={`chx`}
+                    type="checkbox"
+                    value={field}
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label
+                    htmlFor={`filter-${fieldIdx}`}
+                    className="uppercase ml-3 text-sm text-gray-600"
+                  >
+                    {field}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
           <label className="prose">
             <span className="text-xs font-bold text-gray-700 uppercase">
               Current Password
@@ -67,7 +140,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               disabled={true}
               required={false}
               defaultValue={displayPassword}
-              className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              className="chx mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
             />
           </label>
           <div className="prose">

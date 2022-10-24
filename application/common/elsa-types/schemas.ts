@@ -26,8 +26,26 @@ export const ReleaseRemsSyncRequestSchema = Type.Object({
   remsKey: Type.String(),
 });
 
+const AwsFileRecordKey = [
+  "caseId",
+  "patientId",
+  "specimenId",
+  "fileType",
+  "size",
+  "s3Url",
+  "s3Bucket",
+  "s3Key",
+  "s3Signed",
+  "md5",
+] as const;
+
+export const FileRecordHeader = Type.Array(
+  Type.Union(AwsFileRecordKey.map((header: string) => Type.Literal(header)))
+);
+
 export const ReleaseAwsS3PresignRequestSchema = Type.Object({
   // id: Type.String(),
+  presignHeader: FileRecordHeader,
 });
 
 export const ReleaseAwsS3PresignResponseSchema = Type.Object({
@@ -35,6 +53,7 @@ export const ReleaseAwsS3PresignResponseSchema = Type.Object({
   files: Type.Array(Type.String()),
 });
 
+export type FileRecordHeaderType = typeof AwsFileRecordKey[number];
 export type ReleaseAwsS3PresignRequestType = Static<
   typeof ReleaseAwsS3PresignRequestSchema
 >;
