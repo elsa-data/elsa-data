@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { Box } from "../../components/boxes";
@@ -9,6 +9,13 @@ import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
 import { ReleasesAddReleaseDialog } from "./releases-dashboard-add-release-dialog";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { ALLOWED_CREATE_NEW_RELEASES } from "@umccr/elsa-constants";
+import { FileUploader } from "react-drag-drop-files";
+import {
+  useCSVReader,
+  lightenDarkenColor,
+  formatFileSize,
+} from "react-papaparse";
+import { AustralianGenomicsDacRedcapUploadDiv } from "./australian-genomics-dac-redcap/australian-genomics-dac-redcap-upload-div";
 
 export const ReleasesPage: React.FC = () => {
   const { data: releaseData } = useQuery(
@@ -31,7 +38,7 @@ export const ReleasesPage: React.FC = () => {
         {/* SYNCHRONISE DAC BOX */}
         {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
           <Box heading="Synchronise Releases with DAC">
-            <VerticalTabs tabHeadings={["REMS", "DUOS"]}>
+            <VerticalTabs tabHeadings={["REMS", "Australian Genomics Redcap"]}>
               <div className="flex flex-col gap-6">
                 <div className="prose">
                   <label className="block">
@@ -52,9 +59,7 @@ export const ReleasesPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <form>
-                <p>Fetch from DUOS</p>
-              </form>
+              <AustralianGenomicsDacRedcapUploadDiv />
             </VerticalTabs>
           </Box>
         )}
