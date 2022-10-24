@@ -37,6 +37,7 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
     releaseId: e.uuid,
     limit: e.optional(e.int64),
     offset: e.optional(e.int64),
+    includeDetails: e.bool,
     start: e.optional(e.int64),
     end: e.optional(e.int64),
   },
@@ -51,7 +52,13 @@ export const pageableAuditLogEntriesForReleaseQuery = e.params(
       occurredDateTime: true,
       occurredDuration: true,
       outcome: true,
-      detailsStr: e.to_str(auditEvent.details).slice(params.start, params.end),
+      detailsStr: e.op(
+        e.to_str(auditEvent.details).slice(params.start, params.end),
+        "if",
+        params.includeDetails,
+        "else",
+        ""
+      ),
       filter: e.op(
         auditEvent["<auditLog[is release::Release]"].id,
         "=",

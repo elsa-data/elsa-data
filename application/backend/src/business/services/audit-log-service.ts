@@ -10,7 +10,6 @@ import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
   countAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForReleaseQuery,
-  pageableAuditLogEntryDetailsForReleaseQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 
@@ -121,16 +120,19 @@ export class AuditLogService {
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
-    offset: number
+    offset: number,
+    includeDetails: boolean,
+    start?: number,
+    end?: number
   ): Promise<PagedResult<AuditEntryType>> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
-      { releaseId: releaseId }
+      { releaseId }
     );
 
     const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery.run(
       executor,
-      { releaseId: releaseId, limit: limit, offset: offset }
+      { releaseId, limit, offset, includeDetails, start, end }
     );
 
     return createPagedResult(
@@ -144,37 +146,10 @@ export class AuditLogService {
         occurredDateTime: entry.occurredDateTime,
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
+        details: entry.detailsStr ?? undefined,
       })),
       totalEntries,
       limit
     );
   }
-
-  // public async getEntryDetails(
-  //   executor: Executor,
-  //   user: AuthenticatedUser,
-  //   releaseId: string,
-  //   limit: number,
-  //   offset: number,
-  //   start?: number,
-  //   end?: number
-  // ): Promise<PagedResult<AuditEntryDetailsType>> {
-  //   const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
-  //     executor,
-  //     { releaseId }
-  //   );
-  //
-  //   const pageOfEntries = await pageableAuditLogEntryDetailsForReleaseQuery.run(
-  //     executor,
-  //     { releaseId, limit, offset, start, end }
-  //   );
-  //
-  //   return createPagedResult(
-  //     pageOfEntries.map((entry) => ({
-  //       details: entry.detailsStr ?? undefined
-  //     })),
-  //     totalEntries,
-  //     limit
-  //   );
-  // }
 }

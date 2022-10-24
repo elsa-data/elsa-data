@@ -10,6 +10,8 @@ import { AuditLogService } from "../../business/services/audit-log-service";
 import { Static, Type } from "@sinclair/typebox";
 
 export const DetailsQueryStringSchema = Type.Object({
+  page: Type.Optional(Type.Number()),
+  details: Type.Optional(Type.Boolean()),
   start: Type.Optional(Type.Number()),
   end: Type.Optional(Type.Number()),
 });
@@ -20,21 +22,33 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
 
-  fastify.get<{ Params: { rid: string }; Reply: AuditEntryType[] }>(
+  fastify.get<{
+    Params: { rid: string };
+    Reply: AuditEntryType[];
+    Querystring: DetailsQueryStringType;
+  }>(
     "/api/releases/:rid/audit-log",
-    {},
+    {
+      schema: {
+        querystring: DetailsQueryStringSchema,
+      },
+    },
     async function (request, reply) {
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
+      const { details = true, start, end } = request.query;
 
       const events = await auditLogService.getEntries(
         edgeDbClient,
         authenticatedUser,
         releaseId,
         pageSize,
-        (page - 1) * pageSize
+        (page - 1) * pageSize,
+        details,
+        start,
+        end
       );
 
       sendPagedResult(
@@ -45,37 +59,4 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       );
     }
   );
-
-  // fastify.get<{ Params: { rid: string }; Reply: AuditEntryDetailsType[], Querystring: DetailsQueryStringType }>(
-  //   "/api/releases/:rid/audit-log/details",
-  //   {
-  //     schema: {
-  //       querystring: DetailsQueryStringSchema
-  //     }
-  //   },
-  //   async function (request, reply) {
-  //     const { authenticatedUser, pageSize, page } =
-  //       authenticatedRouteOnEntryHelper(request);
-  //
-  //     const releaseId = request.params.rid;
-  //     const { start, end } = request.query;
-  //
-  //     const events = await auditLogService.getEntryDetails(
-  //       edgeDbClient,
-  //       authenticatedUser,
-  //       releaseId,
-  //       pageSize,
-  //       (page - 1) * pageSize,
-  //       start,
-  //       end
-  //     );
-  //
-  //     sendPagedResult(
-  //       reply,
-  //       events,
-  //       page,
-  //       `/api/releases/${releaseId}/audit-log/details?`
-  //     );
-  //   }
-  // );
 };
