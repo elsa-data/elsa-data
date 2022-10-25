@@ -53,6 +53,18 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   console.log(dataQuery.data);
 
+  const detailsQuery = useQuery(
+    ["releases-audit-log", currentPage, releaseId],
+    async () => {
+      return await axios.get<AuditEntryType[]>(
+        `/api/releases/${releaseId}/audit-log/details?id=${dataQuery.data?.[0].objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
+      );
+    },
+    { keepPreviousData: true }
+  );
+
+  console.log(detailsQuery.data);
+
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">

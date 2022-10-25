@@ -125,7 +125,7 @@ export class AuditLogService {
     releaseId: string,
     limit: number,
     offset: number
-  ): Promise<PagedResult<AuditEntryType>> {
+  ): Promise<PagedResult<AuditEntryType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
       { releaseId }
@@ -164,18 +164,18 @@ export class AuditLogService {
     id: string,
     start: number,
     end: number
-  ): Promise<PagedResult<AuditEntryDetailsType>> {
+  ): Promise<AuditEntryDetailsType | null> {
     const entries = await auditLogDetailsForIdQuery(id, start, end).run(
       executor
     );
 
-    return createPagedResult(
-      entries.map((entry) => ({
-        objectId: entry.id,
-        details: entry.detailsStr ?? undefined,
-      })),
-      1,
-      1
-    );
+    if (entries.length == 0) {
+      return null;
+    } else {
+      return {
+        objectId: entries[0].id,
+        details: entries[0].detailsStr ?? undefined,
+      };
+    }
   }
 }

@@ -3,6 +3,7 @@ import { AuditEntryType } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
+  sendResult,
 } from "../api-routes";
 import * as edgedb from "edgedb";
 import { container } from "tsyringe";
@@ -54,14 +55,8 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         pageSize,
         (page - 1) * pageSize
       );
-      //sendPagedResult(reply, events);
 
-      sendPagedResult(
-        reply,
-        events,
-        page,
-        `/api/releases/${releaseId}/audit-log?`
-      );
+      sendPagedResult(reply, events);
     }
   );
 
@@ -77,10 +72,8 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       },
     },
     async function (request, reply) {
-      const { authenticatedUser, page } =
-        authenticatedRouteOnEntryHelper(request);
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
       const { id, start = 0, end = -1 } = request.query;
 
       const events = await auditLogService.getEntryDetails(
@@ -91,12 +84,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         end
       );
 
-      sendPagedResult(
-        reply,
-        events,
-        page,
-        `/api/releases/${releaseId}/audit-log/details?`
-      );
+      sendResult(reply, events);
     }
   );
 };
