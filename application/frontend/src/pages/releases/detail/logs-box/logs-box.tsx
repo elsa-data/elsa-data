@@ -9,6 +9,11 @@ import { format } from "date-fns-tz";
 import * as duration from "duration-fns";
 import { parseISO } from "date-fns";
 
+/**
+ * Maximum character length of details rendered in log box.
+ */
+export const MAXIMUM_DETAIL_LENGTH = 1000;
+
 type LogsBoxProps = {
   releaseId: string;
   // the (max) number of log items shown on any single page
@@ -45,6 +50,8 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     },
     { keepPreviousData: true }
   );
+
+  console.log(dataQuery.data);
 
   return (
     <BoxNoPad heading="Audit Logs">
