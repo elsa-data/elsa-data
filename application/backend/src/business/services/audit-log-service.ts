@@ -121,6 +121,7 @@ export class AuditLogService {
     releaseId: string,
     limit: number,
     offset: number,
+    includeNonDetails: boolean,
     includeDetails: boolean,
     start: number,
     end: number
@@ -130,23 +131,28 @@ export class AuditLogService {
       { releaseId }
     );
 
-    const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery.run(
-      executor,
-      { releaseId, limit, offset, includeDetails, start, end }
-    );
+    const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
+      releaseId,
+      includeNonDetails,
+      includeDetails,
+      start,
+      end,
+      limit,
+      offset
+    ).run(executor);
 
     return createPagedResult(
       pageOfEntries.map((entry) => ({
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,
-        actionCategory: entry.actionCategory.toString(),
+        actionCategory: entry.actionCategory?.toString(),
         actionDescription: entry.actionDescription,
         recordedDateTime: entry.recordedDateTime,
         updatedDateTime: entry.updatedDateTime,
         occurredDateTime: entry.occurredDateTime,
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
-        details: entry.detailsStr || undefined,
+        details: entry.detailsStr ?? undefined,
       })),
       totalEntries,
       limit

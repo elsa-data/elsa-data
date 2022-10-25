@@ -32,43 +32,38 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
  * A pageable EdgeDb query for the audit log entries associated with
  * a given release.
  */
-export const pageableAuditLogEntriesForReleaseQuery = e.params(
-  {
-    releaseId: e.uuid,
-    limit: e.optional(e.int64),
-    offset: e.optional(e.int64),
-    includeDetails: e.bool,
-    start: e.int64,
-    end: e.int64,
-  },
-  (params) =>
-    e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
-      whoId: true,
-      whoDisplayName: true,
-      actionCategory: true,
-      actionDescription: true,
-      recordedDateTime: true,
-      updatedDateTime: true,
-      occurredDateTime: true,
-      occurredDuration: true,
-      outcome: true,
-      detailsStr: e.op(
-        e.to_str(auditEvent.details).slice(params.start, params.end),
-        "if",
-        params.includeDetails,
-        "else",
-        ""
-      ),
-      filter: e.op(
-        auditEvent["<auditLog[is release::Release]"].id,
-        "=",
-        params.releaseId
-      ),
-      order_by: {
-        expression: auditEvent.occurredDateTime,
-        direction: e.DESC,
-      },
-      limit: params.limit,
-      offset: params.offset,
-    }))
-);
+export const pageableAuditLogEntriesForReleaseQuery = (
+  releaseId: string,
+  includeNonDetails: boolean = true,
+  includeDetails: boolean = false,
+  start: number = 0,
+  end: number = -1,
+  limit?: number,
+  offset?: number
+) => {
+  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+    whoId: includeNonDetails,
+    whoDisplayName: includeNonDetails,
+    actionCategory: includeNonDetails,
+    actionDescription: includeNonDetails,
+    recordedDateTime: includeNonDetails,
+    updatedDateTime: includeNonDetails,
+    occurredDateTime: includeNonDetails,
+    occurredDuration: includeNonDetails,
+    outcome: includeNonDetails,
+    detailsStr: includeDetails
+      ? e.to_str(auditEvent.details).slice(start, end)
+      : undefined,
+    filter: e.op(
+      auditEvent["<auditLog[is release::Release]"].id,
+      "=",
+      e.uuid(releaseId)
+    ),
+    order_by: {
+      expression: auditEvent.occurredDateTime,
+      direction: e.DESC,
+    },
+    limit: limit,
+    offset: offset,
+  }));
+};

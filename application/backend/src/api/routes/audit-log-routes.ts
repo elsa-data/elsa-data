@@ -12,6 +12,7 @@ import { Static, Type } from "@sinclair/typebox";
 export const DetailsQueryStringSchema = Type.Object({
   page: Type.Optional(Type.Number()),
   details: Type.Optional(Type.Boolean()),
+  nonDetails: Type.Optional(Type.Boolean()),
   start: Type.Optional(Type.Number()),
   end: Type.Optional(Type.Number()),
 });
@@ -38,7 +39,12 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-      const { details = false, start = 0, end = -1 } = request.query;
+      const {
+        details = false,
+        nonDetails = true,
+        start = 0,
+        end = -1,
+      } = request.query;
 
       const events = await auditLogService.getEntries(
         edgeDbClient,
@@ -46,6 +52,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         releaseId,
         pageSize,
         (page - 1) * pageSize,
+        nonDetails,
         details,
         start,
         end
