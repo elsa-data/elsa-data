@@ -85,9 +85,26 @@ export function sendPagedResult<T>(
 ) {
   if (!pr || !pr.data) sendResult(reply, null);
   else {
-    sendResult(reply, pr, { TOTAL_COUNT_HEADER_NAME: pr.total.toString() });
+    sendResult(reply, pr.data, {
+      [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
+    });
   }
 }
+
+// export function sendPagedResult<T>(
+//   reply: FastifyReply,
+//   pr: PagedResult<T> | null,
+//   basePath?: string
+// ) {
+//   // our services can indicate a lack of permissions, or an unknown identifier - by returning
+//   // null as a PagedResult
+//   // (they can also choose to throw an exception or other stuff - but if they do return null we want to handle it
+//   // safely here)
+//   if (isNil(pr) || isNil(pr.data)) reply.status(400).send();
+//   else {
+//     reply.header(TOTAL_COUNT_HEADER_NAME, pr.total.toString()).send(pr.data);
+//   }
+// }
 
 /**
  * The main API routes plugin point, defining a set of authenticated and

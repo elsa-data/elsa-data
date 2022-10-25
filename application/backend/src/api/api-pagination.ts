@@ -22,7 +22,7 @@ export function currentPageSize(request: FastifyRequest): number {
 }
 
 export type PagedResult<T> = {
-  data: T[];
+  data?: T[];
   total: number;
 };
 
