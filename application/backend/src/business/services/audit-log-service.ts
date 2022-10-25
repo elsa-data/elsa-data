@@ -5,9 +5,13 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
-import { AuditEntryType } from "@umccr/elsa-types/schemas-audit";
+import {
+  AuditEntryType,
+  AuditEntryDetailsType,
+} from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
+  auditLogDetailsForIdQuery,
   countAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForReleaseQuery,
 } from "../db/audit-log-queries";
@@ -120,11 +124,7 @@ export class AuditLogService {
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
-    offset: number,
-    includeNonDetails: boolean,
-    includeDetails: boolean,
-    start: number,
-    end: number
+    offset: number
   ): Promise<PagedResult<AuditEntryType>> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
@@ -133,16 +133,13 @@ export class AuditLogService {
 
     const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
       releaseId,
-      includeNonDetails,
-      includeDetails,
-      start,
-      end,
       limit,
       offset
     ).run(executor);
 
     return createPagedResult(
       pageOfEntries.map((entry) => ({
+        objectId: entry.id,
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,
         actionCategory: entry.actionCategory?.toString(),
@@ -152,10 +149,30 @@ export class AuditLogService {
         occurredDateTime: entry.occurredDateTime,
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
-        details: entry.detailsStr ?? undefined,
       })),
       totalEntries,
       limit
+    );
+  }
+
+  public async getEntryDetails(
+    executor: Executor,
+    user: AuthenticatedUser,
+    id: string,
+    start: number,
+    end: number
+  ): Promise<PagedResult<AuditEntryDetailsType>> {
+    const entries = await auditLogDetailsForIdQuery(id, start, end).run(
+      executor
+    );
+
+    return createPagedResult(
+      entries.map((entry) => ({
+        objectId: entry.id,
+        details: entry.detailsStr ?? undefined,
+      })),
+      1,
+      1
     );
   }
 }

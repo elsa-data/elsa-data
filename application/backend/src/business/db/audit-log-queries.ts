@@ -29,31 +29,18 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
 );
 
 /**
- * Base shape for an audit log entry query.
+ * A pageable EdgeDb query for the audit log entries associated with
+ * a given release.
  */
-export const auditLogEntryQueryShape = (
-  includeNonDetails: boolean = true,
-  includeDetails: boolean = false,
-  start: number = 0,
-  end: number = -1
+export const auditLogDetailsForIdQuery = (
+  id: string,
+  start: number,
+  end: number
 ) => {
-  return e.shape(e.audit.ReleaseAuditEvent, (auditEvent) => ({
-    whoId: includeNonDetails,
-    whoDisplayName: includeNonDetails,
-    actionCategory: includeNonDetails,
-    actionDescription: includeNonDetails,
-    recordedDateTime: includeNonDetails,
-    updatedDateTime: includeNonDetails,
-    occurredDateTime: includeNonDetails,
-    occurredDuration: includeNonDetails,
-    outcome: includeNonDetails,
-    detailsStr: <string | null>(
-      (includeDetails ? e.to_str(auditEvent.details).slice(start, end) : null)
-    ),
-    order_by: {
-      expression: auditEvent.occurredDateTime,
-      direction: e.DESC,
-    },
+  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+    id: true,
+    detailsStr: e.to_str(auditEvent.details).slice(start, end),
+    filter_single: { id },
   }));
 };
 
@@ -63,20 +50,24 @@ export const auditLogEntryQueryShape = (
  */
 export const pageableAuditLogEntriesForReleaseQuery = (
   releaseId: string,
-  includeNonDetails: boolean = true,
-  includeDetails: boolean = false,
-  start: number = 0,
-  end: number = -1,
   limit?: number,
   offset?: number
 ) => {
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
-    ...auditLogEntryQueryShape(
-      includeNonDetails,
-      includeDetails,
-      start,
-      end
-    )(auditEvent),
+    id: true,
+    whoId: true,
+    whoDisplayName: true,
+    actionCategory: true,
+    actionDescription: true,
+    recordedDateTime: true,
+    updatedDateTime: true,
+    occurredDateTime: true,
+    occurredDuration: true,
+    outcome: true,
+    order_by: {
+      expression: auditEvent.occurredDateTime,
+      direction: e.DESC,
+    },
     filter: e.op(
       auditEvent["<auditLog[is release::Release]"].id,
       "=",
