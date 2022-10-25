@@ -13,20 +13,11 @@ import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { LayoutBase } from "../../layouts/layout-base";
+import { DatasetsBox } from "./datasets-box/datasets-box";
+import { usePageSizer } from "../../hooks/page-sizer";
 
 export const DatasetsDashboardPage: React.FC = () => {
-  const envRelay = useEnvRelay();
-  const navigate = useNavigate();
-
-  const { data: datasetsData } = useQuery(
-    "datasets",
-    async () => {
-      return await axios
-        .get<DatasetLightType[]>(`/api/datasets`)
-        .then((response) => response.data);
-    },
-    {}
-  );
+  const pageSize = usePageSizer();
 
   const {
     register,
@@ -74,52 +65,9 @@ export const DatasetsDashboardPage: React.FC = () => {
   return (
     <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
-        <Box heading="Datasets">
-          {datasetsData && (
-            <table className="w-full text-sm text-left text-gray-500 border-black border-1 border-solid">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3">
-                    URI
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Description
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Contains
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    <span className="sr-only">View</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {datasetsData.map((ds) => (
-                  <tr className="bg-white border-b hover:bg-gray-50">
-                    <td className="px-6 py-4 font-mono whitespace-nowrap">
-                      {ds.uri}
-                    </td>
-                    <td className="px-6 py-4">{ds.description}</td>
-                    <td className="px-6 py-4">
-                      {ds.summaryArtifactCount} artifacts of{" "}
-                      {ds.summaryArtifactIncludes.replaceAll(" ", "/")}{" "}
-                      totalling {fileSize(ds.summaryArtifactSizeBytes)}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <a
-                        href={`/datasets/${ds.id}`}
-                        className="font-medium text-blue-600 light:text-blue-500 hover:underline"
-                      >
-                        View
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </Box>
-        <Box heading="Import/Update Dataset">
+        <DatasetsBox pageSize={pageSize} />
+
+        {/*<Box heading="Import/Update Dataset">
           <div className="flex">
             <Tab.Group vertical={true}>
               <Tab.List className="flex-none w-1/5 flex-col space-x-1 rounded-xl bg-blue-900/20 p-1">
@@ -211,7 +159,7 @@ export const DatasetsDashboardPage: React.FC = () => {
               </Tab.Panels>
             </Tab.Group>
           </div>
-        </Box>
+        </Box> */}
       </div>
     </LayoutBase>
   );

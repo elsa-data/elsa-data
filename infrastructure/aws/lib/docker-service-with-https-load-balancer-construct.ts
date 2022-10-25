@@ -115,6 +115,9 @@ export class DockerServiceWithHttpsLoadBalancerConstruct extends Construct {
       publicLoadBalancer: true,
       // securityGroups: props.securityGroups,
       taskDefinition: taskDefinition,
+      circuitBreaker: {
+        rollback: true,
+      },
     });
 
     if (props.healthCheckPath) {

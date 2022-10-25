@@ -137,11 +137,11 @@ export class ReleaseService extends ReleaseBaseService {
    * (the admins will get all the cases, but researchers/pi will only see cases that they
    * have some level of visibility into)
    *
-   * @param user
-   * @param releaseId
-   * @param limit
-   * @param offset
-   * @param identifierSearchText if present, a string that must be present in an identifier within the case
+   * @param user the user asking for the cases
+   * @param releaseId the release id containing the cases
+   * @param limit maximum number of cases to return (paging)
+   * @param offset the offset into the cases (paging)
+   * @param identifierSearchText if present, a string that must be present in any identifier within the case
    */
   public async getCases(
     user: AuthenticatedUser,
@@ -215,6 +215,10 @@ export class ReleaseService extends ReleaseBaseService {
       }
     };
 
+    // TODO: when the 1.0.0 EdgeDb javascript client is released we will refactor this into using
+    // e.shape()
+    // at the moment we have literally just duplicated the query for count() v select()
+
     const caseSearchQuery = e.select(e.dataset.DatasetCase, (dsc) => ({
       ...e.dataset.DatasetCase["*"],
       consent: true,
@@ -262,6 +266,14 @@ export class ReleaseService extends ReleaseBaseService {
     // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
 
     if (!pageCases) return null;
+
+    const caseCountQuery = e.count(
+      e.select(e.dataset.DatasetCase, (dsc) => ({
+        filter: makeFilter(dsc),
+      }))
+    );
+
+    const countCases = await caseCountQuery.run(this.edgeDbClient);
 
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
@@ -327,13 +339,11 @@ export class ReleaseService extends ReleaseBaseService {
       };
     };
 
-    // TODO: remove the paged result from this
     return createPagedResult(
       pageCases.map((pc) =>
         createCaseMap(pc as unknown as dataset.DatasetCase)
       ),
-      1000,
-      limit
+      countCases
     );
   }
 

@@ -62,7 +62,6 @@ export const ReleasesDetailPage: React.FC = () => {
                 releaseId={releaseId}
                 datasetMap={releaseQuery.data.datasetMap}
                 isEditable={releaseQuery.data.permissionEditSelections || false}
-                casesCount={releaseQuery.data.visibleCasesCount}
                 pageSize={pageSize}
               />
             )}

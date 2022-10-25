@@ -1,7 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { releaseRoutes } from "./routes/release-routes";
 import { datasetRoutes } from "./routes/dataset-routes";
-import { SESSION_TOKEN_PRIMARY } from "../auth/auth-constants";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
@@ -29,13 +28,7 @@ type Opts = {
  * @param request
  */
 export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
-  const elsaSettings: ElsaSettings = (request as any).settings;
   const authenticatedUser: AuthenticatedUser = (request as any).user;
-  // page size is either a session cookie kind of setting, or a default - but we always have a value here
-  const pageSize = currentPageSize(request);
-  // we have a sensible default page across the entire system, even if not specified
-  const page = parseInt((request.query as any).page) || 1;
-  const offset = (page - 1) * pageSize;
 
   if (!authenticatedUser)
     // we should never ever get to this - but if for some reason our plumbing has gone wrong
@@ -43,6 +36,13 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
     throw new Error(
       "Inside authenticated route body but no authenticated user data"
     );
+
+  const elsaSettings: ElsaSettings = (request as any).settings;
+  // page size is either a session cookie kind of setting, or a default - but we always have a value here
+  const pageSize = currentPageSize(request);
+  // we have a sensible default page across the entire system, even if not specified
+  const page = parseInt((request.query as any).page) || 1;
+  const offset = (page - 1) * pageSize;
 
   const qRaw = (request.query as any).q;
   // we want our q query to only ever be a non-empty trimmed string - or otherwise leave as undefined
@@ -67,14 +67,12 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
  *
  * @param reply
  * @param pr
- * @param currentPage
  * @param basePath
  */
 export function sendPagedResult<T>(
   reply: FastifyReply,
   pr: PagedResult<T> | null,
-  currentPage: number,
-  basePath: string
+  basePath?: string
 ) {
   // our services can indicate a lack of permissions, or an unknown identifier - by returning
   // null as a PagedResult
@@ -82,42 +80,7 @@ export function sendPagedResult<T>(
   // safely here)
   if (isNil(pr) || isNil(pr!.data)) reply.status(400).send();
   else {
-    if (!basePath.endsWith("?") && !basePath.endsWith("&"))
-      throw Error(
-        "The basePath for returnPagedResult must end with ? or & so that we can create the paging links"
-      );
-
-    // TBH - we don't really use RFC 8288 at the client so no point to this
-
-    // supporting returning RFC 8288 headers
-    //const l = new LinkHeader();
-
-    //if (currentPage < pr.last)
-    //  l.set({
-    //    rel: "next",
-    //    uri: `${basePath}page=${currentPage + 1}`,
-    //  });
-    //if (currentPage > 1)
-    //  l.set({
-    //    rel: "prev",
-    //    uri: `${basePath}page=${currentPage - 1}`,
-    //  });
-
-    //if (isFinite(pr.first))
-    //  l.set({
-    //    rel: "first",
-    //    uri: `${basePath}page=${pr.first}`,
-    //  });
-    //if (isFinite(pr.last))
-    //  l.set({
-    //    rel: "last",
-    //    uri: `${basePath}page=${pr.last}`,
-    //  });
-
-    reply
-      .header(TOTAL_COUNT_HEADER_NAME, pr.total.toString())
-      // .header("link", l)
-      .send(pr.data);
+    reply.header(TOTAL_COUNT_HEADER_NAME, pr.total.toString()).send(pr.data);
   }
 }
 

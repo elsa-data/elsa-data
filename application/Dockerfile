@@ -55,7 +55,7 @@ RUN cd frontend && npm clean-install
 COPY frontend/ ./frontend/
 RUN cd frontend && npx react-scripts build
 RUN cd backend && mkdir -p client/dist
-RUN cd frontend && cp -R build/ ../backend/client/dist
+RUN cd frontend && cp -R build/* ../backend/client/dist
 
 # copy the entire backend structure (we can probably pare this back at some point)
 COPY backend/ ./backend/
