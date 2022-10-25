@@ -1,5 +1,8 @@
 import axios from "axios";
-import { zipWith } from "lodash";
+import {
+  partial,
+  zipWith,
+} from "lodash";
 import LRUCache from "lru-cache";
 import { Options as LRUCacheOptions } from "lru-cache";
 import { CodingType } from "@umccr/elsa-types";
@@ -16,10 +19,6 @@ export type LookupResult = {
   resolved: ResolvedCodingType[],
   unresolved: CodingType[],
 }
-
-// TODO: read this from config file
-// The URL of the ontology server FHIR endpoint
-const ONTO_URL = "https://onto.prod.umccr.org/fhir";
 
 const ontologyLookupCache = new LRUCache<string, ResolvedCodingType>({
   max: 1024
@@ -80,7 +79,10 @@ async function tryLookupInCountryMap(codes: CodingType[]): Promise<LookupResult>
   return mergeLookupResults(codes.map(tryLookupInCountryMap1));
 }
 
-async function tryLookupInOntoserver(codes: CodingType[]): Promise<LookupResult> {
+async function tryLookupInTerminologyServer(
+  url: string,
+  codes: CodingType[]
+): Promise<LookupResult> {
   if (codes.length === 0) {
     return {resolved: [], unresolved: []};
   }
@@ -121,7 +123,7 @@ async function tryLookupInOntoserver(codes: CodingType[]): Promise<LookupResult>
 
   let results = null;
   try {
-    results = (await axios.post(ONTO_URL, data, config)).data
+    results = (await axios.post(url, data, config)).data
   } catch (e) {
     console.log(e);
     return {
@@ -192,35 +194,42 @@ export function putManyIntoCache(codes: ResolvedCodingType[]) {
 }
 
 /**
- * Do a lookup at a single Ontoserver endpoint for any concepts that do not yet have
- * a display component - and then fill that in.
+ * Do a lookup at a single FHIR-based terminology server endpoint for any
+ * concepts that do not yet have a display component - and then fill that in.
  *
+ * @param url the URL of the ontology server FHIR endpoint
  * @param code the code that may or may not have a display field
  * @param forceAllRefresh if true then fetch and set the display field of all codes, irrespective of already set
  */
 export async function doLookup(
+  url: string,
   code: CodingType,
   forceRefresh: boolean = false,
 ): Promise<ResolvedCodingType | undefined> {
-  return (await doBatchLookup([code], forceRefresh)).resolved[0];
+  return (await doBatchLookup(url, [code], forceRefresh)).resolved[0];
 }
 
 /**
- * Do a batch lookup at a single Ontoserver endpoint for any concepts that do not yet have
- * a display component - and then fill that in.
+ * Do a batch lookup at a single FHIR-based terminology server endpoint for any
+ * concepts that do not yet have a display component - and then fill that in.
  *
+ * @param url the URL of the ontology server FHIR endpoint
  * @param codes the array of codes that may or may not have a display field
  * @param forceAllRefresh if true then fetch and set the display field of all codes, irrespective of already set
  */
 export async function doBatchLookup(
+  url: string,
   codes: CodingType[],
   forceAllRefresh: boolean = false
 ): Promise<LookupResult> {
+  const tryLookupInSpecificTerminologyServer = partial(
+    tryLookupInTerminologyServer, url);
+
   const lookupFuncs = [
     ...(forceAllRefresh ? []: [tryLookupInCode]),
     ...(forceAllRefresh ? []: [tryLookupInCache]),
     tryLookupInCountryMap,
-    tryLookupInOntoserver,
+    tryLookupInSpecificTerminologyServer,
   ];
 
   // Do the lookup, falling back to later functions in `lookupFuncs` if earlier

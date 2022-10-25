@@ -33,6 +33,7 @@ if (root != null) {
   const de = (root.dataset.deployedEnvironment ||
     "development") as DeployedEnvironments;
   const dl = root.dataset.deployedLocation || "undefined location";
+  const tfu = root.dataset.terminologyFhirUrl || "undefined terminology FHIR URL";
 
   const queryClient = new QueryClient({});
 
@@ -49,6 +50,7 @@ if (root != null) {
         buildVersion={bv}
         deployedEnvironment={de}
         deployedLocation={dl}
+        terminologyFhirUrl={tfu}
       >
         <I18nProvider i18n={i18n}>
           {/* the query provider comes from react-query and provides standardised remote query semantics */}

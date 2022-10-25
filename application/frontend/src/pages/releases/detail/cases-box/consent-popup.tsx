@@ -26,6 +26,7 @@ import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import {
   doLookup,
 } from "../../../../helpers/ontology-helper";
+import { useEnvRelay } from "../../../../providers/env-relay-provider";
 
 type Props = {
   releaseId: string;
@@ -73,6 +74,7 @@ const resolveDuoCode = function(duoCode: string): string {
 }
 
 const resolveDiseaseCode = async function(
+  terminologyFhirUrl: string,
   mondoSystem: string | undefined,
   mondoCode: string | undefined
 ): Promise<string | undefined> {
@@ -83,7 +85,8 @@ const resolveDiseaseCode = async function(
     return undefined;
   }
 
-  const newCode = await doLookup({system: mondoSystem, code: mondoCode});
+  const oldCode = {system: mondoSystem, code: mondoCode};
+  const newCode = await doLookup(terminologyFhirUrl, oldCode);
 
   const mondoDescription = newCode && newCode.display;
 
@@ -100,6 +103,9 @@ const resolveDiseaseCode = async function(
  */
 export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
   const [duos, setDuos] = useState<ResolvedDuo[]>([]);
+  const envRelay = useEnvRelay();
+
+  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
@@ -117,6 +123,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
         const resolvedDuoCode: string = resolveDuoCode(duoCode);
         const resolvedDiseaseCode: string | undefined = await resolveDiseaseCode(
+          terminologyFhirUrl,
           diseaseSystem,
           diseaseCode,
         );

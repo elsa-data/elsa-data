@@ -5,6 +5,7 @@ import classNames from "classnames";
 import _ from "lodash";
 import { CodingType } from "@umccr/elsa-types";
 import { doLookup } from "../../helpers/ontology-helper";
+import { useEnvRelay } from "../../providers/env-relay-provider";
 
 const Chip: React.FC<{
   c: CodingType;
@@ -12,9 +13,12 @@ const Chip: React.FC<{
 }> = ({ c, removeFromSelected }) => {
   const [display, setDisplay] = useState<string | undefined>(undefined);
 
+  const envRelay = useEnvRelay();
+  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
+
   React.useEffect(() => {
     const fetchData = async () => {
-      const display = (await doLookup(c))?.display;
+      const display = (await doLookup(terminologyFhirUrl, c))?.display;
       setDisplay(display);
     };
     fetchData().catch();
@@ -48,8 +52,6 @@ const Chip: React.FC<{
 };
 
 type Props = {
-  ontoServerUrl: string; // "https://genomics.ontoserver.csiro.au
-
   systemUri: string; // "http://purl.obolibrary.org/obo/hp.owl"
   systemVersion?: string; // "20191108"
 
@@ -77,6 +79,9 @@ type Props = {
  * @constructor
  */
 export const ConceptChooser: React.FC<Props> = (props: Props) => {
+  const envRelay = useEnvRelay();
+  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
+
   // a code array that is set on mount to the same as props.selected - and which then
   // is background filled with 'display' terms
 
@@ -162,7 +167,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
     }
 
     axios
-      .get(`${props.ontoServerUrl}/ValueSet/$expand`, {
+      .get(`${terminologyFhirUrl}/ValueSet/$expand`, {
         params: {
           _format: "json",
           filter: query,

@@ -8,6 +8,7 @@ export type EnvRelay = {
   buildVersion: string;
   deployedEnvironment: DeployedEnvironments;
   deployedLocation: string;
+  terminologyFhirUrl: string;
 };
 
 /**
