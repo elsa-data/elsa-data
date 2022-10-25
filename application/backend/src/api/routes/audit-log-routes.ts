@@ -54,6 +54,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         pageSize,
         (page - 1) * pageSize
       );
+      //sendPagedResult(reply, events);
 
       sendPagedResult(
         reply,

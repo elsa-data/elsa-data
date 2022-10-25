@@ -26,7 +26,7 @@ export async function insertTestData(settings: ElsaSettings) {
   await insert10G();
   await insert10F();
   await insert10C();
-  await insertCARDIAC();
+  // await insertCARDIAC();
 
   await insertBlankDataset(
     "BM",

@@ -76,16 +76,6 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     });
   });
 
-  /**
-   * Before triggering this endpoint. There are pre-requisite to be able to record the data.
-   * A dataset with a single datasetCase must exist with the correct dataset uri.
-   * Enter the following for edgeDb cli
-   * insert dataset::Dataset{
-   *   description:="New Cardaic",
-   *   cases:= (insert dataset::DatasetCase{}),
-   *   uri:= "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac"
-   * };
-   */
   fastify.post<{ Body: { keyPrefix: string } }>(
     "/api/datasets/ag/import",
     {},
@@ -94,7 +84,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
       const keyPrefix = body.keyPrefix;
 
       agService.syncDbFromS3KeyPrefix(keyPrefix);
-      reply.send("ok");
+      reply.send("OK! \nTo prevent API timeout, returning the OK value while the script is still running. ");
     }
   );
 };

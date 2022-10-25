@@ -137,6 +137,10 @@ export class AuditLogService {
       offset
     ).run(executor);
 
+    console.log(
+      `${AuditLogService.name}.getEntries(releaseId=${releaseId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+    );
+
     return createPagedResult(
       pageOfEntries.map((entry) => ({
         objectId: entry.id,
@@ -150,8 +154,7 @@ export class AuditLogService {
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
       })),
-      totalEntries,
-      limit
+      totalEntries
     );
   }
 

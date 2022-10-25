@@ -1,22 +1,24 @@
 import classNames from "classnames";
-import React, { ReactNode } from "react";
-import { PaginatorLink } from "headless-pagination";
+import React from "react";
 import { isString } from "lodash";
+import { Pagination } from "react-headless-pagination";
 
 type Props = {
-  // the word that describes each row (i.e. "cases", "datasets")
+  // the word that describes each row (i.e. "cases", "patients", "datasets")
   rowWord: string;
 
   // the total number of rows that we will be scrolling/paging through
   rowCount: number;
 
-  //
+  // the maximum number of rows to display on one page (i.e. page limit)
   rowsPerPage: number;
 
+  // if present, enables a replacement of the paging mechanism for when there is search text
   currentSearchText?: string;
   setSearchText?: (text: string) => void;
   clearSearchText?: () => void;
 
+  // the state variable holding the current page
   currentPage: number;
 
   // these props are from the header paginator component - created in the parent box
@@ -31,11 +33,6 @@ type Props = {
  * @constructor
  */
 export const BoxPaginator: React.FC<Props> = (props) => {
-  // styles for the page boxes - differing if the page is the 'current' page
-  const currentClasses = "z-10 bg-indigo-50 border-indigo-500 text-indigo-600";
-  const notCurrentClasses =
-    "bg-white border-gray-300 text-gray-500 hover:bg-gray-50";
-
   // if in the process of them entering search text - we want the UI to change slightly
   // note that we also check to make sure the search functionality is enabled (set/clear must be non-null)
   const isTextSearchHappening =
@@ -44,27 +41,8 @@ export const BoxPaginator: React.FC<Props> = (props) => {
     isString(props.currentSearchText) &&
     props.currentSearchText!.length > 0;
 
-  // for our pagination buttons we need to know the max page
-  const maxPage = Math.ceil(props.rowCount / props.rowsPerPage) + 1;
-
-  const linkButtons: ReactNode[] = [];
-
-  for (let i = 1; i < maxPage; i++) {
-    linkButtons.push(
-      <a
-        key={i}
-        aria-current="page"
-        className={classNames(
-          i == props.currentPage ? currentClasses : notCurrentClasses,
-          "relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-        )}
-        onClick={() => props.setPage(i)}
-      >
-        {i.toString()}
-      </a>
-    );
-  }
-
+  // for our pagination buttons and text we need to do some page calculations
+  const maxPage = Math.ceil(props.rowCount / props.rowsPerPage);
   const from = (props.currentPage - 1) * props.rowsPerPage + 1;
   const to = Math.min(
     (props.currentPage - 1) * props.rowsPerPage + props.rowsPerPage,
@@ -82,6 +60,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
           >
             Previous
           </a>
+          {/* TODO what about the search UI on small devices? */}
           <a
             onClick={() => props.setPage(props.currentPage + 1)}
             className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -132,14 +111,24 @@ export const BoxPaginator: React.FC<Props> = (props) => {
           )}
           {!isTextSearchHappening && (
             <div className="ml-8">
-              <nav
-                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                aria-label="Pagination"
+              <Pagination
+                currentPage={props.currentPage - 1}
+                setCurrentPage={(p: number) => props.setPage(p + 1)}
+                totalPages={maxPage}
+                edgePageCount={2}
+                middlePagesSiblingCount={1}
+                className="relative z-0 inline-flex text-sm text-gray-700 -space-x-px"
+                truncableText="..."
+                truncableClassName="w-10 px-0.5 text-center"
               >
-                <button
-                  onClick={() => props.setPage(props.currentPage - 1)}
-                  disabled={props.currentPage == 1}
-                  className="disabled:opacity-50 relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                <Pagination.PrevButton
+                  className={classNames(
+                    "flex items-center mr-2 text-gray-700 hover:text-gray-600 focus:outline-none",
+                    {
+                      "cursor-pointer": props.currentPage !== 1,
+                      "opacity-50": props.currentPage === 1,
+                    }
+                  )}
                 >
                   <span className="sr-only">Previous</span>
                   <span className="h-5 w-5" aria-hidden="true">
@@ -157,12 +146,26 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                       <polyline points="15 6 9 12 15 18" />
                     </svg>
                   </span>
-                </button>
-                {linkButtons.map((link, i) => link)}
-                <button
-                  onClick={() => props.setPage(props.currentPage + 1)}
-                  disabled={props.currentPage >= maxPage - 1}
-                  className="disabled:opacity-50 relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                </Pagination.PrevButton>
+
+                <div className="flex items-center justify-center flex-grow">
+                  <Pagination.PageButton
+                    activeClassName="bg-blue-50 text-blue-600"
+                    inactiveClassName="text-gray-500"
+                    className={
+                      "flex items-center justify-center h-10 w-10 rounded-full cursor-pointer"
+                    }
+                  />
+                </div>
+
+                <Pagination.NextButton
+                  className={classNames(
+                    "flex items-center ml-2 text-gray-700 hover:text-gray-600 focus:outline-none",
+                    {
+                      "cursor-pointer": props.currentPage !== maxPage,
+                      "opacity-50": props.currentPage === maxPage,
+                    }
+                  )}
                 >
                   <span className="sr-only">Next</span>
                   <span className="h-5 w-5" aria-hidden="true">
@@ -179,8 +182,8 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                       <polyline points="9 6 15 12 9 18" />
                     </svg>
                   </span>
-                </button>
-              </nav>
+                </Pagination.NextButton>
+              </Pagination>
             </div>
           )}
         </div>

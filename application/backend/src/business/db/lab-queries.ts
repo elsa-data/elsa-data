@@ -58,20 +58,11 @@ export function insertArtifactCramQuery(cramFile: File, craiFile: File) {
 /**
  * SELECT function queries
  */
-export const fastqArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
-  { datasetCaseId: e.uuid },
+export const fastqArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
+  { datasetId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactFastqPair, (fastqArtifact) => {
-      // const vcfForwardFileQuery = e.select(e.storage.File, (file) => ({
-      //   url: true,
-      //   filter: e.op(file.id, "=", fastqArtifact.forwardFile.id),
-      // }));
-      // const vcfReverseFileQuery = e.select(e.storage.File, (file) => ({
-      //   url: true,
-      //   filter: e.op(file.id, "=", fastqArtifact.reverseFile.id),
-      // }));
       return {
-        // fileId: e.set(vcfForwardFileQuery, vcfReverseFileQuery),
         fileIdList: e.set(
           fastqArtifact.forwardFile.id,
           fastqArtifact.reverseFile.id
@@ -80,16 +71,16 @@ export const fastqArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
           fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
+          fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetCaseId
+          params.datasetId
         ),
       };
     })
 );
 
-export const bamArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
-  { datasetCaseId: e.uuid },
+export const bamArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
+  { datasetId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactBam, (bamArtifact) => {
       return {
@@ -98,16 +89,16 @@ export const bamArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
           bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
+          bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetCaseId
+          params.datasetId
         ),
       };
     })
 );
 
-export const cramArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
-  { datasetCaseId: e.uuid },
+export const cramArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
+  { datasetId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactCram, (cramArtifact) => {
       return {
@@ -116,16 +107,16 @@ export const cramArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
           cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
+          cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetCaseId
+          params.datasetId
         ),
       };
     })
 );
 
-export const vcfArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
-  { datasetCaseId: e.uuid },
+export const vcfArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
+  { datasetId: e.uuid },
   (params) =>
     e.select(e.lab.ArtifactVcf, (vcfArtifact) => {
       return {
@@ -134,9 +125,9 @@ export const vcfArtifactStudyIdAndFileIdByDatasetCaseIdQuery = e.params(
           vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
             .externalIdentifiers,
         filter: e.op(
-          vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].case_.id,
+          vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetCaseId
+          params.datasetId
         ),
       };
     })

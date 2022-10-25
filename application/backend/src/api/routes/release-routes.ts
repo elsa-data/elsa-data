@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
-import * as edgedb from "edgedb";
 import {
   DuoLimitationCodedType,
+  ReleaseAwsS3PresignRequestSchema,
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
   ReleaseDetailType,
@@ -19,6 +19,7 @@ import { JobsService } from "../../business/services/jobs-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
+import { Type } from "@sinclair/typebox";
 
 export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
   const jobsService = container.resolve(JobsService);
@@ -311,17 +312,24 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     );
   });
 
+  const PresignedT = Type.Object({
+    header: Type.Array(Type.Union([Type.Literal("A"), Type.Literal("B")])),
+  });
+
   fastify.post<{
     Body: ReleaseAwsS3PresignRequestType;
     Params: { rid: string };
   }>(
     "/api/releases/:rid/aws-s3-presigned",
-    {},
+    {
+      schema: {
+        body: ReleaseAwsS3PresignRequestSchema,
+      },
+    },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-
       if (!awsPresignedUrlsService.isEnabled)
         throw new Error(
           "The AWS service was not started so AWS S3 presign will not work"
@@ -329,10 +337,9 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
 
       const presignResult = await awsPresignedUrlsService.getPresigned(
         authenticatedUser,
-        releaseId
+        releaseId,
+        request.body.presignHeader
       );
-
-      // if (!awsFiles) throw new Error("Could not pre-sign S3 URLs");
 
       reply.raw.writeHead(200, {
         "Content-Disposition": `attachment; filename=${presignResult.filename}`,

@@ -16,18 +16,20 @@ import { Client } from "edgedb";
 import {
   BART_PATIENT_PGP,
   BART_SPECIMEN,
-  ELROY_SPECIMEN,
-  GEORGE_SPECIMEN,
   HOMER_PATIENT_PGP,
   HOMER_SPECIMEN,
-  JETSONS_CASE,
-  JUDY_SPECIMEN,
   MARGE_PATIENT_PGP,
   MARGE_SPECIMEN,
   SIMPSONS_CASE,
-} from "../../src/test-data/insert-test-data-10f";
+} from "../../src/test-data/insert-test-data-10f-simpsons";
+import {
+  ELROY_SPECIMEN,
+  GEORGE_SPECIMEN,
+  JETSONS_CASE,
+  JUDY_SPECIMEN,
+} from "../../src/test-data/insert-test-data-10f-jetsons";
 
-const testContainer = registerTypes();
+const testContainer = await registerTypes();
 
 const edgeDbClient = testContainer.resolve<Client>("Database");
 const releasesService = testContainer.resolve(ReleaseService);
