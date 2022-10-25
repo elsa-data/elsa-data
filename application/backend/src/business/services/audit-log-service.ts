@@ -169,12 +169,12 @@ export class AuditLogService {
       executor
     );
 
-    if (entries.length == 0) {
+    if (!entries) {
       return null;
     } else {
       return {
-        objectId: entries[0].id,
-        details: entries[0].detailsStr ?? undefined,
+        objectId: entries.id,
+        details: entries.detailsStr ?? undefined,
       };
     }
   }
