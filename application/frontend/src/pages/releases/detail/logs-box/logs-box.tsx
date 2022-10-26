@@ -8,6 +8,7 @@ import { BoxPaginator } from "../../../../components/box-paginator";
 import { format } from "date-fns-tz";
 import * as duration from "duration-fns";
 import { parseISO } from "date-fns";
+import { createColumnHelper } from "@tanstack/react-table";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -51,19 +52,19 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     { keepPreviousData: true }
   );
 
-  console.log(dataQuery.data);
+  // console.log(dataQuery.data);
 
-  const detailsQuery = useQuery(
-    ["releases-audit-log", currentPage, releaseId],
-    async () => {
-      return await axios.get<AuditEntryType[]>(
-        `/api/releases/${releaseId}/audit-log/details?id=${dataQuery.data?.[0].objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
-      );
-    },
-    { keepPreviousData: true }
-  );
-
-  console.log(detailsQuery.data);
+  // const detailsQuery = useQuery(
+  //   ["releases-audit-log-details", currentPage, releaseId],
+  //   async () => {
+  //     return await axios.get<AuditEntryType[]>(
+  //       `/api/releases/${releaseId}/audit-log/details?id=${dataQuery.data?.[0].objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
+  //     ).then(response => response.data);
+  //   },
+  //   { keepPreviousData: true }
+  // );
+  //
+  // console.log(detailsQuery.data);
 
   return (
     <BoxNoPad heading="Audit Logs">
@@ -83,6 +84,30 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
       </div>
     </BoxNoPad>
   );
+};
+
+export const createColumns = () => {
+  const columnHelper = createColumnHelper<AuditEntryType>();
+  return [
+    columnHelper.accessor("occurredDateTime", {
+      header: "Time",
+    }),
+    columnHelper.accessor("occurredDuration", {
+      header: "Duration",
+    }),
+    columnHelper.accessor("outcome", {
+      header: "Outcome",
+    }),
+    columnHelper.accessor("actionCategory", {
+      header: "Category",
+    }),
+    columnHelper.accessor("actionDescription", {
+      header: "Description",
+    }),
+    columnHelper.accessor("whoDisplayName", {
+      header: "Name",
+    }),
+  ];
 };
 
 export const createRows = ({ data }: RowProps): JSX.Element[] => {
