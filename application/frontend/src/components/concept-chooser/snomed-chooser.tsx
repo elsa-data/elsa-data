@@ -28,7 +28,6 @@ export const SnomedChooser: React.FC<Props> = ({
 }) => {
   return (
     <ConceptChooser
-      ontoServerUrl="https://onto.prod.umccr.org/fhir"
       systemUri="http://snomed.info/sct/32506021000036107/version/20210731?fhir_vs=refset/32570581000036105"
       systemVersion="http://snomed.info/sct|http://snomed.info/sct/32506021000036107/version/20210731"
       rootConceptId="HP:0000118"

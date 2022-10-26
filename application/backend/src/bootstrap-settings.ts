@@ -62,7 +62,7 @@ export async function getSettings(
     remsBotKey: config.get("rems.botKey")!,
     remsBotUser: config.get("rems.botUser")!,
     remsUrl: "https://hgpp-rems.dev.umccr.org",
-    ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
+    ontoFhirUrl: config.get("ontoFhirUrl"),
     superAdmins: (config.get("superAdmins") as any[]) ?? [],
     rateLimit: {
       // for the moment we set up the rate limiting across the entire Elsa Data surface

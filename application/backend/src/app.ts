@@ -240,6 +240,10 @@ export class App {
     );
     addAttribute("data-build-version", result.build_version || "unknown");
     addAttribute("data-deployed-environment", this.settings.environment);
+    addAttribute(
+      "data-terminology-fhir-url",
+      result.terminology_fhir_url || this.settings.ontoFhirUrl || "undefined"
+    );
 
     result["data_attributes"] = dataAttributes;
 
