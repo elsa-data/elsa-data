@@ -8,7 +8,12 @@ import { BoxPaginator } from "../../../../components/box-paginator";
 import { format } from "date-fns-tz";
 import * as duration from "duration-fns";
 import { parseISO } from "date-fns";
-import { createColumnHelper } from "@tanstack/react-table";
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -66,12 +71,52 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   //
   // console.log(detailsQuery.data);
 
+  const table = useReactTable({
+    data: dataQuery.data ?? [],
+    columns: createColumns(),
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id} className="border-b pl-2 pr-2">
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
           <tbody>
-            {dataQuery.isSuccess && createRows({ data: dataQuery.data })}
+            {dataQuery.isSuccess &&
+              table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="border-b pl-2 pr-2">
+                  {row.getVisibleCells().map((cell) => (
+                    <td
+                      key={cell.id}
+                      className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
           </tbody>
         </table>
         <BoxPaginator
@@ -111,11 +156,11 @@ export const createColumns = () => {
 };
 
 export const createRows = ({ data }: RowProps): JSX.Element[] => {
-  const baseColumnClasses = "py-2 font-small text-gray-400 whitespace-nowrap";
+  const baseColumnClasses =
+    "py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4";
   let viewLastDay = "";
 
   if (!data) return [];
-
   return data.map((row, rowIndex) => {
     const when = parseISO(row.occurredDateTime as string);
 
