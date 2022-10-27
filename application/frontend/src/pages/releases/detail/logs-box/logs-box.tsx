@@ -128,7 +128,10 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         </table>
         <BoxPaginator
           currentPage={currentPage}
-          setPage={(n) => setCurrentPage(n)}
+          setPage={(n) => {
+            table.reset();
+            setCurrentPage(n);
+          }}
           rowCount={currentTotal}
           rowsPerPage={pageSize}
           rowWord="Log Entries"
@@ -153,7 +156,11 @@ const DetailsRow = ({ releaseId, data }: RowProps): JSX.Element => {
 
   return (
     <div>
-      {detailsQuery.isSuccess && <code>{detailsQuery.data?.details} ...</code>}
+      {detailsQuery.isSuccess && (
+        <code>
+          {detailsQuery.data?.details ? detailsQuery.data.details + " ..." : ""}
+        </code>
+      )}
     </div>
   );
 };
