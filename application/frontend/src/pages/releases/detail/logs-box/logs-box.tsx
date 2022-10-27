@@ -64,6 +64,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     },
     { keepPreviousData: true }
   );
+  console.log(dataQuery.data);
 
   const table = useReactTable({
     data: dataQuery.data ?? [],
@@ -151,9 +152,9 @@ const DetailsRow = ({ releaseId, data }: RowProps): JSX.Element => {
   );
 
   return (
-    <pre style={{ fontSize: "10px" }}>
-      {detailsQuery.isSuccess && <code>{detailsQuery.data?.details}</code>}
-    </pre>
+    <div>
+      {detailsQuery.isSuccess && <code>{detailsQuery.data?.details} ...</code>}
+    </div>
   );
 };
 
