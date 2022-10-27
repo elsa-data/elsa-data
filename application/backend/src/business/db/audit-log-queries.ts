@@ -64,6 +64,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     occurredDateTime: true,
     occurredDuration: true,
     outcome: true,
+    hasDetails: e.op("exists", auditEvent.details),
     order_by: {
       expression: auditEvent.occurredDateTime,
       direction: e.DESC,

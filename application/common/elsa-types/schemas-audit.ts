@@ -12,6 +12,7 @@ export const AuditEntrySchema = Type.Object({
   occurredDateTime: TypeDate,
   occurredDuration: Type.Optional(Type.String()),
   outcome: Type.Integer(),
+  hasDetails: Type.Boolean(),
 });
 
 export type AuditEntryType = Static<typeof AuditEntrySchema>;

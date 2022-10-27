@@ -153,6 +153,7 @@ export class AuditLogService {
         occurredDateTime: entry.occurredDateTime,
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
+        hasDetails: entry.hasDetails,
       })),
       totalEntries
     );
