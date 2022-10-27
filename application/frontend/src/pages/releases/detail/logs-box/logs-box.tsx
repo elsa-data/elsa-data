@@ -80,7 +80,18 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b pl-2 pr-2">
+              <tr
+                key={headerGroup.id}
+                onClick={() =>
+                  table.getCanSomeRowsExpand() &&
+                  table
+                    .getRowModel()
+                    .rows.map((row) => row.getValue("hasDetails"))
+                    .some(Boolean) &&
+                  table.toggleAllRowsExpanded()
+                }
+                className="border-b pl-2 pr-2"
+              >
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
@@ -104,8 +115,8 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                   <tr
                     key={row.id}
                     onClick={() =>
-                      row.getValue("hasDetails") &&
                       row.getCanExpand() &&
+                      row.getValue("hasDetails") &&
                       row.toggleExpanded()
                     }
                     className="border-b pl-2 pr-2"
@@ -177,7 +188,16 @@ export const createColumns = () => {
   const columnHelper = createColumnHelper<AuditEntryType>();
   return [
     columnHelper.accessor("hasDetails", {
-      header: () => null,
+      header: ({ table }) => {
+        return table
+          .getRowModel()
+          .rows.map((row) => row.getValue("hasDetails"))
+          .some(Boolean) && table.getCanSomeRowsExpand() ? (
+          <div>{table.getIsAllRowsExpanded() ? "x" : "o"}</div>
+        ) : (
+          ""
+        );
+      },
       cell: (info) => {
         return info.getValue() && info.row.getCanExpand() ? (
           <div>{info.row.getIsExpanded() ? "x" : "o"}</div>

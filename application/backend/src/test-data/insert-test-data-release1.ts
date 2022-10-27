@@ -143,23 +143,28 @@ function makeSytheticAuditLog() {
   return e.set(
     e.insert(e.audit.ReleaseAuditEvent, makeCreate()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Selected Case")),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
     e.insert(
       e.audit.ReleaseAuditEvent,
       makeLongOperation("Ran Dynamic Consent")
     ),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead())
+    e.insert(
+      e.audit.ReleaseAuditEvent,
+      makeLongOperation("Ran Dynamic Consent")
+    )
   );
 }
