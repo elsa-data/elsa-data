@@ -101,7 +101,11 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
             {dataQuery.isSuccess &&
               table.getRowModel().rows.map((row) => (
                 <Fragment key={row.id}>
-                  <tr key={row.id} className="border-b pl-2 pr-2">
+                  <tr
+                    key={row.id}
+                    onClick={() => row.getCanExpand() && row.toggleExpanded()}
+                    className="border-b pl-2 pr-2"
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
@@ -172,14 +176,7 @@ export const createColumns = () => {
       id: "expander",
       cell: ({ row }) => {
         return row.getCanExpand() ? (
-          <button
-            {...{
-              onClick: row.getToggleExpandedHandler(),
-              style: { cursor: "pointer" },
-            }}
-          >
-            {row.getIsExpanded() ? "x" : "o"}
-          </button>
+          <div>{row.getIsExpanded() ? "x" : "o"}</div>
         ) : (
           ""
         );
