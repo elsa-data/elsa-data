@@ -62,7 +62,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { rid: string };
-    Reply: AuditEntryDetailsType[];
+    Reply: AuditEntryDetailsType | null;
     Querystring: DetailsQueryStringDetailsType;
   }>(
     "/api/releases/:rid/audit-log/details",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Fragment } from "react";
 import { AuditEntryType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery } from "react-query";
@@ -12,12 +12,15 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
+  Row,
   useReactTable,
 } from "@tanstack/react-table";
 import {
   formatDuration,
   formatTime,
 } from "../../../../helpers/datetime-helper";
+import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -31,7 +34,8 @@ type LogsBoxProps = {
 };
 
 type RowProps = {
-  data: AuditEntryType[];
+  releaseId: string;
+  data: AuditEntryType;
 };
 
 export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
@@ -61,24 +65,12 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     { keepPreviousData: true }
   );
 
-  // console.log(dataQuery.data);
-
-  // const detailsQuery = useQuery(
-  //   ["releases-audit-log-details", currentPage, releaseId],
-  //   async () => {
-  //     return await axios.get<AuditEntryType[]>(
-  //       `/api/releases/${releaseId}/audit-log/details?id=${dataQuery.data?.[0].objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
-  //     ).then(response => response.data);
-  //   },
-  //   { keepPreviousData: true }
-  // );
-  //
-  // console.log(detailsQuery.data);
-
   const table = useReactTable({
     data: dataQuery.data ?? [],
     columns: createColumns(),
+    getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
   });
 
   return (
@@ -107,19 +99,29 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
           <tbody>
             {dataQuery.isSuccess &&
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="border-b pl-2 pr-2">
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
-                      className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
+                <Fragment key={row.id}>
+                  <tr key={row.id} className="border-b pl-2 pr-2">
+                    {row.getVisibleCells().map((cell) => (
+                      <td
+                        key={cell.id}
+                        className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                  {row.getIsExpanded() && (
+                    <tr>
+                      {}
+                      <td colSpan={row.getVisibleCells().length}>
+                        <DetailsRow releaseId={releaseId} data={row.original} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
           </tbody>
         </table>
@@ -135,9 +137,46 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   );
 };
 
+const DetailsRow = ({ releaseId, data }: RowProps): JSX.Element => {
+  const detailsQuery = useQuery(
+    ["releases-audit-log-details", releaseId, data.objectId],
+    async () => {
+      return await axios
+        .get<AuditEntryDetailsType | null>(
+          `/api/releases/${releaseId}/audit-log/details?id=${data.objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
+        )
+        .then((response) => response.data);
+    },
+    { keepPreviousData: true }
+  );
+
+  return (
+    <pre style={{ fontSize: "10px" }}>
+      {detailsQuery.isSuccess && <code>{detailsQuery.data?.details}</code>}
+    </pre>
+  );
+};
+
 export const createColumns = () => {
   const columnHelper = createColumnHelper<AuditEntryType>();
   return [
+    columnHelper.display({
+      id: "expander",
+      cell: ({ row }) => {
+        return row.getCanExpand() ? (
+          <button
+            {...{
+              onClick: row.getToggleExpandedHandler(),
+              style: { cursor: "pointer" },
+            }}
+          >
+            {row.getIsExpanded() ? "x" : "o"}
+          </button>
+        ) : (
+          ""
+        );
+      },
+    }),
     columnHelper.accessor("occurredDateTime", {
       header: "Time",
       cell: (info) => formatTime(info.getValue() as string | undefined),
@@ -159,82 +198,4 @@ export const createColumns = () => {
       cell: (info) => formatDuration(info.getValue()),
     }),
   ];
-};
-
-export const createRows = ({ data }: RowProps): JSX.Element[] => {
-  const baseColumnClasses =
-    "py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4";
-  let viewLastDay = "";
-
-  if (!data) return [];
-  return data.map((row, rowIndex) => {
-    const when = parseISO(row.occurredDateTime as string);
-
-    // TODO: get timezone from somewhere in config
-
-    const localDay = format(when, "d/M/yyyy", {
-      timeZone: "Australia/Melbourne",
-    });
-    const localTime = format(when, "HH:mm:ss", {
-      timeZone: "Australia/Melbourne",
-    });
-
-    let showDay = false;
-
-    if (localDay !== viewLastDay) {
-      showDay = true;
-      viewLastDay = localDay;
-    }
-
-    let showDuration = false;
-    let localDuration = "";
-
-    if (row.occurredDuration) {
-      const parsedDuration = duration.parse(row.occurredDuration);
-
-      if (
-        parsedDuration.days > 0 ||
-        parsedDuration.weeks > 0 ||
-        parsedDuration.months > 0 ||
-        parsedDuration.years
-      )
-        // not at all expecting this to happen - if so - just show the entire duration string
-        localDuration = `for ${row.occurredDuration}`;
-      else if (parsedDuration.hours > 0)
-        // even hr long activities are unlikely - but we can show that
-        localDuration = `for ${parsedDuration.hours} hr(s)`;
-      else if (parsedDuration.minutes > 0)
-        localDuration = `for ${parsedDuration.minutes} min(s)`;
-      else if (parsedDuration.seconds > 0)
-        localDuration = `for ${parsedDuration.seconds} sec(s)`;
-      else localDuration = "";
-
-      showDuration = true;
-    }
-
-    return (
-      <tr key={rowIndex} className="border-b pl-2 pr-2">
-        <td
-          className={classNames(baseColumnClasses, "w-40", "text-left", "pl-4")}
-        >
-          {showDay && <p className="font-bold">{viewLastDay}</p>}
-          <p>{localTime}</p>
-          {showDuration && <p className="text-xs">{localDuration}</p>}
-        </td>
-        <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-          {row.actionDescription}
-        </td>
-        <td
-          className={classNames(
-            baseColumnClasses,
-            "text-right",
-            "w-40",
-            "pr-4"
-          )}
-        >
-          {row.whoDisplayName}
-        </td>
-      </tr>
-    );
-  });
 };
