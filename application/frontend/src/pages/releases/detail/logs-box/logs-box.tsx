@@ -103,7 +103,11 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                 <Fragment key={row.id}>
                   <tr
                     key={row.id}
-                    onClick={() => row.getCanExpand() && row.toggleExpanded()}
+                    onClick={() =>
+                      row.getValue("hasDetails") &&
+                      row.getCanExpand() &&
+                      row.toggleExpanded()
+                    }
                     className="border-b pl-2 pr-2"
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -172,11 +176,11 @@ const DetailsRow = ({ releaseId, data }: RowProps): JSX.Element => {
 export const createColumns = () => {
   const columnHelper = createColumnHelper<AuditEntryType>();
   return [
-    columnHelper.display({
-      id: "expander",
-      cell: ({ row }) => {
-        return row.getCanExpand() ? (
-          <div>{row.getIsExpanded() ? "x" : "o"}</div>
+    columnHelper.accessor("hasDetails", {
+      header: () => null,
+      cell: (info) => {
+        return info.getValue() && info.row.getCanExpand() ? (
+          <div>{info.row.getIsExpanded() ? "x" : "o"}</div>
         ) : (
           ""
         );
