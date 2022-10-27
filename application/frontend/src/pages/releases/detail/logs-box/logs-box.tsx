@@ -14,6 +14,10 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import {
+  formatDuration,
+  formatTime,
+} from "../../../../helpers/datetime-helper";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -124,7 +128,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
           setPage={(n) => setCurrentPage(n)}
           rowCount={currentTotal}
           rowsPerPage={pageSize}
-          rowWord="log entries"
+          rowWord="Log Entries"
         />
       </div>
     </BoxNoPad>
@@ -136,9 +140,7 @@ export const createColumns = () => {
   return [
     columnHelper.accessor("occurredDateTime", {
       header: "Time",
-    }),
-    columnHelper.accessor("occurredDuration", {
-      header: "Duration",
+      cell: (info) => formatTime(info.getValue() as string | undefined),
     }),
     columnHelper.accessor("outcome", {
       header: "Outcome",
@@ -151,6 +153,10 @@ export const createColumns = () => {
     }),
     columnHelper.accessor("whoDisplayName", {
       header: "Name",
+    }),
+    columnHelper.accessor("occurredDuration", {
+      header: "Duration",
+      cell: (info) => formatDuration(info.getValue()),
     }),
   ];
 };
