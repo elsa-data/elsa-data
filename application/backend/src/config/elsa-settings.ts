@@ -50,6 +50,9 @@ export type ElsaSettings = {
   remsBotUser: string;
   remsBotKey: string;
 
+  awsSigningAccessKeyId: string;
+  awsSigningSecretAccessKey: string;
+
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
 

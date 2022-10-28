@@ -57,6 +57,8 @@ export async function getSettings(
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
     oidcIssuer: issuer,
+    awsSigningAccessKeyId: config.get("aws.signingAccessKeyId")!,
+    awsSigningSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
     sessionSecret: config.get("session.secret")!,
     sessionSalt: config.get("session.salt")!,
     remsBotKey: config.get("rems.botKey")!,
