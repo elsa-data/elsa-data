@@ -39,30 +39,49 @@ FROM amazonlinux:2022
 
 WORKDIR /app
 
-RUN dnf install -y nodejs npm
-# RUN npm install ts-node
+# TODO: Discard the useless stuff using a multi-stage build
+COPY . .
 
-# the common packages need to be already in place in the folder struct *before* npm install
-COPY common/ ./common/
+RUN dnf install -y nodejs npm findutils shadow util-linux
 
-# install packages for backend and frontend
-COPY backend/package* ./backend/
-RUN cd backend && npm clean-install
-COPY frontend/package* ./frontend/
-RUN cd frontend && npm clean-install
+RUN useradd app-user
 
-# build the frontend
-COPY frontend/ ./frontend/
-RUN cd frontend && npx react-scripts build
-RUN cd backend && mkdir -p client/dist
-RUN cd frontend && cp -R build/* ../backend/client/dist
+RUN chown -R app-user /app
 
-# copy the entire backend structure (we can probably pare this back at some point)
-COPY backend/ ./backend/
+SHELL ["/usr/bin/su", "app-user", "-c"]
 
+RUN : \
+  && curl --proto '=https' --tlsv1.2 -sSf https://sh.edgedb.com > edgedb.sh \
+  && sh edgedb.sh -y \
+  && rm edgedb.sh
 
+RUN \
+  while IFS= read -r -d '' file; do \
+    dirname=$(dirname "$file"); \
+    ( \
+      cd "$dirname" && \
+      npm install; \
+    ) || exit 1; \
+  done < <(find . -name package.json -type f ! -path "*/node_modules/*" -print0)
 
+RUN : \
+  && cd frontend \
+  && npm run build:dev
 
+RUN : \
+  && cd backend \
+  && export EDGEDB_INSTALL_IN_DOCKER=allow \
+  && ~/.local/bin/edgedb project init --non-interactive \
+  && npm run edgetypes
+
+ARG ELSA_DATA_VERSION
+ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
+
+ARG GITHUB_SHA
+ENV GITHUB_SHA $GITHUB_SHA
+
+RUN echo "export ELSA_DATA_VERSION=$ELSA_DATA_VERSION" >> ~/.profile
+RUN echo "export GITHUB_SHA=$GITHUB_SHA" >> ~/.profile
 
 
 
