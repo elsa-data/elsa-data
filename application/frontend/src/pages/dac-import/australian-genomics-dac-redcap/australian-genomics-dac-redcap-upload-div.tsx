@@ -5,8 +5,6 @@ import {
   useCSVReader,
 } from "react-papaparse";
 import axios from "axios";
-import { ReleaseDetailType } from "@umccr/elsa-types";
-import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
 
@@ -84,6 +82,9 @@ const styles = {
 };
 
 export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
+  // in retrospect - this is a pretty awful component - even though it does exactly what we want..
+  // possibly pivot to a combination of components with more control
+  // ok for the moment though
   const { CSVReader } = useCSVReader();
 
   const [zoneHover, setZoneHover] = useState(false);
@@ -91,7 +92,10 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
     DEFAULT_REMOVE_HOVER_COLOR
   );
 
-  const [redcapPossibles, setRedcapPossibles] = useState<
+  // we maintain a list of application data structures that the backend has confirmed are
+  // possibilities for turning into a Release
+  // we pass these into a popup dialog and then the user can choose one which we will submit
+  const [possibleApplications, setPossibleApplications] = useState<
     AustraliaGenomicsDacRedcap[]
   >([]);
   const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
@@ -101,12 +105,18 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
       <div className="flex flex-col gap-6">
         <CSVReader
           onUploadAccepted={async (results: any) => {
-            console.log(results);
+            // the full CSV extract we have been given may contain records that we have already
+            // turned into releases - or records that we are not interested in
+            // we send the whole list to the backend and expect it to return only those of possible
+            // interest
             await axios
-              .post<any[]>(`/api/dac/redcap/possible`, results.data)
+              .post<AustraliaGenomicsDacRedcap[]>(
+                `/api/dac/redcap/possible`,
+                results.data
+              )
               .then((response) => response.data)
               .then((d) => {
-                setRedcapPossibles(d);
+                setPossibleApplications(d);
                 setShowingRedcapDialog(true);
                 setZoneHover(false);
               });
@@ -178,7 +188,7 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
       <AustralianGenomicsDacDialog
         showing={showingRedcapDialog}
         cancelShowing={() => setShowingRedcapDialog(false)}
-        possibleApplications={redcapPossibles}
+        possibleApplications={possibleApplications}
       />
     </>
   );

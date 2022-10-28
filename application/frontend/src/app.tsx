@@ -10,6 +10,7 @@ import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
+import { DacImportPage } from "./pages/dac-import/dac-import-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
       <Routes>
         <Route path={`/`} element={<HomePage />} />
         <Route path={`/users`} element={<UsersDashboardPage />} />
+        <Route path={`/dac`} element={<DacImportPage />} />
         <Route path={`/releases`} element={<ReleasesPage />} />
         <Route path={`/releases/:releaseId`} element={<ReleasesDetailPage />} />
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
