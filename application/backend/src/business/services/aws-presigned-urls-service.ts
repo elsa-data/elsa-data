@@ -65,7 +65,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       // of the running AWS credentials which will normally be hours not days)
       const awsCredentials =
         this.settings.awsSigningAccessKeyId &&
-        this.settings.awsSigningAccessKeyId
+        this.settings.awsSigningSecretAccessKey
           ? {
               sessionToken: undefined,
               accessKeyId: this.settings.awsSigningAccessKeyId,
