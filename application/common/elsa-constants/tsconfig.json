@@ -3,7 +3,8 @@
     "target": "ES2022",
     "composite": true,
     "module": "commonjs",
-    "preserveConstEnums": true
+    "preserveConstEnums": true,
+    "noImplicitAny": false
   },
   "include": ["*.ts"]
 }

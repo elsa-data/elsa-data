@@ -2,14 +2,16 @@ import * as edgedb from "edgedb";
 import e from "../../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../../test-data/test-data-helpers";
 import { inject, injectable, singleton } from "tsyringe";
-import axios from "axios";
-import { RemsApprovedApplicationType } from "@umccr/elsa-types";
+import {
+  australianGenomicsDacRedcapToDatasetUris,
+  australianGenomicsDacRedcapToDuoString,
+} from "@umccr/elsa-types";
 import { randomUUID } from "crypto";
 import { UsersService } from "../users-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
+import { format } from "date-fns";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://mcri.redcap";
@@ -56,35 +58,45 @@ export class RedcapImportApplicationService {
     return results;
   }
 
+  /**
+   * Given a new application as a CSV/JSON object - we create a new release
+   * representing it in a transaction.
+   *
+   * @param user
+   * @param newApplication
+   * @return the release id of the new release
+   */
   public async startNewRelease(
     user: AuthenticatedUser,
     newApplication: AustraliaGenomicsDacRedcap
-  ) {
+  ): Promise<string> {
     // TODO: some error checking here
 
-    await this.edgeDbClient.transaction(async (t) => {
+    return await this.edgeDbClient.transaction(async (t) => {
+      const resourceUris =
+        australianGenomicsDacRedcapToDatasetUris(newApplication);
+
       const resourceToDatasetMap: { [uri: string]: string } = {};
 
       // loop through the resources (datasets) in the application and make sure we are a data holder
       // for them (create a map of dataset id to our edgedb id for that dataset)
-      for (const res of []) {
-        const remsDatasetUri = res["resource/ext-id"];
-
+      for (const resourceUri of resourceUris) {
+        // do we have that dataset registered in our Elsa Data
         const matchDs = await e
           .select(e.dataset.Dataset, (ds) => ({
             id: true,
-            filter: e.op(e.str(remsDatasetUri), "=", ds.uri),
+            filter: e.op(e.str(resourceUri), "=", ds.uri),
           }))
           .run(this.edgeDbClient);
 
         if (matchDs && matchDs.length > 0) {
           if (matchDs.length > 1)
             throw new Error(
-              `Too many matching datasets on record for ${remsDatasetUri}`
+              `Too many matching datasets on record for ${resourceUri}`
             );
-          else resourceToDatasetMap[remsDatasetUri] = matchDs[0].id;
+          else resourceToDatasetMap[resourceUri] = matchDs[0].id;
         } else {
-          throw new Error(`No matching dataset for ${remsDatasetUri}`);
+          throw new Error(`No matching dataset for ${resourceUri}`);
         }
       }
 
@@ -100,25 +112,46 @@ export class RedcapImportApplicationService {
             value: e.str(newApplication.daf_num),
           }),
           applicationDacTitle:
-            newApplication.daf_applicant_title || "Untitled in Redcap",
+            newApplication.daf_project_title || "Untitled in Redcap",
           applicationDacDetails: `
 #### Source
 
-This application was sourced from Australian Genomics Redcap on ${Date.now().toLocaleString()}.
+This application was sourced from Australian Genomics Redcap on ${format(
+            new Date(),
+            "dd/MM/yyyy"
+          )}.
+
+The identifier for this application in the source is
+
+~~~
+${newApplication.daf_num}
+~~~
 
 #### Summary
 
 ${newApplication.daf_public_summ}
 
-##### Created
- 
+#### Ethics
+
 ~~~
+${
+  newApplication.daf_hrec_approve === "1"
+    ? `HREC ${newApplication.daf_hrec_num} was approved on ${newApplication.daf_hrec_approve_dt}`
+    : "No approved HREC recorded"
+}
 ~~~
 
-##### Applicant
+#### Created
  
 ~~~
-${newApplication.daf_applicant_email}
+${newApplication.application_date_hid}
+~~~
+
+#### Applicant
+ 
+~~~
+${newApplication.daf_applicant_name} (${newApplication.daf_applicant_email})
+${newApplication.daf_applicant_institution}
 ~~~
 `,
           applicationCoded: e.insert(e.release.ApplicationCoded, {
@@ -126,7 +159,7 @@ ${newApplication.daf_applicant_email}
             studyIsNotCommercial: true,
             diseasesOfStudy: makeEmptyCodeArray(),
             countriesInvolved: makeEmptyCodeArray(),
-            studyType: "HMB",
+            studyType: australianGenomicsDacRedcapToDuoString(newApplication),
           }),
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
@@ -158,6 +191,8 @@ ${newApplication.daf_applicant_email}
         newRelease.id,
         "DataOwner"
       );
+
+      return newRelease.id;
     });
   }
 }

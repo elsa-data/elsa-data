@@ -9,6 +9,7 @@ import { UsersService } from "./users-service";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { format } from "date-fns";
 
 @injectable()
 @singleton()
@@ -78,7 +79,12 @@ export class RemsService {
     return newReleases;
   }
 
-  public async startNewRelease(user: AuthenticatedUser, remsId: number) {
+  public async startNewRelease(
+    user: AuthenticatedUser,
+    remsId: number
+  ): Promise<string> {
+    // TODO: this uses a config REMS setting when the UI implies we ask the user for the REMS to use
+    // need to decide if this is user configurable or only admin configurable
     const appData = await axios.get(
       `${this.settings.remsUrl}/api/applications/${remsId}`,
       {
@@ -94,7 +100,7 @@ export class RemsService {
 
     // TODO: some error checking here
 
-    await this.edgeDbClient.transaction(async (t) => {
+    return await this.edgeDbClient.transaction(async (t) => {
       const resourceToDatasetMap: { [uri: string]: string } = {};
 
       // loop through the resources (datasets) in the application and make sure we are a data holder
@@ -136,9 +142,16 @@ export class RemsService {
           applicationDacDetails: `
 #### Source
 
-This application was sourced from ${
-            this.settings.remsUrl
-          } on ${Date.now().toLocaleString()}.
+This application was sourced from ${this.settings.remsUrl} on ${format(
+            new Date(),
+            "dd/MM/yyyy"
+          )}.
+          
+The identifier for this application in REMS is
+
+~~~
+${remsId.toString()}
+~~~
 
 See the [original application](${
             this.settings.remsUrl
@@ -195,6 +208,8 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
         newRelease.id,
         "DataOwner"
       );
+
+      return newRelease.id;
     });
 
     /*{

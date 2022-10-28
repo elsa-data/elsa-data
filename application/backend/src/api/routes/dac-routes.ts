@@ -1,14 +1,14 @@
 import { FastifyInstance } from "fastify";
-import { RemsApprovedApplicationType } from "@umccr/elsa-types";
+import {
+  AustraliaGenomicsDacRedcap,
+  RemsApprovedApplicationType,
+} from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../api-routes";
 import { DependencyContainer } from "tsyringe";
 import { RemsService } from "../../business/services/rems-service";
-import {
-  AgRedcap,
-  RedcapImportApplicationService,
-} from "../../business/services/australian-genomics/redcap-import-application-service";
+import { RedcapImportApplicationService } from "../../business/services/australian-genomics/redcap-import-application-service";
 
-// TODO: FIX ALL OF THE SECURITY HERE - NEEDS AUTH / ROLES (WHO CAN DO THIS?)
+// TODO: FIX ALL OF THE SECURITY HERE - NEEDS DECISIONS ON AUTH / ROLES (WHO CAN DO THIS?)
 
 export const dacRoutes = async (
   fastify: FastifyInstance,
@@ -33,21 +33,21 @@ export const dacRoutes = async (
 
   fastify.post<{
     Params: { nid: string };
-    Reply: any;
+    Reply: string;
   }>("/api/dac/rems/new/:nid", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    await remsService.startNewRelease(
+    const newReleaseId = await remsService.startNewRelease(
       authenticatedUser,
       parseInt(request.params.nid)
     );
 
-    reply.send({});
+    reply.send(newReleaseId);
   });
 
   fastify.post<{
-    Body: AgRedcap[];
-    Reply: AgRedcap[];
+    Body: AustraliaGenomicsDacRedcap[];
+    Reply: AustraliaGenomicsDacRedcap[];
   }>("/api/dac/redcap/possible", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
@@ -57,13 +57,16 @@ export const dacRoutes = async (
   });
 
   fastify.post<{
-    Body: AgRedcap;
-    Reply: any;
+    Body: AustraliaGenomicsDacRedcap;
+    Reply: string;
   }>("/api/dac/redcap/new", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    await redcapAgService.startNewRelease(authenticatedUser, request.body);
+    const newReleaseId = await redcapAgService.startNewRelease(
+      authenticatedUser,
+      request.body
+    );
 
-    reply.send({});
+    reply.send(newReleaseId);
   });
 };
