@@ -13,6 +13,8 @@ import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
 
 export const DetailsQueryStringSchema = Type.Object({
   page: Type.Optional(Type.Number()),
+  orderByProperty: Type.Optional(Type.String()),
+  orderAscending: Type.Optional(Type.Boolean()),
 });
 
 export type DetailsQueryStringType = Static<typeof DetailsQueryStringSchema>;
@@ -47,13 +49,17 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
+      const { orderByProperty = "occurredDateTime", orderAscending = false } =
+        request.query;
 
       const events = await auditLogService.getEntries(
         edgeDbClient,
         authenticatedUser,
         releaseId,
         pageSize,
-        (page - 1) * pageSize
+        (page - 1) * pageSize,
+        orderByProperty,
+        orderAscending
       );
 
       sendPagedResult(reply, events);

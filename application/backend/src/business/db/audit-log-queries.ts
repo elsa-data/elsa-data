@@ -50,8 +50,10 @@ export const auditLogDetailsForIdQuery = (
  */
 export const pageableAuditLogEntriesForReleaseQuery = (
   releaseId: string,
-  limit?: number,
-  offset?: number
+  limit: number,
+  offset: number,
+  orderByProperty: string = "occurredDateTime",
+  orderAscending: boolean = false
 ) => {
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
     id: true,
@@ -65,15 +67,42 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     occurredDuration: true,
     outcome: true,
     hasDetails: e.op("exists", auditEvent.details),
-    order_by: {
-      expression: auditEvent.occurredDateTime,
-      direction: e.DESC,
-    },
     filter: e.op(
       auditEvent["<auditLog[is release::Release]"].id,
       "=",
       e.uuid(releaseId)
     ),
+    order_by: [
+      {
+        expression:
+          orderByProperty === "whoId"
+            ? auditEvent.whoId
+            : orderByProperty === "whoDisplayName"
+            ? auditEvent.whoDisplayName
+            : orderByProperty === "actionCategory"
+            ? e.cast(e.str, auditEvent.actionCategory)
+            : orderByProperty === "actionDescription"
+            ? auditEvent.actionDescription
+            : orderByProperty === "recordedDateTime"
+            ? auditEvent.recordedDateTime
+            : orderByProperty === "updatedDateTime"
+            ? auditEvent.updatedDateTime
+            : orderByProperty === "occurredDateTime"
+            ? auditEvent.occurredDateTime
+            : orderByProperty === "occurredDuration"
+            ? auditEvent.occurredDuration
+            : orderByProperty === "outcome"
+            ? auditEvent.outcome
+            : orderByProperty === "details"
+            ? auditEvent.details
+            : auditEvent.occurredDateTime,
+        direction: orderAscending ? e.ASC : e.DESC,
+      },
+      {
+        expression: auditEvent.occurredDateTime,
+        direction: e.DESC,
+      },
+    ],
     limit: limit,
     offset: offset,
   }));

@@ -1,7 +1,20 @@
-import React, { useState, Fragment } from "react";
+import React, {
+  useState,
+  Fragment,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useRef,
+} from "react";
 import { AuditEntryType } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery } from "react-query";
+import {
+  QueryObserver,
+  useQueries,
+  useQuery,
+  UseQueryResult,
+} from "react-query";
 import classNames from "classnames";
 import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
@@ -13,14 +26,21 @@ import {
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
+  getSortedRowModel,
   Row,
+  RowData,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
   formatDuration,
   formatTime,
 } from "../../../../helpers/datetime-helper";
-import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
+import {
+  AuditEntryDetailsType,
+  AuditEntrySchema,
+} from "@umccr/elsa-types/schemas-audit";
+import { SortDirection } from "@tanstack/table-core";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -38,40 +58,142 @@ type RowProps = {
   data: AuditEntryType;
 };
 
-export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
-  // our internal state for which page we are on
-  const [currentPage, setCurrentPage] = useState<number>(1);
-
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
-
-  const dataQuery = useQuery(
-    ["releases-audit-log", currentPage, releaseId],
+export const useAuditEventQuery = (
+  currentPage: number,
+  releaseId: string,
+  orderByProperty: string,
+  orderAscending: boolean,
+  setCurrentTotal: Dispatch<SetStateAction<number>>,
+  setData: Dispatch<SetStateAction<AuditEntryType[]>>,
+  setIsSuccess: Dispatch<SetStateAction<boolean>>
+) => {
+  console.log("INSIDE USEAUDITEVENTQUERY");
+  return useQuery(
+    [
+      "releases-audit-log",
+      currentPage,
+      releaseId,
+      orderByProperty,
+      orderAscending,
+    ],
     async () => {
       return await axios
         .get<AuditEntryType[]>(
-          `/api/releases/${releaseId}/audit-log?page=${currentPage}`
+          `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
         )
         .then((response) => {
-          // as we page - the backend relays to us an accurate total count so we then use that
-          // in the UI
           const newTotal = parseInt(response.headers["elsa-total-count"]);
 
-          if (isFinite(newTotal)) setCurrentTotal(newTotal);
+          if (isFinite(newTotal)) {
+            setCurrentTotal(newTotal);
+          }
 
           return response.data;
         });
     },
-    { keepPreviousData: true }
+    {
+      keepPreviousData: true,
+      enabled: false,
+      onSuccess: (data) => {
+        console.log("INSIDE ONSUCCESS");
+        setData(data ?? []);
+        setIsSuccess(data !== undefined);
+      },
+    }
   );
-  console.log(dataQuery.data);
+};
+
+export const useAllAuditEventQueries = (
+  currentPage: number,
+  releaseId: string,
+  setCurrentTotal: Dispatch<SetStateAction<number>>,
+  setData: Dispatch<SetStateAction<AuditEntryType[]>>,
+  setIsSuccess: Dispatch<SetStateAction<boolean>>
+): { [key: string]: UseQueryResult<AuditEntryType[]> } => {
+  const useAuditEventQueryFn = (
+    occurredDateTime: string,
+    orderAscending: boolean
+  ) => {
+    return useAuditEventQuery(
+      currentPage,
+      releaseId,
+      occurredDateTime,
+      orderAscending,
+      setCurrentTotal,
+      setData,
+      setIsSuccess
+    );
+  };
+
+  return {
+    occurredDateTimeAsc: useAuditEventQueryFn("occurredDateTime", true),
+    occurredDateTimeDesc: useAuditEventQueryFn("occurredDateTime", false),
+    outcomeAsc: useAuditEventQueryFn("outcome", true),
+    outcomeDesc: useAuditEventQueryFn("outcome", false),
+    actionCategoryAsc: useAuditEventQueryFn("actionCategory", true),
+    actionCategoryDesc: useAuditEventQueryFn("actionCategory", false),
+    actionDescriptionAsc: useAuditEventQueryFn("actionDescription", true),
+    actionDescriptionDesc: useAuditEventQueryFn("actionDescription", false),
+    whoDisplayNameAsc: useAuditEventQueryFn("whoDisplayName", true),
+    whoDisplayNameDesc: useAuditEventQueryFn("whoDisplayName", false),
+    occurredDurationAsc: useAuditEventQueryFn("occurredDuration", true),
+    occurredDurationDesc: useAuditEventQueryFn("occurredDuration", false),
+  };
+};
+
+export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
+  // our internal state for which page we are on
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+  const [currentTotal, setCurrentTotal] = useState(1);
+
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [updateData, setUpdateData] = useState(true);
+
+  const [data, setData] = useState([] as AuditEntryType[]);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const dataQueries = useAllAuditEventQueries(
+    currentPage,
+    releaseId,
+    setCurrentTotal,
+    setData,
+    setIsSuccess
+  );
+
+  useEffect(() => {
+    if (updateData) {
+      let key;
+      if (sorting.length === 0) {
+        key = "occurredDateTimeDesc";
+      } else {
+        const { id, desc } = sorting[0];
+        key = desc ? id + "Desc" : id + "Asc";
+      }
+
+      if (key in dataQueries) {
+        void dataQueries[key].refetch();
+      }
+
+      setUpdateData(false);
+    }
+  }, [updateData, dataQueries, sorting]);
 
   const table = useReactTable({
-    data: dataQuery.data ?? [],
+    data: data,
     columns: createColumns(),
+    state: {
+      sorting,
+    },
+    onSortingChange: (state) => {
+      setSorting(state);
+      setUpdateData(true);
+    },
     getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
+    manualSorting: true,
   });
 
   return (
@@ -97,19 +219,29 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     key={header.id}
                     className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
                   >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
+                    {header.isPlaceholder ? null : (
+                      <div
+                        {...{
+                          onClick: header.column.getToggleSortingHandler(),
+                        }}
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                        {{
+                          asc: " ^",
+                          desc: " v",
+                        }[header.column.getIsSorted() as string] ?? null}
+                      </div>
+                    )}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
           <tbody>
-            {dataQuery.isSuccess &&
+            {isSuccess &&
               table.getRowModel().rows.map((row) => (
                 <Fragment key={row.id}>
                   <tr
@@ -148,7 +280,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {
-            table.reset();
+            setUpdateData(true);
             setCurrentPage(n);
           }}
           rowCount={currentTotal}
@@ -189,17 +321,18 @@ export const createColumns = () => {
   return [
     columnHelper.accessor("hasDetails", {
       header: ({ table }) => {
-        return table
-          .getRowModel()
-          .rows.map((row) => row.getValue("hasDetails"))
-          .some(Boolean) && table.getCanSomeRowsExpand() ? (
+        return table.getCanSomeRowsExpand() &&
+          table
+            .getRowModel()
+            .rows.map((row) => row.getValue("hasDetails"))
+            .some(Boolean) ? (
           <div>{table.getIsAllRowsExpanded() ? "x" : "o"}</div>
         ) : (
           ""
         );
       },
       cell: (info) => {
-        return info.getValue() && info.row.getCanExpand() ? (
+        return info.row.getCanExpand() && info.getValue() ? (
           <div>{info.row.getIsExpanded() ? "x" : "o"}</div>
         ) : (
           ""
@@ -209,22 +342,28 @@ export const createColumns = () => {
     columnHelper.accessor("occurredDateTime", {
       header: "Time",
       cell: (info) => formatTime(info.getValue() as string | undefined),
+      sortDescFirst: true,
     }),
     columnHelper.accessor("outcome", {
       header: "Outcome",
+      sortDescFirst: true,
     }),
     columnHelper.accessor("actionCategory", {
       header: "Category",
+      sortDescFirst: true,
     }),
     columnHelper.accessor("actionDescription", {
       header: "Description",
+      sortDescFirst: true,
     }),
     columnHelper.accessor("whoDisplayName", {
       header: "Name",
+      sortDescFirst: true,
     }),
     columnHelper.accessor("occurredDuration", {
       header: "Duration",
       cell: (info) => formatDuration(info.getValue()),
+      sortDescFirst: true,
     }),
   ];
 };

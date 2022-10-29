@@ -124,7 +124,9 @@ export class AuditLogService {
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
-    offset: number
+    offset: number,
+    orderByProperty: string = "occurredDateTime",
+    orderAscending: boolean = false
   ): Promise<PagedResult<AuditEntryType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
@@ -134,7 +136,9 @@ export class AuditLogService {
     const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
       releaseId,
       limit,
-      offset
+      offset,
+      orderByProperty,
+      orderAscending
     ).run(executor);
 
     console.log(
