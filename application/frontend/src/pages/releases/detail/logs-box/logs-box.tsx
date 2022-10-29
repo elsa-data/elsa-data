@@ -34,13 +34,17 @@ import {
 } from "@tanstack/react-table";
 import {
   formatDuration,
-  formatTime,
+  formatLocalDateTime,
+  formatFromNowTime,
 } from "../../../../helpers/datetime-helper";
 import {
   AuditEntryDetailsType,
   AuditEntrySchema,
 } from "@umccr/elsa-types/schemas-audit";
 import { SortDirection } from "@tanstack/table-core";
+import Popup from "reactjs-popup";
+import { PopupPosition } from "reactjs-popup/dist/types";
+import dayjs from "dayjs";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -58,6 +62,12 @@ type RowProps = {
   data: AuditEntryType;
 };
 
+type ToolTipProps = {
+  trigger: JSX.Element;
+  description: string;
+  position?: PopupPosition;
+};
+
 export const useAuditEventQuery = (
   currentPage: number,
   releaseId: string,
@@ -67,7 +77,6 @@ export const useAuditEventQuery = (
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
   setIsSuccess: Dispatch<SetStateAction<boolean>>
 ) => {
-  console.log("INSIDE USEAUDITEVENTQUERY");
   return useQuery(
     [
       "releases-audit-log",
@@ -95,7 +104,6 @@ export const useAuditEventQuery = (
       keepPreviousData: true,
       enabled: false,
       onSuccess: (data) => {
-        console.log("INSIDE ONSUCCESS");
         setData(data ?? []);
         setIsSuccess(data !== undefined);
       },
@@ -269,6 +277,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {
+            table.reset();
             setUpdateData(true);
             setCurrentPage(n);
           }}
@@ -278,6 +287,18 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         />
       </div>
     </BoxNoPad>
+  );
+};
+
+const ToolTip = ({
+  trigger,
+  description,
+  position = "left top",
+}: ToolTipProps): JSX.Element => {
+  return (
+    <Popup trigger={trigger} position={position} on={["hover", "focus"]}>
+      <div>{description}</div>
+    </Popup>
   );
 };
 
@@ -337,7 +358,15 @@ export const createColumns = () => {
     }),
     columnHelper.accessor("occurredDateTime", {
       header: "Time",
-      cell: (info) => formatTime(info.getValue() as string | undefined),
+      cell: (info) => {
+        const dateTime = info.getValue() as string | undefined;
+        return (
+          <ToolTip
+            trigger={<span>{formatFromNowTime(dateTime)}</span>}
+            description={formatLocalDateTime(dateTime)}
+          ></ToolTip>
+        );
+      },
       sortDescFirst: true,
     }),
     columnHelper.accessor("outcome", {
