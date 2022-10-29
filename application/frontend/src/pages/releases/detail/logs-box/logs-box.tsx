@@ -202,18 +202,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr
-                key={headerGroup.id}
-                onClick={() =>
-                  table.getCanSomeRowsExpand() &&
-                  table
-                    .getRowModel()
-                    .rows.map((row) => row.getValue("hasDetails"))
-                    .some(Boolean) &&
-                  table.toggleAllRowsExpanded()
-                }
-                className="border-b pl-2 pr-2"
-              >
+              <tr key={headerGroup.id} className="border-b pl-2 pr-2">
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
@@ -326,7 +315,13 @@ export const createColumns = () => {
             .getRowModel()
             .rows.map((row) => row.getValue("hasDetails"))
             .some(Boolean) ? (
-          <div>{table.getIsAllRowsExpanded() ? "x" : "o"}</div>
+          <button
+            {...{
+              onClick: table.getToggleAllRowsExpandedHandler(),
+            }}
+          >
+            {table.getIsAllRowsExpanded() ? "x" : "o"}
+          </button>
         ) : (
           ""
         );
@@ -338,6 +333,7 @@ export const createColumns = () => {
           ""
         );
       },
+      enableSorting: false,
     }),
     columnHelper.accessor("occurredDateTime", {
       header: "Time",
