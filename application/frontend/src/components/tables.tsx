@@ -1,53 +1,82 @@
-export {};
-/*import { TableOptions, useTable } from "react-table";
-import React, { PropsWithChildren } from "react";
+import { ReactNode } from "react";
 
-type Props = {
-  tableOptions: TableOptions<any>;
+export type TableHeaderProps = {
+  key: string;
+  children?: ReactNode;
 };
 
-export const BasicTable: React.FC<PropsWithChildren<Props>> = ({
-  tableOptions,
+/**
+ * Wrapper around a `th` element.
+ */
+export const TableHeader = ({
+  key,
   children,
-}) => {
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable(tableOptions);
-
+}: TableHeaderProps): JSX.Element => {
   return (
-    <table
-      {...getTableProps()}
-      className="w-full text-sm text-left text-gray-500 light:text-gray-400"
+    <th
+      key={key}
+      className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
     >
-      <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">
-        {headerGroups.map((headerGroup) => (
-          <tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map((column) => (
-              <th {...column.getHeaderProps()} className="px-6 py-3">
-                {column.render("Header")}
-              </th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
-          prepareRow(row);
-          return (
-            <tr
-              {...row.getRowProps()}
-              className="bg-white border-b light:bg-gray-800 light:border-gray-700 hover:bg-gray-50 light:hover:bg-gray-600"
-            >
-              {row.cells.map((cell) => {
-                return (
-                  <td {...cell.getCellProps()} className="px-6 py-4">
-                    {cell.render("Cell")}
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
-      </tbody>
+      {children}
+    </th>
+  );
+};
+
+export type TableRowProps = {
+  key: string;
+  onClick?: React.MouseEventHandler<HTMLTableRowElement>;
+  children: ReactNode | ReactNode[];
+};
+
+/**
+ * Wrapper around a `tr` element.
+ */
+export const TableRow = ({
+  key,
+  onClick,
+  children,
+}: TableRowProps): JSX.Element => {
+  return (
+    <tr key={key} onClick={onClick} className="border-b pl-2 pr-2">
+      {children}
+    </tr>
+  );
+};
+
+export type TableDataProps = {
+  key: string;
+  colSpan?: number;
+  children: ReactNode;
+};
+
+/**
+ * Wrapper around a `td` element.
+ */
+export const TableData = ({
+  key,
+  colSpan,
+  children,
+}: TableDataProps): JSX.Element => {
+  return (
+    <td key={key} colSpan={colSpan} className="border-b pl-2 pr-2">
+      {children}
+    </td>
+  );
+};
+
+export type TableProps = {
+  tableHead: ReactNode;
+  tableBody: ReactNode;
+};
+
+/**
+ * Wrapper around a `table` element.
+ */
+export const Table = ({ tableHead, tableBody }: TableProps): JSX.Element => {
+  return (
+    <table className="w-full text-sm text-left text-gray-500 table-fixed">
+      <thead>{tableHead}</thead>
+      <tbody>{tableBody}</tbody>
     </table>
   );
-};*/
+};

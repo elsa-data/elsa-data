@@ -10,26 +10,20 @@ import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
-import { AuditEventPage } from "./pages/releases/detail/logs-box/audit-event-page";
+import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
+import { ErrorDisplay } from "./components/error-display";
 
 function NoMatch() {
   let location = useLocation();
 
   return (
-    <div>
-      <p>
-        No React router match for <code>{location.pathname}</code>.
-      </p>
-      <p>
-        If you have landed on this page by following links within Elsa Data -
-        then this is an internal bug and we would be grateful if you could
-        report it.
-      </p>
-      <p>
-        If you have just been randomly typing in URLs then you have got what you
-        deserved!
-      </p>
-    </div>
+    <ErrorDisplay
+      message={
+        <div>
+          No React router match for <code>{location.pathname}</code>
+        </div>
+      }
+    />
   );
 }
 
@@ -48,7 +42,7 @@ export const App: React.FC = () => {
         <Route path={`/releases/:releaseId`} element={<ReleasesDetailPage />} />
         <Route
           path={`/releases/:releaseId/audit-log/:objectId`}
-          element={<AuditEventPage />}
+          element={<AuditEntryPage />}
         />
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
         <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />

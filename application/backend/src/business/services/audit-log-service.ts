@@ -6,9 +6,9 @@ import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
 import {
-  AuditEntryType,
   AuditEntryDetailsType,
   AuditEntryFullType,
+  AuditEntryType,
 } from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {

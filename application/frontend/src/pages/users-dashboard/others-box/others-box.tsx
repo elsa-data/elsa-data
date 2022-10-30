@@ -4,15 +4,13 @@ import { useQuery } from "react-query";
 import classNames from "classnames";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
-import { isEmpty, trim } from "lodash";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import { parseISO } from "date-fns";
-import { format } from "date-fns-tz";
 import { useCookies } from "react-cookie";
 import {
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
+import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 
 type Props = {
   // the (max) number of case items shown on any single page
@@ -53,30 +51,10 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
     { keepPreviousData: true }
   );
 
-  const [searchText, setSearchText] = useState("");
-
-  const clearSearchText = () => setSearchText("");
-
-  const makeUseableSearchText = (t: string | undefined) => {
-    if (!isEmpty(t) && !isEmpty(trim(t))) return trim(t);
-    else return undefined;
-  };
-
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
   const createRows = (data: UserSummaryType[]) => {
     return data.map((row, rowIndex) => {
-      const lastLogin = parseISO(row.lastLogin as string);
-
-      // TODO: get timezone from somewhere in config
-
-      const localDay = format(lastLogin, "d/M/yyyy", {
-        timeZone: "Australia/Melbourne",
-      });
-      const localTime = format(lastLogin, "HH:mm:ss", {
-        timeZone: "Australia/Melbourne",
-      });
-
       return (
         <tr key={rowIndex} className="border-b pl-2 pr-2">
           <td
@@ -104,7 +82,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
               "pr-4"
             )}
           >
-            {localDay} {localTime}
+            {formatLocalDateTime(row.lastLogin as string | undefined)}
           </td>
         </tr>
       );

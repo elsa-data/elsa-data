@@ -1,4 +1,5 @@
 import * as edgedb from "edgedb";
+import { Duration } from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
@@ -6,10 +7,8 @@ import {
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { TENG_URI } from "./insert-test-data-10g";
 import { TENC_URI } from "./insert-test-data-10c";
-import { Duration } from "edgedb";
 import { random } from "lodash";
 import {
   BART_SPECIMEN,
@@ -23,6 +22,7 @@ import {
   MONDO_SYSTEM_URI,
 } from "@umccr/elsa-constants";
 import * as MOCK_JSON from "./mock-json.json";
+import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 
 const edgeDbClient = edgedb.createClient();
 

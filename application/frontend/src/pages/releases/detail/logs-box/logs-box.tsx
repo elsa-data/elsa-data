@@ -1,54 +1,43 @@
 import React, {
-  useState,
-  Fragment,
-  useEffect,
   Dispatch,
+  Fragment,
   SetStateAction,
-  useCallback,
-  useRef,
+  useEffect,
+  useState,
 } from "react";
 import { AuditEntryType } from "@umccr/elsa-types";
 import axios from "axios";
-import {
-  QueryObserver,
-  useQueries,
-  useQuery,
-  UseQueryResult,
-} from "react-query";
-import classNames from "classnames";
+import { useQuery, UseQueryResult } from "react-query";
 import { BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
-import { format } from "date-fns-tz";
-import * as duration from "duration-fns";
-import { parseISO } from "date-fns";
 import {
+  ColumnSizingHeader,
+  CoreHeader,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
-  getSortedRowModel,
-  Row,
-  RowData,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
   formatDuration,
-  formatLocalDateTime,
   formatFromNowTime,
+  formatLocalDateTime,
 } from "../../../../helpers/datetime-helper";
+import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
 import {
-  AuditEntryDetailsType,
-  AuditEntrySchema,
-} from "@umccr/elsa-types/schemas-audit";
-import { SortDirection } from "@tanstack/table-core";
-import Popup from "reactjs-popup";
-import { PopupPosition } from "reactjs-popup/dist/types";
-import dayjs from "dayjs";
+  Table,
+  TableData,
+  TableHeader,
+  TableRow,
+} from "../../../../components/tables";
+import { ToolTip } from "../../../../components/tooltip";
 
 /**
  * Maximum character length of details rendered in log box.
  */
+// Allow this to be set somewhere?
 export const MAXIMUM_DETAIL_LENGTH = 1000;
 
 type LogsBoxProps = {
@@ -62,12 +51,9 @@ export type RowProps = {
   objectId: string;
 };
 
-type ToolTipProps = {
-  trigger: JSX.Element;
-  description: JSX.Element;
-  position?: PopupPosition;
-};
-
+/**
+ * Wrapper around a useQuery hook for an audit entry event.
+ */
 export const useAuditEventQuery = (
   currentPage: number,
   releaseId: string,
@@ -111,6 +97,9 @@ export const useAuditEventQuery = (
   );
 };
 
+/**
+ * Declares all audit entry queries used by the logs box.
+ */
 export const useAllAuditEventQueries = (
   currentPage: number,
   releaseId: string,
@@ -149,11 +138,29 @@ export const useAllAuditEventQueries = (
   };
 };
 
-export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
-  // our internal state for which page we are on
-  const [currentPage, setCurrentPage] = useState(1);
+export type AuditEntryTableHeaderProps<TData, TValue> = {
+  header: CoreHeader<TData, TValue> & ColumnSizingHeader;
+};
 
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+export const AuditEntryTableHeader = <TData, TValue>({
+  header,
+}: AuditEntryTableHeaderProps<TData, TValue>): JSX.Element => {
+  return (
+    <div onClick={header.column.getToggleSortingHandler()}>
+      {flexRender(header.column.columnDef.header, header.getContext())}
+      {{
+        asc: " ^",
+        desc: " v",
+      }[header.column.getIsSorted() as string] ?? null}
+    </div>
+  );
+};
+
+/**
+ * The main logs box component.
+ */
+export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
+  const [currentPage, setCurrentPage] = useState(1);
   const [currentTotal, setCurrentTotal] = useState(1);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -204,79 +211,60 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     manualSorting: true,
   });
 
+  const groups = table.getHeaderGroups();
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">
-        <table className="w-full text-sm text-left text-gray-500 table-fixed">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b pl-2 pr-2">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
-                  >
-                    {header.isPlaceholder ? null : (
-                      <div
-                        {...{
-                          onClick: header.column.getToggleSortingHandler(),
-                        }}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {{
-                          asc: " ^",
-                          desc: " v",
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </div>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {isSuccess &&
-              table.getRowModel().rows.map((row) => (
-                <Fragment key={row.id}>
-                  <tr
-                    key={row.id}
-                    onClick={() =>
-                      row.getCanExpand() &&
-                      row.getValue("hasDetails") &&
-                      row.toggleExpanded()
-                    }
-                    className="border-b pl-2 pr-2"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        className="py-2 font-small text-gray-400 whitespace-nowrap w-40 text-left pl-4"
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                  {row.getIsExpanded() && (
-                    <tr>
-                      {}
-                      <td colSpan={row.getVisibleCells().length}>
-                        <DetailsRow
-                          releaseId={releaseId}
-                          objectId={row.original.objectId}
-                        />
-                      </td>
-                    </tr>
+        <Table
+          tableHead={groups.map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHeader key={header.id}>
+                  {header.isPlaceholder ? undefined : (
+                    <AuditEntryTableHeader header={header} />
                   )}
-                </Fragment>
+                </TableHeader>
               ))}
-          </tbody>
-        </table>
+            </TableRow>
+          ))}
+          tableBody={
+            isSuccess &&
+            table.getRowModel().rows.map((row) => (
+              <Fragment key={row.id}>
+                <TableRow
+                  key={row.id}
+                  onClick={() =>
+                    row.getCanExpand() &&
+                    row.getValue("hasDetails") &&
+                    row.toggleExpanded()
+                  }
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableData key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableData>
+                  ))}
+                </TableRow>
+                {row.getIsExpanded() && (
+                  <TableRow key={row.original.objectId}>
+                    <TableData
+                      key={row.original.objectId}
+                      colSpan={row.getVisibleCells().length}
+                    >
+                      <DetailsRow
+                        releaseId={releaseId}
+                        objectId={row.original.objectId}
+                      />
+                    </TableData>
+                  </TableRow>
+                )}
+              </Fragment>
+            ))
+          }
+        />
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {
@@ -293,18 +281,9 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   );
 };
 
-const ToolTip = ({
-  trigger,
-  description,
-  position = "left top",
-}: ToolTipProps): JSX.Element => {
-  return (
-    <Popup trigger={trigger} position={position} on={["hover", "focus"]}>
-      {description}
-    </Popup>
-  );
-};
-
+/**
+ * The details row shown when clicking on a row.
+ */
 const DetailsRow = ({ releaseId, objectId }: RowProps): JSX.Element => {
   const detailsQuery = useQuery(
     ["releases-audit-log-details", objectId],
@@ -329,6 +308,22 @@ const DetailsRow = ({ releaseId, objectId }: RowProps): JSX.Element => {
   );
 };
 
+export type ExpanderIndicatorProps = {
+  isExpanded: boolean;
+};
+
+/**
+ * An indicator for when a row is expanded.
+ */
+export const ExpandedIndicator = ({
+  isExpanded,
+}: ExpanderIndicatorProps): JSX.Element => {
+  return <>{isExpanded ? "x" : "o"}</>;
+};
+
+/**
+ * Create the column definition based on the audit entry type.
+ */
 export const createColumns = (releaseId: string) => {
   const columnHelper = createColumnHelper<AuditEntryType>();
   return [
@@ -337,7 +332,8 @@ export const createColumns = (releaseId: string) => {
       cell: (info) => {
         return (
           <a href={`/releases/${releaseId}/audit-log/${info.getValue()}`}>
-            view
+            {" "}
+            view{" "}
           </a>
         );
       },
@@ -355,13 +351,17 @@ export const createColumns = (releaseId: string) => {
               onClick: table.getToggleAllRowsExpandedHandler(),
             }}
           >
-            {table.getIsAllRowsExpanded() ? "x" : "o"}
+            <ExpandedIndicator
+              isExpanded={table.getIsAllRowsExpanded()}
+            ></ExpandedIndicator>
           </button>
         ) : null;
       },
       cell: (info) => {
         return info.row.getCanExpand() && info.getValue() ? (
-          <div>{info.row.getIsExpanded() ? "x" : "o"}</div>
+          <ExpandedIndicator
+            isExpanded={info.row.getIsExpanded()}
+          ></ExpandedIndicator>
         ) : null;
       },
       enableSorting: false,
@@ -373,7 +373,7 @@ export const createColumns = (releaseId: string) => {
         return (
           <ToolTip
             trigger={<span>{formatFromNowTime(dateTime)}</span>}
-            description={<div>formatLocalDateTime(dateTime)</div>}
+            description={<div>{formatLocalDateTime(dateTime)}</div>}
           ></ToolTip>
         );
       },

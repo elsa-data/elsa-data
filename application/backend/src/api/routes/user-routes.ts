@@ -6,12 +6,10 @@ import {
 import { container } from "tsyringe";
 import { UsersService } from "../../business/services/users-service";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { isSuperAdmin } from "../../auth/auth-route-hook";
 
-export const userRoutes = async (fastify: FastifyInstance, opts: any) => {
+export const userRoutes = async (fastify: FastifyInstance) => {
   const userService = container.resolve(UsersService);
-  const settings = container.resolve<ElsaSettings>("Settings");
+  // const settings = container.resolve<ElsaSettings>("Settings")
 
   // const superAdminAuthHook = createSuperAdminAuthRouteHook(settings);
   //fastify.addHook("onRequest", superAdminAuthHook, () => {
@@ -38,7 +36,7 @@ export const userRoutes = async (fastify: FastifyInstance, opts: any) => {
 
       console.log(users);
 
-      sendPagedResult(reply, users, page, `/api/users?`);
+      sendPagedResult(reply, users);
     }
   );
 };

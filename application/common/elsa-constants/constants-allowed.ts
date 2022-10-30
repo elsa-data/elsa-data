@@ -5,7 +5,7 @@ export const ALLOWED_CREATE_NEW_RELEASES = "ryIAD";
  * An array that maps the above "allowed" flags into strings that can be printed.
  * Will be used purely for dev/debug purposes.
  */
-export function debugAllowedDescription(allowed) {
+export function debugAllowedDescription(allowed: string) {
   switch (allowed) {
     case ALLOWED_CHANGE_ADMINS:
       return "change admins";
