@@ -47,7 +47,7 @@ export class RedcapImportApplicationService {
         .applicationDacIdentifier.value.run(this.edgeDbClient)
     );
 
-    const results: any[] = [];
+    const results: AustraliaGenomicsDacRedcap[] = [];
 
     for (const possibleApplication of csvAsJson || []) {
       if (!currentReleaseIdentifiers.has(possibleApplication.daf_num)) {
