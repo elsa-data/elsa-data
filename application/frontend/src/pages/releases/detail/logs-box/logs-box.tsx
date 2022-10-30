@@ -57,14 +57,14 @@ type LogsBoxProps = {
   pageSize: number;
 };
 
-type RowProps = {
+export type RowProps = {
   releaseId: string;
-  data: AuditEntryType;
+  objectId: string;
 };
 
 type ToolTipProps = {
   trigger: JSX.Element;
-  description: string;
+  description: JSX.Element;
   position?: PopupPosition;
 };
 
@@ -190,7 +190,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   const table = useReactTable({
     data: data,
-    columns: createColumns(),
+    columns: createColumns(releaseId),
     state: {
       sorting,
     },
@@ -266,7 +266,10 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     <tr>
                       {}
                       <td colSpan={row.getVisibleCells().length}>
-                        <DetailsRow releaseId={releaseId} data={row.original} />
+                        <DetailsRow
+                          releaseId={releaseId}
+                          objectId={row.original.objectId}
+                        />
                       </td>
                     </tr>
                   )}
@@ -297,18 +300,18 @@ const ToolTip = ({
 }: ToolTipProps): JSX.Element => {
   return (
     <Popup trigger={trigger} position={position} on={["hover", "focus"]}>
-      <div>{description}</div>
+      {description}
     </Popup>
   );
 };
 
-const DetailsRow = ({ releaseId, data }: RowProps): JSX.Element => {
+const DetailsRow = ({ releaseId, objectId }: RowProps): JSX.Element => {
   const detailsQuery = useQuery(
-    ["releases-audit-log-details", releaseId, data.objectId],
+    ["releases-audit-log-details", objectId],
     async () => {
       return await axios
         .get<AuditEntryDetailsType | null>(
-          `/api/releases/${releaseId}/audit-log/details?id=${data.objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
+          `/api/releases/${releaseId}/audit-log/details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
         )
         .then((response) => response.data);
     },
@@ -326,9 +329,20 @@ const DetailsRow = ({ releaseId, data }: RowProps): JSX.Element => {
   );
 };
 
-export const createColumns = () => {
+export const createColumns = (releaseId: string) => {
   const columnHelper = createColumnHelper<AuditEntryType>();
   return [
+    columnHelper.accessor("objectId", {
+      header: () => null,
+      cell: (info) => {
+        return (
+          <a href={`/releases/${releaseId}/audit-log/${info.getValue()}`}>
+            view
+          </a>
+        );
+      },
+      enableSorting: false,
+    }),
     columnHelper.accessor("hasDetails", {
       header: ({ table }) => {
         return table.getCanSomeRowsExpand() &&
@@ -343,16 +357,12 @@ export const createColumns = () => {
           >
             {table.getIsAllRowsExpanded() ? "x" : "o"}
           </button>
-        ) : (
-          ""
-        );
+        ) : null;
       },
       cell: (info) => {
         return info.row.getCanExpand() && info.getValue() ? (
           <div>{info.row.getIsExpanded() ? "x" : "o"}</div>
-        ) : (
-          ""
-        );
+        ) : null;
       },
       enableSorting: false,
     }),
@@ -363,7 +373,7 @@ export const createColumns = () => {
         return (
           <ToolTip
             trigger={<span>{formatFromNowTime(dateTime)}</span>}
-            description={formatLocalDateTime(dateTime)}
+            description={<div>formatLocalDateTime(dateTime)</div>}
           ></ToolTip>
         );
       },

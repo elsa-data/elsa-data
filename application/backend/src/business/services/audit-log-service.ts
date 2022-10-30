@@ -8,10 +8,12 @@ import { differenceInSeconds } from "date-fns";
 import {
   AuditEntryType,
   AuditEntryDetailsType,
+  AuditEntryFullType,
 } from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
   auditLogDetailsForIdQuery,
+  auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForReleaseQuery,
 } from "../db/audit-log-queries";
@@ -170,16 +172,40 @@ export class AuditLogService {
     start: number,
     end: number
   ): Promise<AuditEntryDetailsType | null> {
-    const entries = await auditLogDetailsForIdQuery(id, start, end).run(
-      executor
-    );
+    const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
 
-    if (!entries) {
+    if (!entry) {
       return null;
     } else {
       return {
-        objectId: entries.id,
-        details: entries.detailsStr ?? undefined,
+        objectId: entry.id,
+        details: entry.detailsStr ?? undefined,
+      };
+    }
+  }
+
+  public async getFullEntry(
+    executor: Executor,
+    user: AuthenticatedUser,
+    id: string
+  ): Promise<AuditEntryFullType | null> {
+    const entry = await auditLogFullForIdQuery(id).run(executor);
+
+    if (!entry) {
+      return null;
+    } else {
+      return {
+        objectId: entry.id,
+        whoId: entry.whoId,
+        whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory?.toString(),
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime,
+        occurredDuration: entry.occurredDuration?.toString(),
+        outcome: entry.outcome,
+        details: entry.details,
       };
     }
   }

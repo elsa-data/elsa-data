@@ -29,8 +29,7 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
 );
 
 /**
- * A pageable EdgeDb query for the audit log entries associated with
- * a given release.
+ * An EdgeDb query for the audit log details associated with an id.
  */
 export const auditLogDetailsForIdQuery = (
   id: string,
@@ -40,6 +39,16 @@ export const auditLogDetailsForIdQuery = (
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
     id: true,
     detailsStr: e.to_str(auditEvent.details).slice(start, end),
+    filter: e.op(auditEvent.id, "=", e.uuid(id)),
+  }));
+};
+
+/**
+ * An EdgeDb query for the full audit log event associated with an id.
+ */
+export const auditLogFullForIdQuery = (id: string) => {
+  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+    ...e.audit.ReleaseAuditEvent["*"],
     filter: e.op(auditEvent.id, "=", e.uuid(id)),
   }));
 };

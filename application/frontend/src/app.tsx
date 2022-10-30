@@ -10,6 +10,7 @@ import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
+import { AuditEventPage } from "./pages/releases/detail/logs-box/audit-event-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -45,6 +46,10 @@ export const App: React.FC = () => {
         <Route path={`/users`} element={<UsersDashboardPage />} />
         <Route path={`/releases`} element={<ReleasesPage />} />
         <Route path={`/releases/:releaseId`} element={<ReleasesDetailPage />} />
+        <Route
+          path={`/releases/:releaseId/audit-log/:objectId`}
+          element={<AuditEventPage />}
+        />
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
         <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
         <Route path="*" element={<NoMatch />} />

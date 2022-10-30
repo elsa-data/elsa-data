@@ -9,24 +9,32 @@ import * as edgedb from "edgedb";
 import { container } from "tsyringe";
 import { AuditLogService } from "../../business/services/audit-log-service";
 import { Static, Type } from "@sinclair/typebox";
-import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
+import {
+  AuditEntryDetailsType,
+  AuditEntryFullType,
+} from "@umccr/elsa-types/schemas-audit";
 
-export const DetailsQueryStringSchema = Type.Object({
+export const AuditEventForReleaseQuerySchema = Type.Object({
   page: Type.Optional(Type.Number()),
   orderByProperty: Type.Optional(Type.String()),
   orderAscending: Type.Optional(Type.Boolean()),
 });
+export type AuditEventForReleastQueryType = Static<
+  typeof AuditEventForReleaseQuerySchema
+>;
 
-export type DetailsQueryStringType = Static<typeof DetailsQueryStringSchema>;
-
-export const DetailsQueryStringDetailsSchema = Type.Object({
+export const AuditEventByIdQuerySchema = Type.Object({
   id: Type.String(),
+});
+export type AuditEventFullQueryType = Static<typeof AuditEventByIdQuerySchema>;
+
+export const AuditEventDetailsQuerySchema = Type.Object({
+  ...AuditEventByIdQuerySchema.properties,
   start: Type.Optional(Type.Number()),
   end: Type.Optional(Type.Number()),
 });
-
-export type DetailsQueryStringDetailsType = Static<
-  typeof DetailsQueryStringDetailsSchema
+export type AuditEventDetailsQueryType = Static<
+  typeof AuditEventDetailsQuerySchema
 >;
 
 export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
@@ -34,21 +42,21 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
 
   fastify.get<{
-    Params: { rid: string };
+    Params: { releaseId: string };
     Reply: AuditEntryType[];
-    Querystring: DetailsQueryStringType;
+    Querystring: AuditEventForReleastQueryType;
   }>(
-    "/api/releases/:rid/audit-log",
+    "/api/releases/:releaseId/audit-log",
     {
       schema: {
-        querystring: DetailsQueryStringSchema,
+        querystring: AuditEventForReleaseQuerySchema,
       },
     },
     async function (request, reply) {
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseId = request.params.releaseId;
       const { orderByProperty = "occurredDateTime", orderAscending = false } =
         request.query;
 
@@ -67,14 +75,14 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   );
 
   fastify.get<{
-    Params: { rid: string };
+    Params: { releaseId: string };
     Reply: AuditEntryDetailsType | null;
-    Querystring: DetailsQueryStringDetailsType;
+    Querystring: AuditEventDetailsQueryType;
   }>(
-    "/api/releases/:rid/audit-log/details",
+    "/api/releases/:releaseId/audit-log/details",
     {
       schema: {
-        querystring: DetailsQueryStringDetailsSchema,
+        querystring: AuditEventDetailsQuerySchema,
       },
     },
     async function (request, reply) {
@@ -88,6 +96,24 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         id,
         start,
         end
+      );
+
+      sendResult(reply, events);
+    }
+  );
+
+  fastify.get<{
+    Params: { releaseId: string; objectId: string };
+    Reply: AuditEntryFullType | null;
+  }>(
+    "/api/releases/:releaseId/audit-log/:objectId",
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const events = await auditLogService.getFullEntry(
+        edgeDbClient,
+        authenticatedUser,
+        request.params.objectId
       );
 
       sendResult(reply, events);
