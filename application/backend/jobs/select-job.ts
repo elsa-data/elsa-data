@@ -25,6 +25,8 @@ const fakeSettings: ElsaSettings = {
   sessionSalt: "",
   sessionSecret: "",
   remsBotUser: "",
+  awsSigningAccessKeyId: "",
+  awsSigningSecretAccessKey: "",
   oidcClientId: "",
   oidcClientSecret: "",
   oidcIssuer: new Issuer({ issuer: "" }),
