@@ -372,8 +372,8 @@ export const createColumns = (releaseId: string) => {
         const dateTime = info.getValue() as string | undefined;
         return (
           <ToolTip
-            trigger={<span>{formatFromNowTime(dateTime)}</span>}
-            description={<div>{formatLocalDateTime(dateTime)}</div>}
+            trigger={formatFromNowTime(dateTime)}
+            description={formatLocalDateTime(dateTime)}
           ></ToolTip>
         );
       },

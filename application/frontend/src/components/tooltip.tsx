@@ -1,24 +1,29 @@
-import Popup from "reactjs-popup";
-import React from "react";
-import { PopupPosition } from "reactjs-popup/dist/types";
+import React, { ReactNode } from "react";
+import classNames from "classnames";
 
 export type ToolTipProps = {
-  trigger: JSX.Element;
-  description: JSX.Element;
-  position?: PopupPosition;
+  trigger: ReactNode;
+  applyCSS?: string;
+  description: ReactNode;
 };
 
 /**
- * Tooltip shown on hover and focus.
+ * Tooltip shown on hover.
  */
 export const ToolTip = ({
   trigger,
+  applyCSS,
   description,
-  position = "left top",
 }: ToolTipProps): JSX.Element => {
   return (
-    <Popup trigger={trigger} position={position} on={["hover", "focus"]}>
-      {description}
-    </Popup>
+    <div className={classNames("group relative inline-block", applyCSS)}>
+      {trigger}
+      <span
+        className="absolute hidden group-hover:flex flex items-center -left-5 -top-2 -translate-y-full px-2 py-1
+          bg-gray-600/75 rounded-lg text-center text-white text-sm"
+      >
+        {description}
+      </span>
+    </div>
   );
 };
