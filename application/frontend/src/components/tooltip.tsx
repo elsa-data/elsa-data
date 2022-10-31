@@ -20,7 +20,7 @@ export const ToolTip = ({
       {trigger}
       <span
         className="absolute hidden group-hover:flex flex items-center -left-5 -top-2 -translate-y-full px-2 py-1
-          bg-gray-600/75 rounded-lg text-center text-white text-sm"
+          bg-gray-600/75 rounded-lg text-center text-white text-sm whitespace-nowrap"
       >
         {description}
       </span>

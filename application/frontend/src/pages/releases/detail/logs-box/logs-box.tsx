@@ -26,13 +26,14 @@ import {
   formatLocalDateTime,
 } from "../../../../helpers/datetime-helper";
 import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
-import {
-  Table,
-  TableData,
-  TableHeader,
-  TableRow,
-} from "../../../../components/tables";
+import { Table } from "../../../../components/tables";
 import { ToolTip } from "../../../../components/tooltip";
+import {
+  BiChevronDown,
+  BiChevronRight,
+  BiChevronUp,
+  BiLinkExternal,
+} from "react-icons/bi";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -146,11 +147,14 @@ export const AuditEntryTableHeader = <TData, TValue>({
   header,
 }: AuditEntryTableHeaderProps<TData, TValue>): JSX.Element => {
   return (
-    <div onClick={header.column.getToggleSortingHandler()}>
+    <div
+      onClick={header.column.getToggleSortingHandler()}
+      className="flex flex-nowrap space-x-1"
+    >
       {flexRender(header.column.columnDef.header, header.getContext())}
       {{
-        asc: " ^",
-        desc: " v",
+        asc: <BiChevronUp />,
+        desc: <BiChevronDown />,
       }[header.column.getIsSorted() as string] ?? null}
     </div>
   );
@@ -217,50 +221,70 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
       <div className="flex flex-col">
         <Table
           tableHead={groups.map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <tr
+              key={headerGroup.id}
+              className="py-4 text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"
+            >
               {headerGroup.headers.map((header) => (
-                <TableHeader key={header.id}>
+                <th
+                  key={header.id}
+                  onClick={
+                    header.id === "hasDetails"
+                      ? table.getToggleAllRowsExpandedHandler()
+                      : () => {}
+                  }
+                  className="py-4 text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg"
+                >
                   {header.isPlaceholder ? undefined : (
                     <AuditEntryTableHeader header={header} />
                   )}
-                </TableHeader>
+                </th>
               ))}
-            </TableRow>
+            </tr>
           ))}
           tableBody={
             isSuccess &&
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
-                <TableRow
+                <tr
                   key={row.id}
                   onClick={() =>
                     row.getCanExpand() &&
                     row.getValue("hasDetails") &&
                     row.toggleExpanded()
                   }
+                  className="py-4 text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableData key={cell.id}>
+                    <td
+                      key={cell.id}
+                      className="py-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
                       )}
-                    </TableData>
+                    </td>
                   ))}
-                </TableRow>
-                {row.getIsExpanded() && (
-                  <TableRow key={row.original.objectId}>
-                    <TableData
+                </tr>
+                {row.getIsExpanded() &&
+                  (row.getValue("hasDetails") as boolean) && (
+                    <tr
                       key={row.original.objectId}
-                      colSpan={row.getVisibleCells().length}
+                      className="py-4 text-sm text-gray-500 border-b odd:bg-white even:bg-slate-50 border-slate-700"
                     >
-                      <DetailsRow
-                        releaseId={releaseId}
-                        objectId={row.original.objectId}
-                      />
-                    </TableData>
-                  </TableRow>
-                )}
+                      <td
+                        key={row.original.objectId}
+                        colSpan={row.getVisibleCells().length}
+                        className="p-4 left text-sm text-`gray-500 border-b"
+                      >
+                        <DetailsRow
+                          releaseId={releaseId}
+                          objectId={row.original.objectId}
+                        />
+                      </td>
+                    </tr>
+                  )}
               </Fragment>
             ))
           }
@@ -318,7 +342,7 @@ export type ExpanderIndicatorProps = {
 export const ExpandedIndicator = ({
   isExpanded,
 }: ExpanderIndicatorProps): JSX.Element => {
-  return <>{isExpanded ? "x" : "o"}</>;
+  return isExpanded ? <BiChevronDown /> : <BiChevronRight />;
 };
 
 /**
@@ -331,9 +355,11 @@ export const createColumns = (releaseId: string) => {
       header: () => null,
       cell: (info) => {
         return (
-          <a href={`/releases/${releaseId}/audit-log/${info.getValue()}`}>
-            {" "}
-            view{" "}
+          <a
+            href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
+            className="pl-4 block w-auto h-auto hover:bg-slate-200 hover:rounded-lg"
+          >
+            <BiLinkExternal />
           </a>
         );
       },
@@ -346,15 +372,9 @@ export const createColumns = (releaseId: string) => {
             .getRowModel()
             .rows.map((row) => row.getValue("hasDetails"))
             .some(Boolean) ? (
-          <button
-            {...{
-              onClick: table.getToggleAllRowsExpandedHandler(),
-            }}
-          >
-            <ExpandedIndicator
-              isExpanded={table.getIsAllRowsExpanded()}
-            ></ExpandedIndicator>
-          </button>
+          <ExpandedIndicator
+            isExpanded={table.getIsAllRowsExpanded()}
+          ></ExpandedIndicator>
         ) : null;
       },
       cell: (info) => {

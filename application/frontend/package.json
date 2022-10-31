@@ -19,10 +19,10 @@
     ]
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "6.1.1",
-    "@fortawesome/free-regular-svg-icons": "6.1.1",
-    "@fortawesome/free-solid-svg-icons": "6.1.1",
-    "@fortawesome/react-fontawesome": "0.2.0",
+    "@fortawesome/fontawesome-svg-core": "^6.2.0",
+    "@fortawesome/free-regular-svg-icons": "^6.2.0",
+    "@fortawesome/free-solid-svg-icons": "^6.2.0",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "^2.0.11",
     "@lingui/react": "3.14.0",
@@ -47,14 +47,15 @@
     "react-dom": "18.1.0",
     "react-headless-pagination": "^0.2.1",
     "react-hook-form": "7.33.1",
+    "react-icons": "^4.6.0",
     "react-markdown": "^8.0.3",
     "react-query": "3.39.0",
     "react-router-dom": "6.3.0",
-    "react-syntax-highlighter": "^15.5.0",
-    "reactjs-popup": "2.0.5"
+    "react-syntax-highlighter": "^15.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.9",
+    "@fortawesome/fontawesome-common-types": "^6.2.0",
     "@lingui/cli": "^3.14.0",
     "@lingui/macro": "^3.14.0",
     "@tailwindcss/forms": "^0.5.2",

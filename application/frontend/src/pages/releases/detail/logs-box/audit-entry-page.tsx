@@ -4,9 +4,9 @@ import axios from "axios";
 import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ErrorDisplay } from "../../../../components/error-display";
 import { BoxNoPad } from "../../../../components/boxes";
+import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 /**
  * The audit event page shows a full audit entry event as a JSON.
@@ -62,7 +62,12 @@ type AuditEntryBoxProps = {
  */
 export const AuditEntryBox = ({ data }: AuditEntryBoxProps): JSX.Element => {
   return (
-    <SyntaxHighlighter language="json" style={docco}>
+    <SyntaxHighlighter
+      language="json"
+      style={arduinoLight}
+      wrapLines={true}
+      wrapLongLines={true}
+    >
       {JSON.stringify(data, null, 2)}
     </SyntaxHighlighter>
   );
