@@ -80,9 +80,6 @@ ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
 ARG GITHUB_SHA
 ENV GITHUB_SHA $GITHUB_SHA
 
-RUN echo "export ELSA_DATA_VERSION=$ELSA_DATA_VERSION" >> ~/.profile
-RUN echo "export GITHUB_SHA=$GITHUB_SHA" >> ~/.profile
-
 
 
 # TODO: careful crafting has broken stuff.. for the moment just throwing everything together
