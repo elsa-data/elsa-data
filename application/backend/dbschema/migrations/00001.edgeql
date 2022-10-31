@@ -1,4 +1,4 @@
-CREATE MIGRATION m1mp63vssm4p2d3sceplp3tuv6izp52yq7mkklt2xs3ys34fv3prbq
+CREATE MIGRATION m1riy5sxqwnewpzjthoxvcykrjwxm4qu7kuxvdday5m5eupq3zvpia
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -186,7 +186,7 @@ CREATE MIGRATION m1mp63vssm4p2d3sceplp3tuv6izp52yq7mkklt2xs3ys34fv3prbq
       CREATE OPTIONAL PROPERTY reason -> tuple<system: std::str, value: std::str>;
   };
   ALTER TYPE dataset::DatasetCase {
-      CREATE OPTIONAL LINK pedigree := (pedigree::Pedigree);
+      CREATE OPTIONAL LINK pedigree -> pedigree::Pedigree;
   };
   ALTER TYPE job::Job {
       CREATE REQUIRED LINK forRelease -> release::Release {

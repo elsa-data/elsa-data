@@ -209,28 +209,6 @@ describe("AWS s3 client", () => {
     expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
-  it("Test converts3ManifestTypeToFileRecord", async () => {
-    const agService = container.resolve(AGService);
-
-    const newFileRec = agService.converts3ManifestTypeToFileRecord(
-      MOCK_1_S3URL_MANIFEST_OBJECT,
-      MOCK_1_CARDIAC_S3_OBJECT_LIST
-    );
-
-    expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
-  });
-
-  it("Test converts3ManifestTypeToFileRecord", async () => {
-    const agService = container.resolve(AGService);
-
-    const newFileRec = agService.converts3ManifestTypeToFileRecord(
-      MOCK_1_S3URL_MANIFEST_OBJECT,
-      MOCK_1_CARDIAC_S3_OBJECT_LIST
-    );
-
-    expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
-  });
-
   it("Test MOCK 1 insert new Cardiac from s3Key", async () => {
     jest
       .spyOn(awsHelper, "awsListObjects")

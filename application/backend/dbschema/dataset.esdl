@@ -60,7 +60,7 @@ module dataset {
         }
 
         # pedigree data structure
-        optional link pedigree := pedigree::Pedigree;
+        optional link pedigree -> pedigree::Pedigree;
 
         # sample info (which are normals etc)
     }
