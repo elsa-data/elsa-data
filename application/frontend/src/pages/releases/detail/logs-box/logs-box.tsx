@@ -17,6 +17,7 @@ import {
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
+  RowData,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -35,6 +36,14 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 
+declare module "@tanstack/table-core" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    headerStyling?: string;
+    cellStyling?: string;
+  }
+}
+
 /**
  * Maximum character length of details rendered in log box.
  */
@@ -45,11 +54,6 @@ type LogsBoxProps = {
   releaseId: string;
   // the (max) number of log items shown on any single page
   pageSize: number;
-};
-
-export type RowProps = {
-  releaseId: string;
-  objectId: string;
 };
 
 /**
@@ -143,6 +147,9 @@ export type AuditEntryTableHeaderProps<TData, TValue> = {
   header: CoreHeader<TData, TValue> & ColumnSizingHeader;
 };
 
+/**
+ * Refactored code that goes in the main header components of the table.
+ */
 export const AuditEntryTableHeader = <TData, TValue>({
   header,
 }: AuditEntryTableHeaderProps<TData, TValue>): JSX.Element => {
@@ -223,7 +230,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
           tableHead={groups.map((headerGroup) => (
             <tr
               key={headerGroup.id}
-              className="py-4 text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"
+              className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"
             >
               {headerGroup.headers.map((header) => (
                 <th
@@ -233,7 +240,11 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                       ? table.getToggleAllRowsExpandedHandler()
                       : () => {}
                   }
-                  className="py-4 text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg"
+                  className={
+                    !header.column.columnDef.meta?.headerStyling
+                      ? "py-4 text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg"
+                      : header.column.columnDef.meta.headerStyling
+                  }
                 >
                   {header.isPlaceholder ? undefined : (
                     <AuditEntryTableHeader header={header} />
@@ -253,12 +264,16 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     row.getValue("hasDetails") &&
                     row.toggleExpanded()
                   }
-                  className="py-4 text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+                  className="text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="py-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                      className={
+                        !cell.column.columnDef.meta?.cellStyling
+                          ? "py-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                          : cell.column.columnDef.meta?.cellStyling
+                      }
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -271,12 +286,12 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                   (row.getValue("hasDetails") as boolean) && (
                     <tr
                       key={row.original.objectId}
-                      className="py-4 text-sm text-gray-500 border-b odd:bg-white even:bg-slate-50 border-slate-700"
+                      className="text-sm text-gray-500 border-b odd:bg-white even:bg-slate-50 border-slate-700"
                     >
                       <td
                         key={row.original.objectId}
                         colSpan={row.getVisibleCells().length}
-                        className="p-4 left text-sm text-`gray-500 border-b"
+                        className="p-4 left text-sm text-gray-500 border-b"
                       >
                         <DetailsRow
                           releaseId={releaseId}
@@ -305,10 +320,15 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   );
 };
 
+export type DetailsRowProps = {
+  releaseId: string;
+  objectId: string;
+};
+
 /**
  * The details row shown when clicking on a row.
  */
-const DetailsRow = ({ releaseId, objectId }: RowProps): JSX.Element => {
+const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
   const detailsQuery = useQuery(
     ["releases-audit-log-details", objectId],
     async () => {
@@ -357,11 +377,15 @@ export const createColumns = (releaseId: string) => {
         return (
           <a
             href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
-            className="pl-4 block w-auto h-auto hover:bg-slate-200 hover:rounded-lg"
+            className="flex pl-2 items-center w-8 h-8 block hover:bg-slate-200 hover:rounded-lg"
           >
             <BiLinkExternal />
           </a>
         );
+      },
+      meta: {
+        headerStyling: "py-4 text-sm text-gray-600 whitespace-nowrap border-b",
+        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
       },
       enableSorting: false,
     }),
