@@ -54,7 +54,8 @@
     "react-papaparse": "^4.1.0",
     "react-query": "3.39.0",
     "react-router-dom": "6.3.0",
-    "react-syntax-highlighter": "^15.5.0"
+    "react-syntax-highlighter": "^15.5.0",
+    "reactjs-popup": "^2.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.18.9",
