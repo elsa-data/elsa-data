@@ -27,6 +27,7 @@ import {
 import { isNil } from "lodash";
 import {
   selectPedigreeByDatasetCaseIdQuery,
+  insertPedigreeByDatasetCaseIdQuery,
   updatePedigreeProbandAndDatasetPatientQuery,
   updatePedigreeMaternalRelationshipQuery,
   updatePedigreePaternalRelationshipQuery,
@@ -424,12 +425,32 @@ export class AGService {
     return datasetCaseIdArray[0]?.id;
   }
 
+  async getPedigreeByDatasetCaseId(
+    datasetCaseId: string
+  ): Promise<string | null> {
+    const pedigreeIdArray = await selectPedigreeByDatasetCaseIdQuery(
+      datasetCaseId
+    ).run(this.edgeDbClient);
+
+    let pedigreeUUID: string | null;
+    if (isNil(pedigreeIdArray)) {
+      pedigreeUUID = null;
+    } else if (Array.isArray(pedigreeIdArray) && !pedigreeIdArray.length) {
+      pedigreeUUID = null;
+    } else if (Array.isArray(pedigreeIdArray)) {
+      pedigreeUUID = pedigreeIdArray[0].id;
+    } else {
+      pedigreeUUID = pedigreeIdArray.id;
+    }
+
+    return pedigreeUUID;
+  }
   async insertDatasetCaseAndDatasetPatient({
     patientId,
-    caseId,
+    datasetCaseId,
     datasetId,
   }: {
-    caseId: string;
+    datasetCaseId: string;
     datasetId: string;
     patientId: string;
   }) {
@@ -442,7 +463,7 @@ export class AGService {
     });
 
     const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
-      externalIdentifiers: makeSystemlessIdentifierArray(caseId),
+      externalIdentifiers: makeSystemlessIdentifierArray(datasetCaseId),
       pedigree: insertPedigreeQuery,
       patients: e.set(insertDatasetPatientQuery),
     });
@@ -578,6 +599,57 @@ export class AGService {
     return result;
   }
 
+  async linkPedigreeRelationship(
+    pedigreeList: {
+      probandId: string;
+      patientId: string;
+      datasetCaseId: string;
+    }[]
+  ) {
+    for (const pedigree of pedigreeList) {
+      const { probandId, patientId, datasetCaseId } = pedigree;
+
+      // Find existing pedigree has exist
+      let pedigreeUUID = await this.getPedigreeByDatasetCaseId(datasetCaseId);
+
+      if (!pedigreeUUID) {
+        // Ideally it empty pedigree should be initiated above.
+        // This will catch incase old implementation did not create pedigree.
+
+        await insertPedigreeByDatasetCaseIdQuery(datasetCaseId).run(
+          this.edgeDbClient
+        );
+
+        // Will run this one more time
+        pedigreeUUID = await this.getPedigreeByDatasetCaseId(datasetCaseId);
+
+        if (!pedigreeUUID) {
+          console.warn(`Cannot create Pedigree ${datasetCaseId}. Skipping ...`);
+          continue;
+        }
+      }
+
+      if (patientId.toLowerCase().endsWith("_mat")) {
+        await updatePedigreeMaternalRelationshipQuery({
+          pedigreeUUID: pedigreeUUID,
+          probandId: probandId,
+          maternalId: patientId,
+        }).run(this.edgeDbClient);
+      } else if (patientId.toLowerCase().endsWith("_pat")) {
+        await updatePedigreePaternalRelationshipQuery({
+          pedigreeUUID: pedigreeUUID,
+          probandId: probandId,
+          paternalId: patientId,
+        }).run(this.edgeDbClient);
+      } else {
+        await updatePedigreeProbandAndDatasetPatientQuery({
+          probandId: patientId,
+          pedigreeUUID: pedigreeUUID,
+        }).run(this.edgeDbClient);
+      }
+    }
+  }
+
   /**
    * @param s3KeyPrefix s3 key to sync the files
    */
@@ -676,18 +748,19 @@ export class AGService {
             ? famReMatch[0].replaceAll(/_|\.|-/g, "")
             : null;
 
-          const caseId = familyId ? familyId : probandId;
+          const datasetCaseId = familyId ? familyId : probandId;
 
+          // Grouping and passing this array for the pedigree relationship below.
           patientIdAndDataCaseIdLinkingArray.push({
             probandId: probandId,
-            caseId: caseId,
+            datasetCaseId: datasetCaseId,
             patientId: studyId,
           });
 
           const newDatasetCasePatientRes =
             await this.insertDatasetCaseAndDatasetPatient({
               datasetId: datasetId,
-              caseId: caseId,
+              datasetCaseId: datasetCaseId,
               patientId: studyId,
             });
 
@@ -707,47 +780,8 @@ export class AGService {
       }
 
       // Handling pedigree Linking
-      // At this section of the code, all data is already in the database
-      for (const studyIdDatacaseId of patientIdAndDataCaseIdLinkingArray) {
-        const { probandId, patientId, caseId } = studyIdDatacaseId;
-
-        // Find exiting pedigree has exist
-        let pedigreeIdArray = await selectPedigreeByDatasetCaseIdQuery.run(
-          this.edgeDbClient,
-          {
-            datasetCaseId: caseId,
-          }
-        );
-        if (
-          isNil(pedigreeIdArray) ||
-          (Array.isArray(pedigreeIdArray) && !pedigreeIdArray.length)
-        ) {
-          console.warn("Pedigree Not found");
-          continue;
-        }
-
-        const pedigreeUUID = Array.isArray(pedigreeIdArray)
-          ? pedigreeIdArray[0].id
-          : pedigreeIdArray.id;
-        if (patientId.endsWith("_mat")) {
-          await updatePedigreeMaternalRelationshipQuery({
-            pedigreeUUID: pedigreeUUID,
-            probandId: probandId,
-            maternalId: patientId,
-          }).run(this.edgeDbClient);
-        } else if (patientId.endsWith("_pat")) {
-          await updatePedigreePaternalRelationshipQuery({
-            pedigreeUUID: pedigreeUUID,
-            probandId: probandId,
-            paternalId: patientId,
-          }).run(this.edgeDbClient);
-        } else {
-          await updatePedigreeProbandAndDatasetPatientQuery({
-            probandId: patientId,
-            pedigreeUUID: pedigreeUUID,
-          }).run(this.edgeDbClient);
-        }
-      }
+      // At this stage, all dataset::DatasetPatient record should already exist
+      await this.linkPedigreeRelationship(patientIdAndDataCaseIdLinkingArray);
     }
   }
 }

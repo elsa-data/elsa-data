@@ -2,18 +2,31 @@ import e, { pedigree } from "../../../dbschema/edgeql-js";
 import { selectDatasetPatientByExternalIdentifiersQuery } from "./dataset-queries";
 import { makeSystemlessIdentifierArray } from "./helper";
 
-export const selectPedigreeByDatasetCaseIdQuery = e.params(
-  { datasetCaseId: e.str },
-  (params: any) =>
-    e.select(e.pedigree.Pedigree, (p: { case_: any }) => ({
-      id: true,
-      filter: e.op(
-        p.case_.externalIdentifiers,
-        "=",
-        makeSystemlessIdentifierArray(params.datasetCaseId)
-      ),
-    }))
-);
+export const selectPedigreeByDatasetCaseIdQuery = (datasetCaseId: string) => {
+  return e.select(e.pedigree.Pedigree, (p: { case_: any }) => ({
+    id: true,
+    filter: e.op(
+      p.case_.externalIdentifiers,
+      "=",
+      makeSystemlessIdentifierArray(datasetCaseId)
+    ),
+  }));
+};
+
+export const insertPedigreeByDatasetCaseIdQuery = (datasetCaseId: string) => {
+  const insertNewPedigree = e.insert(e.pedigree.Pedigree, {});
+
+  return e.update(e.dataset.DatasetCase, (dc) => ({
+    filter: e.op(
+      dc.externalIdentifiers,
+      "=",
+      makeSystemlessIdentifierArray(datasetCaseId)
+    ),
+    set: {
+      pedigree: insertNewPedigree,
+    },
+  }));
+};
 
 export const updatePedigreeProbandAndDatasetPatientQuery = ({
   pedigreeUUID,
@@ -73,7 +86,7 @@ export const updatePedigreeMaternalRelationshipQuery = ({
         "+=": e.insert(e.pedigree.PedigreeRelationship, {
           individual:
             selectDatasetPatientByExternalIdentifiersQuery(maternalId),
-          relation: pedigree.KinType.isBiologicalFather,
+          relation: pedigree.KinType.isBiologicalMother,
           relative: selectDatasetPatientByExternalIdentifiersQuery(probandId),
         }),
       },

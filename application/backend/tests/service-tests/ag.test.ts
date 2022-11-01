@@ -209,6 +209,57 @@ describe("AWS s3 client", () => {
     expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
+  it("Test linkPedigreeRelationship", async () => {
+    const DATA_CASE_ID = "FAM0001";
+    const agService = container.resolve(AGService);
+
+    // Mock Data
+    const pedigreeIdList = [
+      {
+        probandId: "A000001",
+        patientId: "A000001",
+        datasetCaseId: DATA_CASE_ID,
+      },
+      {
+        probandId: "A000001",
+        patientId: "A000001_pat",
+        datasetCaseId: DATA_CASE_ID,
+      },
+      {
+        probandId: "A000001",
+        patientId: "A000001_mat",
+        datasetCaseId: DATA_CASE_ID,
+      },
+    ];
+
+    // Pre-insert DatasetPatient
+    for (const pedigreeId of pedigreeIdList) {
+      const { patientId } = pedigreeId;
+      const dpQuery = e.insert(e.dataset.DatasetPatient, {
+        externalIdentifiers: makeSystemlessIdentifierArray(patientId),
+      });
+      await dpQuery.run(edgedbClient);
+    }
+
+    // Pre-insert DataCaseId
+    const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
+      externalIdentifiers: makeSystemlessIdentifierArray(DATA_CASE_ID),
+    });
+    await insertDatasetCaseQuery.run(edgedbClient);
+    await agService.linkPedigreeRelationship(pedigreeIdList);
+
+    const pedigreeQuery = e.select(e.pedigree.Pedigree, () => ({}));
+    const pedigreeArray = await pedigreeQuery.run(edgedbClient);
+    expect(pedigreeArray.length).toEqual(1);
+
+    const pedigreeRQuery = e.select(
+      e.pedigree.PedigreeRelationship,
+      () => ({})
+    );
+    const pedigreeRelationshipArray = await pedigreeRQuery.run(edgedbClient);
+    expect(pedigreeRelationshipArray.length).toEqual(2);
+  });
+
   it("Test MOCK 1 insert new Cardiac from s3Key", async () => {
     jest
       .spyOn(awsHelper, "awsListObjects")
