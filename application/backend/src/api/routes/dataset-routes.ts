@@ -13,6 +13,7 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
@@ -44,7 +45,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      // const elsaSettings: ElsaSettings = (request as any).settings;
+      const elsaSettings: ElsaSettings = (request as any).settings;
 
       const datasetId = request.params.did;
 

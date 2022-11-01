@@ -102,17 +102,17 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     "/api/releases/:rid/specimens/select",
     {},
     async function (request, reply) {
-      // const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      //
-      // const releaseId = request.params.rid;
-      //
-      // const specs: string[] = request.body;
-      //
-      // const setResult = await releasesService.setSelected(
-      //   authenticatedUser,
-      //   releaseId,
-      //   specs
-      // );
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const specs: string[] = request.body;
+
+      const setResult = await releasesService.setSelected(
+        authenticatedUser,
+        releaseId,
+        specs
+      );
 
       reply.send("ok");
     }
@@ -122,17 +122,17 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     "/api/releases/:rid/specimens/unselect",
     {},
     async function (request, reply) {
-      // const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      //
-      // const releaseId = request.params.rid;
-      //
-      // const specs: string[] = request.body;
-      //
-      // const unsetResult = await releasesService.setUnselected(
-      //   authenticatedUser,
-      //   releaseId,
-      //   specs
-      // );
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const specs: string[] = request.body;
+
+      const unsetResult = await releasesService.setUnselected(
+        authenticatedUser,
+        releaseId,
+        specs
+      );
 
       reply.send("ok");
     }
