@@ -1,4 +1,4 @@
-CREATE MIGRATION m1riy5sxqwnewpzjthoxvcykrjwxm4qu7kuxvdday5m5eupq3zvpia
+CREATE MIGRATION m1hpmkgrnkpszhog7owmmjmkfdqic3xvnazufsl3dore2fsrbkktvq
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -171,14 +171,14 @@ CREATE MIGRATION m1riy5sxqwnewpzjthoxvcykrjwxm4qu7kuxvdday5m5eupq3zvpia
       CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
       CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
   };
-  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
+  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalFather, isBiologicalMother, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE TYPE pedigree::PedigreeRelationship {
-      CREATE REQUIRED LINK individual -> dataset::DatasetPatient;
-      CREATE REQUIRED LINK relative -> dataset::DatasetPatient;
+      CREATE REQUIRED MULTI LINK individual -> dataset::DatasetPatient;
+      CREATE REQUIRED MULTI LINK relative -> dataset::DatasetPatient;
       CREATE REQUIRED PROPERTY relation -> pedigree::KinType;
   };
   CREATE TYPE pedigree::Pedigree {
-      CREATE LINK proband -> dataset::DatasetPatient;
+      CREATE MULTI LINK proband -> dataset::DatasetPatient;
       CREATE MULTI LINK relationships -> pedigree::PedigreeRelationship {
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
@@ -186,7 +186,13 @@ CREATE MIGRATION m1riy5sxqwnewpzjthoxvcykrjwxm4qu7kuxvdday5m5eupq3zvpia
       CREATE OPTIONAL PROPERTY reason -> tuple<system: std::str, value: std::str>;
   };
   ALTER TYPE dataset::DatasetCase {
-      CREATE OPTIONAL LINK pedigree -> pedigree::Pedigree;
+      CREATE OPTIONAL LINK pedigree -> pedigree::Pedigree {
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+  };
+  ALTER TYPE pedigree::Pedigree {
+      CREATE LINK case_ := (.<pedigree[IS dataset::DatasetCase]);
   };
   ALTER TYPE job::Job {
       CREATE REQUIRED LINK forRelease -> release::Release {

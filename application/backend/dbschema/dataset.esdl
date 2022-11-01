@@ -60,7 +60,10 @@ module dataset {
         }
 
         # pedigree data structure
-        optional link pedigree -> pedigree::Pedigree;
+        optional link pedigree -> pedigree::Pedigree{
+            on target delete allow;
+            constraint exclusive;
+        };
 
         # sample info (which are normals etc)
     }

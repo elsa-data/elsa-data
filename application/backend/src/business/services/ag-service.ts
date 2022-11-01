@@ -21,11 +21,17 @@ import {
 } from "../db/lab-queries";
 import { fileByFileIdQuery, fileByUrlQuery } from "../db/storage-queries";
 import {
-  makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   getMd5FromChecksumsArray,
 } from "../db/helper";
 import { isNil } from "lodash";
+import {
+  selectPedigreeByDatasetCaseIdQuery,
+  updatePedigreeProbandAndDatasetPatientQuery,
+  updatePedigreeMaternalRelationshipQuery,
+  updatePedigreePaternalRelationshipQuery,
+} from "../db/pedigree-queries";
+import { selectDatasetPatientByExternalIdentifiersQuery } from "../db/dataset-queries";
 const util = require("util");
 
 // need to be configuration eventually
@@ -67,10 +73,13 @@ export class AGService {
 
     if (!datasetUri) return;
 
-    const selectDatasetIdQuery = e.select(e.dataset.Dataset, (d: { uri: any; }) => ({
-      id: true,
-      filter: e.op(d.uri, "ilike", datasetUri),
-    }));
+    const selectDatasetIdQuery = e.select(
+      e.dataset.Dataset,
+      (d: { uri: any }) => ({
+        id: true,
+        filter: e.op(d.uri, "ilike", datasetUri),
+      })
+    );
 
     // Find current Dataset
     const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
@@ -424,6 +433,7 @@ export class AGService {
     datasetId: string;
     patientId: string;
   }) {
+    const insertPedigreeQuery = e.insert(e.pedigree.Pedigree, {});
     const insertDatasetSpecimenQuery = e.insert(e.dataset.DatasetSpecimen, {});
 
     const insertDatasetPatientQuery = e.insert(e.dataset.DatasetPatient, {
@@ -433,6 +443,7 @@ export class AGService {
 
     const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
+      pedigree: insertPedigreeQuery,
       patients: e.set(insertDatasetPatientQuery),
     });
 
@@ -590,6 +601,7 @@ export class AGService {
     // Grab all s3ManifestType object from current edgedb
     const dbs3ManifestTypeObjectDict =
       await this.getDbManifestObjectListByDatasetId(datasetId);
+
     // Do comparison for data retrieve from s3 and with current edgedb data
     const missingFileFromDb = this.diffManifestAlphaAndManifestBeta(
       s3ManifestTypeObjectDict,
@@ -607,6 +619,7 @@ export class AGService {
     // Handle for data that is deleted from s3
     if (toBeDeletedFromDb.length) {
       console.log(`Data to be deleted: ${toBeDeletedFromDb}`);
+      // TODO: Implement record deletion (Dataset, Storage, Pedigree)
     }
 
     // Handle for checksum different
@@ -626,6 +639,7 @@ export class AGService {
       const groupedMissingRecByStudyId =
         this.groupManifestByStudyId(missingFileFromDb);
 
+      const patientIdAndDataCaseIdLinkingArray = [];
       const listOfStudyId = Object.keys(groupedMissingRecByStudyId);
       for (const studyId of listOfStudyId) {
         const manifestRecord = groupedMissingRecByStudyId[studyId];
@@ -648,7 +662,7 @@ export class AGService {
 
         if (!datasetPatientId) {
           // Group Families to a single DatasetCase
-          // Temporarily will be using FAMXXX id as part of the filename else probandId will be used.
+          // Temporarily will be using FAMXXX id if exist in filename else probandId will be used.
           // Assumption:
           //  - Proband studyId will be 1:1 relationship with the familyId included in filename.
           //  - All files with the same Proband studyId will have the same familyId included in filenames.
@@ -663,6 +677,12 @@ export class AGService {
             : null;
 
           const caseId = familyId ? familyId : probandId;
+
+          patientIdAndDataCaseIdLinkingArray.push({
+            probandId: probandId,
+            caseId: caseId,
+            patientId: studyId,
+          });
 
           const newDatasetCasePatientRes =
             await this.insertDatasetCaseAndDatasetPatient({
@@ -684,6 +704,49 @@ export class AGService {
           datasetPatientId,
           insertArtifactListQuery
         );
+      }
+
+      // Handling pedigree Linking
+      // At this section of the code, all data is already in the database
+      for (const studyIdDatacaseId of patientIdAndDataCaseIdLinkingArray) {
+        const { probandId, patientId, caseId } = studyIdDatacaseId;
+
+        // Find exiting pedigree has exist
+        let pedigreeIdArray = await selectPedigreeByDatasetCaseIdQuery.run(
+          this.edgeDbClient,
+          {
+            datasetCaseId: caseId,
+          }
+        );
+        if (
+          isNil(pedigreeIdArray) ||
+          (Array.isArray(pedigreeIdArray) && !pedigreeIdArray.length)
+        ) {
+          console.warn("Pedigree Not found");
+          continue;
+        }
+
+        const pedigreeUUID = Array.isArray(pedigreeIdArray)
+          ? pedigreeIdArray[0].id
+          : pedigreeIdArray.id;
+        if (patientId.endsWith("_mat")) {
+          await updatePedigreeMaternalRelationshipQuery({
+            pedigreeUUID: pedigreeUUID,
+            probandId: probandId,
+            maternalId: patientId,
+          }).run(this.edgeDbClient);
+        } else if (patientId.endsWith("_pat")) {
+          await updatePedigreePaternalRelationshipQuery({
+            pedigreeUUID: pedigreeUUID,
+            probandId: probandId,
+            paternalId: patientId,
+          }).run(this.edgeDbClient);
+        } else {
+          await updatePedigreeProbandAndDatasetPatientQuery({
+            probandId: patientId,
+            pedigreeUUID: pedigreeUUID,
+          }).run(this.edgeDbClient);
+        }
       }
     }
   }
