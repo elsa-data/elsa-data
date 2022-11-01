@@ -24,10 +24,9 @@ import classNames from "classnames";
 import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import {
-  doBatchLookup,
-  makeCacheEntry,
-  ontologyLookupCache,
+  doLookup,
 } from "../../../../helpers/ontology-helper";
+import { useEnvRelay } from "../../../../providers/env-relay-provider";
 
 type Props = {
   releaseId: string;
@@ -75,6 +74,7 @@ const resolveDuoCode = function(duoCode: string): string {
 }
 
 const resolveDiseaseCode = async function(
+  terminologyFhirUrl: string,
   mondoSystem: string | undefined,
   mondoCode: string | undefined
 ): Promise<string | undefined> {
@@ -85,15 +85,10 @@ const resolveDiseaseCode = async function(
     return undefined;
   }
 
-  const oldCodes: CodingType[] = [{system: mondoSystem, code: mondoCode}];
-  const newCodes = await doBatchLookup(
-    "https://onto.prod.umccr.org/fhir",
-    oldCodes,
-  );
+  const oldCode = {system: mondoSystem, code: mondoCode};
+  const newCode = await doLookup(terminologyFhirUrl, oldCode);
 
-  const mondoDescription = newCodes.length > 0 && newCodes[0].display
-    ? newCodes[0].display
-    : null;
+  const mondoDescription = newCode && newCode.display;
 
   return mondoDescription ? `${mondoCode} (${mondoDescription})` : mondoCode;
 }
@@ -108,6 +103,9 @@ const resolveDiseaseCode = async function(
  */
 export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
   const [duos, setDuos] = useState<ResolvedDuo[]>([]);
+  const envRelay = useEnvRelay();
+
+  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
@@ -125,6 +123,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
         const resolvedDuoCode: string = resolveDuoCode(duoCode);
         const resolvedDiseaseCode: string | undefined = await resolveDiseaseCode(
+          terminologyFhirUrl,
           diseaseSystem,
           diseaseCode,
         );

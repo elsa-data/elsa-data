@@ -27,7 +27,6 @@ export const HgncChooser: React.FC<Props> = ({
 }) => {
   return (
     <ConceptChooser
-      ontoServerUrl="https://onto.prod.umccr.org/fhir"
       systemUri="http://www.genenames.org/geneId"
       systemVersion="http://www.genenames.org/geneId|2021-12-20"
       rootConceptId="xxx"

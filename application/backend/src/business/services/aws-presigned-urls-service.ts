@@ -15,12 +15,14 @@ import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
 import { parseUrl } from "@aws-sdk/url-parser";
 import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 @injectable()
 @singleton()
 export class AwsPresignedUrlsService extends AwsBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") protected edgeDbClient: edgedb.Client,
+    @inject("Settings") private settings: ElsaSettings,
     private releaseService: ReleaseService,
     usersService: UsersService,
     auditLogService: AuditLogService
@@ -34,6 +36,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
    *
    * @param user
    * @param releaseId
+   * @param presignHeader the CSV headers to include in the output
    */
   public async getPresigned(
     user: AuthenticatedUser,
@@ -55,8 +58,20 @@ export class AwsPresignedUrlsService extends AwsBaseService {
 
     const presign = async (s3url: string) => {
       const s3Client = new S3Client({});
-      const awsCredentials = s3Client.config.credentials;
       const awsRegion = await s3Client.config.region();
+
+      // we use the S3 client credentials as a backup - but we actually will prefer to use the static credentials given to
+      // us via settings (this is what allows us to extend the share out to 7 days - otherwise we are bound by the lifespan
+      // of the running AWS credentials which will normally be hours not days)
+      const awsCredentials =
+        this.settings.awsSigningAccessKeyId &&
+        this.settings.awsSigningSecretAccessKey
+          ? {
+              sessionToken: undefined,
+              accessKeyId: this.settings.awsSigningAccessKeyId,
+              secretAccessKey: this.settings.awsSigningSecretAccessKey,
+            }
+          : s3Client.config.credentials;
 
       const _match = s3url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
       if (!_match) throw new Error("Bad format");

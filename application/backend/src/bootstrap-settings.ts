@@ -57,12 +57,14 @@ export async function getSettings(
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
     oidcIssuer: issuer,
+    awsSigningAccessKeyId: config.get("aws.signingAccessKeyId")!,
+    awsSigningSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
     sessionSecret: config.get("session.secret")!,
     sessionSalt: config.get("session.salt")!,
     remsBotKey: config.get("rems.botKey")!,
     remsBotUser: config.get("rems.botUser")!,
     remsUrl: "https://hgpp-rems.dev.umccr.org",
-    ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
+    ontoFhirUrl: config.get("ontoFhirUrl"),
     superAdmins: (config.get("superAdmins") as any[]) ?? [],
     rateLimit: {
       // for the moment we set up the rate limiting across the entire Elsa Data surface

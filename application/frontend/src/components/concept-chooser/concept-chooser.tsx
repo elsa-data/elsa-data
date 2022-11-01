@@ -4,34 +4,25 @@ import axios from "axios";
 import classNames from "classnames";
 import _ from "lodash";
 import { CodingType } from "@umccr/elsa-types";
-import {
-  doBatchLookup,
-  makeCacheEntry,
-  ontologyLookupCache,
-} from "../../helpers/ontology-helper";
+import { doLookup } from "../../helpers/ontology-helper";
+import { useEnvRelay } from "../../providers/env-relay-provider";
 
 const Chip: React.FC<{
   c: CodingType;
   removeFromSelected: (c: CodingType) => void;
 }> = ({ c, removeFromSelected }) => {
-  const initialDisplay =
-    c.display ||
-    (makeCacheEntry(c.system, c.code) in ontologyLookupCache
-      ? ontologyLookupCache[makeCacheEntry(c.system, c.code)]
-      : null);
+  const [display, setDisplay] = useState<string | undefined>(undefined);
 
-  const [display, setDisplay] = useState<string | null>(initialDisplay);
+  const envRelay = useEnvRelay();
+  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
 
   React.useEffect(() => {
     const fetchData = async () => {
-      const newCodes = await doBatchLookup("https://onto.prod.umccr.org/fhir", [
-        c,
-      ]);
-      if (newCodes.length > 0 && newCodes[0].display)
-        setDisplay(newCodes[0].display);
+      const display = (await doLookup(terminologyFhirUrl, c))?.display;
+      setDisplay(display);
     };
     fetchData().catch();
-  }, [c]);
+  });
 
   return (
     <li className="px-4 py-2 rounded-full text-gray-500 bg-gray-200 text-sm flex-none flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease">
@@ -61,8 +52,6 @@ const Chip: React.FC<{
 };
 
 type Props = {
-  ontoServerUrl: string; // "https://genomics.ontoserver.csiro.au
-
   systemUri: string; // "http://purl.obolibrary.org/obo/hp.owl"
   systemVersion?: string; // "20191108"
 
@@ -90,6 +79,9 @@ type Props = {
  * @constructor
  */
 export const ConceptChooser: React.FC<Props> = (props: Props) => {
+  const envRelay = useEnvRelay();
+  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
+
   // a code array that is set on mount to the same as props.selected - and which then
   // is background filled with 'display' terms
 
@@ -175,7 +167,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
     }
 
     axios
-      .get(`${props.ontoServerUrl}/ValueSet/$expand`, {
+      .get(`${terminologyFhirUrl}/ValueSet/$expand`, {
         params: {
           _format: "json",
           filter: query,

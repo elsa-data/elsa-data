@@ -23,6 +23,8 @@ export * from "./schemas-duo";
 export * from "./schemas-releases";
 export * from "./schemas-testing";
 
+export * from "./csv-australian-genomics";
+
 export type ReleaseApplicationCodedType = Static<
   typeof ReleaseApplicationCodedSchema
 >;

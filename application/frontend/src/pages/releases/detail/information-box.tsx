@@ -27,10 +27,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
     <Box heading={<Trans>Release Information</Trans>}>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <span className="font-bold">
-            {releaseData.applicationDacTitle}{" "}
-            {releaseData.applicationDacIdentifier}
-          </span>
+          <span className="font-bold">{releaseData.applicationDacTitle}</span>
           {releaseData.applicationDacDetails && (
             <ReactMarkdown
               components={

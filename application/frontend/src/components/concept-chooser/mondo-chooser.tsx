@@ -28,7 +28,6 @@ export const MondoChooser: React.FC<Props> = ({
 }) => {
   return (
     <ConceptChooser
-      ontoServerUrl="https://onto.prod.umccr.org/fhir"
       systemUri="http://purl.obolibrary.org/obo/mondo.owl?vs"
       //systemVersion="2022-03-01"
       rootConceptId="MONDO:0000001"

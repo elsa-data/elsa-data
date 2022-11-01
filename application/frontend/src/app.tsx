@@ -12,6 +12,7 @@ import { LoginDevPage } from "./pages/login-dev-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
 import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
 import { ErrorDisplay } from "./components/error-display";
+import { DacImportPage } from "./pages/dac-import/dac-import-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -38,6 +39,7 @@ export const App: React.FC = () => {
       <Routes>
         <Route path={`/`} element={<HomePage />} />
         <Route path={`/users`} element={<UsersDashboardPage />} />
+        <Route path={`/dac`} element={<DacImportPage />} />
         <Route path={`/releases`} element={<ReleasesPage />} />
         <Route path={`/releases/:releaseId`} element={<ReleasesDetailPage />} />
         <Route

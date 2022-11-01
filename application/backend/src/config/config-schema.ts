@@ -100,6 +100,20 @@ export async function getConfig(
           nullable: false,
         },
       },
+      aws: {
+        signingAccessKeyId: {
+          doc: "An AWS access key id for a user with read permission of files that can be shared via S3 signed URLs",
+          format: "*",
+          sensitive: false,
+          default: undefined,
+        },
+        signingSecretAccessKey: {
+          doc: "An AWS secret access key for a user with read permission of files that can be shared via S3 signed URLs",
+          format: "*",
+          sensitive: true,
+          default: undefined,
+        },
+      },
       // the rate limiting options are basically a pass through to the Fastify rate limit plugin
       // for the moment we have picked only a subset of the full configuration items
       rateLimit: {
