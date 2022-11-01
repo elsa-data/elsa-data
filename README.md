@@ -17,11 +17,11 @@ Then
 
 ```shell
 while IFS= read -r -d '' file; do
-    dirname=$(dirname "$file")
-    (
-      cd "$dirname"
-      npm install
-    ) || exit 1
+  dirname=$(dirname "$file")
+  (
+    cd "$dirname"
+    npm install
+  ) || exit 1
 done < <(find . -name package.json -type f ! -path "*/node_modules/*" -print0)
 ```
 
@@ -34,7 +34,7 @@ npm run build:dev
 3. In folder `application/backend`
 
 ```shell
-edgedb project init
+edgedb project init --non-interactive
 npm run edgetypes
 ```
 
