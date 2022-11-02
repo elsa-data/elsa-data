@@ -1,96 +1,25 @@
 import React, { CSSProperties, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUpload,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   formatFileSize,
-  lightenDarkenColor,
   useCSVReader,
 } from "react-papaparse";
 import axios from "axios";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
+import "./australian-genomics-dac-redcap-upload-div.css";
 
-const GREY = "#CCC";
-const GREY_LIGHT = "rgba(255, 255, 255, 0.4)";
-const DEFAULT_REMOVE_HOVER_COLOR = "#A01919";
-const REMOVE_HOVER_COLOR_LIGHT = lightenDarkenColor(
-  DEFAULT_REMOVE_HOVER_COLOR,
-  40
-);
-const GREY_DIM = "#686868";
-
-const styles = {
-  zone: {
-    alignItems: "center",
-    border: `2px dashed ${GREY}`,
-    borderRadius: 20,
-    display: "flex",
-    flexDirection: "column",
-    height: "100%",
-    justifyContent: "center",
-    padding: 20,
-  } as CSSProperties,
-  file: {
-    background: "linear-gradient(to bottom, #EEE, #DDD)",
-    borderRadius: 20,
-    display: "flex",
-    height: 120,
-    width: 120,
-    position: "relative",
-    zIndex: 10,
-    flexDirection: "column",
-    justifyContent: "center",
-  } as CSSProperties,
-  info: {
-    alignItems: "center",
-    display: "flex",
-    flexDirection: "column",
-    paddingLeft: 10,
-    paddingRight: 10,
-  } as CSSProperties,
-  size: {
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 3,
-    marginBottom: "0.5em",
-    justifyContent: "center",
-    display: "flex",
-  } as CSSProperties,
-  name: {
-    backgroundColor: GREY_LIGHT,
-    borderRadius: 3,
-    fontSize: 12,
-    marginBottom: "0.5em",
-  } as CSSProperties,
-  progressBar: {
-    bottom: 14,
-    position: "absolute",
-    width: "100%",
-    paddingLeft: 10,
-    paddingRight: 10,
-  } as CSSProperties,
-  zoneHover: {
-    borderColor: GREY_DIM,
-  } as CSSProperties,
-  default: {
-    borderColor: GREY,
-  } as CSSProperties,
-  remove: {
-    height: 23,
-    position: "absolute",
-    right: 6,
-    top: 6,
-    width: 23,
-  } as CSSProperties,
-};
+// TODO: Fix dimensions of zone so that it doesn't change size when a file
+//       is dragged to it
 
 export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
   // in retrospect - this is a pretty awful component - even though it does exactly what we want..
   // possibly pivot to a combination of components with more control
   // ok for the moment though
   const { CSVReader } = useCSVReader();
-
-  const [zoneHover, setZoneHover] = useState(false);
-  const [removeHoverColor, setRemoveHoverColor] = useState(
-    DEFAULT_REMOVE_HOVER_COLOR
-  );
 
   // we maintain a list of application data structures that the backend has confirmed are
   // possibilities for turning into a Release
@@ -102,7 +31,7 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 items-center">
         <CSVReader
           onUploadAccepted={async (results: any) => {
             // the full CSV extract we have been given may contain records that we have already
@@ -118,16 +47,13 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
               .then((d) => {
                 setPossibleApplications(d);
                 setShowingRedcapDialog(true);
-                setZoneHover(false);
               });
           }}
           onDragOver={(event: DragEvent) => {
             event.preventDefault();
-            setZoneHover(true);
           }}
           onDragLeave={(event: DragEvent) => {
             event.preventDefault();
-            setZoneHover(false);
           }}
           config={{
             header: true,
@@ -143,42 +69,33 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
             <>
               <div
                 {...getRootProps()}
-                style={Object.assign(
-                  {},
-                  styles.zone,
-                  zoneHover && styles.zoneHover
-                )}
+                className="max-w-2xl items-center bg-gray-200 hover:bg-gray-100 border-dashed border-slate-400 border-2 flex flex-col rounded-2xl justify-center p-12"
               >
                 {acceptedFile ? (
                   <>
-                    <div style={styles.file}>
-                      <div style={styles.info}>
-                        <span style={styles.size}>
+                    <div className="bg-gradient-to-b from-sky-200 to-sky-300 rounded-2xl flex flex-col h-32 w-32 relative z-10 justify-center">
+                      <div className="items-center flex flex-col px-2.5">
+                        <span className="rounded-sm mb-0.5 justify-center flex">
                           {formatFileSize(acceptedFile.size)}
                         </span>
-                        <span style={styles.name}>{acceptedFile.name}</span>
+                        <span className="rounded-sm text-sx mb-0.5">{acceptedFile.name}</span>
                       </div>
-                      <div style={styles.progressBar}>
+                      <div className="absolute bottom-3.5 w-full px-2.5">
                         <ProgressBar />
                       </div>
                       <div
                         {...getRemoveFileProps()}
-                        style={styles.remove}
-                        onMouseOver={(event: Event) => {
-                          event.preventDefault();
-                          setRemoveHoverColor(REMOVE_HOVER_COLOR_LIGHT);
-                        }}
-                        onMouseOut={(event: Event) => {
-                          event.preventDefault();
-                          setRemoveHoverColor(DEFAULT_REMOVE_HOVER_COLOR);
-                        }}
+                        className="h-6 w-6 absolute top-1.5 right-1.5"
                       >
-                        <Remove color={removeHoverColor} />
+                        <Remove/>
                       </div>
                     </div>
                   </>
                 ) : (
-                  "Drop CSV file here or click to upload"
+                  <>
+                    <FontAwesomeIcon icon={faUpload} className="text-6xl p-5"/>
+                    <p>Drop CSV file here or click to upload</p>
+                  </>
                 )}
               </div>
             </>
