@@ -38,6 +38,7 @@ import {
   BiChevronUp,
   BiLinkExternal,
 } from "react-icons/bi";
+import classNames from "classnames";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -373,7 +374,10 @@ export const ExpandedIndicator = ({
   return isExpanded ? <BiChevronDown /> : <BiChevronRight />;
 };
 
-const categoryTooltipDescription = (category: ActionCategoryType): string => {
+/**
+ * Convert an `ActionCategoryType` to a description.
+ */
+export const categoryToDescription = (category: ActionCategoryType): string => {
   if (category === "C") {
     return "Create";
   } else if (category === "R") {
@@ -388,6 +392,32 @@ const categoryTooltipDescription = (category: ActionCategoryType): string => {
 };
 
 /**
+ * Convert a numerical outcome code to a description.
+ */
+export const outcomeToDescription = (outcome: number): string | undefined => {
+  if (outcome === 0) {
+    return "Success";
+  } else if (outcome === 4) {
+    return "Minor Failure";
+  } else if (outcome === 8) {
+    return "Serious Failure";
+  } else if (outcome === 12) {
+    return "Major Failure";
+  } else {
+    return undefined;
+  }
+};
+
+/**
+ * Check if an outcome is successful.
+ */
+export const outcomeIsSuccess = (outcome: number): boolean => {
+  return outcome === 0;
+};
+
+export const CELL_BOX = "flex items-center justify-center w-8 h-8";
+
+/**
  * Create the column definition based on the audit entry type.
  */
 export const createColumns = (releaseId: string) => {
@@ -399,7 +429,10 @@ export const createColumns = (releaseId: string) => {
         return (
           <a
             href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
-            className="flex pl-2 items-center w-8 h-8 block hover:bg-slate-200 hover:rounded-lg"
+            className={classNames(
+              "block hover:bg-slate-200 hover:rounded-lg",
+              CELL_BOX
+            )}
           >
             <BiLinkExternal />
           </a>
@@ -447,15 +480,33 @@ export const createColumns = (releaseId: string) => {
     }),
     columnHelper.accessor("outcome", {
       header: "Outcome",
+      cell: (info) => {
+        const value = info.getValue();
+        return (
+          <ToolTip
+            trigger={value}
+            applyCSS={
+              outcomeIsSuccess(value)
+                ? classNames("rounded-lg bg-green-200", CELL_BOX)
+                : classNames("rounded-lg bg-green-200", CELL_BOX)
+            }
+            description={outcomeToDescription(value)}
+          ></ToolTip>
+        );
+      },
+      meta: {
+        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
+      },
       sortDescFirst: true,
     }),
     columnHelper.accessor("actionCategory", {
       header: "Category",
       cell: (info) => {
+        const value = info.getValue();
         return (
           <ToolTip
-            trigger={info.getValue()}
-            description={categoryTooltipDescription(info.getValue())}
+            trigger={value}
+            description={categoryToDescription(value)}
           ></ToolTip>
         );
       },
