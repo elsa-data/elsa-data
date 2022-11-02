@@ -26,7 +26,10 @@ import {
   formatFromNowTime,
   formatLocalDateTime,
 } from "../../../../helpers/datetime-helper";
-import { AuditEntryDetailsType } from "@umccr/elsa-types/schemas-audit";
+import {
+  AuditEntryDetailsType,
+  ActionCategoryType,
+} from "@umccr/elsa-types/schemas-audit";
 import { Table } from "../../../../components/tables";
 import { ToolTip } from "../../../../components/tooltip";
 import {
@@ -370,6 +373,20 @@ export const ExpandedIndicator = ({
   return isExpanded ? <BiChevronDown /> : <BiChevronRight />;
 };
 
+const categoryTooltipDescription = (category: ActionCategoryType): string => {
+  if (category === "C") {
+    return "Create";
+  } else if (category === "R") {
+    return "Read";
+  } else if (category === "U") {
+    return "Update";
+  } else if (category === "D") {
+    return "Delete";
+  } else {
+    return "Execute";
+  }
+};
+
 /**
  * Create the column definition based on the audit entry type.
  */
@@ -434,6 +451,14 @@ export const createColumns = (releaseId: string) => {
     }),
     columnHelper.accessor("actionCategory", {
       header: "Category",
+      cell: (info) => {
+        return (
+          <ToolTip
+            trigger={info.getValue()}
+            description={categoryTooltipDescription(info.getValue())}
+          ></ToolTip>
+        );
+      },
       sortDescFirst: true,
     }),
     columnHelper.accessor("actionDescription", {

@@ -1,11 +1,20 @@
 import { Static, Type } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
+export const ActionCategorySchema = Type.Union([
+  Type.Literal("C"),
+  Type.Literal("R"),
+  Type.Literal("U"),
+  Type.Literal("D"),
+  Type.Literal("E"),
+]);
+export type ActionCategoryType = Static<typeof ActionCategorySchema>;
+
 const AuditEntryBaseSchema = Type.Object({
   objectId: Type.String(),
   whoId: Type.String(),
   whoDisplayName: Type.String(),
-  actionCategory: Type.String(),
+  actionCategory: ActionCategorySchema,
   actionDescription: Type.String(),
   recordedDateTime: TypeDate,
   updatedDateTime: TypeDate,
