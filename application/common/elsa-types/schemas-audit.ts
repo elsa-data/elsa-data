@@ -23,6 +23,7 @@ export type AuditEntryType = Static<typeof AuditEntrySchema>;
 export const AuditEntryDetailsSchema = Type.Object({
   objectId: Type.String(),
   details: Type.Optional(Type.String()),
+  truncated: Type.Optional(Type.Boolean()),
 });
 export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;
 

@@ -36,9 +36,12 @@ export const auditLogDetailsForIdQuery = (
   start: number,
   end: number
 ) => {
+  const detailsStr = (auditEvent: any) =>
+    e.to_str(auditEvent.details, "pretty");
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
     id: true,
-    detailsStr: e.to_str(auditEvent.details).slice(start, end),
+    detailsStr: detailsStr(auditEvent).slice(start, end),
+    truncated: e.op(e.len(detailsStr(auditEvent)), ">=", end),
     filter: e.op(auditEvent.id, "=", e.uuid(id)),
   }));
 };

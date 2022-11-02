@@ -341,14 +341,19 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
     { keepPreviousData: true }
   );
 
-  return (
-    <div>
-      {detailsQuery.isSuccess && (
-        <code>
-          {detailsQuery.data?.details ? detailsQuery.data.details + " ..." : ""}
-        </code>
+  return detailsQuery.isSuccess && detailsQuery.data?.details ? (
+    <div className="text-sm font-mono whitespace-pre-wrap">
+      {detailsQuery.data.details}
+      {detailsQuery.data.truncated ? (
+        <div className="pl-8 pt-2 text-sm font-mono whitespace-pre-wrap italic text-gray-400">
+          ...
+        </div>
+      ) : (
+        <></>
       )}
     </div>
+  ) : (
+    <></>
   );
 };
 
