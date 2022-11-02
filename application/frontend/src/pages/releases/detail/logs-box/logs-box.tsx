@@ -40,7 +40,6 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
-import { BsChevronBarContract, BsChevronBarExpand } from "react-icons/bs";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -351,7 +350,7 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
     <div className="text-sm font-mono whitespace-pre-wrap">
       {detailsQuery.data.details}
       {detailsQuery.data.truncated ? (
-        <div className="pl-8 pt-2 text-sm font-mono whitespace-pre-wrap italic text-gray-400">
+        <div className="pl-8 pt-2 text-sm font-mono whitespace-pre-wrap italic text-gray-400 font-bold">
           ...
         </div>
       ) : (
@@ -440,11 +439,17 @@ export const createColumns = (releaseId: string) => {
             .getRowModel()
             .rows.map((row) => row.getValue("hasDetails"))
             .some(Boolean) ? (
-          <ExpandedIndicator
-            isExpanded={table.getIsAllRowsExpanded()}
-            symbolUnexpanded={<BsChevronBarExpand />}
-            symbolExpanded={<BsChevronBarContract />}
-          ></ExpandedIndicator>
+          <ToolTip
+            trigger={
+              <ExpandedIndicator
+                isExpanded={table.getIsAllRowsExpanded()}
+                symbolUnexpanded={<BiChevronRight />}
+                symbolExpanded={<BiChevronDown />}
+              ></ExpandedIndicator>
+            }
+            applyCSS={"flex-1 font-normal flex py-2"}
+            description={table.getIsAllRowsExpanded() ? "Contract" : "Expand"}
+          />
         ) : null;
       },
       cell: (info) => {
@@ -475,6 +480,8 @@ export const createColumns = (releaseId: string) => {
       },
       meta: {
         cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
+        headerStyling:
+          "text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg",
       },
       enableSorting: false,
     }),
@@ -523,10 +530,13 @@ export const createColumns = (releaseId: string) => {
         const value = info.getValue();
         return (
           <ToolTip
-            trigger={value}
+            trigger={<div className="flex items-center w-8 h-8">{value}</div>}
             description={categoryToDescription(value)}
           ></ToolTip>
         );
+      },
+      meta: {
+        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
       },
       sortDescFirst: true,
     }),
