@@ -12,7 +12,7 @@ module pedigree {
         # the backlink to the datasetCase that owns it
         link case_ := .<pedigree[is dataset::DatasetCase];
 
-        multi link proband -> dataset::DatasetPatient;
+        link proband -> dataset::DatasetPatient;
 
         multi link relationships -> PedigreeRelationship {
             on target delete allow;
@@ -23,7 +23,7 @@ module pedigree {
     }
 
     type PedigreeRelationship {
-        required multi link individual -> dataset::DatasetPatient;
+        required link individual -> dataset::DatasetPatient;
 
         # the relationship the individual has to the relative
         # (e.g., if the individual is the relative's biological mother,
@@ -31,7 +31,7 @@ module pedigree {
         # terms should come from the KIN terminology
         required property relation -> KinType;
 
-        required multi link relative -> dataset::DatasetPatient;
+        required link relative -> dataset::DatasetPatient;
 
     }
 }

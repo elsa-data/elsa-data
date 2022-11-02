@@ -381,7 +381,7 @@ export class AGService {
   }
 
   async updateDatasetPatient(
-    datasetPatientId: string,
+    datasetPatientUUID: string,
     insertArtifactListQuery: any
   ) {
     const updateDataPatientQuery = e.update(
@@ -392,17 +392,17 @@ export class AGService {
             "+=": e.set(...insertArtifactListQuery),
           },
         },
-        filter: e.op(specimen.patient.id, "=", e.uuid(datasetPatientId)),
+        filter: e.op(specimen.patient.id, "=", e.uuid(datasetPatientUUID)),
       })
     );
     await updateDataPatientQuery.run(this.edgeDbClient);
   }
 
   async getDatasetPatientByStudyId(studyId: string) {
-    const findDPQuery = e.select(e.dataset.DatasetPatient, () => ({
+    const findDPQuery = e.select(e.dataset.DatasetPatient, (dp) => ({
       id: true,
       filter: e.op(
-        e.dataset.DatasetPatient.externalIdentifiers,
+        dp.externalIdentifiers,
         "=",
         makeSystemlessIdentifierArray(studyId)
       ),
@@ -413,10 +413,10 @@ export class AGService {
   }
 
   async getDatasetCaseByCaseId(caseId: string) {
-    const findDCQuery = e.select(e.dataset.DatasetCase, () => ({
+    const findDCQuery = e.select(e.dataset.DatasetCase, (dc) => ({
       id: true,
       filter: e.op(
-        e.dataset.DatasetPatient.externalIdentifiers,
+        dc.externalIdentifiers,
         "=",
         makeSystemlessIdentifierArray(caseId)
       ),
@@ -445,27 +445,18 @@ export class AGService {
 
     return pedigreeUUID;
   }
-  async insertDatasetCaseAndDatasetPatient({
-    patientId,
+
+  async insertNewDatasetCase({
     datasetCaseId,
-    datasetId,
+    datasetUUID,
   }: {
     datasetCaseId: string;
-    datasetId: string;
-    patientId: string;
+    datasetUUID: string;
   }) {
     const insertPedigreeQuery = e.insert(e.pedigree.Pedigree, {});
-    const insertDatasetSpecimenQuery = e.insert(e.dataset.DatasetSpecimen, {});
-
-    const insertDatasetPatientQuery = e.insert(e.dataset.DatasetPatient, {
-      externalIdentifiers: makeSystemlessIdentifierArray(patientId),
-      specimens: e.set(insertDatasetSpecimenQuery),
-    });
-
     const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(datasetCaseId),
       pedigree: insertPedigreeQuery,
-      patients: e.set(insertDatasetPatientQuery),
     });
 
     const linkDatasetQuery = e.update(e.dataset.Dataset, (dataset: any) => ({
@@ -474,9 +465,37 @@ export class AGService {
           "+=": insertDatasetCaseQuery,
         },
       },
-      filter: e.op(dataset.id, "=", e.uuid(datasetId)),
+      filter: e.op(dataset.id, "=", e.uuid(datasetUUID)),
     }));
-    return await linkDatasetQuery.run(this.edgeDbClient);
+    await linkDatasetQuery.run(this.edgeDbClient);
+  }
+
+  async insertNewDatasetPatientByDatasetCaseId({
+    datasetCaseId,
+    patientId,
+  }: {
+    datasetCaseId: string;
+    patientId: string;
+  }) {
+    const insertDatasetSpecimenQuery = e.insert(e.dataset.DatasetSpecimen, {});
+    const insertDatasetPatientQuery = e.insert(e.dataset.DatasetPatient, {
+      externalIdentifiers: makeSystemlessIdentifierArray(patientId),
+      specimens: e.set(insertDatasetSpecimenQuery),
+    });
+
+    const linkDatasetCaseQuery = e.update(e.dataset.DatasetCase, (dc) => ({
+      set: {
+        patients: {
+          "+=": insertDatasetPatientQuery,
+        },
+      },
+      filter: e.op(
+        dc.externalIdentifiers,
+        "=",
+        makeSystemlessIdentifierArray(datasetCaseId)
+      ),
+    }));
+    await linkDatasetCaseQuery.run(this.edgeDbClient);
   }
 
   async getDbManifestObjectListByDatasetId(
@@ -730,9 +749,9 @@ export class AGService {
         const insertArtifactListQuery =
           this.insertNewArtifactListQuery(groupArtifactType);
 
-        let datasetPatientId = await this.getDatasetPatientByStudyId(studyId);
+        let datasetPatientUUID = await this.getDatasetPatientByStudyId(studyId);
 
-        if (!datasetPatientId) {
+        if (!datasetPatientUUID) {
           // Group Families to a single DatasetCase
           // Temporarily will be using FAMXXX id if exist in filename else probandId will be used.
           // Assumption:
@@ -741,11 +760,11 @@ export class AGService {
 
           const probandId = studyId.split("_")[0];
 
-          const famRe = /[_|-|\.](FAM\d+)[_|-|\.]/gi;
+          const famRe = /(FAM\d+)/gi;
           const s3Url = manifestRecord[0].s3Url;
           const famReMatch: string[] | null = s3Url.match(famRe);
           const familyId = famReMatch
-            ? famReMatch[0].replaceAll(/_|\.|-/g, "")
+            ? famReMatch[0]
             : null;
 
           const datasetCaseId = familyId ? familyId : probandId;
@@ -757,24 +776,37 @@ export class AGService {
             patientId: studyId,
           });
 
-          const newDatasetCasePatientRes =
-            await this.insertDatasetCaseAndDatasetPatient({
-              datasetId: datasetId,
+          let datasetCaseUUID = await this.getDatasetCaseByCaseId(
+            datasetCaseId
+          );
+          if (!datasetCaseUUID) {
+            await this.insertNewDatasetCase({
+              datasetUUID: datasetId,
               datasetCaseId: datasetCaseId,
-              patientId: studyId,
             });
 
-          if (isNil(newDatasetCasePatientRes)) {
-            console.error(
-              `Unable to insert a new DatasetCase and DatasetPatient (${studyId})`
-            );
+            datasetCaseUUID = await this.getDatasetCaseByCaseId(datasetCaseId);
+            if (isNil(datasetCaseUUID)) {
+              console.error(
+                `Unable to insert a new DatasetCase (${datasetCaseId})`
+              );
+              continue;
+            }
+          }
+
+          await this.insertNewDatasetPatientByDatasetCaseId({
+            datasetCaseId: datasetCaseId,
+            patientId: studyId,
+          });
+          datasetPatientUUID = await this.getDatasetPatientByStudyId(studyId);
+          if (isNil(datasetPatientUUID)) {
+            console.error(`Unable to insert a new DatasetPatient (${studyId})`);
             continue;
           }
-          datasetPatientId = await this.getDatasetPatientByStudyId(studyId);
         }
 
         await this.updateDatasetPatient(
-          datasetPatientId,
+          datasetPatientUUID,
           insertArtifactListQuery
         );
       }

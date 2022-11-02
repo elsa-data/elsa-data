@@ -41,7 +41,7 @@ export const updatePedigreeProbandAndDatasetPatientQuery = ({
   return e.update(e.pedigree.Pedigree, (p) => ({
     filter: e.op(p.id, "=", e.uuid(pedigreeUUID)),
     set: {
-      proband: findDPFromExternalId,
+      proband: findDPFromExternalId.assert_single(),
     },
   }));
 };
@@ -61,9 +61,14 @@ export const updatePedigreePaternalRelationshipQuery = ({
       relationships: {
         "+=": e.insert(e.pedigree.PedigreeRelationship, {
           individual:
-            selectDatasetPatientByExternalIdentifiersQuery(paternalId),
+            selectDatasetPatientByExternalIdentifiersQuery(
+              paternalId
+            ).assert_single(),
           relation: pedigree.KinType.isBiologicalFather,
-          relative: selectDatasetPatientByExternalIdentifiersQuery(probandId),
+          relative:
+            selectDatasetPatientByExternalIdentifiersQuery(
+              probandId
+            ).assert_single(),
         }),
       },
     },
@@ -85,9 +90,14 @@ export const updatePedigreeMaternalRelationshipQuery = ({
       relationships: {
         "+=": e.insert(e.pedigree.PedigreeRelationship, {
           individual:
-            selectDatasetPatientByExternalIdentifiersQuery(maternalId),
+            selectDatasetPatientByExternalIdentifiersQuery(
+              maternalId
+            ).assert_single(),
           relation: pedigree.KinType.isBiologicalMother,
-          relative: selectDatasetPatientByExternalIdentifiersQuery(probandId),
+          relative:
+            selectDatasetPatientByExternalIdentifiersQuery(
+              probandId
+            ).assert_single(),
         }),
       },
     },
