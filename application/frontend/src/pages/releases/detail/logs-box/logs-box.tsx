@@ -227,12 +227,12 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     manualSorting: true,
   });
 
-  const groups = table.getHeaderGroups();
+  // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
   return (
     <BoxNoPad heading="Audit Logs">
       <div className="flex flex-col">
         <Table
-          tableHead={groups.map((headerGroup) => (
+          tableHead={table.getHeaderGroups().map((headerGroup) => (
             <tr
               key={headerGroup.id}
               className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"

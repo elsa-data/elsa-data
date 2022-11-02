@@ -62,6 +62,7 @@ type AuditEntryBoxProps = {
  */
 export const AuditEntryBox = ({ data }: AuditEntryBoxProps): JSX.Element => {
   return (
+    // TODO convert this to a table format for more readability, add copy or download button.
     <SyntaxHighlighter
       language="json"
       style={arduinoLight}
