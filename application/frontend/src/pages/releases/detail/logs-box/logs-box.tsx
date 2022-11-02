@@ -1,6 +1,7 @@
 import React, {
   Dispatch,
   Fragment,
+  ReactNode,
   SetStateAction,
   useEffect,
   useState,
@@ -27,8 +28,8 @@ import {
   formatLocalDateTime,
 } from "../../../../helpers/datetime-helper";
 import {
-  AuditEntryDetailsType,
   ActionCategoryType,
+  AuditEntryDetailsType,
 } from "@umccr/elsa-types/schemas-audit";
 import { Table } from "../../../../components/tables";
 import { ToolTip } from "../../../../components/tooltip";
@@ -39,6 +40,7 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
+import { BsChevronBarContract, BsChevronBarExpand } from "react-icons/bs";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -240,7 +242,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                 <th
                   key={header.id}
                   onClick={
-                    header.id === "hasDetails"
+                    header.id === "objectId"
                       ? table.getToggleAllRowsExpandedHandler()
                       : () => {}
                   }
@@ -268,7 +270,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     row.getValue("hasDetails") &&
                     row.toggleExpanded()
                   }
-                  className="text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+                  className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
@@ -363,6 +365,8 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
 
 export type ExpanderIndicatorProps = {
   isExpanded: boolean;
+  symbolUnexpanded?: ReactNode;
+  symbolExpanded?: ReactNode;
 };
 
 /**
@@ -370,8 +374,14 @@ export type ExpanderIndicatorProps = {
  */
 export const ExpandedIndicator = ({
   isExpanded,
+  symbolUnexpanded,
+  symbolExpanded,
 }: ExpanderIndicatorProps): JSX.Element => {
-  return isExpanded ? <BiChevronDown /> : <BiChevronRight />;
+  return (
+    <div className={CELL_BOX}>
+      {isExpanded ? symbolExpanded : symbolUnexpanded}
+    </div>
+  );
 };
 
 /**
@@ -424,27 +434,6 @@ export const createColumns = (releaseId: string) => {
   const columnHelper = createColumnHelper<AuditEntryType>();
   return [
     columnHelper.accessor("objectId", {
-      header: () => null,
-      cell: (info) => {
-        return (
-          <a
-            href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
-            className={classNames(
-              "block hover:bg-slate-200 hover:rounded-lg",
-              CELL_BOX
-            )}
-          >
-            <BiLinkExternal />
-          </a>
-        );
-      },
-      meta: {
-        headerStyling: "py-4 text-sm text-gray-600 whitespace-nowrap border-b",
-        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
-      },
-      enableSorting: false,
-    }),
-    columnHelper.accessor("hasDetails", {
       header: ({ table }) => {
         return table.getCanSomeRowsExpand() &&
           table
@@ -453,16 +442,45 @@ export const createColumns = (releaseId: string) => {
             .some(Boolean) ? (
           <ExpandedIndicator
             isExpanded={table.getIsAllRowsExpanded()}
+            symbolUnexpanded={<BsChevronBarExpand />}
+            symbolExpanded={<BsChevronBarContract />}
           ></ExpandedIndicator>
         ) : null;
       },
       cell: (info) => {
-        return info.row.getCanExpand() && info.getValue() ? (
-          <ExpandedIndicator
-            isExpanded={info.row.getIsExpanded()}
-          ></ExpandedIndicator>
-        ) : null;
+        const isExpandedWithDetails =
+          info.row.getCanExpand() && info.row.getValue("hasDetails");
+        return (
+          <div className="flex justify-start">
+            <ExpandedIndicator
+              isExpanded={info.row.getIsExpanded()}
+              symbolUnexpanded={
+                isExpandedWithDetails ? <BiChevronRight /> : undefined
+              }
+              symbolExpanded={
+                isExpandedWithDetails ? <BiChevronDown /> : undefined
+              }
+            />
+            <a
+              href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
+              className={classNames(
+                "block hover:bg-slate-200 hover:rounded-lg invisible group-hover:visible",
+                CELL_BOX
+              )}
+            >
+              <BiLinkExternal />
+            </a>
+          </div>
+        );
       },
+      meta: {
+        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
+      },
+      enableSorting: false,
+    }),
+    columnHelper.accessor("hasDetails", {
+      header: () => null,
+      cell: () => null,
       enableSorting: false,
     }),
     columnHelper.accessor("occurredDateTime", {
@@ -488,7 +506,7 @@ export const createColumns = (releaseId: string) => {
             applyCSS={
               outcomeIsSuccess(value)
                 ? classNames("rounded-lg bg-green-200", CELL_BOX)
-                : classNames("rounded-lg bg-green-200", CELL_BOX)
+                : classNames("rounded-lg bg-red-200", CELL_BOX)
             }
             description={outcomeToDescription(value)}
           ></ToolTip>

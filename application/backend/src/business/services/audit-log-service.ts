@@ -174,7 +174,6 @@ export class AuditLogService {
   ): Promise<AuditEntryDetailsType | null> {
     const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
 
-    console.log(entry);
     if (!entry) {
       return null;
     } else {
