@@ -448,7 +448,9 @@ export const createColumns = (releaseId: string) => {
               ></ExpandedIndicator>
             }
             applyCSS={"flex-1 font-normal flex py-2"}
-            description={table.getIsAllRowsExpanded() ? "Contract" : "Expand"}
+            description={
+              table.getIsAllRowsExpanded() ? "Contract All" : "Expand All"
+            }
           />
         ) : null;
       },
