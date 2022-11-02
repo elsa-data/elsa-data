@@ -466,15 +466,20 @@ export const createColumns = (releaseId: string) => {
                 isExpandedWithDetails ? <BiChevronDown /> : undefined
               }
             />
-            <a
-              href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
-              className={classNames(
-                "block hover:bg-slate-200 hover:rounded-lg invisible group-hover:visible",
-                CELL_BOX
-              )}
-            >
-              <BiLinkExternal />
-            </a>
+            <ToolTip
+              trigger={
+                <a
+                  href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
+                  className={classNames(
+                    "block hover:bg-slate-200 hover:rounded-lg invisible group-hover:visible",
+                    CELL_BOX
+                  )}
+                >
+                  <BiLinkExternal />
+                </a>
+              }
+              description={"View Entry"}
+            />
           </div>
         );
       },
