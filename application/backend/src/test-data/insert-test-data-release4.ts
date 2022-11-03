@@ -6,15 +6,16 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
-import { TENF_URI } from "./insert-test-data-10f-helpers";
+import { TENG_URI } from "./insert-test-data-10g";
 
 const edgeDbClient = edgedb.createClient();
 
 export async function insertRelease4() {
   return await e
     .insert(e.release.Release, {
-      applicationDacTitle: "A Release With Nothing Selected By Default",
-      applicationDacDetails: "Some other details from the DAC",
+      applicationDacTitle: "A Working Release of 10G Data",
+      applicationDacDetails:
+        "A release that has all working/matching files in S3 - so can do actual sharing",
       applicationDacIdentifier: makeSystemlessIdentifier("2"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.HMB,
@@ -22,13 +23,37 @@ export async function insertRelease4() {
         diseasesOfStudy: makeEmptyCodeArray(),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
+        beaconQuery: {
+          filters: [
+            //{
+            //    "scope": "biosamples",
+            //    "id": "HP:0002664",
+            //    "includeDescendantTerms": true,
+            //    "similarity": "exact"
+            //},
+            {
+              scope: "individuals",
+              id: "sex",
+              operator: "=",
+              value: "male",
+            },
+          ],
+          requestParameters: {
+            g_variant: {
+              referenceName: "chr1",
+              start: 185194,
+              referenceBases: "G",
+              alternateBases: "C",
+            },
+          },
+        },
       }),
-      datasetUris: e.array([TENF_URI]),
+      datasetUris: e.array([TENG_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
       releaseIdentifier: "TR",
-      releasePassword: "go123", // pragma: allowlist secret
+      releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       auditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {

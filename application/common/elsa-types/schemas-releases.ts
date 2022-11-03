@@ -44,6 +44,8 @@ export const ReleaseApplicationCodedSchema = Type.Object({
   diseases: Type.Array(CodingSchema),
 
   countriesInvolved: Type.Array(CodingSchema),
+
+  beaconQuery: Type.Any(),
 });
 
 export const ReleaseRunningJobSchema = Type.Object({

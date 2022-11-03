@@ -59,6 +59,7 @@ Ethics form XYZ.
         ),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
+        beaconQuery: {},
       }),
       releaseIdentifier: "MNRETQER",
       releasePassword: "abcd", // pragma: allowlist secret

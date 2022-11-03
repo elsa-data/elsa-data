@@ -111,5 +111,15 @@ module release {
         required property studyAgreesToPublish -> bool;
 
         required property studyIsNotCommercial -> bool;
+
+        # a JSON formatted query (in Beacon v2 format) that will be applied when
+        # selecting cases
+        # so I think our query needs to match with query in here https://github.com/ga4gh-beacon/beacon-v2/blob/main/framework/json/requests/examples-fullDocuments/beaconRequestBody-MAX-example.json
+        # but then the thing of interest is genomicVariants with the request parameters
+        # anyhow we probably should tighten this up with some typescript/json schema once we work out exactly what we are doing here
+        # https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/json/beacon-v2-default-model/genomicVariations/requestParameters.json
+        #
+        required property beaconQuery -> json;
     }
+
 }

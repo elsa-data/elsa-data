@@ -22,10 +22,26 @@ export async function insertRelease3() {
         diseasesOfStudy: makeEmptyCodeArray(),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
+        beaconQuery: {
+          filters: [
+            {
+              id: "EFO:0001212",
+              scope: "biosamples",
+            },
+          ],
+          requestParameters: {
+            g_variant: {
+              referenceName: "chr1",
+              start: 185194,
+              referenceBases: "G",
+              alternateBases: "C",
+            },
+          },
+        },
       }),
       releasePassword: "apassword", // pragma: allowlist secret
       datasetUris: e.array([
-        "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
+        "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
       ]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],

@@ -25,6 +25,7 @@ export const RhTextArea = React.forwardRef<HTMLTextAreaElement, Props>(
             id={id}
             className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
             {...props}
+            ref={ref}
           />
         </div>
         {props.extra && (

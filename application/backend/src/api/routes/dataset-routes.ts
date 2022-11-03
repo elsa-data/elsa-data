@@ -35,7 +35,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
         offset
       );
 
-      sendPagedResult(reply, datasetsPagedResult, page, "/api/datasets?");
+      sendPagedResult(reply, datasetsPagedResult, "/api/datasets?");
     }
   );
 
@@ -84,7 +84,9 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
       const keyPrefix = body.keyPrefix;
 
       agService.syncDbFromS3KeyPrefix(keyPrefix);
-      reply.send("OK! \nTo prevent API timeout, returning the OK value while the script is still running. ");
+      reply.send(
+        "OK! \nTo prevent API timeout, returning the OK value while the script is still running. "
+      );
     }
   );
 };

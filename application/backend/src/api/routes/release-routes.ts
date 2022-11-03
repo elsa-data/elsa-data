@@ -76,7 +76,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
         q
       );
 
-      sendPagedResult(reply, cases, page, `/api/releases/${releaseId}/cases?`);
+      sendPagedResult(reply, cases, `/api/releases/${releaseId}/cases?`);
     }
   );
 
@@ -172,16 +172,19 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     }
   );
 
+  // TODO: this probably should be a Graphql mutate endpoint rather than this hack..
+
   fastify.post<{
     Params: {
       rid: string;
-      field: "diseases" | "countries";
-      op: "add" | "remove";
+      field: "diseases" | "countries" | "type" | "beacon";
+      op: "add" | "remove" | "set";
     };
     Body: {
       type?: "HMB" | "DS" | "CC" | "GRU" | "POA";
       system?: string;
       code?: string;
+      query?: any;
     };
   }>(
     "/api/releases/:rid/application-coded/:field/:op",
@@ -250,6 +253,15 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
               authenticatedUser,
               releaseId,
               body.type!
+            )
+          );
+          return;
+        case "beacon-set":
+          reply.send(
+            await releasesService.setBeaconQuery(
+              authenticatedUser,
+              releaseId,
+              body.query!
             )
           );
           return;
