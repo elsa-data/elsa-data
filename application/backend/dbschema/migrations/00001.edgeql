@@ -172,7 +172,7 @@ CREATE MIGRATION m1frshlglnihyky2mbvx55bwanmesfiw4vodjuenlhi4q3wvtz74pa
       CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
       CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
   };
-  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
+  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isBiologicalFatherOf, isBiologicalMotherOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE TYPE pedigree::PedigreeRelationship {
       CREATE REQUIRED LINK individual -> dataset::DatasetPatient;
       CREATE REQUIRED LINK relative -> dataset::DatasetPatient;
@@ -187,7 +187,13 @@ CREATE MIGRATION m1frshlglnihyky2mbvx55bwanmesfiw4vodjuenlhi4q3wvtz74pa
       CREATE OPTIONAL PROPERTY reason -> tuple<system: std::str, value: std::str>;
   };
   ALTER TYPE dataset::DatasetCase {
-      CREATE OPTIONAL LINK pedigree := (pedigree::Pedigree);
+      CREATE OPTIONAL LINK pedigree -> pedigree::Pedigree {
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+  };
+  ALTER TYPE pedigree::Pedigree {
+      CREATE LINK case_ := (.<pedigree[IS dataset::DatasetCase]);
   };
   ALTER TYPE job::Job {
       CREATE REQUIRED LINK forRelease -> release::Release {

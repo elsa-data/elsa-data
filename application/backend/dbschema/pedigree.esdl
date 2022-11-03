@@ -1,13 +1,16 @@
 module pedigree {
 
     # not complete: just copying/pasting some examples..
-    scalar type KinType extending enum<'isRelativeOf', 'isBiologicalRelativeOf',
-     'isBiologicalParentOf', 'isSpermDonorOf',
+    scalar type KinType extending enum<'isRelativeOf', 'isBiologicalRelativeOf','isBiologicalParentOf',
+      'isBiologicalFatherOf','isBiologicalMotherOf','isSpermDonorOf',
       'isBiologicalSiblingOf', 'isFullSiblingOf', 'isMultipleBirthSiblingOf',
        'isParentalSiblingOf', 'isHalfSiblingOf', 'isMaternalCousinOf',
         'isPaternalCousinOf'>;
 
     type Pedigree {
+
+        # the backlink to the datasetCase that owns it
+        link case_ := .<pedigree[is dataset::DatasetCase];
 
         link proband -> dataset::DatasetPatient;
 

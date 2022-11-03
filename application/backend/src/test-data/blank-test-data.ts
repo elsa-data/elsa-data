@@ -15,6 +15,11 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   if (printDetailsToConsole)
     console.log(`Removing any existing data in test database`);
 
+  const pedigreeDeleted = await e.delete(e.pedigree.Pedigree).run(edgeDbClient);
+  const pedigreeRelationshipDeleted = await e
+    .delete(e.pedigree.PedigreeRelationship)
+    .run(edgeDbClient);
+
   const jobsDeleted = await e.delete(e.job.Job).run(edgeDbClient);
 
   const usersDeleted = await e.delete(e.permission.User).run(edgeDbClient);
@@ -69,5 +74,10 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`  ${vcfsDeleted.length} lab vcf(s)`);
 
     console.log(`  ${filesDeleted.length} storage file(s)`);
+
+    console.log(`  ${pedigreeDeleted.length} pedigree(s)`);
+    console.log(
+      `  ${pedigreeRelationshipDeleted.length} pedigree relationship(s)`
+    );
   }
 }
