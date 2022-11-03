@@ -64,7 +64,7 @@ export const updatePedigreePaternalRelationshipQuery = ({
             selectDatasetPatientByExternalIdentifiersQuery(
               paternalId
             ).assert_single(),
-          relation: pedigree.KinType.isBiologicalFather,
+          relation: pedigree.KinType.isBiologicalFatherOf,
           relative:
             selectDatasetPatientByExternalIdentifiersQuery(
               probandId
@@ -93,7 +93,7 @@ export const updatePedigreeMaternalRelationshipQuery = ({
             selectDatasetPatientByExternalIdentifiersQuery(
               maternalId
             ).assert_single(),
-          relation: pedigree.KinType.isBiologicalMother,
+          relation: pedigree.KinType.isBiologicalMotherOf,
           relative:
             selectDatasetPatientByExternalIdentifiersQuery(
               probandId

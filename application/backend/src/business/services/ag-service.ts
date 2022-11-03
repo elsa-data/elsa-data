@@ -1,6 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import e, { storage } from "../../../dbschema/edgeql-js";
+import e, { storage, dataset } from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
   S3ObjectMetadata,
@@ -477,8 +477,15 @@ export class AGService {
     datasetCaseId: string;
     patientId: string;
   }) {
+    let sexAtBirth = patientId.endsWith("_pat")
+      ? dataset.SexAtBirthType.male
+      : patientId.endsWith("_mat")
+      ? dataset.SexAtBirthType.female
+      : null;
+
     const insertDatasetSpecimenQuery = e.insert(e.dataset.DatasetSpecimen, {});
     const insertDatasetPatientQuery = e.insert(e.dataset.DatasetPatient, {
+      sexAtBirth: sexAtBirth,
       externalIdentifiers: makeSystemlessIdentifierArray(patientId),
       specimens: e.set(insertDatasetSpecimenQuery),
     });
@@ -763,9 +770,7 @@ export class AGService {
           const famRe = /(FAM\d+)/gi;
           const s3Url = manifestRecord[0].s3Url;
           const famReMatch: string[] | null = s3Url.match(famRe);
-          const familyId = famReMatch
-            ? famReMatch[0]
-            : null;
+          const familyId = famReMatch ? famReMatch[0] : null;
 
           const datasetCaseId = familyId ? familyId : probandId;
 

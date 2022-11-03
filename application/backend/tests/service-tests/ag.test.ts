@@ -57,13 +57,6 @@ describe("AWS s3 client", () => {
   beforeEach(async () => {
     s3ClientMock.reset();
     await blankTestData();
-    await e
-      .insert(e.dataset.Dataset, {
-        uri: MOCK_DATASET_URI,
-        description: "a mock cardiac test",
-        cases: e.insert(e.dataset.DatasetCase, {}),
-      })
-      .run(edgedbClient);
   });
 
   afterEach(async () => {
@@ -413,5 +406,3 @@ describe("AWS s3 client", () => {
     expect(consoleText).toHaveBeenCalledWith(`Data to be deleted: ${expected}`);
   });
 });
-
-// console.log(util.inspect(newFileRec, false, 99));

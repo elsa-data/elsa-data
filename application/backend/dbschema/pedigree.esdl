@@ -1,8 +1,8 @@
 module pedigree {
 
     # not complete: just copying/pasting some examples..
-    scalar type KinType extending enum<'isRelativeOf', 'isBiologicalRelativeOf',
-      'isBiologicalFather','isBiologicalMother','isSpermDonorOf',
+    scalar type KinType extending enum<'isRelativeOf', 'isBiologicalRelativeOf','isBiologicalParentOf',
+      'isBiologicalFatherOf','isBiologicalMotherOf','isSpermDonorOf',
       'isBiologicalSiblingOf', 'isFullSiblingOf', 'isMultipleBirthSiblingOf',
        'isParentalSiblingOf', 'isHalfSiblingOf', 'isMaternalCousinOf',
         'isPaternalCousinOf'>;
