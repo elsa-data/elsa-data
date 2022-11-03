@@ -32,7 +32,10 @@ import {
   updatePedigreeMaternalRelationshipQuery,
   updatePedigreePaternalRelationshipQuery,
 } from "../db/pedigree-queries";
-import { selectDatasetPatientByExternalIdentifiersQuery } from "../db/dataset-queries";
+import {
+  selectDatasetPatientByExternalIdentifiersQuery,
+  selectDatasetCaseByExternalIdentifiersQuery,
+} from "../db/dataset-queries";
 const util = require("util");
 
 // need to be configuration eventually
@@ -399,28 +402,14 @@ export class AGService {
   }
 
   async getDatasetPatientByStudyId(studyId: string) {
-    const findDPQuery = e.select(e.dataset.DatasetPatient, (dp) => ({
-      id: true,
-      filter: e.op(
-        dp.externalIdentifiers,
-        "=",
-        makeSystemlessIdentifierArray(studyId)
-      ),
-    }));
+    const findDPQuery = selectDatasetPatientByExternalIdentifiersQuery(studyId);
 
     const datasetPatientIdArray = await findDPQuery.run(this.edgeDbClient);
     return datasetPatientIdArray[0]?.id;
   }
 
   async getDatasetCaseByCaseId(caseId: string) {
-    const findDCQuery = e.select(e.dataset.DatasetCase, (dc) => ({
-      id: true,
-      filter: e.op(
-        dc.externalIdentifiers,
-        "=",
-        makeSystemlessIdentifierArray(caseId)
-      ),
-    }));
+    const findDCQuery = selectDatasetCaseByExternalIdentifiersQuery(caseId);
     const datasetCaseIdArray = await findDCQuery.run(this.edgeDbClient);
     return datasetCaseIdArray[0]?.id;
   }

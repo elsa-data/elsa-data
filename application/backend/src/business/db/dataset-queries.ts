@@ -101,3 +101,12 @@ export const selectDatasetPatientByExternalIdentifiersQuery = (exId: string) =>
       makeSystemlessIdentifierArray(exId)
     ),
   }));
+
+export const selectDatasetCaseByExternalIdentifiersQuery = (exId: string) =>
+  e.select(e.dataset.DatasetCase, (dc) => ({
+    filter: e.op(
+      dc.externalIdentifiers,
+      "=",
+      makeSystemlessIdentifierArray(exId)
+    ),
+  }));
