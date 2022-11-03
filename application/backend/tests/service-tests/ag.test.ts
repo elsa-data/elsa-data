@@ -357,6 +357,14 @@ describe("AWS s3 client", () => {
       MOCK_2_BAM_FILE_RECORD,
       MOCK_2_BAI_FILE_RECORD
     );
+    await e
+      .insert(e.dataset.Dataset, {
+        uri: MOCK_DATASET_URI,
+        description: "a mock cardiac test",
+        cases: e.insert(e.dataset.DatasetCase, {}),
+      })
+      .run(edgedbClient);
+
     const preExistingData = e.insert(e.dataset.DatasetPatient, {
       externalIdentifiers: makeSystemlessIdentifierArray(MOCK_2_STUDY_ID),
       specimens: e.set(
