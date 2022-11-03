@@ -1,4 +1,5 @@
 import e from "../../../dbschema/edgeql-js";
+import { makeSystemlessIdentifierArray } from "./helper";
 
 /**
  * An EdgeDb query for counting datasets.
@@ -91,3 +92,21 @@ export const datasetAllSummaryQuery = e.params(
       offset: params.offset,
     }))
 );
+
+export const selectDatasetPatientByExternalIdentifiersQuery = (exId: string) =>
+  e.select(e.dataset.DatasetPatient, (dp) => ({
+    filter: e.op(
+      dp.externalIdentifiers,
+      "=",
+      makeSystemlessIdentifierArray(exId)
+    ),
+  }));
+
+export const selectDatasetCaseByExternalIdentifiersQuery = (exId: string) =>
+  e.select(e.dataset.DatasetCase, (dc) => ({
+    filter: e.op(
+      dc.externalIdentifiers,
+      "=",
+      makeSystemlessIdentifierArray(exId)
+    ),
+  }));
