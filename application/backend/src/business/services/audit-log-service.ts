@@ -5,9 +5,15 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
-import { AuditEntryType } from "@umccr/elsa-types/schemas-audit";
+import {
+  AuditEntryDetailsType,
+  AuditEntryFullType,
+  AuditEntryType,
+} from "@umccr/elsa-types/schemas-audit";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import {
+  auditLogDetailsForIdQuery,
+  auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForReleaseQuery,
 } from "../db/audit-log-queries";
@@ -24,7 +30,7 @@ export class AuditLogService {
     @inject("Settings") private settings: ElsaSettings,
     // NOTE: we don't define an edgeDbClient here as the audit log functionality
     // is designed to work either standalone or in a transaction context
-    private usersService: UsersService
+    private _usersService: UsersService
   ) {}
 
   /**
@@ -63,7 +69,7 @@ export class AuditLogService {
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
-    const updatedRelease = await e
+    await e
       .update(e.release.Release, (r) => ({
         filter: e.op(e.uuid(releaseId), "=", r.id),
         set: {
@@ -99,8 +105,7 @@ export class AuditLogService {
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
-
-    const ae = await e
+    await e
       .update(e.audit.ReleaseAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
@@ -121,33 +126,88 @@ export class AuditLogService {
     user: AuthenticatedUser,
     releaseId: string,
     limit: number,
-    offset: number
-  ): Promise<PagedResult<AuditEntryType>> {
+    offset: number,
+    orderByProperty: string = "occurredDateTime",
+    orderAscending: boolean = false
+  ): Promise<PagedResult<AuditEntryType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
-      { releaseId: releaseId }
+      { releaseId }
     );
 
-    const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery.run(
-      executor,
-      { releaseId: releaseId, limit: limit, offset: offset }
-    );
+    const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
+      releaseId,
+      limit,
+      offset,
+      orderByProperty,
+      orderAscending
+    ).run(executor);
 
     console.log(
       `${AuditLogService.name}.getEntries(releaseId=${releaseId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      pageOfEntries.map((a) => ({
-        whoDisplay: a.whoDisplayName,
-        when: a.occurredDateTime,
-        actionCategory: a.actionCategory,
-        actionDescription: a.actionDescription,
-        duration: a.occurredDuration
-          ? a.occurredDuration.toString()
-          : undefined,
+      pageOfEntries.map((entry) => ({
+        objectId: entry.id,
+        whoId: entry.whoId,
+        whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory,
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime,
+        occurredDuration: entry.occurredDuration?.toString(),
+        outcome: entry.outcome,
+        hasDetails: entry.hasDetails,
       })),
       totalEntries
     );
+  }
+
+  public async getEntryDetails(
+    executor: Executor,
+    user: AuthenticatedUser,
+    id: string,
+    start: number,
+    end: number
+  ): Promise<AuditEntryDetailsType | null> {
+    const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
+
+    if (!entry) {
+      return null;
+    } else {
+      return {
+        objectId: entry.id,
+        details: entry.detailsStr ?? undefined,
+        truncated: entry.truncated,
+      };
+    }
+  }
+
+  public async getFullEntry(
+    executor: Executor,
+    user: AuthenticatedUser,
+    id: string
+  ): Promise<AuditEntryFullType | null> {
+    const entry = await auditLogFullForIdQuery(id).run(executor);
+
+    if (!entry) {
+      return null;
+    } else {
+      return {
+        objectId: entry.id,
+        whoId: entry.whoId,
+        whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory,
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime,
+        occurredDuration: entry.occurredDuration?.toString(),
+        outcome: entry.outcome,
+        details: entry.details,
+      };
+    }
   }
 }

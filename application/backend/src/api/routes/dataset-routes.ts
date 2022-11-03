@@ -15,7 +15,7 @@ import {
 } from "../api-routes";
 import { ElsaSettings } from "../../config/elsa-settings";
 
-export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
+export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
   const agService = container.resolve(AGService);
 
@@ -26,7 +26,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     "/api/datasets",
     {},
     async function (request, reply) {
-      const { authenticatedUser, pageSize, page, offset } =
+      const { authenticatedUser, pageSize, offset } =
         authenticatedRouteOnEntryHelper(request);
 
       const datasetsPagedResult = await datasetsService.getAll(
@@ -35,7 +35,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
         offset
       );
 
-      sendPagedResult(reply, datasetsPagedResult, page, "/api/datasets?");
+      sendPagedResult(reply, datasetsPagedResult);
     }
   );
 
@@ -84,7 +84,9 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
       const keyPrefix = body.keyPrefix;
 
       agService.syncDbFromS3KeyPrefix(keyPrefix);
-      reply.send("OK! \nTo prevent API timeout, returning the OK value while the script is still running. ");
+      reply.send(
+        "OK! \nTo prevent API timeout, returning the OK value while the script is still running. "
+      );
     }
   );
 };

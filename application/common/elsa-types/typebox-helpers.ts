@@ -1,6 +1,5 @@
 import { TLiteral, TSchema, TString, TUnion, Type } from "@sinclair/typebox";
 
-// @ts-ignore
 export const DateKind = Symbol("DateKind");
 export interface TDate extends TSchema {
   type: "string";

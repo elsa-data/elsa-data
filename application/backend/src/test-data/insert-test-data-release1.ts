@@ -1,4 +1,5 @@
 import * as edgedb from "edgedb";
+import { Duration } from "edgedb";
 import e, { release } from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
@@ -6,10 +7,8 @@ import {
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { TENG_URI } from "./insert-test-data-10g";
 import { TENC_URI } from "./insert-test-data-10c";
-import { Duration } from "edgedb";
 import { random } from "lodash";
 import {
   BART_SPECIMEN,
@@ -22,6 +21,8 @@ import {
   ISO_COUNTRY_SYSTEM_URI,
   MONDO_SYSTEM_URI,
 } from "@umccr/elsa-constants";
+import * as MOCK_JSON from "./mock-json.json";
+import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 
 const edgeDbClient = edgedb.createClient();
 
@@ -93,6 +94,7 @@ function makeSytheticAuditLog() {
       "-",
       e.duration(new Duration(0, 0, 0, 0, 1, 2, 3))
     ),
+    details: MOCK_JSON,
   });
 
   const makeRead = () => ({
@@ -135,28 +137,34 @@ function makeSytheticAuditLog() {
     occurredDuration: e.duration(
       new Duration(0, 0, 0, 0, 0, random(59), random(59))
     ),
+    details: MOCK_JSON,
   });
 
   return e.set(
     e.insert(e.audit.ReleaseAuditEvent, makeCreate()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Selected Case")),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
+    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
     e.insert(
       e.audit.ReleaseAuditEvent,
       makeLongOperation("Ran Dynamic Consent")
     ),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead())
+    e.insert(
+      e.audit.ReleaseAuditEvent,
+      makeLongOperation("Ran Dynamic Consent")
+    )
   );
 }
