@@ -13,7 +13,8 @@
   "compilerOptions": {
     "noEmit": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true
   },
   "include": ["./src/**/*", "./jobs/**/*", "./dbschema/edgeql-js/**/*"],
   "exclude": ["node_modules"]

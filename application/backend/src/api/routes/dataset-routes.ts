@@ -15,7 +15,7 @@ import {
 } from "../api-routes";
 import { ElsaSettings } from "../../config/elsa-settings";
 
-export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
+export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
   const agService = container.resolve(AGService);
 
@@ -26,7 +26,7 @@ export const datasetRoutes = async (fastify: FastifyInstance, opts: any) => {
     "/api/datasets",
     {},
     async function (request, reply) {
-      const { authenticatedUser, pageSize, page, offset } =
+      const { authenticatedUser, pageSize, offset } =
         authenticatedRouteOnEntryHelper(request);
 
       const datasetsPagedResult = await datasetsService.getAll(

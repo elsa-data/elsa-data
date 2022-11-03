@@ -12,16 +12,14 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
-import { Readable } from "stream";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
-import { Type } from "@sinclair/typebox";
 
-export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
+export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
   const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
@@ -76,7 +74,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
         q
       );
 
-      sendPagedResult(reply, cases, `/api/releases/${releaseId}/cases?`);
+      sendPagedResult(reply, cases);
     }
   );
 
@@ -84,8 +82,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     Params: { rid: string; nid: string };
     Reply: DuoLimitationCodedType[];
   }>("/api/releases/:rid/consent/:nid", {}, async function (request, reply) {
-    const { authenticatedUser, pageSize } =
-      authenticatedRouteOnEntryHelper(request);
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
     const nodeId = request.params.nid;
@@ -272,23 +269,23 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     }
   );
 
-  /**
-   * @param binary Buffer
-   * returns readableInstanceStream Readable
-   */
-  function bufferToStream(binary: Buffer) {
-    return new Readable({
-      read() {
-        this.push(binary);
-        this.push(null);
-      },
-    });
-  }
+  // /**
+  //  * @param binary Buffer
+  //  * returns readableInstanceStream Readable
+  //  */
+  // function bufferToStream(binary: Buffer) {
+  //   return new Readable({
+  //     read() {
+  //       this.push(binary);
+  //       this.push(null);
+  //     },
+  //   });
+  // }
 
   fastify.post<{
     Body: ReleaseMasterAccessRequestType;
     Params: { rid: string };
-  }>("/api/releases/:rid/access", {}, async function (request, reply) {
+  }>("/api/releases/:rid/access", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
@@ -304,7 +301,7 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
   fastify.post<{
     Body: any;
     Params: { rid: string };
-  }>("/api/releases/:rid/cfn", {}, async function (request, reply) {
+  }>("/api/releases/:rid/cfn", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
@@ -324,9 +321,9 @@ export const releaseRoutes = async (fastify: FastifyInstance, opts: any) => {
     );
   });
 
-  const PresignedT = Type.Object({
-    header: Type.Array(Type.Union([Type.Literal("A"), Type.Literal("B")])),
-  });
+  // const PresignedT = Type.Object({
+  //   header: Type.Array(Type.Union([Type.Literal("A"), Type.Literal("B")])),
+  // });
 
   fastify.post<{
     Body: ReleaseAwsS3PresignRequestType;

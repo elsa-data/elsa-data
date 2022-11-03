@@ -62,25 +62,32 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
 }
 
 /**
+ * A helper function that can send arbitrary results back to the client, with optional headers.
+ */
+export function sendResult<T>(
+  reply: FastifyReply,
+  pr: T | null,
+  headers: { [key: string]: string } = {}
+) {
+  if (!pr) reply.status(400).send();
+  else {
+    reply.headers(headers).send(pr);
+  }
+}
+
+/**
  * A helper function that can send arbitrary paged results back to the client
  * but inserting various headers to support paging.
- *
- * @param reply
- * @param pr
- * @param basePath
  */
 export function sendPagedResult<T>(
   reply: FastifyReply,
-  pr: PagedResult<T> | null,
-  basePath?: string
+  pr: PagedResult<T> | null
 ) {
-  // our services can indicate a lack of permissions, or an unknown identifier - by returning
-  // null as a PagedResult
-  // (they can also choose to throw an exception or other stuff - but if they do return null we want to handle it
-  // safely here)
-  if (isNil(pr) || isNil(pr!.data)) reply.status(400).send();
+  if (!pr || !pr.data) sendResult(reply, null);
   else {
-    reply.header(TOTAL_COUNT_HEADER_NAME, pr.total.toString()).send(pr.data);
+    sendResult(reply, pr.data, {
+      [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
+    });
   }
 }
 
