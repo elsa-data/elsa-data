@@ -1,4 +1,4 @@
-import React, { CSSProperties, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
@@ -14,7 +14,6 @@ import {
 import Papa from "papaparse";
 import {
   LocalFile,
-  ParseError,
   ParseResult,
 } from "papaparse";
 import axios from "axios";
