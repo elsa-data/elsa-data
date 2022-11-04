@@ -1,112 +1,147 @@
-import React, { CSSProperties, useState } from "react";
+import React, { CSSProperties, useCallback, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import {
-  formatFileSize,
-  useCSVReader,
-} from "react-papaparse";
+  partial,
+} from "lodash";
+import {
+  useDropzone,
+  FileError,
+  FileRejection,
+} from 'react-dropzone'
+import Papa from "papaparse";
+import {
+  LocalFile,
+  ParseError,
+  ParseResult,
+} from "papaparse";
 import axios from "axios";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
-import "./australian-genomics-dac-redcap-upload-div.css";
 
-// TODO: Fix dimensions of zone so that it doesn't change size when a file
-//       is dragged to it
+const GENERIC_ERR_MSG = "Something went wrong";
+
+async function parseCsv<T extends File>(file: T): Promise<Record<string, string>[]> {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      complete: (results: ParseResult<Record<string, string>>) => {
+        if (results.errors.length > 0) {
+          return reject(results.errors);
+        } else {
+          return resolve(results.data);
+        }
+      },
+      error: (error) => {
+        return reject([error]);
+      },
+    });
+  });
+}
+
+function errorMessage(fileRejections: FileRejection[]): string {
+  const errors = fileRejections.flatMap((fileRejection: FileRejection) => {
+    const error = fileRejection.errors.map((error) =>
+      error.message
+    ).join(', ');
+    return `${fileRejection.file.name}: ${error}`;
+  });
+  return errors.join('; ');
+}
+
+
+async function onDropCallback<T extends File>(
+  showingRedcapDialogSetter: (b: boolean) => void,
+  possibleApplicationsSetter: (d: AustraliaGenomicsDacRedcap[]) => void,
+  parseErrorSetter: (s: string | undefined) => void,
+  acceptedFiles: T[],
+  fileRejections: FileRejection[],
+) {
+  possibleApplicationsSetter([]);
+  parseErrorSetter(undefined);
+
+  if (fileRejections.length > 0) {
+    parseErrorSetter(errorMessage(fileRejections));
+    showingRedcapDialogSetter(true);
+    return;
+  }
+
+  const parseCsvPromises = acceptedFiles.map((f) => parseCsv<T>(f));
+  const parsed = (await Promise.all(parseCsvPromises)).flat();
+
+  await axios
+    .post<AustraliaGenomicsDacRedcap[]>(
+      `/api/dac/redcap/possible`,
+      parsed,
+    )
+    .then((response) => response.data)
+    .then((d) => {
+      possibleApplicationsSetter(d);
+      showingRedcapDialogSetter(true);
+    })
+    .catch((err: any) => {
+      console.log(err);
+      if (err instanceof Error) {
+        parseErrorSetter(err.message);
+      } else {
+        parseErrorSetter(GENERIC_ERR_MSG);
+      }
+      showingRedcapDialogSetter(true);
+    });
+};
 
 export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
-  // in retrospect - this is a pretty awful component - even though it does exactly what we want..
-  // possibly pivot to a combination of components with more control
-  // ok for the moment though
-  const { CSVReader } = useCSVReader();
-
-  // we maintain a list of application data structures that the backend has confirmed are
-  // possibilities for turning into a Release
-  // we pass these into a popup dialog and then the user can choose one which we will submit
+  const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
   const [possibleApplications, setPossibleApplications] = useState<
     AustraliaGenomicsDacRedcap[]
   >([]);
-  const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
+  const [parseError, setParseError] = useState<string | undefined>(undefined);
+
+  const onDrop = useCallback(
+    partial(
+      onDropCallback,
+      setShowingRedcapDialog,
+      setPossibleApplications,
+      setParseError,
+    ),
+    []
+  );
+
+  const onError = useCallback((err: Error) => {
+    console.log(err);
+    setParseError(GENERIC_ERR_MSG);
+    setShowingRedcapDialog(true);
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    onError,
+    accept: {'text/csv': []},
+  });
 
   return (
     <>
-      <div className="flex flex-col gap-6 items-center">
-        <CSVReader
-          onUploadAccepted={async (results: any) => {
-            // the full CSV extract we have been given may contain records that we have already
-            // turned into releases - or records that we are not interested in
-            // we send the whole list to the backend and expect it to return only those of possible
-            // interest
-            await axios
-              .post<AustraliaGenomicsDacRedcap[]>(
-                `/api/dac/redcap/possible`,
-                results.data
-              )
-              .then((response) => response.data)
-              .then((d) => {
-                setPossibleApplications(d);
-                setShowingRedcapDialog(true);
-              });
-          }}
-          onDragOver={(event: DragEvent) => {
-            event.preventDefault();
-          }}
-          onDragLeave={(event: DragEvent) => {
-            event.preventDefault();
-          }}
-          config={{
-            header: true,
-          }}
+      <div
+        {...getRootProps()}
+        className="flex flex-col gap-6 items-center"
+      >
+        <div
+          className="w-96 h-60 items-center bg-gray-200 hover:bg-gray-100 border-dashed border-slate-400 border-2 flex flex-col rounded-2xl justify-center p-12"
         >
-          {({
-            getRootProps,
-            acceptedFile,
-            ProgressBar,
-            getRemoveFileProps,
-            Remove,
-          }: any) => (
-            <>
-              <div
-                {...getRootProps()}
-                className="max-w-2xl items-center bg-gray-200 hover:bg-gray-100 border-dashed border-slate-400 border-2 flex flex-col rounded-2xl justify-center p-12"
-              >
-                {acceptedFile ? (
-                  <>
-                    <div className="bg-gradient-to-b from-sky-200 to-sky-300 rounded-2xl flex flex-col h-32 w-32 relative z-10 justify-center">
-                      <div className="items-center flex flex-col px-2.5">
-                        <span className="rounded-sm mb-0.5 justify-center flex">
-                          {formatFileSize(acceptedFile.size)}
-                        </span>
-                        <span className="rounded-sm text-sx mb-0.5">{acceptedFile.name}</span>
-                      </div>
-                      <div className="absolute bottom-3.5 w-full px-2.5">
-                        <ProgressBar />
-                      </div>
-                      <div
-                        {...getRemoveFileProps()}
-                        className="h-6 w-6 absolute top-1.5 right-1.5"
-                      >
-                        <Remove/>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <FontAwesomeIcon icon={faUpload} className="text-6xl p-5"/>
-                    <p>Drop CSV file here or click to upload</p>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-        </CSVReader>
+
+          <input {...getInputProps()} />
+          <FontAwesomeIcon icon={faUpload} className="text-6xl p-5"/>
+          <p className="text-center">Drop CSV file here or click to upload</p>
+        </div>
       </div>
       <AustralianGenomicsDacDialog
         showing={showingRedcapDialog}
         cancelShowing={() => setShowingRedcapDialog(false)}
         possibleApplications={possibleApplications}
+        initialError={parseError}
       />
     </>
-  );
-};
+  )
+}
