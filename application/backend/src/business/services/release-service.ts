@@ -582,4 +582,49 @@ export class ReleaseService extends ReleaseBaseService {
 
     return await this.getBase(releaseId, userRole);
   }
+
+  public async setBeaconQuery(
+    user: AuthenticatedUser,
+    releaseId: string,
+    query: any
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    // TODO JSON schema the query once the becaon v2 spec is stable
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      // get the current coded application
+      const releaseWithAppCoded = await e
+        .select(e.release.Release, (r) => ({
+          applicationCoded: true,
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+        }))
+        .assert_single()
+        .run(tx);
+
+      if (!releaseWithAppCoded)
+        throw new Error(
+          `Release ${releaseId} that existed just before this code has now disappeared!`
+        );
+
+      await e
+        .update(e.release.ApplicationCoded, (ac) => ({
+          filter: e.op(
+            ac.id,
+            "=",
+            e.uuid(releaseWithAppCoded.applicationCoded.id)
+          ),
+          set: {
+            beaconQuery: query,
+          },
+        }))
+        .run(tx);
+    });
+
+    return await this.getBase(releaseId, userRole);
+  }
 }

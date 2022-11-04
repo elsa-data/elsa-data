@@ -144,6 +144,7 @@ export abstract class ReleaseBaseService {
         type: releaseInfo.applicationCoded.studyType,
         diseases: releaseInfo.applicationCoded.diseasesOfStudy,
         countriesInvolved: releaseInfo.applicationCoded.countriesInvolved,
+        beaconQuery: releaseInfo.applicationCoded.beaconQuery,
       },
       runningJob: hasRunningJob
         ? {

@@ -177,6 +177,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
             diseasesOfStudy: makeEmptyCodeArray(),
             countriesInvolved: makeEmptyCodeArray(),
             studyType: "HMB",
+            beaconQuery: {},
           }),
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],

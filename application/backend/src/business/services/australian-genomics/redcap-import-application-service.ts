@@ -160,6 +160,7 @@ ${newApplication.daf_applicant_institution}
             diseasesOfStudy: makeEmptyCodeArray(),
             countriesInvolved: makeEmptyCodeArray(),
             studyType: australianGenomicsDacRedcapToDuoString(newApplication),
+            beaconQuery: {},
           }),
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],

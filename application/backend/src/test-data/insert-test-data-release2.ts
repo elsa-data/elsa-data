@@ -22,6 +22,7 @@ export async function insertRelease2() {
         diseasesOfStudy: makeEmptyCodeArray(),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
+        beaconQuery: {},
       }),
       datasetUris: e.array([TENF_URI]),
       datasetCaseUrisOrderPreference: [""],

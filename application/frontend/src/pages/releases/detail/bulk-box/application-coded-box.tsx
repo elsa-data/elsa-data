@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { CodingType, ReleaseApplicationCodedType } from "@umccr/elsa-types";
 import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
@@ -7,10 +7,52 @@ import { RhSelect } from "../../../../components/rh/rh-select";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
+import { RhTextArea } from "../../../../components/rh/rh-text-area";
 
 type Props = {
   releaseId: string;
   applicationCoded: ReleaseApplicationCodedType;
+};
+
+const malesQuery = {
+  filters: [
+    {
+      scope: "individuals",
+      id: "sex",
+      operator: "=",
+      value: "male",
+    },
+  ],
+};
+
+const notMalesQuery = {
+  filters: [
+    {
+      scope: "individuals",
+      id: "sex",
+      operator: "!=",
+      value: "male",
+    },
+  ],
+};
+
+const malesWithVariantQuery = {
+  filters: [
+    {
+      scope: "individuals",
+      id: "sex",
+      operator: "=",
+      value: "male",
+    },
+  ],
+  requestParameters: {
+    g_variant: {
+      referenceName: "chr1",
+      start: 185194,
+      referenceBases: "G",
+      alternateBases: "C",
+    },
+  },
 };
 
 /**
@@ -42,7 +84,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
   };
 
   const afterMutateError = (err: any) => {
-    setLastMutateError(err?.response?.data?.detail);
+    setLastMutateError(err?.response?.data?.detail || "Error");
   };
 
   // all of our coded application apis follow the same pattern - post new value to API and get
@@ -66,6 +108,12 @@ export const ApplicationCodedBox: React.FC<Props> = ({
     )
   );
 
+  const beaconQueryMutate = useMutation(
+    axiosPostArgMutationFn<{ query: any }>(
+      `/api/releases/${releaseId}/application-coded/beacon/set`
+    )
+  );
+
   const typeRadio = (label: string, value: string) => (
     <RhRadioItem
       label={label}
@@ -82,6 +130,28 @@ export const ApplicationCodedBox: React.FC<Props> = ({
       }
     />
   );
+
+  const ExampleLink = (label: string, query: any) => (
+    <a
+      className="underline cursor-pointer"
+      onClick={() => {
+        if (textAreaRef.current) {
+          textAreaRef.current.value = JSON.stringify(query, null, 2);
+        }
+        beaconQueryMutate.mutate(
+          { query: query },
+          {
+            onSuccess: afterMutateUpdateQueryData,
+            onError: afterMutateError,
+          }
+        );
+      }}
+    >
+      {label}
+    </a>
+  );
+
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <div className="md:grid md:grid-cols-5 md:gap-6">
@@ -134,6 +204,37 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   disabled={false}
                 />
               )}
+
+              <div className="col-span-3">
+                <RhTextArea
+                  label={"Beacon v2 Query"}
+                  className="font-mono rounded-md border border-gray-300 w-full"
+                  rows={15}
+                  defaultValue={JSON.stringify(
+                    applicationCoded.beaconQuery,
+                    null,
+                    2
+                  )}
+                  ref={textAreaRef}
+                  // value={beaconText}
+                  // onChange={(e) => setBeaconText(e.target.value)}
+                  onBlur={(e) =>
+                    beaconQueryMutate.mutate(
+                      { query: JSON.parse(e.target.value) },
+                      {
+                        onSuccess: afterMutateUpdateQueryData,
+                        onError: afterMutateError,
+                      }
+                    )
+                  }
+                />
+                <div className="col-span-3 text-right text-xs space-x-2 text-blue-500">
+                  <span className="text-black">examples: </span>
+                  {ExampleLink("Males", malesQuery)}
+                  {ExampleLink("Not Males", notMalesQuery)}
+                  {ExampleLink("Males with Variant", malesWithVariantQuery)}
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
+CREATE MIGRATION m1frshlglnihyky2mbvx55bwanmesfiw4vodjuenlhi4q3wvtz74pa
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -14,6 +14,7 @@ CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
   CREATE TYPE release::ApplicationCoded {
       CREATE REQUIRED PROPERTY countriesInvolved -> array<tuple<system: std::str, code: std::str>>;
       CREATE REQUIRED PROPERTY diseasesOfStudy -> array<tuple<system: std::str, code: std::str>>;
+      CREATE REQUIRED PROPERTY beaconQuery -> std::json;
       CREATE REQUIRED PROPERTY studyAgreesToPublish -> std::bool;
       CREATE REQUIRED PROPERTY studyIsNotCommercial -> std::bool;
       CREATE REQUIRED PROPERTY studyType -> release::ApplicationCodedStudyType;

@@ -82,9 +82,15 @@ export class ElsaApplicationStack extends NestedStack {
     privateServiceWithLoadBalancer.service.taskDefinition.taskRole.attachInlinePolicy(
       new Policy(this, "FargateServiceTaskPolicy", {
         statements: [
+          // need to be able to fetch secrets
           new PolicyStatement({
             actions: ["secretsmanager:GetSecretValue"],
             resources: ["arn:aws:secretsmanager:*:*:secret:Elsa-??????"],
+          }),
+          // need to be able to invoke lambdas
+          new PolicyStatement({
+            actions: ["lambda:InvokeFunction"],
+            resources: ["arn:aws:lambda:*:*:function:elsa-data-*"],
           }),
         ],
       })

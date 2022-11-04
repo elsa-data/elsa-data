@@ -54,14 +54,18 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
 
   return (
     <Box heading="Bulk">
+      {/*
+      The consent sources are not needed until we hook up real Dynamic systems like CTRL
       <ConsentSourcesBox releaseId={releaseId} />
-      <HrDiv />
+      <HrDiv /> */}
       <ApplicationCodedBox
         releaseId={releaseId}
         applicationCoded={releaseData.applicationCoded}
       />
+      {/*
+      The virtual cohorting has been mixed in with the application coding for a bit - revisit
       <HrDiv />
-      <VirtualCohortBox releaseId={releaseId} />
+      <VirtualCohortBox releaseId={releaseId} /> */}
       <HrDiv />
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv

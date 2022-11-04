@@ -11,6 +11,7 @@ import { ReleaseService } from "./release-service";
 import { UsersService } from "./users-service";
 import { Transaction } from "edgedb/dist/transaction";
 import { AuditLogService } from "./audit-log-service";
+import { vcfArtifactUrlsBySpecimenQuery } from "../db/lab-queries";
 
 class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseId: string) {
@@ -271,9 +272,32 @@ export class JobsService {
         for (const cas of casesFromQueue) {
           for (const pat of cas.patients || []) {
             for (const spec of pat.specimens || []) {
+              const r = await vcfArtifactUrlsBySpecimenQuery.run(tx, {
+                specimenId: spec.id,
+              });
+              // TODO: fix this
+              // [
+              //   {
+              //     vcfs: [
+              //       's3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered.vcf.gz',
+              //       's3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered.vcf.gz.tbi'
+              //     ]
+              //   }
+              // ]
+              let vcf = undefined,
+                index = undefined;
+              if (r && r.length > 0) {
+                if (r[0].vcfs && r[0].vcfs.length === 2) {
+                  vcf = r[0].vcfs[0];
+                  index = r[0].vcfs[1];
+                }
+              }
+
               if (
                 await this.selectService.isSelectable(
                   applicationCoded as any,
+                  vcf,
+                  index,
                   cas as any,
                   pat as any,
                   spec as any
