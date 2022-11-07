@@ -36,6 +36,7 @@ import {
   selectDatasetPatientByExternalIdentifiersQuery,
   selectDatasetCaseByExternalIdentifiersQuery,
 } from "../db/dataset-queries";
+import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 const util = require("util");
 
 // need to be configuration eventually
@@ -43,7 +44,7 @@ const AG_BUCKET = "agha-gdr-store-2.0";
 
 // Static Mapping of AG bucket prefix and DatasetURI
 const BUCKET_PREFIX_AND_URI_MAPPING: Record<string, string> = {
-  cardiac: "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac",
+  cardiac: AG_CARDIAC_FLAGSHIP,
 };
 
 /**

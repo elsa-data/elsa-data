@@ -74,6 +74,7 @@ export function australianGenomicsDacRedcapToDuoString(
   if (ag.daf_type_research___other === "1") throw new Error("No Other yet");
   if (ag.daf_type_research___popn_stud === "1")
     throw new Error("No Pop stud yet");
+  throw new Error("No Duo string found!");
 }
 
 /**
