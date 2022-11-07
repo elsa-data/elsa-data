@@ -121,6 +121,51 @@ export class AuditLogService {
       .run(executor);
   }
 
+  /**
+   * Insert DataAccessAudit
+   */
+  public async updateDataAccessAuditEvent({
+    executor,
+    releaseAuditEventId,
+    who,
+    fileUrl,
+    egressBytes,
+    description,
+    date,
+  }: {
+    executor: Executor;
+    releaseAuditEventId: string;
+    who: string;
+    fileUrl: string;
+    description: string;
+    egressBytes: number;
+    date: Date;
+  }) {
+    await e
+      .update(e.audit.ReleaseAuditEvent, (ra) => ({
+        filter: e.op(ra.id, "=", e.uuid(releaseAuditEventId)),
+        set: {
+          dataAccessAuditEvents: {
+            "+=": e.insert(e.audit.DataAccessAuditEvent, {
+              file: e
+                .select(e.storage.File, (f) => ({
+                  filter: e.op(f.url, "=", fileUrl),
+                }))
+                .assert_single(),
+              egressBytes: egressBytes,
+              whoId: who,
+              whoDisplayName: who,
+              actionCategory: e.audit.ActionType.R,
+              actionDescription: description,
+              occurredDateTime: e.datetime(date),
+              outcome: 0,
+            }),
+          },
+        },
+      }))
+      .run(executor);
+  }
+
   public async getEntries(
     executor: Executor,
     user: AuthenticatedUser,
