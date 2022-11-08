@@ -1,11 +1,5 @@
 import e from "../../../dbschema/edgeql-js";
 
-const rs = e
-  .select(e.release.Release, (r) => ({
-    filter: e.op(r.id, "=", e.uuid("")),
-  }))
-  .assert_single().datasetUris;
-
 /**
  * An EdgeDb query for all the dataset details for those datasets
  * associated with a given release.
@@ -44,7 +38,7 @@ export const allReleasesSummaryByUserQuery = e.params(
         (u) => ({
           id: true,
           filter: e.op(u.id, "=", params.userDbId),
-          // got to work out how to extract the link property values.. this was broken in Edge pre 2.0
+          // got to work out how to extract the link property values... this was broken in Edge pre 2.0
           // "@role": true
         })
       ),
