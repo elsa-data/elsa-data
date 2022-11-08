@@ -64,6 +64,7 @@ export class ElsaStack extends Stack {
       hostedZone: hostedZone,
       config: {
         isDevelopment: true,
+        secretsPrefix: "ElsaData", // pragma: allowlist secret
         baseDatabase: {
           dbAdminUser: `elsa_admin`,
           dbName: `elsa_database`,
@@ -86,8 +87,6 @@ export class ElsaStack extends Stack {
         region: process.env.CDK_DEFAULT_REGION,
       },
     });
-
-    console.log(edgeDb.dsnForEnvironmentVariable);
 
     const elsa = new ElsaApplicationStack(this, "Elsa", {
       vpc: vpc,

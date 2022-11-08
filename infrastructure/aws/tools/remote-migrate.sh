@@ -7,7 +7,7 @@
 # So if you get mysterious "password invalid" then maybe this is the place
 
 
-SECRET=$(aws secretsmanager list-secrets --filter "Key=name,Values=EdgeDb" --query "SecretList[0].ARN" --output text)
+SECRET=$(aws secretsmanager list-secrets --filter "Key=name,Values=ElsaDataEdgeDb" --query "SecretList[0].ARN" --output text)
 PW=$(aws secretsmanager get-secret-value --secret-id $SECRET --query "SecretString" --output text)
 
 # make a local copy of the cert CA
