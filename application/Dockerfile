@@ -32,6 +32,35 @@
 # we also bundle each Bree job as an individual bundle
 #RUN cd backend && npx esbuild jobs/select-job.ts --bundle --platform=node --target=node18 --outfile=./select-job.js
 
+FROM amazonlinux:2022 AS edgedbbuilder
+
+WORKDIR /build
+
+RUN dnf install -y nodejs npm findutils shadow util-linux
+
+RUN useradd "build-user"
+
+RUN chown -R "build-user" /build
+
+USER "build-user"
+
+RUN : \
+  && curl --proto '=https' --tlsv1.2 -sSf https://sh.edgedb.com > edgedb.sh \
+  && sh edgedb.sh -y \
+  && rm edgedb.sh
+
+COPY --chown=build-user backend/dbschema/ backend/dbschema/
+COPY --chown=build-user backend/package* backend/
+
+RUN cd backend && npm install
+
+RUN : \
+  && cd backend \
+  && export EDGEDB_INSTALL_IN_DOCKER=allow \
+  && ~/.local/bin/edgedb project init --non-interactive \
+  && npm run edgetypes
+
+
 #
 # Deployed app
 #
@@ -39,21 +68,10 @@ FROM amazonlinux:2022
 
 WORKDIR /app
 
-# TODO: Discard the useless stuff using a multi-stage build
-COPY . .
-
 RUN dnf install -y nodejs npm findutils shadow util-linux
 
-RUN useradd app-user
-
-RUN chown -R app-user /app
-
-SHELL ["/usr/bin/su", "app-user", "-c"]
-
-RUN : \
-  && curl --proto '=https' --tlsv1.2 -sSf https://sh.edgedb.com > edgedb.sh \
-  && sh edgedb.sh -y \
-  && rm edgedb.sh
+# TODO: Discard the useless stuff using a multi-stage build
+COPY . .
 
 RUN \
   while IFS= read -r -d '' file; do \
@@ -68,11 +86,12 @@ RUN : \
   && cd frontend \
   && npm run build:dev
 
-RUN : \
-  && cd backend \
-  && export EDGEDB_INSTALL_IN_DOCKER=allow \
-  && ~/.local/bin/edgedb project init --non-interactive \
-  && npm run edgetypes
+COPY --from=edgedbbuilder /build/backend/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
+
+# when running in the real Docker image the frontend is expected to be bundled local to the backend
+RUN mkdir backend/client
+RUN mv frontend/build backend/client
+RUN cd backend/client && mv build dist
 
 ARG ELSA_DATA_VERSION
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION

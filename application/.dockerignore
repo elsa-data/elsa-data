@@ -1,5 +1,12 @@
 backend/node_modules/
-frontend/node_modules/
 backend/coverage/
+backend/dbschema/edgeql-js/
+
+frontend/node_modules/
 frontend/build/
 
+common/**/node_modules/
+
+# because we are doing a copy . . we need to explicitly ignore things that we don't want to trigger a rebuild
+Dockerfile
+.dockerignore
