@@ -119,3 +119,27 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     offset: offset,
   }));
 };
+
+export const selectDataAccessAuditEventByLogIdQuery = (logId: string) => {
+  return e.select(e.audit.DataAccessAuditEvent, (da) => ({
+    ...e.audit.DataAccessAuditEvent["*"],
+    fileSize: da.file.size,
+    fileUrl: da.file.url,
+    filter: e.op(da.releaseAudit.id, "=", e.uuid(logId)),
+  }));
+};
+
+export const selectDataAccessAuditEventByReleaseIdQuery = (
+  releaseId: string
+) => {
+  return e.select(e.audit.DataAccessAuditEvent, (da) => ({
+    ...e.audit.DataAccessAuditEvent["*"],
+    fileSize: da.file.size,
+    fileUrl: da.file.url,
+    filter: e.op(
+      da.releaseAudit["<auditLog[is release::Release]"].id,
+      "=",
+      e.uuid(releaseId)
+    ),
+  }));
+};

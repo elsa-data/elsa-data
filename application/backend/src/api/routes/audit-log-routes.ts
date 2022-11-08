@@ -10,6 +10,7 @@ import { container } from "tsyringe";
 import { AuditLogService } from "../../business/services/audit-log-service";
 import { Static, Type } from "@sinclair/typebox";
 import {
+  AuditDataAccessType,
   AuditEntryDetailsType,
   AuditEntryFullType,
 } from "@umccr/elsa-types/schemas-audit";
@@ -114,6 +115,42 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         edgeDbClient,
         authenticatedUser,
         request.params.objectId
+      );
+
+      sendResult(reply, events);
+    }
+  );
+
+  fastify.get<{
+    Params: { releaseId: string; objectId: string };
+    Reply: AuditDataAccessType[] | null;
+  }>(
+    "/api/releases/:releaseId/audit-log/:objectId/data-access",
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const events = await auditLogService.getDataAccessAuditByLogId(
+        edgeDbClient,
+        authenticatedUser,
+        request.params.objectId
+      );
+
+      sendResult(reply, events);
+    }
+  );
+
+  fastify.get<{
+    Params: { releaseId: string };
+    Reply: AuditDataAccessType[] | null;
+  }>(
+    "/api/releases/:releaseId/audit-log/data-access",
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const events = await auditLogService.getDataAccessAuditByReleaseId(
+        edgeDbClient,
+        authenticatedUser,
+        request.params.releaseId
       );
 
       sendResult(reply, events);

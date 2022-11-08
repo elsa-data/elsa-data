@@ -41,3 +41,20 @@ export const AuditEntryFullSchema = Type.Object({
   details: Type.Optional(Type.Any()),
 });
 export type AuditEntryFullType = Static<typeof AuditEntryFullSchema>;
+
+export const AuditDataAccessSchema = Type.Object({
+  ...AuditEntryBaseSchema.properties,
+  fileUrl: Type.String(),
+  fileSize: Type.Integer(),
+  egressBytes: Type.Integer(),
+});
+export type AuditDataAccessType = Static<typeof AuditDataAccessSchema>;
+
+export const AuditDataSummarySchema = Type.Object({
+  fileUrl: Type.String(),
+  fileSize: Type.Integer(),
+  dataAccessedInBytes: Type.Integer(),
+  downloadStatus: Type.String(),
+  lastAccessedTime: Type.String(),
+});
+export type AuditDataSummaryType = Static<typeof AuditDataSummarySchema>;
