@@ -44,6 +44,7 @@
     "@fastify/sensible": "5.1.1",
     "@fastify/static": "6.5.0",
     "@sinclair/typebox": "0.24.47",
+    "@types/randomstring": "^1.1.8",
     "@umccr/elsa-constants": "file:../common/elsa-constants",
     "@umccr/elsa-types": "file:../common/elsa-types",
     "ajv": "8.11.0",
@@ -72,6 +73,7 @@
     "patch-package": "6.4.7",
     "protobufjs": "7.1.2",
     "qs": "6.11.0",
+    "randomstring": "^1.2.3",
     "reflect-metadata": "0.1.13",
     "temp": "0.9.4",
     "tsyringe": "4.7.0"
