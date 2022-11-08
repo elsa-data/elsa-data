@@ -1,4 +1,4 @@
-CREATE MIGRATION m12btt7inahpd7l3srpfen2yspkixlitkrlvhqtjsynenvibgeqcza
+CREATE MIGRATION m1nv55thvouf4q54d2x2fw5m24u7n7vo3ps6vcc674wklv7yoqvvsa
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -249,6 +249,17 @@ CREATE MIGRATION m12btt7inahpd7l3srpfen2yspkixlitkrlvhqtjsynenvibgeqcza
       };
       CREATE PROPERTY platform -> std::str;
       CREATE PROPERTY runDate -> std::datetime;
+  };
+  CREATE TYPE permission::PotentialUser {
+      CREATE MULTI LINK futureReleaseParticipant -> release::Release {
+          ON TARGET DELETE ALLOW;
+          CREATE PROPERTY role -> std::str {
+              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
+          };
+      };
+      CREATE PROPERTY displayName -> std::str;
+      CREATE PROPERTY email -> std::str;
+      CREATE PROPERTY subjectId -> std::str;
   };
   CREATE TYPE permission::User {
       CREATE MULTI LINK releaseParticipant -> release::Release {
