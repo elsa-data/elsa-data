@@ -4,6 +4,7 @@ import e, { release } from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
   makeDoubleCodeArray,
+  makeIdentifierTuple,
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
@@ -30,7 +31,10 @@ export async function insertRelease1() {
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Study of Lots of Test Data",
-      applicationDacIdentifier: makeSystemlessIdentifier("ABC"),
+      applicationDacIdentifier: makeIdentifierTuple(
+        "https://rems.australiangenomics.org.au",
+        "56"
+      ),
       applicationDacDetails: `
 #### Origin
 
@@ -48,7 +52,13 @@ Ethics form XYZ.
 
 * Signed by A, B, C
 * Agreed to condition Y
-        `,
+
+#### A table
+
+| a | b |
+| - | - |
+| 4 | 5 |
+`,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.DS,
         countriesInvolved: makeSingleCodeArray(ISO_COUNTRY_SYSTEM_URI, "AUS"),
@@ -62,7 +72,12 @@ Ethics form XYZ.
         studyIsNotCommercial: true,
         beaconQuery: {},
       }),
-      releaseIdentifier: "MNRETQER",
+      //
+      //
+      // B5MN76L3BN
+      //
+      //
+      releaseIdentifier: "C5YR7P2PE1",
       releasePassword: "abcd", // pragma: allowlist secret
       releaseStarted: new Date(2022, 1, 23),
       releaseEnded: new Date(2023, 1, 1),
