@@ -2,7 +2,7 @@ import React, { CSSProperties, useState } from "react";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { Box } from "../../components/boxes";
-import { ReleaseDetailType } from "@umccr/elsa-types";
+import { ReleaseDetailType, ReleaseSummaryType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
 
@@ -11,7 +11,7 @@ export const ReleasesPage: React.FC = () => {
     REACT_QUERY_RELEASE_KEYS.all,
     async () => {
       return await axios
-        .get<ReleaseDetailType[]>(`/api/releases`)
+        .get<ReleaseSummaryType[]>(`/api/releases`)
         .then((response) => response.data);
     },
     {}
@@ -25,7 +25,8 @@ export const ReleasesPage: React.FC = () => {
             <table className="w-full text-sm text-left text-gray-500 light:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">
                 <tr>
-                  <th scope="col" className="p-4">
+                  {/* Left in as an example of checkbox columns if we want to enable bulk ops
+                    <th scope="col" className="p-4">
                     <div className="flex items-center">
                       <input
                         id="checkbox-all"
@@ -36,9 +37,12 @@ export const ReleasesPage: React.FC = () => {
                         checkbox
                       </label>
                     </div>
+                  </th> */}
+                  <th scope="col" className="px-6 py-3">
+                    Release Id
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Id
+                    DAC Id
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Title
@@ -51,7 +55,7 @@ export const ReleasesPage: React.FC = () => {
               <tbody>
                 {releaseData.map((r) => (
                   <tr className="bg-white border-b light:bg-gray-800 light:border-gray-700 hover:bg-gray-50 light:hover:bg-gray-600">
-                    <td className="w-4 p-4">
+                    {/*<td className="w-4 p-4">
                       <div className="flex items-center">
                         <input
                           id="checkbox-table-1"
@@ -62,12 +66,22 @@ export const ReleasesPage: React.FC = () => {
                           checkbox
                         </label>
                       </div>
-                    </td>
+                    </td>*/}
                     <th
                       scope="row"
                       className="px-6 py-4 font-mono whitespace-nowrap"
                     >
-                      {JSON.stringify(r.applicationDacIdentifier)}
+                      {r.releaseIdentifier}
+                    </th>
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-mono whitespace-nowrap"
+                    >
+                      <span className="text-xs">
+                        {r.applicationDacIdentifierSystem}
+                      </span>
+                      <br />
+                      {r.applicationDacIdentifierValue}
                     </th>
                     <td className="px-6 py-4">{r.applicationDacTitle}</td>
                     <td className="px-6 py-4 text-right">

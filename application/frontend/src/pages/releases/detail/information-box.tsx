@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import classNames from "classnames";
 import { Trans } from "@lingui/macro";
 import { useLingui } from "@lingui/react";
+import remarkGfm from "remark-gfm";
 
 type Props = {
   releaseId: string;
@@ -30,6 +31,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
           <span className="font-bold">{releaseData.applicationDacTitle}</span>
           {releaseData.applicationDacDetails && (
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={
                 {
                   // Map `h1` (`# heading`) to use `h2`s.

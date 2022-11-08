@@ -53,11 +53,13 @@
     "react-headless-pagination": "^0.2.1",
     "react-hook-form": "7.33.1",
     "react-icons": "^4.6.0",
-    "react-markdown": "^8.0.3",
+    "react-markdown": "8.0.3",
+    "react-papaparse": "^4.1.0",
     "react-query": "3.39.0",
     "react-router-dom": "6.3.0",
     "react-syntax-highlighter": "^15.5.0",
-    "reactjs-popup": "^2.0.5"
+    "reactjs-popup": "^2.0.5",
+    "remark-gfm": "3.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.18.9",
