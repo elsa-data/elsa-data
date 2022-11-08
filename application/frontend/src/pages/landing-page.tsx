@@ -69,7 +69,7 @@ export const HomePage: React.FC = () => {
       <img
         alt="Block diagram of Elsa Data"
         src={blockDiagram}
-        className="w-full"
+        className="w-3/4"
       />
 
       <hr className="mt-6 mb-6" />
