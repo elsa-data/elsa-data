@@ -2,6 +2,7 @@ import convict from "convict";
 import { ElsaEnvironment, ElsaLocation } from "./elsa-settings";
 import { getConfigLocalMac } from "./config-local-mac";
 import { getConfigAwsSecretsManager } from "./config-aws-secrets-manager";
+import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 
 convict.addParser({ extension: "json5", parse: require("json5").parse });
 
@@ -195,8 +196,26 @@ export async function getConfig(
     "./config/base.json5",
   ]);
 
-  if (location === "local-mac") config.load(await getConfigLocalMac());
-  if (location === "aws") config.load(await getConfigAwsSecretsManager());
+  // TODO: this hack will be replaced by a proper meta config definition
+
+  if (location === "local-mac") {
+    // when running on the local-mac we also want the ability to use AWS secrets
+    // if configured with AWS permissions
+    const stsClient = new STSClient({});
+
+    try {
+      // will fail unless we have valid AWS credentials
+      const _identity = await stsClient.send(new GetCallerIdentityCommand({}));
+
+      config.load(await getConfigAwsSecretsManager(true));
+    } catch {
+      // if we were not in AWS OR the secret doesn't load then plough on irrespective (this is local-mac!)
+    }
+
+    config.load(await getConfigLocalMac());
+  }
+
+  if (location === "aws") config.load(await getConfigAwsSecretsManager(false));
 
   // perform validation
   config.validate({ allowed: "strict" });
