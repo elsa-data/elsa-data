@@ -220,7 +220,11 @@ export const authRoutes = async (
     // that is - they are a deployment instance level setting
     const isa = isSuperAdmin(settings, authUser);
 
-    if (isa) allowed.add(ALLOWED_CHANGE_ADMINS);
+    if (isa) {
+      allowed.add(ALLOWED_CHANGE_ADMINS);
+      // for the moment if we want to do demos it is easy if the super admins get all the functionality
+      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
+    }
 
     // some garbage temporary logic for giving extra permissions to some people
     // this would normally come via group info
