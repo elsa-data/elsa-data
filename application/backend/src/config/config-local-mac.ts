@@ -29,6 +29,8 @@ export async function getConfigLocalMac() {
     `security find-generic-password -s "Elsa REMS Bot Key Dev" -w`
   );
 
+  console.log(`Loading configuration from Mac keychain`);
+
   // note: these key names need to be kept in sync with the overall configuration schema
   return {
     oidc: {

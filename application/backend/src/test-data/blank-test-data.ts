@@ -23,6 +23,9 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const jobsDeleted = await e.delete(e.job.Job).run(edgeDbClient);
 
   const usersDeleted = await e.delete(e.permission.User).run(edgeDbClient);
+  const potentialUsersDeleted = await e
+    .delete(e.permission.PotentialUser)
+    .run(edgeDbClient);
 
   const releasesDeleted = await e.delete(e.release.Release).run(edgeDbClient);
 
@@ -56,15 +59,16 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
 
   if (printDetailsToConsole) {
     console.log(`  ${jobsDeleted.length} job(s)`);
-    console.log(`  ${usersDeleted.length} user(s)`);
+    console.log(
+      `  ${usersDeleted.length}/${potentialUsersDeleted.length} user(s)/potential user(s)`
+    );
 
     console.log(`  ${releasesDeleted.length} release(s)`);
     console.log(`  ${releaseAuditDeleted.length} releaseAudit(s)`);
 
-    console.log(`  ${specimensDeleted.length} dataset specimen(s)`);
-    console.log(`  ${patientsDeleted.length} dataset patient(s)`);
-    console.log(`  ${casesDeleted.length} dataset case(s)`);
-    console.log(`  ${datasetsDeleted.length} dataset(s)`);
+    console.log(
+      `  ${specimensDeleted.length}/${patientsDeleted.length}/${casesDeleted.length}/${datasetsDeleted.length} dataset specimen(s)/patient(s)/case(s)/set(s)`
+    );
 
     console.log(`  ${analysesDeleted.length} lab analyses(s)`);
     console.log(`  ${runsDeleted.length} lab run(s)`);

@@ -1,4 +1,4 @@
-CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
+CREATE MIGRATION m1nv55thvouf4q54d2x2fw5m24u7n7vo3ps6vcc674wklv7yoqvvsa
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -14,6 +14,7 @@ CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
   CREATE TYPE release::ApplicationCoded {
       CREATE REQUIRED PROPERTY countriesInvolved -> array<tuple<system: std::str, code: std::str>>;
       CREATE REQUIRED PROPERTY diseasesOfStudy -> array<tuple<system: std::str, code: std::str>>;
+      CREATE REQUIRED PROPERTY beaconQuery -> std::json;
       CREATE REQUIRED PROPERTY studyAgreesToPublish -> std::bool;
       CREATE REQUIRED PROPERTY studyIsNotCommercial -> std::bool;
       CREATE REQUIRED PROPERTY studyType -> release::ApplicationCodedStudyType;
@@ -45,21 +46,18 @@ CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
-  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
-  };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE MULTI LINK patients -> dataset::DatasetPatient {
-          ON TARGET DELETE ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-  };
   CREATE ABSTRACT TYPE lab::ArtifactBase;
   CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE MULTI LINK artifacts -> lab::ArtifactBase;
       CREATE OPTIONAL PROPERTY sampleType -> std::str;
+  };
+  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
+  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
   };
   CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE storage::File {
@@ -159,12 +157,15 @@ CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation -> std::json;
   };
-  ALTER TYPE dataset::DatasetPatient {
-      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
+  ALTER TYPE dataset::DatasetCase {
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK patients -> dataset::DatasetPatient {
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
+  };
+  ALTER TYPE dataset::DatasetPatient {
+      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
@@ -248,6 +249,17 @@ CREATE MIGRATION m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
       };
       CREATE PROPERTY platform -> std::str;
       CREATE PROPERTY runDate -> std::datetime;
+  };
+  CREATE TYPE permission::PotentialUser {
+      CREATE MULTI LINK futureReleaseParticipant -> release::Release {
+          ON TARGET DELETE ALLOW;
+          CREATE PROPERTY role -> std::str {
+              CREATE CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
+          };
+      };
+      CREATE PROPERTY displayName -> std::str;
+      CREATE PROPERTY email -> std::str;
+      CREATE PROPERTY subjectId -> std::str;
   };
   CREATE TYPE permission::User {
       CREATE MULTI LINK releaseParticipant -> release::Release {

@@ -7,7 +7,10 @@ import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 import {
   countAllUserQuery,
+  deletePotentialUserByDisplayNameQuery,
   pageableAllUserQuery,
+  singlePotentialUserByDisplayNameQuery,
+  singleUserByDisplayNameQuery,
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -74,9 +77,12 @@ export class UsersService {
   }
 
   /**
-   * Inserts the user with default settings (if they don't exist) - or update
+   * Inserts the user - or update
    * their display name if they do. Sets the 'last login' time of their
-   * record to the current time.
+   * record to the current time. Note that this function takes into account
+   * a secondary table of 'potential' users that may already have some default
+   * settings - but who have no yet logged in. This means for instance that a new
+   * user can be created already associated with a release.
    *
    * @param subjectId
    * @param displayName
@@ -85,30 +91,65 @@ export class UsersService {
     subjectId: string,
     displayName: string
   ): Promise<AuthenticatedUser> {
-    // this should be handled before hand - but bad things will go
-    // wrong if we get passed in empty params
+    // this should be handled beforehand - but bad things will go
+    // wrong if we get pass in empty params - so we check again
     if (isNil(subjectId) || isEmpty(subjectId.trim()))
       throw Error("Subject id was empty");
 
     if (isNil(displayName) || isEmpty(displayName.trim()))
       throw Error("Display name was empty");
 
-    const dbUser = await e
-      .insert(e.permission.User, {
-        subjectId: subjectId,
-        displayName: displayName,
-      })
-      .unlessConflict((u) => ({
-        on: u.subjectId,
-        else: e.update(u, () => ({
-          set: {
-            displayName: displayName,
-            lastLoginDateTime: e.datetime_current(),
-          },
-        })),
-      }))
-      .assert_single()
-      .run(this.edgeDbClient);
+    const dbUser = await this.edgeDbClient.transaction(async (tx) => {
+      // did we already perhaps see reference to this user from an application - but the user hasn't logged in?
+      const potentialDbUser = await singlePotentialUserByDisplayNameQuery.run(
+        tx,
+        {
+          displayName: displayName,
+        }
+      );
+
+      let releasesToAdd: any;
+
+      if (potentialDbUser) {
+        // find all the 'default' settings (like releases they are part of) for the user
+        releasesToAdd =
+          potentialDbUser.futureReleaseParticipant.length > 0
+            ? e.set(
+                ...potentialDbUser.futureReleaseParticipant.map((a) =>
+                  e.uuid(a.id)
+                )
+              )
+            : e.cast(e.uuid, e.set());
+
+        // the user is no longer potential - they will be real in the users table - so delete from potential
+        await deletePotentialUserByDisplayNameQuery.run(tx, {
+          displayName: displayName,
+        });
+      } else {
+        releasesToAdd = e.cast(e.uuid, e.set());
+      }
+
+      return await e
+        .insert(e.permission.User, {
+          subjectId: subjectId,
+          displayName: displayName,
+          releaseParticipant: e.select(e.release.Release, (r) => ({
+            filter: e.op(r.id, "in", releasesToAdd),
+            "@role": e.str("Member"),
+          })),
+        })
+        .unlessConflict((u) => ({
+          on: u.subjectId,
+          else: e.update(u, () => ({
+            set: {
+              displayName: displayName,
+              lastLoginDateTime: e.datetime_current(),
+            },
+          })),
+        }))
+        .assert_single()
+        .run(tx);
+    });
 
     // there is no way to get the upsert to also return the other db fields so we
     // have to requery if we want to return a full authenticated user here

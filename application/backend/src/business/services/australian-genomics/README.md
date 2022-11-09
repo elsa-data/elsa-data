@@ -47,7 +47,7 @@
 | Phenotypic/Clinical data categories requested (choice=Clinical investigations)                                              | daf_clindata_category\_\_\_4      | 1                                | 0                   |
 | Phenotypic/Clinical data categories requested (choice=Variant information)                                                  | daf_clindata_category\_\_\_5      | 1                                | 0                   |
 | Flagship set requested                                                                                                      | daf_data_req                      | 2                                | 1                   |
-| Describe the subset of participants you are requestingNote: Do NOT input any identifying information into this field        | daf_data_req_subset               | Participants with cardiomyopathy |                     |
+| Describe the subset of participants you are requestingNote: Do NOT input any identifying information into this field        | daf_data_req_subset               | Participants with cardiomyopathy |                     |
 | Title                                                                                                                       | daf_applicant_title               | Prof                             | Dr                  |
 | Full Name                                                                                                                   | daf_applicant_name                | Albus Dumbledore                 | Meredith Grey       |
 | Institution                                                                                                                 | daf_applicant_institution         | Hogwarts                         | Grey Sloan Hospital |

@@ -1,14 +1,12 @@
 import React, { ReactNode, useState } from "react";
-import { AuditEntryType, ReleaseCaseType } from "@umccr/elsa-types";
+import { ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, useQueryClient } from "react-query";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
-import usePagination from "headless-pagination-react";
-import { BoxNoPad } from "../../../../components/boxes";
+import { Box, BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
-import { BoxSearcher } from "../../../../components/box-searcher";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
 
@@ -23,6 +21,10 @@ type Props = {
 
   // whether the table is being viewed by someone with permissions to edit it
   isEditable: boolean;
+
+  // whether all the cases information is in fact being re-created and so we need to display
+  // a message and disable the UI temporarily
+  isInBulkProcessing: boolean;
 };
 
 export const CasesBox: React.FC<Props> = ({
@@ -30,9 +32,8 @@ export const CasesBox: React.FC<Props> = ({
   datasetMap,
   pageSize,
   isEditable,
+  isInBulkProcessing,
 }) => {
-  const queryClient = useQueryClient();
-
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -100,6 +101,17 @@ export const CasesBox: React.FC<Props> = ({
 
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
+
+  if (isInBulkProcessing)
+    return (
+      <Box heading="Cases">
+        <p>
+          Case processing is happening in the background -
+          cases/patients/specimens will be displayed once this processing is
+          finished.
+        </p>
+      </Box>
+    );
 
   return (
     <BoxNoPad heading="Cases">

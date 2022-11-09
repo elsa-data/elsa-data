@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { LayoutBase } from "../layouts/layout-base";
 import { useCookies } from "react-cookie";
 import {
-  debugAllowedDescription,
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
   USER_ALLOWED_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { useUiAllowed } from "../hooks/ui-allowed";
+import blockDiagram from "./landing-block-diagram.png";
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -62,26 +62,51 @@ export const HomePage: React.FC = () => {
   return (
     <LayoutBase>
       <p className="prose">
+        Elsa Data is a tool for bridging the gaps in a federated genomic data
+        sharing ecosystem.
+      </p>
+
+      <img
+        alt="Block diagram of Elsa Data"
+        src={blockDiagram}
+        className="w-3/4"
+      />
+
+      <hr className="mt-6 mb-6" />
+
+      <p className="prose text-xs">
         Current page size literal from cookie is '{pageSizeFromCookie}'
       </p>
-      <p className="prose">
+      <p className="prose text-xs">
         Current page size in practice is therefore {pageSize}
       </p>
       <div className="flex flex-row space-x-2 mt-2 mb-2">
-        <button className="btn-normal" onClick={() => mutatePageSizeCookie(5)}>
+        <button
+          className="btn-normal text-xs"
+          onClick={() => mutatePageSizeCookie(5)}
+        >
           Set page size 5
         </button>
-        <button className="btn-normal" onClick={() => mutatePageSizeCookie(10)}>
+        <button
+          className="btn-normal text-xs"
+          onClick={() => mutatePageSizeCookie(10)}
+        >
           Set page size 10
         </button>
-        <button className="btn-normal" onClick={() => mutatePageSizeCookie(15)}>
+        <button
+          className="btn-normal text-xs"
+          onClick={() => mutatePageSizeCookie(15)}
+        >
           Set page size 15
         </button>
-        <button className="btn-normal" onClick={() => mutatePageSizeCookie(20)}>
+        <button
+          className="btn-normal text-xs"
+          onClick={() => mutatePageSizeCookie(20)}
+        >
           Set page size 20
         </button>
         <button
-          className="btn-normal"
+          className="btn-normal text-xs"
           onClick={() => mutatePageSizeCookie(undefined)}
         >
           Clear page size

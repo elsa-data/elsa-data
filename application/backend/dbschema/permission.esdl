@@ -1,5 +1,32 @@
 module permission {
 
+    # we need to support user as abstract/potential users - that get mentioned in DAC applications etc
+    # by email address - but who have not yet ever logged into Elsa Data and so have not become
+    # concrete users
+
+    type PotentialUser {
+
+        property subjectId -> str;
+        property displayName -> str;
+        property email -> str;
+
+        # whether this user will become a participant of a release when they login
+
+        multi link futureReleaseParticipant -> release::Release {
+            property role -> str {
+               constraint one_of('DataOwner', 'Member', 'PI');
+            }
+
+            # allow releases to be removed - all that happens for the user is they lose involvement with that release
+            # (in general releases won't be deleted anyway)
+            #
+            on target delete allow;
+        }
+
+    }
+
+
+
     type User {
 
         required property subjectId -> str {

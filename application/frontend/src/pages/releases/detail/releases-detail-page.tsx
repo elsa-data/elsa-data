@@ -59,30 +59,13 @@ export const ReleasesDetailPage: React.FC = () => {
               <BulkBox releaseId={releaseId} releaseData={releaseQuery.data} />
             )}
 
-            {!isJobRunning && (
-              <CasesBox
-                releaseId={releaseId}
-                datasetMap={releaseQuery.data.datasetMap}
-                isEditable={releaseQuery.data.permissionEditSelections || false}
-                pageSize={pageSize}
-              />
-            )}
-            {isJobRunning && (
-              <BoxNoPad heading="Cases">
-                <>
-                  <p>
-                    Case processing is happening in the background -
-                    cases/patients/specimens will be displayed once this
-                    processing is finished.
-                  </p>
-                  <ul className="h-12">
-                    {releaseQuery.data.runningJob!.messages.map((m) => (
-                      <li>{m}</li>
-                    ))}
-                  </ul>
-                </>
-              </BoxNoPad>
-            )}
+            <CasesBox
+              releaseId={releaseId}
+              datasetMap={releaseQuery.data.datasetMap}
+              isEditable={releaseQuery.data.permissionEditSelections || false}
+              pageSize={pageSize}
+              isInBulkProcessing={isJobRunning}
+            />
 
             {releaseQuery.data.permissionEditSelections && (
               <FutherRestrictionsBox

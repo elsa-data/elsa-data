@@ -132,3 +132,21 @@ export const vcfArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
       };
     })
 );
+
+/**
+ * For a given specimen - return the pairs of vcf/index (if any)
+ */
+export const vcfArtifactUrlsBySpecimenQuery = e.params(
+  { specimenId: e.uuid },
+  (params) =>
+    e.select(e.lab.ArtifactVcf, (vcfArtifact) => {
+      return {
+        vcfs: e.tuple([vcfArtifact.vcfFile.url, vcfArtifact.tbiFile.url]),
+        filter: e.op(
+          vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].id,
+          "=",
+          params.specimenId
+        ),
+      };
+    })
+);

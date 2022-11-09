@@ -1,11 +1,10 @@
 import e, { storage } from "../../dbschema/edgeql-js";
-
+import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 /**
  * Will declare some mock test data here
  */
 
-export const MOCK_DATASET_URI =
-  "urn:fdc:australiangenomics.org.au:2022:datasets/cardiac";
+export const MOCK_DATASET_URI = AG_CARDIAC_FLAGSHIP;
 export const S3_URL_PREFIX = "s3://agha-gdr-store-2.0/Cardiac/2019-11-21";
 
 function createS3ObjectList(key = "S3_KEY", etag = "AWS_ETAG", size = 1) {

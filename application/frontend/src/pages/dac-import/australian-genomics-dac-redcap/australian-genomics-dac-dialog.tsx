@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { isNil, isNumber } from "lodash";
@@ -11,12 +11,14 @@ type Props = {
   showing: boolean;
   cancelShowing: () => void;
   possibleApplications: AustraliaGenomicsDacRedcap[];
+  initialError?: string;
 };
 
 export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   showing,
   cancelShowing,
   possibleApplications,
+  initialError,
 }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -25,9 +27,8 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
 
   const cancelButtonRef = useRef(null);
 
-  const [lastMutateError, setLastMutateError] = useState<string | undefined>(
-    undefined
-  );
+  const [lastError, setLastError] = useState<string | undefined>();
+  useEffect(() => setLastError(initialError), [initialError]);
 
   const createNewReleaseMutate = useMutation((d: AustraliaGenomicsDacRedcap) =>
     axios
@@ -36,7 +37,6 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   );
 
   const closeDialog = () => {
-    setLastMutateError(undefined);
     setSelectedRowIndex(null);
     cancelShowing();
   };
@@ -73,7 +73,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                         checked={selectedRowIndex === paIndex}
                         onClick={() => {
                           // clear any previous errors
-                          setLastMutateError(undefined);
+                          setLastError(undefined);
                           // change the row index
                           setSelectedRowIndex(paIndex);
                         }}
@@ -112,12 +112,12 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                       closeDialog();
                     },
                     onError: (err: any) =>
-                      setLastMutateError(err?.response?.data?.detail),
+                      setLastError(err?.response?.data?.detail),
                   }
                 );
               else {
                 // this should not be possible as the button is disabled whilst the row index is null
-                setLastMutateError("Selected row index is null");
+                setLastError("Selected row index is null");
               }
             }}
           >
@@ -133,7 +133,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
           </button>
         </>
       }
-      errorMessage={lastMutateError}
+      errorMessage={lastError}
     />
   );
 };

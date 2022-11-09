@@ -6,15 +6,31 @@ import {
   australianGenomicsDacRedcapToDatasetUris,
   australianGenomicsDacRedcapToDuoString,
 } from "@umccr/elsa-types";
-import { randomUUID } from "crypto";
 import { UsersService } from "../users-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
 import { format } from "date-fns";
+import {
+  singleUserByDisplayNameQuery,
+  singleUserBySubjectIdQuery,
+} from "../../db/user-queries";
+import { generate } from "randomstring";
+import _ from "lodash";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
-const AG_REDCAP_URL = "https://mcri.redcap";
+const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
+
+interface ApplicationUser {
+  // the primary key we will try to use to link to future/current users
+  email: string;
+  // the display name we use (temporarily until email is in the db user)
+  displayName: string;
+  // the institution which is collected but we probably don't use
+  institution?: string;
+  // the role we want to assign this person in the release
+  role: "PI" | "Member";
+}
 
 @injectable()
 @singleton()
@@ -70,9 +86,24 @@ export class RedcapImportApplicationService {
     user: AuthenticatedUser,
     newApplication: AustraliaGenomicsDacRedcap
   ): Promise<string> {
-    // TODO: some error checking here
+    // TODO: some error checking here of the incoming application data
 
-    return await this.edgeDbClient.transaction(async (t) => {
+    // check that a ApplicationUser data structure we have parsed in from external CSV
+    // has the right field content and types and throw an exception if not
+    const checkValidApplicationUser = (
+      au: ApplicationUser,
+      userDescription: string
+    ) => {
+      const e = `Email/name fields for a person listed in an application must be non-empty strings - in this case user ${userDescription} in the application`;
+
+      if (!_.isString(au.email) || !_.isString(au.displayName))
+        throw new Error(e);
+
+      if (_.isEmpty(au.email.trim()) || _.isEmpty(au.displayName.trim()))
+        throw new Error(e);
+    };
+
+    const newRelease = await this.edgeDbClient.transaction(async (t) => {
       const resourceUris =
         australianGenomicsDacRedcapToDatasetUris(newApplication);
 
@@ -100,9 +131,81 @@ export class RedcapImportApplicationService {
         }
       }
 
-      // loop through the members (users) mapping to users that we know about
-      // TODO: create new users entries for those we don't know yet
-      // const memberToUserMap: { [uri: string]: string } = {};
+      let pi: ApplicationUser;
+
+      // the PI details are literally a duplicate of the applicant OR
+      // we grab them from elsewhere in the CSV
+      if (newApplication.daf_applicant_pi_yn === "1") {
+        pi = {
+          email: newApplication.daf_applicant_email,
+          displayName: newApplication.daf_applicant_name,
+          institution: newApplication.daf_applicant_institution,
+          role: "PI",
+        };
+        checkValidApplicationUser(pi, "applicant");
+      } else {
+        pi = {
+          email: newApplication.daf_pi_email,
+          displayName: newApplication.daf_pi_name,
+          institution:
+            newApplication.daf_pi_institution_same === "1"
+              ? newApplication.daf_applicant_institution
+              : newApplication.daf_pi_institution,
+          role: "PI",
+        };
+        checkValidApplicationUser(pi, "pi");
+      }
+
+      const otherResearchers: ApplicationUser[] = [];
+
+      if (newApplication.daf_collab_num) {
+        for (
+          let otherResearchCount = 0;
+          otherResearchCount < parseInt(newApplication.daf_collab_num);
+          otherResearchCount++
+        ) {
+          const siteNumber = (otherResearchCount + 1).toString();
+          const isHoldingData =
+            (newApplication as any)["daf_data_house_site" + siteNumber] === "1";
+          const r: ApplicationUser = {
+            email: (newApplication as any)[
+              "daf_contact_email_site" + siteNumber
+            ],
+            displayName: (newApplication as any)[
+              "daf_contact_site" + siteNumber
+            ],
+            institution: (newApplication as any)[
+              "daf_institution_site" + siteNumber
+            ],
+            // TODO - once we have a "no download" role - we need to set it here
+            role: isHoldingData ? "Member" : "Member",
+          };
+          checkValidApplicationUser(r, "collaborator" + siteNumber);
+          otherResearchers.push(r);
+        }
+      }
+
+      const studyType = australianGenomicsDacRedcapToDuoString(newApplication);
+
+      if (!studyType) {
+        throw new Error(
+          "The application had no type of study expressed as a DUO code"
+        );
+      }
+
+      const roleTable = [
+        "| Name                   | Email                   | Institute       | Role             |",
+        "| ---------------------- | ----------------------- | --------------- | ---------------- |",
+      ];
+
+      roleTable.push(
+        `| ${pi.displayName} | ${pi.email} | ${pi.institution} | ${pi.role} |`
+      );
+      for (const o of otherResearchers) {
+        roleTable.push(
+          `| ${o.displayName} | ${o.email} | ${o.institution} | ${o.role} |`
+        );
+      }
 
       const newRelease = await e
         .insert(e.release.Release, {
@@ -114,7 +217,7 @@ export class RedcapImportApplicationService {
           applicationDacTitle:
             newApplication.daf_project_title || "Untitled in Redcap",
           applicationDacDetails: `
-#### Source
+### Source
 
 This application was sourced from Australian Genomics Redcap on ${format(
             new Date(),
@@ -127,45 +230,51 @@ The identifier for this application in the source is
 ${newApplication.daf_num}
 ~~~
 
-#### Summary
+### Summary
 
 ${newApplication.daf_public_summ}
 
-#### Ethics
+### Ethics
 
-~~~
 ${
   newApplication.daf_hrec_approve === "1"
     ? `HREC ${newApplication.daf_hrec_num} was approved on ${newApplication.daf_hrec_approve_dt}`
     : "No approved HREC recorded"
 }
-~~~
 
-#### Created
+### Created
  
-~~~
 ${newApplication.application_date_hid}
-~~~
 
-#### Applicant
+### Applicant
  
-~~~
 ${newApplication.daf_applicant_name} (${newApplication.daf_applicant_email})
 ${newApplication.daf_applicant_institution}
-~~~
+
+### Involved (at time of application)
+
+${roleTable.join("\n")}
+
 `,
           applicationCoded: e.insert(e.release.ApplicationCoded, {
             studyAgreesToPublish: true,
             studyIsNotCommercial: true,
             diseasesOfStudy: makeEmptyCodeArray(),
             countriesInvolved: makeEmptyCodeArray(),
-            studyType: australianGenomicsDacRedcapToDuoString(newApplication),
+            studyType: studyType,
+            beaconQuery: {},
           }),
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
-          releaseIdentifier: randomUUID(),
-          releasePassword: randomUUID(),
+          releaseIdentifier: generate({
+            length: 10,
+            capitalization: "uppercase",
+            charset: "alphabetic",
+            readable: true,
+          }),
+          // for the moment we fix this to a known secret
+          releasePassword: "abcd",
           datasetUris: e.literal(
             e.array(e.str),
             Object.keys(resourceToDatasetMap)
@@ -184,15 +293,66 @@ ${newApplication.daf_applicant_institution}
             })
           ),
         })
-        .run(this.edgeDbClient);
+        .run(t);
 
-      await this.usersService.registerRoleInRelease(
-        user,
-        newRelease.id,
-        "DataOwner"
-      );
+      // set up the users for the release
+      const insertPotentialOrReal = async (
+        au: ApplicationUser,
+        role: string
+      ) => {
+        // has this user already logged in to Elsa?
+        const dbUser = await singleUserByDisplayNameQuery.run(t, {
+          displayName: au.displayName,
+        });
 
-      return newRelease.id;
+        if (dbUser) {
+          // adding a role link into an existing user
+          await e
+            .update(e.permission.User, (u) => ({
+              filter: e.op(e.uuid(user.dbId), "=", u.id),
+              set: {
+                releaseParticipant: {
+                  "+=": e.select(e.release.Release, (r) => ({
+                    filter: e.op(e.uuid(newRelease.id), "=", r.id),
+                    "@role": e.str(role),
+                  })),
+                },
+              },
+            }))
+            .run(t);
+        } else {
+          // TODO: the case of a potential user already existing.. this will have to wait until
+          // we have an 'email' property to make exclusive constraint
+          const potentialDbUser = await e
+            .insert(e.permission.PotentialUser, {
+              displayName: au.displayName,
+              email: au.email,
+              futureReleaseParticipant: e.select(e.release.Release, (r) => ({
+                filter: e.op(e.uuid(newRelease.id), "=", r.id),
+                "@role": e.str(role),
+              })),
+            })
+            .assert_single()
+            .run(t);
+        }
+      };
+
+      await insertPotentialOrReal(pi, pi.role);
+
+      for (const r of otherResearchers) {
+        await insertPotentialOrReal(r, r.role);
+      }
+
+      return newRelease;
     });
+
+    // TODO: move this inside the transaction once we have a 'transactionable' version of this service method
+    await this.usersService.registerRoleInRelease(
+      user,
+      newRelease.id,
+      "DataOwner"
+    );
+
+    return newRelease.id;
   }
 }

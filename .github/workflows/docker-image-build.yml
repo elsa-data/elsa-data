@@ -15,6 +15,19 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
       -
+        name: Define docker tag
+        id: define_docker_tag
+        run: |
+          ref_name=${{ github.ref_name }}
+          {
+            printf "tag="
+            if [[ "${ref_name}" == dev ]]; then
+              printf "latest"
+            else
+              printf "${ref_name}"
+            fi
+          } >> "$GITHUB_OUTPUT"
+      -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       -
@@ -33,9 +46,10 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: application
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/umccr/elsa-data:${{ github.ref_name }}
+            ghcr.io/umccr/elsa-data:${{ steps.define_docker_tag.outputs.tag }}
             ghcr.io/umccr/elsa-data:${{ github.sha }}
           build-args: |
             ELSA_DATA_VERSION=${{ github.ref_name }}

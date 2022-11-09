@@ -64,38 +64,6 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
                   {lastMutateError}
                 </p>
               )}
-              <RhTextArea
-                label={"Beacon v2 Query"}
-                className="font-mono border-none w-full"
-                rows={15}
-                value={
-                  "{\n" +
-                  '  "filters": [\n' +
-                  "    {\n" +
-                  '      "id": "age",\n' +
-                  '      "operator": ">="\n' +
-                  '      "scope": "individuals"\n' +
-                  '      "value": "P70Y"\n' +
-                  "    }\n" +
-                  "  ],\n" +
-                  '  "requestParameters": {\n' +
-                  '    "referenceName": "NC_000017.11",\n' +
-                  '    "start": [ 5000000, 7676592 ],\n' +
-                  '    "end": [ 7669607, 10000000 ],\n' +
-                  '    "variantType": "DEL"\n' +
-                  "  }\n" +
-                  "}"
-                }
-                onChange={(e) =>
-                  ctrlUrlMutate.mutate(
-                    { type: e.target.value },
-                    {
-                      onSuccess: afterMutateUpdateQueryData,
-                      onError: afterMutateError,
-                    }
-                  )
-                }
-              />
             </div>
           </div>
         </div>

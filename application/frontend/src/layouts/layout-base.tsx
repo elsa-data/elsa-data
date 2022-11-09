@@ -164,7 +164,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
         </div>
       </div>
 
-      <LayoutBaseFooter />
+      {/*<LayoutBaseFooter />*/}
     </>
   );
 };

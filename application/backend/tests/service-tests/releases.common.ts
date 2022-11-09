@@ -46,6 +46,7 @@ export async function beforeEachCommon() {
         diseasesOfStudy: makeSingleCodeArray("mondo", "ABCD"),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
+        beaconQuery: {},
       }),
       // data for this release comes from 10g and 10f datasets
       datasetUris: e.array([TENG_URI, TENF_URI]),
