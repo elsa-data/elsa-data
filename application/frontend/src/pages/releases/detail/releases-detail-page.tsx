@@ -16,6 +16,7 @@ import { MasterAccessControlBox } from "./master-access-control-box";
 import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
+import DataAccessLogsBox from "./logs-box/data-access-logs";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -136,6 +137,7 @@ export const ReleasesDetailPage: React.FC = () => {
             </Box>
 
             <LogsBox releaseId={releaseId} pageSize={pageSize} />
+            <DataAccessLogsBox releaseId={releaseId} />
           </>
         )}
       </div>

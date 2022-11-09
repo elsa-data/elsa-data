@@ -56,5 +56,6 @@ export const AuditDataSummarySchema = Type.Object({
   dataAccessedInBytes: Type.Integer(),
   downloadStatus: Type.String(),
   lastAccessedTime: Type.String(),
+  target: Type.String(),
 });
 export type AuditDataSummaryType = Static<typeof AuditDataSummarySchema>;

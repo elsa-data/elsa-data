@@ -350,7 +350,7 @@ export class AuditLogService {
       }
 
       dataAccessSummaryResult.push({
-        targetDestination: lastEvent.whoDisplayName,
+        target: lastEvent.whoDisplayName,
         fileUrl: fileUrl,
         fileSize: fileSize,
         dataAccessedInBytes: totalEgressBytes,
