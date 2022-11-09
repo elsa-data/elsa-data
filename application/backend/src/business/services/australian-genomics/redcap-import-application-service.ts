@@ -16,6 +16,7 @@ import {
   singleUserBySubjectIdQuery,
 } from "../../db/user-queries";
 import { generate } from "randomstring";
+import _ from "lodash";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -87,6 +88,21 @@ export class RedcapImportApplicationService {
   ): Promise<string> {
     // TODO: some error checking here of the incoming application data
 
+    // check that a ApplicationUser data structure we have parsed in from external CSV
+    // has the right field content and types and throw an exception if not
+    const checkValidApplicationUser = (
+      au: ApplicationUser,
+      userDescription: string
+    ) => {
+      const e = `Email/name fields for a person listed in an application must be non-empty strings - in this case user ${userDescription} in the application`;
+
+      if (!_.isString(au.email) || !_.isString(au.displayName))
+        throw new Error(e);
+
+      if (_.isEmpty(au.email.trim()) || _.isEmpty(au.displayName.trim()))
+        throw new Error(e);
+    };
+
     const newRelease = await this.edgeDbClient.transaction(async (t) => {
       const resourceUris =
         australianGenomicsDacRedcapToDatasetUris(newApplication);
@@ -126,6 +142,7 @@ export class RedcapImportApplicationService {
           institution: newApplication.daf_applicant_institution,
           role: "PI",
         };
+        checkValidApplicationUser(pi, "applicant");
       } else {
         pi = {
           email: newApplication.daf_pi_email,
@@ -136,6 +153,7 @@ export class RedcapImportApplicationService {
               : newApplication.daf_pi_institution,
           role: "PI",
         };
+        checkValidApplicationUser(pi, "pi");
       }
 
       const otherResearchers: ApplicationUser[] = [];
@@ -159,9 +177,10 @@ export class RedcapImportApplicationService {
             institution: (newApplication as any)[
               "daf_institution_site" + siteNumber
             ],
-            // TODO - once we have a "non download" role - we need to set it here
+            // TODO - once we have a "no download" role - we need to set it here
             role: isHoldingData ? "Member" : "Member",
           };
+          checkValidApplicationUser(r, "collaborator" + siteNumber);
           otherResearchers.push(r);
         }
       }
