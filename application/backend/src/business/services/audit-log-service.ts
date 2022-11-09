@@ -279,7 +279,7 @@ export class AuditLogService {
         actionDescription: entry.actionDescription,
         recordedDateTime: entry.recordedDateTime,
         updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime,
+        occurredDateTime: entry.occurredDateTime.toString(),
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
         egressBytes: entry.egressBytes,
