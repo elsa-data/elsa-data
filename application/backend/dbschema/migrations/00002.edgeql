@@ -1,8 +1,8 @@
-CREATE MIGRATION m1bx4gtxpuxikvjkwmiunoqer2rg4kbgmfump6in4unct5krwx34zq
-    ONTO m14c3ucfvfwnfnpalenmtbjf3zr3mioceo6o6nf55c2yfoqkacuaeq
+CREATE MIGRATION m1i2d3di6zcpn6hygyz35ztwsrmwgvdaq7ibpw2tn42p4jxop67e3q
+    ONTO m1nv55thvouf4q54d2x2fw5m24u7n7vo3ps6vcc674wklv7yoqvvsa
 {
   CREATE TYPE audit::DataAccessAuditEvent EXTENDING audit::AuditEvent {
-      CREATE LINK file -> storage::File {
+      CREATE REQUIRED LINK file -> storage::File {
           ON TARGET DELETE ALLOW;
       };
       CREATE REQUIRED PROPERTY egressBytes -> std::int64;
