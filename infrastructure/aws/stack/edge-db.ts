@@ -122,7 +122,8 @@ export class EdgeDbStack extends NestedStack {
       memory: config.edgeDbService.memory,
       superUser: config.edgeDbService.superUser,
       superUserSecret: this._edgeDbPasswordSecret,
-      edgeDbVersion: "2.3",
+      // https://hub.docker.com/r/edgedb/edgedb/tags
+      edgeDbVersion: "2.6",
       certificateCertSecret: config.edgeDbService.cert,
       certificateKeySecret: config.edgeDbService.key,
     });
