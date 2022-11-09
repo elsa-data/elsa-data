@@ -44,6 +44,7 @@ export type AuditEntryFullType = Static<typeof AuditEntryFullSchema>;
 
 export const AuditDataAccessSchema = Type.Object({
   ...AuditEntryBaseSchema.properties,
+  occurredDateTime: Type.String(),
   fileUrl: Type.String(),
   fileSize: Type.Integer(),
   egressBytes: Type.Integer(),
