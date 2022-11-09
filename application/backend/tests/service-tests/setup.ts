@@ -50,6 +50,9 @@ export async function registerTypes() {
         sessionSalt: "ABCD",
         sessionSecret: "XYZ",
         ontoFhirUrl: "",
+        awsSigningSecretAccessKey: "A",
+        awsSigningAccessKeyId: "B",
+        rateLimit: {},
       };
       return s;
     },

@@ -64,7 +64,7 @@ export function australianGenomicsDacRedcapToDatasetUris(
 
 export function australianGenomicsDacRedcapToDuoString(
   ag: AustraliaGenomicsDacRedcap
-): "GRU" | "HMB" | "CC" | "POA" | "DS" {
+): "GRU" | "HMB" | "CC" | "POA" | "DS" | undefined {
   if (ag.daf_type_research___case_ctrl === "1") return "CC";
   if (ag.daf_type_research___disease === "1") return "DS";
   if (ag.daf_type_research___hmb === "1") return "HMB";

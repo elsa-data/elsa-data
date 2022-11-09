@@ -46,7 +46,7 @@ export async function insertRelease3() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: "B",
+      releaseIdentifier: "P4RF4AC5BR",
       selectedSpecimens: e.set(),
       auditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {

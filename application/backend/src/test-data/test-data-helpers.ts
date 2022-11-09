@@ -17,6 +17,10 @@ export function makeSystemlessIdentifier(entry1: string) {
   return e.tuple({ system: "", value: entry1 });
 }
 
+export function makeIdentifierTuple(system: string, value: string) {
+  return e.tuple({ system: system, value: value });
+}
+
 /**
  * Make an identifier array (array of tuples) where there is only
  * one entry and it is an identifier with value only (no system)

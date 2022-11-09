@@ -52,7 +52,7 @@ export async function insertRelease4() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: "TR",
+      releaseIdentifier: "S9DT3Z9NMA",
       releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       auditLog: e.set(
