@@ -304,6 +304,7 @@ export class AuditLogService {
     user: AuthenticatedUser,
     id: string
   ): Promise<AuditDataSummaryType[] | null> {
+    // TODO: Make this paginate
     const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
       id
     ).run(executor);
