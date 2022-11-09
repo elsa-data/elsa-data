@@ -106,8 +106,9 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
 
   async getCloudTrailLakeEvents(): Promise<Record<string, any>[]> {
-    // TODO: Uncomment and need to replace the params below
-    // It will need to get eventDataStoreId gotten from AWS CloudTrail Stack
+    // TODO: Uncomment and need to replace the params below.
+    //       It will need to get eventDataStoreId gotten from the stack of where CloudTrail lake is created.
+
     // const queryId = await this.requestS3CloudTrailLakeQuery(param);
     // const s3CloudTrailLogs = await this.getResultS3CloudTrailLakeQuery({
     //   queryId: queryId,
@@ -161,10 +162,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
     // Recording this into database
     // Must make this idempotent, perhaps check if auditId has exceed more than 7 days.
-    // Make sure with edgedb current time is : timezone in UTC time? or local ec2 region
 
     for (const trailEvent of cloudTrailEventArray) {
       const s3Url = `s3://${trailEvent.bucketName}/${trailEvent.key}`;
+
+      // CloudTrail time always UTC time, adding UTC postfix to make sure recorded properly.
       const utcDate = new Date(`${trailEvent.eventTime} UTC`);
 
       // Improvement do it in batch?

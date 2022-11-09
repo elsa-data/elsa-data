@@ -24,7 +24,6 @@ function DataAccessSummaryBox({ releaseId }: Props) {
         .then((response) => response.data)
   );
 
-  // Move to types
   const COLUMN_TO_SHOW = [
     "target",
     "fileUrl",

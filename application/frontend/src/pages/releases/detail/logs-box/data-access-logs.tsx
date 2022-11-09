@@ -27,7 +27,6 @@ function DataAccessLogsBox() {
         .then((response) => response.data)
   );
 
-  // Move to types
   const COLUMN_TO_SHOW = [
     { key: "fileUrl", value: "File URL" },
     { key: "whoDisplayName", value: "IP Address" },
