@@ -63,7 +63,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
           </tr>
         }
         tableBody={
-          // dataAccessQuery.isSuccess &&
+          dataAccessQuery.isSuccess &&
           data &&
           data.map((row, idx) => (
             <>
