@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { AuditDataAccessType } from "@umccr/elsa-types";
 import { useQuery } from "react-query";
 import { BoxNoPad } from "../../../../components/boxes";
@@ -6,7 +6,7 @@ import { Table } from "../../../../components/tables";
 import { ToolTip } from "../../../../components/tooltip";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { getStringReadableBytes } from "../../../../helpers/utils";
-import { categoryToDescription, outcomeIsSuccess } from "./logs-box";
+import { categoryToDescription } from "./logs-box";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { isEmpty, isNil } from "lodash";
