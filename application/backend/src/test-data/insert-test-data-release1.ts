@@ -95,7 +95,8 @@ Ethics form XYZ.
         // and just the proband of another trio
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
-      auditLog: makeSytheticAuditLog(),
+      releaseAuditLog: makeSytheticAuditLog(),
+      dataAccessAuditLog: makeSyntheticDataAccessLog(),
     })
     .run(edgeDbClient);
 }
@@ -155,51 +156,7 @@ function makeSytheticAuditLog() {
     occurredDuration: e.duration(
       new Duration(0, 0, 0, 0, 0, random(59), random(59))
     ),
-    // details: MOCK_JSON,
-    dataAccessAuditEvents: e.set(
-      e.insert(e.audit.DataAccessAuditEvent, {
-        file: e
-          .select(e.storage.File, (f) => ({
-            filter: e.op(f.url, "ilike", `%${MARGE_BAM_S3}`),
-          }))
-          .assert_single(),
-        egressBytes: 10188721080,
-        whoId: "123.123.123.123",
-        whoDisplayName: "123.123.123.123",
-        actionCategory: e.audit.ActionType.R,
-        actionDescription: "Data Access",
-        occurredDateTime: e.datetime(new Date()),
-        outcome: 0,
-      }),
-      e.insert(e.audit.DataAccessAuditEvent, {
-        file: e
-          .select(e.storage.File, (f) => ({
-            filter: e.op(f.url, "ilike", `%${MARGE_BAM_S3}`),
-          }))
-          .assert_single(),
-        egressBytes: 10188721080,
-        whoId: "123.123.123.123",
-        whoDisplayName: "123.123.123.123",
-        actionCategory: e.audit.ActionType.R,
-        actionDescription: "Data Access",
-        occurredDateTime: e.datetime(new Date()),
-        outcome: 0,
-      }),
-      e.insert(e.audit.DataAccessAuditEvent, {
-        file: e
-          .select(e.storage.File, (f) => ({
-            filter: e.op(f.url, "ilike", `%${MARGE_BAI_S3}`),
-          }))
-          .assert_single(),
-        egressBytes: 3681456,
-        whoId: "123.123.123.123",
-        whoDisplayName: "123.123.123.123",
-        actionCategory: e.audit.ActionType.R,
-        actionDescription: "Data Access",
-        occurredDateTime: e.datetime(new Date()),
-        outcome: 0,
-      })
-    ),
+    details: MOCK_JSON,
   });
 
   return e.set(
@@ -226,3 +183,25 @@ function makeSytheticAuditLog() {
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen"))
   );
 }
+
+const makeSyntheticDataAccessLog = () => {
+  const makeDataAccessLog = (fileUrl: string) => ({
+    file: e
+      .select(e.storage.File, (f) => ({
+        filter: e.op(f.url, "ilike", `%${fileUrl}`),
+      }))
+      .assert_single(),
+    egressBytes: 10188721080,
+    whoId: "123.123.123.123",
+    whoDisplayName: "123.123.123.123",
+    actionCategory: e.audit.ActionType.R,
+    actionDescription: "Data Access",
+    occurredDateTime: e.datetime(new Date()),
+    outcome: 0,
+  });
+
+  return e.set(
+    e.insert(e.audit.DataAccessAuditEvent, makeDataAccessLog(MARGE_BAM_S3)),
+    e.insert(e.audit.DataAccessAuditEvent, makeDataAccessLog(MARGE_BAI_S3))
+  );
+};

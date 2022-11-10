@@ -19,11 +19,7 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
   (params) =>
     e.count(
       e.select(e.audit.ReleaseAuditEvent, (ae) => ({
-        filter: e.op(
-          ae["<auditLog[is release::Release]"].id,
-          "=",
-          params.releaseId
-        ),
+        filter: e.op(ae.release_.id, "=", params.releaseId),
       }))
     )
 );
@@ -79,11 +75,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     occurredDuration: true,
     outcome: true,
     hasDetails: e.op("exists", auditEvent.details),
-    filter: e.op(
-      auditEvent["<auditLog[is release::Release]"].id,
-      "=",
-      e.uuid(releaseId)
-    ),
+    filter: e.op(auditEvent.release_.id, "=", e.uuid(releaseId)),
     order_by: [
       {
         expression:
@@ -120,15 +112,6 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   }));
 };
 
-export const selectDataAccessAuditEventByLogIdQuery = (logId: string) => {
-  return e.select(e.audit.DataAccessAuditEvent, (da) => ({
-    ...e.audit.DataAccessAuditEvent["*"],
-    fileSize: da.file.size,
-    fileUrl: da.file.url,
-    filter: e.op(da.releaseAudit.id, "=", e.uuid(logId)),
-  }));
-};
-
 export const selectDataAccessAuditEventByReleaseIdQuery = (
   releaseId: string
 ) => {
@@ -136,10 +119,6 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
     ...e.audit.DataAccessAuditEvent["*"],
     fileSize: da.file.size,
     fileUrl: da.file.url,
-    filter: e.op(
-      da.releaseAudit["<auditLog[is release::Release]"].id,
-      "=",
-      e.uuid(releaseId)
-    ),
+    filter: e.op(da.release_.id, "=", e.uuid(releaseId)),
   }));
 };

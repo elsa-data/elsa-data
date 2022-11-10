@@ -55,7 +55,7 @@ export async function insertRelease4() {
       releaseIdentifier: "S9DT3Z9NMA",
       releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
-      auditLog: e.set(
+      releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",
           actionDescription: "Created Release",

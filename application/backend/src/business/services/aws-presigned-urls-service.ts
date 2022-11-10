@@ -157,7 +157,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     for (const file of allFiles.slice(0, -1)) {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseAuditEventId: newAuditEventId,
+        releaseId: releaseId,
         who: ipAddress,
         fileUrl: file.s3Url,
         description: "Data read from presigned URL.",
@@ -169,7 +169,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     // Insert first record twice to show multiple-download in UI
     await this.auditLogService.updateDataAccessAuditEvent({
       executor: this.edgeDbClient,
-      releaseAuditEventId: newAuditEventId,
+      releaseId: releaseId,
       who: ipAddress,
       fileUrl: allFiles[0].s3Url,
       description: "Data read from presigned URL.",
@@ -182,7 +182,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     if (lastFile) {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseAuditEventId: newAuditEventId,
+        releaseId: releaseId,
         who: ipAddress,
         fileUrl: lastFile.s3Url,
         description: "Data read from presigned URL.",

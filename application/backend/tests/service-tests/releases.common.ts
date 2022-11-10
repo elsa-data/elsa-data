@@ -79,7 +79,7 @@ export async function beforeEachCommon() {
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(JUDY_SPECIMEN)
       ),
-      auditLog: e.set(
+      releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",
           actionDescription: "Created Release",

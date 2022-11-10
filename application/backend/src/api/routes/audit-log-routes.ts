@@ -129,10 +129,10 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const events = await auditLogService.getDataAccessAuditByLogId(
+      const events = await auditLogService.getDataAccessAuditByReleaseId(
         edgeDbClient,
         authenticatedUser,
-        request.params.objectId
+        request.params.releaseId
       );
 
       sendResult(reply, events);
@@ -147,7 +147,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const events = await auditLogService.getDataAccessAuditByReleaseId(
+      const events = await auditLogService.getSummaryDataAccessAuditByReleaseId(
         edgeDbClient,
         authenticatedUser,
         request.params.releaseId
