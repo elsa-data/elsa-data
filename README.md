@@ -1,6 +1,6 @@
 # elsa-data
 
-Genomic data sharing support software ("let the data go")
+Genomic data sharing support software ("let the data go").
 
 ## Dev
 
@@ -26,7 +26,7 @@ npm run init-db
 npm start
 ```
 
-3. Create local secrets for local boot
+3. Create local secrets for local boot:
 
 You will need to get these actual values out of band (i.e. Slack).
 
