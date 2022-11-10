@@ -145,6 +145,54 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       { numUrls: allFiles.length, filename: filename }
     );
 
+    /* *************************************************************************
+     * For demonstration purposes, will add some DataAccessedAudit after link has been generated
+     * This will show a data access log from the given file above.
+     * ************************************************************************* */
+
+    const ipAddress = "128.250.161.231";
+    const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
+
+    // Insert all records except the last to be able to demonstrate incomplete download log
+    for (const file of allFiles.slice(0, -1)) {
+      await this.auditLogService.updateDataAccessAuditEvent({
+        executor: this.edgeDbClient,
+        releaseAuditEventId: newAuditEventId,
+        who: ipAddress,
+        fileUrl: file.s3Url,
+        description: "Data read from presigned URL.",
+        egressBytes: Number(file.size),
+        date: mockTimeAccessed,
+      });
+    }
+
+    // Insert first record twice to show multiple-download in UI
+    await this.auditLogService.updateDataAccessAuditEvent({
+      executor: this.edgeDbClient,
+      releaseAuditEventId: newAuditEventId,
+      who: ipAddress,
+      fileUrl: allFiles[0].s3Url,
+      description: "Data read from presigned URL.",
+      egressBytes: Number(allFiles[0].size),
+      date: mockTimeAccessed,
+    });
+
+    // Insert last record to be incomplete
+    const lastFile = allFiles.pop();
+    if (lastFile) {
+      await this.auditLogService.updateDataAccessAuditEvent({
+        executor: this.edgeDbClient,
+        releaseAuditEventId: newAuditEventId,
+        who: ipAddress,
+        fileUrl: lastFile.s3Url,
+        description: "Data read from presigned URL.",
+        egressBytes: Number(lastFile.size) - 1,
+        date: mockTimeAccessed,
+      });
+    }
+
+    /* ************************************************************************ */
+
     return {
       archive: archive,
       filename: filename,
