@@ -1,0 +1,20 @@
+{
+  "name": "elsa-data",
+  "workspaces": [
+    "application/backend",
+    "application/common/elsa-constants",
+    "application/common/elsa-types",
+    "application/frontend",
+    "infrastructure/aws",
+    "utils/cloudtrail_s3",
+    "utils/cloudtrail_s3/infrastructure"
+  ],
+  "scripts": {
+    "migrate-db": "cd application/backend && edgedb migration create && edgedb migrate",
+    "init-db": "cd application/backend && edgedb project init",
+    "edgetypes": "cd application/backend && npm run edgetypes",
+    "frontend": "cd application/frontend && npm run build:dev",
+    "backend": "cd application/backend && npm run edgetypes && npm run dev",
+    "start": "npm run frontend && npm run backend"
+  }
+}

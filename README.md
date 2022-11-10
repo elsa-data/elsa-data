@@ -1,6 +1,6 @@
 # elsa-data
 
-Genomic data sharing support software ("let the data go")
+Genomic data sharing support software ("let the data go").
 
 ## Dev
 
@@ -13,32 +13,20 @@ The following are assumed to be installed
 
 Then
 
-1. In each folder containing a `package.json` file, run `npm install`:
+1. To install dependencies, run:
 
 ```shell
-while IFS= read -r -d '' file; do
-  dirname=$(dirname "$file")
-  (
-    cd "$dirname"
-    npm install
-  ) || exit 1
-done < <(find . -name package.json -type f ! -path "*/node_modules/*" -print0)
+npm install
 ```
 
-2. In folder `application/frontend`
+2. To start run the following:
 
 ```shell
-npm run build:dev
+npm run init-db
+npm start
 ```
 
-3. In folder `application/backend`
-
-```shell
-edgedb project init --non-interactive
-npm run edgetypes
-```
-
-4. Create local secrets for local boot
+3. Create local secrets for local boot:
 
 You will need to get these actual values out of band (i.e. Slack).
 
@@ -51,18 +39,18 @@ security add-generic-password -a "$USER" -s 'Elsa REMS Bot Key Dev' -w 'qwerty12
 
 ### Run Locally
 
-Setup two shell windows, one in `application/frontend` and one in `application/backend`
+The Elsa frontend is located in `application/frontend` and the backend in `application/backend`.
 
-In the frontend - whenever frontend code is changed - rebuild with
+Whenever frontend code is changed - rebuild with:
 
+```shell
+npm run frontend
 ```
-npm run build:dev
-```
 
-In the backend
+For the backend:
 
-```
-npm run dev
+```shell
+npm run backend
 ```
 
 Backend code is automatically monitored and will restart on any code changes.
