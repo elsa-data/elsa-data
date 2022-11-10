@@ -50,7 +50,6 @@ export const AuditEntryPage = (): JSX.Element => {
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
         </div>
       </BoxNoPad>
-      <DataAccessLogsBox />
     </LayoutBase>
   );
 };

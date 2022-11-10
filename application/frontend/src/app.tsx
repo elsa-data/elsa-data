@@ -13,6 +13,7 @@ import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page
 import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
 import { ErrorDisplay } from "./components/error-display";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
+import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -40,12 +41,20 @@ export const App: React.FC = () => {
         <Route path={`/`} element={<HomePage />} />
         <Route path={`/users`} element={<UsersDashboardPage />} />
         <Route path={`/dac`} element={<DacImportPage />} />
-        <Route path={`/releases`} element={<ReleasesPage />} />
-        <Route path={`/releases/:releaseId`} element={<ReleasesDetailPage />} />
-        <Route
-          path={`/releases/:releaseId/audit-log/:objectId`}
-          element={<AuditEntryPage />}
-        />
+
+        <Route path={`releases`}>
+          <Route index element={<ReleasesPage />} />
+
+          <Route path=":releaseId">
+            <Route index element={<ReleasesDetailPage />} />
+
+            <Route path="audit-log">
+              <Route path={`:objectId`} element={<AuditEntryPage />} />
+              <Route path={`data-access`} element={<DataAccessPage />} />
+            </Route>
+          </Route>
+        </Route>
+
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
         <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
         <Route path="*" element={<NoMatch />} />

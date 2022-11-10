@@ -125,7 +125,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     Params: { releaseId: string; objectId: string };
     Reply: AuditDataAccessType[] | null;
   }>(
-    "/api/releases/:releaseId/audit-log/:objectId/data-access",
+    "/api/releases/:releaseId/audit-log/data-access",
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
@@ -143,7 +143,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
   }>(
-    "/api/releases/:releaseId/audit-log/data-access",
+    "/api/releases/:releaseId/audit-log/data-access/summary",
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 

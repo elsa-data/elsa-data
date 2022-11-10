@@ -22,7 +22,7 @@ function DataAccessLogsBox() {
     async () =>
       await axios
         .get<AuditDataAccessType[]>(
-          `/api/releases/${releaseId}/audit-log/${objectId}/data-access`
+          `/api/releases/${releaseId}/audit-log/data-access`
         )
         .then((response) => response.data)
   );
