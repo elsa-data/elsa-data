@@ -1,5 +1,6 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import * as edgedb from "edgedb";
+import e from "../../dbschema/edgeql-js";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
 import { AuditLogService } from "../../src/business/services/audit-log-service";
@@ -96,4 +97,36 @@ it("audit stuff duration", async () => {
   );
 
   console.log(JSON.stringify(events));
+});
+
+it("audit data access log", async () => {
+  const start = new Date();
+
+  // Pre-insert file storage
+  const fileUrl = "s3://elsa-bucket/PRM001.fastq.gz";
+  await e
+    .insert(e.storage.File, {
+      url: fileUrl,
+      size: 123,
+      checksums: [{ type: "MD5", value: "abcde123" }],
+    })
+    .run(edgeDbClient);
+
+  const aeId = await auditLogService.startReleaseAuditEvent(
+    edgeDbClient,
+    allowedPiUser,
+    testReleaseId,
+    "C",
+    "Data access release",
+    start
+  );
+  const se = await auditLogService.updateDataAccessAuditEvent({
+    executor: edgeDbClient,
+    fileUrl: fileUrl,
+    releaseAuditEventId: aeId,
+    who: "123.123.12.123",
+    egressBytes: 123456,
+    description: "Test data access log.",
+    date: new Date("2022-10-24 05:56:40.000"),
+  });
 });

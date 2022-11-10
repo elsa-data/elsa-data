@@ -6,6 +6,8 @@ import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
 import {
+  AuditDataSummaryType,
+  AuditDataAccessType,
   AuditEntryDetailsType,
   AuditEntryFullType,
   AuditEntryType,
@@ -16,6 +18,8 @@ import {
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForReleaseQuery,
+  selectDataAccessAuditEventByReleaseIdQuery,
+  selectDataAccessAuditEventByLogIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 
@@ -121,6 +125,51 @@ export class AuditLogService {
       .run(executor);
   }
 
+  /**
+   * Insert DataAccessAudit
+   */
+  public async updateDataAccessAuditEvent({
+    executor,
+    releaseAuditEventId,
+    who,
+    fileUrl,
+    egressBytes,
+    description,
+    date,
+  }: {
+    executor: Executor;
+    releaseAuditEventId: string;
+    who: string;
+    fileUrl: string;
+    description: string;
+    egressBytes: number;
+    date: Date;
+  }) {
+    await e
+      .update(e.audit.ReleaseAuditEvent, (ra) => ({
+        filter: e.op(ra.id, "=", e.uuid(releaseAuditEventId)),
+        set: {
+          dataAccessAuditEvents: {
+            "+=": e.insert(e.audit.DataAccessAuditEvent, {
+              file: e
+                .select(e.storage.File, (f) => ({
+                  filter: e.op(f.url, "=", fileUrl),
+                }))
+                .assert_single(),
+              egressBytes: egressBytes,
+              whoId: who,
+              whoDisplayName: who,
+              actionCategory: e.audit.ActionType.R,
+              actionDescription: description,
+              occurredDateTime: e.datetime(date),
+              outcome: 0,
+            }),
+          },
+        },
+      }))
+      .run(executor);
+  }
+
   public async getEntries(
     executor: Executor,
     user: AuthenticatedUser,
@@ -209,5 +258,108 @@ export class AuditLogService {
         details: entry.details,
       };
     }
+  }
+
+  public async getDataAccessAuditByLogId(
+    executor: Executor,
+    user: AuthenticatedUser,
+    id: string
+  ): Promise<AuditDataAccessType[] | null> {
+    const dataAccessLogArray = await selectDataAccessAuditEventByLogIdQuery(
+      id
+    ).run(executor);
+    if (!dataAccessLogArray) {
+      return null;
+    } else {
+      return dataAccessLogArray.map((entry) => ({
+        objectId: entry.id,
+        whoId: entry.whoId,
+        whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory,
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime.toString(),
+        occurredDuration: entry.occurredDuration?.toString(),
+        outcome: entry.outcome,
+        egressBytes: entry.egressBytes,
+        fileUrl: entry.fileUrl,
+        fileSize: entry.fileSize,
+      }));
+    }
+  }
+
+  sortString(
+    a: Record<string, string | number>,
+    b: Record<string, string | number>,
+    column: string
+  ) {
+    if (a[column] < b[column]) return -1;
+    if (a[column] > b[column]) return 1;
+    return 0;
+  }
+
+  public async getDataAccessAuditByReleaseId(
+    executor: Executor,
+    user: AuthenticatedUser,
+    id: string
+  ): Promise<AuditDataSummaryType[] | null> {
+    // TODO: Make this paginate
+    const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
+      id
+    ).run(executor);
+
+    if (!dataAccessLogArray) return null;
+
+    // Grouping result by fileUrl
+    const groupedByFileUrl = dataAccessLogArray.reduce((group: any, log) => {
+      const { fileUrl } = log;
+      group[fileUrl] = group[fileUrl] ?? [];
+      group[fileUrl].push(log);
+      return group;
+    }, {});
+
+    const dataAccessSummaryResult = [];
+    for (const fileUrl in groupedByFileUrl) {
+      const dataAccessEventArray = groupedByFileUrl[fileUrl];
+
+      // Finding last event for that object
+      // In some field we are only interested on the last event.
+      const sortedEvent = dataAccessEventArray.sort((a: any, b: any) =>
+        this.sortString(a, b, "occurredDateTime")
+      );
+      const lastEvent = sortedEvent.at(sortedEvent.length - 1);
+
+      // Total egress (in bytes)
+      let totalEgressBytes: number = 0;
+      for (const log of dataAccessEventArray) {
+        const { egressBytes } = log;
+        totalEgressBytes += egressBytes;
+      }
+
+      // Calculate status of download. Rough indicate if download was complete, incomplete, multi-download
+      let downloadStatus: string;
+      const { fileSize } = lastEvent; // All other should value should be the same
+      if (totalEgressBytes == fileSize) {
+        downloadStatus = "complete";
+      } else if (totalEgressBytes < fileSize) {
+        downloadStatus = "incomplete";
+      } else if (totalEgressBytes > fileSize) {
+        downloadStatus = "multiple-download";
+      } else {
+        downloadStatus = "-";
+      }
+
+      dataAccessSummaryResult.push({
+        target: lastEvent.whoDisplayName,
+        fileUrl: fileUrl,
+        fileSize: fileSize,
+        dataAccessedInBytes: totalEgressBytes,
+        downloadStatus: downloadStatus,
+        lastAccessedTime: lastEvent.occurredDateTime,
+      });
+    }
+
+    return dataAccessSummaryResult;
   }
 }

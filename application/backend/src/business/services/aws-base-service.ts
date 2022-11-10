@@ -191,6 +191,7 @@ export abstract class AwsBaseService {
           result.s3Bucket = "bucket";
           result.s3Key = "key";
           // throw new Error("Bad S3 URL format");
+          continue;
         } else {
           result.s3Bucket = _match[1];
           result.s3Key = _match[2];

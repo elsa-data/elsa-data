@@ -1,5 +1,7 @@
 module audit {
 
+    # ActionType definition
+    # Ref: https://www.hl7.org/fhir/valueset-audit-event-action.html
     scalar type ActionType extending enum<'C', 'R', 'U', 'D', 'E'>;
 
     abstract type AuditEvent {
@@ -57,7 +59,37 @@ module audit {
         property details -> json;
     }
 
+    type DataAccessAuditEvent extending AuditEvent{
+
+        # Link back which audit owns this
+        link releaseAudit := .<dataAccessAuditEvents[is audit::ReleaseAuditEvent];
+        
+        # Intended file access
+        required link file -> storage::File{
+            on target delete allow
+        };
+
+        # Number of bytes transfer out from storage
+        required property egressBytes -> int64;
+
+    }
+
     type ReleaseAuditEvent extending AuditEvent {
+        
+        # Link back which release own this audit log
+        link release_ := .<auditLog[is release::Release];
+
+        # A link to related data access events.
+        # Possible to defined default value for empty
+        multi link dataAccessAuditEvents -> DataAccessAuditEvent{
+
+            # the audit events can be deleted if the ReleaseAuditEvent itself is
+            on source delete delete target;
+
+            constraint exclusive;
+
+        };
+
 
     }
 

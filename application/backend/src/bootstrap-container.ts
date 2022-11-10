@@ -9,6 +9,7 @@ import { AwsAccessPointService } from "./business/services/aws-access-point-serv
 import { AwsPresignedUrlsService } from "./business/services/aws-presigned-urls-service";
 import { DatasetService } from "./business/services/dataset-service";
 import { JobsService } from "./business/services/jobs-service";
+import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 
 export function registerTypes() {
   container.register<edgedb.Client>("Database", {
@@ -17,6 +18,10 @@ export function registerTypes() {
 
   container.register<S3Client>("S3Client", {
     useFactory: () => new S3Client({}),
+  });
+
+  container.register<CloudTrailClient>("S3Client", {
+    useFactory: () => new CloudTrailClient({}),
   });
 
   container.register<CloudFormationClient>("CloudFormationClient", {

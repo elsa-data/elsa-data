@@ -14,6 +14,8 @@ import { random } from "lodash";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
+  MARGE_BAI_S3,
+  MARGE_BAM_S3,
   MARGE_SPECIMEN,
 } from "./insert-test-data-10f-simpsons";
 import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
@@ -153,10 +155,58 @@ function makeSytheticAuditLog() {
     occurredDuration: e.duration(
       new Duration(0, 0, 0, 0, 0, random(59), random(59))
     ),
-    details: MOCK_JSON,
+    // details: MOCK_JSON,
+    dataAccessAuditEvents: e.set(
+      e.insert(e.audit.DataAccessAuditEvent, {
+        file: e
+          .select(e.storage.File, (f) => ({
+            filter: e.op(f.url, "ilike", `%${MARGE_BAM_S3}`),
+          }))
+          .assert_single(),
+        egressBytes: 10188721080,
+        whoId: "123.123.123.123",
+        whoDisplayName: "123.123.123.123",
+        actionCategory: e.audit.ActionType.R,
+        actionDescription: "Data Access",
+        occurredDateTime: e.datetime(new Date()),
+        outcome: 0,
+      }),
+      e.insert(e.audit.DataAccessAuditEvent, {
+        file: e
+          .select(e.storage.File, (f) => ({
+            filter: e.op(f.url, "ilike", `%${MARGE_BAM_S3}`),
+          }))
+          .assert_single(),
+        egressBytes: 10188721080,
+        whoId: "123.123.123.123",
+        whoDisplayName: "123.123.123.123",
+        actionCategory: e.audit.ActionType.R,
+        actionDescription: "Data Access",
+        occurredDateTime: e.datetime(new Date()),
+        outcome: 0,
+      }),
+      e.insert(e.audit.DataAccessAuditEvent, {
+        file: e
+          .select(e.storage.File, (f) => ({
+            filter: e.op(f.url, "ilike", `%${MARGE_BAI_S3}`),
+          }))
+          .assert_single(),
+        egressBytes: 3681456,
+        whoId: "123.123.123.123",
+        whoDisplayName: "123.123.123.123",
+        actionCategory: e.audit.ActionType.R,
+        actionDescription: "Data Access",
+        occurredDateTime: e.datetime(new Date()),
+        outcome: 0,
+      })
+    ),
   });
 
   return e.set(
+    e.insert(
+      e.audit.ReleaseAuditEvent,
+      makeLongOperation("Ran Dynamic Consent")
+    ),
     e.insert(e.audit.ReleaseAuditEvent, makeCreate()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
@@ -173,14 +223,6 @@ function makeSytheticAuditLog() {
     e.insert(e.audit.ReleaseAuditEvent, makeRead()),
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Selected Case")),
     e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
-    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
-    e.insert(
-      e.audit.ReleaseAuditEvent,
-      makeLongOperation("Ran Dynamic Consent")
-    ),
-    e.insert(
-      e.audit.ReleaseAuditEvent,
-      makeLongOperation("Ran Dynamic Consent")
-    )
+    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen"))
   );
 }
