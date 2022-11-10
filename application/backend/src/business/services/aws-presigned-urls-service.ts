@@ -79,7 +79,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
         `https://${_match[1]}.s3.${awsRegion}.amazonaws.com/${_match[2]}`
       );
       s3ObjectUrl.query = {
-        "x-auditId": newAuditEventId,
+        "x-releaseId": releaseId,
       };
 
       const presigner = new S3RequestPresigner({
