@@ -1,6 +1,6 @@
 {
   "name": "elsa-data-frontend",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "//frontend": "Serves the frontend files up using a built in web server - but without the custom backend or APIs - this is generally not useable",

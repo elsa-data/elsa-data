@@ -1,6 +1,6 @@
 {
   "name": "elsa-data-backend",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The backend that serves HTML/API for Elsa Data",
   "author": {
     "name": "University of Melbourne Centre for Cancer Research",
@@ -45,6 +45,7 @@
     "@fastify/sensible": "5.1.1",
     "@fastify/static": "6.5.0",
     "@sinclair/typebox": "0.24.47",
+    "@types/moo": "^0.5.5",
     "@types/randomstring": "^1.1.8",
     "@umccr/elsa-constants": "file:../common/elsa-constants",
     "@umccr/elsa-types": "file:../common/elsa-types",
@@ -69,6 +70,7 @@
     "json5": "2.2.1",
     "jszip": "3.10.1",
     "lodash": "4.17.21",
+    "moo": "^0.5.2",
     "openid-client": "5.2.1",
     "p-throttle": "^5.0.0",
     "patch-package": "6.4.7",
