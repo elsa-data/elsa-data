@@ -36,7 +36,7 @@ const notMalesQuery = {
   ],
 };
 
-const malesWithVariantQuery = {
+const malesWithChr1VariantQuery = {
   filters: [
     {
       scope: "individuals",
@@ -45,12 +45,46 @@ const malesWithVariantQuery = {
       value: "male",
     },
   ],
+  // 0101101111
   requestParameters: {
     g_variant: {
       referenceName: "chr1",
       start: 185194,
       referenceBases: "G",
       alternateBases: "C",
+    },
+  },
+};
+
+const allWithChr2VariantQuery = {
+  // 1111111000
+  requestParameters: {
+    g_variant: {
+      referenceName: "chr2",
+      start: 2397677,
+      referenceBases: "GT",
+      alternateBases: "G",
+    },
+  },
+};
+
+const femalesWithChr20VariantQuery = {
+  // 1100101111
+  filters: [
+    {
+      scope: "individuals",
+      id: "sex",
+      operator: "=",
+      value: "female",
+    },
+  ],
+  // 0101101111
+  requestParameters: {
+    g_variant: {
+      referenceName: "chr20",
+      start: 1469919,
+      referenceBases: "A",
+      alternateBases: "AATAAT",
     },
   },
 };
@@ -232,7 +266,18 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   <span className="text-black">examples: </span>
                   {ExampleLink("Males", malesQuery)}
                   {ExampleLink("Not Males", notMalesQuery)}
-                  {ExampleLink("Males with Variant", malesWithVariantQuery)}
+                  {ExampleLink(
+                    "Males with Variant 0101101111",
+                    malesWithChr1VariantQuery
+                  )}
+                  {ExampleLink(
+                    "All with Variant 1111111000",
+                    allWithChr2VariantQuery
+                  )}
+                  {ExampleLink(
+                    "Females with Variant 1100101111",
+                    femalesWithChr20VariantQuery
+                  )}
                 </div>
               </div>
             </div>
