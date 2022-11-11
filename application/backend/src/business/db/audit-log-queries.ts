@@ -25,6 +25,22 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
 );
 
 /**
+ * An EdgeDb query to count the DataAccessAudit log entries associated
+ * with a given release.
+ */
+export const countDataAccessAuditLogEntriesQuery = e.params(
+  {
+    releaseId: e.uuid,
+  },
+  (params) =>
+    e.count(
+      e.select(e.audit.DataAccessAuditEvent, (da) => ({
+        filter: e.op(da.release_.id, "=", params.releaseId),
+      }))
+    )
+);
+
+/**
  * An EdgeDb query for the audit log details associated with an id.
  */
 export const auditLogDetailsForIdQuery = (
@@ -113,12 +129,53 @@ export const pageableAuditLogEntriesForReleaseQuery = (
 };
 
 export const selectDataAccessAuditEventByReleaseIdQuery = (
-  releaseId: string
+  releaseId: string,
+  limit: number,
+  offset: number,
+  orderByProperty: string = "occurredDateTime",
+  orderAscending: boolean = false
 ) => {
   return e.select(e.audit.DataAccessAuditEvent, (da) => ({
     ...e.audit.DataAccessAuditEvent["*"],
     fileSize: da.file.size,
     fileUrl: da.file.url,
     filter: e.op(da.release_.id, "=", e.uuid(releaseId)),
+    order_by: [
+      {
+        expression:
+          orderByProperty === "whoId"
+            ? da.whoId
+            : orderByProperty === "whoDisplayName"
+            ? da.whoDisplayName
+            : orderByProperty === "actionCategory"
+            ? e.cast(e.str, da.actionCategory)
+            : orderByProperty === "actionDescription"
+            ? da.actionDescription
+            : orderByProperty === "recordedDateTime"
+            ? da.recordedDateTime
+            : orderByProperty === "updatedDateTime"
+            ? da.updatedDateTime
+            : orderByProperty === "occurredDateTime"
+            ? da.occurredDateTime
+            : orderByProperty === "occurredDuration"
+            ? da.occurredDuration
+            : orderByProperty === "outcome"
+            ? da.outcome
+            : orderByProperty === "details"
+            ? da.details
+            : orderByProperty === "fileUrl"
+            ? da.file.url
+            : orderByProperty === "egressBytes"
+            ? da.egressBytes
+            : da.occurredDateTime,
+        direction: orderAscending ? e.ASC : e.DESC,
+      },
+      {
+        expression: da.occurredDateTime,
+        direction: e.DESC,
+      },
+    ],
+    limit: limit,
+    offset: offset,
   }));
 };

@@ -17,6 +17,7 @@ import {
   auditLogDetailsForIdQuery,
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
+  countDataAccessAuditLogEntriesQuery,
   pageableAuditLogEntriesForReleaseQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
@@ -262,15 +263,27 @@ export class AuditLogService {
   public async getDataAccessAuditByReleaseId(
     executor: Executor,
     user: AuthenticatedUser,
-    id: string
-  ): Promise<AuditDataAccessType[] | null> {
+    releaseId: string,
+    limit: number,
+    offset: number,
+    orderByProperty: string = "occurredDateTime",
+    orderAscending: boolean = false
+  ): Promise<PagedResult<AuditDataAccessType> | null> {
+    const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
+      executor,
+      { releaseId }
+    );
+
     const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
-      id
+      releaseId,
+      limit,
+      offset,
+      orderByProperty,
+      orderAscending
     ).run(executor);
-    if (!dataAccessLogArray) {
-      return null;
-    } else {
-      return dataAccessLogArray.map((entry) => ({
+
+    return createPagedResult(
+      dataAccessLogArray.map((entry) => ({
         objectId: entry.id,
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,
@@ -284,8 +297,9 @@ export class AuditLogService {
         egressBytes: entry.egressBytes,
         fileUrl: entry.fileUrl,
         fileSize: entry.fileSize,
-      }));
-    }
+      })),
+      totalEntries
+    );
   }
 
   sortString(
@@ -301,11 +315,21 @@ export class AuditLogService {
   public async getSummaryDataAccessAuditByReleaseId(
     executor: Executor,
     user: AuthenticatedUser,
-    id: string
+    releaseId: string
   ): Promise<AuditDataSummaryType[] | null> {
     // TODO: Make this paginate
+
+    const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
+      executor,
+      { releaseId }
+    );
+
     const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
-      id
+      releaseId,
+      totalEntries,
+      0,
+      "occurredDateTime",
+      false
     ).run(executor);
 
     if (!dataAccessLogArray) return null;

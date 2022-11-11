@@ -44,10 +44,8 @@ export const App: React.FC = () => {
 
         <Route path={`releases`}>
           <Route index element={<ReleasesPage />} />
-
           <Route path=":releaseId">
             <Route index element={<ReleasesDetailPage />} />
-
             <Route path="audit-log">
               <Route path={`:objectId`} element={<AuditEntryPage />} />
               <Route path={`data-access`} element={<DataAccessPage />} />

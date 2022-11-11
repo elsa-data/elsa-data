@@ -122,20 +122,35 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   );
 
   fastify.get<{
-    Params: { releaseId: string; objectId: string };
+    Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
+    Querystring: AuditEventForReleastQueryType;
   }>(
     "/api/releases/:releaseId/audit-log/data-access",
+    {
+      schema: {
+        querystring: AuditEventForReleaseQuerySchema,
+      },
+    },
     async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+      const { authenticatedUser, pageSize, page } =
+        authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.releaseId;
+      const { orderByProperty = "occurredDateTime", orderAscending = false } =
+        request.query;
 
       const events = await auditLogService.getDataAccessAuditByReleaseId(
         edgeDbClient,
         authenticatedUser,
-        request.params.releaseId
+        releaseId,
+        pageSize,
+        (page - 1) * pageSize,
+        orderByProperty,
+        orderAscending
       );
 
-      sendResult(reply, events);
+      sendPagedResult(reply, events);
     }
   );
 

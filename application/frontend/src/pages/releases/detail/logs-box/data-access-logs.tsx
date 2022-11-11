@@ -10,6 +10,8 @@ import { categoryToDescription } from "./logs-box";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { isEmpty, isNil } from "lodash";
+import { BoxPaginator } from "../../../../components/box-paginator";
+import { usePageSizer } from "../../../../hooks/page-sizer";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -17,14 +19,28 @@ function DataAccessLogsBox() {
     objectId: string;
   }>();
 
+  // Pagination Variables
+  const pageSize = usePageSizer();
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentTotal, setCurrentTotal] = useState<number>(1);
+
   const dataAccessQuery = useQuery(
-    ["release-data-access-audit", releaseId, objectId],
-    async () =>
-      await axios
-        .get<AuditDataAccessType[]>(
-          `/api/releases/${releaseId}/audit-log/data-access`
-        )
-        .then((response) => response.data)
+    ["release-data-access-audit", releaseId, objectId, currentPage],
+    async () => {
+      const response = await axios.get<AuditDataAccessType[]>(
+        `/api/releases/${releaseId}/audit-log/data-access`,
+        {
+          params: {
+            page: currentPage,
+          },
+        }
+      );
+
+      const data = response.data;
+      const newTotal = parseInt(response.headers["elsa-total-count"]);
+      if (isFinite(newTotal)) setCurrentTotal(newTotal);
+      return data;
+    }
   );
 
   const COLUMN_TO_SHOW = [
@@ -36,7 +52,7 @@ function DataAccessLogsBox() {
   ];
 
   const data: AuditDataAccessType[] | undefined = dataAccessQuery.data;
-  if ((isNil(data) || isEmpty(data)) && dataAccessQuery.isSuccess) return <></>;
+  if (isNil(data) && dataAccessQuery.isSuccess) return <>No Data Found!</>;
   return (
     <BoxNoPad heading="Data Access Log Summary">
       <Table
@@ -94,6 +110,13 @@ function DataAccessLogsBox() {
             </>
           ))
         }
+      />
+      <BoxPaginator
+        currentPage={currentPage}
+        setPage={(n) => setCurrentPage(n)}
+        rowCount={currentTotal}
+        rowsPerPage={pageSize}
+        rowWord="dataAccess"
       />
     </BoxNoPad>
   );
