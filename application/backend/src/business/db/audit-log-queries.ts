@@ -19,11 +19,23 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
   (params) =>
     e.count(
       e.select(e.audit.ReleaseAuditEvent, (ae) => ({
-        filter: e.op(
-          ae["<auditLog[is release::Release]"].id,
-          "=",
-          params.releaseId
-        ),
+        filter: e.op(ae.release_.id, "=", params.releaseId),
+      }))
+    )
+);
+
+/**
+ * An EdgeDb query to count the DataAccessAudit log entries associated
+ * with a given release.
+ */
+export const countDataAccessAuditLogEntriesQuery = e.params(
+  {
+    releaseId: e.uuid,
+  },
+  (params) =>
+    e.count(
+      e.select(e.audit.DataAccessAuditEvent, (da) => ({
+        filter: e.op(da.release_.id, "=", params.releaseId),
       }))
     )
 );
@@ -79,11 +91,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     occurredDuration: true,
     outcome: true,
     hasDetails: e.op("exists", auditEvent.details),
-    filter: e.op(
-      auditEvent["<auditLog[is release::Release]"].id,
-      "=",
-      e.uuid(releaseId)
-    ),
+    filter: e.op(auditEvent.release_.id, "=", e.uuid(releaseId)),
     order_by: [
       {
         expression:
@@ -120,26 +128,54 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   }));
 };
 
-export const selectDataAccessAuditEventByLogIdQuery = (logId: string) => {
-  return e.select(e.audit.DataAccessAuditEvent, (da) => ({
-    ...e.audit.DataAccessAuditEvent["*"],
-    fileSize: da.file.size,
-    fileUrl: da.file.url,
-    filter: e.op(da.releaseAudit.id, "=", e.uuid(logId)),
-  }));
-};
-
 export const selectDataAccessAuditEventByReleaseIdQuery = (
-  releaseId: string
+  releaseId: string,
+  limit: number,
+  offset: number,
+  orderByProperty: string = "occurredDateTime",
+  orderAscending: boolean = false
 ) => {
   return e.select(e.audit.DataAccessAuditEvent, (da) => ({
     ...e.audit.DataAccessAuditEvent["*"],
     fileSize: da.file.size,
     fileUrl: da.file.url,
-    filter: e.op(
-      da.releaseAudit["<auditLog[is release::Release]"].id,
-      "=",
-      e.uuid(releaseId)
-    ),
+    filter: e.op(da.release_.id, "=", e.uuid(releaseId)),
+    order_by: [
+      {
+        expression:
+          orderByProperty === "whoId"
+            ? da.whoId
+            : orderByProperty === "whoDisplayName"
+            ? da.whoDisplayName
+            : orderByProperty === "actionCategory"
+            ? e.cast(e.str, da.actionCategory)
+            : orderByProperty === "actionDescription"
+            ? da.actionDescription
+            : orderByProperty === "recordedDateTime"
+            ? da.recordedDateTime
+            : orderByProperty === "updatedDateTime"
+            ? da.updatedDateTime
+            : orderByProperty === "occurredDateTime"
+            ? da.occurredDateTime
+            : orderByProperty === "occurredDuration"
+            ? da.occurredDuration
+            : orderByProperty === "outcome"
+            ? da.outcome
+            : orderByProperty === "details"
+            ? da.details
+            : orderByProperty === "fileUrl"
+            ? da.file.url
+            : orderByProperty === "egressBytes"
+            ? da.egressBytes
+            : da.occurredDateTime,
+        direction: orderAscending ? e.ASC : e.DESC,
+      },
+      {
+        expression: da.occurredDateTime,
+        direction: e.DESC,
+      },
+    ],
+    limit: limit,
+    offset: offset,
   }));
 };

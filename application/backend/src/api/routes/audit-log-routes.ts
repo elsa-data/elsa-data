@@ -122,20 +122,35 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   );
 
   fastify.get<{
-    Params: { releaseId: string; objectId: string };
+    Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
+    Querystring: AuditEventForReleastQueryType;
   }>(
-    "/api/releases/:releaseId/audit-log/:objectId/data-access",
+    "/api/releases/:releaseId/audit-log/data-access",
+    {
+      schema: {
+        querystring: AuditEventForReleaseQuerySchema,
+      },
+    },
     async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+      const { authenticatedUser, pageSize, page } =
+        authenticatedRouteOnEntryHelper(request);
 
-      const events = await auditLogService.getDataAccessAuditByLogId(
+      const releaseId = request.params.releaseId;
+      const { orderByProperty = "occurredDateTime", orderAscending = false } =
+        request.query;
+
+      const events = await auditLogService.getDataAccessAuditByReleaseId(
         edgeDbClient,
         authenticatedUser,
-        request.params.objectId
+        releaseId,
+        pageSize,
+        (page - 1) * pageSize,
+        orderByProperty,
+        orderAscending
       );
 
-      sendResult(reply, events);
+      sendPagedResult(reply, events);
     }
   );
 
@@ -143,11 +158,11 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
   }>(
-    "/api/releases/:releaseId/audit-log/data-access",
+    "/api/releases/:releaseId/audit-log/data-access/summary",
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const events = await auditLogService.getDataAccessAuditByReleaseId(
+      const events = await auditLogService.getSummaryDataAccessAuditByReleaseId(
         edgeDbClient,
         authenticatedUser,
         request.params.releaseId

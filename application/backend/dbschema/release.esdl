@@ -79,13 +79,21 @@ module release {
 
         # we store audit logs per release where they are directly attributable to a release
         #
-        multi link auditLog -> audit::ReleaseAuditEvent {
+        multi link releaseAuditLog -> audit::ReleaseAuditEvent {
             # audit events should not be able to be deleted (singly)
             #
             on target delete restrict;
 
             # the audit events can be deleted if the release itself is
             #
+            on source delete delete target
+        }
+
+        multi link dataAccessAuditLog -> audit::DataAccessAuditEvent {
+            # audit events should not be able to be deleted (singly)
+            on target delete restrict;
+
+            # the audit events can be deleted if the release itself is
             on source delete delete target
         }
 

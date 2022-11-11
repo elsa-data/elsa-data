@@ -9,17 +9,15 @@ import {
 } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
-type Props = {
-  releaseId: string;
-};
+import { BiLinkExternal } from "react-icons/bi";
 
-function DataAccessSummaryBox({ releaseId }: Props) {
+function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
   const dataAccessQuery = useQuery(
     ["release-data-access-audit", releaseId],
     async () =>
       await axios
         .get<AuditDataSummaryType[]>(
-          `/api/releases/${releaseId}/audit-log/data-access`
+          `/api/releases/${releaseId}/audit-log/data-access/summary`
         )
         .then((response) => response.data)
   );
@@ -35,8 +33,20 @@ function DataAccessSummaryBox({ releaseId }: Props) {
 
   const data: AuditDataSummaryType[] | undefined = dataAccessQuery.data;
 
+  const BoxHeader = () => (
+    <div className="flex justify-between">
+      <div>Data Access Log Summary</div>
+      <a
+        className="normal-case	bg-transparent flex cursor-pointer hover:bg-slate-200 p-1 rounded-md"
+        href={`/releases/${releaseId}/audit-log/data-access`}
+      >
+        <BiLinkExternal />
+      </a>
+    </div>
+  );
+
   return (
-    <BoxNoPad heading="Data Access Log Summary">
+    <BoxNoPad heading={<BoxHeader />}>
       <Table
         tableHead={
           <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">

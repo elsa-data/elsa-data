@@ -62,7 +62,7 @@ module audit {
     type DataAccessAuditEvent extending AuditEvent{
 
         # Link back which audit owns this
-        link releaseAudit := .<dataAccessAuditEvents[is audit::ReleaseAuditEvent];
+        link release_ := .<dataAccessAuditLog[is release::Release];
         
         # Intended file access
         required link file -> storage::File{
@@ -77,20 +77,7 @@ module audit {
     type ReleaseAuditEvent extending AuditEvent {
         
         # Link back which release own this audit log
-        link release_ := .<auditLog[is release::Release];
-
-        # A link to related data access events.
-        # Possible to defined default value for empty
-        multi link dataAccessAuditEvents -> DataAccessAuditEvent{
-
-            # the audit events can be deleted if the ReleaseAuditEvent itself is
-            on source delete delete target;
-
-            constraint exclusive;
-
-        };
-
-
+        link release_ := .<releaseAuditLog[is release::Release];
     }
 
     type SystemAuditEvent extending AuditEvent {

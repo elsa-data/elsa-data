@@ -17,9 +17,9 @@ import {
   auditLogDetailsForIdQuery,
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
+  countDataAccessAuditLogEntriesQuery,
   pageableAuditLogEntriesForReleaseQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
-  selectDataAccessAuditEventByLogIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 
@@ -77,7 +77,7 @@ export class AuditLogService {
       .update(e.release.Release, (r) => ({
         filter: e.op(e.uuid(releaseId), "=", r.id),
         set: {
-          auditLog: {
+          releaseAuditLog: {
             "+=": e.select(e.audit.ReleaseAuditEvent, (ae) => ({
               filter: e.op(e.uuid(auditEvent.id), "=", ae.id).assert_single(),
             })),
@@ -130,7 +130,7 @@ export class AuditLogService {
    */
   public async updateDataAccessAuditEvent({
     executor,
-    releaseAuditEventId,
+    releaseId,
     who,
     fileUrl,
     egressBytes,
@@ -138,7 +138,7 @@ export class AuditLogService {
     date,
   }: {
     executor: Executor;
-    releaseAuditEventId: string;
+    releaseId: string;
     who: string;
     fileUrl: string;
     description: string;
@@ -146,10 +146,10 @@ export class AuditLogService {
     date: Date;
   }) {
     await e
-      .update(e.audit.ReleaseAuditEvent, (ra) => ({
-        filter: e.op(ra.id, "=", e.uuid(releaseAuditEventId)),
+      .update(e.release.Release, (r) => ({
+        filter: e.op(r.id, "=", e.uuid(releaseId)),
         set: {
-          dataAccessAuditEvents: {
+          dataAccessAuditLog: {
             "+=": e.insert(e.audit.DataAccessAuditEvent, {
               file: e
                 .select(e.storage.File, (f) => ({
@@ -260,18 +260,30 @@ export class AuditLogService {
     }
   }
 
-  public async getDataAccessAuditByLogId(
+  public async getDataAccessAuditByReleaseId(
     executor: Executor,
     user: AuthenticatedUser,
-    id: string
-  ): Promise<AuditDataAccessType[] | null> {
-    const dataAccessLogArray = await selectDataAccessAuditEventByLogIdQuery(
-      id
+    releaseId: string,
+    limit: number,
+    offset: number,
+    orderByProperty: string = "occurredDateTime",
+    orderAscending: boolean = false
+  ): Promise<PagedResult<AuditDataAccessType> | null> {
+    const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
+      executor,
+      { releaseId }
+    );
+
+    const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
+      releaseId,
+      limit,
+      offset,
+      orderByProperty,
+      orderAscending
     ).run(executor);
-    if (!dataAccessLogArray) {
-      return null;
-    } else {
-      return dataAccessLogArray.map((entry) => ({
+
+    return createPagedResult(
+      dataAccessLogArray.map((entry) => ({
         objectId: entry.id,
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,
@@ -285,8 +297,9 @@ export class AuditLogService {
         egressBytes: entry.egressBytes,
         fileUrl: entry.fileUrl,
         fileSize: entry.fileSize,
-      }));
-    }
+      })),
+      totalEntries
+    );
   }
 
   sortString(
@@ -299,14 +312,24 @@ export class AuditLogService {
     return 0;
   }
 
-  public async getDataAccessAuditByReleaseId(
+  public async getSummaryDataAccessAuditByReleaseId(
     executor: Executor,
     user: AuthenticatedUser,
-    id: string
+    releaseId: string
   ): Promise<AuditDataSummaryType[] | null> {
     // TODO: Make this paginate
+
+    const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
+      executor,
+      { releaseId }
+    );
+
     const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
-      id
+      releaseId,
+      totalEntries,
+      0,
+      "occurredDateTime",
+      false
     ).run(executor);
 
     if (!dataAccessLogArray) return null;

@@ -153,11 +153,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
 
   // Ideally might be an interval job (perhaps run weekly? or maybe 7days after releaseAudit)
-  async recordCloudTrailLogByReleaseId({
-    releaseAuditEventId,
-  }: {
-    releaseAuditEventId: string;
-  }) {
+  async recordCloudTrailLogByReleaseId({ releaseId }: { releaseId: string }) {
     const cloudTrailEventArray = await this.getCloudTrailLakeEvents();
 
     // Recording this into database
@@ -172,7 +168,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       // Improvement do it in batch?
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseAuditEventId: releaseAuditEventId,
+        releaseId: releaseId,
         who: trailEvent.sourceIPAddress,
         fileUrl: s3Url,
         description: "Presigned URL accessed.",

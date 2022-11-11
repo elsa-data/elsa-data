@@ -7,7 +7,6 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { ErrorDisplay } from "../../../../components/error-display";
 import { BoxNoPad } from "../../../../components/boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import DataAccessLogsBox from "./data-access-logs";
 
 /**
  * The audit event page shows a full audit entry event as a JSON.
@@ -50,7 +49,6 @@ export const AuditEntryPage = (): JSX.Element => {
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
         </div>
       </BoxNoPad>
-      <DataAccessLogsBox />
     </LayoutBase>
   );
 };

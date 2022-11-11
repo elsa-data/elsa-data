@@ -282,7 +282,7 @@ ${roleTable.join("\n")}
           // NOTE: this is slightly non-standard as the audit event here is not created as part of the
           // audit service - however this allows us to make it all a single db operation
           // make sure the audit code here keeps in sync with the basic add audit event
-          auditLog: e.set(
+          releaseAuditLog: e.set(
             e.insert(e.audit.ReleaseAuditEvent, {
               actionCategory: "C",
               actionDescription: "Created Release",
