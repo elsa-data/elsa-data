@@ -48,6 +48,8 @@ function formatError(
 
   if (err instanceof Error) {
     parseErrorSetter(err.message);
+  } else if (typeof err === "string") {
+    parseErrorSetter(err);
   } else {
     parseErrorSetter(GENERIC_ERR_MSG);
   }
@@ -76,8 +78,12 @@ async function onDropCallback<T extends File>(
 
   const parseCsvPromises = acceptedFiles.map((f) => parseCsv<T>(f));
   const parsedPromises =
-    (await Promise.all(parseCsvPromises).catch((err: any) => {
-      formatError(err, parseErrorSetter, showingRedcapDialogSetter);
+    (await Promise.all(parseCsvPromises).catch((_: any) => {
+      formatError(
+        `${GENERIC_ERR_MSG} while parsing CSV file`,
+        parseErrorSetter,
+        showingRedcapDialogSetter
+      );
     })) ?? undefined;
 
   if (!parsedPromises) {
