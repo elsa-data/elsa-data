@@ -26,6 +26,7 @@ async function parseCsv<T extends File>(
       error: (error) => {
         return reject([error]);
       },
+      skipEmptyLines: "greedy",
     });
   });
 }
