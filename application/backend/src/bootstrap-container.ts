@@ -20,7 +20,7 @@ export function registerTypes() {
     useFactory: () => new S3Client({}),
   });
 
-  container.register<CloudTrailClient>("S3Client", {
+  container.register<CloudTrailClient>("CloudTrailClient", {
     useFactory: () => new CloudTrailClient({}),
   });
 
