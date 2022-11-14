@@ -44,7 +44,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   ): Promise<string> {
     // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
     const requestedField =
-      "element_at(requestParameters, 'x-auditId'), " +
+      "element_at(requestParameters, 'x-releaseId'), " +
       "eventTime, " +
       "sourceIPAddress, " +
       "element_at(requestParameters, 'bucketName') as bucketName, " +
