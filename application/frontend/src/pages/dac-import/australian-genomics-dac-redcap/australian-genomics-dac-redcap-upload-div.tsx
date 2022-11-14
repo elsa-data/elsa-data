@@ -1,28 +1,18 @@
 import React, { useCallback, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUpload,
-} from "@fortawesome/free-solid-svg-icons";
-import {
-  partial,
-} from "lodash";
-import {
-  useDropzone,
-  FileError,
-  FileRejection,
-} from 'react-dropzone'
-import Papa from "papaparse";
-import {
-  LocalFile,
-  ParseResult,
-} from "papaparse";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { partial } from "lodash";
+import { FileRejection, useDropzone } from "react-dropzone";
+import Papa, { ParseResult } from "papaparse";
 import axios from "axios";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
 
 const GENERIC_ERR_MSG = "Something went wrong";
 
-async function parseCsv<T extends File>(file: T): Promise<Record<string, string>[]> {
+async function parseCsv<T extends File>(
+  file: T
+): Promise<Record<string, string>[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
       header: true,
@@ -42,54 +32,70 @@ async function parseCsv<T extends File>(file: T): Promise<Record<string, string>
 
 function errorMessage(fileRejections: FileRejection[]): string {
   const errors = fileRejections.flatMap((fileRejection: FileRejection) => {
-    const error = fileRejection.errors.map((error) =>
-      error.message
-    ).join(', ');
+    const error = fileRejection.errors.map((error) => error.message).join(", ");
     return `${fileRejection.file.name}: ${error}`;
   });
-  return errors.join('; ');
+  return errors.join("; ");
 }
 
+function formatError(
+  err: any,
+  parseErrorSetter: (s: string | undefined) => void,
+  showingRedcapDialogSetter: (b: boolean) => void
+) {
+  console.log(err);
+
+  if (err instanceof Error) {
+    parseErrorSetter(err.message);
+  } else {
+    parseErrorSetter(GENERIC_ERR_MSG);
+  }
+
+  showingRedcapDialogSetter(true);
+}
 
 async function onDropCallback<T extends File>(
   showingRedcapDialogSetter: (b: boolean) => void,
   possibleApplicationsSetter: (d: AustraliaGenomicsDacRedcap[]) => void,
   parseErrorSetter: (s: string | undefined) => void,
   acceptedFiles: T[],
-  fileRejections: FileRejection[],
+  fileRejections: FileRejection[]
 ) {
   possibleApplicationsSetter([]);
   parseErrorSetter(undefined);
 
   if (fileRejections.length > 0) {
-    parseErrorSetter(errorMessage(fileRejections));
-    showingRedcapDialogSetter(true);
+    formatError(
+      errorMessage(fileRejections),
+      parseErrorSetter,
+      showingRedcapDialogSetter
+    );
     return;
   }
 
   const parseCsvPromises = acceptedFiles.map((f) => parseCsv<T>(f));
-  const parsed = (await Promise.all(parseCsvPromises)).flat();
+  const parsedPromises =
+    (await Promise.all(parseCsvPromises).catch((err: any) => {
+      formatError(err, parseErrorSetter, showingRedcapDialogSetter);
+    })) ?? undefined;
+
+  if (!parsedPromises) {
+    return;
+  }
+
+  const parsed = parsedPromises.flat();
 
   await axios
-    .post<AustraliaGenomicsDacRedcap[]>(
-      `/api/dac/redcap/possible`,
-      parsed,
-    )
+    .post<AustraliaGenomicsDacRedcap[]>(`/api/dac/redcap/possible`, parsed)
     .then((response) => response.data)
     .then((d) => {
       possibleApplicationsSetter(d);
       showingRedcapDialogSetter(true);
     })
     .catch((err: any) => {
-      console.log(err);
-      if (err instanceof Error) {
-        parseErrorSetter(err.message);
-      } else {
-        parseErrorSetter(GENERIC_ERR_MSG);
-      }
-      showingRedcapDialogSetter(true);
+      formatError(err, parseErrorSetter, showingRedcapDialogSetter);
     });
-};
+}
 
 export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
   const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
@@ -103,35 +109,27 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
       onDropCallback,
       setShowingRedcapDialog,
       setPossibleApplications,
-      setParseError,
+      setParseError
     ),
     []
   );
 
   const onError = useCallback((err: Error) => {
-    console.log(err);
-    setParseError(GENERIC_ERR_MSG);
-    setShowingRedcapDialog(true);
+    formatError(err, setParseError, setShowingRedcapDialog);
   }, []);
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     onError,
-    accept: {'text/csv': []},
+    accept: { "text/csv": [] },
   });
 
   return (
     <>
-      <div
-        {...getRootProps()}
-        className="flex flex-col gap-6 items-center"
-      >
-        <div
-          className="w-96 h-60 items-center bg-gray-200 hover:bg-gray-100 border-dashed border-slate-400 border-2 flex flex-col rounded-2xl justify-center p-12"
-        >
-
+      <div {...getRootProps()} className="flex flex-col gap-6 items-center">
+        <div className="w-96 h-60 items-center bg-gray-200 hover:bg-gray-100 border-dashed border-slate-400 border-2 flex flex-col rounded-2xl justify-center p-12">
           <input {...getInputProps()} />
-          <FontAwesomeIcon icon={faUpload} className="text-6xl p-5"/>
+          <FontAwesomeIcon icon={faUpload} className="text-6xl p-5" />
           <p className="text-center">Drop CSV file here or click to upload</p>
         </div>
       </div>
@@ -142,5 +140,5 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
         initialError={parseError}
       />
     </>
-  )
-}
+  );
+};
