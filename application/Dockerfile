@@ -27,7 +27,7 @@
 
 # NOTE: we currently exclude from bundling
 #   sodium-native and node-gyp-build - these don't get bundled well because they include native libs etc
-#RUN cd backend && npx esbuild src/bootstrap-aws.ts --bundle --external:sodium-native --external:node-gyp-build --platform=node --target=node18 --outfile=./elsa.cjs
+#RUN cd backend && npx esbuild src/entrypoint-container.ts --bundle --external:sodium-native --external:node-gyp-build --platform=node --target=node18 --outfile=./elsa.cjs
 
 # we also bundle each Bree job as an individual bundle
 #RUN cd backend && npx esbuild jobs/select-job.ts --bundle --platform=node --target=node18 --outfile=./select-job.js
@@ -130,4 +130,4 @@ EXPOSE 80
 WORKDIR /app/backend
 
 # ENTRYPOINT [ "node", "elsa.cjs" ]
-ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/bootstrap-aws.ts" ]
+ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint-container.ts" ]

@@ -3,23 +3,18 @@ import "reflect-metadata";
 import { parentPort } from "worker_threads";
 import { container } from "tsyringe";
 import { JobsService } from "../src/business/services/jobs-service";
-import { registerTypes } from "../src/bootstrap-container";
-import { AuditLogService } from "../src/business/services/audit-log-service";
-import { UsersService } from "../src/business/services/users-service";
-import {
-  ElsaEnvironment,
-  ElsaLocation,
-  ElsaSettings,
-} from "../src/config/elsa-settings";
+import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
+import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
 
 // global settings for DI
-registerTypes();
+bootstrapDependencyInjection();
 
 // we need to work out what we are going to do here in the workers for establishing configuration
 // for the moment we seem to be fine because none of the services used in the worker needs
 // settings
 const fakeSettings: ElsaSettings = {
+  deployedUrl: "localhost",
   remsBotKey: "",
   remsUrl: "",
   sessionSalt: "",
@@ -32,9 +27,7 @@ const fakeSettings: ElsaSettings = {
   oidcIssuer: new Issuer({ issuer: "" }),
   ontoFhirUrl: "",
   port: 3000,
-  environment: "development" as ElsaEnvironment,
   superAdmins: [],
-  location: "local-mac" as ElsaLocation,
   rateLimit: {},
 };
 

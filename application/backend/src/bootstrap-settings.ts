@@ -1,35 +1,17 @@
 import { Issuer } from "openid-client";
 import { writeFile } from "fs/promises";
 import * as temp from "temp";
-import {
-  ElsaEnvironment,
-  ElsaLocation,
-  ElsaSettings,
-} from "./config/elsa-settings";
-import { getConfigLocalMac } from "./config/config-local-mac";
-import { getConfigAwsSecretsManager } from "./config/config-aws-secrets-manager";
-import { getConfig } from "./config/config-schema";
+import { ElsaSettings } from "./config/elsa-settings";
 
-/**
- * Converts out configuration files (which are at best primitive values like string/numbers)
- * into a settings object - which can be constructed Objects like Issuer etc.
- *
- * @param environment
- * @param location
- */
-export async function getSettings(
-  environment: ElsaEnvironment,
-  location: ElsaLocation
-): Promise<ElsaSettings> {
-  const config = await getConfig(environment, location);
-
+export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
   console.log("The raw configuration found is");
   console.log(config.toString());
 
   // we now have our 'config' - which is the plain text values from all our configuration sources..
   // however our 'settings' are more than that - the settings involve things that need to be
-  // constructed/discovered etc. Settings might involve writing a cert file to disk and setting
-  // a corresponding env variable.
+  // constructed/discovered etc.
+  // Settings might involve writing a cert file to disk and setting a corresponding env variable.
+  // Settings might involve doing OIDC discovery and then using the returned value
   const issuer = await Issuer.discover(config.get("oidc.issuerUrl")!);
 
   const rootCa: string | undefined = config.get("edgeDb.tlsRootCa");
@@ -50,9 +32,28 @@ export async function getSettings(
     process.env["EDGEDB_TLS_CA_FILE"] = rootCaLocation;
   }
 
+  // we are in dev *only* if it is made explicit
+  const isDevelopment = process.env["NODE_ENV"] === "development";
+
+  // we are prepared to default this to localhost
+  let deployedUrl = `http://localhost:${config.get("port")}`;
+
+  // but only if we are in dev and it is not set
+  if (config.get("deployedUrl")) {
+    deployedUrl = config.get("deployedUrl");
+    if (!deployedUrl.startsWith("https://"))
+      throw new Error("Deployed URL setting must be using HTTPS");
+    if (deployedUrl.endsWith("/"))
+      throw new Error("Deployed URL setting must not end with a slash");
+  } else {
+    if (!isDevelopment)
+      throw new Error(
+        "Only development launches can default to the use of localhost"
+      );
+  }
+
   return {
-    environment: environment,
-    location: location,
+    deployedUrl: deployedUrl,
     port: config.get("port"),
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
@@ -74,5 +75,12 @@ export async function getSettings(
       timeWindow: config.get("rateLimit.timeWindow"),
       allowList: config.get("rateLimit.allowList"),
     },
+    devTesting: isDevelopment
+      ? {
+          allowTestUsers: true,
+          allowTestRoutes: true,
+          sourceFrontEndDirect: true,
+        }
+      : undefined,
   };
 }

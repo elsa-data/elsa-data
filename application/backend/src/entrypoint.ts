@@ -2,15 +2,17 @@
 import "reflect-metadata";
 
 import { App } from "./app";
-import { getSettings } from "./bootstrap-settings";
+import { bootstrapSettings } from "./bootstrap-settings";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
 import Bree from "bree";
 import { container } from "tsyringe";
-import { registerTypes } from "./bootstrap-container";
+import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
 import path from "path";
-import { ElsaEnvironment, ElsaSettings } from "./config/elsa-settings";
+import { ElsaSettings } from "./config/elsa-settings";
 import { oneOffCommonInitialiseSynchronous } from "./bootstrap-common-once";
+import { getMetaConfig } from "./config/config-schema";
+import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
 
 oneOffCommonInitialiseSynchronous();
 
@@ -26,15 +28,17 @@ const bree = new Bree({
 });
 
 // global settings for DI
-registerTypes();
+bootstrapDependencyInjection();
 
 const start = async () => {
-  // other parts of the node env are going to trigger off this setting so to a certain
-  // extent we will too
-  const environment: ElsaEnvironment =
-    process.env.NODE_ENV === "production" ? "production" : "development";
+  const metaSources = process.env[CONFIG_SOURCES_ENVIRONMENT_VAR];
 
-  const settings = await getSettings(environment, "local-mac");
+  if (!metaSources)
+    throw new Error(
+      `For local development launch there must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
+    );
+
+  const settings = await bootstrapSettings(await getMetaConfig(metaSources));
 
   container.register<ElsaSettings>("Settings", {
     useValue: settings,

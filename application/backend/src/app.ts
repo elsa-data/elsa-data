@@ -17,11 +17,7 @@ import { ErrorHandler } from "./api/errors/_error.handler";
 import { registerTestingRoutes } from "./api/routes/testing";
 import { apiRoutes } from "./api/api-routes";
 import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
-import {
-  ElsaSettings,
-  exposedToTheInternet,
-  hasAccessToTheSourceBuildFolders,
-} from "./config/elsa-settings";
+import { ElsaSettings } from "./config/elsa-settings";
 import { container } from "tsyringe";
 import fastifyTraps from "@dnlup/fastify-traps";
 
@@ -44,18 +40,8 @@ export class App {
    * @param settings the settings
    */
   constructor(private readonly settings: ElsaSettings) {
-    if (
-      settings.location === "local-mac" &&
-      settings.environment !== "development"
-    )
-      throw new Error(
-        "Cannot run anything other than a development server on local"
-      );
-
     // find where our website HTML is
-    this.staticFilesPath = locateHtmlDirectory(
-      hasAccessToTheSourceBuildFolders(settings.location)
-    );
+    this.staticFilesPath = locateHtmlDirectory(true);
 
     this.server = Fastify({ logger: true });
 
@@ -99,23 +85,19 @@ export class App {
 
     this.server.register(apiRoutes, {
       container: container,
-      allowTestCookieEquals:
-        this.settings.environment === "development" ? "hello" : undefined,
+      allowTestCookieEquals: undefined,
+      // this.settings.environment === "development" ? "hello" : undefined,
     });
 
     this.server.register(authRoutes, {
       container: container,
-      // TODO: need a better way for doing callback route discovery
-      redirectUri:
-        this.settings.location === "local-mac"
-          ? "http://localhost:3000/cb"
-          : "https://elsa.dev.umccr.org/cb",
-      includeTestUsers: !exposedToTheInternet(this.settings.location),
+      redirectUri: this.settings.deployedUrl + "/cb",
+      includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
     });
 
     registerTestingRoutes(
       this.server,
-      this.settings.environment === "development"
+      this.settings.devTesting?.allowTestRoutes ?? false
     );
 
     // our behaviour for React routed websites is that NotFound responses should be replaced
@@ -239,7 +221,10 @@ export class App {
       result.semantic_version || "undefined"
     );
     addAttribute("data-build-version", result.build_version || "unknown");
-    addAttribute("data-deployed-environment", this.settings.environment);
+    addAttribute(
+      "data-deployed-environment",
+      this.settings.devTesting ? "development" : "production"
+    );
     addAttribute(
       "data-terminology-fhir-url",
       result.terminology_fhir_url || this.settings.ontoFhirUrl || "undefined"

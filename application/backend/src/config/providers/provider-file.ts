@@ -21,6 +21,9 @@ export class ProviderFile extends ProviderBase {
     this.fileBase = argTokens[0].value;
   }
 
+  /**
+   * Return the configuration data provided by this provider.
+   */
   public async getConfig(): Promise<any> {
     const configEntries = await fs.readdir("./config", { withFileTypes: true });
 
