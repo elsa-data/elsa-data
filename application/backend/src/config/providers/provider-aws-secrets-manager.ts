@@ -26,9 +26,6 @@ export class ProviderAwsSecretsManager extends ProviderBase {
   public async getConfig(): Promise<any> {
     const client = new SecretsManagerClient({});
 
-    // TODO: should this be set by the meta config system - for the moment this will do
-    //const secretId = isLocal ? "ElsaDataLocalhost" : "ElsaDataDevDeployed";
-
     const secretResult = await client.send(
       new GetSecretValueCommand({ SecretId: this.secretId })
     );

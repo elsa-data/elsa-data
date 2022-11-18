@@ -2,7 +2,7 @@ import moo from "moo";
 
 export type TokenType =
   | "WS"
-  | "number"
+  | "integer"
   | "string"
   | "lbracket"
   | "rbracket"
@@ -17,8 +17,9 @@ export type Token = {
 // useful that we are using a formal lexer
 // https://github.com/no-context/moo
 const lexer = moo.compile({
-  WS: { match: /\s+/, lineBreaks: true },
-  number: /0|[1-9][0-9]*/,
+  // note: we include , in the WS - which allows it to be used to break up arguments etc - but is not required
+  WS: { match: /[,\s]+/, lineBreaks: true },
+  integer: /0|[1-9][0-9]*/,
   string: { match: /'(?:\\["\\]|[^\n'\\])*'/, value: (s) => s.slice(1, -1) },
   lbracket: "(",
   rbracket: ")",

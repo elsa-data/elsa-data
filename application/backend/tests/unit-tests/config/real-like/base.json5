@@ -1,0 +1,6 @@
+{
+  // an ontoserver with MONDO terminology loaded
+  ontoFhirUrl: "https://server.com/fhir",
+  // JSON5 supports trailing ,
+  port: 8000,
+}

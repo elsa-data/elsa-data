@@ -1,4 +1,103 @@
 #
+# Database builder
+#
+FROM amazonlinux:2022 AS edgedbbuilder
+
+RUN dnf install -y nodejs npm findutils shadow util-linux
+
+WORKDIR /build
+
+RUN useradd "build-user" && chown -R "build-user" /build
+
+USER "build-user"
+
+COPY --chown=build-user backend/dbschema/ ./backend/dbschema/
+COPY --chown=build-user backend/package* ./backend/
+COPY --chown=build-user backend/common* ./common/
+
+RUN : \
+  && cd ./backend \
+  && npm install
+
+RUN : \
+  && curl --proto '=https' --tlsv1.2 -sSf https://sh.edgedb.com > edgedb.sh \
+  && sh edgedb.sh -y \
+  && rm edgedb.sh
+
+RUN : \
+  && cd backend \
+  && export EDGEDB_INSTALL_IN_DOCKER=allow \
+  && ~/.local/bin/edgedb project init --non-interactive \
+  && npm run edgetypes
+
+
+#
+# Deployed app
+#
+FROM amazonlinux:2022
+
+WORKDIR /app
+
+RUN dnf install -y nodejs npm findutils shadow util-linux
+
+# TODO: Discard the useless stuff using a multi-stage build
+COPY . .
+
+RUN cd backend && npm ci
+RUN cd frontend && npm ci
+RUN cd common/elsa-constants && npm ci
+RUN cd common/elsa-types && npm ci
+
+RUN : \
+  && cd frontend \
+  && npm run build:dev
+
+COPY --from=edgedbbuilder /build/backend/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
+
+# when running in the real Docker image the frontend is expected to be bundled local to the backend
+RUN mkdir backend/client
+RUN mv frontend/build backend/client
+RUN cd backend/client && mv build dist
+
+ARG ELSA_DATA_VERSION
+ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
+
+ARG GITHUB_SHA
+ENV GITHUB_SHA $GITHUB_SHA
+
+EXPOSE 80
+
+WORKDIR /app/backend
+
+ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
+
+# TODO: careful crafting has broken stuff.. for the moment just throwing everything together
+# TODO: decide if anything below is useful and if not delete
+
+#COPY backend/src/favicon.ico ./
+# we carefully craft the runtime structure from bits and pieces of the build
+#COPY --from=backend-builder /build/common/ /common/
+# bring in any node_modules incompatible with bundling
+#COPY --from=backend-builder /build/backend/node_modules/node-gyp-build/ ./node_modules/node-gyp-build/
+#COPY --from=backend-builder /build/backend/node_modules/sodium-native/ ./node_modules/sodium-native/
+#COPY --from=backend-builder /build/backend/node_modules/ ./node_modules/
+# the configurations and translations
+#COPY --from=backend-builder /build/backend/config/ ./config/
+#COPY --from=backend-builder /build/backend/locales/ ./locales/
+# aargs
+#COPY --from=backend-builder /build/backend/dbschema/ ./dbschema/
+#COPY --from=backend-builder /build/backend/jobs/ ./jobs/
+#COPY --from=backend-builder /build/backend/src/ ./src/
+#COPY --from=backend-builder /build/backend/package.json ./
+#COPY --from=backend-builder /build/backend/tsconfig.json ./
+# the react front end bundled into a dist directory
+#COPY --from=backend-builder /build/frontend/build ./client/dist/
+# each Bree job gets built/bundled as a standalone
+#COPY --from=backend-builder /build/backend/*-job.js ./
+# the main elsa app bundled
+#COPY --from=backend-builder /build/backend/elsa.cjs ./
+
+#
 # We use a single builder for both frontend and backend as they share
 # some common code and setup
 #
@@ -32,102 +131,4 @@
 # we also bundle each Bree job as an individual bundle
 #RUN cd backend && npx esbuild jobs/select-job.ts --bundle --platform=node --target=node18 --outfile=./select-job.js
 
-FROM amazonlinux:2022 AS edgedbbuilder
-
-WORKDIR /build
-
-RUN dnf install -y nodejs npm findutils shadow util-linux
-
-RUN useradd "build-user"
-
-RUN chown -R "build-user" /build
-
-USER "build-user"
-
-RUN : \
-  && curl --proto '=https' --tlsv1.2 -sSf https://sh.edgedb.com > edgedb.sh \
-  && sh edgedb.sh -y \
-  && rm edgedb.sh
-
-COPY --chown=build-user backend/dbschema/ backend/dbschema/
-COPY --chown=build-user backend/package* backend/
-
-RUN cd backend && npm install
-
-RUN : \
-  && cd backend \
-  && export EDGEDB_INSTALL_IN_DOCKER=allow \
-  && ~/.local/bin/edgedb project init --non-interactive \
-  && npm run edgetypes
-
-
-#
-# Deployed app
-#
-FROM amazonlinux:2022
-
-WORKDIR /app
-
-RUN dnf install -y nodejs npm findutils shadow util-linux
-
-# TODO: Discard the useless stuff using a multi-stage build
-COPY . .
-
-RUN \
-  while IFS= read -r -d '' file; do \
-    dirname=$(dirname "$file"); \
-    ( \
-      cd "$dirname" && \
-      npm install; \
-    ) || exit 1; \
-  done < <(find . -name package.json -type f ! -path "*/node_modules/*" -print0)
-
-RUN : \
-  && cd frontend \
-  && npm run build:dev
-
-COPY --from=edgedbbuilder /build/backend/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
-
-# when running in the real Docker image the frontend is expected to be bundled local to the backend
-RUN mkdir backend/client
-RUN mv frontend/build backend/client
-RUN cd backend/client && mv build dist
-
-ARG ELSA_DATA_VERSION
-ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
-
-ARG GITHUB_SHA
-ENV GITHUB_SHA $GITHUB_SHA
-
-
-
-# TODO: careful crafting has broken stuff.. for the moment just throwing everything together
-#COPY backend/src/favicon.ico ./
-# we carefully craft the runtime structure from bits and pieces of the build
-#COPY --from=backend-builder /build/common/ /common/
-# bring in any node_modules incompatible with bundling
-#COPY --from=backend-builder /build/backend/node_modules/node-gyp-build/ ./node_modules/node-gyp-build/
-#COPY --from=backend-builder /build/backend/node_modules/sodium-native/ ./node_modules/sodium-native/
-#COPY --from=backend-builder /build/backend/node_modules/ ./node_modules/
-# the configurations and translations
-#COPY --from=backend-builder /build/backend/config/ ./config/
-#COPY --from=backend-builder /build/backend/locales/ ./locales/
-# aargs
-#COPY --from=backend-builder /build/backend/dbschema/ ./dbschema/
-#COPY --from=backend-builder /build/backend/jobs/ ./jobs/
-#COPY --from=backend-builder /build/backend/src/ ./src/
-#COPY --from=backend-builder /build/backend/package.json ./
-#COPY --from=backend-builder /build/backend/tsconfig.json ./
-# the react front end bundled into a dist directory
-#COPY --from=backend-builder /build/frontend/build ./client/dist/
-# each Bree job gets built/bundled as a standalone
-#COPY --from=backend-builder /build/backend/*-job.js ./
-# the main elsa app bundled
-#COPY --from=backend-builder /build/backend/elsa.cjs ./
-
-EXPOSE 80
-
-WORKDIR /app/backend
-
 # ENTRYPOINT [ "node", "elsa.cjs" ]
-ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]

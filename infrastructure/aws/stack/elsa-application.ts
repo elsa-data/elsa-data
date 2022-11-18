@@ -8,7 +8,7 @@ import {
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
-import path from "path";
+import * as path from "path";
 import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { DockerServiceWithHttpsLoadBalancerConstruct } from "../lib/docker-service-with-https-load-balancer-construct";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
@@ -68,6 +68,11 @@ export class ElsaApplicationStack extends NestedStack {
           healthCheckPath: "/",
           environment: {
             EDGEDB_DSN: config.edgeDbDsnNoPassword,
+            ELSA_DATA_META_CONFIG_FOLDERS: "./config",
+            ELSA_DATA_META_CONFIG_SOURCES:
+              "file('base') file('dev-common') file('dev-deployed') aws-secret('ElsaDataDevDeployed')",
+            // override any file based setting of the deployed url
+            ELSA_DATA_CONFIG_DEPLOYED_URL: `https://${hostedPrefix}.${hostedZoneName}`,
           },
           secrets: {
             EDGEDB_PASSWORD: ecs.Secret.fromSecretsManager(

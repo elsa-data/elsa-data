@@ -42,7 +42,9 @@ convict.addFormat({
  *
  * @param meta
  */
-export async function getMetaConfig(meta: string) {
+export async function getMetaConfig(
+  meta: string
+): Promise<convict.Config<any>> {
   // setup our configuration schema
   const convictConfig = convict(configDefinition, {});
 

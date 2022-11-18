@@ -80,15 +80,15 @@ export function parseMeta(meta: string): ProviderMeta[] {
       argTokens!.push(currentTok);
     }
 
-    if (currentTok.type === "number") {
+    if (currentTok.type === "integer") {
       if (_.isUndefined(providerToken))
         throw new Error(
-          "Number argument shouldn't be encountered till after a left bracket"
+          "Integer argument shouldn't be encountered till after a left bracket"
         );
 
       if (_.isUndefined(argTokens))
         throw new Error(
-          "Number argument shouldn't be encountered till after a left bracket"
+          "Integer argument shouldn't be encountered till after a left bracket"
         );
 
       argTokens!.push(currentTok);

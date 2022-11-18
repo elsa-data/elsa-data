@@ -121,6 +121,7 @@ export const configDefinition = {
     doc: "The externally accessible Url for the deployed location of Elsa Data",
     format: "*",
     default: undefined,
+    env: `${env_prefix}DEPLOYED_URL`,
   },
   superAdmins: {
     doc: "A collection of users with super administration rights i.e. the ability to alter other user rights",
