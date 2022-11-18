@@ -28,7 +28,6 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
     (err) => {
       const errCode = err.response.status;
       if (errCode === 403) {
-        alert("Session expired! Please re-logged in back to Elsa.");
         removeCookie(USER_SUBJECT_COOKIE_NAME);
       }
       return Promise.reject(err);
