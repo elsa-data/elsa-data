@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import { createCtx } from "./create-ctx";
 import { useCookies } from "react-cookie";
 import {
@@ -20,7 +21,19 @@ export type LoggedInUser = {
  * @constructor
  */
 export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
-  const [cookies] = useCookies<any>([]);
+  const [cookies, setCookie, removeCookie] = useCookies<any>();
+
+  // Removing Cookie when token is no longer valid when using Axios (by 403 Status Code Response).
+  axios.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      const errCode = err.response.status;
+      if (errCode === 403) {
+        removeCookie(USER_SUBJECT_COOKIE_NAME);
+      }
+      return Promise.reject(err);
+    }
+  );
 
   const isLoggedIn = cookies[USER_SUBJECT_COOKIE_NAME];
   const isLoggedInName = cookies[USER_NAME_COOKIE_NAME];

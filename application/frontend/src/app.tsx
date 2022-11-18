@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { HomePage } from "./pages/landing-page";
 import { ReleasesPage } from "./pages/releases-dashboard/releases-dashboard-page";
 import { ReleasesDetailPage } from "./pages/releases/detail/releases-detail-page";
@@ -44,9 +44,9 @@ export const App: React.FC = () => {
 
         <Route path={`releases`}>
           <Route index element={<ReleasesPage />} />
-          <Route path=":releaseId">
+          <Route path={`:releaseId`}>
             <Route index element={<ReleasesDetailPage />} />
-            <Route path="audit-log">
+            <Route path={`audit-log`}>
               <Route path={`:objectId`} element={<AuditEntryPage />} />
               <Route path={`data-access`} element={<DataAccessPage />} />
             </Route>
@@ -64,7 +64,8 @@ export const App: React.FC = () => {
         {/* a page that we will get to disappear in production deployments */}
         <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
         <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
-        <Route path="*" element={<LoginPage />} />
+        <Route path={`/login`} element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     );
 };
