@@ -130,4 +130,4 @@ EXPOSE 80
 WORKDIR /app/backend
 
 # ENTRYPOINT [ "node", "elsa.cjs" ]
-ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint-container.ts" ]
+ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]

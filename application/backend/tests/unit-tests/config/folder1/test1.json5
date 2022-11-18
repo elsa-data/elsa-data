@@ -1,0 +1,14 @@
+{
+  // note: this is *not* the same content as test1.json5 in folder2 - this is so we can test folder ordering
+  stringValue: "a string",
+  superAdmins: [
+    {
+      id: "http://test1",
+      email: "test1@example.com",
+    },
+    {
+      id: "http://test2",
+      email: "test2@example.com",
+    },
+  ],
+}
