@@ -46,7 +46,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: application
-          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ghcr.io/umccr/elsa-data:${{ steps.define_docker_tag.outputs.tag }}
