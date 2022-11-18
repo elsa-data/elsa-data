@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
