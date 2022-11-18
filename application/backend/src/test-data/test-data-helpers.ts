@@ -95,6 +95,7 @@ export function makeTripleCodeArray(
 export async function createTestUser(
   subjectId: string,
   displayName: string,
+  email: string,
   releasesAsDataOwner: string[],
   releasesAsPI: string[],
   releasesAsMember: string[]
@@ -104,6 +105,7 @@ export async function createTestUser(
     .insert(e.permission.User, {
       subjectId: subjectId,
       displayName: displayName,
+      email: email,
       allowedChangeReleaseDataOwner: false,
       allowedCreateRelease: false,
       allowedImportDataset: false,

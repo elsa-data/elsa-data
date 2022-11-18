@@ -183,7 +183,8 @@ export const authRoutes = async (
 
     const authUser = await userService.upsertUserForLogin(
       idClaims.sub,
-      displayName
+      displayName,
+      email
     );
 
     if (!authUser) {

@@ -8,7 +8,11 @@ module permission {
 
         property subjectId -> str;
         property displayName -> str;
-        property email -> str;
+        required property email -> str {
+            constraint exclusive;
+            readonly := true;
+        }
+
 
         # whether this user will become a participant of a release when they login
 
@@ -33,6 +37,11 @@ module permission {
             # all user subjectIds must be unique
             constraint exclusive;
             constraint min_len_value(6);
+            readonly := true;
+        }
+
+        required property email -> str {
+            constraint exclusive;
             readonly := true;
         }
 
