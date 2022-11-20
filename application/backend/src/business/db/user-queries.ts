@@ -26,7 +26,6 @@ export const singleUserByEmailQuery = e.params({ email: e.str }, (params) =>
     .select(e.permission.User, (u) => ({
       ...e.permission.User["*"],
       filter: e.op(params.email, "=", u.email),
-      limit: 1,
     }))
     .assert_single()
 );
@@ -44,7 +43,6 @@ export const singlePotentialUserByEmailQuery = e.params(
           id: true,
         },
         filter: e.op(params.email, "=", pu.email),
-        limit: 1,
       }))
       .assert_single()
 );
