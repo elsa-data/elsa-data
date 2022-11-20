@@ -7,7 +7,7 @@ import {
   makeSingleCodeArray,
   makeSystemlessIdentifier,
 } from "../../src/test-data/test-data-helpers";
-import { insert10F, TENF_URI } from "../../src/test-data/insert-test-data-10f";
+import { insert10F } from "../../src/test-data/insert-test-data-10f";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -27,11 +27,13 @@ export async function beforeEachCommon() {
 
   // TODO: we don't have an admin model for datasets yet so this is very simple
   const allowedPiSubject = "http://subject1.com";
+  const allowedPiEmail = "admin-user@elsa.net";
 
   const allowedPiUserInsert = await e
     .insert(e.permission.User, {
       subjectId: allowedPiSubject,
       displayName: "Test User Who Is An Admin",
+      email: allowedPiEmail,
     })
     .run(edgeDbClient);
 
@@ -39,6 +41,11 @@ export async function beforeEachCommon() {
     id: allowedPiUserInsert.id,
     subjectId: allowedPiSubject,
     displayName: "Allowed PI",
+    email: allowedPiEmail,
+    allowedChangeReleaseDataOwner: true,
+    allowedCreateRelease: true,
+    allowedImportDataset: true,
+    lastLoginDateTime: new Date(),
   });
 
   return {

@@ -178,7 +178,6 @@ export const authRoutes = async (
     const idClaims = tokenSet.claims();
 
     const displayName = idClaims.name || "No Display Name";
-    // TODO we don't save email yet - but we should
     const email = idClaims.email || "No Email";
 
     const authUser = await userService.upsertUserForLogin(

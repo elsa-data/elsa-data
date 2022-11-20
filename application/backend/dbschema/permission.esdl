@@ -9,7 +9,7 @@ module permission {
         property subjectId -> str;
         property displayName -> str;
         required property email -> str {
-            constraint exclusive;
+            constraint exclusive on (str_lower(__subject__));
             readonly := true;
         }
 
@@ -41,7 +41,7 @@ module permission {
         }
 
         required property email -> str {
-            constraint exclusive;
+            constraint exclusive on (str_lower(__subject__));
             readonly := true;
         }
 
