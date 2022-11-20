@@ -12,7 +12,8 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
 import { format } from "date-fns";
 import {
-  singleUserByDisplayNameQuery,
+  singlePotentialUserByEmailQuery,
+  singleUserByEmailQuery,
   singleUserBySubjectIdQuery,
 } from "../../db/user-queries";
 import { generate } from "randomstring";
@@ -300,16 +301,19 @@ ${roleTable.join("\n")}
         au: ApplicationUser,
         role: string
       ) => {
-        // has this user already logged in to Elsa?
-        const dbUser = await singleUserByDisplayNameQuery.run(t, {
-          displayName: au.displayName,
+        // Find if user had logged in to elsa
+        const dbUser = await singleUserByEmailQuery.run(t, {
+          email: au.email,
+        });
+        const potentialDbUser = await singlePotentialUserByEmailQuery.run(t, {
+          email: au.email,
         });
 
         if (dbUser) {
-          // adding a role link into an existing user
+          // Adding a role link into an existing user.
           await e
             .update(e.permission.User, (u) => ({
-              filter: e.op(e.uuid(user.dbId), "=", u.id),
+              filter: e.op(e.uuid(dbUser.id), "=", u.id),
               set: {
                 releaseParticipant: {
                   "+=": e.select(e.release.Release, (r) => ({
@@ -320,10 +324,24 @@ ${roleTable.join("\n")}
               },
             }))
             .run(t);
+        } else if (potentialDbUser) {
+          // Adding a role to an existing potentialUser record.
+          await e
+            .update(e.permission.PotentialUser, (pu) => ({
+              filter: e.op(e.uuid(potentialDbUser.id), "=", pu.id),
+              set: {
+                futureReleaseParticipant: {
+                  "+=": e.select(e.release.Release, (r) => ({
+                    filter: e.op(e.uuid(newRelease.id), "=", r.id),
+                    "@role": e.str(role),
+                  })),
+                },
+              },
+            }))
+            .run(t);
         } else {
-          // TODO: the case of a potential user already existing.. this will have to wait until
-          // we have an 'email' property to make exclusive constraint
-          const potentialDbUser = await e
+          // A brand new potentialUser with a link role to the release
+          await e
             .insert(e.permission.PotentialUser, {
               displayName: au.displayName,
               email: au.email,
