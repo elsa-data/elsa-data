@@ -19,7 +19,7 @@ export type SingleUserBySubjectIdType = $infer<
 >;
 
 /**
- * Return the details of a single user searching by display name.
+ * Return the details of a single user searching by email.
  */
 export const singleUserByEmailQuery = e.params({ email: e.str }, (params) =>
   e
@@ -32,7 +32,7 @@ export const singleUserByEmailQuery = e.params({ email: e.str }, (params) =>
 );
 
 /**
- * Return the details of a single user searching by display name.
+ * Return the details of a single user searching by email.
  */
 export const singlePotentialUserByEmailQuery = e.params(
   { email: e.str },

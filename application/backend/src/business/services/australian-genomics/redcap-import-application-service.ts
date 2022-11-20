@@ -310,8 +310,7 @@ ${roleTable.join("\n")}
         });
 
         if (dbUser) {
-          // adding a role link into an existing user
-
+          // Adding a role link into an existing user.
           await e
             .update(e.permission.User, (u) => ({
               filter: e.op(e.uuid(dbUser.id), "=", u.id),
@@ -326,7 +325,7 @@ ${roleTable.join("\n")}
             }))
             .run(t);
         } else if (potentialDbUser) {
-          // Adding to existing potentialUser that has been created
+          // Adding a role to an existing potentialUser record.
           await e
             .update(e.permission.PotentialUser, (pu) => ({
               filter: e.op(e.uuid(potentialDbUser.id), "=", pu.id),
@@ -341,7 +340,7 @@ ${roleTable.join("\n")}
             }))
             .run(t);
         } else {
-          // A brand new potentialUser must be created
+          // A brand new potentialUser with a link role to the release
           await e
             .insert(e.permission.PotentialUser, {
               displayName: au.displayName,
