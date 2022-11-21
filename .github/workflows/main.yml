@@ -1,11 +1,11 @@
 name: CI
 
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Triggers the workflow on push or pull request events but not for our feature branches
   push:
-    branches: ["main"]
+    branches: ["dev", "main"]
   pull_request:
-    branches: ["main"]
+    branches: ["dev", "main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -18,14 +18,6 @@ jobs:
       # Check out repo
       - uses: actions/checkout@v3
 
-      # Install an EdgeDb for use by the tests
-      - uses: edgedb/setup-edgedb@8bc9e10005674ec772652b86e1fdd476e6462284
-        with:
-          # Trying nightly to get around some bugs.. pin when we can
-          cli-version: nightly
-          server-version: nightly
-          project-dir: application/backend
-
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -36,10 +28,19 @@ jobs:
         run: npm ci
         working-directory: application/backend
 
-      - name: Generate EdgeDb types
-        run: npm run edgetypes
+      # Note that our unit tests by design have no dependency on EdgeDb
+      - name: Run unit tests
+        run: npx jest --config jest.unit-tests.config.js
         working-directory: application/backend
 
-      - name: Run tests
-        run: npm test
-        working-directory: application/backend
+      # Install an EdgeDb for use by the tests
+      #- uses: edgedb/setup-edgedb@8bc9e10005674ec772652b86e1fdd476e6462284
+      #  with:
+      #    # Trying nightly to get around some bugs.. pin when we can
+      #    cli-version: nightly
+      #    server-version: nightly
+      #    project-dir: application/backend
+
+      #- name: Generate EdgeDb types
+      #  run: npm run edgetypes
+      #  working-directory: application/backend

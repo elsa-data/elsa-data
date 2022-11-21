@@ -1,6 +1,8 @@
 {
-  "watch": ["src", ".env", "config", "dbschema"],
+  "watch": ["src", "config", "dbschema", "jobs", "locales"],
   "ext": "js,ts,json,json5,esdl",
   "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts", "tests/**/*"],
-  "exec": "ts-node --transpile-only --require dotenv/config src/bootstrap-local-mac.ts"
+  "execMap": {
+    "ts": "node --loader ts-node/esm -r dotenv/config"
+  }
 }

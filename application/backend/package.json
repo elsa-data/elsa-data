@@ -1,6 +1,6 @@
 {
   "name": "elsa-data-backend",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The backend that serves HTML/API for Elsa Data",
   "author": {
     "name": "University of Melbourne Centre for Cancer Research",
@@ -10,8 +10,14 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": " cross-env NODE_ENV=development nodemon",
-    "prod": "cross-env NODE_ENV=production ts-node -r dotenv/config src/bootstrap-local-mac.ts",
+    "//watch:*": "Nodemon run (i.e. source watch / auto restart) the dev application with configuration for a Mac or Linux",
+    "watch:mac": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.mac nodemon src/entrypoint.ts",
+    "watch:linux": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.linux nodemon src/entrypoint.ts",
+    "watch:aws": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.aws nodemon src/entrypoint.ts",
+    "//dev:*": "Run the dev application (no source watch or restart) with configuration for a Mac or Linux",
+    "dev:mac": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.mac node --loader ts-node/esm -r dotenv/config src/entrypoint.ts",
+    "dev:linux": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.linux node --loader ts-node/esm -r dotenv/config src/entrypoint.ts",
+    "dev:aws": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.aws node --loader ts-node/esm -r dotenv/config src/entrypoint.ts",
     "//typecheck": "Use the Typescript compiler for a compile of the complete src/test/types (no code generated or run)",
     "typecheck": "tsc --noEmit",
     "//edgemigration": "Creates a migration script based on the difference between the current db and schema file",
@@ -22,7 +28,7 @@
     "edgetypes": "edgeql-js",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
-    "//postinstall": "",
+    "//postinstall": "Give us the ability to locally patch packages after install",
     "postinstall": "patch-package"
   },
   "dependencies": {
@@ -45,6 +51,7 @@
     "@fastify/sensible": "5.1.1",
     "@fastify/static": "6.5.0",
     "@sinclair/typebox": "0.24.47",
+    "@types/moo": "^0.5.5",
     "@types/randomstring": "^1.1.8",
     "@umccr/elsa-constants": "file:../common/elsa-constants",
     "@umccr/elsa-types": "file:../common/elsa-types",
@@ -69,6 +76,7 @@
     "json5": "2.2.1",
     "jszip": "3.10.1",
     "lodash": "4.17.21",
+    "moo": "^0.5.2",
     "openid-client": "5.2.1",
     "p-throttle": "^5.0.0",
     "patch-package": "6.4.7",

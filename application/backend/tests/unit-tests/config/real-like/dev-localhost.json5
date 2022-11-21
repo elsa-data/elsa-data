@@ -1,0 +1,11 @@
+{
+  // the security of our localhost dev cookies is not so important - for the real deployments
+  // we need to get these secrets from a real secret source
+  session: {
+    secret: "This is a session key string that we are just using as a realistic config file in test", // pragma: allowlist secret
+    salt: "16 Also a string",
+  },
+  rateLimit: {
+    allowList: ["127.0.0.1", "::1"],
+  },
+}

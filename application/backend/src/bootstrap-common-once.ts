@@ -5,7 +5,7 @@ import path from "path";
 import i18n from "i18n";
 
 /**
- * A location for any sync setup that
+ * A location for any synchronous setup that
  * - is common across all envs/locations
  * - is synchronous
  * - must only be performed once per process/node

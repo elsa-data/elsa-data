@@ -5,16 +5,6 @@
     secret: "This is a long string that will encrypt our session cookies but only for localhost", // pragma: allowlist secret
     salt: "Also a string 16",
   },
-  superAdmins: [
-    //{
-    //  id: "http://cilogon.org/serverB/users/51445922",
-    //  email: "andrew.patterson@unimelb.edu.au",
-    //},
-    {
-      id: "http://cilogon.org/serverA/users/46001501",
-      email: "andrew@patto.net",
-    },
-  ],
   rateLimit: {
     allowList: ["127.0.0.1", "::1"],
   },
