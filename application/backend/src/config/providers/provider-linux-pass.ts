@@ -9,7 +9,7 @@ import { homedir } from "os";
 const execPromise = promisify(execFile);
 
 /**
- * A provider that can get config from specific entries in an OsX keychain
+ * A provider that can get config from specific entries in a linux password store.
  */
 export class ProviderLinuxPass extends ProviderBase {
   private readonly passwordStoreName: string;
@@ -35,6 +35,7 @@ export class ProviderLinuxPass extends ProviderBase {
     for (const pass of readdirSync(elsaPassFolder)) {
       const passName = parse(pass).name;
       const passPath = join(this.passwordStoreName, passName);
+
       try {
         const { stdout: passValue } = await execPromise("pass", [
           "show",
