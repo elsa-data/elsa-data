@@ -52,14 +52,7 @@ export class ProviderOsxKeychain extends ProviderBase {
 
       values[k] = lookupStdout.trim();
     }
-    console.log(values);
-    // convert the flat object to a nested object that is compatible with convict
-    const a = Object.entries(values).reduce(
-      (o, entry) => set(o, entry[0], entry[1]),
-      {}
-    );
 
-    console.log(a);
-    return a;
+    return ProviderBase.nestObject(values);
   }
 }

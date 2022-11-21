@@ -39,10 +39,6 @@ export class ProviderAwsSecretsManager extends ProviderBase {
     delete flatSecretObject["edgeDb.tlsKey"];
     delete flatSecretObject["edgeDb.tlsCert"];
 
-    // convert the flat object to a nested object that is compatible with convict
-    return Object.entries(flatSecretObject).reduce(
-      (o, entry) => set(o, entry[0], entry[1]),
-      {}
-    );
+    return ProviderBase.nestObject(flatSecretObject);
   }
 }
