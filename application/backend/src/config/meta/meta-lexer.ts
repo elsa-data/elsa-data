@@ -23,7 +23,13 @@ const lexer = moo.compile({
   string: { match: /'(?:\\["\\]|[^\n'\\])*'/, value: (s) => s.slice(1, -1) },
   lbracket: "(",
   rbracket: ")",
-  provider: ["aws-secret", "gcloud-secret", "file", "osx-keychain"],
+  provider: [
+    "aws-secret",
+    "gcloud-secret",
+    "file",
+    "osx-keychain",
+    "linux-pass",
+  ],
 });
 
 // examples
