@@ -4,6 +4,7 @@ import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-mana
 import { ProviderFile } from "./providers/provider-file";
 import { configDefinition } from "./config-constants";
 import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
+import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 
 // an array of user records designated in the config for extra permissions etc
 convict.addFormat({
@@ -22,7 +23,7 @@ convict.addFormat({
 // a TLS artifact that we fetch and possibly save to disk for use in TLS connections
 convict.addFormat({
   name: "tls",
-  validate(val: any, schema: convict.SchemaObj) {
+  validate(val: any, _schema: convict.SchemaObj) {
     if (val) {
       if (!val.startsWith("-----BEGIN"))
         throw new Error("TLS must start with ASCII armor -----BEGIN");
@@ -65,6 +66,9 @@ export async function getMetaConfig(
         providerConfig = await new ProviderOsxKeychain(
           mp.argTokens
         ).getConfig();
+        break;
+      case "linux-pass":
+        providerConfig = await new ProviderLinuxPass(mp.argTokens).getConfig();
         break;
       default:
         throw new Error(

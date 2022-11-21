@@ -65,7 +65,28 @@ See `.env.aws` for where the meta configuration names the specific Secret to use
 
 #### Linux with no cloud
 
-NOT YET WRITTEN
+For linux with no AWS, the `pass` command can be used to store secrets. `pass` uses gpg keys to manage passwords.
+See `.env.linux` for how the password store is named.
+
+To initialize the password store, use a gpg id or email:
+
+```shell
+pass init gpg_id_or_email
+```
+
+Optionally, the `PASSWORD_STORE_DIR` environment variable can be set to modify where the password store is.
+
+Then store any configuration secrets in an `elsa-data` folder:
+
+```
+echo "https://test.cilogon.org" | pass insert -e elsa-data/oidc.issuerUrl
+echo "qwerty123" | pass insert -e elsa-data/oidc.clientId
+echo "qwerty123" | pass insert -e elsa-data/oidc.clientSecret
+echo "qwerty123" | pass insert -e elsa-data/rems.botUser
+echo "qwerty123" | pass insert -e elsa-data/rems.botKey
+```
+
+This folder can be set in the `.env.linux` metaconfiguration file.
 
 ### Run Locally
 
