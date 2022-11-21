@@ -23,7 +23,7 @@ convict.addFormat({
 // a TLS artifact that we fetch and possibly save to disk for use in TLS connections
 convict.addFormat({
   name: "tls",
-  validate(val: any, _schema: convict.SchemaObj) {
+  validate(val: any, schema: convict.SchemaObj) {
     if (val) {
       if (!val.startsWith("-----BEGIN"))
         throw new Error("TLS must start with ASCII armor -----BEGIN");
