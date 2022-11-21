@@ -14,7 +14,7 @@
     "init-db": "cd application/backend && edgedb project init",
     "edgetypes": "cd application/backend && npm run edgetypes",
     "frontend": "cd application/frontend && npm run build:dev",
-    "backend": "cd application/backend && npm run edgetypes && npm run dev",
-    "start": "npm run frontend && npm run backend"
+    "backend:mac": "cd application/backend && npm run edgetypes && npm run dev:mac",
+    "start": "npm run frontend && npm run backend:mac"
   }
 }
