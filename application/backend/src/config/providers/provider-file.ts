@@ -9,8 +9,17 @@ import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../config-constants";
  * A provider that can get config from a file
  */
 export class ProviderFile extends ProviderBase {
+  private readonly fileBase: string;
+
   constructor(argTokens: Token[]) {
-    super(argTokens);
+    super();
+
+    if (argTokens.length != 1)
+      throw new Error(
+        `${ProviderFile.name} expects a single meta parameter specifying the base name of a JSON5 file that will be found in the configuration directories`
+      );
+
+    this.fileBase = argTokens[0].value;
   }
 
   /**
@@ -66,7 +75,7 @@ export class ProviderFile extends ProviderBase {
         (de) => de.isFile() && de.name.endsWith("json5")
       );
 
-      const fileName = `${this.tokenValue}.json5`;
+      const fileName = `${this.fileBase}.json5`;
 
       for (const x of onlyJson5Files) {
         if (x.name === fileName) {
@@ -81,7 +90,7 @@ export class ProviderFile extends ProviderBase {
     }
 
     const baseMessage = `Configuration file ${
-      this.tokenValue
+      this.fileBase
     } (.json5) was not found in any of the configuration folders ${foldersAbsolute.join(
       path.delimiter
     )}`;

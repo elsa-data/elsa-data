@@ -9,15 +9,24 @@ import { ProviderBase } from "./provider-base";
  * A provider that can get config from a specified AWS secret
  */
 export class ProviderAwsSecretsManager extends ProviderBase {
+  private readonly secretId: string;
+
   constructor(argTokens: Token[]) {
-    super(argTokens);
+    super();
+
+    if (argTokens.length != 1)
+      throw new Error(
+        `${ProviderAwsSecretsManager.name} expects a single meta parameter specifying the name of an AWS secret`
+      );
+
+    this.secretId = argTokens[0].value;
   }
 
   public async getConfig(): Promise<any> {
     const client = new SecretsManagerClient({});
 
     const secretResult = await client.send(
-      new GetSecretValueCommand({ SecretId: this.tokenValue })
+      new GetSecretValueCommand({ SecretId: this.secretId })
     );
 
     if (secretResult.SecretBinary || !secretResult.SecretString) {

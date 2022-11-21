@@ -8,21 +8,30 @@ const execPromise = promisify(exec);
  * A provider that can get config from specific entries in an OsX keychain
  */
 export class ProviderOsxKeychain extends ProviderBase {
+  private readonly keychainName: string;
+
   constructor(argTokens: Token[]) {
-    super(argTokens);
+    super();
+
+    if (argTokens.length != 1)
+      throw new Error(
+        `${ProviderOsxKeychain.name} expects a single meta parameter specifying the name of the keychain holding configuration values`
+      );
+
+    this.keychainName = argTokens[0].value;
   }
 
   public async getConfig(): Promise<any> {
     // https://coderwall.com/p/5ck85g/storing-secrets-in-the-macos-keychain
 
-    if (this.tokenValue.toLowerCase() === "login") {
+    if (this.keychainName.toLowerCase() === "login") {
       throw new Error(
         "The login keychain cannot be used for storing Elsa Data configuration - use a custom keychain"
       );
     }
 
     const { stdout: dumpKeychainStdout, stderr: dumpKeychainStderr } =
-      await execPromise(`security dump-keychain -r ${this.tokenValue}`);
+      await execPromise(`security dump-keychain -r ${this.keychainName}`);
 
     // NOTE: this is extremely susceptible to changes in OS-X cli tool output - but Apple gives us no other
     // way to enumerate the keys in a keychain
@@ -46,7 +55,7 @@ export class ProviderOsxKeychain extends ProviderBase {
 
     for (const k of keysFound) {
       const { stdout: lookupStdout, stderr: lookupStderr } = await execPromise(
-        `security find-generic-password -s "${k}" -w ${this.tokenValue}`
+        `security find-generic-password -s "${k}" -w ${this.keychainName}`
       );
 
       values[k] = lookupStdout.trim();
