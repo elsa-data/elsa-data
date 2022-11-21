@@ -10,7 +10,7 @@ import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../config-constants";
  */
 export class ProviderFile extends ProviderBase {
   constructor(argTokens: Token[]) {
-    super(argTokens, ProviderFile.name);
+    super(argTokens);
   }
 
   /**

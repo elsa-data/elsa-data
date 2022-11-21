@@ -2,7 +2,6 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { set } from "lodash";
 import { Token } from "../meta/meta-lexer";
 import { ProviderBase } from "./provider-base";
 
@@ -11,7 +10,7 @@ import { ProviderBase } from "./provider-base";
  */
 export class ProviderAwsSecretsManager extends ProviderBase {
   constructor(argTokens: Token[]) {
-    super(argTokens, ProviderAwsSecretsManager.name);
+    super(argTokens);
   }
 
   public async getConfig(): Promise<any> {

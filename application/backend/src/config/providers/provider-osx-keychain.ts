@@ -2,7 +2,6 @@ import { Token } from "../meta/meta-lexer";
 import { ProviderBase } from "./provider-base";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { set } from "lodash";
 const execPromise = promisify(exec);
 
 /**
@@ -10,7 +9,7 @@ const execPromise = promisify(exec);
  */
 export class ProviderOsxKeychain extends ProviderBase {
   constructor(argTokens: Token[]) {
-    super(argTokens, ProviderOsxKeychain.name);
+    super(argTokens);
   }
 
   public async getConfig(): Promise<any> {
