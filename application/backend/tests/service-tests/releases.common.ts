@@ -101,11 +101,13 @@ export async function beforeEachCommon() {
   {
     const allowedDataOwnerSubject = "https://i-am-admin.org";
     const allowedDisplayName = "Test User Who Is Allowed Data Owner Access";
+    const allowedEmail = "admin@elsa.net";
 
     const allowedDataOwnerUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedDataOwnerSubject,
         displayName: allowedDisplayName,
+        email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(e.uuid(testReleaseId), "=", r.id),
           "@role": e.str("DataOwner"),
@@ -117,6 +119,7 @@ export async function beforeEachCommon() {
       id: allowedDataOwnerUserInsert.id,
       subjectId: allowedDataOwnerSubject,
       displayName: allowedDisplayName,
+      email: allowedEmail,
       lastLoginDateTime: new Date(),
       allowedImportDataset: false,
       allowedChangeReleaseDataOwner: false,
@@ -128,11 +131,13 @@ export async function beforeEachCommon() {
   {
     const allowedPiSubject = "http://subject1.com";
     const allowedDisplayName = "Test User Who Is Allowed PI Access";
+    const allowedEmail = "subject1@elsa.net";
 
     const allowedPiUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedPiSubject,
         displayName: allowedDisplayName,
+        email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(e.uuid(testReleaseId), "=", r.id),
           "@role": e.str("PI"),
@@ -144,6 +149,7 @@ export async function beforeEachCommon() {
       id: allowedPiUserInsert.id,
       subjectId: allowedPiSubject,
       displayName: allowedDisplayName,
+      email: allowedEmail,
       lastLoginDateTime: new Date(),
       allowedImportDataset: false,
       allowedChangeReleaseDataOwner: false,
@@ -155,10 +161,12 @@ export async function beforeEachCommon() {
   {
     const notAllowedSubject = "http://subject3.com";
     const notAllowedDisplayName = "Test User Who Isn't Allowed Any Access";
+    const notAllowedEmail = "subject3@elsa.net";
 
     const notAllowedUserInsert = await e
       .insert(e.permission.User, {
         subjectId: notAllowedSubject,
+        email: notAllowedEmail,
         displayName: "Test User Who Isn't Allowed Any Access",
       })
       .run(edgeDbClient);
@@ -167,6 +175,7 @@ export async function beforeEachCommon() {
       id: notAllowedUserInsert.id,
       subjectId: notAllowedSubject,
       displayName: notAllowedDisplayName,
+      email: notAllowedEmail,
       lastLoginDateTime: new Date(),
       allowedImportDataset: false,
       allowedChangeReleaseDataOwner: false,

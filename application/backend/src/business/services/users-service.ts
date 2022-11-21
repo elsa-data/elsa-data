@@ -7,10 +7,9 @@ import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 import {
   countAllUserQuery,
-  deletePotentialUserByDisplayNameQuery,
+  deletePotentialUserByEmailQuery,
   pageableAllUserQuery,
-  singlePotentialUserByDisplayNameQuery,
-  singleUserByDisplayNameQuery,
+  singlePotentialUserByEmailQuery,
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -89,7 +88,8 @@ export class UsersService {
    */
   public async upsertUserForLogin(
     subjectId: string,
-    displayName: string
+    displayName: string,
+    email: string
   ): Promise<AuthenticatedUser> {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
@@ -99,14 +99,14 @@ export class UsersService {
     if (isNil(displayName) || isEmpty(displayName.trim()))
       throw Error("Display name was empty");
 
+    if (isNil(email) || isEmpty(email.trim()))
+      throw Error("Email name was empty");
+
     const dbUser = await this.edgeDbClient.transaction(async (tx) => {
       // did we already perhaps see reference to this user from an application - but the user hasn't logged in?
-      const potentialDbUser = await singlePotentialUserByDisplayNameQuery.run(
-        tx,
-        {
-          displayName: displayName,
-        }
-      );
+      const potentialDbUser = await singlePotentialUserByEmailQuery.run(tx, {
+        email: email,
+      });
 
       let releasesToAdd: any;
 
@@ -122,8 +122,8 @@ export class UsersService {
             : e.cast(e.uuid, e.set());
 
         // the user is no longer potential - they will be real in the users table - so delete from potential
-        await deletePotentialUserByDisplayNameQuery.run(tx, {
-          displayName: displayName,
+        await deletePotentialUserByEmailQuery.run(tx, {
+          email: email,
         });
       } else {
         releasesToAdd = e.cast(e.uuid, e.set());
@@ -133,6 +133,7 @@ export class UsersService {
         .insert(e.permission.User, {
           subjectId: subjectId,
           displayName: displayName,
+          email: email,
           releaseParticipant: e.select(e.release.Release, (r) => ({
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),

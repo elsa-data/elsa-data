@@ -11,6 +11,7 @@ export class AuthenticatedUser {
       isNil(this.dbUser.id) ||
       isNil(this.dbUser.subjectId) ||
       isNil(this.dbUser.displayName) ||
+      isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
       isNil(this.dbUser.allowedCreateRelease) ||
       isNil(this.dbUser.allowedChangeReleaseDataOwner) ||
@@ -40,6 +41,10 @@ export class AuthenticatedUser {
    */
   public get displayName(): string {
     return this.dbUser!.displayName;
+  }
+
+  public get email(): string {
+    return this.dbUser!.email;
   }
 
   public get allowedCreateRelease(): boolean {

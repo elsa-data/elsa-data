@@ -19,29 +19,22 @@ export type SingleUserBySubjectIdType = $infer<
 >;
 
 /**
- * Return the details of a single user searching by display name.
- * (NOTE: this is a temporary place holder until we add an email field in user - this will be replaced entirely by that)
- * NOTE: we match the first! match here (because display name is not unique)
+ * Return the details of a single user searching by email.
  */
-export const singleUserByDisplayNameQuery = e.params(
-  { displayName: e.str },
-  (params) =>
-    e
-      .select(e.permission.User, (u) => ({
-        ...e.permission.User["*"],
-        filter: e.op(params.displayName, "=", u.displayName),
-        limit: 1,
-      }))
-      .assert_single()
+export const singleUserByEmailQuery = e.params({ email: e.str }, (params) =>
+  e
+    .select(e.permission.User, (u) => ({
+      ...e.permission.User["*"],
+      filter: e.op(params.email, "=", u.email),
+    }))
+    .assert_single()
 );
 
 /**
- * Return the details of a single user searching by display name.
- * (NOTE: this is a temporary place holder until we add an email field in user - this will be replaced entirely by that)
- * NOTE: we match the first! match here (because display name is not unique)
+ * Return the details of a single user searching by email.
  */
-export const singlePotentialUserByDisplayNameQuery = e.params(
-  { displayName: e.str },
+export const singlePotentialUserByEmailQuery = e.params(
+  { email: e.str },
   (params) =>
     e
       .select(e.permission.PotentialUser, (pu) => ({
@@ -49,17 +42,16 @@ export const singlePotentialUserByDisplayNameQuery = e.params(
         futureReleaseParticipant: {
           id: true,
         },
-        filter: e.op(params.displayName, "=", pu.displayName),
-        limit: 1,
+        filter: e.op(params.email, "=", pu.email),
       }))
       .assert_single()
 );
 
-export const deletePotentialUserByDisplayNameQuery = e.params(
-  { displayName: e.str },
+export const deletePotentialUserByEmailQuery = e.params(
+  { email: e.str },
   (params) =>
     e.delete(e.permission.PotentialUser, (pu) => ({
-      filter: e.op(params.displayName, "=", pu.displayName),
+      filter: e.op(params.email, "=", pu.email),
     }))
 );
 

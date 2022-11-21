@@ -1,5 +1,6 @@
 import React, { Fragment, MutableRefObject, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import { ErrorDisplay } from "./error-display";
 
 type Props = {
   showing: boolean;
@@ -65,14 +66,7 @@ export const SelectDialogBase: React.FC<Props> = ({
                     {content}
                   </div>
                 </div>
-                {errorMessage && (
-                  <div
-                    className="p-4 mx-4 my-3 text-sm text-red-700 bg-red-100 rounded-lg"
-                    role="alert"
-                  >
-                    <span className="font-medium">Error</span> {errorMessage}
-                  </div>
-                )}
+                <ErrorDisplay message={errorMessage} />
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   {buttons}
                 </div>

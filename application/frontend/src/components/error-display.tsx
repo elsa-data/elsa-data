@@ -1,25 +1,18 @@
-import React from "react";
+import React, { ReactNode } from "react";
 
 export type ErrorDisplayProps = {
-  message: JSX.Element;
+  message: ReactNode | undefined;
 };
 
 /**
  * Display an error message.
  */
-export const ErrorDisplay = ({ message }: ErrorDisplayProps): JSX.Element => {
-  return (
-    <div>
-      <p>{message}</p>
-      <p>
-        If you have landed on this page by following links within Elsa Data -
-        then this is an internal bug and we would be grateful if you could
-        report it.
-      </p>
-      <p>
-        If you have just been randomly typing in URLs then you have got what you
-        deserved!
-      </p>
+export const ErrorDisplay = ({
+  message,
+}: ErrorDisplayProps): JSX.Element | null => {
+  return message ? (
+    <div className="p-4 mx-4 my-3 text-sm text-red-700 bg-red-100 rounded-lg">
+      <span>{message}</span>
     </div>
-  );
+  ) : null;
 };
