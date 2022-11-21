@@ -1,12 +1,13 @@
 import { Token } from "../meta/meta-lexer";
 import { ProviderBase } from "./provider-base";
-import { exec } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import { set } from "lodash";
 import { readdirSync } from "fs";
 import { join, resolve, parse } from "node:path";
 import { homedir } from "os";
-const execPromise = promisify(exec);
+
+const execPromise = promisify(execFile);
 
 /**
  * A provider that can get config from specific entries in an OsX keychain
@@ -36,9 +37,10 @@ export class ProviderLinuxPass extends ProviderBase {
       const passName = parse(pass).name;
       const passPath = join(this.keychainName, passName);
       try {
-        const { stdout: passValue } = await execPromise(
-          `pass show ${passPath}`
-        );
+        const { stdout: passValue } = await execPromise("pass", [
+          "show",
+          passPath,
+        ]);
         values[passName] = passValue.trim();
       } catch (error) {}
     }
