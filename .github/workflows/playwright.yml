@@ -45,11 +45,10 @@ jobs:
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
           server-dsn: edgedb://localhost:5656
-          project-dir: ./application/backend
-          #cli-version: nightly
-          #server-version: nightly
 
       - run: edgedb query "SELECT 'Hello from GitHub Actions'"
+        env:
+          EDGEDB_DSN: edgedb://localhost:5656
         working-directory: ./application/backend
 
       - name: Install E2E test dependencies
