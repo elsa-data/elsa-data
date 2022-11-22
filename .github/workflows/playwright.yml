@@ -85,7 +85,8 @@ jobs:
         working-directory: ./e2e
         env:
           NODE_ENV: development
-          ELSA_DATA_META_CONFIG_SOURCES: "file('base') file('dev-common') file('dev-localhost')"
+          ELSA_DATA_META_CONFIG_FOLDERS: "${GITHUB_WORKSPACE}/e2e/config"
+          ELSA_DATA_META_CONFIG_SOURCES: "file('e2e')"
 
       - uses: actions/upload-artifact@v3
         if: always()
