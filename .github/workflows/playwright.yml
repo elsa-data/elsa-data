@@ -48,6 +48,7 @@ jobs:
 
       - run: edgedb query "SELECT 'Hello from GitHub Actions'"
         env:
+          EDGEDB_CLIENT_SECURITY: insecure_dev_mode
           EDGEDB_DSN: edgedb://localhost:5656
         working-directory: ./application/backend
 
