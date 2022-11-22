@@ -1,9 +1,6 @@
 import { DuoLimitationCodedType, DuoLimitationSchema } from "@umccr/elsa-types";
 import addFormats from "ajv-formats";
 import Ajv from "ajv/dist/2019";
-import { registerTypes } from "../service-tests/setup";
-
-const testContainer = registerTypes();
 
 const ajv = addFormats(new Ajv({}), [
   "date-time",
@@ -24,7 +21,7 @@ const ajv = addFormats(new Ajv({}), [
   .addKeyword("kind")
   .addKeyword("modifier");
 
-describe("test basic duo stuff", () => {
+describe("DUO types and serialisation", () => {
   let gruExample: DuoLimitationCodedType;
   let dsExample: DuoLimitationCodedType;
   let hmbExample: DuoLimitationCodedType;
@@ -44,7 +41,8 @@ describe("test basic duo stuff", () => {
     };
     dsExample = {
       code: "DUO:0000007",
-      disease: "Placeholder for the moment",
+      diseaseSystem: "SNOMED",
+      diseaseCode: "2342424",
       modifiers: [
         {
           code: "DUO:0000046",
@@ -61,6 +59,7 @@ describe("test basic duo stuff", () => {
         {
           code: "DUO:0000025",
           start: "2020-01-01",
+          end: "2021-01-01",
         },
       ],
     };
@@ -73,6 +72,7 @@ describe("test basic duo stuff", () => {
         {
           code: "DUO:0000025",
           start: "2020-01-AB",
+          end: "2020-01-01",
         },
       ],
     };
@@ -93,6 +93,7 @@ describe("test basic duo stuff", () => {
 
     expect(limitationValidate(gruExample)).toBe(true);
     expect(limitationValidate(dsExample)).toBe(true);
+
     // throw in an example here of validating ajv *without* the compiled schema
     expect(ajv.validate(DuoLimitationSchema, hmbExample)).toBe(true);
 

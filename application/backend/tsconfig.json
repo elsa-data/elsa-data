@@ -16,6 +16,11 @@
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true
   },
-  "include": ["./src/**/*", "./jobs/**/*", "./dbschema/edgeql-js/**/*"],
+  "include": [
+    "./src/**/*",
+    "./jobs/**/*",
+    "./tests/**/*",
+    "./dbschema/edgeql-js/**/*"
+  ],
   "exclude": ["node_modules"]
 }
