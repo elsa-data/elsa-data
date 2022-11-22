@@ -55,8 +55,10 @@ jobs:
 
       # install the OS playwright dependencies but hopefully with caching
       - run: npx playwright install --with-deps
+        working-directory: ./e2e
         if: steps.playwright-cache.outputs.cache-hit != 'true'
       - run: npx playwright install-deps
+        working-directory: ./e2e
         if: steps.playwright-cache.outputs.cache-hit == 'true'
 
       # install the EdgeDb CLI
@@ -64,12 +66,18 @@ jobs:
         with:
           server-dsn: ${{ env.EDGEDB_DSN }}
 
+      # get our database schema correct
       - run: edgedb migrate
         working-directory: ./application/backend
+
+      - run: npm run build:dev
+        working-directory: ./application/frontend
 
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: ./e2e
+        env:
+          ELSA_DATA_META_CONFIG_SOURCES: "file('base') file('dev-common') file('dev-localhost')"
 
       - uses: actions/upload-artifact@v3
         if: always()
@@ -77,4 +85,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-          working-directory: ./e2e
