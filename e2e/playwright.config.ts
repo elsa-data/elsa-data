@@ -7,6 +7,7 @@ import { resolve } from "path";
  */
 const config: PlaywrightTestConfig = {
   testDir: "./tests",
+  globalTimeout: 360 * 1000,
   /* Maximum time one test can run for. */
   timeout: 30 * 1000,
   expect: {
@@ -65,6 +66,7 @@ const config: PlaywrightTestConfig = {
     reuseExistingServer: !process.env.CI,
     // specific config for localhost testing
     env: {
+      DEBUG: "pw:webserver",
       NODE_ENV: "development",
       ELSA_DATA_META_CONFIG_SOURCES: "file('e2e')",
       ELSA_DATA_META_CONFIG_FOLDERS: resolve("config"),
