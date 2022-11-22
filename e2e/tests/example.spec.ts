@@ -7,11 +7,12 @@ test("homepage has title and links to intro page", async ({ page }) => {
   await expect(page).toHaveTitle(/Elsa Data/);
 
   // create a locator
-  const getStarted = page.getByRole("button", { name: "Log in via CILogon" });
+  await expect(page.getByText("Home")).toBeVisible();
+  await expect(page.getByText("Releases")).toBeVisible();
 
-  // Click the get started link.
-  await getStarted.click();
+  const dacLink = page.getByRole("link", { name: /DAC/ });
 
-  // Expects the URL to contain intro.
-  await expect(page).toHaveURL(/.*authorize/);
+  await dacLink.click();
+
+  await expect(page).toHaveURL(/.*dac/);
 });

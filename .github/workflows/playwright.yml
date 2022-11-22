@@ -44,6 +44,14 @@ jobs:
             ./application/common/elsa-types
             ./application/frontend
 
+      # unit tests can run first before any databases are set up
+      - name: Run unit tests
+        run: npx jest --config jest.unit-tests.config.js
+        working-directory: application/backend
+        env:
+          # we explicitly make sure that if a unit test *did* try to access a db it will fail
+          EDGEDB_DSN: undefined
+
       # setup a cache explicitly for Playwright dependencies (browser dependencies at the OS level)
       # https://justin.poehnelt.com/posts/caching-playwright-in-github-actions/
       - uses: actions/cache@v3
@@ -55,10 +63,10 @@ jobs:
 
       # install the OS playwright dependencies but hopefully with caching
       - run: npx playwright install --with-deps
-        working-directory: ./e2e
+        working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit != 'true'
       - run: npx playwright install-deps
-        working-directory: ./e2e
+        working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit == 'true'
 
       # install the EdgeDb CLI
@@ -68,25 +76,22 @@ jobs:
 
       # get our database schema correct
       - run: edgedb migrate
-        working-directory: ./application/backend
+        working-directory: application/backend
 
       # generate our types
       - run: npm run edgetypes
-        working-directory: ./application/backend
+        working-directory: application/backend
 
       # build our React frontend
       - run: npm run build:dev
-        working-directory: ./application/frontend
+        working-directory: application/frontend
         env:
+          # whilst ever we allow React warnings in dev we need to do this to switch off CI over strictness
           CI: false
 
-      - name: Run Playwright tests
-        run: npx playwright test
-        working-directory: ./e2e
-        env:
-          NODE_ENV: development
-          ELSA_DATA_META_CONFIG_FOLDERS: ${{ github.workspace }}/e2e/config
-          ELSA_DATA_META_CONFIG_SOURCES: "file('e2e')"
+      # run the UI tests
+      - run: npx playwright test
+        working-directory: e2e
 
       - uses: actions/upload-artifact@v3
         if: always()
