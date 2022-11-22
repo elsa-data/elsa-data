@@ -56,7 +56,7 @@ jobs:
       # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
-          server-dsn: true
+          server-dsn: ${{ env.EDGEDB_DSN }}
 
       - run: edgedb migrate
         working-directory: ./application/backend
