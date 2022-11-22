@@ -72,11 +72,14 @@ jobs:
 
       - run: npm run build:dev
         working-directory: ./application/frontend
+        env:
+          CI: false
 
       - name: Run Playwright tests
         run: npx playwright test
         working-directory: ./e2e
         env:
+          NODE_ENV: development
           ELSA_DATA_META_CONFIG_SOURCES: "file('base') file('dev-common') file('dev-localhost')"
 
       - uses: actions/upload-artifact@v3
