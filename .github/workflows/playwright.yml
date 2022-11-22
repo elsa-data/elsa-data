@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
-    # run a EdgeDb in the background that will be connected to from our app
+    # run an EdgeDb in the background that will be connected to from our app
     services:
       edgedb:
         image: edgedb/edgedb:2.7
@@ -21,25 +21,37 @@ jobs:
     defaults:
       run:
         working-directory: ./e2e
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
+
+      # setup NodeJs
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Create edgedb.toml
-        run: |
-          echo -e '[edgedb]\nserver-version = "2.7"' >> edgedb.toml
+      # and all our packaging (with caching)
+      - name: 📥 Download deps
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: |
+            ./e2e
+            ./application/backend
+            ./application/frontend
 
+      # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
           server-dsn: edgedb://localhost:5656
+          project-dir: ./application/backend
           #cli-version: nightly
           #server-version: nightly
-          #project-dir: application/backend
 
       - run: edgedb query "SELECT 'Hello from GitHub Actions'"
-        #working-directory: ./application/backend
+        with:
+          working-directory: ./application/backend
 
       - name: Install E2E test dependencies
         run: npm ci
