@@ -44,7 +44,7 @@ jobs:
             ./application/common/elsa-types
             ./application/frontend
 
-      # setup a cache explicitly for Playwright dependencies (needed at OS level)
+      # setup a cache explicitly for Playwright dependencies (browser dependencies at the OS level)
       # https://justin.poehnelt.com/posts/caching-playwright-in-github-actions/
       - uses: actions/cache@v3
         id: playwright-cache
@@ -52,6 +52,12 @@ jobs:
           path: |
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('./e2e/package-lock.json') }}
+
+      # install the OS playwright dependencies but hopefully with caching
+      - run: npx playwright install --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - run: npx playwright install-deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
 
       # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
@@ -61,14 +67,9 @@ jobs:
       - run: edgedb migrate
         working-directory: ./application/backend
 
-      # install the OS playwright dependencies but hopefully with caching
-      - run: npx playwright install --with-deps
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-      - run: npx playwright install-deps
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-
       - name: Run Playwright tests
         run: npx playwright test
+        working-directory: ./e2e
 
       - uses: actions/upload-artifact@v3
         if: always()
@@ -76,3 +77,4 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+          working-directory: ./e2e
