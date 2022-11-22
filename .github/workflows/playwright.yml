@@ -50,8 +50,7 @@ jobs:
           #server-version: nightly
 
       - run: edgedb query "SELECT 'Hello from GitHub Actions'"
-        with:
-          working-directory: ./application/backend
+        working-directory: ./application/backend
 
       - name: Install E2E test dependencies
         run: npm ci
