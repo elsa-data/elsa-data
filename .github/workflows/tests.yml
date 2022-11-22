@@ -29,10 +29,8 @@ jobs:
         with:
           node-version: 18
 
-      # setup all our packaging (with caching)
+      # setup all our packages (with caching)
       - uses: bahmutov/npm-install@v1
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           working-directory: |
             e2e
@@ -40,11 +38,6 @@ jobs:
             application/common/elsa-types
             application/backend
             application/frontend
-
-      # A simple Typescript compile can find some syntax errors
-      - name: Typescript compile
-        run: npx tsc --noEmit
-        working-directory: application/backend
 
       # unit tests can run first before any databases are set up
       - name: Run unit tests
@@ -65,6 +58,11 @@ jobs:
 
       # generate our types
       - run: npm run edgetypes
+        working-directory: application/backend
+
+      # A simple Typescript compile can find some syntax errors
+      - name: Typescript compile
+        run: npx tsc --noEmit
         working-directory: application/backend
 
       # db tests run only in the backend and concentrate on validating edgeql queries

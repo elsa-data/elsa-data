@@ -18,20 +18,19 @@ jobs:
       # Check out repo
       - uses: actions/checkout@v3
 
+      # setup NodeJs
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
-          cache: "npm"
-          cache-dependency-path: application/backend/package-lock.json
+          node-version: 18
 
-      - name: Install modules
-        run: npm ci
-        working-directory: application/backend
-
-      # Note that our unit tests by design have no dependency on EdgeDb
-      - name: Run unit tests
-        run: npx jest --config jest.unit-tests.config.js
-        working-directory: application/backend
+      # setup all our packages (with caching)
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: |
+            application/common/elsa-constants
+            application/common/elsa-types
+            application/backend
+            application/frontend
 
       # Install an EdgeDb for use by the tests
       #- uses: edgedb/setup-edgedb@8bc9e10005674ec772652b86e1fdd476e6462284
