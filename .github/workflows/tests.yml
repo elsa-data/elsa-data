@@ -31,13 +31,20 @@ jobs:
 
       # setup all our packaging (with caching)
       - uses: bahmutov/npm-install@v1
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           working-directory: |
-            ./e2e
-            ./application/backend
-            ./application/common/elsa-constants
-            ./application/common/elsa-types
-            ./application/frontend
+            e2e
+            application/common/elsa-constants
+            application/common/elsa-types
+            application/backend
+            application/frontend
+
+      # A simple Typescript compile can find some syntax errors
+      - name: Typescript compile
+        run: npx tsc --noEmit
+        working-directory: application/backend
 
       # unit tests can run first before any databases are set up
       - name: Run unit tests

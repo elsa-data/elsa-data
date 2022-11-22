@@ -19,7 +19,8 @@
   "include": [
     "./src/**/*",
     "./jobs/**/*",
-    "./tests/**/*",
+    "./tests/db-tests/**/*",
+    "./tests/unit-tests/**/*",
     "./dbschema/edgeql-js/**/*"
   ],
   "exclude": ["node_modules"]
