@@ -94,7 +94,7 @@
     "@types/i18n": "^0.13.4",
     "@types/jest": "27.5.2",
     "@types/lodash": "4.14.182",
-    "@types/node": "16.11.38",
+    "@types/node": "18.11.9",
     "@types/qs": "^6.9.7",
     "@types/supertest": "2.0.12",
     "@types/temp": "^0.9.1",

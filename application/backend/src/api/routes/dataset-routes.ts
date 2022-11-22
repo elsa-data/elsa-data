@@ -35,7 +35,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
         offset
       );
 
-      sendPagedResult(reply, datasetsPagedResult, "/api/datasets?");
+      sendPagedResult(reply, datasetsPagedResult);
     }
   );
 
