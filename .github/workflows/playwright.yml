@@ -27,6 +27,10 @@ jobs:
         with:
           node-version: 18
 
+      - name: Create edgedb.toml
+        run: |
+          echo -e '[edgedb]\nserver-version = "2.7"' >> edgedb.toml
+
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
           server-dsn: edgedb://localhost:5656
