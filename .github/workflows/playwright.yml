@@ -1,0 +1,62 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: ["feature/testing-spike"]
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    # run a EdgeDb in the background that will be connected to from our app
+    services:
+      edgedb:
+        image: edgedb/edgedb:2.7
+        env:
+          EDGEDB_SERVER_SECURITY: insecure_dev_mode
+        ports:
+          - 5656:5656
+
+    defaults:
+      run:
+        working-directory: ./e2e
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - uses: edgedb/setup-edgedb@v1.2.2
+        with:
+          server-dsn: edgedb://localhost:5656
+          #cli-version: nightly
+          #server-version: nightly
+          #project-dir: application/backend
+
+      - run: edgedb query "SELECT 'Hello from GitHub Actions'"
+        #working-directory: ./application/backend
+
+      - name: Install E2E test dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+# Service is how we possibly should do this but it doesn't work with act (yet)
+#     services:
+#      edgedb:
+#        image: edgedb/edgedb:2.7
+#        env:
+#          EDGEDB_SERVER_SECURITY: insecure_dev_mode
+#        ports:
+#          - 5656:5656
+#
+#        server-dsn: edgedb://127.0.0.1:5656
