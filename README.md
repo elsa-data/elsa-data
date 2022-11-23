@@ -131,7 +131,7 @@ see the actual source in `src/config/meta`. More instructions to follow.
 
 An example of this though is
 
-`file('base') file('dev-common') file('dev-localhost') osx-keychain('elsa-data')`
+`file('base') file('dev-common') file('dev-localhost') file('datasets') osx-keychain('elsa-data')`
 
 ## Links
 
