@@ -1,16 +1,19 @@
-export const WEB_SERVER_COMMAND = "web-server";
-export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
+import { ElsaSettings } from "./config/elsa-settings";
+import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
+import { bootstrapSettings } from "./bootstrap-settings";
+import { getMetaConfig } from "./config/config-schema";
+
 export const DB_MIGRATE_COMMAND = "db-migrate";
 export const ECHO_COMMAND = "echo";
 export const DB_BLANK_COMMAND = "db-blank";
 export const ADD_SCENARIO_COMMAND = "add-scenario";
 
-export type EntrypointCommand = {
+export type EntrypointCommandHelper = {
   command: string;
   args: string[];
 };
 
-export function getCommands(argv: string[]): EntrypointCommand[] {
+export function getCommands(argv: string[]): EntrypointCommandHelper[] {
   // we are looking to build a set of commands that this invoke of the entrypoint should
   // execute in order
   const commandStrings = [];
@@ -24,7 +27,7 @@ export function getCommands(argv: string[]): EntrypointCommand[] {
     commandStrings.push(...semiSplit);
   }
 
-  const commands: EntrypointCommand[] = [];
+  const commands: EntrypointCommandHelper[] = [];
 
   for (const c of commandStrings) {
     // if the args have extra semicolons etc - which result in empty commands - we don't mind - just skip
@@ -46,4 +49,16 @@ export function getCommands(argv: string[]): EntrypointCommand[] {
   }
 
   return commands;
+}
+
+// TODO - decide on a proper 'default' behaviour for config sources and replace this
+export async function getFromEnv(): Promise<ElsaSettings> {
+  const metaSources = process.env[CONFIG_SOURCES_ENVIRONMENT_VAR];
+
+  if (!metaSources)
+    throw new Error(
+      `For local development launch there must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
+    );
+
+  return await bootstrapSettings(await getMetaConfig(metaSources));
 }
