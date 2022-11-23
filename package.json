@@ -9,15 +9,26 @@
     "install:cloudtrail_s3": "cd utils/cloudtrail_s3 && npm install",
     "install:cloudtrail_s3:infrastructure": "cd utils/cloudtrail_s3/infrastructure && npm install",
     "postinstall": "run-p install:*",
-
-    "migrate-db": "cd application/backend && edgedb migration create && edgedb migrate",
+    "migrate-db": "cd application/backend && edgedb migration create || true && edgedb migrate",
     "init-db": "cd application/backend && edgedb project init",
     "edgetypes": "cd application/backend && npm run edgetypes",
     "frontend": "cd application/frontend && npm run build:dev",
-    "backend:mac": "cd application/backend && npm run edgetypes && npm run dev:mac",
-    "start": "npm run frontend && npm run backend:mac"
+    "backend:watch:mac": "cd application/backend && npm run watch:mac",
+    "backend:watch:linux": "cd application/backend && npm run watch:linux",
+    "backend:watch:aws": "cd application/backend && npm run watch:aws",
+    "backend:dev:mac": "cd application/backend && npm run dev:mac",
+    "backend:dev:linux": "cd application/backend && npm run dev:linux",
+    "backend:dev:aws": "cd application/backend && npm run dev:aws",
+    "start": "run-script-os",
+    "start:macos": "npm run frontend && npm run edgetypes && npm run backend:dev:mac",
+    "start:linux": "npm run frontend && npm run edgetypes && npm run backend:dev:linux",
+    "start:aws": "npm run frontend && npm run edgetypes && npm run backend:dev:aws",
+    "start:watch:mac": "npm run frontend && npm run edgetypes && npm run backend:watch:mac",
+    "start:watch:linux": "npm run frontend && npm run edgetypes && npm run backend:watch:linux",
+    "start:watch:aws": "npm run frontend && npm run edgetypes && npm run backend:watch:aws"
   },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "run-script-os": "^1.1.6"
   }
 }
