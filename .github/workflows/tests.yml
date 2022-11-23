@@ -1,0 +1,106 @@
+name: Tests
+
+on: push
+
+jobs:
+  test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    # run an EdgeDb in the background that will be connected to from our app
+    services:
+      edgedb:
+        image: edgedb/edgedb:2.7
+        env:
+          EDGEDB_SERVER_SECURITY: insecure_dev_mode
+        ports:
+          - 5656:5656
+
+    # these will be used by all EdgeDb clients in order to connect to the above
+    env:
+      EDGEDB_CLIENT_SECURITY: insecure_dev_mode
+      EDGEDB_DSN: edgedb://localhost:5656
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # setup NodeJs
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # setup all our packages (with caching)
+      - uses: bahmutov/npm-install@v1
+        with:
+          working-directory: |
+            e2e
+            application/common/elsa-constants
+            application/common/elsa-types
+            application/backend
+            application/frontend
+
+      # unit tests can run first before any databases are set up
+      - name: Run unit tests
+        run: npx jest --config jest.unit-tests.config.js
+        working-directory: application/backend
+        env:
+          # we explicitly make sure that if a unit test *did* try to access a db it will fail
+          EDGEDB_DSN: undefined
+
+      # install the EdgeDb CLI
+      - uses: edgedb/setup-edgedb@v1.2.2
+        with:
+          server-dsn: ${{ env.EDGEDB_DSN }}
+
+      # get our database schema correct
+      - run: edgedb migrate
+        working-directory: application/backend
+
+      # generate our types
+      - run: npm run edgetypes
+        working-directory: application/backend
+
+      # A simple Typescript compile can find some syntax errors
+      - name: Typescript compile
+        run: npx tsc --noEmit
+        working-directory: application/backend
+
+      # db tests run only in the backend and concentrate on validating edgeql queries
+      - name: Run database tests
+        run: npx jest --config jest.db-tests.config.js
+        working-directory: application/backend
+
+      # build our React frontend
+      - run: npm run build:dev
+        working-directory: application/frontend
+        env:
+          # whilst ever we allow React warnings in dev we need to do this to switch off CI over strictness
+          CI: false
+
+      # setup a cache explicitly for Playwright dependencies (browser dependencies at the OS level)
+      # https://justin.poehnelt.com/posts/caching-playwright-in-github-actions/
+      - uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('./e2e/package-lock.json') }}
+
+      # install the OS playwright dependencies but hopefully with caching
+      - run: npx playwright install --with-deps
+        working-directory: e2e
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - run: npx playwright install-deps
+        working-directory: e2e
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+
+      # run the UI tests
+      - run: npx playwright test
+        working-directory: e2e
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 30

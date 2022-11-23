@@ -3,6 +3,7 @@ import {
   S3Client,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import { Readable } from "stream";
 
 /**
  *
@@ -56,14 +57,20 @@ export async function readObjectToStringFromS3Key(
   objectKey: string
 ): Promise<string> {
   try {
-    const s3ClientInput: GetObjectCommand = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: objectKey,
-    });
-    const getObjOutput = await s3Client.send(s3ClientInput);
-    const bodyBuffer = await getObjOutput.Body.toArray();
+    // https://transang.me/modern-fetch-and-how-to-get-buffer-output-from-aws-sdk-v3-getobjectcommand/
+    const getObjOutput = await s3Client.send(
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: objectKey,
+      })
+    );
+    if (getObjOutput.Body) {
+      const stream = getObjOutput.Body as Readable;
+      // the NodeJs typescript defs for Readable haven't caught up with the toArray() method (Nodejs 17+)
+      const asBuffer = Buffer.concat(await (stream as any).toArray());
 
-    return bodyBuffer.toString("utf-8");
+      return asBuffer.toString("utf-8");
+    }
   } catch (e) {
     console.error(e);
   }

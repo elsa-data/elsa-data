@@ -1,0 +1,14 @@
+{
+  "name": "elsa-data-e2e",
+  "version": "1.0.0",
+  "description": "E2E test scripts for any deployment of Elsa Data",
+  "main": "index.js",
+  "private": true,
+  "scripts": {},
+  "keywords": [],
+  "author": "UMCCR",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.28.0"
+  }
+}
