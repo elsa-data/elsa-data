@@ -36,7 +36,7 @@ export type ElsaSettings = {
     uri: string;
     description: string;
     storageLocation: string;
-    uriPrefix: string;
+    storageUriPrefix: string;
     aws?: {
       eventDataStoreId: string;
     };

@@ -148,15 +148,10 @@ export const configDefinition = {
         format: ["aws-s3"],
         default: "aws-s3",
       },
-      uriPrefix: {
-        doc: "The URI prefix leading to data and manifests.",
+      storageUriPrefix: {
+        doc: "The storage URI prefix leading to data and manifests. e.g. 's3://agha-gdr-store-2.0/Cardiac/",
         format: "*",
         default: "",
-      },
-      num: {
-        doc: "The URI prefix leading to data and manifests.",
-        format: "int",
-        default: 1,
       },
       aws: {
         eventDataStoreId: {

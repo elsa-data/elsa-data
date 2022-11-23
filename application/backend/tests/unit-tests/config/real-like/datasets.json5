@@ -5,7 +5,7 @@
       description: "A dataset sample.",
       uri: "urn:elsa.net:2022:dataset001",
       storageLocation: "aws-s3",
-      uriPrefix: "example/dataset001",
+      storageUriPrefix: "example/dataset001",
     },
   ],
 }
