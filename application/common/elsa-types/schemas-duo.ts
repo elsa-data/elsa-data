@@ -73,6 +73,12 @@ export const DuoNotForProfitUseOnlySchema = Type.Object({
   code: Type.Literal("DUO:0000045"), // NPU  NotForProfitUseOnlyCode
 });
 
+export const DuoTimeSpecificSchema = Type.Object({
+  code: Type.Literal("DUO:0000025"), // TS
+  start: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
+  end: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
+});
+
 export type DuoGeographicalRestrictionType = Static<
   typeof DuoGeographicalRestrictionSchema
 >;
@@ -105,11 +111,7 @@ export const DuoModifierSchema = Type.Union(
     Type.Object({
       code: Type.Literal("DUO:0000016"), // GSO  GeneticStudiesOnlyCode
     }),
-    Type.Object({
-      code: Type.Literal("DUO:0000025"), // TS
-      start: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
-      end: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
-    }),
+    DuoTimeSpecificSchema,
     Type.Object({
       code: Type.Literal("DUO:0000029"), //  RTN  ReturnToDatabaseCode
     }),
