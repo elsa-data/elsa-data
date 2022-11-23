@@ -13,6 +13,7 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { oneOffCommonInitialiseSynchronous } from "./bootstrap-common-once";
 import { getMetaConfig } from "./config/config-schema";
 import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
+import { DatasetService } from "./business/services/dataset-service";
 
 oneOffCommonInitialiseSynchronous();
 
@@ -43,9 +44,19 @@ const start = async () => {
   container.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
-
   await blankTestData();
   await insertTestData(settings);
+
+  // DB Setup
+  // Dataset in the configuration are being initialized here.
+  const datasetsService = container.resolve(DatasetService);
+  for (const dp of settings.datasets) {
+    await datasetsService.selectOrInsertDataset({
+      datasetDescription: dp.description,
+      datasetName: dp.name,
+      datasetUri: dp.uri,
+    });
+  }
 
   console.log("Starting job queue");
 

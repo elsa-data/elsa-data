@@ -31,6 +31,16 @@ export type ElsaSettings = {
 
   superAdmins: { id: string; email: string }[];
 
+  datasets: {
+    name: string;
+    uri: string;
+    description: string;
+    storageLocation: string;
+    uriPrefix: string;
+    aws?: {
+      eventDataStoreId: string;
+    };
+  }[];
   // options to pass into the rate limiter
   rateLimit: RateLimitPluginOptions;
 

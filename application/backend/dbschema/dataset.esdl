@@ -31,7 +31,7 @@ module dataset {
         # along with any external identifiers - we require that datasets have an immutable URI
         # that uniquely identifies them globally
         required property uri -> str {
-          readonly := true;
+            readonly := true;
         }
 
         required property description -> str;

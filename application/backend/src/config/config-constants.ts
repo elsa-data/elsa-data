@@ -123,9 +123,53 @@ export const configDefinition = {
     default: undefined,
     env: `${env_prefix}DEPLOYED_URL`,
   },
+  datasets: {
+    doc: "A collection datasets configurations that will are registered in Elsa Data.",
+    format: "array",
+    default: [],
+    children: {
+      name: {
+        doc: "Name of the dataset.",
+        format: String,
+        default: undefined,
+      },
+      uri: {
+        doc: "A URI unique for the particular dataset.",
+        format: String,
+        default: undefined,
+      },
+      description: {
+        doc: "A brief description of the dataset.",
+        format: String,
+        default: undefined,
+      },
+      storageLocation: {
+        doc: "The location where data are stored. Options: 'aws-s3'",
+        format: ["aws-s3"],
+        default: "aws-s3",
+      },
+      uriPrefix: {
+        doc: "The URI prefix leading to data and manifests.",
+        format: "*",
+        default: "",
+      },
+      num: {
+        doc: "The URI prefix leading to data and manifests.",
+        format: "int",
+        default: 1,
+      },
+      aws: {
+        eventDataStoreId: {
+          doc: "An AWS CloudTrail lake client data store Id for tracking data egress. E.g. '327383f8-3273-3273-3273-327383f8fc43'",
+          format: String,
+          default: undefined,
+        },
+      },
+    },
+  },
   superAdmins: {
     doc: "A collection of users with super administration rights i.e. the ability to alter other user rights",
-    format: "user-array",
+    format: "array",
     default: [],
 
     children: {

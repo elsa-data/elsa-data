@@ -1,0 +1,11 @@
+{
+  datasets: [
+    {
+      name: "Cardiac",
+      description: "An Australian Genomics flagship.",
+      uri: "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
+      storageLocation: "aws-s3",
+      uriPrefix: "agha-gdr-store-2.0/Cardiac",
+    },
+  ],
+}

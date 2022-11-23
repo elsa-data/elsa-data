@@ -5,9 +5,11 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable, singleton } from "tsyringe";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import { BadLimitOffset } from "../exceptions/bad-limit-offset";
+import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
   datasetAllSummaryQuery,
+  selectDatasetIdByDatasetUriAndExternalIdentifiers,
 } from "../db/dataset-queries";
 
 @injectable()
@@ -148,5 +150,39 @@ export class DatasetService {
       .run(this.edgeDbClient);
 
     return pageCases;
+  }
+
+  /**
+   * Select or insert new dataset if doesn't exist in Db
+   * @returns Dataset Id
+   */
+  public async selectOrInsertDataset({
+    datasetUri,
+    datasetDescription,
+    datasetName,
+  }: {
+    datasetUri: string;
+    datasetDescription: string;
+    datasetName: string;
+  }): Promise<string> {
+    const selectDatasetIdQuery =
+      selectDatasetIdByDatasetUriAndExternalIdentifiers(
+        datasetUri,
+        datasetName
+      );
+
+    // Find current Dataset
+    const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
+    const datasetId = datasetIdArray[0]?.id;
+    if (datasetId) return datasetId;
+
+    // Else, create new dataset
+    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
+      uri: datasetUri,
+      externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
+      description: datasetDescription,
+    });
+    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
+    return newDataset.id;
   }
 }

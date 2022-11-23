@@ -66,6 +66,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     remsBotUser: config.get("rems.botUser")!,
     remsUrl: "https://hgpp-rems.dev.umccr.org",
     ontoFhirUrl: config.get("ontoFhirUrl"),
+    datasets: (config.get("datasets") as any[]) ?? [],
     superAdmins: (config.get("superAdmins") as any[]) ?? [],
     rateLimit: {
       // for the moment we set up the rate limiting across the entire Elsa Data surface
