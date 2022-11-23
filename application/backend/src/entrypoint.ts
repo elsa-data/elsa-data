@@ -2,24 +2,28 @@
 import "reflect-metadata";
 
 import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
-import { oneOffCommonInitialiseSynchronous } from "./bootstrap-common-once";
-import {
-  ADD_SCENARIO_COMMAND,
-  DB_BLANK_COMMAND,
-  DB_MIGRATE_COMMAND,
-  ECHO_COMMAND,
-  getCommands,
-} from "./entrypoint-command-helper";
+import { bootstrapGlobalSynchronous } from "./bootstrap-global-synchronous";
+import { getCommands } from "./entrypoint-command-helper";
 import {
   startWebServer,
   WEB_SERVER_COMMAND,
   WEB_SERVER_WITH_SCENARIO_COMMAND,
 } from "./entrypoint-command-start-web-server";
-import { commandDbBlank } from "./entrypoint-command-db-blank";
-import { commandDbMigrate } from "./entrypoint-command-db-migrate";
-import { commandAddScenario } from "./entrypoint-command-add-scenario";
+import {
+  commandDbBlank,
+  DB_BLANK_COMMAND,
+} from "./entrypoint-command-db-blank";
+import {
+  commandDbMigrate,
+  DB_MIGRATE_COMMAND,
+} from "./entrypoint-command-db-migrate";
+import {
+  ADD_SCENARIO_COMMAND,
+  commandAddScenario,
+} from "./entrypoint-command-add-scenario";
 
-oneOffCommonInitialiseSynchronous();
+// some Node wide synchronous initialisations
+bootstrapGlobalSynchronous();
 
 // global settings for DI
 bootstrapDependencyInjection();
@@ -32,7 +36,6 @@ function printHelpText() {
   console.log(
     `${WEB_SERVER_WITH_SCENARIO_COMMAND} <scenario 1|2...> - launch Elsa Data web server and always blank/insert the given scenario on start up`
   );
-  console.log(`${ECHO_COMMAND} <args> - echo arguments to console`);
   console.log(`${DB_BLANK_COMMAND}`);
   // TODO implement some guards on destructive operations
   //      console.log(`${DB_BLANK_COMMAND} [hostname] - delete all data from the database, requires hostname to be specified if in production`);
@@ -56,22 +59,23 @@ function printHelpText() {
         printHelpText();
         process.exit(0);
         break;
+      case "echo":
+        // TODO consider if this is in anyway useful / too dangerous
+        todo.push(async () => {
+          console.log(c.args);
+          return 0;
+        });
+        break;
       case WEB_SERVER_COMMAND:
         todo.push(async () => startWebServer(null));
         break;
       case WEB_SERVER_WITH_SCENARIO_COMMAND:
         if (c.args.length != 1)
           console.error(
-            `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`
+            `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
           );
 
         todo.push(async () => startWebServer(parseInt(c.args[0])));
-        break;
-      case ECHO_COMMAND:
-        todo.push(async () => {
-          console.log(c.args);
-          return 0;
-        });
         break;
       case ADD_SCENARIO_COMMAND:
         if (c.args.length != 1)

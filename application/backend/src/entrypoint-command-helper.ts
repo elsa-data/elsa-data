@@ -3,16 +3,16 @@ import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
 import { bootstrapSettings } from "./bootstrap-settings";
 import { getMetaConfig } from "./config/config-schema";
 
-export const DB_MIGRATE_COMMAND = "db-migrate";
-export const ECHO_COMMAND = "echo";
-export const DB_BLANK_COMMAND = "db-blank";
-export const ADD_SCENARIO_COMMAND = "add-scenario";
-
 export type EntrypointCommandHelper = {
   command: string;
   args: string[];
 };
 
+/**
+ * A poor substitute for something like yargs - but one that supports specifying
+ * multiple commands on a single argv separated by ";"
+ * @param argv
+ */
 export function getCommands(argv: string[]): EntrypointCommandHelper[] {
   // we are looking to build a set of commands that this invoke of the entrypoint should
   // execute in order
