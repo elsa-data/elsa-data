@@ -65,6 +65,7 @@ export class ElsaApplicationStack extends NestedStack {
           cpu: 1024,
           desiredCount: 1,
           containerName: "elsa",
+          logStreamPrefix: "elsa",
           healthCheckPath: "/",
           environment: {
             EDGEDB_DSN: config.edgeDbDsnNoPassword,
@@ -73,6 +74,7 @@ export class ElsaApplicationStack extends NestedStack {
               "file('base') file('dev-common') file('dev-deployed') file('datasets') aws-secret('ElsaDataDevDeployed')",
             // override any file based setting of the deployed url
             ELSA_DATA_CONFIG_DEPLOYED_URL: `https://${hostedPrefix}.${hostedZoneName}`,
+            ELSA_DATA_CONFIG_PORT: "80",
           },
           secrets: {
             EDGEDB_PASSWORD: ecs.Secret.fromSecretsManager(
