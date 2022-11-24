@@ -8,11 +8,9 @@ import i18n from "i18n";
  * A location for any synchronous setup that
  * - is common across all envs/locations
  * - is synchronous
- * - must only be performed once per process/node
+ * - must only be performed globally once per process/node
  */
-export function oneOffCommonInitialiseSynchronous() {
-  console.log("Performing one-off common initialisation");
-
+export function bootstrapGlobalSynchronous() {
   // register format for archiver
   // note: only do it once per Node.js process/application, as duplicate registration will throw an error
   archiver.registerFormat("zip-encrypted", archiverZipEncrypted);
