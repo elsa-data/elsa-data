@@ -1,6 +1,6 @@
 import React, { Fragment, MutableRefObject, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ErrorDisplay } from "./error-display";
+import {ErrorBoundary} from "./error-display";
 
 type Props = {
   showing: boolean;
@@ -66,7 +66,7 @@ export const SelectDialogBase: React.FC<Props> = ({
                     {content}
                   </div>
                 </div>
-                <ErrorDisplay message={errorMessage} />
+                <ErrorBoundary message={errorMessage} displayEagerly={true} />
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   {buttons}
                 </div>

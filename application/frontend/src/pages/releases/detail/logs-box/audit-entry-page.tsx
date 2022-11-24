@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { ErrorDisplay } from "../../../../components/error-display";
+import {ErrorBoundary} from "../../../../components/error-display";
 import { BoxNoPad } from "../../../../components/boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -31,13 +31,14 @@ export const AuditEntryPage = (): JSX.Element => {
 
   if (!releaseId || !objectId) {
     return (
-      <ErrorDisplay
+      <ErrorBoundary
         message={
           <div>
             Error: this component should not be rendered outside a route with a
             <code>releaseId</code> or <code>objectId</code> param
           </div>
         }
+        displayEagerly={true}
       />
     );
   }
