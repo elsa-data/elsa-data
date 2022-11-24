@@ -1,7 +1,7 @@
 import { App } from "../../src/app";
 import { getLocalSettings } from "../../src/bootstrap-settings";
 import { FastifyInstance } from "fastify";
-import { Base7807Response } from "../../src/api/errors/_error.types";
+import { Base7807Response } from "@umccr/elsa-types/error-types";
 import { registerTypes } from "../service-tests/setup";
 
 const testContainer = registerTypes();

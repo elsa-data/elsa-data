@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
-import { Base7807Error } from "../../api/errors/_error.types";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
