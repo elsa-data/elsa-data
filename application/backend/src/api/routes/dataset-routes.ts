@@ -23,13 +23,30 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
    * Pageable fetching of top-level dataset information (summary level info)
    */
   fastify.get<{ Reply: DatasetLightType[] }>(
-    "/api/datasets",
+    "/api/datasets/all",
     {},
     async function (request, reply) {
       const { authenticatedUser, pageSize, offset } =
         authenticatedRouteOnEntryHelper(request);
 
       const datasetsPagedResult = await datasetsService.getAll(
+        authenticatedUser,
+        pageSize,
+        offset
+      );
+
+      sendPagedResult(reply, datasetsPagedResult);
+    }
+  );
+
+  fastify.get<{ Reply: DatasetLightType[] }>(
+    "/api/datasets/available",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser, pageSize, offset } =
+        authenticatedRouteOnEntryHelper(request);
+
+      const datasetsPagedResult = await datasetsService.getOnlyAvailableDataset(
         authenticatedUser,
         pageSize,
         offset

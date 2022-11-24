@@ -10,8 +10,8 @@ import classNames from "classnames";
 import usePagination from "headless-pagination-react";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
-import { Box } from "../../../components/boxes";
 import { fileSize } from "humanize-plus";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   // the (max) number of items shown on any single page
@@ -19,6 +19,8 @@ type Props = {
 };
 
 export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
+  const navigate = useNavigate();
+
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -30,7 +32,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
     async () => {
       const urlParams = new URLSearchParams();
       urlParams.append("page", currentPage.toString());
-      const u = `/api/datasets?${urlParams.toString()}`;
+      const u = `/api/datasets/available?${urlParams.toString()}`;
       return await axios.get<DatasetLightType[]>(u).then((response) => {
         const newTotal = parseInt(response.headers["elsa-total-count"]);
 
@@ -78,15 +80,20 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             <tbody>
               {dataQuery.data.map((row, rowIndex) => {
                 return (
-                  <tr key={row.id} className="border-b">
+                  <tr
+                    key={row.id}
+                    className="border-b cursor-pointer hover:bg-gray-50"
+                    onClick={() => navigate(`${row.id}`)}
+                  >
                     <td
                       className={classNames(
                         baseColumnClasses,
                         "w-100",
                         "font-mono",
-                        "pl-4",
+                        "px-4",
                         "text-left",
-                        "whitespace-nowrap"
+                        "whitespace-nowrap",
+                        "truncate"
                       )}
                     >
                       {row.uri}
@@ -104,7 +111,8 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                     >
                       {row.summaryArtifactCount} artifacts of{" "}
                       {row.summaryArtifactIncludes.replaceAll(" ", "/")}{" "}
-                      totalling {fileSize(row.summaryArtifactSizeBytes)}
+                      totalling {fileSize(row.summaryArtifactSizeBytes)} are
+                      available
                     </td>
                   </tr>
                 );

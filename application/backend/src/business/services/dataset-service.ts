@@ -8,6 +8,7 @@ import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import {
   datasetAllCountQuery,
   datasetAllSummaryQuery,
+  datasetAvailableSummaryQuery,
 } from "../db/dataset-queries";
 
 @injectable()
@@ -58,6 +59,49 @@ export class DatasetService {
         summaryArtifactCount: fd.summaryArtifactCount,
         summaryArtifactIncludes: includes.join(" "),
         summaryArtifactSizeBytes: fd.summaryArtifactBytes,
+      };
+    });
+
+    return createPagedResult(converted, fullCount);
+  }
+
+  public async getOnlyAvailableDataset(
+    user: AuthenticatedUser,
+    limit: number,
+    offset: number
+  ): Promise<PagedResult<DatasetLightType>> {
+    if (limit <= 0 || offset < 0) throw new BadLimitOffset(limit, offset);
+
+    // TODO: if we introduce any security model into dataset (i.e. at the moment
+    // all data owners can see all datasets) - we need to add some filtering to these
+    // queries
+    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
+
+    const availableDatasets = await datasetAvailableSummaryQuery.run(
+      this.edgeDbClient,
+      {
+        limit: limit,
+        offset: offset,
+      }
+    );
+
+    const converted: DatasetLightType[] = availableDatasets.map((ad) => {
+      const includes: string[] = [];
+      if (ad.summaryBamCount > 0) includes.push("BAM");
+      if (ad.summaryBclCount > 0) includes.push("BCL");
+      if (ad.summaryCramCount > 0) includes.push("CRAM");
+      if (ad.summaryFastqCount > 0) includes.push("FASTQ");
+      if (ad.summaryVcfCount > 0) includes.push("VCF");
+      return {
+        id: ad.id,
+        uri: ad.uri!,
+        description: ad.description,
+        summaryCaseCount: ad.summaryCaseCount,
+        summaryPatientCount: ad.summaryPatientCount,
+        summarySpecimenCount: ad.summarySpecimenCount,
+        summaryArtifactCount: ad.summaryArtifactCount,
+        summaryArtifactIncludes: includes.join(" "),
+        summaryArtifactSizeBytes: ad.summaryArtifactBytes,
       };
     });
 
