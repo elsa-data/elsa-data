@@ -1,4 +1,4 @@
-import { AGService } from "../../src/business/services/ag-service";
+import { S3IndexApplicationService } from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e, { storage } from "../../dbschema/edgeql-js";
@@ -64,7 +64,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test getManifestKeyFromS3ObjectList", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
     const manifestObjectList = agService.getManifestKeyFromS3ObjectList(
       MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
@@ -72,13 +72,13 @@ describe("AWS s3 client", () => {
   });
 
   it("Test convertTsvToJson", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
     const jsonManifest = agService.convertTsvToJson(MOCK_1_CARDIAC_MANIFEST);
     expect(jsonManifest).toEqual(MOCK_1_MANIFEST_OBJECT);
   });
 
   it("Test groupManifestByStudyId", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
 
     const groupArtifactContent = agService.groupManifestByStudyId(
       MOCK_1_S3URL_MANIFEST_OBJECT
@@ -89,7 +89,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test groupManifestFileByArtifactTypeAndFilename", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
 
     const fileRecordListedInManifest: File[] = [
       ...MOCK_FASTQ_PAIR_FILE_SET,
@@ -117,7 +117,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test updateFileRecordFromManifest", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
 
     const mockInsertUrl = "s3://bucket/FILE_L001_R1.fastq.gz";
     const newManifestContent = {
@@ -161,8 +161,38 @@ describe("AWS s3 client", () => {
     expect(newMd5Checksum).toEqual("UPDATED_CHECKSUM");
   });
 
+  it("Test updateUnavailableFileRecord", async () => {
+    const agService = container.resolve(S3IndexApplicationService);
+
+    const mockInsertUrl = "s3://bucket/FILE_L001_R1.fastq.gz";
+
+    // Startup
+    const insertQuery = e.insert(e.storage.File, {
+      url: mockInsertUrl,
+      size: 0,
+      checksums: [
+        {
+          type: storage.ChecksumType.MD5,
+          value: "OLD_CHECKSUM",
+        },
+      ],
+      isAvailable: true,
+    });
+    await insertQuery.run(edgedbClient);
+
+    await agService.updateUnavailableFileRecord(mockInsertUrl);
+
+    // Query For the New Change
+    const newFileRec = await fileByUrlQuery.run(edgedbClient, {
+      url: mockInsertUrl,
+    });
+
+    const newIsAvailable = newFileRec[0]?.isAvailable;
+    expect(newIsAvailable).toEqual(false);
+  });
+
   it("Test insertNewArtifact", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
     const dataToInsert = {
       FASTQ: { FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET },
       BAM: { BAMFILENAMEID: MOCK_BAM_FILE_SET },
@@ -192,7 +222,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test converts3ManifestTypeToFileRecord", async () => {
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
 
     const newFileRec = agService.converts3ManifestTypeToFileRecord(
       MOCK_1_S3URL_MANIFEST_OBJECT,
@@ -204,7 +234,7 @@ describe("AWS s3 client", () => {
 
   it("Test linkPedigreeRelationship", async () => {
     const DATA_CASE_ID = "FAM0001";
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
 
     // Mock Data
     const pedigreeIdList = [
@@ -261,7 +291,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Key")
       .mockImplementation(async () => MOCK_1_CARDIAC_MANIFEST);
 
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
     await agService.syncDbFromS3KeyPrefix("Cardiac");
 
     // FILE schema expected values
@@ -327,7 +357,7 @@ describe("AWS s3 client", () => {
     jest
       .spyOn(awsHelper, "readObjectToStringFromS3Key")
       .mockImplementation(async () => MOCK_2_CARDIAC_MANIFEST);
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
     await agService.syncDbFromS3KeyPrefix("Cardiac");
 
     // FILE schema expected values
@@ -351,7 +381,7 @@ describe("AWS s3 client", () => {
     expect(totalFileList).toEqual(expect.arrayContaining(expected));
   });
 
-  it("Test MOCK 3 Warning to delete data", async () => {
+  it("Test MOCK 3 Check file mark unavailable", async () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
@@ -394,23 +424,23 @@ describe("AWS s3 client", () => {
     jest
       .spyOn(awsHelper, "readObjectToStringFromS3Key")
       .mockImplementation(async () => MOCK_3_CARDIAC_MANIFEST);
-    const consoleText = jest.spyOn(console, "log");
 
-    const agService = container.resolve(AGService);
+    const agService = container.resolve(S3IndexApplicationService);
     await agService.syncDbFromS3KeyPrefix("Cardiac");
 
-    const expected = [
-      {
-        s3Url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
-        checksum: "RANDOMCHECKSUM",
-        agha_study_id: "A0000002",
-      },
-      {
-        s3Url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
-        checksum: "RANDOMCHECKSUM",
-        agha_study_id: "A0000002",
-      },
+    const expectedFileMarked = [
+      "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
+      "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
     ];
-    expect(consoleText).toHaveBeenCalledWith(`Data to be deleted: ${expected}`);
+
+    for (const e of expectedFileMarked) {
+      // Query For the New Change
+      const newFileRec = await fileByUrlQuery.run(edgedbClient, {
+        url: e,
+      });
+
+      const newIsAvailable = newFileRec[0]?.isAvailable;
+      expect(newIsAvailable).toEqual(false);
+    }
   });
 });

@@ -64,7 +64,7 @@ type manifestDict = Record<string, s3ManifestType>;
 
 @injectable()
 @singleton()
-export class AGService {
+export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,
     @inject("Database") private edgeDbClient: edgedb.Client
@@ -290,6 +290,22 @@ export class AGService {
         size: newFileRec.size,
       },
     }));
+    await updateQuery.run(this.edgeDbClient);
+  }
+
+  /**
+   * We do not allow to delete file record (to prevent linking problem), in return we mark the file object no longer available
+   * @param s3Url The unique s3Url
+   */
+  async updateUnavailableFileRecord(s3Url: string) {
+    const updateQuery = e
+      .update(e.storage.File, (file: { url: any }) => ({
+        filter: e.op(file.url, "ilike", s3Url),
+        set: {
+          isAvailable: false,
+        },
+      }))
+      .assert_single();
     await updateQuery.run(this.edgeDbClient);
   }
 
@@ -704,10 +720,11 @@ export class AGService {
       dbs3ManifestTypeObjectDict
     );
 
-    // Handle for data that is deleted from s3
+    // Update file record to be unavailable
     if (toBeDeletedFromDb.length) {
-      console.log(`Data to be deleted: ${toBeDeletedFromDb}`);
-      // TODO: Implement record deletion (Dataset, Storage, Pedigree)
+      for (const f of toBeDeletedFromDb) {
+        this.updateUnavailableFileRecord(f.s3Url);
+      }
     }
 
     // Handle for checksum different
