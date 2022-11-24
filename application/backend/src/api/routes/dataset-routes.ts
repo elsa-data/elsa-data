@@ -8,7 +8,7 @@ import {
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
 import { container } from "tsyringe";
 import { DatasetService } from "../../business/services/dataset-service";
-import { AGService } from "../../business/services/ag-service";
+import { AGService } from "../../business/services/australian-genomics/s3-index-import-service";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,

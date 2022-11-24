@@ -1,12 +1,12 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import e, { storage, dataset } from "../../../dbschema/edgeql-js";
+import e, { storage, dataset } from "../../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
   S3ObjectMetadata,
   awsListObjects,
   readObjectToStringFromS3Key,
-} from "./aws-helper";
+} from "../aws-helper";
 import {
   File,
   ArtifactType,
@@ -18,12 +18,12 @@ import {
   bamArtifactStudyIdAndFileIdByDatasetIdQuery,
   vcfArtifactStudyIdAndFileIdByDatasetIdQuery,
   cramArtifactStudyIdAndFileIdByDatasetIdQuery,
-} from "../db/lab-queries";
-import { fileByFileIdQuery, fileByUrlQuery } from "../db/storage-queries";
+} from "../../db/lab-queries";
+import { fileByFileIdQuery, fileByUrlQuery } from "../../db/storage-queries";
 import {
   makeSystemlessIdentifierArray,
   getMd5FromChecksumsArray,
-} from "../db/helper";
+} from "../../db/helper";
 import { isNil } from "lodash";
 import {
   selectPedigreeByDatasetCaseIdQuery,
@@ -31,11 +31,11 @@ import {
   updatePedigreeProbandAndDatasetPatientQuery,
   updatePedigreeMaternalRelationshipQuery,
   updatePedigreePaternalRelationshipQuery,
-} from "../db/pedigree-queries";
+} from "../../db/pedigree-queries";
 import {
   selectDatasetPatientByExternalIdentifiersQuery,
   selectDatasetCaseByExternalIdentifiersQuery,
-} from "../db/dataset-queries";
+} from "../../db/dataset-queries";
 import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 const util = require("util");
 
