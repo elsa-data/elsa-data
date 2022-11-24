@@ -185,4 +185,23 @@ export class DatasetService {
     const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
     return newDataset.id;
   }
+
+  /**
+   * Delete given dataset URI from database.
+   * @returns DatasetId
+   */
+  public async deleteDataset({
+    datasetUri,
+  }: {
+    datasetUri: string;
+  }): Promise<string | undefined> {
+    const deleteDataset = e
+      .delete(e.dataset.Dataset, (d) => ({
+        filter: e.op(d.uri, "=", datasetUri),
+      }))
+      .assert_single();
+
+    const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
+    return datasetDeleted?.id;
+  }
 }

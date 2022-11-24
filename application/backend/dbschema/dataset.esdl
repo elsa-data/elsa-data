@@ -28,10 +28,9 @@ module dataset {
 
     type Dataset extending DatasetShareable, DatasetIdentifiable {
 
-        # along with any external identifiers - we require that datasets have an immutable URI
-        # that uniquely identifies them globally
         required property uri -> str {
             readonly := true;
+            constraint exclusive on (str_lower(__subject__));
         }
 
         required property description -> str;

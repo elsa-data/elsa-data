@@ -149,7 +149,7 @@ export const configDefinition = {
         default: "aws-s3",
       },
       storageUriPrefix: {
-        doc: "The storage URI prefix leading to data and manifests. e.g. 's3://agha-gdr-store-2.0/Cardiac/",
+        doc: "The storage URI prefix leading to data and manifests. e.g. 's3://agha-gdr-store-2.0/Cardiac/'",
         format: "*",
         default: "",
       },
