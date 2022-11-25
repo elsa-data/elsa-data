@@ -41,6 +41,10 @@ module dataset {
             on target delete allow;
             constraint exclusive;
         };
+
+        required property isInConfig -> bool {
+            default := true;
+        };
     }
 
 

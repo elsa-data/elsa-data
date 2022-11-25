@@ -204,4 +204,44 @@ export class DatasetService {
     const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
     return datasetDeleted?.id;
   }
+
+  public async configureDataset(
+    datasetConfigArray: ({
+      uri: string;
+      description: string;
+      name: string;
+    } & Record<string, any>)[]
+  ): Promise<void> {
+    // Insert new dataset
+    for (const dc of datasetConfigArray) {
+      await this.selectOrInsertDataset({
+        datasetDescription: dc.description,
+        datasetName: dc.name,
+        datasetUri: dc.uri,
+      });
+    }
+
+    // Mark for dataset no longer in config file
+    const currentDbUriArr = (
+      await e
+        .select(e.dataset.Dataset, () => ({ uri: true }))
+        .run(this.edgeDbClient)
+    ).map((x) => x.uri);
+    const missingDatasetFromConfig = currentDbUriArr.filter((dbUri) => {
+      for (const dc of datasetConfigArray) {
+        if (dc.uri == dbUri) return false;
+      }
+      return true;
+    });
+    for (const md of missingDatasetFromConfig) {
+      await e
+        .update(e.dataset.Dataset, (d) => ({
+          filter: e.op(d.uri, "=", md).assert_single(),
+          set: {
+            isInConfig: false,
+          },
+        }))
+        .run(this.edgeDbClient);
+    }
+  }
 }

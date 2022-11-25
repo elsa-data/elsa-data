@@ -22,10 +22,6 @@ import {
   commandAddScenario,
 } from "./entrypoint-command-add-scenario";
 import {
-  commandInsertConfigDatasets,
-  INSERT_CONFIG_DATASETS_COMMAND,
-} from "./entrypoint-command-insert-datasets";
-import {
   commandDeleteDataset,
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
@@ -50,9 +46,6 @@ function printHelpText() {
   console.log(`${DB_MIGRATE_COMMAND} - migrate database schema`);
   console.log(
     `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
-  );
-  console.log(
-    `${INSERT_CONFIG_DATASETS_COMMAND} - Insert non existant dataset that appear in config.`
   );
   // TODO implement some guards on destructive operations
   // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
@@ -103,9 +96,6 @@ function printHelpText() {
         break;
       case DB_MIGRATE_COMMAND:
         todo.push(async () => commandDbMigrate());
-        break;
-      case INSERT_CONFIG_DATASETS_COMMAND:
-        todo.push(async () => commandInsertConfigDatasets());
         break;
 
       case DELETE_DATASETS_COMMAND:
