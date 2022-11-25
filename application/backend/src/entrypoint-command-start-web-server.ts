@@ -7,6 +7,7 @@ import path from "path";
 import { ElsaSettings } from "./config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { getFromEnv } from "./entrypoint-command-helper";
+import { DatasetService } from "./business/services/dataset-service";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -43,6 +44,10 @@ export async function startWebServer(scenario: number | null): Promise<number> {
       return 1;
     }
   }
+
+  // Insert datasets from config
+  const datasetService = container.resolve(DatasetService);
+  datasetService.configureDataset(settings.datasets);
 
   console.log("Starting job queue");
 

@@ -27,6 +27,7 @@ const fakeSettings: ElsaSettings = {
   oidcIssuer: new Issuer({ issuer: "" }),
   ontoFhirUrl: "",
   port: 3000,
+  datasets: [],
   superAdmins: [],
   rateLimit: {},
 };

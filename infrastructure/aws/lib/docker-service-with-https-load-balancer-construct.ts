@@ -38,6 +38,7 @@ type Props = {
   memoryLimitMiB: number;
   cpu: number;
   containerName: string;
+  logStreamPrefix: string;
   desiredCount: number;
   healthCheckPath?: string;
 };
@@ -95,7 +96,7 @@ export class DockerServiceWithHttpsLoadBalancerConstruct extends Construct {
       environment: props.environment,
       secrets: props.secrets,
       logging: LogDrivers.awsLogs({
-        streamPrefix: "elsa",
+        streamPrefix: props.logStreamPrefix,
         logGroup: this.clusterLogGroup,
       }),
     });

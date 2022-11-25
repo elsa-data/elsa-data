@@ -1,0 +1,11 @@
+{
+  datasets: [
+    {
+      name: "dataset001",
+      description: "A dataset sample.",
+      uri: "urn:elsa.net:2022:dataset001",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "example/dataset001",
+    },
+  ],
+}

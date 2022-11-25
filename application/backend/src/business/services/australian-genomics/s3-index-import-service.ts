@@ -37,6 +37,7 @@ import {
   selectDatasetCaseByExternalIdentifiersQuery,
 } from "../../db/dataset-queries";
 import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
+import { DatasetService } from "./dataset-service";
 const util = require("util");
 
 // need to be configuration eventually
@@ -67,7 +68,8 @@ type manifestDict = Record<string, s3ManifestType>;
 export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,
-    @inject("Database") private edgeDbClient: edgedb.Client
+    @inject("Database") private edgeDbClient: edgedb.Client,
+    private datasetService: DatasetService
   ) {}
 
   async getDatasetIdByS3KeyPrefix(
@@ -78,26 +80,11 @@ export class S3IndexApplicationService {
 
     if (!datasetUri) return;
 
-    const selectDatasetIdQuery = e.select(
-      e.dataset.Dataset,
-      (d: { uri: any }) => ({
-        id: true,
-        filter: e.op(d.uri, "ilike", datasetUri),
-      })
-    );
-
-    // Find current Dataset
-    const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
-    const datasetId = datasetIdArray[0]?.id;
-    if (datasetId) return datasetId;
-
-    // Else, create new dataset
-    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
-      uri: datasetUri,
-      description: `A ${flagshipPrefix} flagship.`,
+    return await this.datasetService.selectOrInsertDataset({
+      datasetUri: datasetUri,
+      datasetDescription: "An Australian Genomics flagship.",
+      datasetName: flagshipPrefix,
     });
-    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
-    return newDataset.id;
   }
 
   /**

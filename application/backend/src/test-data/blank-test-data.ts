@@ -6,7 +6,7 @@ const edgeDbClient = edgedb.createClient();
 /**
  * In the absence of some sort of truncate functionality in edgedb - we explicitly
  * delete all object types in an order that is safe from delete clashes.
- * 0
+ *
  * This is for use in unit tests setups etc to ensure an empty db state.
  */
 export async function blankTestData(printDetailsToConsole: boolean = false) {
