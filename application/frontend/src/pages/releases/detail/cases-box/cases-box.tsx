@@ -9,7 +9,7 @@ import { Box, BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
-import {ErrorBoundary} from "../../../../components/error-display";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;

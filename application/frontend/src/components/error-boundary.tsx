@@ -34,44 +34,44 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
       if (error instanceof Base7807Error) {
         const error7808 = error.toResponse();
         return <>
-          <span>
+          <div>
             <span className="font-bold">type: </span>
             {error7808.type}
-          </span>
-          <span>
+          </div>
+          <div>
             <span className="font-bold">title: </span>
             {error7808.title}
-          </span>
-          <span>
+          </div>
+          <div>
             <span className="font-bold">status: </span>
             {error7808.status}
-          </span>
+          </div>
           {error7808.detail &&
-          <span>
+          <div>
             <span className="font-bold">detail: </span>
             {error7808.detail}
-          </span>}
+          </div>}
           {error7808.instance &&
-          <span>
+          <div>
             <span className="font-bold">instance: </span>
             {error7808.instance}
-          </span>}
+          </div>}
         </>;
       } else if (axios.isAxiosError(error)) {
         return <>
-          <span>
+          <div>
             <span className="font-bold">message: </span>
             {error.message}
-          </span>
-          <span>
+          </div>
+          <div>
             <span className="font-bold">code: </span>
             {error.code}
-          </span>
+          </div>
         </>;
       } else if (error instanceof Error) {
-        return <span>{error.message}</span>;
+        return <div>{error.message}</div>;
       } else {
-        return <span>{error}</span>
+        return <div>{error}</div>
       }
     }
   }
@@ -80,7 +80,8 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
     if (this.props.displayEagerly || this.state.error) {
       return (
         <div className="p-4 mx-4 my-3 text-sm text-red-700 bg-red-100 rounded-lg">
-          {this.props.message ? <span>{this.props.message}</span> : <span>Something went wrong.</span>}
+          {this.props.message ? <div>{this.props.message}</div> : <div>Something went wrong.</div>}
+          <br></br>
           {this.state.error && this.formatError()}
         </div>
       );

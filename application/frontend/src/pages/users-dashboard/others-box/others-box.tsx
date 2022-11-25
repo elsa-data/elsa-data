@@ -11,7 +11,7 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import {ErrorBoundary} from "../../../components/error-display";
+import {ErrorBoundary} from "../../../components/error-boundary";
 
 type Props = {
   // the (max) number of case items shown on any single page

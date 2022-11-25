@@ -12,7 +12,7 @@ import axios from "axios";
 import { isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
-import {ErrorBoundary} from "../../../../components/error-display";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{

@@ -8,7 +8,7 @@ import classNames from "classnames";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { fileSize } from "humanize-plus";
-import {ErrorBoundary} from "../../../components/error-display";
+import {ErrorBoundary} from "../../../components/error-boundary";
 
 type Props = {
   // the (max) number of items shown on any single page

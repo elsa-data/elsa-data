@@ -1,6 +1,6 @@
 import React, { Fragment, MutableRefObject, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ErrorBoundary } from "./error-display";
+import { ErrorBoundary } from "./error-boundary";
 
 type Props = {
   showing: boolean;

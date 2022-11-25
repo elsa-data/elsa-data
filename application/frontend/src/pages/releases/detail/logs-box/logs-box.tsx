@@ -40,7 +40,7 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
-import {ErrorBoundary} from "../../../../components/error-display";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
