@@ -28,10 +28,9 @@ module dataset {
 
     type Dataset extending DatasetShareable, DatasetIdentifiable {
 
-        # along with any external identifiers - we require that datasets have an immutable URI
-        # that uniquely identifies them globally
         required property uri -> str {
-          readonly := true;
+            readonly := true;
+            constraint exclusive on (str_lower(__subject__));
         }
 
         required property description -> str;
@@ -41,6 +40,10 @@ module dataset {
         multi link cases -> DatasetCase {
             on target delete allow;
             constraint exclusive;
+        };
+
+        required property isInConfig -> bool {
+            default := true;
         };
     }
 

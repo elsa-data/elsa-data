@@ -5,9 +5,11 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable, singleton } from "tsyringe";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
 import { BadLimitOffset } from "../exceptions/bad-limit-offset";
+import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
   datasetAllSummaryQuery,
+  selectDatasetIdByDatasetUriAndExternalIdentifiers,
 } from "../db/dataset-queries";
 
 @injectable()
@@ -148,5 +150,98 @@ export class DatasetService {
       .run(this.edgeDbClient);
 
     return pageCases;
+  }
+
+  /**
+   * Select or insert new dataset if doesn't exist in Db
+   * @returns Dataset Id
+   */
+  public async selectOrInsertDataset({
+    datasetUri,
+    datasetDescription,
+    datasetName,
+  }: {
+    datasetUri: string;
+    datasetDescription: string;
+    datasetName: string;
+  }): Promise<string> {
+    const selectDatasetIdQuery =
+      selectDatasetIdByDatasetUriAndExternalIdentifiers(
+        datasetUri,
+        datasetName
+      );
+
+    // Find current Dataset
+    const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
+    const datasetId = datasetIdArray[0]?.id;
+    if (datasetId) return datasetId;
+
+    // Else, create new dataset
+    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
+      uri: datasetUri,
+      externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
+      description: datasetDescription,
+    });
+    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
+    return newDataset.id;
+  }
+
+  /**
+   * Delete given dataset URI from database.
+   * @returns DatasetId
+   */
+  public async deleteDataset({
+    datasetUri,
+  }: {
+    datasetUri: string;
+  }): Promise<string | undefined> {
+    const deleteDataset = e
+      .delete(e.dataset.Dataset, (d) => ({
+        filter: e.op(d.uri, "=", datasetUri),
+      }))
+      .assert_single();
+
+    const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
+    return datasetDeleted?.id;
+  }
+
+  public async configureDataset(
+    datasetConfigArray: ({
+      uri: string;
+      description: string;
+      name: string;
+    } & Record<string, any>)[]
+  ): Promise<void> {
+    // Insert new dataset
+    for (const dc of datasetConfigArray) {
+      await this.selectOrInsertDataset({
+        datasetDescription: dc.description,
+        datasetName: dc.name,
+        datasetUri: dc.uri,
+      });
+    }
+
+    // Mark for dataset no longer in config file
+    const currentDbUriArr = (
+      await e
+        .select(e.dataset.Dataset, () => ({ uri: true }))
+        .run(this.edgeDbClient)
+    ).map((x) => x.uri);
+    const missingDatasetFromConfig = currentDbUriArr.filter((dbUri) => {
+      for (const dc of datasetConfigArray) {
+        if (dc.uri == dbUri) return false;
+      }
+      return true;
+    });
+    for (const md of missingDatasetFromConfig) {
+      await e
+        .update(e.dataset.Dataset, (d) => ({
+          filter: e.op(d.uri, "=", md).assert_single(),
+          set: {
+            isInConfig: false,
+          },
+        }))
+        .run(this.edgeDbClient);
+    }
   }
 }

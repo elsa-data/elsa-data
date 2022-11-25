@@ -8,10 +8,10 @@ import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 
 // an array of user records designated in the config for extra permissions etc
 convict.addFormat({
-  name: "user-array",
+  name: "array",
   validate: function (items: any[], schema) {
     if (!Array.isArray(items)) {
-      throw new Error("must be of type Array");
+      throw new Error("Must be of type Array");
     }
 
     for (const child of items) {
