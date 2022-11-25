@@ -32,7 +32,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
     async () => {
       const urlParams = new URLSearchParams();
       urlParams.append("page", currentPage.toString());
-      const u = `/api/datasets/available?${urlParams.toString()}`;
+      const u = `/api/datasets/?${urlParams.toString()}`;
       return await axios.get<DatasetLightType[]>(u).then((response) => {
         const newTotal = parseInt(response.headers["elsa-total-count"]);
 

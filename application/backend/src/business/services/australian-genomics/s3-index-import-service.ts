@@ -37,7 +37,7 @@ import {
   selectDatasetCaseByExternalIdentifiersQuery,
 } from "../../db/dataset-queries";
 import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
-import { DatasetService } from "./dataset-service";
+import { DatasetService } from "./../dataset-service";
 const util = require("util");
 
 // need to be configuration eventually
@@ -289,7 +289,7 @@ export class S3IndexApplicationService {
       .update(e.storage.File, (file: { url: any }) => ({
         filter: e.op(file.url, "ilike", s3Url),
         set: {
-          isAvailable: false,
+          isDeleted: true,
         },
       }))
       .assert_single();

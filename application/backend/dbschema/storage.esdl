@@ -18,11 +18,11 @@ module storage {
 
         required property checksums -> array<tuple<type: ChecksumType, value: str>>;
 
-        # This would be useful to identify file that has been deleted by the submitter
-        # We won't be deleting the actual record so it doesn't mess up with any of the linking
-        # Instead a flag to identify if data is still available
-        required property isAvailable -> bool {
-            default := true;
+        # This would be useful to identify file that has been deleted by the submitter.
+        # We won't be deleting the actual record to prevent with any record linking
+        # Instead a flag to identify if data has been deleted.
+        required property isDeleted -> bool {
+            default := false;
         }
     }
 }

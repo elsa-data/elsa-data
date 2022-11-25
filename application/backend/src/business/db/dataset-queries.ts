@@ -11,96 +11,16 @@ export const datasetAllCountQuery = e.count(e.dataset.Dataset);
  * however recurse deep into the dataset structures for all the sub cases/patients etc - those
  * query elements need to be added elsewhere
  */
-export const datasetAllSummaryQuery = e.params(
-  { limit: e.int32, offset: e.int32 },
-  (params) =>
-    e.select(e.dataset.Dataset, (ds) => ({
-      // get the top level dataset elements
-      ...e.dataset.Dataset["*"],
-      // compute some useful summary counts
-      summaryCaseCount: e.count(ds.cases),
-      summaryPatientCount: e.count(ds.cases.patients),
-      summarySpecimenCount: e.count(ds.cases.patients.specimens),
-      summaryArtifactCount: e.count(ds.cases.patients.specimens.artifacts),
-      summaryBclCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl)
-      ),
-      summaryFastqCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-      ),
-      summaryBamCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam)
-      ),
-      summaryCramCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-      ),
-      summaryVcfCount: e.count(
-        ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf)
-      ),
-      // the byte size of all artifacts
-      summaryArtifactBytes: e.sum(
-        e.set(
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBcl).bclFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-              .forwardFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactFastqPair)
-              .reverseFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam).bamFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactBam).baiFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-              .cramFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactCram)
-              .craiFile.size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf).vcfFile
-              .size
-          ),
-          e.sum(
-            ds.cases.patients.specimens.artifacts.is(e.lab.ArtifactVcf).tbiFile
-              .size
-          )
-        )
-      ),
-      order_by: [
-        {
-          expression: ds.uri,
-          direction: e.ASC,
-        },
-        {
-          expression: ds.id,
-          direction: e.ASC,
-        },
-      ],
-      limit: params.limit,
-      offset: params.offset,
-    }))
-);
-
-export const datasetAvailableSummaryQuery = e.params(
-  { limit: e.int32, offset: e.int32 },
+export const datasetSummaryQuery = e.params(
+  { limit: e.int32, offset: e.int32, includeDeletedFile: e.bool },
   (params) =>
     e.select(e.dataset.Dataset, (ds) => {
+      const isDeletedFileFilter = params.includeDeletedFile;
+
       const availBclArtifact = e.select(e.lab.ArtifactBcl, (ab) => ({
         ...ab["*"],
         filter: e.op(
-          e.op(ab.bclFile.isAvailable, "=", true),
+          e.op(ab.bclFile.isDeleted, "or", isDeletedFileFilter),
           "and",
           e.op(
             ab.id,
@@ -120,9 +40,9 @@ export const datasetAvailableSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(afp.forwardFile.isAvailable, "=", true),
+            e.op(afp.forwardFile.isDeleted, "or", isDeletedFileFilter),
             "and",
-            e.op(afp.reverseFile.isAvailable, "=", true)
+            e.op(afp.reverseFile.isDeleted, "or", isDeletedFileFilter)
           )
         ),
       }));
@@ -139,9 +59,9 @@ export const datasetAvailableSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(ab.bamFile.isAvailable, "=", true),
+            e.op(ab.bamFile.isDeleted, "or", isDeletedFileFilter),
             "and",
-            e.op(ab.baiFile.isAvailable, "=", true)
+            e.op(ab.baiFile.isDeleted, "or", isDeletedFileFilter)
           )
         ),
       }));
@@ -158,9 +78,9 @@ export const datasetAvailableSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(ac.cramFile.isAvailable, "=", true),
+            e.op(ac.cramFile.isDeleted, "or", isDeletedFileFilter),
             "and",
-            e.op(ac.craiFile.isAvailable, "=", true)
+            e.op(ac.craiFile.isDeleted, "or", isDeletedFileFilter)
           )
         ),
       }));
@@ -177,9 +97,9 @@ export const datasetAvailableSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(av.vcfFile.isAvailable, "=", true),
+            e.op(av.vcfFile.isDeleted, "or", isDeletedFileFilter),
             "and",
-            e.op(av.tbiFile.isAvailable, "=", true)
+            e.op(av.tbiFile.isDeleted, "or", isDeletedFileFilter)
           )
         ),
       }));
@@ -245,15 +165,8 @@ export const selectDatasetCaseByExternalIdentifiersQuery = (exId: string) =>
     ),
   }));
 
-export const selectDatasetIdByDatasetUriAndExternalIdentifiers = (
-  datasetUri: string,
-  exId: string
-) =>
+export const selectDatasetIdByDatasetUri = (datasetUri: string) =>
   e.select(e.dataset.Dataset, (d) => ({
     id: true,
-    filter: e.op(
-      e.op(d.uri, "ilike", datasetUri),
-      "and",
-      e.op(d.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId))
-    ),
+    filter: e.op(d.uri, "ilike", datasetUri),
   }));

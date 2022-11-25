@@ -13,7 +13,13 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
+import { Static, Type } from "@sinclair/typebox";
 import { ElsaSettings } from "../../config/elsa-settings";
+
+export const DatasetSummaryQuerySchema = Type.Object({
+  includeDeletedFile: Type.Optional(Type.String()),
+});
+export type DatasetSummaryQueryType = Static<typeof DatasetSummaryQuerySchema>;
 
 export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
@@ -22,39 +28,23 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   /**
    * Pageable fetching of top-level dataset information (summary level info)
    */
-  fastify.get<{ Reply: DatasetLightType[] }>(
-    "/api/datasets/all",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
+  fastify.get<{
+    Querystring: DatasetSummaryQueryType;
+    Reply: DatasetLightType[];
+  }>("/api/datasets/", {}, async function (request, reply) {
+    const { authenticatedUser, pageSize, offset } =
+      authenticatedRouteOnEntryHelper(request);
 
-      const datasetsPagedResult = await datasetsService.getAll(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
+    const { includeDeletedFile = "false" } = request.query;
+    const datasetsPagedResult = await datasetsService.getSummary(
+      authenticatedUser,
+      pageSize,
+      offset,
+      includeDeletedFile === "true" ? true : false
+    );
 
-      sendPagedResult(reply, datasetsPagedResult);
-    }
-  );
-
-  fastify.get<{ Reply: DatasetLightType[] }>(
-    "/api/datasets/available",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const datasetsPagedResult = await datasetsService.getOnlyAvailableDataset(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
-
-      sendPagedResult(reply, datasetsPagedResult);
-    }
-  );
+    sendPagedResult(reply, datasetsPagedResult);
+  });
 
   fastify.get<{ Params: { did: string }; Reply: DatasetDeepType }>(
     "/api/datasets/:did",

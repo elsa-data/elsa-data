@@ -176,7 +176,7 @@ describe("AWS s3 client", () => {
           value: "OLD_CHECKSUM",
         },
       ],
-      isAvailable: true,
+      isDeleted: false,
     });
     await insertQuery.run(edgedbClient);
 
@@ -187,8 +187,8 @@ describe("AWS s3 client", () => {
       url: mockInsertUrl,
     });
 
-    const newIsAvailable = newFileRec[0]?.isAvailable;
-    expect(newIsAvailable).toEqual(false);
+    const newIsAvailable = newFileRec[0]?.isDeleted;
+    expect(newIsAvailable).toEqual(true);
   });
 
   it("Test insertNewArtifact", async () => {
@@ -439,8 +439,8 @@ describe("AWS s3 client", () => {
         url: e,
       });
 
-      const newIsAvailable = newFileRec[0]?.isAvailable;
-      expect(newIsAvailable).toEqual(false);
+      const newIsAvailable = newFileRec[0]?.isDeleted;
+      expect(newIsAvailable).toEqual(true);
     }
   });
 });
