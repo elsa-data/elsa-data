@@ -1,12 +1,4 @@
-# ADR 0004 - Use Typescript for backend language
-
-## When
-
-July 2022.
-
-## Status
-
-Accepted.
+# ADR 0004
 
 ## Context
 
@@ -14,7 +6,7 @@ What is the issue that we're seeing that is motivating this decision or change?
 
 ## Decision
 
-What is the change that we're proposing and/or doing?
+Use Typescript as the backend language.
 
 ## Consequences
 

@@ -1,8 +1,7 @@
-# ADR xxxx - Use ...
+# ADR xxxx
 
-## Status
-
-What is the status, such as proposed, accepted, rejected, deprecated, superseded, etc.?
+(note: delete this line - the status/date that would normally be in this document is recorded one
+level higher in the overall README)
 
 ## Context
 
