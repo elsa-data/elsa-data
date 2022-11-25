@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import {ErrorBoundary} from "../../../../components/error-display";
+import { ErrorBoundary } from "../../../../components/error-display";
 import { BoxNoPad } from "../../../../components/boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -48,6 +48,7 @@ export const AuditEntryPage = (): JSX.Element => {
       <BoxNoPad heading={`Audit event for ${objectId}`}>
         <div className="flex flex-row flex-wrap flex-grow mt-2 overflow-auto">
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
+          {query.isError && <ErrorBoundary error={query.error}></ErrorBoundary>}
         </div>
       </BoxNoPad>
     </LayoutBase>

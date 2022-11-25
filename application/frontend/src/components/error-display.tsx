@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import {Base7807Error} from "@umccr/elsa-types/error-types";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 import axios from "axios";
 
 
@@ -8,6 +8,7 @@ export type ErrorDisplayProps = {
   message?: ReactNode;
   // Should this component be displayed even if no error has been thrown.
   displayEagerly?: boolean;
+  error?: any;
 };
 
 export type ErrorDisplayState = {
@@ -20,7 +21,7 @@ export type ErrorDisplayState = {
 export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDisplayState> {
   constructor(props: ErrorDisplayProps) {
     super(props);
-    this.state = { error: undefined };
+    this.state = { error: props.error };
   }
 
   static getDerivedStateFromError(error: any): ErrorDisplayState {
@@ -79,7 +80,7 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
     if (this.props.displayEagerly || this.state.error) {
       return (
         <div className="p-4 mx-4 my-3 text-sm text-red-700 bg-red-100 rounded-lg">
-          {this.props.message && <span>{this.props.message}</span>}
+          {this.props.message ? <span>{this.props.message}</span> : <span>Something went wrong.</span>}
           {this.state.error && this.formatError()}
         </div>
       );
