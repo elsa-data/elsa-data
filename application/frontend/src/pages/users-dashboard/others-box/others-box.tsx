@@ -11,6 +11,7 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
+import {ErrorBoundary} from "../../../components/error-display";
 
 type Props = {
   // the (max) number of case items shown on any single page
@@ -102,6 +103,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
           <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
         </table>
+        {dataQuery.isError && <ErrorBoundary error={dataQuery.error}></ErrorBoundary>}
       </div>
     </BoxNoPad>
   );

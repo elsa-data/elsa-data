@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from "react";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
@@ -9,6 +9,7 @@ import { Box, BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
+import {ErrorBoundary} from "../../../../components/error-display";
 
 type Props = {
   releaseId: string;
@@ -83,7 +84,7 @@ export const CasesBox: React.FC<Props> = ({
     let currentSpanRow = -1;
 
     for (let r = 0; r < dataQuery.data.length; r++) {
-      if (dataQuery.data[r].fromDatasetUri != currentDataset) {
+      if (dataQuery.data[r].fromDatasetUri !== currentDataset) {
         // if we have changed from the previous - then its a new span..
         currentSpanRow = r;
         currentDataset = dataQuery.data[r].fromDatasetUri;
@@ -205,7 +206,7 @@ export const CasesBox: React.FC<Props> = ({
                           "border-red-500"
                         )}
                         rowSpan={
-                          rowSpans[rowIndex] == 1
+                          rowSpans[rowIndex] === 1
                             ? undefined
                             : rowSpans[rowIndex]
                         }
@@ -219,6 +220,7 @@ export const CasesBox: React.FC<Props> = ({
             </tbody>
           </table>
         )}
+        {dataQuery.isError && <ErrorBoundary error={dataQuery.error}></ErrorBoundary>}
       </div>
       <div id="popup-root" />
     </BoxNoPad>

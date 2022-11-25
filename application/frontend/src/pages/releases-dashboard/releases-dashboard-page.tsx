@@ -1,13 +1,14 @@
-import React, { CSSProperties, useState } from "react";
+import React from "react";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { Box } from "../../components/boxes";
-import { ReleaseDetailType, ReleaseSummaryType } from "@umccr/elsa-types";
+import { ReleaseSummaryType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
+import {ErrorBoundary} from "../../components/error-display";
 
 export const ReleasesPage: React.FC = () => {
-  const { data: releaseData } = useQuery(
+  const query = useQuery(
     REACT_QUERY_RELEASE_KEYS.all,
     async () => {
       return await axios
@@ -21,7 +22,7 @@ export const ReleasesPage: React.FC = () => {
     <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
         <Box heading="Releases">
-          {releaseData && (
+          {query.data && (
             <table className="w-full text-sm text-left text-gray-500 light:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">
                 <tr>
@@ -53,7 +54,7 @@ export const ReleasesPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {releaseData.map((r) => (
+                {query.data.map((r) => (
                   <tr className="bg-white border-b light:bg-gray-800 light:border-gray-700 hover:bg-gray-50 light:hover:bg-gray-600">
                     {/*<td className="w-4 p-4">
                       <div className="flex items-center">
@@ -97,6 +98,7 @@ export const ReleasesPage: React.FC = () => {
               </tbody>
             </table>
           )}
+          {query.isError && <ErrorBoundary error={query.error}></ErrorBoundary>}
         </Box>
       </div>
     </LayoutBase>

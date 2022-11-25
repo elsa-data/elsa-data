@@ -40,6 +40,7 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
+import {ErrorBoundary} from "../../../../components/error-display";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -259,7 +260,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
             </tr>
           ))}
           tableBody={
-            isSuccess &&
+            isSuccess ?
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
                 <tr
@@ -306,7 +307,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     </tr>
                   )}
               </Fragment>
-            ))
+            )) : <ErrorBoundary message={"Could not display logs table."}></ErrorBoundary>
           }
         />
         <BoxPaginator
@@ -357,7 +358,9 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
         <></>
       )}
     </div>
-  ) : (
+  ) : detailsQuery.isError ? (
+    <ErrorBoundary error={detailsQuery.error}></ErrorBoundary>
+    ) : (
     <></>
   );
 };

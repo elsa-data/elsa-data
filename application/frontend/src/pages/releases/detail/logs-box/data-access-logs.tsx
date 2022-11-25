@@ -9,9 +9,10 @@ import { getStringReadableBytes } from "../../../../helpers/utils";
 import { categoryToDescription } from "./logs-box";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { isEmpty, isNil } from "lodash";
+import { isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
+import {ErrorBoundary} from "../../../../components/error-display";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -111,6 +112,7 @@ function DataAccessLogsBox() {
           ))
         }
       />
+      {dataAccessQuery.isError && <ErrorBoundary error={dataAccessQuery.error}></ErrorBoundary>}
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}

@@ -1,17 +1,14 @@
-import React, { ReactNode, useState } from "react";
+import React, { useState } from "react";
 import {
-  AuditEntryType,
   DatasetLightType,
-  ReleaseCaseType,
 } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import classNames from "classnames";
-import usePagination from "headless-pagination-react";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
-import { Box } from "../../../components/boxes";
 import { fileSize } from "humanize-plus";
+import {ErrorBoundary} from "../../../components/error-display";
 
 type Props = {
   // the (max) number of items shown on any single page
@@ -76,7 +73,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
         {dataQuery.data && dataQuery.data.length > 0 && (
           <table className="w-full text-sm text-left text-gray-500 table-fixed">
             <tbody>
-              {dataQuery.data.map((row, rowIndex) => {
+              {dataQuery.data.map((row, _rowIndex) => {
                 return (
                   <tr key={row.id} className="border-b">
                     <td
@@ -112,6 +109,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             </tbody>
           </table>
         )}
+        {dataQuery.isError && <ErrorBoundary error={dataQuery.error}></ErrorBoundary>}
       </div>
     </BoxNoPad>
   );

@@ -10,6 +10,7 @@ import {
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
+import {ErrorBoundary} from "../../../../components/error-display";
 
 function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
   const dataAccessQuery = useQuery(
@@ -93,6 +94,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
           ))
         }
       />
+      {dataAccessQuery.isError && <ErrorBoundary error={dataAccessQuery.error}></ErrorBoundary>}
     </BoxNoPad>
   );
 }

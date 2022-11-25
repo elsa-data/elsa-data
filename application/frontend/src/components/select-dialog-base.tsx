@@ -66,7 +66,7 @@ export const SelectDialogBase: React.FC<Props> = ({
                     {content}
                   </div>
                 </div>
-                <ErrorBoundary message={errorMessage} displayEagerly={true} />
+                {errorMessage && <ErrorBoundary message={errorMessage} displayEagerly={true} />}
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   {buttons}
                 </div>
