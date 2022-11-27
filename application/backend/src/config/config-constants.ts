@@ -110,6 +110,13 @@ export const configDefinition = {
     format: "*",
     default: "",
   },
+  host: {
+    doc: "The host to bind.",
+    format: "*",
+    default: "0.0.0.0",
+    env: `${env_prefix}HOST`,
+    arg: "host",
+  },
   port: {
     doc: "The port to bind.",
     format: "port",

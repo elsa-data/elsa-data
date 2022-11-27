@@ -68,12 +68,12 @@ export async function startWebServer(scenario: number | null): Promise<number> {
 
   const server = await app.setupServer();
 
-  console.log(`Listening on 0.0.0.0 on port ${settings.port}`);
+  console.log(`Listening on ${settings.host} on port ${settings.port}`);
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down
     // to best support Docker - which will be our normal deployment - we listen on 0.0.0.0
-    await server.listen({ port: settings.port, host: "0.0.0.0" });
+    await server.listen({ port: settings.port, host: settings.host });
 
     // TODO possibly replace Bree with our own direct Jobs query and handle that here
 

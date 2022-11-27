@@ -10,6 +10,7 @@ export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
+  host: string;
   port: number;
 
   sessionSecret: string;
