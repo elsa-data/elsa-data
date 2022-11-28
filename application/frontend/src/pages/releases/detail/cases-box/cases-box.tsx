@@ -55,10 +55,11 @@ export const CasesBox: React.FC<Props> = ({
     ["releases-cases", currentPage, searchText, releaseId],
     async () => {
       const urlParams = new URLSearchParams();
-      urlParams.append("page", currentPage.toString());
       const useableSearchText = makeUseableSearchText(searchText);
       if (useableSearchText) {
         urlParams.append("q", useableSearchText);
+      } else {
+        urlParams.append("page", currentPage.toString());
       }
       const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
       return await axios.get<ReleaseCaseType[]>(u).then((response) => {
