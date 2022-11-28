@@ -96,4 +96,19 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
       );
     }
   );
+
+  fastify.post<{ Body: { datasetId: string } }>(
+    "/api/datasets/sync",
+    {},
+    async function (request, reply) {
+      const body = request.body;
+      const datasetId = body.datasetId;
+      // TODO: Make dataset service support re-sync or import
+      console.log(`datasetId received:`, datasetId);
+
+      reply.send(
+        "OK! \nTo prevent API timeout, returning the OK while importing might still run in the background. "
+      );
+    }
+  );
 };

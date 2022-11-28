@@ -38,7 +38,6 @@ export class DatasetService {
     // all data owners can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-    console.log("HELLOW");
     const fullDatasets = await datasetSummaryQuery.run(this.edgeDbClient, {
       limit: limit,
       offset: offset,
@@ -56,6 +55,7 @@ export class DatasetService {
         id: fd.id,
         uri: fd.uri!,
         description: fd.description,
+        isInConfig: fd.isInConfig,
         summaryCaseCount: fd.summaryCaseCount,
         summaryPatientCount: fd.summaryPatientCount,
         summarySpecimenCount: fd.summarySpecimenCount,
@@ -92,10 +92,11 @@ export class DatasetService {
       }))
       .run(this.edgeDbClient);
 
-    if (singleDataset != null)
+    if (singleDataset != null) {
       return {
         id: singleDataset.id,
         uri: singleDataset.uri,
+        isInConfig: singleDataset.isInConfig,
         description: singleDataset.description,
         summaryArtifactCount: 0,
         summaryArtifactIncludes: "",
@@ -103,22 +104,11 @@ export class DatasetService {
         summarySpecimenCount: 0,
         summaryPatientCount: 0,
         summaryArtifactSizeBytes: 0,
-        cases: singleDataset.cases.map((c) => {
-          return {
-            patients: c.patients.map((p) => {
-              return {
-                specimens: p.specimens.map((s) => {
-                  return {
-                    artifacts: [],
-                  };
-                }),
-              };
-            }),
-          };
-        }),
+        cases: [],
       };
+    }
 
-    return null;
+    return singleDataset;
   }
 
   /**
