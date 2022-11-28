@@ -36,6 +36,25 @@ convict.addFormat({
 });
 
 /**
+ * Give the raw JSON of configuration, return the data loaded into Convict.
+ * This function is drop in replacement for getMetaConfig - but is useful in
+ * some testing situations.
+ *
+ * @param config
+ */
+export async function getDirectConfig(
+  config: any
+): Promise<convict.Config<any>> {
+  const convictConfig = convict(configDefinition, {});
+
+  convictConfig.load(config);
+  // perform validation
+  convictConfig.validate({ allowed: "strict" });
+
+  return convictConfig;
+}
+
+/**
  * Given a meta configuration description (a string listing a sequence of config
  * providers), this loads all the relevant configs in order and returns them
  * merged and loaded into convict. Convict will do the handling of default values

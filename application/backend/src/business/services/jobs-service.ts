@@ -70,6 +70,34 @@ export class JobsService {
   }
 
   /**
+   * Return the ids for any jobs that are currently in progress. This is the main
+   * entry to the job system for our worker threads looking for work.
+   */
+  public async getInProgressJobs() {
+    const jobsInProgress = await e
+      .select(e.job.Job, (sj) => ({
+        id: true,
+        forRelease: { id: true },
+        requestedCancellation: true,
+        auditEntry: true,
+        started: true,
+        ...e.is(e.job.SelectJob, { isSelectJob: e.bool(true) }),
+        // ...e.is(e.job.CloudFormationInstallJob, { isCloudFormationInstallJob: e.bool(true) }),
+        filter: e.op(sj.status, "=", e.job.JobStatus.running),
+      }))
+      .run(this.edgeDbClient);
+
+    return jobsInProgress.map((j) => ({
+      jobId: j.id,
+      releaseId: j.forRelease.id,
+      auditEntryId: j.auditEntry.id,
+      auditEntryStarted: j.started,
+      requestedCancellation: j.requestedCancellation,
+      isSelectJob: j.isSelectJob,
+    }));
+  }
+
+  /**
    * For a given release, start a background job identifying/selecting cases/patients/specimens
    * that should be included. Returns the release information which will now have
    * a 'runningJob' field.
@@ -178,30 +206,6 @@ export class JobsService {
     // return the status of the release - which will not really have changed (because cancellations
     // take a while to happen)
     return await this.releasesService.getBase(releaseId, userRole);
-  }
-
-  /**
-   * Return the ids for any 'select' jobs that are currently in progress.
-   */
-  public async getInProgressSelectJobs() {
-    const jobsInProgress = await e
-      .select(e.job.SelectJob, (sj) => ({
-        id: true,
-        forRelease: { id: true },
-        requestedCancellation: true,
-        auditEntry: true,
-        started: true,
-        filter: e.op(sj.status, "=", e.job.JobStatus.running),
-      }))
-      .run(this.edgeDbClient);
-
-    return jobsInProgress.map((j) => ({
-      jobId: j.id,
-      releaseId: j.forRelease.id,
-      auditEntryId: j.auditEntry.id,
-      auditEntryStarted: j.started,
-      requestedCancellation: j.requestedCancellation,
-    }));
   }
 
   /**

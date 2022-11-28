@@ -59,13 +59,26 @@ module job {
         required property initialTodoCount -> int32;
 
         multi link todoQueue -> dataset::DatasetCase {
+            # because jobs are retained forever - we want to make sure any links to objects
+            # are weak links that don't prevent the target from being deleted
+            #
             on target delete allow;
         };
 
         multi link selectedSpecimens -> dataset::DatasetSpecimen {
+            # because jobs are retained forever - we want to make sure any links to objects
+            # are weak links that don't prevent the target from being deleted
+            #
             on target delete allow;
         };
 
 
     }
+
+    type CloudFormationInstallJob extending Job {
+
+        required property url -> str;
+
+    }
+
 }

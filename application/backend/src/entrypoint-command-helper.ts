@@ -2,6 +2,8 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
 import { bootstrapSettings } from "./bootstrap-settings";
 import { getMetaConfig } from "./config/config-schema";
+import { schema } from "../dbschema/edgeql-js";
+import Tuple = schema.Tuple;
 
 export type EntrypointCommandHelper = {
   command: string;
@@ -52,13 +54,21 @@ export function getCommands(argv: string[]): EntrypointCommandHelper[] {
 }
 
 // TODO - decide on a proper 'default' behaviour for config sources and replace this
-export async function getFromEnv(): Promise<ElsaSettings> {
+export async function getFromEnv(): Promise<{
+  settings: ElsaSettings;
+  config: any;
+}> {
   const metaSources = process.env[CONFIG_SOURCES_ENVIRONMENT_VAR];
 
   if (!metaSources)
     throw new Error(
-      `For local development launch there must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
+      `There must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
     );
 
-  return await bootstrapSettings(await getMetaConfig(metaSources));
+  const convictConfig = await getMetaConfig(metaSources);
+
+  return {
+    settings: await bootstrapSettings(convictConfig),
+    config: convictConfig.getProperties(),
+  };
 }
