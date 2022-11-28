@@ -8,6 +8,7 @@ import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
 import { RhTextArea } from "../../../../components/rh/rh-text-area";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -200,9 +201,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
           <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
             <div className="grid grid-cols-3 gap-6">
               {lastMutateError && (
-                <p className="col-span-3 font-bold text-red-700 border-gray-800 border-2 p-2">
-                  {lastMutateError}
-                </p>
+                <ErrorBoundary message={lastMutateError} displayEagerly={true}></ErrorBoundary>
               )}
               <RhRadios label={"Study Type"}>
                 {typeRadio("Disease Specific", "DS")}

@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { CodingType, ReleaseApplicationCodedType } from "@umccr/elsa-types";
-import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
-import { RhSelect } from "../../../../components/rh/rh-select";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
 import { RhInput } from "../../../../components/rh/rh-input";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -99,10 +97,8 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseId }) => {
         <div className="shadow sm:rounded-md">
           <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
             <div className="grid grid-cols-3 gap-6">
-              {lastMutateError && false && (
-                <p className="col-span-3 font-bold text-red-700 border-gray-800 border-2 p-2">
-                  {lastMutateError}
-                </p>
+              {lastMutateError && (
+                <ErrorBoundary message={lastMutateError} displayEagerly={true}></ErrorBoundary>
               )}
               <RhRadios label={"Consent Defaults"}>
                 {typeRadio("Absent consent information = Consent", "YES")}

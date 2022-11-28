@@ -359,7 +359,7 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
       )}
     </div>
   ) : detailsQuery.isError ? (
-    <ErrorBoundary error={detailsQuery.error}></ErrorBoundary>
+    <ErrorBoundary message={"Something went wrong audit log details."} error={detailsQuery.error}></ErrorBoundary>
     ) : (
     <></>
   );

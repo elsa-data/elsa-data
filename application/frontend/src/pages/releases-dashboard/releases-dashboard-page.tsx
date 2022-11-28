@@ -98,7 +98,7 @@ export const ReleasesPage: React.FC = () => {
               </tbody>
             </table>
           )}
-          {query.isError && <ErrorBoundary error={query.error}></ErrorBoundary>}
+          {query.isError && <ErrorBoundary message={"Something went wrong fetching releases."} error={query.error}></ErrorBoundary>}
         </Box>
       </div>
     </LayoutBase>

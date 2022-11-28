@@ -1,8 +1,8 @@
 import React, { useState, PropsWithChildren } from "react";
 import { NavLink } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
-import { LayoutBaseFooter } from "./layout-base-footer";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
+import {ErrorBoundary} from "../components/error-boundary";
 
 type Props = {};
 
@@ -26,14 +26,16 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
     const whenInactive = `text-gray-500 border-white ${hoverClass} ${always}`;
 
     return (
-      <li className="mr-6 my-2 md:my-0">
-        <NavLink
-          to={to}
-          className={({ isActive }) => (isActive ? whenActive : whenInactive)}
-        >
-          <span className="pb-1 md:pb-0 text-sm">{label}</span>
-        </NavLink>
-      </li>
+      <ErrorBoundary>
+        <li className="mr-6 my-2 md:my-0">
+          <NavLink
+            to={to}
+            className={({ isActive }) => (isActive ? whenActive : whenInactive)}
+          >
+            <span className="pb-1 md:pb-0 text-sm">{label}</span>
+          </NavLink>
+        </li>
+      </ErrorBoundary>
     );
   };
 

@@ -2,7 +2,6 @@ import React, { ReactNode } from "react";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 import axios from "axios";
 
-
 export type ErrorDisplayProps = {
   children? : React.ReactNode
   message?: ReactNode;
