@@ -54,6 +54,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
 
   return {
     deployedUrl: deployedUrl,
+    host: config.get("host"),
     port: config.get("port"),
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
