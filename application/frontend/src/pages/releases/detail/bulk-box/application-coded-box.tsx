@@ -8,7 +8,7 @@ import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
 import { RhTextArea } from "../../../../components/rh/rh-text-area";
-import {ErrorBoundary} from "../../../../components/error-boundary";
+import { ErrorBoundary } from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;

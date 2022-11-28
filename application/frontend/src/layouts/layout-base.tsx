@@ -2,7 +2,7 @@ import React, { useState, PropsWithChildren } from "react";
 import { NavLink } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
-import {ErrorBoundary} from "../components/error-boundary";
+import { ErrorBoundary } from "../components/error-boundary";
 
 type Props = {};
 

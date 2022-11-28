@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
-import {ErrorBoundary} from "../../../../components/error-boundary";
+import { ErrorBoundary } from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;

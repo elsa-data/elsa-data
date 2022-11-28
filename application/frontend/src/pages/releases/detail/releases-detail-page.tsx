@@ -17,7 +17,7 @@ import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
-import {ErrorBoundary} from "../../../components/error-boundary";
+import { ErrorBoundary } from "../../../components/error-boundary";
 
 /**
  * The master page layout performing actions/viewing data for a single

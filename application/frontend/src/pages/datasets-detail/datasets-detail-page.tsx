@@ -7,7 +7,7 @@ import { Box } from "../../components/boxes";
 import { DatasetDeepType } from "@umccr/elsa-types";
 import { MyModal } from "../../components/modals";
 import { LayoutBase } from "../../layouts/layout-base";
-import {ErrorBoundary} from "../../components/error-boundary";
+import { ErrorBoundary } from "../../components/error-boundary";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;

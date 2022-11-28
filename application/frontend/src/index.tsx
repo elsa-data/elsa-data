@@ -13,7 +13,7 @@ import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { messages } from "./locales/en/messages";
-import {ErrorBoundary} from "./components/error-boundary";
+import { ErrorBoundary } from "./components/error-boundary";
 
 const root = document.getElementById("root");
 

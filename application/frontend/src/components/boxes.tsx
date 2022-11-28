@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, ReactNode } from "react";
 import classNames from "classnames";
-import {ErrorBoundary} from "./error-boundary";
+import { ErrorBoundary } from "./error-boundary";
 
 type BoxProps = {
   heading: ReactNode;
