@@ -1,7 +1,7 @@
 import { App } from "../../src/app";
-import { getLocalSettings } from "../../src/bootstrap-settings";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../service-tests/setup";
+import { createTestElsaSettings } from "../test-elsa-settings.common";
 
 const testContainer = registerTypes();
 
@@ -9,8 +9,7 @@ describe("http integration tests", () => {
   let server: FastifyInstance;
 
   beforeAll(async () => {
-    const settings = await getLocalSettings();
-    const app = new App(() => settings);
+    const app = new App(createTestElsaSettings());
     server = await app.setupServer();
     await server.ready();
   });

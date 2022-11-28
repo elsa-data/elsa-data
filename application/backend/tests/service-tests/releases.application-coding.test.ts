@@ -5,24 +5,25 @@ import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
 import { ReleaseService } from "../../src/business/services/release-service";
 
-const testContainer = registerTypes();
-
-const releasesService = testContainer.resolve(ReleaseService);
-const edgeDbClient = testContainer.resolve<Client>("Database");
-
+let edgeDbClient: Client;
+let releaseService: ReleaseService;
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeEach(async () => {
-  testContainer.clearInstances();
+beforeAll(async () => {
+  const testContainer = await registerTypes();
 
+  edgeDbClient = testContainer.resolve("Database");
+  releaseService = testContainer.resolve(ReleaseService);
+});
+
+beforeEach(async () => {
   ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
-
 it("basic add/remove of diseases from coded application", async () => {
   {
     const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
@@ -33,7 +34,7 @@ it("basic add/remove of diseases from coded application", async () => {
     });
   }
   {
-    await releasesService.addDiseaseToApplicationCoded(
+    await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "AA",
@@ -54,14 +55,14 @@ it("basic add/remove of diseases from coded application", async () => {
   }
 
   {
-    await releasesService.addDiseaseToApplicationCoded(
+    await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "AA",
       "CC"
     );
 
-    await releasesService.removeDiseaseFromApplicationCoded(
+    await releaseService.removeDiseaseFromApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "mondo",
@@ -92,7 +93,7 @@ it("basic add/remove of countries from coded application", async () => {
     });
   }
   {
-    await releasesService.addCountryToApplicationCoded(
+    await releaseService.addCountryToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "AA",
@@ -113,14 +114,14 @@ it("basic add/remove of countries from coded application", async () => {
   }
 
   {
-    await releasesService.addCountryToApplicationCoded(
+    await releaseService.addCountryToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "AA",
       "CC"
     );
 
-    await releasesService.removeCountryFromApplicationCoded(
+    await releaseService.removeCountryFromApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "iso",
@@ -143,7 +144,7 @@ it("basic add/remove of countries from coded application", async () => {
 
 it("set like behaviour of disease/country in coded application", async () => {
   {
-    await releasesService.addCountryToApplicationCoded(
+    await releaseService.addCountryToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "iso",
@@ -160,7 +161,7 @@ it("set like behaviour of disease/country in coded application", async () => {
   }
 
   {
-    await releasesService.addDiseaseToApplicationCoded(
+    await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "mondo",
@@ -178,7 +179,7 @@ it("set like behaviour of disease/country in coded application", async () => {
 
   // confirm that adding something where only the system changes - does still push something
   {
-    await releasesService.addDiseaseToApplicationCoded(
+    await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
       testReleaseId,
       "mondoNOT",

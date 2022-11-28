@@ -36,7 +36,8 @@ it("test for existence of user who does not exist", async () => {
 it("upsert a new user", async () => {
   const newUser = await userService.upsertUserForLogin(
     "http://newuser.com",
-    "New User"
+    "New User",
+    "test@example.com"
   );
 
   const u = await userService.getBySubjectId("http://newuser.com");
@@ -50,7 +51,8 @@ it("upsert a new user", async () => {
 it("upsert an existing user to a new display name", async () => {
   const newUser = await userService.upsertUserForLogin(
     "http://subject1.com",
-    "New Display Name"
+    "New Display Name",
+    "test@example.com"
   );
 
   const u = await userService.getBySubjectId("http://subject1.com");

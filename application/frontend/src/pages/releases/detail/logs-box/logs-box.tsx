@@ -40,6 +40,7 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
+import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -87,11 +88,7 @@ export const useAuditEventQuery = (
           `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
         )
         .then((response) => {
-          const newTotal = parseInt(response.headers["elsa-total-count"]);
-
-          if (isFinite(newTotal)) {
-            setCurrentTotal(newTotal);
-          }
+          handleTotalCountHeaders(response, setCurrentTotal);
 
           return response.data;
         });
