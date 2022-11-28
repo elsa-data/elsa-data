@@ -36,12 +36,14 @@ const warningSuperscriptIcon = (
         </svg>
       </span>
     }
-    description={`Dataset is not configured.`}
+    description={`Missing dataset configuration`}
   />
 );
 
 export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const navigate = useNavigate();
+
+  const [onlyAvailDataset, setOnlyAvailDataset] = useState<boolean>(true);
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -50,11 +52,13 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const dataQuery = useQuery(
-    ["datasets", currentPage],
+    ["datasets", currentPage, onlyAvailDataset],
     async () => {
       const urlParams = new URLSearchParams();
       urlParams.append("page", currentPage.toString());
+      urlParams.append("includeDeletedFile", onlyAvailDataset.toString());
       const u = `/api/datasets/?${urlParams.toString()}`;
+
       return await axios.get<DatasetLightType[]>(u).then((response) => {
         const newTotal = parseInt(response.headers["elsa-total-count"]);
 
@@ -72,14 +76,27 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
     "min-h-[10em] w-full flex items-center justify-center";
   return (
     <BoxNoPad heading="Datasets">
+      <div className="p-5 bg-gray-50 text-right sm:px-6 border-b">
+        <div className="flex items-center justify-start">
+          <input
+            className="h-3 w-3 rounded-sm mr-2 cursor-pointer"
+            type="checkbox"
+            checked={onlyAvailDataset}
+            onClick={() => setOnlyAvailDataset((p) => !p)}
+          />
+          <label className="flex text-gray-800">
+            <ToolTip
+              trigger={
+                <div className="flex items-center text-xs">
+                  Only datasets available
+                </div>
+              }
+              description={`If unchecked the summary will include deleted files.`}
+            />
+          </label>
+        </div>
+      </div>
       <div className="flex flex-col">
-        <BoxPaginator
-          currentPage={currentPage}
-          setPage={setCurrentPage}
-          rowCount={currentTotal}
-          rowsPerPage={pageSize}
-          rowWord="datasets"
-        />
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
         )}
@@ -113,17 +130,14 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                         "font-mono",
                         "px-4",
                         "text-left",
-                        "whitespace-nowrap"
+                        "whitespace-nowrap",
+                        "h-full"
                       )}
                     >
                       <div className="absolute">
-                        {row.isInConfig && warningSuperscriptIcon}
+                        {!row.isInConfig && warningSuperscriptIcon}
                       </div>
-                      <div
-                        className={`${
-                          row.isInConfig && "pl-5"
-                        } inline-block truncate w-full`}
-                      >
+                      <div className={`pl-5 inline-block truncate w-full`}>
                         {row.uri}
                       </div>
                     </td>
@@ -150,6 +164,13 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
           </table>
         )}
       </div>
+      <BoxPaginator
+        currentPage={currentPage}
+        setPage={setCurrentPage}
+        rowCount={currentTotal}
+        rowsPerPage={pageSize}
+        rowWord="datasets"
+      />
     </BoxNoPad>
   );
 };

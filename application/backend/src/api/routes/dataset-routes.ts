@@ -98,7 +98,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   );
 
   fastify.post<{ Body: { datasetId: string } }>(
-    "/api/datasets/sync",
+    "/api/datasets/sync/",
     {},
     async function (request, reply) {
       const body = request.body;

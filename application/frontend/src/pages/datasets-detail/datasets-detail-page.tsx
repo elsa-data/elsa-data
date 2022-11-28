@@ -50,7 +50,7 @@ export const DatasetsDetailPage: React.FC = () => {
                   "Artifact Filetypes":
                     datasetData.summaryArtifactIncludes != ""
                       ? datasetData.summaryArtifactIncludes.replaceAll(" ", "/")
-                      : "NIL",
+                      : "-",
                   "Artifact Size": fileSize(
                     datasetData.summaryArtifactSizeBytes
                   ),
@@ -106,7 +106,7 @@ const configurationChip = (isConfig: boolean) => {
 
   return (
     <span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-orange-200 text-orange-600 rounded-full">
-      Needs attention!
+      Missing configuration
     </span>
   );
 };
