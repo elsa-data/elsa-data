@@ -41,10 +41,10 @@ jobs:
 
       # unit tests can run first before any databases are set up
       - name: Run unit tests
-        run: npx jest --config jest.unit-tests.config.js
+        run: npm run test:unit
         working-directory: application/backend
         env:
-          # we explicitly make sure that if a unit test *did* try to access a db it will fail
+          # we explicitly make sure that if a unit test *did* try to access the db it will fail
           EDGEDB_DSN: undefined
 
       # install the EdgeDb CLI
@@ -67,7 +67,7 @@ jobs:
 
       # db tests run only in the backend and concentrate on validating edgeql queries
       - name: Run database tests
-        run: npx jest --config jest.db-tests.config.js
+        run: npm run test:db
         working-directory: application/backend
 
       # build our React frontend

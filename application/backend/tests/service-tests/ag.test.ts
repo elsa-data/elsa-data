@@ -39,8 +39,6 @@ import {
   makeEmptyIdentifierArray,
 } from "../../src/business/db/helper";
 
-const util = require("util");
-
 const edgedbClient = edgedb.createClient();
 const s3ClientMock = mockClient(S3Client);
 

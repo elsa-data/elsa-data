@@ -2,21 +2,25 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { ReleaseService } from "../../src/business/services/release-service";
 import { registerTypes } from "./setup";
-import * as assert from "assert";
+import assert from "assert";
+import { Client } from "edgedb";
 
-const testContainer = registerTypes();
-
-const releasesService = await testContainer.resolve(ReleaseService);
-
+let edgeDbClient: Client;
+let releaseService: ReleaseService;
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeEach(async () => {
-  testContainer.clearInstances();
+beforeAll(async () => {
+  const testContainer = await registerTypes();
 
+  edgeDbClient = testContainer.resolve("Database");
+  releaseService = testContainer.resolve(ReleaseService);
+});
+
+beforeEach(async () => {
   ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
@@ -25,7 +29,7 @@ beforeEach(async () => {
  *
  */
 it("allowed users can get release data", async () => {
-  const result = await releasesService.get(allowedPiUser, testReleaseId);
+  const result = await releaseService.get(allowedPiUser, testReleaseId);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -36,12 +40,12 @@ it("allowed users can get release data", async () => {
  */
 it("not allowed users cannot get release data", async () => {
   await expect(async () => {
-    const result = await releasesService.get(notAllowedUser, testReleaseId);
+    const result = await releaseService.get(notAllowedUser, testReleaseId);
   }).rejects.toThrow(Error);
 });
 
 it("basic release data is present for PI", async () => {
-  const result = await releasesService.get(allowedPiUser, testReleaseId);
+  const result = await releaseService.get(allowedPiUser, testReleaseId);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -56,7 +60,7 @@ it("basic release data is present for PI", async () => {
 });
 
 it("basic release data is present for data owner", async () => {
-  const result = await releasesService.get(allowedDataOwnerUser, testReleaseId);
+  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
 
   expect(result).not.toBeNull();
   assert(result != null);
