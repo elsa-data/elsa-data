@@ -1,0 +1,33 @@
+{
+  datasets: [
+    // TODO: Need to move Cardiac Out from the following record!
+    {
+      name: "Cardiac",
+      description: "An Australian Genomics flagship.",
+      uri: "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://agha-gdr-store-2.0/Cardiac",
+    },
+    {
+      name: "10G",
+      description: "UMCCR 10G",
+      uri: "urn:fdc:umccr.org:2022:dataset/10g",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10g-data-dev",
+    },
+    {
+      name: "10F",
+      description: "UMCCR 10F",
+      uri: "urn:fdc:umccr.org:2022:dataset/10f",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10f-data-dev",
+    },
+    {
+      name: "10C",
+      description: "UMCCR 10C",
+      uri: "urn:fdc:umccr.org:2022:dataset/10c",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10c-data-dev",
+    },
+  ],
+}

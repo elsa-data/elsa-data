@@ -22,7 +22,7 @@ it("basic parsing with right most providers overriding", async () => {
     "./tests/unit-tests/config/real-like";
 
   const config = await getMetaConfig(
-    "file('base') file('dev-common') file('dev-localhost')"
+    "file('base') file('dev-common') file('dev-localhost') file('datasets')"
   );
 
   // here the dev-common overrides the port as set in base
@@ -33,7 +33,7 @@ it("basic parsing but with env variable override", async () => {
   process.env["ELSA_DATA_CONFIG_PORT"] = "9999";
 
   const config = await getMetaConfig(
-    "file('base') file('dev-common') file('dev-localhost')"
+    "file('base') file('dev-common') file('dev-localhost') file('datasets')"
   );
 
   // here the explicit env variables overrides any file content

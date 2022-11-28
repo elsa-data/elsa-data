@@ -110,3 +110,16 @@ export const selectDatasetCaseByExternalIdentifiersQuery = (exId: string) =>
       makeSystemlessIdentifierArray(exId)
     ),
   }));
+
+export const selectDatasetIdByDatasetUriAndExternalIdentifiers = (
+  datasetUri: string,
+  exId: string
+) =>
+  e.select(e.dataset.Dataset, (d) => ({
+    id: true,
+    filter: e.op(
+      e.op(d.uri, "ilike", datasetUri),
+      "and",
+      e.op(d.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId))
+    ),
+  }));

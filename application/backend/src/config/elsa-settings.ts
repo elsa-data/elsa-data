@@ -10,6 +10,7 @@ export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
+  host: string;
   port: number;
 
   sessionSecret: string;
@@ -31,6 +32,16 @@ export type ElsaSettings = {
 
   superAdmins: { id: string; email: string }[];
 
+  datasets: {
+    name: string;
+    uri: string;
+    description: string;
+    storageLocation: string;
+    storageUriPrefix: string;
+    aws?: {
+      eventDataStoreId: string;
+    };
+  }[];
   // options to pass into the rate limiter
   rateLimit: RateLimitPluginOptions;
 

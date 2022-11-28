@@ -246,9 +246,22 @@ export const authRoutes = async (
   });
 
   if (opts.includeTestUsers) {
-    const subject1 = await userService.getBySubjectId(TEST_SUBJECT_1);
-    const subject2 = await userService.getBySubjectId(TEST_SUBJECT_2);
-    const subject3 = await userService.getBySubjectId(TEST_SUBJECT_3);
+    // TODO unify this with the other test user insertion code
+    const subject1 = await userService.upsertUserForLogin(
+      TEST_SUBJECT_1,
+      "Test Subject 1",
+      "test@example.com"
+    );
+    const subject2 = await userService.upsertUserForLogin(
+      TEST_SUBJECT_2,
+      "Test Subject 2",
+      "test2@example.com"
+    );
+    const subject3 = await userService.upsertUserForLogin(
+      TEST_SUBJECT_3,
+      "Test Subject 3",
+      "test3@example.com"
+    );
 
     if (!subject1 || !subject2 || !subject3)
       throw new Error(
