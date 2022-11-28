@@ -3,21 +3,25 @@ import assert from "assert";
 import { beforeEachCommon } from "./dataset.common";
 import { registerTypes } from "./setup";
 import { DatasetService } from "../../src/business/services/dataset-service";
-import { TENF_URI } from "../../src/test-data/insert-test-data-10f";
 import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { insert10C, TENC_URI } from "../../src/test-data/insert-test-data-10c";
+import { Client } from "edgedb";
+import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
 
-const testContainer = registerTypes();
-
-const datasetService = testContainer.resolve(DatasetService);
-
+let edgeDbClient: Client;
+let datasetService: DatasetService;
 let adminUser: AuthenticatedUser;
 let tenfDatasetId: string;
 let tengDatasetId2: string;
 
-beforeEach(async () => {
-  testContainer.clearInstances();
+beforeAll(async () => {
+  const testContainer = await registerTypes();
 
+  edgeDbClient = testContainer.resolve("Database");
+  datasetService = testContainer.resolve(DatasetService);
+});
+
+beforeEach(async () => {
   ({ tenfDatasetId, tengDatasetId2, adminUser } = await beforeEachCommon());
 });
 
@@ -25,7 +29,7 @@ it("basic summary get all works", async () => {
   const result = await datasetService.getAll(adminUser, 1000, 0);
 
   expect(result).not.toBeNull();
-  assert(result != null);
+  assert(result && result.data);
 
   expect(result.data.length).toBe(2);
 });
@@ -34,7 +38,7 @@ it("basic summary get all has correct summary values for family dataset", async 
   const result = await datasetService.getAll(adminUser, 1000, 0);
 
   expect(result).not.toBeNull();
-  assert(result != null);
+  assert(result && result.data);
 
   expect(result.data.length).toBe(2);
 
@@ -56,7 +60,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   {
     const result = await datasetService.getAll(adminUser, 1000, 0);
 
-    assert(result != null);
+    assert(result && result.data);
     expect(result.data.length).toBe(2);
     expect(result.data[0].uri).toBe(TENF_URI);
     expect(result.data[1].uri).toBe(TENG_URI);
@@ -68,7 +72,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   {
     const result = await datasetService.getAll(adminUser, 1000, 0);
 
-    assert(result != null);
+    assert(result && result.data);
     expect(result.data.length).toBe(3);
     expect(result.data[0].uri).toBe(TENC_URI);
     expect(result.data[1].uri).toBe(TENF_URI);

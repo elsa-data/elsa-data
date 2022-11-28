@@ -8,7 +8,8 @@ import classNames from "classnames";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { fileSize } from "humanize-plus";
-import {ErrorBoundary} from "../../../components/error-boundary";
+import { ErrorBoundary } from "../../../components/error-boundary";
+import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {
   // the (max) number of items shown on any single page
@@ -29,9 +30,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
       urlParams.append("page", currentPage.toString());
       const u = `/api/datasets?${urlParams.toString()}`;
       return await axios.get<DatasetLightType[]>(u).then((response) => {
-        const newTotal = parseInt(response.headers["elsa-total-count"]);
-
-        if (isFinite(newTotal)) setCurrentTotal(newTotal);
+        handleTotalCountHeaders(response, setCurrentTotal);
 
         return response.data;
       });

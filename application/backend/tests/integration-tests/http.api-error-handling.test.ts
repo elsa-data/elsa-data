@@ -1,8 +1,8 @@
 import { App } from "../../src/app";
-import { getLocalSettings } from "../../src/bootstrap-settings";
 import { FastifyInstance } from "fastify";
 import { Base7807Response } from "@umccr/elsa-types/error-types";
 import { registerTypes } from "../service-tests/setup";
+import { createTestElsaSettings } from "../test-elsa-settings.common";
 
 const testContainer = registerTypes();
 
@@ -10,8 +10,7 @@ describe("http API error handling tests", () => {
   let server: FastifyInstance;
 
   beforeAll(async () => {
-    const settings = await getLocalSettings();
-    const app = new App(() => settings);
+    const app = new App(createTestElsaSettings());
     server = await app.setupServer();
     await server.ready();
   });

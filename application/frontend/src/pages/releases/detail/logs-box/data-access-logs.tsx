@@ -12,7 +12,8 @@ import axios from "axios";
 import { isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
-import {ErrorBoundary} from "../../../../components/error-boundary";
+import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
+import { ErrorBoundary } from "../../../../components/error-boundary";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -38,8 +39,7 @@ function DataAccessLogsBox() {
       );
 
       const data = response.data;
-      const newTotal = parseInt(response.headers["elsa-total-count"]);
-      if (isFinite(newTotal)) setCurrentTotal(newTotal);
+      handleTotalCountHeaders(response, setCurrentTotal);
       return data;
     }
   );
