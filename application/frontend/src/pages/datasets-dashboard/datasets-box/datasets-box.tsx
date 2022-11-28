@@ -45,7 +45,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
     "min-h-[10em] w-full flex items-center justify-center";
 
   return (
-    <BoxNoPad heading="Datasets">
+    <BoxNoPad heading="Datasets" errorMessage={"Something went wrong fetching datasets."}>
       <div className="flex flex-col">
         <BoxPaginator
           currentPage={currentPage}

@@ -230,7 +230,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
   return (
-    <BoxNoPad heading="Audit Logs">
+    <BoxNoPad heading="Audit Logs" errorMessage={"Something went wrong fetching audit logs."}>
       <div className="flex flex-col">
         <Table
           tableHead={table.getHeaderGroups().map((headerGroup) => (

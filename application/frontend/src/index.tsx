@@ -13,6 +13,7 @@ import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import { messages } from "./locales/en/messages";
+import {ErrorBoundary} from "./components/error-boundary";
 
 const root = document.getElementById("root");
 
@@ -45,27 +46,29 @@ if (root != null) {
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
 
       {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
-      <EnvRelayProvider
-        semanticVersion={sv}
-        buildVersion={bv}
-        deployedEnvironment={de}
-        deployedLocation={dl}
-        terminologyFhirUrl={tfu}
-      >
-        <I18nProvider i18n={i18n}>
-          {/* the query provider comes from react-query and provides standardised remote query semantics */}
-          <QueryClientProvider client={queryClient}>
-            {/* we use session cookies for auth and use this provider to make them easily available */}
-            <CookiesProvider>
-              <LoggedInUserProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
-              </LoggedInUserProvider>
-            </CookiesProvider>
-          </QueryClientProvider>
-        </I18nProvider>
-      </EnvRelayProvider>
+      <ErrorBoundary>
+        <EnvRelayProvider
+          semanticVersion={sv}
+          buildVersion={bv}
+          deployedEnvironment={de}
+          deployedLocation={dl}
+          terminologyFhirUrl={tfu}
+        >
+          <I18nProvider i18n={i18n}>
+            {/* the query provider comes from react-query and provides standardised remote query semantics */}
+            <QueryClientProvider client={queryClient}>
+              {/* we use session cookies for auth and use this provider to make them easily available */}
+              <CookiesProvider>
+                <LoggedInUserProvider>
+                  <BrowserRouter>
+                    <App />
+                  </BrowserRouter>
+                </LoggedInUserProvider>
+              </CookiesProvider>
+            </QueryClientProvider>
+          </I18nProvider>
+        </EnvRelayProvider>
+      </ErrorBoundary>
     </React.StrictMode>,
     document.getElementById("root")
   );

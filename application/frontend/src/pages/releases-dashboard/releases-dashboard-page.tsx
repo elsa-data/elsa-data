@@ -21,7 +21,7 @@ export const ReleasesPage: React.FC = () => {
   return (
     <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
-        <Box heading="Releases">
+        <Box heading="Releases" errorMessage={"Something went wrong fetching releases."}>
           {query.data && (
             <table className="w-full text-sm text-left text-gray-500 light:text-gray-400">
               <thead className="text-xs text-gray-700 uppercase bg-gray-50 light:bg-gray-700 light:text-gray-400">

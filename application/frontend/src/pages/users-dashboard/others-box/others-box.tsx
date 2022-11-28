@@ -91,7 +91,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
   };
 
   return (
-    <BoxNoPad heading="Users (not you)">
+    <BoxNoPad heading="Users (not you)" errorMessage={"Something went wrong fetching users."}>
       <div className="flex flex-col">
         <BoxPaginator
           currentPage={currentPage}

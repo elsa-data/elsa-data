@@ -115,7 +115,7 @@ export const CasesBox: React.FC<Props> = ({
     );
 
   return (
-    <BoxNoPad heading="Cases">
+    <BoxNoPad heading="Cases" errorMessage={"Something went wrong fetching cases."}>
       <div className="flex flex-col">
         <BoxPaginator
           currentPage={currentPage}

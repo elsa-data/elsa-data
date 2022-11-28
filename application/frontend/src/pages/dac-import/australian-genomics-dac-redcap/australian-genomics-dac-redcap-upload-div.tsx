@@ -8,7 +8,7 @@ import axios from "axios";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
 
-const GENERIC_ERR_MSG = "Something went wrong";
+const GENERIC_ERR_MSG = "Something went wrong.";
 
 async function parseCsv<T extends File>(
   file: T
