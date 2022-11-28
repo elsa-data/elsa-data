@@ -25,7 +25,7 @@
     "//edgemigrate": "Brings the current db up to date",
     "edgemigrate": "edgedb migrate",
     "//edgetypes": "Generates Typescript classes that match the schema of the *current* project EdgeDb",
-    "edgetypes": "edgeql-js",
+    "edgetypes": "edgeql-js --target esm",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
     "//postinstall": "Give us the ability to locally patch packages after install",
