@@ -31,6 +31,7 @@ export const DatasetSchemaLight = Type.Object({
   id: Type.String(),
   uri: Type.String(),
   description: Type.String(),
+  isInConfig: Type.Boolean(),
   summaryCaseCount: Type.Number(),
   summaryPatientCount: Type.Number(),
   summarySpecimenCount: Type.Number(),

@@ -1,22 +1,44 @@
-import React, { ReactNode, useState } from "react";
-import {
-  AuditEntryType,
-  DatasetLightType,
-  ReleaseCaseType,
-} from "@umccr/elsa-types";
+import React, { useState } from "react";
+import { DatasetLightType } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import classNames from "classnames";
-import usePagination from "headless-pagination-react";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { fileSize } from "humanize-plus";
 import { useNavigate } from "react-router-dom";
+import { ToolTip } from "../../../components/tooltip";
 
 type Props = {
   // the (max) number of items shown on any single page
   pageSize: number;
 };
+
+const warningSuperscriptIcon = (
+  <ToolTip
+    trigger={
+      <span className="text-xs inline-block p-1 leading-none text-center whitespace-nowrap align-baseline font-bold text-white rounded-full">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="icon icon-tabler icon-tabler-alert-triangle"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="#2c3e50"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+        </svg>
+      </span>
+    }
+    description={`Dataset is not configured.`}
+  />
+);
 
 export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const navigate = useNavigate();
@@ -48,7 +70,6 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
 
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
-
   return (
     <BoxNoPad heading="Datasets">
       <div className="flex flex-col">
@@ -92,11 +113,19 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                         "font-mono",
                         "px-4",
                         "text-left",
-                        "whitespace-nowrap",
-                        "truncate"
+                        "whitespace-nowrap"
                       )}
                     >
-                      {row.uri}
+                      <div className="absolute">
+                        {row.isInConfig && warningSuperscriptIcon}
+                      </div>
+                      <div
+                        className={`${
+                          row.isInConfig && "pl-5"
+                        } inline-block truncate w-full`}
+                      >
+                        {row.uri}
+                      </div>
                     </td>
                     <td className={classNames(baseColumnClasses, "text-left")}>
                       {row.description}
