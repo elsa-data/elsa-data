@@ -48,16 +48,16 @@ RUN cd frontend && npm ci
 RUN cd common/elsa-constants && npm ci
 RUN cd common/elsa-types && npm ci
 
-RUN : \
-  && cd frontend \
-  && npm run build:dev
-
 COPY --from=edgedbbuilder /build/backend/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
 
+RUN : \
+  && cd frontend \
+  && npm run build:prod
+
 # when running in the real Docker image the frontend is expected to be bundled local to the backend
-RUN mkdir backend/client
-RUN mv frontend/build backend/client
-RUN cd backend/client && mv build dist
+#RUN mkdir backend/client
+#RUN mv frontend/build backend/client
+#RUN cd backend/client && mv build dist
 
 ARG ELSA_DATA_VERSION
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
