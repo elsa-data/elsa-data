@@ -3,14 +3,27 @@ import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "./shared-types";
 import ReactMarkdown from "react-markdown";
 import classNames from "classnames";
-import { Trans } from "@lingui/macro";
-import { useLingui } from "@lingui/react";
 import remarkGfm from "remark-gfm";
 
 type Props = {
   releaseId: string;
   releaseData: ReleaseTypeLocal;
 };
+
+/*
+Sample usage of Linugi for restoring at some point.
+import { Trans } from "@lingui/macro";
+import { useLingui } from "@lingui/react";
+  const { i18n } = useLingui();
+    <Box heading={<Trans>Release Information</Trans>}>
+    <Trans>
+      <p>Data access is currently enabled.</p>
+      <p>Access will automatically cease</p>
+      <p title={i18n.date("2022-03-05")}>
+        <b>in six months.</b>
+      </p>
+    </Trans>
+ */
 
 /**
  * Displays summary/important information about a release.
@@ -20,12 +33,10 @@ type Props = {
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
-  const { i18n } = useLingui();
-
   const alertBoxClasses = "border-4 rounded-2xl p-4 text-center mb-2";
 
   return (
-    <Box heading={<Trans>Release Information</Trans>}>
+    <Box heading="Release Information">
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           <span className="font-bold">{releaseData.applicationDacTitle}</span>
@@ -49,13 +60,11 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
         <div className="flex flex-col gap-2 items-end">
           {releaseData.accessEnabled && (
             <div className={classNames(alertBoxClasses, "border-green-400")}>
-              <Trans>
-                <p>Data access is currently enabled.</p>
-                <p>Access will automatically cease</p>
-                <p title={i18n.date("2022-03-05")}>
-                  <b>in six months.</b>
-                </p>
-              </Trans>
+              <p>Data access is currently enabled.</p>
+              <p>Access will automatically cease</p>
+              <p title="2022-03-05">
+                <b>in six months.</b>
+              </p>
             </div>
           )}
           {!releaseData.accessEnabled && (
