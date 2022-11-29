@@ -5,16 +5,10 @@
   "scripts": {
     "//frontend": "Serves the frontend files up using a built in web server - but without the custom backend or APIs - this is generally not useable",
     "frontend": "vite serve",
-    "//build:dev": "Builds a dev build in the frontend/build/ folder where it can be found by the backend in dev mode",
-    "build:dev": "vite build",
-    "build:prod": "vite build"
-  },
-  "//eslintConfig": "Despite not using eslint - taking this config away causes craco builds to fail with Typescript errors",
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "//build:dev": "Builds a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
+    "build:dev": "vite build --mode development",
+    "//build:prod": "Builds a prod build in the ../backend/client/dist/ folder where it can be found by the production server",
+    "build:prod": "vite build --mode production"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
