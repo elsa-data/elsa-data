@@ -166,7 +166,9 @@ export const selectDatasetCaseByExternalIdentifiersQuery = (exId: string) =>
   }));
 
 export const selectDatasetIdByDatasetUri = (datasetUri: string) =>
-  e.select(e.dataset.Dataset, (d) => ({
-    id: true,
-    filter: e.op(d.uri, "ilike", datasetUri),
-  }));
+  e
+    .select(e.dataset.Dataset, (d) => ({
+      id: true,
+      filter: e.op(d.uri, "ilike", datasetUri),
+    }))
+    .assert_single();

@@ -24,7 +24,7 @@ export type DatasetSummaryQueryType = Static<typeof DatasetSummaryQuerySchema>;
 export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
   const agService = container.resolve(S3IndexApplicationService);
-
+  const settings = container.resolve<ElsaSettings>("Settings");
   /**
    * Pageable fetching of top-level dataset information (summary level info)
    */
@@ -83,29 +83,17 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     });
   });
 
-  fastify.post<{ Body: { keyPrefix: string } }>(
-    "/api/datasets/ag/import",
-    {},
-    async function (request, reply) {
-      const body = request.body;
-      const keyPrefix = body.keyPrefix;
-
-      agService.syncDbFromS3KeyPrefix(keyPrefix);
-      reply.send(
-        "OK! \nTo prevent API timeout, returning the OK value while the script is still running. "
-      );
-    }
-  );
-
-  fastify.post<{ Body: { datasetId: string } }>(
+  fastify.post<{ Body: { datasetURI: string } }>(
     "/api/datasets/sync/",
     {},
     async function (request, reply) {
       const body = request.body;
-      const datasetId = body.datasetId;
-      // TODO: Make dataset service support re-sync or import
-      console.log(`datasetId received:`, datasetId);
+      const datasetUri = body.datasetURI;
+      const elsaSettings: ElsaSettings = (request as any).settings;
 
+      // TODO: Support more import method accordingly
+      // TODO: Some error when datasetUri not found
+      agService.syncDbFromDatasetUri(datasetUri);
       reply.send(
         "OK! \nTo prevent API timeout, returning the OK while importing might still run in the background. "
       );

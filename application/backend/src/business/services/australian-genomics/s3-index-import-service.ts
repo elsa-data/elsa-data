@@ -5,7 +5,7 @@ import { inject, injectable, singleton } from "tsyringe";
 import {
   S3ObjectMetadata,
   awsListObjects,
-  readObjectToStringFromS3Key,
+  readObjectToStringFromS3Url,
 } from "../aws-helper";
 import {
   File,
@@ -35,18 +35,9 @@ import {
 import {
   selectDatasetPatientByExternalIdentifiersQuery,
   selectDatasetCaseByExternalIdentifiersQuery,
+  selectDatasetIdByDatasetUri,
 } from "../../db/dataset-queries";
-import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 import { DatasetService } from "./../dataset-service";
-const util = require("util");
-
-// need to be configuration eventually
-const AG_BUCKET = "agha-gdr-store-2.0";
-
-// Static Mapping of AG bucket prefix and DatasetURI
-const BUCKET_PREFIX_AND_URI_MAPPING: Record<string, string> = {
-  cardiac: AG_CARDIAC_FLAGSHIP,
-};
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -72,40 +63,25 @@ export class S3IndexApplicationService {
     private datasetService: DatasetService
   ) {}
 
-  async getDatasetIdByS3KeyPrefix(
-    s3KeyPrefix: string
-  ): Promise<string | undefined> {
-    const flagshipPrefix = s3KeyPrefix.toLowerCase().split("/")[0];
-    let datasetUri = BUCKET_PREFIX_AND_URI_MAPPING[flagshipPrefix];
-
-    if (!datasetUri) return;
-
-    return await this.datasetService.selectOrInsertDataset({
-      datasetUri: datasetUri,
-      datasetDescription: "An Australian Genomics flagship.",
-      datasetName: flagshipPrefix,
-    });
-  }
-
   /**
-   * @param s3KeyPrefix Prefix to search
+   * @param s3UrlPrefix Prefix to search
    * @returns A list of S3 object metadata for AG bucket matching key prefix
    */
-  async getS3ObjectListFromKeyPrefix(
-    s3KeyPrefix: string
+  async getS3ObjectListFromUriPrefix(
+    s3UrlPrefix: string
   ): Promise<S3ObjectMetadata[]> {
-    return await awsListObjects(this.s3Client, AG_BUCKET, s3KeyPrefix);
+    return await awsListObjects(this.s3Client, s3UrlPrefix);
   }
 
   /**
    * @param s3ListMetadata
    * @returns A list of manifest string
    */
-  getManifestKeyFromS3ObjectList(s3ListMetadata: S3ObjectMetadata[]): string[] {
+  getManifestUriFromS3ObjectList(s3ListMetadata: S3ObjectMetadata[]): string[] {
     const manifestKeys: string[] = [];
     for (const s3Metadata of s3ListMetadata) {
-      if (s3Metadata.key.endsWith("manifest.txt")) {
-        manifestKeys.push(s3Metadata.key);
+      if (s3Metadata.s3Url.endsWith("manifest.txt")) {
+        manifestKeys.push(s3Metadata.s3Url);
       }
     }
     return manifestKeys;
@@ -153,25 +129,18 @@ export class S3IndexApplicationService {
     return studyIdGroup;
   }
 
-  async getS3ManifestObjectListByS3KeyPrefix(
-    s3KeyPrefix: string
+  async getS3ManifestObjectListByS3UrlPrefix(
+    s3UrlPrefix: string
   ): Promise<manifestDict> {
     const s3UrlManifestObj: manifestDict = {};
 
-    const s3MetadataList = await this.getS3ObjectListFromKeyPrefix(s3KeyPrefix);
-    const manifestKeyList = this.getManifestKeyFromS3ObjectList(s3MetadataList);
-    for (const manifestS3Key of manifestKeyList) {
-      const manifestLastSlashIndex = manifestS3Key.lastIndexOf("/");
-      const manifestS3Prefix = manifestS3Key.substring(
-        0,
-        manifestLastSlashIndex
-      );
-      const s3UrlPrefix = `s3://${AG_BUCKET}/${manifestS3Prefix}`;
+    const s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
+    const manifestUriList = this.getManifestUriFromS3ObjectList(s3MetadataList);
 
-      const manifestTsvContent = await readObjectToStringFromS3Key(
+    for (const manifestS3Url of manifestUriList) {
+      const manifestTsvContent = await readObjectToStringFromS3Url(
         this.s3Client,
-        AG_BUCKET,
-        manifestS3Key
+        manifestS3Url
       );
 
       const manifestObjContentList = <manifestType[]>(
@@ -180,8 +149,13 @@ export class S3IndexApplicationService {
 
       // The manifest will contain a filename only, but for the purpose of uniqueness and how we stored in db.
       // We would append the filename with the s3 Url prefix.
+      const manifestLastSlashIndex = manifestS3Url.lastIndexOf("/");
+      const manifestS3UrlPrefix = manifestS3Url.substring(
+        0,
+        manifestLastSlashIndex
+      );
       for (const manifestObj of manifestObjContentList) {
-        const s3Url = `${s3UrlPrefix}/${manifestObj.filename}`;
+        const s3Url = `${manifestS3UrlPrefix}/${manifestObj.filename}`;
         s3UrlManifestObj[s3Url] = {
           s3Url: s3Url,
           checksum: manifestObj.checksum,
@@ -262,7 +236,7 @@ export class S3IndexApplicationService {
 
     // Find current checksum record
     const fileRec = await fileByUrlQuery.run(this.edgeDbClient, { url: s3Url });
-    const currentChecksum = fileRec[0]?.checksums ?? [];
+    const currentChecksum = fileRec?.checksums ?? [];
     for (const checksumRec of currentChecksum) {
       if (checksumRec.type === "MD5") {
         checksumRec.value = getMd5FromChecksumsArray(newFileRec.checksums);
@@ -361,8 +335,7 @@ export class S3IndexApplicationService {
 
     const s3MetadataDict: Record<string, S3ObjectMetadata> = {};
     for (const s3Metadata of s3MetadataList) {
-      const s3url = `s3://${AG_BUCKET}/${s3Metadata.key}`;
-      s3MetadataDict[s3url] = s3Metadata;
+      s3MetadataDict[s3Metadata.s3Url] = s3Metadata;
     }
     for (const manifestRecord of manifestRecordList) {
       const s3Url = manifestRecord.s3Url;
@@ -670,24 +643,34 @@ export class S3IndexApplicationService {
   }
 
   /**
-   * @param s3KeyPrefix s3 key to sync the files
+   * @param datasetUri s3 URI prefix to sync the files
    */
-  async syncDbFromS3KeyPrefix(s3KeyPrefix: string) {
-    const datasetId = await this.getDatasetIdByS3KeyPrefix(s3KeyPrefix);
+  async syncDbFromDatasetUri(datasetUri: string) {
+    const datasetId = (
+      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
+    )?.id;
+
     if (!datasetId) {
       console.warn("No Dataset URI found from given key prefix.");
       console.warn(
-        "Please register the key prefix before running it through this function."
+        "Please register to the configuration before running this service."
       );
       return;
     }
 
+    const s3UrlPrefix =
+      this.datasetService.getUriPrefixFromFromDatasetUri(datasetUri);
+    if (!s3UrlPrefix) {
+      console.warn("No Storage Dataset URI found.");
+      return;
+    }
+
     // Searching match prefix with data in S3 store bucket
-    const s3MetadataList = await this.getS3ObjectListFromKeyPrefix(s3KeyPrefix);
+    const s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
 
     // Grab all s3ManifestType object from all manifest files in s3
     const s3ManifestTypeObjectDict =
-      await this.getS3ManifestObjectListByS3KeyPrefix(s3KeyPrefix);
+      await this.getS3ManifestObjectListByS3UrlPrefix(s3UrlPrefix);
 
     // Grab all s3ManifestType object from current edgedb
     const dbs3ManifestTypeObjectDict =
@@ -710,7 +693,7 @@ export class S3IndexApplicationService {
     // Update file record to be unavailable
     if (toBeDeletedFromDb.length) {
       for (const f of toBeDeletedFromDb) {
-        this.updateUnavailableFileRecord(f.s3Url);
+        await this.updateUnavailableFileRecord(f.s3Url);
       }
     }
 
@@ -814,5 +797,8 @@ export class S3IndexApplicationService {
       // At this stage, all dataset::DatasetPatient record should already exist
       await this.linkPedigreeRelationship(patientIdAndDataCaseIdLinkingArray);
     }
+
+    // Update last update on Dataset
+    await this.datasetService.updateDatasetCurrentTimestamp(datasetId);
   }
 }

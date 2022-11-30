@@ -67,7 +67,7 @@ export const DatasetsDetailPage: React.FC = () => {
                     disabled={!datasetData.id}
                     onClick={async () =>
                       await axios.post<any>(`/api/datasets/sync/`, {
-                        datasetId: datasetData.id,
+                        datasetURI: datasetData.uri,
                       })
                     }
                     type="button"

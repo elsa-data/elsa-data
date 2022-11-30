@@ -11,13 +11,25 @@ import {
   datasetSummaryQuery,
   selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 @injectable()
 @singleton()
 export class DatasetService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private settings: ElsaSettings
   ) {}
+
+  getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
+    for (const d of this.settings.datasets) {
+      if (d.uri === datasetUri) {
+        return d.storageUriPrefix;
+      }
+    }
+
+    return null;
+  }
 
   /**
    * Return a paged result of datasets in summary form.
@@ -157,11 +169,10 @@ export class DatasetService {
     datasetDescription: string;
     datasetName: string;
   }): Promise<string> {
-    const selectDatasetIdQuery = selectDatasetIdByDatasetUri(datasetUri);
-
     // Find current Dataset
-    const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
-    const datasetId = datasetIdArray[0]?.id;
+    const datasetId = (
+      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
+    )?.id;
     if (datasetId) return datasetId;
 
     // Else, create new dataset
@@ -172,6 +183,20 @@ export class DatasetService {
     });
     const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
     return newDataset.id;
+  }
+
+  /**
+   * Select dataset from datasetUri
+   */
+  public async selectDatasetIdFromDatasetUri(
+    datasetUri: string
+  ): Promise<string | null> {
+    const datasetId = (
+      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
+    )?.id;
+    if (datasetId) return datasetId;
+
+    return null;
   }
 
   /**
@@ -231,5 +256,16 @@ export class DatasetService {
         }))
         .run(this.edgeDbClient);
     }
+  }
+
+  public async updateDatasetCurrentTimestamp(datasetId: string) {
+    await e
+      .update(e.dataset.Dataset, (d) => ({
+        filter: e.op(d.id, "=", e.uuid(datasetId)).assert_single(),
+        set: {
+          updatedDateTime: new Date(),
+        },
+      }))
+      .run(this.edgeDbClient);
   }
 }

@@ -6,6 +6,7 @@ import { Issuer } from "openid-client";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { ElsaSettings } from "../../src/config/elsa-settings";
+import { MOCK_DATASET_URI, MOCK_STORAGE_PREFIX_URL } from "./ag.common";
 
 const execPromise = promisify(exec);
 export async function registerTypes() {
@@ -25,11 +26,11 @@ export async function registerTypes() {
   });
 
   const { stdout: remsUserStdout, stderr: remsUserStderr } = await execPromise(
-    `security find-generic-password -s "Elsa REMS Bot User Dev" -w`
+    `security find-generic-password -s "rems.botUser" -w elsa-data`
   );
 
   const { stdout: remsKeyStdout, stderr: remsKeyStderr } = await execPromise(
-    `security find-generic-password -s "Elsa REMS Bot Key Dev" -w`
+    `security find-generic-password -s "rems.botKey" -w elsa-data`
   );
 
   testContainer.register<ElsaSettings>("Settings", {
@@ -37,8 +38,9 @@ export async function registerTypes() {
       const s: ElsaSettings = {
         port: 3000,
         superAdmins: [],
-        environment: "development",
-        location: "local-mac",
+        deployedUrl: "http://localhost:3000",
+        // environment: "development",
+        // location: "local-mac",
         remsUrl: "https://hgpp-rems.dev.umccr.org",
         remsBotKey: remsKeyStdout.trim(),
         remsBotUser: remsUserStdout.trim(),
@@ -53,6 +55,15 @@ export async function registerTypes() {
         awsSigningSecretAccessKey: "A",
         awsSigningAccessKeyId: "B",
         rateLimit: {},
+        datasets: [
+          {
+            name: "Cardiac",
+            description: "An Australian Genomics flagship.",
+            uri: MOCK_DATASET_URI,
+            storageLocation: "aws-s3",
+            storageUriPrefix: MOCK_STORAGE_PREFIX_URL,
+          },
+        ],
       };
       return s;
     },

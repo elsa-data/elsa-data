@@ -5,11 +5,12 @@ import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
  */
 
 export const MOCK_DATASET_URI = AG_CARDIAC_FLAGSHIP;
+export const MOCK_STORAGE_PREFIX_URL = "s3://agha-gdr-store-2.0/Cardiac";
 export const S3_URL_PREFIX = "s3://agha-gdr-store-2.0/Cardiac/2019-11-21";
 
 function createS3ObjectList(key = "S3_KEY", etag = "AWS_ETAG", size = 1) {
   return {
-    key: key,
+    s3Url: `s3://agha-gdr-store-2.0/${key}`,
     eTag: etag,
     size: size,
   };
