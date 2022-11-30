@@ -15,21 +15,21 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
   children,
 }) => {
   return (
-    <ErrorBoundary message={errorMessage}>
-      <div className="w-full py-3">
-        <div className="bg-white border rounded-b-xl shadow">
-          <div
-            className={classNames(
-              "border-b p-3 bg-gradient-to-r",
-              headerFromColour
-            )}
-          >
-            <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
-          </div>
-          <div className="p-5">{children}</div>
+    <div className="w-full py-3">
+      <div className="bg-white border rounded-b-xl shadow">
+        <div
+          className={classNames(
+            "border-b p-3 bg-gradient-to-r",
+            headerFromColour
+          )}
+        >
+          <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
         </div>
+        <ErrorBoundary message={errorMessage}>
+          <div className="p-5">{children}</div>
+        </ErrorBoundary>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 
@@ -40,20 +40,20 @@ export const BoxNoPad: React.FC<PropsWithChildren<BoxProps>> = ({
   children,
 }) => {
   return (
-    <ErrorBoundary message={errorMessage}>
-      <div className="w-full py-3">
-        <div className="bg-white border rounded-b-xl shadow">
-          <div
-            className={classNames(
-              "border-b p-3 bg-gradient-to-r",
-              headerFromColour
-            )}
-          >
-            <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
-          </div>
-          <div className="overflow-auto">{children}</div>
+    <div className="w-full py-3">
+      <div className="bg-white border rounded-b-xl shadow">
+        <div
+          className={classNames(
+            "border-b p-3 bg-gradient-to-r",
+            headerFromColour
+          )}
+        >
+          <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
         </div>
+        <ErrorBoundary message={errorMessage}>
+          <div className="overflow-auto">{children}</div>
+        </ErrorBoundary>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };

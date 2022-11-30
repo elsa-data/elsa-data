@@ -94,7 +94,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
           ))
         }
       />
-      {dataAccessQuery.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."} error={dataAccessQuery.error}></ErrorBoundary>}
+      {dataAccessQuery.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."} error={dataAccessQuery.error} displayEagerly={true}></ErrorBoundary>}
     </BoxNoPad>
   );
 }

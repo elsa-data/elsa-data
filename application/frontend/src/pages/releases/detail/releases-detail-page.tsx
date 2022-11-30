@@ -124,7 +124,7 @@ export const ReleasesDetailPage: React.FC = () => {
             <DataAccessSummaryBox releaseId={releaseId} />
           </>
         )}
-        {releaseQuery.isError && <ErrorBoundary message={"Something went wrong fetching release data."} error={releaseQuery.error}></ErrorBoundary>}
+        {releaseQuery.isError && <ErrorBoundary message={"Something went wrong fetching release data."} error={releaseQuery.error} displayEagerly={true}></ErrorBoundary>}
       </div>
     </LayoutBase>
   );

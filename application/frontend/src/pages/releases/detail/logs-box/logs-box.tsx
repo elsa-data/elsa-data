@@ -41,6 +41,7 @@ import {
 } from "react-icons/bi";
 import classNames from "classnames";
 import { ErrorBoundary } from "../../../../components/error-boundary";
+import {handleTotalCountHeaders} from "../../../../helpers/paging-helper";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -84,16 +85,15 @@ export const useAuditEventQuery = (
       orderAscending,
     ],
     async () => {
-      throw "";
-      // return await axios
-      //   .get<AuditEntryType[]>(
-      //     `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
-      //   )
-      //   .then((response) => {
-      //     handleTotalCountHeaders(response, setCurrentTotal);
-      //
-      //     return response.data;
-      //   });
+      return await axios
+        .get<AuditEntryType[]>(
+          `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
+        )
+        .then((response) => {
+          handleTotalCountHeaders(response, setCurrentTotal);
+
+          return response.data;
+        });
     },
     {
       keepPreviousData: true,
@@ -239,7 +239,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   return (
     <BoxNoPad heading="Audit Logs" errorMessage={"Something went wrong fetching audit logs."}>
       <div className="flex flex-col">
-        <Table
+        {isSuccess ? <Table
           tableHead={table.getHeaderGroups().map((headerGroup) => (
             <tr
               key={headerGroup.id}
@@ -267,7 +267,6 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
             </tr>
           ))}
           tableBody={
-            isSuccess ?
             table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
                 <tr
@@ -314,9 +313,9 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     </tr>
                   )}
               </Fragment>
-            )) : <ErrorBoundary message={"Could not display logs table."} error={error} displayEagerly={true}></ErrorBoundary>
+            ))
           }
-        />
+        /> : <ErrorBoundary message={"Could not display logs table."} error={error} displayEagerly={true}></ErrorBoundary>}
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {
@@ -366,7 +365,7 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
       )}
     </div>
   ) : detailsQuery.isError ? (
-    <ErrorBoundary message={"Something went wrong audit log details."} error={detailsQuery.error}></ErrorBoundary>
+    <ErrorBoundary message={"Something went wrong displaying audit log details."} error={detailsQuery.error} displayEagerly={true}></ErrorBoundary>
     ) : (
     <></>
   );

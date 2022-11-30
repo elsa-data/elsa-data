@@ -33,6 +33,8 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
       if (error instanceof Base7807Error) {
         const error7808 = error.toResponse();
         return <>
+          This could be an issue with the network, here are some details:
+          <br></br>
           <div>
             <span className="font-bold">type: </span>
             {error7808.type}
@@ -58,6 +60,8 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
         </>;
       } else if (axios.isAxiosError(error)) {
         return <>
+          This could be an issue with the network, here are some details:
+          <br></br>
           <div>
             <span className="font-bold">message: </span>
             {error.message}
@@ -76,11 +80,9 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
   }
 
   render() {
-    console.log(this.state.error);
-    console.log("HERE");
     if (this.props.displayEagerly || (this.state.error !== undefined && this.state.error !== null)) {
       return (
-        <div className="p-4 mx-4 my-3 text-sm text-red-700 bg-red-100 rounded-lg">
+        <div className="p-4 text-sm text-red-700 bg-red-100">
           {this.props.message ? <div>{this.props.message}</div> : <div>Something went wrong.</div>}
           <br></br>
           {this.state.error && this.formatError()}
