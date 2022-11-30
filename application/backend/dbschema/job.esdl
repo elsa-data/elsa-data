@@ -15,6 +15,10 @@ module job {
         #
         required property status -> JobStatus;
 
+        # we regularly need to find only the jobs of a certain type and we want this to be quick
+        #
+        index on (.status);
+
         # the database time the job was created
         #
         required property created -> datetime {
@@ -71,8 +75,6 @@ module job {
             #
             on target delete allow;
         };
-
-
     }
 
     type CloudFormationInstallJob extending Job {
@@ -88,7 +90,14 @@ module job {
         #      this is solely used *during* the install to track progress
         #
         required property awsStackId -> str;
+    }
 
+    type CloudFormationDeleteJob extending Job {
+
+        # the stack id of the cloud formation we are deleting
+        # NOTE this is solely used *during* the delete to track progress
+        #
+        required property awsStackId -> str;
     }
 
 }

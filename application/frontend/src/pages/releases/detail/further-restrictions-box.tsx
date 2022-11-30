@@ -19,18 +19,19 @@ export const FutherRestrictionsBox: React.FC<Props> = ({
         <LeftDiv
           heading={"Allowed File Types"}
           extra={
-            "Access may be restricted to only certain types of data files depending on whether the study has need for raw read data (for instance)"
+            "Access may be restricted to only certain types of data files depending on whether the study has need for read data or just variants (for instance)"
           }
         />
         <RightDiv>
-          <RhChecks label="File types">
-            <RhCheckItem label="VCF" />
-            <RhCheckItem label="BAM" />
-            <RhCheckItem label="FASTQ" />
+          <RhChecks label="Allow Access to Data">
+            <RhCheckItem label="Manifests" checked={true} />
+            <RhCheckItem label="Reads" />
+            <RhCheckItem label="Variants" />
+            <RhCheckItem label="Phenotypes" />
           </RhChecks>
         </RightDiv>
       </div>
-      <HrDiv />
+      {/*} <HrDiv />
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv
           heading={"Allowed File Roles"}
@@ -60,7 +61,7 @@ export const FutherRestrictionsBox: React.FC<Props> = ({
             <RhCheckItem label="DRS" />
           </RhChecks>
         </RightDiv>
-      </div>
+      </div> */}
     </Box>
   );
 };

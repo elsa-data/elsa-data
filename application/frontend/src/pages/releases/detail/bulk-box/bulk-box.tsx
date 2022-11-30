@@ -27,9 +27,9 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (releaseData.runningJob) {
-        queryClient.invalidateQueries(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseId)
-        );
+        // we are busy waiting on the job to complete - so we can invalidate the whole cache
+        // as the jobs may affect the entire UI (audit logs, cases etc)
+        queryClient.invalidateQueries().then(() => {});
       }
     }, 5000);
     return () => {

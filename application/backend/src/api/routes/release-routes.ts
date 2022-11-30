@@ -390,4 +390,38 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       presignResult.archive.pipe(reply.raw);
     }
   );
+
+  fastify.post<{
+    Body: ReleaseAwsS3PresignRequestType;
+    Params: { rid: string };
+  }>(
+    "/api/releases/:rid/cfn/manifest",
+    {
+      schema: {
+        body: ReleaseAwsS3PresignRequestSchema,
+      },
+    },
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+      if (!awsAccessPointService.isEnabled)
+        throw new Error(
+          "The AWS service was not started so AWS S3 Access Points will not work"
+        );
+
+      const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
+        authenticatedUser,
+        releaseId,
+        request.body.presignHeader
+      );
+
+      reply.header(
+        "Content-disposition",
+        `attachment; filename=${accessPointTsv.filename}`
+      );
+      reply.type("text/tab-separated-values");
+      reply.send(accessPointTsv.content);
+    }
+  );
 };

@@ -87,31 +87,33 @@ export class JobsService {
   public async getInProgressJobs() {
     const jobsInProgress = await e
       .select(e.job.Job, (sj) => ({
-        __type__: true,
+        __type__: { name: true },
         id: true,
         forRelease: { id: true },
         requestedCancellation: true,
         auditEntry: true,
         started: true,
-        ...e.is(e.job.SelectJob, { isSelectJob: e.bool(true) }),
-        ...e.is(e.job.CloudFormationInstallJob, {
-          isCloudFormationInstallJob: e.bool(true),
-        }),
         filter: e.op(sj.status, "=", e.job.JobStatus.running),
       }))
       .run(this.edgeDbClient);
 
-    return jobsInProgress.map((j) => ({
-      jobId: j.id,
-      releaseId: j.forRelease.id,
-      auditEntryId: j.auditEntry.id,
-      auditEntryStarted: j.started,
-      requestedCancellation: j.requestedCancellation,
-      isSelectJob: j.isSelectJob,
-      isCloudFormationInstallJob: j.isCloudFormationInstallJob,
-      // WIP
-      isCloudFormationDeleteJob: false,
-    }));
+    return jobsInProgress.map((j) => {
+      const typeName = j.__type__.name;
+
+      if (typeName.startsWith("job::")) {
+        return {
+          jobId: j.id,
+          jobType: typeName.substring("job::".length),
+          releaseId: j.forRelease.id,
+          auditEntryId: j.auditEntry.id,
+          auditEntryStarted: j.started,
+          requestedCancellation: j.requestedCancellation,
+        };
+      } else
+        throw new Error(
+          "Our job type name no longer starts with the expected module of job::"
+        );
+    });
   }
 
   public async getCloudFormationAccessPointStackForRelease(
@@ -610,6 +612,56 @@ export class JobsService {
 
       await e
         .update(selectJobQuery, (sj) => ({
+          set: {
+            percentDone: 100,
+            ended: e.datetime_current(),
+            status: isCancellation
+              ? e.job.JobStatus.cancelled
+              : wasSuccessful
+              ? e.job.JobStatus.succeeded
+              : e.job.JobStatus.failed,
+          },
+        }))
+        .run(tx);
+    });
+  }
+
+  public async endCloudFormationInstallJob(
+    jobId: string,
+    wasSuccessful: boolean,
+    isCancellation: boolean
+  ): Promise<void> {
+    // basically at this point we believe the cloud formation is installed
+    // we just need to clean up the records
+    await this.edgeDbClient.transaction(async (tx) => {
+      const cloudFormationInstallQuery = e
+        .select(e.job.CloudFormationInstallJob, (j) => ({
+          auditEntry: true,
+          started: true,
+          filter: e.op(j.id, "=", e.uuid(jobId)),
+        }))
+        .assert_single();
+
+      const cloudFormationInstallJob = await cloudFormationInstallQuery.run(
+        this.edgeDbClient
+      );
+
+      if (!cloudFormationInstallJob)
+        throw new Error(
+          "Job id passed in was not a Cloud Formation Install Job"
+        );
+
+      await this.auditLogService.completeReleaseAuditEvent(
+        tx,
+        cloudFormationInstallJob.auditEntry.id,
+        isCancellation ? 4 : 0,
+        cloudFormationInstallJob.started,
+        new Date(),
+        { jobId: jobId }
+      );
+
+      await e
+        .update(cloudFormationInstallQuery, (sj) => ({
           set: {
             percentDone: 100,
             ended: e.datetime_current(),

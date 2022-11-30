@@ -11,10 +11,16 @@ import {
   CreateStackCommand,
   DescribeStackResourcesCommand,
   DescribeStacksCommand,
+  DescribeStacksCommandOutput,
   StackResource,
   waitUntilStackCreateComplete,
 } from "@aws-sdk/client-cloudformation";
 import { AuditLogService } from "./audit-log-service";
+import { stringify } from "csv-stringify";
+import { Readable } from "stream";
+import streamConsumers from "node:stream/consumers";
+import archiver, { ArchiverOptions } from "archiver";
+import { ReleaseService } from "./release-service";
 
 // need to be configuration eventually
 const BUCKET = "elsa-data-tmp";
@@ -28,6 +34,7 @@ export class AwsAccessPointService extends AwsBaseService {
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Database") edgeDbClient: edgedb.Client,
+    private releaseService: ReleaseService,
     usersService: UsersService,
     auditLogService: AuditLogService
   ) {
@@ -47,45 +54,6 @@ export class AwsAccessPointService extends AwsBaseService {
   }
 
   /**
-   * Asks AWS if there is already an access point endpoint that exists
-   * for this release - by checking the list of installed CloudFormations
-   * for one matching our naming pattern.
-   *
-   * This operation is suitable for use in polling as it is relatively
-   * lightweight and read-only.
-   *
-   * @param user
-   * @param releaseId
-   */
-  public async getCloudFormationAccessPointStackForRelease(
-    user: AuthenticatedUser,
-    releaseId: string
-  ): Promise<StackResource | null> {
-    this.enabledGuard();
-
-    const releaseStackName =
-      AwsAccessPointService.getReleaseStackName(releaseId);
-
-    const releaseReleaseStack = await this.cfnClient.send(
-      new DescribeStackResourcesCommand({
-        StackName: releaseStackName,
-      })
-    );
-
-    if (!releaseReleaseStack.StackResources) return null;
-
-    if (releaseReleaseStack.StackResources.length > 1) {
-      throw new Error(
-        "Unexpected result of two cloud formation stacks with the same name"
-      );
-    }
-
-    if (releaseReleaseStack.StackResources.length < 1) return null;
-
-    return releaseReleaseStack.StackResources[0];
-  }
-
-  /**
    * Returns the details from an installed access point stack for the given release
    * or null if there is no access point stack installed. This function can
    * be used to test for the existence of a stack for the release (it uses the
@@ -93,37 +61,109 @@ export class AwsAccessPointService extends AwsBaseService {
    *
    * @param user
    * @param releaseId
-   * @private
    */
   public async getInstalledAccessPointResources(
     user: AuthenticatedUser,
     releaseId: string
-  ): Promise<{ stackName: string; stackId: string; resources: any } | null> {
+  ): Promise<{ stackName: string; stackId: string; outputs: any } | null> {
     const releaseStackName =
       AwsAccessPointService.getReleaseStackName(releaseId);
 
-    const releaseStack = await this.cfnClient.send(
-      new DescribeStacksCommand({
-        StackName: releaseStackName,
-      })
-    );
+    let releaseStack: DescribeStacksCommandOutput;
+
+    try {
+      releaseStack = await this.cfnClient.send(
+        new DescribeStacksCommand({
+          StackName: releaseStackName,
+        })
+      );
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
 
     if (!releaseStack.Stacks || releaseStack.Stacks.length != 1) return null;
 
     // TODO check stack status?? - should be complete_ok?
+    const outputs: { [k: string]: string } = {};
 
-    const releaseStackResources = await this.cfnClient.send(
-      new DescribeStackResourcesCommand({
-        StackName: releaseStack.Stacks[0].StackId,
-      })
-    );
-
-    console.log(releaseStackResources.StackResources);
+    if (releaseStack.Stacks[0].Outputs) {
+      releaseStack.Stacks[0].Outputs.forEach((o) => {
+        outputs[AwsAccessPointService.resourceNameAsBucketName(o.OutputKey!)] =
+          o.OutputValue!;
+      });
+    }
 
     return {
       stackName: releaseStackName,
       stackId: releaseStack.Stacks[0].StackId!,
-      resources: {},
+      outputs: outputs,
+    };
+  }
+
+  /**
+   * Returns the TSV file manifest for this release but with paths corrected
+   * for the access point.
+   *
+   * @param user
+   * @param releaseId
+   * @param tsvColumns an array of column names that will be used to construct the TSV columns (matching order)
+   * @returns a proposed filename and the content of a TSV
+   */
+  public async getAccessPointFileList(
+    user: AuthenticatedUser,
+    releaseId: string,
+    tsvColumns: string[]
+  ) {
+    // find all the files encompassed by this release as a flat array of S3 URLs
+    // noting that these files will be S3 paths that
+    const filesArray = await this.getAllFileRecords(user, releaseId);
+
+    const stackResources = await this.getInstalledAccessPointResources(
+      user,
+      releaseId
+    );
+
+    if (!stackResources)
+      throw new Error(
+        "Access point file list was requested but the release does not appear to have a current access point"
+      );
+
+    for (const f of filesArray) {
+      if (f.s3Bucket in stackResources.outputs) {
+        f.s3Bucket = stackResources.outputs[f.s3Bucket];
+        f.s3Url = `s3://${f.s3Bucket}/${f.s3Key}`;
+      }
+    }
+
+    // setup a TSV stream
+    const stringifyColumnOptions = [];
+
+    for (const header of tsvColumns) {
+      stringifyColumnOptions.push({
+        key: header,
+        header: header.toUpperCase(),
+      });
+    }
+    const stringifier = stringify({
+      header: true,
+      columns: stringifyColumnOptions,
+      delimiter: "\t",
+    });
+
+    const readableStream = Readable.from(filesArray);
+    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
+
+    const counter = await this.releaseService.getIncrementingCounter(
+      user,
+      releaseId
+    );
+
+    const filename = `release-${releaseId.replaceAll("-", "")}-${counter}.tsv`;
+
+    return {
+      filename: filename,
+      content: buf,
     };
   }
 
