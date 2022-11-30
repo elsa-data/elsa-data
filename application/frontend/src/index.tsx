@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
+import {ErrorBoundary} from "./components/error-boundary";
 
 const root = document.getElementById("root");
 
