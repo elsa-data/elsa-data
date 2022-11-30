@@ -7,7 +7,6 @@ import {
 import * as edgedb from "edgedb";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import e from "../../../dbschema/edgeql-js";
-import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
 import { AuditLogService } from "./audit-log-service";
 
@@ -62,6 +61,15 @@ export abstract class AwsBaseService {
       );
   }
 
+  /**
+   * Retrieve a list of file objects that are available to the given user
+   * for the given release. This function returns *only* raw data from the
+   * database - it does not attempt to 'sign urls' etc.
+   *
+   * @param user
+   * @param releaseId
+   * @protected
+   */
   protected async getAllFileRecords(
     user: AuthenticatedUser,
     releaseId: string
@@ -74,7 +82,7 @@ export abstract class AwsBaseService {
       releaseId
     );
 
-    const { releaseInfoQuery } = await getReleaseInfo(
+    const { releaseInfoQuery, releaseInfo } = await getReleaseInfo(
       this.edgeDbClient,
       releaseId
     );
@@ -138,42 +146,55 @@ export abstract class AwsBaseService {
           size: "-1",
         };
 
+        // note that we are processing here every artifact that is accessible from
+        // the chosen specimens
+        // below we apply some simple logic that will rule out classes of artifacts
+        // based on the isAllowedReadData, isAllowedVariantData etc
+
         if (fa.forwardFile) {
+          if (!releaseInfo.isAllowedReadData) continue;
           result.fileType = "FASTQ";
           result.s3Url = fa.forwardFile.url;
           result.size = fa.forwardFile.size.toString();
           result.md5 = getMd5(fa.forwardFile.checksums);
         } else if (fa.reverseFile) {
+          if (!releaseInfo.isAllowedReadData) continue;
           result.fileType = "FASTQ";
           result.s3Url = fa.reverseFile.url;
           result.size = fa.reverseFile.size.toString();
           result.md5 = getMd5(fa.reverseFile.checksums);
         } else if (fa.bamFile) {
+          if (!releaseInfo.isAllowedReadData) continue;
           result.fileType = "BAM";
           result.s3Url = fa.bamFile.url;
           result.size = fa.bamFile.size.toString();
           result.md5 = getMd5(fa.bamFile.checksums);
         } else if (fa.baiFile) {
+          if (!releaseInfo.isAllowedReadData) continue;
           result.fileType = "BAM";
           result.s3Url = fa.baiFile.url;
           result.size = fa.baiFile.size.toString();
           result.md5 = getMd5(fa.baiFile.checksums);
         } else if (fa.cramFile) {
+          if (!releaseInfo.isAllowedReadData) continue;
           result.fileType = "CRAM";
           result.s3Url = fa.cramFile.url;
           result.size = fa.cramFile.size.toString();
           result.md5 = getMd5(fa.cramFile.checksums);
         } else if (fa.craiFile) {
+          if (!releaseInfo.isAllowedReadData) continue;
           result.fileType = "CRAM";
           result.s3Url = fa.craiFile.url;
           result.size = fa.craiFile.size.toString();
           result.md5 = getMd5(fa.craiFile.checksums);
         } else if (fa.vcfFile) {
+          if (!releaseInfo.isAllowedVariantData) continue;
           result.fileType = "VCF";
           result.s3Url = fa.vcfFile.url;
           result.size = fa.vcfFile.size.toString();
           result.md5 = getMd5(fa.vcfFile.checksums);
         } else if (fa.tbiFile) {
+          if (!releaseInfo.isAllowedVariantData) continue;
           result.fileType = "VCF";
           result.s3Url = fa.tbiFile.url;
           result.size = fa.tbiFile.size.toString();

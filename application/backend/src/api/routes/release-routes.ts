@@ -14,7 +14,7 @@ import {
 } from "../api-routes";
 import { Base7807Error } from "../errors/_error.types";
 import { container } from "tsyringe";
-import { JobsService } from "../../business/services/jobs-service";
+import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
@@ -298,27 +298,59 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     );
   });
 
+  fastify.get<{
+    Params: { rid: string };
+  }>("/api/releases/:rid/cfn", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+
+    if (!awsAccessPointService.isEnabled)
+      throw new Error(
+        "The AWS service was not started so AWS VPC sharing will not work"
+      );
+
+    const res = await awsAccessPointService.getInstalledAccessPointResources(
+      authenticatedUser,
+      releaseId
+    );
+
+    reply.send(res);
+  });
+
   fastify.post<{
-    Body: any;
+    Body: { accounts: string[]; vpcId?: string };
     Params: { rid: string };
   }>("/api/releases/:rid/cfn", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
 
-    console.log(request.body);
-
-    if (!awsPresignedUrlsService.isEnabled)
+    if (!awsAccessPointService.isEnabled)
       throw new Error(
         "The AWS service was not started so AWS VPC sharing will not work"
       );
 
-    await awsAccessPointService.installCloudFormationAccessPointForRelease(
+    const s3HttpsUrl =
+      await awsAccessPointService.createAccessPointCloudFormationTemplate(
+        authenticatedUser,
+        releaseId,
+        request.body.accounts,
+        request.body.vpcId
+      );
+
+    await jobsService.startCloudFormationInstallJob(
+      authenticatedUser,
+      releaseId,
+      s3HttpsUrl
+    );
+
+    /*await awsAccessPointService.installCloudFormationAccessPointForRelease(
       authenticatedUser,
       releaseId,
       ["831090136584"],
       "vpc-03d735d10b6cec468"
-    );
+    ); */
   });
 
   // const PresignedT = Type.Object({

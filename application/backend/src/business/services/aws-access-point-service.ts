@@ -11,6 +11,7 @@ import {
   CreateStackCommand,
   DescribeStackResourcesCommand,
   DescribeStacksCommand,
+  StackResource,
   waitUntilStackCreateComplete,
 } from "@aws-sdk/client-cloudformation";
 import { AuditLogService } from "./audit-log-service";
@@ -33,7 +34,7 @@ export class AwsAccessPointService extends AwsBaseService {
     super(edgeDbClient, usersService, auditLogService);
   }
 
-  private static getReleaseStackName(releaseId: string): string {
+  public static getReleaseStackName(releaseId: string): string {
     return `elsa-data-release-${releaseId}`;
   }
 
@@ -45,57 +46,108 @@ export class AwsAccessPointService extends AwsBaseService {
     return new Buffer(resourceName, "hex").toString("ascii");
   }
 
-  public async deleteCloudFormationAccessPointForRelease(
+  /**
+   * Asks AWS if there is already an access point endpoint that exists
+   * for this release - by checking the list of installed CloudFormations
+   * for one matching our naming pattern.
+   *
+   * This operation is suitable for use in polling as it is relatively
+   * lightweight and read-only.
+   *
+   * @param user
+   * @param releaseId
+   */
+  public async getCloudFormationAccessPointStackForRelease(
     user: AuthenticatedUser,
     releaseId: string
-  ): Promise<void> {
-    this.enabledGuard();
-  }
-
-  public async getCloudFormationAccessPointForReleaseDetails(
-    user: AuthenticatedUser,
-    releaseId: string
-  ): Promise<void> {
+  ): Promise<StackResource | null> {
     this.enabledGuard();
 
     const releaseStackName =
       AwsAccessPointService.getReleaseStackName(releaseId);
 
-    try {
-      const releaseReleaseStack = await this.cfnClient.send(
-        new DescribeStackResourcesCommand({
-          StackName: releaseStackName,
-        })
+    const releaseReleaseStack = await this.cfnClient.send(
+      new DescribeStackResourcesCommand({
+        StackName: releaseStackName,
+      })
+    );
+
+    if (!releaseReleaseStack.StackResources) return null;
+
+    if (releaseReleaseStack.StackResources.length > 1) {
+      throw new Error(
+        "Unexpected result of two cloud formation stacks with the same name"
       );
-      console.log(releaseReleaseStack);
-    } catch (e) {
-      console.log("Stack for this release does not exist");
     }
+
+    if (releaseReleaseStack.StackResources.length < 1) return null;
+
+    return releaseReleaseStack.StackResources[0];
   }
 
-  public async installCloudFormationAccessPointForRelease(
+  /**
+   * Returns the details from an installed access point stack for the given release
+   * or null if there is no access point stack installed. This function can
+   * be used to test for the existence of a stack for the release (it uses the
+   * minimum resources to detect this and immediately returns null for no stack).
+   *
+   * @param user
+   * @param releaseId
+   * @private
+   */
+  public async getInstalledAccessPointResources(
+    user: AuthenticatedUser,
+    releaseId: string
+  ): Promise<{ stackName: string; stackId: string; resources: any } | null> {
+    const releaseStackName =
+      AwsAccessPointService.getReleaseStackName(releaseId);
+
+    const releaseStack = await this.cfnClient.send(
+      new DescribeStacksCommand({
+        StackName: releaseStackName,
+      })
+    );
+
+    if (!releaseStack.Stacks || releaseStack.Stacks.length != 1) return null;
+
+    // TODO check stack status?? - should be complete_ok?
+
+    const releaseStackResources = await this.cfnClient.send(
+      new DescribeStackResourcesCommand({
+        StackName: releaseStack.Stacks[0].StackId,
+      })
+    );
+
+    console.log(releaseStackResources.StackResources);
+
+    return {
+      stackName: releaseStackName,
+      stackId: releaseStack.Stacks[0].StackId!,
+      resources: {},
+    };
+  }
+
+  /**
+   * For the given release id, create a CloudFormation template sharing all
+   * exposed files and save the template to S3.
+   *
+   * Note that this function operates entirely independently to access points that may or may not
+   * already exist. This function just works out a template and saves it. Installation/deletion
+   * is done separately in the jobs service.
+   *
+   * @param user the user asking for the cloud formation template (may alter which data is released)
+   * @param releaseId the release id
+   * @param accountIds an array of account ids that the files will be shared to
+   * @param vpcId if specified, a specific VPC id that the files will further be restricted to
+   */
+  public async createAccessPointCloudFormationTemplate(
     user: AuthenticatedUser,
     releaseId: string,
     accountIds: string[],
     vpcId?: string
-  ): Promise<void> {
+  ): Promise<string> {
+    // the AWS guard is switched on as this needs to write out to S3
     this.enabledGuard();
-
-    const releaseStackName =
-      AwsAccessPointService.getReleaseStackName(releaseId);
-
-    try {
-      const releaseReleaseStack = await this.cfnClient.send(
-        new DescribeStackResourcesCommand({
-          StackName: releaseStackName,
-        })
-      );
-      console.log(releaseReleaseStack);
-    } catch (e) {
-      console.log(
-        "Stack for this release does not exist - installing new stack"
-      );
-    }
 
     // find all the files encompassed by this release as a flat array of S3 URLs
     const filesArray = await this.getAllFileRecords(user, releaseId);
@@ -111,8 +163,6 @@ export class AwsAccessPointService extends AwsBaseService {
 
       filesByBucket[af.s3Bucket].push(af);
     }
-
-    console.log(JSON.stringify(filesByBucket));
 
     // for our S3 paths we want to make sure every time we do this it is in someway unique
     const stackId = randomBytes(8).toString("hex");
@@ -170,8 +220,6 @@ export class AwsAccessPointService extends AwsBaseService {
       subStackAccessPointName = `${releaseId}-${subStackCount}`;
       subStackStackName =
         AwsAccessPointService.bucketNameAsResource(bucketName);
-
-      //stackNamesByBucket[bucketName] = subStackStackName;
 
       subStackCurrent = {
         AWSTemplateFormatVersion: "2010-09-09",
@@ -245,16 +293,11 @@ export class AwsAccessPointService extends AwsBaseService {
       })
     );
 
-    const newReleaseStack = await this.cfnClient.send(
-      new CreateStackCommand({
-        StackName: releaseStackName,
-        ClientRequestToken: stackId,
-        TemplateURL: `https://${BUCKET}.s3.ap-southeast-2.amazonaws.com/${stackId}/install.template`,
-        Capabilities: ["CAPABILITY_IAM"],
-        OnFailure: "DELETE",
-      })
-    );
+    return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${stackId}/install.template`;
+  }
+}
 
+/*
     await waitUntilStackCreateComplete(
       { client: this.cfnClient, maxWaitTime: 300 },
       {
@@ -297,5 +340,5 @@ export class AwsAccessPointService extends AwsBaseService {
 
     //console.log(`WROTE SCRIPTS IN FOLDER ${stackId}`);
     //console.log(stackNamesByBucket);
-  }
-}
+
+ */

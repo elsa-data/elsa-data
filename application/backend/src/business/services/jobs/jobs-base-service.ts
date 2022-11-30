@@ -1,17 +1,25 @@
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../authenticated-user";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
-import { Base7807Error } from "../../api/errors/_error.types";
+import e from "../../../../dbschema/edgeql-js";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { doRoleInReleaseCheck, getReleaseInfo } from "../helpers";
+import { Base7807Error } from "../../../api/errors/_error.types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
-import { SelectService } from "./select-service";
-import { ReleaseService } from "./release-service";
-import { UsersService } from "./users-service";
+import { SelectService } from "../select-service";
+import { ReleaseService } from "../release-service";
+import { UsersService } from "../users-service";
 import { Transaction } from "edgedb/dist/transaction";
-import { AuditLogService } from "./audit-log-service";
-import { vcfArtifactUrlsBySpecimenQuery } from "../db/lab-queries";
+import { AuditLogService } from "../audit-log-service";
+import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
+import {
+  CloudFormationClient,
+  CreateStackCommand,
+  DescribeStackResourcesCommand,
+  DescribeStacksCommand,
+  StackResource,
+} from "@aws-sdk/client-cloudformation";
+import { AwsAccessPointService } from "../aws-access-point-service";
 
 class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseId: string) {
@@ -28,13 +36,16 @@ class NotAuthorisedToControlJob extends Base7807Error {
 export class JobsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
+    @inject("CloudFormationClient")
+    private readonly cfnClient: CloudFormationClient,
+
     private usersService: UsersService,
     private auditLogService: AuditLogService,
     private releasesService: ReleaseService,
     private selectService: SelectService
   ) {}
 
-  private async startGenericJob(
+  protected async startGenericJob(
     releaseId: string,
     finalJobStartStep: (tx: Transaction) => Promise<void>
   ) {
@@ -76,13 +87,16 @@ export class JobsService {
   public async getInProgressJobs() {
     const jobsInProgress = await e
       .select(e.job.Job, (sj) => ({
+        __type__: true,
         id: true,
         forRelease: { id: true },
         requestedCancellation: true,
         auditEntry: true,
         started: true,
         ...e.is(e.job.SelectJob, { isSelectJob: e.bool(true) }),
-        // ...e.is(e.job.CloudFormationInstallJob, { isCloudFormationInstallJob: e.bool(true) }),
+        ...e.is(e.job.CloudFormationInstallJob, {
+          isCloudFormationInstallJob: e.bool(true),
+        }),
         filter: e.op(sj.status, "=", e.job.JobStatus.running),
       }))
       .run(this.edgeDbClient);
@@ -94,7 +108,164 @@ export class JobsService {
       auditEntryStarted: j.started,
       requestedCancellation: j.requestedCancellation,
       isSelectJob: j.isSelectJob,
+      isCloudFormationInstallJob: j.isCloudFormationInstallJob,
+      // WIP
+      isCloudFormationDeleteJob: false,
     }));
+  }
+
+  public async getCloudFormationAccessPointStackForRelease(
+    user: AuthenticatedUser,
+    releaseId: string
+  ): Promise<StackResource | null> {
+    const releaseStackName =
+      AwsAccessPointService.getReleaseStackName(releaseId);
+
+    const releaseReleaseStack = await this.cfnClient.send(
+      new DescribeStackResourcesCommand({
+        StackName: releaseStackName,
+      })
+    );
+
+    if (!releaseReleaseStack.StackResources) return null;
+
+    if (releaseReleaseStack.StackResources.length > 1) {
+      throw new Error(
+        "Unexpected result of two cloud formation stacks with the same name"
+      );
+    }
+
+    if (releaseReleaseStack.StackResources.length < 1) return null;
+
+    return releaseReleaseStack.StackResources[0];
+  }
+
+  /**
+   * @param user the user attempting the install
+   * @param releaseId the release to install in the context of
+   * @param s3HttpsUrl a https://s3.. URL that represents the cloud formation template to install
+   */
+  public async startCloudFormationInstallJob(
+    user: AuthenticatedUser,
+    releaseId: string,
+    s3HttpsUrl: string
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    if (userRole != "DataOwner")
+      throw new NotAuthorisedToControlJob(userRole, releaseId);
+
+    const { releaseQuery } = await getReleaseInfo(this.edgeDbClient, releaseId);
+
+    await this.startGenericJob(releaseId, async (tx) => {
+      // by placing the audit event in the transaction I guess we miss out on
+      // the ability to audit jobs that don't start at all - but maybe we do that
+      // some other way
+      const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
+        tx,
+        user,
+        releaseId,
+        "E",
+        "Install S3 Access Point",
+        new Date()
+      );
+
+      const releaseStackName =
+        AwsAccessPointService.getReleaseStackName(releaseId);
+
+      const newReleaseStack = await this.cfnClient.send(
+        new CreateStackCommand({
+          StackName: releaseStackName,
+          TemplateURL: s3HttpsUrl,
+          Capabilities: ["CAPABILITY_IAM"],
+          OnFailure: "DELETE",
+          // need to determine this number - but creating access points is pretty simple so
+          // we need to set this to above the upper limit
+          TimeoutInMinutes: 5,
+        })
+      );
+
+      if (!newReleaseStack || !newReleaseStack.StackId) {
+        throw new Error("Failed to even trigger the cloud formation");
+
+        // TODO: finish off the audit entry and create a 'failed' job representing that we didn't even
+        //       get off the ground
+      }
+
+      // create a new cloud formation install entry
+      await e
+        .insert(e.job.CloudFormationInstallJob, {
+          forRelease: releaseQuery,
+          status: e.job.JobStatus.running,
+          started: e.datetime_current(),
+          percentDone: e.int16(0),
+          messages: e.literal(e.array(e.str), ["Created"]),
+          auditEntry: e
+            .select(e.audit.ReleaseAuditEvent, (ae) => ({
+              filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
+            }))
+            .assert_single(),
+          awsStackId: newReleaseStack.StackId,
+          s3HttpsUrl: s3HttpsUrl,
+        })
+        .run(tx);
+    });
+
+    // return the status of the release - which now has a runningJob
+    return await this.releasesService.getBase(releaseId, userRole);
+  }
+
+  public async doCloudFormationInstallJob(jobId: string): Promise<number> {
+    const cfInstallJobQuery = e
+      .select(e.job.CloudFormationInstallJob, (j) => ({
+        forRelease: true,
+        awsStackId: true,
+        filter: e.op(j.id, "=", e.uuid(jobId)),
+      }))
+      .assert_single();
+
+    const cfInstallJob = await cfInstallJobQuery.run(this.edgeDbClient);
+
+    if (!cfInstallJob)
+      throw new Error("Job id passed in was not a Cloud Formation Install Job");
+
+    const releaseReleaseStack = await this.cfnClient.send(
+      new DescribeStacksCommand({
+        StackName: cfInstallJob.awsStackId,
+      })
+    );
+
+    if (!releaseReleaseStack.Stacks || releaseReleaseStack.Stacks.length < 1) {
+      // the stack has disappeared.. abort the job
+      console.log("Stack has disappeared");
+      return 0;
+    }
+
+    if (releaseReleaseStack.Stacks.length > 1) {
+      throw new Error(
+        "Unexpected result of two cloud formation stacks with the same name"
+      );
+    }
+
+    const theStack = releaseReleaseStack.Stacks[0];
+
+    if (theStack.StackStatus === "CREATE_IN_PROGRESS") {
+      return 1;
+    }
+    if (theStack.StackStatus === "DELETE_IN_PROGRESS") {
+      return 1;
+    }
+    if (theStack.StackStatus === "CREATE_COMPLETE") {
+      return 0;
+    }
+
+    console.log(theStack.StackStatus);
+
+    return 0;
   }
 
   /**

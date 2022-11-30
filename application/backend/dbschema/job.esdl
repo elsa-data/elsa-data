@@ -77,7 +77,17 @@ module job {
 
     type CloudFormationInstallJob extending Job {
 
-        required property url -> str;
+        # the S3 location of the cloud formation template we are installing
+        #
+        required property s3HttpsUrl -> str;
+
+        # the stack id of the cloud formation we are creating
+        # NOTE after the installation process finishes - we do not use this binding any more
+        #      i.e. a stack could be replaced with a different one of a similar name outside Elsa Data and
+        #      we would not notice
+        #      this is solely used *during* the install to track progress
+        #
+        required property awsStackId -> str;
 
     }
 

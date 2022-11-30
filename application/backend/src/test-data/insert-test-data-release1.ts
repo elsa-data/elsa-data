@@ -87,6 +87,9 @@ Ethics form XYZ.
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
+      isAllowedReadData: true,
+      isAllowedVariantData: true,
+      isAllowedPhenotypeData: true,
       selectedSpecimens: e.set(
         // we fully select one trio
         findSpecimenQuery(BART_SPECIMEN),

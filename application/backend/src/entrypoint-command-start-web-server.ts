@@ -8,7 +8,7 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { getFromEnv } from "./entrypoint-command-helper";
 import { DatasetService } from "./business/services/dataset-service";
-import { JobsService } from "./business/services/jobs-service";
+import { JobsService } from "./business/services/jobs/jobs-base-service";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";

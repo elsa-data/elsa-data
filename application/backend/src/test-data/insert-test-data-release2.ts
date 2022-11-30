@@ -30,6 +30,9 @@ export async function insertRelease2() {
       datasetIndividualUrisOrderPreference: [""],
       releaseIdentifier: "RH5WOR7QXB",
       releasePassword: "bbew75CZ", // pragma: allowlist secret
+      isAllowedReadData: true,
+      isAllowedVariantData: true,
+      isAllowedPhenotypeData: true,
       selectedSpecimens: e.set(),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
