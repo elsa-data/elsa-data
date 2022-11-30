@@ -76,7 +76,9 @@ export class ErrorBoundary extends React.Component<ErrorDisplayProps, ErrorDispl
   }
 
   render() {
-    if (this.props.displayEagerly || this.state.error) {
+    console.log(this.state.error);
+    console.log("HERE");
+    if (this.props.displayEagerly || (this.state.error !== undefined && this.state.error !== null)) {
       return (
         <div className="p-4 mx-4 my-3 text-sm text-red-700 bg-red-100 rounded-lg">
           {this.props.message ? <div>{this.props.message}</div> : <div>Something went wrong.</div>}

@@ -41,7 +41,6 @@ import {
 } from "react-icons/bi";
 import classNames from "classnames";
 import { ErrorBoundary } from "../../../../components/error-boundary";
-import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -73,7 +72,8 @@ export const useAuditEventQuery = (
   orderAscending: boolean,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
-  setIsSuccess: Dispatch<SetStateAction<boolean>>
+  setIsSuccess: Dispatch<SetStateAction<boolean>>,
+  setError: Dispatch<SetStateAction<any | null>>
 ) => {
   return useQuery(
     [
@@ -84,15 +84,16 @@ export const useAuditEventQuery = (
       orderAscending,
     ],
     async () => {
-      return await axios
-        .get<AuditEntryType[]>(
-          `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
-        )
-        .then((response) => {
-          handleTotalCountHeaders(response, setCurrentTotal);
-
-          return response.data;
-        });
+      throw "";
+      // return await axios
+      //   .get<AuditEntryType[]>(
+      //     `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
+      //   )
+      //   .then((response) => {
+      //     handleTotalCountHeaders(response, setCurrentTotal);
+      //
+      //     return response.data;
+      //   });
     },
     {
       keepPreviousData: true,
@@ -101,6 +102,11 @@ export const useAuditEventQuery = (
         setData(data ?? []);
         setIsSuccess(data !== undefined);
       },
+      onError: (err) => {
+        setData([]);
+        setIsSuccess(false);
+        setError(err);
+      }
     }
   );
 };
@@ -113,7 +119,8 @@ export const useAllAuditEventQueries = (
   releaseId: string,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
-  setIsSuccess: Dispatch<SetStateAction<boolean>>
+  setIsSuccess: Dispatch<SetStateAction<boolean>>,
+  setError: Dispatch<SetStateAction<any | null>>
 ): { [key: string]: UseQueryResult<AuditEntryType[]> } => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
@@ -126,7 +133,8 @@ export const useAllAuditEventQueries = (
       orderAscending,
       setCurrentTotal,
       setData,
-      setIsSuccess
+      setIsSuccess,
+      setError
     );
   };
 
@@ -182,13 +190,15 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   const [data, setData] = useState([] as AuditEntryType[]);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<any | null>(null);
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
     releaseId,
     setCurrentTotal,
     setData,
-    setIsSuccess
+    setIsSuccess,
+    setError
   );
 
   useEffect(() => {
@@ -304,7 +314,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     </tr>
                   )}
               </Fragment>
-            )) : <ErrorBoundary message={"Could not display logs table."}></ErrorBoundary>
+            )) : <ErrorBoundary message={"Could not display logs table."} error={error} displayEagerly={true}></ErrorBoundary>
           }
         />
         <BoxPaginator
