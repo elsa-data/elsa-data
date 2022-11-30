@@ -5,10 +5,12 @@
     "install:elsa-constants": "cd application/common/elsa-constants && npm install",
     "install:elsa-types": "cd application/common/elsa-types && npm install",
     "install:frontend": "cd application/frontend && npm install",
+    "install:e2e": "cd e2e && npm install",
     "install:aws": "cd infrastructure/aws && npm install",
     "install:cloudtrail_s3": "cd utils/cloudtrail_s3 && npm install",
     "install:cloudtrail_s3:infrastructure": "cd utils/cloudtrail_s3/infrastructure && npm install",
     "postinstall": "run-p install:*",
+
     "migrate-db": "cd application/backend && edgedb migration create || true && edgedb migrate",
     "init-db": "cd application/backend && edgedb project init",
     "edgetypes": "cd application/backend && npm run edgetypes",
@@ -19,6 +21,7 @@
     "backend:dev:mac": "cd application/backend && npm run dev:mac",
     "backend:dev:linux": "cd application/backend && npm run dev:linux",
     "backend:dev:aws": "cd application/backend && npm run dev:aws",
+
     "start": "run-script-os",
     "start:macos": "npm run frontend && npm run edgetypes && npm run backend:dev:mac",
     "start:linux": "npm run frontend && npm run edgetypes && npm run backend:dev:linux",
