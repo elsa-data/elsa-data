@@ -67,6 +67,7 @@ export class DatasetService {
         id: fd.id,
         uri: fd.uri!,
         description: fd.description,
+        updatedDateTime: fd.updatedDateTime,
         isInConfig: fd.isInConfig,
         summaryCaseCount: fd.summaryCaseCount,
         summaryPatientCount: fd.summaryPatientCount,
@@ -108,6 +109,7 @@ export class DatasetService {
       return {
         id: singleDataset.id,
         uri: singleDataset.uri,
+        updatedDateTime: singleDataset.updatedDateTime,
         isInConfig: singleDataset.isInConfig,
         description: singleDataset.description,
         summaryArtifactCount: 0,
