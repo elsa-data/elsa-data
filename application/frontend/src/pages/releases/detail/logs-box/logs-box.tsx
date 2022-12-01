@@ -87,7 +87,9 @@ export const useAuditEventQuery = (
           `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
         )
         .then((response) => {
-          const newTotal = parseInt(response.headers["elsa-total-count"]);
+          const newTotal = parseInt(
+            response?.headers["elsa-total-count"] ?? "0"
+          );
 
           if (isFinite(newTotal)) {
             setCurrentTotal(newTotal);

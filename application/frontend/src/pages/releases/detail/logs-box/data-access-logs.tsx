@@ -37,7 +37,7 @@ function DataAccessLogsBox() {
       );
 
       const data = response.data;
-      const newTotal = parseInt(response.headers["elsa-total-count"]);
+      const newTotal = parseInt(response?.headers["elsa-total-count"] ?? "0");
       if (isFinite(newTotal)) setCurrentTotal(newTotal);
       return data;
     }

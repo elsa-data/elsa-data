@@ -40,7 +40,9 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
           );
 
           // as we page - the backend relays to us an accurate total count so we then use that in the UI
-          const newTotal = parseInt(response.headers["elsa-total-count"]);
+          const newTotal = parseInt(
+            response?.headers["elsa-total-count"] ?? "0"
+          );
 
           // use the value if it appears sensible (we subtract one because we are taking ourselves out of the user list)
           if (isFinite(newTotal)) setCurrentTotal(newTotal - 1);

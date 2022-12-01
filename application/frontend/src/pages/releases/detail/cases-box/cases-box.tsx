@@ -63,7 +63,9 @@ export const CasesBox: React.FC<Props> = ({
         if (!useableSearchText) {
           // as we page - the backend relays to us an accurate total count so we then use that
           // in the UI - we however only want to set it if we are not in 'search' mode
-          const newTotal = parseInt(response.headers["elsa-total-count"]);
+          const newTotal = parseInt(
+            response?.headers["elsa-total-count"] ?? "0"
+          );
           if (isFinite(newTotal)) setCurrentTotal(newTotal);
         }
 

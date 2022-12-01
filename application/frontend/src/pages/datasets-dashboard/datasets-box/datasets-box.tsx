@@ -8,6 +8,7 @@ import { BoxPaginator } from "../../../components/box-paginator";
 import { fileSize } from "humanize-plus";
 import { useNavigate } from "react-router-dom";
 import { ToolTip } from "../../../components/tooltip";
+import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 
 type Props = {
   // the (max) number of items shown on any single page
@@ -60,7 +61,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
       const u = `/api/datasets/?${urlParams.toString()}`;
 
       return await axios.get<DatasetLightType[]>(u).then((response) => {
-        const newTotal = parseInt(response.headers["elsa-total-count"]);
+        const newTotal = parseInt(response?.headers["elsa-total-count"] ?? "0");
 
         if (isFinite(newTotal)) setCurrentTotal(newTotal);
 
@@ -143,6 +144,11 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                     </td>
                     <td className={classNames(baseColumnClasses, "text-left")}>
                       {row.description}
+                    </td>
+                    <td className={classNames(baseColumnClasses, "text-left")}>
+                      {row.updatedDateTime
+                        ? formatLocalDateTime(row.updatedDateTime as string)
+                        : ""}
                     </td>
                     <td
                       className={classNames(
