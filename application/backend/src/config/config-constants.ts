@@ -110,6 +110,50 @@ export const configDefinition = {
     format: "*",
     default: "",
   },
+  mondoSystem: {
+    uri: {
+      format: String,
+      default: "",
+    },
+    oid: {
+      format: String,
+      default: "",
+    }
+  },
+  hgncGenesSystem: {
+    uri: {
+      format: String,
+      default: "",
+    },
+    oid: {
+      format: String,
+      default: "",
+    }
+  },
+  hpoSystem: {
+    uri: {
+      format: String,
+      default: "",
+    },
+    nonPreferredUri: {
+      format: String,
+      default: "",
+    },
+  },
+  isoCountrySystemUri: {
+    format: String,
+    default: "",
+  },
+  snomedSystem: {
+    uri: {
+      format: String,
+      default: "",
+    },
+    oid: {
+      format: String,
+      default: "",
+    }
+  },
   host: {
     doc: "The host to bind.",
     format: "*",
