@@ -113,45 +113,45 @@ export const configDefinition = {
   mondoSystem: {
     uri: {
       format: String,
-      default: "",
+      default: "http://purl.obolibrary.org/obo/mondo.owl",
     },
     oid: {
       format: String,
-      default: "",
+      default: "2.16.840.1.113883.3.9216",
     }
   },
   hgncGenesSystem: {
     uri: {
       format: String,
-      default: "",
+      default: "http://www.genenames.org",
     },
     oid: {
       format: String,
-      default: "",
+      default: "2.16.840.1.113883.6.281",
     }
   },
   hpoSystem: {
     uri: {
       format: String,
-      default: "",
+      default: "http://human-phenotype-ontology.org",
     },
     nonPreferredUri: {
       format: String,
-      default: "",
+      default: "http://purl.obolibrary.org/obo/hp.owl",
     },
   },
   isoCountrySystemUri: {
     format: String,
-    default: "",
+    default: "urn:iso:std:iso:3166",
   },
   snomedSystem: {
     uri: {
       format: String,
-      default: "",
+      default: "http://snomed.info/sct",
     },
     oid: {
       format: String,
-      default: "",
+      default: "2.16.840.1.113883.6.96",
     }
   },
   host: {

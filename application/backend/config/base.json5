@@ -1,21 +1,4 @@
 {
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
-  mondoSystem: {
-    uri: "http://purl.obolibrary.org/obo/mondo.owl",
-    oid: "2.16.840.1.113883.3.9216"
-  },
-  hgncGenesSystem: {
-    uri: "http://www.genenames.org",
-    oid: "2.16.840.1.113883.6.281"
-  },
-  hpoSystem: {
-    uri: "http://human-phenotype-ontology.org",
-    nonPreferredUri: "http://purl.obolibrary.org/obo/hp.owl"
-  },
-  isoCountrySystemUri: "urn:iso:std:iso:3166",
-  snomedSystem: {
-    uri: "http://snomed.info/sct",
-    oid: "2.16.840.1.113883.6.96"
-  },
 }
