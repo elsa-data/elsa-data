@@ -1,11 +1,9 @@
 import React from "react";
-import { useEnvRelay } from "../../providers/env-relay-provider";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { DatasetDeepType, ReleaseDetailType } from "@umccr/elsa-types";
-import { MyModal } from "../../components/modals";
+import { DatasetDeepType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
@@ -17,18 +15,26 @@ type DatasetsSpecificPageParams = {
 const DATASET_REACT_QUERY_KEY = "dataset";
 
 export const DatasetsDetailPage: React.FC = () => {
-  const envRelay = useEnvRelay();
-  const navigate = useNavigate();
-
   const { datasetId: datasetIdParam } = useParams<DatasetsSpecificPageParams>();
-
-  const queryClient = useQueryClient();
 
   const { data: datasetData, isLoading: datasetIsLoading } = useQuery({
     queryKey: [DATASET_REACT_QUERY_KEY, datasetIdParam],
     queryFn: async ({ queryKey }) => {
       const did = queryKey[1];
-
+      return {
+        id: "0fcc4906-710b-11ed-b7e3-b795347a4064",
+        uri: "urn:fdc:umccr.org:2022:dataset/10c",
+        updatedDateTime: null,
+        isInConfig: false,
+        description: "UMCCR 10C",
+        summaryArtifactCount: 0,
+        summaryArtifactIncludes: "",
+        summaryCaseCount: 0,
+        summarySpecimenCount: 0,
+        summaryPatientCount: 0,
+        summaryArtifactSizeBytes: 0,
+        cases: [],
+      };
       return await axios
         .get<DatasetDeepType>(`/api/datasets/${did}`)
         .then((response) => response.data);
@@ -71,7 +77,7 @@ export const DatasetsDetailPage: React.FC = () => {
                       })
                     }
                     type="button"
-                    className="cursor-pointer	inline-block px-6 py-2.5 bg-slate-200	text-slate-500	font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-slate-300 hover:shadow-lg focus:bg-slate-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-800 active:shadow-lg transition duration-150 ease-in-out"
+                    className="cursor-pointer	inline-block px-6 py-2.5 bg-slate-200	text-slate-500	font-medium text-xs rounded shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
                   >
                     SYNC
                   </button>
@@ -96,7 +102,7 @@ export const DatasetsDetailPage: React.FC = () => {
  */
 
 const configurationChip = (isConfig: boolean) => {
-  if (isConfig == true) {
+  if (isConfig === true) {
     return (
       <span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-green-200 text-green-700 rounded-full">
         OK

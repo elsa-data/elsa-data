@@ -5,7 +5,7 @@ import { useQuery } from "react-query";
 import classNames from "classnames";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
-import { fileSize } from "humanize-plus";
+import { fileSize, oxford } from "humanize-plus";
 import { useNavigate } from "react-router-dom";
 import { ToolTip } from "../../../components/tooltip";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
@@ -15,7 +15,7 @@ type Props = {
   pageSize: number;
 };
 
-const warningSuperscriptIcon = (
+const warningIcon = (
   <ToolTip
     trigger={
       <span className="text-xs inline-block p-1 leading-none text-center whitespace-nowrap align-baseline font-bold text-white rounded-full">
@@ -41,10 +41,37 @@ const warningSuperscriptIcon = (
   />
 );
 
+const columnProps = [
+  {
+    columnTitle: "",
+    className: ["w-5"],
+  },
+  {
+    columnTitle: "Dataset URI",
+  },
+  {
+    columnTitle: "Dataset Description",
+    titleStyle: { minWidth: "200px" },
+  },
+  {
+    columnTitle: "Last Modified",
+    titleStyle: { minWidth: "200px" },
+  },
+  {
+    columnTitle: "Artifact Count",
+  },
+  {
+    columnTitle: "Artifact Types",
+  },
+  {
+    columnTitle: "Total Size",
+  },
+];
+
 export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const navigate = useNavigate();
 
-  const [onlyAvailDataset, setOnlyAvailDataset] = useState<boolean>(true);
+  const [includeDeletedFile, setIncludeDeletedFile] = useState<boolean>(false);
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -53,11 +80,11 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const dataQuery = useQuery(
-    ["datasets", currentPage, onlyAvailDataset],
+    ["datasets", currentPage, includeDeletedFile],
     async () => {
       const urlParams = new URLSearchParams();
       urlParams.append("page", currentPage.toString());
-      urlParams.append("includeDeletedFile", onlyAvailDataset.toString());
+      urlParams.append("includeDeletedFile", includeDeletedFile.toString());
       const u = `/api/datasets/?${urlParams.toString()}`;
 
       return await axios.get<DatasetLightType[]>(u).then((response) => {
@@ -71,33 +98,37 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
     { keepPreviousData: true }
   );
 
-  const baseColumnClasses = ["py-4", "font-medium", "text-gray-500"];
+  const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
   return (
     <BoxNoPad heading="Datasets">
       <div className="p-5 bg-gray-50 text-right sm:px-6 border-b">
-        <div className="flex items-center justify-start">
-          <input
-            className="h-3 w-3 rounded-sm mr-2 cursor-pointer"
-            type="checkbox"
-            checked={onlyAvailDataset}
-            onClick={() => setOnlyAvailDataset((p) => !p)}
-          />
-          <label className="flex text-gray-800">
-            <ToolTip
-              trigger={
-                <div className="flex items-center text-xs">
-                  Only datasets available
-                </div>
-              }
-              description={`If unchecked the summary will include deleted files.`}
+        <div className="flex justify-start">
+          <div
+            className="inline-flex cursor-pointer items-center"
+            onClick={() => setIncludeDeletedFile((p) => !p)}
+          >
+            <input
+              className="h-3 w-3 rounded-sm mr-2"
+              type="checkbox"
+              checked={includeDeletedFile}
             />
-          </label>
+            <label className="flex text-gray-800">
+              <ToolTip
+                trigger={
+                  <div className="flex items-center text-xs">
+                    Include deleted files
+                  </div>
+                }
+                description={`If checked the summary will include deleted files.`}
+              />
+            </label>
+          </div>
         </div>
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col overflow-auto">
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
         )}
@@ -115,8 +146,25 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
           </div>
         )}
         {dataQuery.data && dataQuery.data.length > 0 && (
-          <table className="w-full text-sm text-left text-gray-500 table-fixed">
+          <table className="w-full text-sm text-left text-gray-500 table-auto">
             <tbody>
+              {/* Column Title */}
+              <tr>
+                {columnProps.map((props) => (
+                  <td
+                    className={classNames(
+                      baseColumnClasses,
+                      "font-semibold",
+                      "border-b",
+                      props.className
+                    )}
+                    style={props.titleStyle}
+                  >
+                    {props.columnTitle}
+                  </td>
+                ))}
+              </tr>
+
               {dataQuery.data.map((row, rowIndex) => {
                 return (
                   <tr
@@ -124,21 +172,20 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                     className="border-b cursor-pointer hover:bg-gray-50"
                     onClick={() => navigate(`${row.id}`)}
                   >
+                    <td className={classNames(baseColumnClasses, "text-left")}>
+                      {!row.isInConfig && warningIcon}
+                    </td>
                     <td
                       className={classNames(
                         baseColumnClasses,
                         "w-100",
                         "font-mono",
-                        "px-4",
                         "text-left",
                         "whitespace-nowrap",
                         "h-full"
                       )}
                     >
-                      <div className="absolute">
-                        {!row.isInConfig && warningSuperscriptIcon}
-                      </div>
-                      <div className={`pl-5 inline-block truncate w-full`}>
+                      <div className={`inline-block truncate w-full`}>
                         {row.uri}
                       </div>
                     </td>
@@ -154,14 +201,30 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                       className={classNames(
                         baseColumnClasses,
                         "text-left",
+                        "w-60"
+                      )}
+                    >
+                      {row.summaryArtifactCount}
+                    </td>
+                    <td
+                      className={classNames(
+                        baseColumnClasses,
+                        "text-left",
                         "w-60",
                         "pr-4"
                       )}
                     >
-                      {row.summaryArtifactCount} artifacts of{" "}
-                      {row.summaryArtifactIncludes.replaceAll(" ", "/")}{" "}
-                      totalling {fileSize(row.summaryArtifactSizeBytes)} are
-                      available
+                      {oxford(row.summaryArtifactIncludes.split(" "))}
+                    </td>
+                    <td
+                      className={classNames(
+                        baseColumnClasses,
+                        "text-left",
+                        "w-60",
+                        "pr-4"
+                      )}
+                    >
+                      {fileSize(row.summaryArtifactSizeBytes)}
                     </td>
                   </tr>
                 );

@@ -16,11 +16,12 @@ export const datasetSummaryQuery = e.params(
   (params) =>
     e.select(e.dataset.Dataset, (ds) => {
       const isDeletedFileFilter = params.includeDeletedFile;
+      const op = "or";
 
       const availBclArtifact = e.select(e.lab.ArtifactBcl, (ab) => ({
         ...ab["*"],
         filter: e.op(
-          e.op(ab.bclFile.isDeleted, "or", isDeletedFileFilter),
+          e.op(e.op("not", ab.bclFile.isDeleted), op, isDeletedFileFilter),
           "and",
           e.op(
             ab.id,
@@ -40,9 +41,17 @@ export const datasetSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(afp.forwardFile.isDeleted, "or", isDeletedFileFilter),
+            e.op(
+              e.op("not", afp.forwardFile.isDeleted),
+              op,
+              isDeletedFileFilter
+            ),
             "and",
-            e.op(afp.reverseFile.isDeleted, "or", isDeletedFileFilter)
+            e.op(
+              e.op("not", afp.reverseFile.isDeleted),
+              op,
+              isDeletedFileFilter
+            )
           )
         ),
       }));
@@ -59,9 +68,9 @@ export const datasetSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(ab.bamFile.isDeleted, "or", isDeletedFileFilter),
+            e.op(e.op("not", ab.bamFile.isDeleted), op, isDeletedFileFilter),
             "and",
-            e.op(ab.baiFile.isDeleted, "or", isDeletedFileFilter)
+            e.op(e.op("not", ab.baiFile.isDeleted), op, isDeletedFileFilter)
           )
         ),
       }));
@@ -78,9 +87,9 @@ export const datasetSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(ac.cramFile.isDeleted, "or", isDeletedFileFilter),
+            e.op(e.op("not", ac.cramFile.isDeleted), op, isDeletedFileFilter),
             "and",
-            e.op(ac.craiFile.isDeleted, "or", isDeletedFileFilter)
+            e.op(e.op("not", ac.craiFile.isDeleted), op, isDeletedFileFilter)
           )
         ),
       }));
@@ -97,12 +106,22 @@ export const datasetSummaryQuery = e.params(
           ),
           "and",
           e.op(
-            e.op(av.vcfFile.isDeleted, "or", isDeletedFileFilter),
+            e.op(e.op("not", av.vcfFile.isDeleted), op, isDeletedFileFilter),
             "and",
-            e.op(av.tbiFile.isDeleted, "or", isDeletedFileFilter)
+            e.op(e.op("not", av.tbiFile.isDeleted), op, isDeletedFileFilter)
           )
         ),
       }));
+
+      const artifactTotalSum = e.sum(
+        e.set(
+          e.count(availBclArtifact),
+          e.count(availFastqArtifact),
+          e.count(availBamArtifact),
+          e.count(availCramArtifact),
+          e.count(availVcfArtifact)
+        )
+      );
 
       return {
         // get the top level dataset elements
@@ -111,7 +130,7 @@ export const datasetSummaryQuery = e.params(
         summaryCaseCount: e.count(ds.cases),
         summaryPatientCount: e.count(ds.cases.patients),
         summarySpecimenCount: e.count(ds.cases.patients.specimens),
-        summaryArtifactCount: e.count(ds.cases.patients.specimens.artifacts),
+        summaryArtifactCount: artifactTotalSum,
         summaryBclCount: e.count(availBclArtifact),
         summaryFastqCount: e.count(availFastqArtifact),
         summaryBamCount: e.count(availBamArtifact),
