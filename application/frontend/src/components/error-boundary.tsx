@@ -24,7 +24,7 @@ export type ErrorBoxProps = {
 }
 
 export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
-  return <div className={classNames("p-4 flex place-content-center text-sm text-red-700 bg-red-100", styling)}>
+  return <div className={classNames("p-4 flex justify-center items-center text-sm text-red-700 bg-red-100 rounded-lg", styling)}>
     {children}
   </div>;
 }
@@ -102,20 +102,24 @@ export class ErrorBoundary extends Component<ErrorDisplayProps, ErrorDisplayStat
     }
   }
 
+  static formatErrorDetailWithMessage(error: any): JSX.Element | undefined {
+    return <>
+      <br></br>
+      Here are some details:
+      {ErrorBoundary.formatErrorDetail(error)}
+    </>;
+  }
+
   formatError() : JSX.Element | undefined {
     if (ErrorBoundary.isAuthenticationError(this.state.error)) {
       return <ErrorBox styling={this.props.styling}>
         Failed to authenticate, check your crendentials.
-        <br></br>
-        Here are some details:
-        {this.state.error && ErrorBoundary.formatErrorDetail(this.state.error)}
+        {this.state.error && ErrorBoundary.formatErrorDetailWithMessage(this.state.error)}
       </ErrorBox>;
     } else {
       return <ErrorBox styling={this.props.styling}>
         {this.props.message ? <div>{this.props.message}</div> : <div>Something went wrong.</div>}
-        <br></br>
-        Here are some details:
-        {this.state.error && ErrorBoundary.formatErrorDetail(this.state.error)}
+        {this.state.error && ErrorBoundary.formatErrorDetailWithMessage(this.state.error)}
       </ErrorBox>;
     }
   }

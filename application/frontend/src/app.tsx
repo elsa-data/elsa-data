@@ -49,39 +49,35 @@ export const App: React.FC = () => {
 
   if (loggedInUser) {
     return (
-      <ErrorBoundary>
-        <Routes>
-          <Route path={`/`} element={<HomePage />} />
-          <Route path={`/users`} element={<UsersDashboardPage />} />
-          <Route path={`/dac`} element={<DacImportPage />} />
+      <Routes>
+        <Route path={`/`} element={<HomePage />} />
+        <Route path={`/users`} element={<UsersDashboardPage />} />
+        <Route path={`/dac`} element={<DacImportPage />} />
 
-          <Route path={`releases`}>
-            <Route index element={<ReleasesPage />} />
-            <Route path={`:releaseId`}>
-              <Route index element={<ReleasesDetailPage />} />
-              <Route path={`audit-log`}>
-                <Route path={`:objectId`} element={<AuditEntryPage />} />
-                <Route path={`data-access`} element={<DataAccessPage />} />
-              </Route>
+        <Route path={`releases`}>
+          <Route index element={<ReleasesPage />} />
+          <Route path={`:releaseId`}>
+            <Route index element={<ReleasesDetailPage />} />
+            <Route path={`audit-log`}>
+              <Route path={`:objectId`} element={<AuditEntryPage />} />
+              <Route path={`data-access`} element={<DataAccessPage />} />
             </Route>
           </Route>
+        </Route>
 
-          <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
-          <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
-          <Route path="*" element={<NoMatch />} />
-        </Routes>
-      </ErrorBoundary>
+        <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
+        <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
+        <Route path="*" element={<NoMatch />} />
+      </Routes>
     );
   } else
     return (
-      <ErrorBoundary>
-        <Routes>
-          {/* a page that we will get to disappear in production deployments */}
-          <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
-          <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
-          <Route path={`/login`} element={<LoginPage />} />
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
-      </ErrorBoundary>
+      <Routes>
+        {/* a page that we will get to disappear in production deployments */}
+        <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
+        <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
+        <Route path={`/login`} element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
     );
 };

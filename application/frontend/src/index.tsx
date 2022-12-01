@@ -41,7 +41,7 @@ if (root != null) {
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
 
       {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
-      <ErrorBoundary>
+      <ErrorBoundary rethrowError={(_: any) => false}>
         <EnvRelayProvider
           semanticVersion={sv}
           buildVersion={bv}

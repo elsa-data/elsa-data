@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
@@ -10,8 +10,7 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { isUndefined } from "lodash";
-import { ConsentSourcesBox } from "./consent-sources-box";
-import { VirtualCohortBox } from "./virtual-cohort-box";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -20,6 +19,9 @@ type Props = {
 
 export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
+
+  const [error, setError] = useState<any>(undefined);
+  const [isErrorSet, setIsErrorSet] = useState<boolean>(false);
 
   // *only* when running a job in the background - we want to set up a polling loop of the backend
   // so we set this effect up with a dependency on the runningJob field - and switch the
@@ -42,6 +44,13 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
       result
     );
+    setError(undefined);
+    setIsErrorSet(false);
+  };
+
+  const onError = (error: any) => {
+    setError(error);
+    setIsErrorSet(true);
   };
 
   const applyAllMutate = useMutation(
@@ -85,6 +94,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       onClick={async () => {
                         applyAllMutate.mutate(null, {
                           onSuccess: afterMutateUpdateQueryData,
+                          onError: (error: any) => onError(error)
                         });
                       }}
                       disabled={!isUndefined(releaseData.runningJob)}
@@ -97,6 +107,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       onClick={async () => {
                         cancelMutate.mutate(null, {
                           onSuccess: afterMutateUpdateQueryData,
+                          onError: (error: any) => onError(error)
                         });
                       }}
                       disabled={
@@ -111,7 +122,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                     </button>
                   </div>
 
-                  {releaseData.runningJob && (
+                  {!isErrorSet && releaseData.runningJob && (
                     <>
                       <div className="flex justify-between mb-1">
                         <span className="text-base font-medium text-blue-700">
@@ -134,6 +145,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       <p></p>
                     </>
                   )}
+                  {isErrorSet && <ErrorBoundary displayEagerly={true} error={error} />}
                 </div>
               </div>
             </div>

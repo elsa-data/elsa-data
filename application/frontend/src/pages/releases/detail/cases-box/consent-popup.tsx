@@ -2,31 +2,20 @@ import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { hasFlag } from "country-flag-icons";
 import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faDna,
-  faFemale,
-  faMale,
-  faQuestion,
-  faLock,
-  faUnlock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faUnlock } from "@fortawesome/free-solid-svg-icons";
 
 import {
-  CodingType,
   DuoLimitationCodedType,
   DuoModifierType,
-  ReleaseCaseType,
-  ReleasePatientType,
 } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQueryClient } from "react-query";
-import classNames from "classnames";
 import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import {
   doLookup,
 } from "../../../../helpers/ontology-helper";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
+import {ErrorBoundary} from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -109,10 +98,22 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
+  const [error, setError] = useState<any>(undefined);
+  const [isErrorSet, setIsErrorSet] = useState<boolean>(false);
+
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
     const duos = await axios
         .get<DuoLimitationCodedType[]>(u)
-        .then((response) => response.data);
+        .then((response) => {
+          setError(undefined);
+          setIsErrorSet(false);
+          return response.data;
+        })
+        .catch((error: any) => {
+          setError(error);
+          setIsErrorSet(true);
+          return [];
+        });
 
     const resolvedDuos = await Promise.all(
       duos.map(async function(duo: DuoLimitationCodedType): Promise<ResolvedDuo> {
@@ -149,52 +150,55 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
-      <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
-        {duos.map(function (resolvedDuo: ResolvedDuo) {
-          return (
-            <div>
+      {!isErrorSet &&
+        <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
+          {duos.map(function (resolvedDuo: ResolvedDuo) {
+            return (
               <div>
-                <b>Code:</b>
-                {" "}
-                <span className="capitalize">{resolvedDuo.resolvedCode}</span>
-              </div>
-              {resolvedDuo.modifiers && (
                 <div>
-                  <b>Modifiers:</b>{" "}
-                  <ul className="inline-list comma-list">
-                    {resolvedDuo.modifiers.map(function (modifier) {
-                      const regions: string[] = (modifier as any)?.regions;
-                      return (
-                        <li>
-                          {modifier.code}
-                          {regions && (
-                            <>
-                              {" "}
-                              <Flags regions={regions} />
-                            </>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-              {resolvedDuo.resolvedDiseaseCode && (
-                <div>
-                  <b>Disease Code:</b>
+                  <b>Code:</b>
                   {" "}
-                  <span className="capitalize">{resolvedDuo.resolvedDiseaseCode}</span>
+                  <span className="capitalize">{resolvedDuo.resolvedCode}</span>
                 </div>
-              )}
-              {resolvedDuo.diseaseSystem && (
-                <div>
-                  <b>Disease System:</b> {resolvedDuo.diseaseSystem}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {resolvedDuo.modifiers && (
+                  <div>
+                    <b>Modifiers:</b>{" "}
+                    <ul className="inline-list comma-list">
+                      {resolvedDuo.modifiers.map(function (modifier) {
+                        const regions: string[] = (modifier as any)?.regions;
+                        return (
+                          <li>
+                            {modifier.code}
+                            {regions && (
+                              <>
+                                {" "}
+                                <Flags regions={regions} />
+                              </>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+                {resolvedDuo.resolvedDiseaseCode && (
+                  <div>
+                    <b>Disease Code:</b>
+                    {" "}
+                    <span className="capitalize">{resolvedDuo.resolvedDiseaseCode}</span>
+                  </div>
+                )}
+                {resolvedDuo.diseaseSystem && (
+                  <div>
+                    <b>Disease System:</b> {resolvedDuo.diseaseSystem}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      }
+      {isErrorSet && <ErrorBoundary message={"Something went wrong resolving duos."} displayEagerly={true} error={error} />}
     </Popup>
   );
 };
