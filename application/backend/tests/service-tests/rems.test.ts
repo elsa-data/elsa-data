@@ -1,8 +1,6 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
-import { AuditLogService } from "../../src/business/services/audit-log-service";
-import { addSeconds } from "date-fns";
 import { RemsService } from "../../src/business/services/rems-service";
 
 let remsService: RemsService;
@@ -31,7 +29,7 @@ it("sync", async () => {
 
   console.log(newReleases);
 
-  const a = await remsService.startNewRelease(7);
+  const a = await remsService.startNewRelease(allowedDataOwnerUser, 7);
 
   console.log(JSON.stringify(a, null, 2));
 });

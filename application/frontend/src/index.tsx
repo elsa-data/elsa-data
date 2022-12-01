@@ -11,9 +11,6 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
-import { i18n } from "@lingui/core";
-import { I18nProvider } from "@lingui/react";
-import { messages } from "./locales/en/messages";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -40,9 +37,6 @@ if (rootElement != null) {
 
   const queryClient = new QueryClient({});
 
-  i18n.load(loc, messages);
-  i18n.activate(loc);
-
   root.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
@@ -55,20 +49,33 @@ if (rootElement != null) {
         deployedLocation={dl}
         terminologyFhirUrl={tfu}
       >
-        <I18nProvider i18n={i18n}>
-          {/* the query provider comes from react-query and provides standardised remote query semantics */}
-          <QueryClientProvider client={queryClient}>
-            {/* we use session cookies for auth and use this provider to make them easily available */}
-            <CookiesProvider>
-              <LoggedInUserProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
-              </LoggedInUserProvider>
-            </CookiesProvider>
-          </QueryClientProvider>
-        </I18nProvider>
+        {/* the query provider comes from react-query and provides standardised remote query semantics */}
+        <QueryClientProvider client={queryClient}>
+          {/* we use session cookies for auth and use this provider to make them easily available */}
+          <CookiesProvider>
+            <LoggedInUserProvider>
+              <BrowserRouter>
+                <App />
+              </BrowserRouter>
+            </LoggedInUserProvider>
+          </CookiesProvider>
+        </QueryClientProvider>
       </EnvRelayProvider>
     </React.StrictMode>
   );
 }
+
+/*
+Lingui was interfering with our pivot to Vitejs. This was the
+code we did have - look into re-enabling when we need multi lingual support.
+
+import { messages } from "./locales/en/messages";
+import { i18n } from "@lingui/core";
+import { I18nProvider } from "@lingui/react";
+
+<I18nProvider i18n={i18n}>
+</I18nProvider>
+i18n.load(loc, messages);
+i18n.activate(loc);
+
+ */

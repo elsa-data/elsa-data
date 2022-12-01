@@ -12,6 +12,7 @@ import { isEmpty, isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
 import { fileSize } from "humanize-plus";
+import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -37,8 +38,7 @@ function DataAccessLogsBox() {
       );
 
       const data = response.data;
-      const newTotal = parseInt(response?.headers["elsa-total-count"] ?? "0");
-      if (isFinite(newTotal)) setCurrentTotal(newTotal);
+      handleTotalCountHeaders(response, setCurrentTotal);
       return data;
     }
   );

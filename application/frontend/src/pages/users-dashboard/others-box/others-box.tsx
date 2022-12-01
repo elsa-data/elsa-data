@@ -11,9 +11,10 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
+import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {
-  // the (max) number of case items shown on any single page
+  // the (max) number of users shown on any single page
   pageSize: number;
 };
 
@@ -39,13 +40,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
             (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
           );
 
-          // as we page - the backend relays to us an accurate total count so we then use that in the UI
-          const newTotal = parseInt(
-            response?.headers["elsa-total-count"] ?? "0"
-          );
-
-          // use the value if it appears sensible (we subtract one because we are taking ourselves out of the user list)
-          if (isFinite(newTotal)) setCurrentTotal(newTotal - 1);
+          handleTotalCountHeaders(response, setCurrentTotal);
 
           return usersWithoutMe;
         });
@@ -97,7 +92,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
-          rowCount={currentTotal}
+          rowCount={currentTotal - 1}
           rowsPerPage={pageSize}
           rowWord="other users"
         />

@@ -26,6 +26,24 @@ const fakeSettings: ElsaSettings = {
   oidcClientSecret: "",
   oidcIssuer: new Issuer({ issuer: "" }),
   ontoFhirUrl: "",
+  mondoSystem: {
+    uri: "",
+    oid: ""
+  },
+  hgncGenesSystem: {
+    uri: "",
+    oid: ""
+  },
+  hpoSystem: {
+    uri: "",
+    nonPreferredUri: ""
+  },
+  isoCountrySystemUri: "",
+  snomedSystem: {
+    uri: "",
+    oid: ""
+  },
+  host: "127.0.0.1",
   port: 3000,
   datasets: [],
   superAdmins: [],

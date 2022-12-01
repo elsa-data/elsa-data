@@ -10,6 +10,7 @@ export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
+  host: string;
   port: number;
 
   sessionSecret: string;
@@ -28,6 +29,13 @@ export type ElsaSettings = {
 
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
+
+  // NOTE: https://confluence.hl7.org/display/TA/External+Terminologies+-+Information is a good reference for these
+  mondoSystem: { uri: string, oid: string };
+  hgncGenesSystem: { uri: string, oid: string };
+  hpoSystem: { uri: string, nonPreferredUri: string };
+  isoCountrySystemUri: string;
+  snomedSystem: { uri: string, oid: string };
 
   superAdmins: { id: string; email: string }[];
 

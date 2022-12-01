@@ -3,7 +3,6 @@ import assert from "assert";
 import {
   findCase,
   findDatabaseSpecimenIds,
-  findPatient,
   findPatientExpected,
   findSpecimen,
 } from "./utils";
@@ -14,11 +13,8 @@ import { registerTypes } from "./setup";
 import { ReleaseService } from "../../src/business/services/release-service";
 import { Client } from "edgedb";
 import {
-  BART_PATIENT_PGP,
   BART_SPECIMEN,
-  HOMER_PATIENT_PGP,
   HOMER_SPECIMEN,
-  MARGE_PATIENT_PGP,
   MARGE_SPECIMEN,
   SIMPSONS_CASE,
 } from "../../src/test-data/insert-test-data-10f-simpsons";
@@ -29,11 +25,8 @@ import {
   JUDY_SPECIMEN,
 } from "../../src/test-data/insert-test-data-10f-jetsons";
 
-const testContainer = await registerTypes();
-
-const edgeDbClient = testContainer.resolve<Client>("Database");
-const releasesService = testContainer.resolve(ReleaseService);
-
+let edgeDbClient: Client;
+let releaseService: ReleaseService;
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
@@ -43,9 +36,14 @@ let notAllowedUser: AuthenticatedUser;
 const DEFAULT_LIMIT = 10000;
 const DEFAULT_OFFSET = 0;
 
-beforeEach(async () => {
-  testContainer.clearInstances();
+beforeAll(async () => {
+  const testContainer = await registerTypes();
 
+  edgeDbClient = testContainer.resolve("Database");
+  releaseService = testContainer.resolve(ReleaseService);
+});
+
+beforeEach(async () => {
   ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
@@ -54,7 +52,7 @@ beforeEach(async () => {
  *
  */
 it("get all case level information from a release as a data owner", async () => {
-  const pagedResult = await releasesService.getCases(
+  const pagedResult = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -63,8 +61,9 @@ it("get all case level information from a release as a data owner", async () => 
 
   expect(pagedResult).not.toBeNull();
   assert(pagedResult != null);
+  assert(pagedResult.data != null);
 
-  // as the dataowner we will see everything
+  // as the data owner we will see everything
   // 10 cases from 10g and 2 cases from 10f
   expect(pagedResult.data.length).toBe(14);
 
@@ -93,7 +92,7 @@ it("get all case level information from a release as a data owner", async () => 
  *
  */
 it("get limited case level information from a release as a PI", async () => {
-  const pagedResult = await releasesService.getCases(
+  const pagedResult = await releaseService.getCases(
     allowedPiUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -102,6 +101,7 @@ it("get limited case level information from a release as a PI", async () => {
 
   expect(pagedResult).not.toBeNull();
   assert(pagedResult != null);
+  assert(pagedResult.data != null);
 
   // as a PI we will only see cases that have _something_ selected in them
   expect(pagedResult.data.length).toBe(6);
@@ -134,7 +134,7 @@ it("get limited case level information from a release as a PI", async () => {
  *
  */
 it("get patient/specimen level data fields", async () => {
-  const pagedResult = await releasesService.getCases(
+  const pagedResult = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -143,6 +143,7 @@ it("get patient/specimen level data fields", async () => {
 
   expect(pagedResult).not.toBeNull();
   assert(pagedResult != null);
+  assert(pagedResult.data != null);
 
   const caseSimpsons = findCase(pagedResult.data, SIMPSONS_CASE);
   const patientBart = findPatientExpected(pagedResult.data, "BART");
@@ -159,7 +160,7 @@ it("get patient/specimen level data fields", async () => {
  */
 it("node status changes as leaves are selected and unselected", async () => {
   {
-    const initialResult = await releasesService.getCases(
+    const initialResult = await releaseService.getCases(
       allowedDataOwnerUser,
       testReleaseId,
       DEFAULT_LIMIT,
@@ -167,6 +168,7 @@ it("node status changes as leaves are selected and unselected", async () => {
     );
 
     assert(initialResult != null);
+    assert(initialResult.data != null);
 
     expect(findCase(initialResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
       "indeterminate"
@@ -194,7 +196,7 @@ it("node status changes as leaves are selected and unselected", async () => {
     );
   }
 
-  await releasesService.setSelected(
+  await releaseService.setSelected(
     allowedDataOwnerUser,
     testReleaseId,
     await findDatabaseSpecimenIds(edgeDbClient, [
@@ -205,7 +207,7 @@ it("node status changes as leaves are selected and unselected", async () => {
   );
 
   {
-    const afterSetResult = await releasesService.getCases(
+    const afterSetResult = await releaseService.getCases(
       allowedDataOwnerUser,
       testReleaseId,
       DEFAULT_LIMIT,
@@ -214,6 +216,7 @@ it("node status changes as leaves are selected and unselected", async () => {
 
     expect(afterSetResult).not.toBeNull();
     assert(afterSetResult != null);
+    assert(afterSetResult.data != null);
 
     expect(findCase(afterSetResult.data, "SIMPSONS")?.nodeStatus).toBe(
       "indeterminate"
@@ -242,14 +245,14 @@ it("node status changes as leaves are selected and unselected", async () => {
     );
   }
 
-  await releasesService.setUnselected(
+  await releaseService.setUnselected(
     allowedDataOwnerUser,
     testReleaseId,
     await findDatabaseSpecimenIds(edgeDbClient, [BART_SPECIMEN, HOMER_SPECIMEN])
   );
 
   {
-    const afterUnsetResult = await releasesService.getCases(
+    const afterUnsetResult = await releaseService.getCases(
       allowedDataOwnerUser,
       testReleaseId,
       DEFAULT_LIMIT,
@@ -258,6 +261,7 @@ it("node status changes as leaves are selected and unselected", async () => {
 
     expect(afterUnsetResult).not.toBeNull();
     assert(afterUnsetResult != null);
+    assert(afterUnsetResult.data != null);
 
     // note this change due to all the leaves now being unset
     expect(findCase(afterUnsetResult.data, "SIMPSONS")?.nodeStatus).toBe(
@@ -277,7 +281,7 @@ it("node status changes as leaves are selected and unselected", async () => {
 
 it("pass in specimen ids that are not valid", async () => {
   await expect(async () => {
-    await releasesService.setSelected(
+    await releaseService.setSelected(
       allowedPiUser,
       testReleaseId,
       // whilst this looks vaguely like a edgedb id it will never match
@@ -296,7 +300,7 @@ it("pass in specimen ids that are not valid", async () => {
   // }).rejects.toThrow(Error);
 });
 
-it("test paging", async () => {
+/*it("test paging", async () => {
   const allCasesFound: string[] = [];
 
   const limit = 3;
@@ -307,7 +311,7 @@ it("test paging", async () => {
   do {
     page += 1;
 
-    result = await releasesService.getCases(
+    result = await releaseService.getCases(
       allowedDataOwnerUser,
       testReleaseId,
       limit,
@@ -316,6 +320,7 @@ it("test paging", async () => {
 
     expect(result).not.toBeNull();
     assert(result != null);
+    assert(result.data != null);
 
     for (const c of result.data) {
       allCasesFound.push(c.id);
@@ -324,10 +329,10 @@ it("test paging", async () => {
 
   // 10 cases from 10g and 4 cases from 10f
   expect(allCasesFound.length).toBe(14);
-});
+}); */
 
 it("test identifier searching with case level match", async () => {
-  const result = await releasesService.getCases(
+  const result = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -337,6 +342,7 @@ it("test identifier searching with case level match", async () => {
 
   expect(result).not.toBeNull();
   assert(result != null);
+  assert(result.data != null);
 
   expect(result.data.length).toBe(1);
 
@@ -345,7 +351,7 @@ it("test identifier searching with case level match", async () => {
 });
 
 it("test identifier searching with patient level match", async () => {
-  const result = await releasesService.getCases(
+  const result = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -355,13 +361,14 @@ it("test identifier searching with patient level match", async () => {
 
   expect(result).not.toBeNull();
   assert(result != null);
+  assert(result.data != null);
 
   expect(result.data.length).toBe(1);
   expect(result.data[0].externalId).toBe("SIMPSONS");
 });
 
 it("test identifier searching with specimen level match", async () => {
-  const result = await releasesService.getCases(
+  const result = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -371,13 +378,14 @@ it("test identifier searching with specimen level match", async () => {
 
   expect(result).not.toBeNull();
   assert(result != null);
+  assert(result.data != null);
 
   expect(result.data.length).toBe(1);
   expect(result.data[0].externalId).toBe("SIMPSONS");
 });
 
 it("test identifier searching with specimen level partial match (not supported)", async () => {
-  const result = await releasesService.getCases(
+  const result = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseId,
     DEFAULT_LIMIT,
@@ -388,6 +396,7 @@ it("test identifier searching with specimen level partial match (not supported)"
 
   expect(result).not.toBeNull();
   assert(result != null);
+  assert(result.data != null);
 
   // we DO NOT currently want to support partial matching so this should return nothing
   expect(result.data.length).toBe(0);

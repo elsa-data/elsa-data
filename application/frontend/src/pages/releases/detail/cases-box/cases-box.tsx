@@ -9,6 +9,7 @@ import { Box, BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
+import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 type Props = {
   releaseId: string;
@@ -53,20 +54,18 @@ export const CasesBox: React.FC<Props> = ({
     ["releases-cases", currentPage, searchText, releaseId],
     async () => {
       const urlParams = new URLSearchParams();
-      urlParams.append("page", currentPage.toString());
       const useableSearchText = makeUseableSearchText(searchText);
       if (useableSearchText) {
         urlParams.append("q", useableSearchText);
+      } else {
+        urlParams.append("page", currentPage.toString());
       }
       const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
       return await axios.get<ReleaseCaseType[]>(u).then((response) => {
         if (!useableSearchText) {
           // as we page - the backend relays to us an accurate total count so we then use that
           // in the UI - we however only want to set it if we are not in 'search' mode
-          const newTotal = parseInt(
-            response?.headers["elsa-total-count"] ?? "0"
-          );
-          if (isFinite(newTotal)) setCurrentTotal(newTotal);
+          handleTotalCountHeaders(response, setCurrentTotal);
         }
 
         return response.data;
