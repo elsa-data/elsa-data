@@ -169,7 +169,67 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     }
   );
 
-  // TODO: this probably should be a Graphql mutate endpoint rather than this hack..
+  fastify.post<{
+    Params: {
+      rid: string;
+      field: "allowed-read" | "allowed-variant" | "allowed-phenotype";
+      op: "set";
+    };
+    Body: {
+      value: boolean;
+    };
+  }>(
+    "/api/releases/:rid/fields/:field/:op",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+      const field = request.params.field;
+      const op = request.params.op;
+      const body = request.body;
+
+      // we are pretty safe to add these fields together - even though they come from the user supplied route
+      // if someone makes either field something unexpected - we'll fall through to the 400 reply
+      switch (field + "-" + op) {
+        case "allowed-read-set":
+          reply.send(
+            await releasesService.setIsAllowed(
+              authenticatedUser,
+              releaseId,
+              "read",
+              body.value!
+            )
+          );
+          return;
+        case "allowed-variant-set":
+          reply.send(
+            await releasesService.setIsAllowed(
+              authenticatedUser,
+              releaseId,
+              "variant",
+              body.value!
+            )
+          );
+          return;
+        case "allowed-phenotype-set":
+          reply.send(
+            await releasesService.setIsAllowed(
+              authenticatedUser,
+              releaseId,
+              "phenotype",
+              body.value!
+            )
+          );
+          return;
+        default:
+          reply.status(400).send();
+          return;
+      }
+    }
+  );
+
+  // TODO: these probably should be a Graphql mutate endpoint rather than this hack..
 
   fastify.post<{
     Params: {

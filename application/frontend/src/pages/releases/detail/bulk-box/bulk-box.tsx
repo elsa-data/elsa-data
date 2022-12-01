@@ -21,22 +21,6 @@ type Props = {
 export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
 
-  // *only* when running a job in the background - we want to set up a polling loop of the backend
-  // so we set this effect up with a dependency on the runningJob field - and switch the
-  // interval on only when there is background job
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (releaseData.runningJob) {
-        // we are busy waiting on the job to complete - so we can invalidate the whole cache
-        // as the jobs may affect the entire UI (audit logs, cases etc)
-        queryClient.invalidateQueries().then(() => {});
-      }
-    }, 5000);
-    return () => {
-      clearInterval(interval);
-    };
-  }, [releaseData.runningJob]);
-
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
@@ -46,10 +30,6 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
 
   const applyAllMutate = useMutation(
     axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/select`)
-  );
-
-  const cancelMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
   );
 
   return (
@@ -91,49 +71,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                     >
                       Apply All
                     </button>
-
-                    <button
-                      className="btn-normal"
-                      onClick={async () => {
-                        cancelMutate.mutate(null, {
-                          onSuccess: afterMutateUpdateQueryData,
-                        });
-                      }}
-                      disabled={
-                        !releaseData.runningJob ||
-                        releaseData.runningJob.requestedCancellation
-                      }
-                    >
-                      Cancel
-                      {releaseData.runningJob?.requestedCancellation && (
-                        <span> (in progress)</span>
-                      )}
-                    </button>
                   </div>
-
-                  {releaseData.runningJob && (
-                    <>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-base font-medium text-blue-700">
-                          Running
-                        </span>
-                        <span className="text-sm font-medium text-blue-700">
-                          {releaseData.runningJob.percentDone.toString()}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className="bg-blue-600 h-2.5 rounded-full"
-                          style={{
-                            width:
-                              releaseData.runningJob.percentDone.toString() +
-                              "%",
-                          }}
-                        ></div>
-                      </div>
-                      <p></p>
-                    </>
-                  )}
                 </div>
               </div>
             </div>

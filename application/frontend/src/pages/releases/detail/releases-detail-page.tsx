@@ -1,5 +1,5 @@
-import React from "react";
-import { useQuery, useQueryClient } from "react-query";
+import React, { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import { Box, BoxNoPad } from "../../../components/boxes";
 import { LayoutBase } from "../../../layouts/layout-base";
@@ -7,7 +7,11 @@ import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
 import { AwsS3PresignedForm } from "./aws-s3-presigned-form";
 import { InformationBox } from "./information-box";
-import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
+import {
+  axiosPostNullMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+  specificReleaseQuery,
+} from "./queries";
 import { BulkBox } from "./bulk-box/bulk-box";
 import { isUndefined } from "lodash";
 import { FutherRestrictionsBox } from "./further-restrictions-box";
@@ -17,6 +21,7 @@ import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
+import { ReleaseTypeLocal } from "./shared-types";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -42,12 +47,75 @@ export const ReleasesDetailPage: React.FC = () => {
     queryFn: specificReleaseQuery,
   });
 
+  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
+    queryClient.setQueryData(
+      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      result
+    );
+  };
+
+  const cancelMutate = useMutation(
+    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
+  );
   const isJobRunning: boolean = !isUndefined(releaseQuery?.data?.runningJob);
+
+  // *only* when running a job in the background - we want to set up a polling loop of the backend
+  // so we set this effect up with a dependency on the runningJob field - and switch the
+  // interval on only when there is background job
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (releaseQuery?.data?.runningJob) {
+        // we are busy waiting on the job to complete - so we can invalidate the whole cache
+        // as the jobs may affect the entire UI (audit logs, cases etc)
+        queryClient.invalidateQueries().then(() => {});
+      }
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [releaseQuery?.data?.runningJob]);
 
   return (
     <LayoutBase>
       <div className="flex flex-row flex-wrap flex-grow mt-2">
-        {releaseQuery.isSuccess && (
+        {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
+          <>
+            <Box heading="Background Job">
+              <div className="flex justify-between mb-1">
+                <span className="text-base font-medium text-blue-700">
+                  Running
+                </span>
+                <span className="text-sm font-medium text-blue-700">
+                  {releaseQuery.data.runningJob.percentDone.toString()}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-blue-600 h-2.5 rounded-full"
+                  style={{
+                    width:
+                      releaseQuery.data.runningJob.percentDone.toString() + "%",
+                  }}
+                ></div>
+              </div>
+              <button
+                className="btn-normal"
+                onClick={async () => {
+                  cancelMutate.mutate(null, {
+                    onSuccess: afterMutateUpdateQueryData,
+                  });
+                }}
+                disabled={releaseQuery.data.runningJob.requestedCancellation}
+              >
+                Cancel
+                {releaseQuery.data.runningJob?.requestedCancellation && (
+                  <span> (in progress)</span>
+                )}
+              </button>
+            </Box>
+          </>
+        )}
+        {releaseQuery.isSuccess && !releaseQuery.data.runningJob && (
           <>
             <InformationBox
               releaseId={releaseId}

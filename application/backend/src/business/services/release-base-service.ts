@@ -158,6 +158,9 @@ export abstract class ReleaseBaseService {
       accessStartDate: releaseInfo.releaseStarted ?? undefined,
       accessEndDate: releaseInfo.releaseEnded ?? undefined,
       accessEnabled: releaseInfo.accessEnabled ?? false,
+      isAllowedReadData: releaseInfo.isAllowedReadData,
+      isAllowedVariantData: releaseInfo.isAllowedVariantData,
+      isAllowedPhenotypeData: releaseInfo.isAllowedPhenotypeData,
       // password only gets sent down to the PI
       downloadPassword:
         userRole === "PI" ? releaseInfo.releasePassword : undefined,
