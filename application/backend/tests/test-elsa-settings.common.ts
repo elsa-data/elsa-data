@@ -14,6 +14,7 @@ const ciLogonIssuer = new Issuer({
 export const createTestElsaSettings: () => ElsaSettings = () => ({
   // TODO these settings have just been thrown in - and may need to be refined as testing gets
   //      more sophisticated
+  host: "127.0.0.1",
   port: 3000,
   host: "127.0.0.1",
   deployedUrl: "http://localhost:3000",
@@ -50,6 +51,23 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   sessionSalt: "ABCD",
   sessionSecret: "XYZ",
   ontoFhirUrl: "",
+  mondoSystem: {
+    uri: "",
+    oid: ""
+  },
+  hgncGenesSystem: {
+    uri: "",
+    oid: ""
+  },
+  hpoSystem: {
+    uri: "",
+    nonPreferredUri: ""
+  },
+  isoCountrySystemUri: "",
+  snomedSystem: {
+    uri: "",
+    oid: ""
+  },
   awsSigningSecretAccessKey: "A",
   awsSigningAccessKeyId: "B",
   rateLimit: {},
