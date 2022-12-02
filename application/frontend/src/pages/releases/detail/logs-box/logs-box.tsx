@@ -42,7 +42,6 @@ import {
 import classNames from "classnames";
 import { EagerErrorBoundary } from "../../../../components/error-boundary";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

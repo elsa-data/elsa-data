@@ -1,5 +1,9 @@
 import { Component, ReactNode } from "react";
-import { Base7807Error, Base7807Response } from "@umccr/elsa-types/error-types";
+import {
+  Base7807Error,
+  Base7807Response,
+  isBase7807Response,
+} from "@umccr/elsa-types/error-types";
 import classNames from "classnames";
 import axios from "axios";
 
@@ -8,23 +12,36 @@ export type ErrorDisplayProps = {
   message?: ReactNode;
   styling?: string;
   // Whether this error should be rethrown to a higher up component.
-  rethrowError: (error: any) => boolean;
+  rethrowError?: (error: any) => boolean;
 };
 
-export type EagerErrorDisplayProps = {
+export type EagerErrorDisplayProps = ErrorFormatterDetailProps &
+  ErrorDisplayProps;
+
+export type ErrorFormatterProps = {
+  errorCondition: boolean;
+} & EagerErrorDisplayProps;
+
+export type ErrorFormatterDetailProps = {
   error?: any;
-} & ErrorDisplayProps;
+};
+
+export type Format7807ErrorProps = {
+  error: Base7807Response;
+};
 
 export type ErrorDisplayState = {
-  error?: any;
   displayError: boolean;
-};
+} & ErrorFormatterDetailProps;
 
 export type ErrorBoxProps = {
   children?: ReactNode;
   styling?: string;
 };
 
+/**
+ * A general red error box.
+ */
 export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
   return (
     <div
@@ -42,10 +59,9 @@ export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
   );
 };
 
-export const getDerivedStateFromError = (error: any): ErrorDisplayState => {
-  return { error: error, displayError: true };
-};
-
+/**
+ * Check whether the error is an authentication error.
+ */
 export const isAuthenticationError = (error: any): boolean => {
   return (
     (error instanceof Base7807Error && error.status == 403) ||
@@ -53,9 +69,12 @@ export const isAuthenticationError = (error: any): boolean => {
   );
 };
 
-export const format7807Error = (
-  error: Base7807Response
-): JSX.Element | undefined => {
+/**
+ * Format a 7807 Error.
+ */
+export const Format7807Error = ({
+  error,
+}: Format7807ErrorProps): JSX.Element => {
   return (
     <div className="pl-4 pt-4">
       <div>
@@ -86,15 +105,20 @@ export const format7807Error = (
   );
 };
 
-export const formatErrorDetail = (error: any): JSX.Element | undefined => {
+/**
+ * Format an error using its details.
+ */
+export const ErrorFormatterDetail = ({
+  error,
+}: ErrorFormatterDetailProps): JSX.Element => {
   if (error !== undefined) {
     if (error instanceof Base7807Error) {
-      return format7807Error(error.toResponse());
-    } else if (Base7807Error.isBase7807Error(error)) {
-      return format7807Error(error.toResponse());
+      return <Format7807Error error={error.toResponse()} />;
+    } else if (isBase7807Response(error)) {
+      return <Format7807Error error={error} />;
     } else if (axios.isAxiosError(error)) {
       if (error.response?.data instanceof Base7807Error) {
-        return formatErrorDetail(error.response.data);
+        return <ErrorFormatterDetail error={error.response.data} />;
       } else {
         return (
           <div className="pl-4 pt-4">
@@ -111,31 +135,39 @@ export const formatErrorDetail = (error: any): JSX.Element | undefined => {
       }
     } else if (error instanceof Error) {
       return <div className="pl-4 pt-4">{error.message}</div>;
-    } else {
-      return <div className="pl-4 pt-4">{error}</div>;
     }
+
+    return <div className="pl-4 pt-4">{error}</div>;
   }
+
+  return <></>;
 };
 
-export const formatErrorDetailWithMessage = (
-  error: any
-): JSX.Element | undefined => {
+/**
+ * Format an error with a details message.
+ */
+export const ErrorFormatterWithMessage = ({
+  error,
+}: ErrorFormatterDetailProps): JSX.Element => {
   return (
     <>
       Here are some details:
-      {formatErrorDetail(error)}
+      <ErrorFormatterDetail error={error} />
     </>
   );
 };
 
-export const formatError = (
-  errorCondition: boolean,
-  rethrowError: (error: any) => boolean,
-  message?: ReactNode,
-  error?: any,
-  styling?: string,
-  children?: ReactNode
-): ReactNode | undefined => {
+/**
+ * Format an error using a condition.
+ */
+export const ErrorFormatter = ({
+  errorCondition,
+  message,
+  error,
+  styling,
+  children,
+  rethrowError = rethrowErrorFn,
+}: ErrorFormatterProps): JSX.Element => {
   if (!navigator.onLine) {
     return (
       <ErrorBox styling={styling}>
@@ -151,60 +183,66 @@ export const formatError = (
       return (
         <ErrorBox styling={styling}>
           Failed to authenticate, check your crendentials.
-          {error && formatErrorDetailWithMessage(error)}
+          {error && <ErrorFormatterWithMessage error={error} />}
         </ErrorBox>
       );
     } else {
       return (
         <ErrorBox styling={styling}>
           {message ? <div>{message}</div> : <div>Something went wrong.</div>}
-          {error && formatErrorDetailWithMessage(error)}
+          {error && <ErrorFormatterWithMessage error={error} />}
         </ErrorBox>
       );
     }
   } else {
-    return children;
+    return <>{children}</>;
   }
 };
 
-export const rethrowError = (error: any): boolean => {
+/**
+ * Default check for whether an error is rethrown.
+ */
+export const rethrowErrorFn = (error: any): boolean => {
   return !navigator.onLine || isAuthenticationError(error);
 };
 
 /**
- * Display an error message passed through props
+ * Display an error passed through props.
  */
-export class EagerErrorBoundary extends Component<EagerErrorDisplayProps> {
-  static defaultProps = {
-    rethrowError: rethrowError,
-  };
-
-  constructor(props: ErrorDisplayProps) {
-    super(props);
-  }
-
-  render() {
-    return formatError(
-      true,
-      this.props.rethrowError,
-      this.props.message,
-      this.props.error,
-      this.props.styling,
-      this.props.children
-    );
-  }
-}
+export const EagerErrorBoundary = ({
+  message,
+  error,
+  styling,
+  children,
+  rethrowError = rethrowErrorFn,
+}: EagerErrorDisplayProps): JSX.Element => {
+  return (
+    <ErrorFormatter
+      errorCondition={true}
+      message={message}
+      error={error}
+      styling={styling}
+      rethrowError={rethrowError}
+    >
+      {children}
+    </ErrorFormatter>
+  );
+};
 
 /**
- * Display an error message on throw.
+ * Display an error on throw.
  */
 export class ErrorBoundary extends Component<
   ErrorDisplayProps,
   ErrorDisplayState
 > {
   static defaultProps = {
-    rethrowError: rethrowError,
+    rethrowError: rethrowErrorFn,
   };
+
+  static getDerivedStateFromError(error: any): ErrorDisplayState {
+    return { error: error, displayError: true };
+  }
 
   constructor(props: ErrorDisplayProps) {
     super(props);
@@ -212,13 +250,16 @@ export class ErrorBoundary extends Component<
   }
 
   render() {
-    return formatError(
-      this.state.displayError,
-      this.props.rethrowError,
-      this.props.message,
-      this.state.error,
-      this.props.styling,
-      this.props.children
+    return (
+      <ErrorFormatter
+        errorCondition={this.state.displayError}
+        message={this.props.message}
+        error={this.state.error}
+        styling={this.props.styling}
+        rethrowError={this.props.rethrowError}
+      >
+        {this.props.children}
+      </ErrorFormatter>
     );
   }
 }
