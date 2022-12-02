@@ -100,7 +100,10 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
           <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
         </table>
-        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching users."} error={dataQuery.error} displayEagerly={true}></ErrorBoundary>}
+        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching users."}
+                                             error={dataQuery.error}
+                                             displayEagerly={true}
+                                             styling={"bg-red-100"} />}
       </div>
     </BoxNoPad>
   );

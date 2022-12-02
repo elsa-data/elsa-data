@@ -39,9 +39,8 @@ if (root != null) {
   ReactDOM.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
-
-      {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
       <ErrorBoundary rethrowError={(_: any) => false}>
+      {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
         <EnvRelayProvider
           semanticVersion={sv}
           buildVersion={bv}
@@ -49,17 +48,17 @@ if (root != null) {
           deployedLocation={dl}
           terminologyFhirUrl={tfu}
         >
-            {/* the query provider comes from react-query and provides standardised remote query semantics */}
-            <QueryClientProvider client={queryClient}>
-              {/* we use session cookies for auth and use this provider to make them easily available */}
-              <CookiesProvider>
-                <LoggedInUserProvider>
-                  <BrowserRouter>
+          {/* the query provider comes from react-query and provides standardised remote query semantics */}
+          <QueryClientProvider client={queryClient}>
+            {/* we use session cookies for auth and use this provider to make them easily available */}
+            <CookiesProvider>
+              <LoggedInUserProvider>
+                <BrowserRouter>
                     <App />
-                  </BrowserRouter>
-                </LoggedInUserProvider>
-              </CookiesProvider>
-            </QueryClientProvider>
+                </BrowserRouter>
+              </LoggedInUserProvider>
+            </CookiesProvider>
+          </QueryClientProvider>
         </EnvRelayProvider>
       </ErrorBoundary>
     </React.StrictMode>,

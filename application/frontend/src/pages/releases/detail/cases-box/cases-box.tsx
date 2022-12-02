@@ -219,7 +219,10 @@ export const CasesBox: React.FC<Props> = ({
             </tbody>
           </table>
         )}
-        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching cases."} error={dataQuery.error} displayEagerly={true}></ErrorBoundary>}
+        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching cases."}
+                                             error={dataQuery.error}
+                                             displayEagerly={true}
+                                             styling={"bg-red-100"} />}
       </div>
       <div id="popup-root" />
     </BoxNoPad>

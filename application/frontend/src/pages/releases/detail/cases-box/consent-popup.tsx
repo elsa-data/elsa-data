@@ -198,7 +198,10 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
           })}
         </div>
       }
-      {isErrorSet && <ErrorBoundary message={"Something went wrong resolving duos."} displayEagerly={true} error={error} />}
+      {isErrorSet && <ErrorBoundary message={"Something went wrong resolving duos."}
+                                    displayEagerly={true}
+                                    error={error}
+                                    styling={"bg-red-100"} />}
     </Popup>
   );
 };

@@ -1,10 +1,11 @@
-import { Component, ReactNode } from "react";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
+import {Component, Key, ReactNode} from "react";
+import {Base7807Error, Base7807Response} from "@umccr/elsa-types/error-types";
 import classNames from "classnames";
 import axios from "axios";
 
 export type ErrorDisplayProps = {
-  children? : ReactNode
+  children? : ReactNode;
+  key?: Key;
   message?: ReactNode;
   // Should this component be displayed even if no error has been thrown.
   displayEagerly?: boolean;
@@ -16,6 +17,7 @@ export type ErrorDisplayProps = {
 
 export type ErrorDisplayState = {
   error?: any;
+  displayError: boolean;
 };
 
 export type ErrorBoxProps = {
@@ -24,8 +26,10 @@ export type ErrorBoxProps = {
 }
 
 export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
-  return <div className={classNames("p-4 flex justify-center items-center text-sm text-red-700 bg-red-100 rounded-lg", styling)}>
-    {children}
+  return <div className={classNames("p-4 flex place-content-center justify-center items-center", styling)}>
+    <div className={classNames("p-4 text-sm text-red-700 bg-red-100 rounded-lg")}>
+      {children}
+    </div>
   </div>;
 }
 
@@ -39,11 +43,11 @@ export class ErrorBoundary extends Component<ErrorDisplayProps, ErrorDisplayStat
 
   constructor(props: ErrorDisplayProps) {
     super(props);
-    this.state = { error: props.error };
+    this.state = { error: props.error, displayError: props.error !== undefined && props.error !== null };
   }
 
   static getDerivedStateFromError(error: any): ErrorDisplayState {
-    return { error: error };
+    return { error: error, displayError: true };
   }
 
   static isAuthenticationError(error: any): boolean {
@@ -51,39 +55,46 @@ export class ErrorBoundary extends Component<ErrorDisplayProps, ErrorDisplayStat
       (axios.isAxiosError(error) && error.code === "403");
   }
 
+  static format7807Error(error: Base7807Response): JSX.Element | undefined {
+    return <div className="pl-4 pt-4">
+      <div>
+        <span className="font-bold">type: </span>
+        {error.type}
+      </div>
+      <div>
+        <span className="font-bold">title: </span>
+        {error.title}
+      </div>
+      <div>
+        <span className="font-bold">status: </span>
+        {error.status}
+      </div>
+      {error.detail &&
+        <div>
+          <span className="font-bold">detail: </span>
+          {error.detail}
+        </div>
+      }
+      {error.instance &&
+        <div>
+          <span className="font-bold">instance: </span>
+          {error.instance}
+        </div>
+      }
+    </div>;
+  }
+
   static formatErrorDetail(error: any): JSX.Element | undefined {
     if (error !== undefined) {
       if (error instanceof Base7807Error) {
-        const error7808 = error.toResponse();
-        return <>
-          <div>
-            <span className="font-bold">type: </span>
-            {error7808.type}
-          </div>
-          <div>
-            <span className="font-bold">title: </span>
-            {error7808.title}
-          </div>
-          <div>
-            <span className="font-bold">status: </span>
-            {error7808.status}
-          </div>
-          {error7808.detail &&
-          <div>
-            <span className="font-bold">detail: </span>
-            {error7808.detail}
-          </div>}
-          {error7808.instance &&
-          <div>
-            <span className="font-bold">instance: </span>
-            {error7808.instance}
-          </div>}
-        </>;
+        return ErrorBoundary.format7807Error(error.toResponse());
+      } else if (Base7807Error.isBase7807Error(error)) {
+        return ErrorBoundary.format7807Error(error.toResponse());
       } else if (axios.isAxiosError(error)) {
         if (error.response?.data instanceof Base7807Error) {
           return this.formatErrorDetail(error.response.data);
         } else {
-          return <>
+          return <div className="pl-4 pt-4">
             <div>
               <span className="font-bold">message: </span>
               {error.message}
@@ -92,19 +103,18 @@ export class ErrorBoundary extends Component<ErrorDisplayProps, ErrorDisplayStat
               <span className="font-bold">code: </span>
               {error.code}
             </div>
-          </>;
+          </div>;
         }
       } else if (error instanceof Error) {
-        return <div>{error.message}</div>;
+        return <div className="pl-4 pt-4">{error.message}</div>;
       } else {
-        return <div>{error}</div>
+        return <div className="pl-4 pt-4">{error}</div>
       }
     }
   }
 
   static formatErrorDetailWithMessage(error: any): JSX.Element | undefined {
     return <>
-      <br></br>
       Here are some details:
       {ErrorBoundary.formatErrorDetail(error)}
     </>;
@@ -125,11 +135,14 @@ export class ErrorBoundary extends Component<ErrorDisplayProps, ErrorDisplayStat
   }
 
   render() {
+    console.log("HERE3");
+    console.log(this.props);
+    console.log(this.state);
     if (!navigator.onLine) {
       return <ErrorBox styling={this.props.styling}>
         You are offline, check your connection.
       </ErrorBox>;
-    } else if (this.props.displayEagerly || (this.state.error !== undefined && this.state.error !== null)) {
+    } else if (this.props.displayEagerly || this.state.displayError) {
       if (this.props.rethrowError(this.state.error)) {
         throw this.state.error;
       }

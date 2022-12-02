@@ -112,7 +112,10 @@ function DataAccessLogsBox() {
           ))
         }
       />
-      {dataAccessQuery.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."} error={dataAccessQuery.error} displayEagerly={true}></ErrorBoundary>}
+      {dataAccessQuery.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."}
+                                                 error={dataAccessQuery.error}
+                                                 displayEagerly={true}
+                                                 styling={"bg-red-100"} />}
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}

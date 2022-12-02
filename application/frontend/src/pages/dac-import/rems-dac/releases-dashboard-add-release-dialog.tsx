@@ -61,7 +61,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
   }, [showing]);
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary styling={"bg-red-100"}>
       <SelectDialogBase
         showing={showing}
         cancelShowing={cancelShowing}

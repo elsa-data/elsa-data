@@ -98,7 +98,10 @@ export const ReleasesPage: React.FC = () => {
               </tbody>
             </table>
           )}
-          {query.isError && <ErrorBoundary message={"Something went wrong fetching releases."} error={query.error} displayEagerly={true}></ErrorBoundary>}
+          {query.isError && <ErrorBoundary message={"Something went wrong fetching releases."}
+                                           error={query.error}
+                                           displayEagerly={true}
+                                           styling={"bg-red-100"} />}
         </Box>
       </div>
     </LayoutBase>

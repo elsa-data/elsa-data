@@ -48,7 +48,10 @@ export const AuditEntryPage = (): JSX.Element => {
       <BoxNoPad heading={`Audit event for ${objectId}`} errorMessage={"Something went wrong audit event."}>
         <div className="flex flex-row flex-wrap flex-grow mt-2 overflow-auto">
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
-          {query.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."} error={query.error} displayEagerly={true}></ErrorBoundary>}
+          {query.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."}
+                                           error={query.error}
+                                           displayEagerly={true}
+                                           styling={"bg-red-100"} />}
         </div>
       </BoxNoPad>
     </LayoutBase>

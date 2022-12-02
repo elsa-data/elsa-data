@@ -58,7 +58,10 @@ export const DatasetsDetailPage: React.FC = () => {
             </>
           )}
         </div>
-        {error && <ErrorBoundary message={"Something went wrong fetching datasets."} error={error} displayEagerly={true}></ErrorBoundary>}
+        {error && <ErrorBoundary message={"Something went wrong fetching datasets."}
+                                 error={error}
+                                 displayEagerly={true}
+                                 styling={"bg-red-100"} />}
       </>
     </LayoutBase>
   );

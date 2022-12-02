@@ -108,7 +108,10 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             </tbody>
           </table>
         )}
-        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching datasets."} error={dataQuery.error} displayEagerly={true}></ErrorBoundary>}
+        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching datasets."}
+                                             error={dataQuery.error}
+                                             displayEagerly={true}
+                                             styling={"bg-red-100"} />}
       </div>
     </BoxNoPad>
   );
