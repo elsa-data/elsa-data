@@ -26,14 +26,14 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
     const whenInactive = `text-gray-500 border-white ${hoverClass} ${always}`;
 
     return (
-      <li className="mr-6 my-2 md:my-0">
+      <div className="mr-6 my-2 md:my-0">
         <NavLink
           to={to}
           className={({ isActive }) => (isActive ? whenActive : whenInactive)}
         >
           <span className="pb-1 md:pb-0 text-sm">{label}</span>
         </NavLink>
-      </li>
+      </div>
     );
   };
 

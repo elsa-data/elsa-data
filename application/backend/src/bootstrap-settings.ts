@@ -68,6 +68,23 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     remsBotUser: config.get("rems.botUser")!,
     remsUrl: "https://hgpp-rems.dev.umccr.org",
     ontoFhirUrl: config.get("ontoFhirUrl"),
+    mondoSystem: {
+      uri: config.get("mondoSystem.uri"),
+      oid: config.get("mondoSystem.oid"),
+    },
+    hgncGenesSystem: {
+      uri: config.get("hgncGenesSystem.uri"),
+      oid: config.get("hgncGenesSystem.oid"),
+    },
+    hpoSystem: {
+      uri: config.get("hpoSystem.uri"),
+      nonPreferredUri: config.get("hpoSystem.nonPreferredUri"),
+    },
+    isoCountrySystemUri: config.get("isoCountrySystemUri"),
+    snomedSystem: {
+      uri: config.get("snomedSystem.uri"),
+      oid: config.get("snomedSystem.oid"),
+    },
     datasets: (config.get("datasets") as any[]) ?? [],
     superAdmins: (config.get("superAdmins") as any[]) ?? [],
     rateLimit: {

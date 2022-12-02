@@ -20,16 +20,16 @@ import {
 } from "./insert-test-data-10f-simpsons";
 import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
-import {
-  ISO_COUNTRY_SYSTEM_URI,
-  MONDO_SYSTEM_URI,
-} from "@umccr/elsa-constants";
 import * as MOCK_JSON from "./mock-json.json";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
+import { container } from "tsyringe";
+import { ElsaSettings } from "../config/elsa-settings";
 
 const edgeDbClient = edgedb.createClient();
 
 export async function insertRelease1() {
+  const settings = container.resolve<ElsaSettings>("Settings");
+
   return await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Study of Lots of Test Data",
@@ -63,11 +63,14 @@ Ethics form XYZ.
 `,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.DS,
-        countriesInvolved: makeSingleCodeArray(ISO_COUNTRY_SYSTEM_URI, "AUS"),
+        countriesInvolved: makeSingleCodeArray(
+          settings.isoCountrySystemUri,
+          "AUS"
+        ),
         diseasesOfStudy: makeDoubleCodeArray(
-          MONDO_SYSTEM_URI,
+          settings.mondoSystem.uri,
           "MONDO:0008678",
-          MONDO_SYSTEM_URI,
+          settings.mondoSystem.uri,
           "MONDO:0021531"
         ),
         studyAgreesToPublish: true,
