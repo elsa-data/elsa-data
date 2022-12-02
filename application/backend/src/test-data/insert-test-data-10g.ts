@@ -6,7 +6,8 @@ import {
   createFile,
 } from "./test-data-helpers";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
-import { MONDO_SYSTEM_URI } from "@umccr/elsa-constants";
+import { container } from "tsyringe";
+import { ElsaSettings } from "../config/elsa-settings";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -17,6 +18,8 @@ export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
  * to test specific areas of data sharing.
  */
 export async function insert10G() {
+  const settings = container.resolve<ElsaSettings>("Settings");
+
   const makeCase = async (
     caseId: string,
     patientId: string,
@@ -121,7 +124,7 @@ export async function insert10G() {
             {
               code: "DUO:0000007",
               // endocrine system disorder
-              diseaseSystem: MONDO_SYSTEM_URI,
+              diseaseSystem: settings.mondoSystem.uri,
               diseaseCode: "MONDO:0005151",
               modifiers: [{ code: "DUO:0000045" }],
             },

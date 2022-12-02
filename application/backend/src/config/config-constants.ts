@@ -110,6 +110,50 @@ export const configDefinition = {
     format: "*",
     default: "",
   },
+  mondoSystem: {
+    uri: {
+      format: String,
+      default: "http://purl.obolibrary.org/obo/mondo.owl",
+    },
+    oid: {
+      format: String,
+      default: "2.16.840.1.113883.3.9216",
+    }
+  },
+  hgncGenesSystem: {
+    uri: {
+      format: String,
+      default: "http://www.genenames.org",
+    },
+    oid: {
+      format: String,
+      default: "2.16.840.1.113883.6.281",
+    }
+  },
+  hpoSystem: {
+    uri: {
+      format: String,
+      default: "http://human-phenotype-ontology.org",
+    },
+    nonPreferredUri: {
+      format: String,
+      default: "http://purl.obolibrary.org/obo/hp.owl",
+    },
+  },
+  isoCountrySystemUri: {
+    format: String,
+    default: "urn:iso:std:iso:3166",
+  },
+  snomedSystem: {
+    uri: {
+      format: String,
+      default: "http://snomed.info/sct",
+    },
+    oid: {
+      format: String,
+      default: "2.16.840.1.113883.6.96",
+    }
+  },
   host: {
     doc: "The host to bind.",
     format: "*",

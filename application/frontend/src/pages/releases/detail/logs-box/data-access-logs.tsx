@@ -5,13 +5,13 @@ import { BoxNoPad } from "../../../../components/boxes";
 import { Table } from "../../../../components/tables";
 import { ToolTip } from "../../../../components/tooltip";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
-import { getStringReadableBytes } from "../../../../helpers/utils";
 import { categoryToDescription } from "./logs-box";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
+import { fileSize } from "humanize-plus";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
@@ -89,7 +89,7 @@ function DataAccessLogsBox() {
                       key={idx}
                     >
                       {objKey === "egressBytes" ? (
-                        getStringReadableBytes(row[objKey])
+                        fileSize(row[objKey])
                       ) : objKey === "occurredDateTime" ? (
                         formatLocalDateTime(row[objKey])
                       ) : objKey === "actionCategory" ? (

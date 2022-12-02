@@ -8,16 +8,28 @@ import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
-  datasetAllSummaryQuery,
-  selectDatasetIdByDatasetUriAndExternalIdentifiers,
+  datasetSummaryQuery,
+  selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 @injectable()
 @singleton()
 export class DatasetService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private settings: ElsaSettings
   ) {}
+
+  getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
+    for (const d of this.settings.datasets) {
+      if (d.uri === datasetUri) {
+        return d.storageUriPrefix;
+      }
+    }
+
+    return null;
+  }
 
   /**
    * Return a paged result of datasets in summary form.
@@ -26,10 +38,11 @@ export class DatasetService {
    * @param limit
    * @param offset
    */
-  public async getAll(
+  public async getSummary(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
+    includeDeletedFile: boolean
   ): Promise<PagedResult<DatasetLightType>> {
     if (limit <= 0 || offset < 0) throw new BadLimitOffset(limit, offset);
 
@@ -37,10 +50,10 @@ export class DatasetService {
     // all data owners can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-
-    const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
+    const fullDatasets = await datasetSummaryQuery.run(this.edgeDbClient, {
       limit: limit,
       offset: offset,
+      includeDeletedFile: includeDeletedFile,
     });
 
     const converted: DatasetLightType[] = fullDatasets.map((fd) => {
@@ -54,6 +67,8 @@ export class DatasetService {
         id: fd.id,
         uri: fd.uri!,
         description: fd.description,
+        updatedDateTime: fd.updatedDateTime,
+        isInConfig: fd.isInConfig,
         summaryCaseCount: fd.summaryCaseCount,
         summaryPatientCount: fd.summaryPatientCount,
         summarySpecimenCount: fd.summarySpecimenCount,
@@ -90,10 +105,12 @@ export class DatasetService {
       }))
       .run(this.edgeDbClient);
 
-    if (singleDataset != null)
+    if (singleDataset != null) {
       return {
         id: singleDataset.id,
         uri: singleDataset.uri,
+        updatedDateTime: singleDataset.updatedDateTime,
+        isInConfig: singleDataset.isInConfig,
         description: singleDataset.description,
         summaryArtifactCount: 0,
         summaryArtifactIncludes: "",
@@ -101,22 +118,11 @@ export class DatasetService {
         summarySpecimenCount: 0,
         summaryPatientCount: 0,
         summaryArtifactSizeBytes: 0,
-        cases: singleDataset.cases.map((c) => {
-          return {
-            patients: c.patients.map((p) => {
-              return {
-                specimens: p.specimens.map((s) => {
-                  return {
-                    artifacts: [],
-                  };
-                }),
-              };
-            }),
-          };
-        }),
+        cases: [],
       };
+    }
 
-    return null;
+    return singleDataset;
   }
 
   /**
@@ -165,15 +171,10 @@ export class DatasetService {
     datasetDescription: string;
     datasetName: string;
   }): Promise<string> {
-    const selectDatasetIdQuery =
-      selectDatasetIdByDatasetUriAndExternalIdentifiers(
-        datasetUri,
-        datasetName
-      );
-
     // Find current Dataset
-    const datasetIdArray = await selectDatasetIdQuery.run(this.edgeDbClient);
-    const datasetId = datasetIdArray[0]?.id;
+    const datasetId = (
+      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
+    )?.id;
     if (datasetId) return datasetId;
 
     // Else, create new dataset
@@ -184,6 +185,20 @@ export class DatasetService {
     });
     const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
     return newDataset.id;
+  }
+
+  /**
+   * Select dataset from datasetUri
+   */
+  public async selectDatasetIdFromDatasetUri(
+    datasetUri: string
+  ): Promise<string | null> {
+    const datasetId = (
+      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
+    )?.id;
+    if (datasetId) return datasetId;
+
+    return null;
   }
 
   /**
@@ -243,5 +258,16 @@ export class DatasetService {
         }))
         .run(this.edgeDbClient);
     }
+  }
+
+  public async updateDatasetCurrentTimestamp(datasetId: string) {
+    await e
+      .update(e.dataset.Dataset, (d) => ({
+        filter: e.op(d.id, "=", e.uuid(datasetId)).assert_single(),
+        set: {
+          updatedDateTime: new Date(),
+        },
+      }))
+      .run(this.edgeDbClient);
   }
 }

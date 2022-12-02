@@ -13,22 +13,25 @@ import { Readable } from "stream";
  * @returns
  */
 export type S3ObjectMetadata = {
-  key: string;
+  s3Url: string;
   eTag: string;
   size: number;
 };
 export async function awsListObjects(
   s3Client: S3Client,
-  bucketName: string,
-  s3KeyPrefix: string
+  s3UrlPrefix: string
 ): Promise<S3ObjectMetadata[]> {
+  const stripS3Protocol = s3UrlPrefix.replaceAll(/s3:\/\//gi, "");
+  const bucketName = stripS3Protocol.split("/")[0];
+  const keyPrefix = stripS3Protocol.replaceAll(`${bucketName}/`, "");
+
   let s3ObjectList: S3ObjectMetadata[] = [];
   let continuationToken: string | undefined = undefined;
 
   do {
     const s3ClientInput: ListObjectsV2Command = new ListObjectsV2Command({
       Bucket: bucketName,
-      Prefix: s3KeyPrefix,
+      Prefix: keyPrefix,
       ContinuationToken: continuationToken,
     });
     const listObjOutput = await s3Client.send(s3ClientInput);
@@ -41,7 +44,7 @@ export async function awsListObjects(
         const key = objContent.Key;
 
         s3ObjectList.push({
-          key: key ?? "",
+          s3Url: `s3://${bucketName}/${key}` ?? "",
           eTag: objContent.ETag ?? "",
           size: objContent.Size ?? 0,
         });
@@ -51,17 +54,20 @@ export async function awsListObjects(
   return s3ObjectList;
 }
 
-export async function readObjectToStringFromS3Key(
+export async function readObjectToStringFromS3Url(
   s3Client: S3Client,
-  bucketName: string,
-  objectKey: string
+  s3Url: string
 ): Promise<string> {
+  const stripS3Protocol = s3Url.replaceAll(/s3:\/\//gi, "");
+  const bucketName = stripS3Protocol.split("/")[0];
+  const key = stripS3Protocol.replaceAll(`${bucketName}/`, "");
+
   try {
     // https://transang.me/modern-fetch-and-how-to-get-buffer-output-from-aws-sdk-v3-getobjectcommand/
     const getObjOutput = await s3Client.send(
       new GetObjectCommand({
         Bucket: bucketName,
-        Key: objectKey,
+        Key: key,
       })
     );
     if (getObjOutput.Body) {

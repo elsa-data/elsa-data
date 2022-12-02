@@ -51,7 +51,7 @@ export const BoxNoPad: React.FC<PropsWithChildren<BoxProps>> = ({
           <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
         </div>
         <ErrorBoundary message={errorMessage} styling={"bg-red-100"}>
-          <div className="overflow-auto">{children}</div>
+          <div className="overflow-visible">{children}</div>
         </ErrorBoundary>
       </div>
     </div>

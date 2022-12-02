@@ -45,6 +45,8 @@ module dataset {
         required property isInConfig -> bool {
             default := true;
         };
+
+        property updatedDateTime -> datetime;
     }
 
 

@@ -50,6 +50,23 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   sessionSalt: "ABCD",
   sessionSecret: "XYZ",
   ontoFhirUrl: "",
+  mondoSystem: {
+    uri: "",
+    oid: ""
+  },
+  hgncGenesSystem: {
+    uri: "",
+    oid: ""
+  },
+  hpoSystem: {
+    uri: "",
+    nonPreferredUri: ""
+  },
+  isoCountrySystemUri: "",
+  snomedSystem: {
+    uri: "",
+    oid: ""
+  },
   awsSigningSecretAccessKey: "A",
   awsSigningAccessKeyId: "B",
   rateLimit: {},

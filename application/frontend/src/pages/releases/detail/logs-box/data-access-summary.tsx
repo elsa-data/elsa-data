@@ -3,14 +3,12 @@ import axios from "axios";
 import { useQuery } from "react-query";
 import { BoxNoPad } from "../../../../components/boxes";
 import { Table } from "../../../../components/tables";
-import {
-  convertCamelCaseToTitle,
-  getStringReadableBytes,
-} from "../../../../helpers/utils";
+import { convertCamelCaseToTitle } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
 import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import { fileSize } from "humanize-plus";
 
 function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
   const dataAccessQuery = useQuery(
@@ -79,7 +77,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
                   >
                     {column === "dataAccessedInBytes" ||
                     column === "fileSize" ? (
-                      getStringReadableBytes(row[column])
+                      fileSize(row[column])
                     ) : column === "downloadStatus" ? (
                       <DisplayDownloadStatus status={row[column]} />
                     ) : column === "lastAccessedTime" ? (

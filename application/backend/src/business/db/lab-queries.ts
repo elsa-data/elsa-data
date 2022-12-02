@@ -21,6 +21,7 @@ function insertFile(file: File) {
     url: file.url,
     size: file.size,
     checksums: file.checksums,
+    isDeleted: false,
   });
 }
 

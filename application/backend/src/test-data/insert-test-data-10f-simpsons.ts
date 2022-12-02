@@ -16,7 +16,8 @@ import {
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
 } from "@umccr/elsa-types";
-import { MONDO_SYSTEM_URI } from "@umccr/elsa-constants";
+import { container } from "tsyringe";
+import { ElsaSettings } from "../config/elsa-settings";
 
 // we make these identifers as external consts so they can be used as insertion values
 // but can also be in test suites for looking up know cases etc
@@ -117,7 +118,7 @@ export async function makeSimpsonsTrio() {
       {
         code: "DUO:0000007",
         // inherited auditory system disease
-        diseaseSystem: MONDO_SYSTEM_URI,
+        diseaseSystem: container.resolve<ElsaSettings>("Settings").mondoSystem.uri,
         diseaseCode: "MONDO:0037940",
         // also SCTID:362991006
         modifiers: [

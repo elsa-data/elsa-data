@@ -1,4 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
+import { TypeDate } from "./typebox-helpers";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -31,6 +32,8 @@ export const DatasetSchemaLight = Type.Object({
   id: Type.String(),
   uri: Type.String(),
   description: Type.String(),
+  updatedDateTime: TypeDate,
+  isInConfig: Type.Boolean(),
   summaryCaseCount: Type.Number(),
   summaryPatientCount: Type.Number(),
   summarySpecimenCount: Type.Number(),

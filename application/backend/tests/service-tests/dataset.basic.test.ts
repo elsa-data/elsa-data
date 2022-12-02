@@ -26,7 +26,7 @@ beforeEach(async () => {
 });
 
 it("basic summary get all works", async () => {
-  const result = await datasetService.getAll(adminUser, 1000, 0);
+  const result = await datasetService.getSummary(adminUser, 1000, 0, true);
 
   expect(result).not.toBeNull();
   assert(result && result.data);
@@ -35,7 +35,7 @@ it("basic summary get all works", async () => {
 });
 
 it("basic summary get all has correct summary values for family dataset", async () => {
-  const result = await datasetService.getAll(adminUser, 1000, 0);
+  const result = await datasetService.getSummary(adminUser, 1000, 0, true);
 
   expect(result).not.toBeNull();
   assert(result && result.data);
@@ -43,22 +43,22 @@ it("basic summary get all has correct summary values for family dataset", async 
   expect(result.data.length).toBe(2);
 
   // because we get consistently sorted results (by uri) - we expect family dataset to be first
-  const family = result.data[0];
+  const family = result.data[1];
 
-  expect(family.id).toBe(tenfDatasetId);
-  expect(family.uri).toBe(TENF_URI);
-  expect(family.description).toBe("UMCCR 10F");
-  expect(family.summaryArtifactCount).toBe(32);
+  expect(family.id).toBe(tengDatasetId2);
+  expect(family.uri).toBe(TENG_URI);
+  expect(family.description).toBe("UMCCR 10G");
+  expect(family.summaryArtifactCount).toBe(20);
   expect(family.summaryArtifactIncludes).toBe("BAM VCF");
-  expect(family.summaryArtifactSizeBytes).toBe(2880815296);
-  expect(family.summaryCaseCount).toBe(4);
-  expect(family.summaryPatientCount).toBe(16);
-  expect(family.summarySpecimenCount).toBe(16);
+  expect(family.summaryArtifactSizeBytes).toBe(546398018478);
+  expect(family.summaryCaseCount).toBe(10);
+  expect(family.summaryPatientCount).toBe(10);
+  expect(family.summarySpecimenCount).toBe(10);
 });
 
 it("basic summary get all is sorted by dataset URI", async () => {
   {
-    const result = await datasetService.getAll(adminUser, 1000, 0);
+    const result = await datasetService.getSummary(adminUser, 1000, 0, true);
 
     assert(result && result.data);
     expect(result.data.length).toBe(2);
@@ -70,7 +70,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   await insert10C();
 
   {
-    const result = await datasetService.getAll(adminUser, 1000, 0);
+    const result = await datasetService.getSummary(adminUser, 1000, 0, true);
 
     assert(result && result.data);
     expect(result.data.length).toBe(3);
