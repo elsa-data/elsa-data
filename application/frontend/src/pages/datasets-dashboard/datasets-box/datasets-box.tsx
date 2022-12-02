@@ -127,7 +127,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             </label>
           </div>
         </div>
-      </div>
+      </div> 
       <div className="flex flex-col overflow-auto">
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>

@@ -21,20 +21,7 @@ export const DatasetsDetailPage: React.FC = () => {
     queryKey: [DATASET_REACT_QUERY_KEY, datasetIdParam],
     queryFn: async ({ queryKey }) => {
       const did = queryKey[1];
-      return {
-        id: "0fcc4906-710b-11ed-b7e3-b795347a4064",
-        uri: "urn:fdc:umccr.org:2022:dataset/10c",
-        updatedDateTime: null,
-        isInConfig: false,
-        description: "UMCCR 10C",
-        summaryArtifactCount: 0,
-        summaryArtifactIncludes: "",
-        summaryCaseCount: 0,
-        summarySpecimenCount: 0,
-        summaryPatientCount: 0,
-        summaryArtifactSizeBytes: 0,
-        cases: [],
-      };
+
       return await axios
         .get<DatasetDeepType>(`/api/datasets/${did}`)
         .then((response) => response.data);
