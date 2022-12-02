@@ -98,7 +98,10 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     const allFiles = await this.getAllFileRecords(user, releaseId);
 
     // fill in the actual S3 signed urls
-    for (const af of allFiles) af.s3Signed = await presign(af.s3Url!);
+    for (const af of allFiles) {
+      if (af.s3Url) af.s3Signed = await presign(af.s3Url!);
+      else af.s3Signed = "";
+    }
 
     // setup a TSV stream
     const stringifyColumnOptions = [];

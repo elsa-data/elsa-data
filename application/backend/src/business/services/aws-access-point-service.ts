@@ -3,27 +3,24 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
-import { randomBytes } from "crypto";
-import { has } from "lodash";
-import { AwsBaseService, ReleaseAwsFileRecord } from "./aws-base-service";
+import { AwsBaseService } from "./aws-base-service";
 import {
   CloudFormationClient,
-  CreateStackCommand,
-  DescribeStackResourcesCommand,
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
-  StackResource,
-  waitUntilStackCreateComplete,
 } from "@aws-sdk/client-cloudformation";
 import { AuditLogService } from "./audit-log-service";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
-import archiver, { ArchiverOptions } from "archiver";
 import { ReleaseService } from "./release-service";
+import {
+  correctAccessPointTemplateOutputs,
+  createAccessPointTemplateFromReleaseFileEntries,
+} from "./_access-point-template-helper";
+import { ElsaSettings } from "../../config/elsa-settings";
 
-// need to be configuration eventually
-const BUCKET = "elsa-data-tmp";
+// TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
 
 @injectable()
@@ -33,8 +30,9 @@ export class AwsAccessPointService extends AwsBaseService {
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    private readonly releaseService: ReleaseService,
     @inject("Database") edgeDbClient: edgedb.Client,
-    private releaseService: ReleaseService,
     usersService: UsersService,
     auditLogService: AuditLogService
   ) {
@@ -43,14 +41,6 @@ export class AwsAccessPointService extends AwsBaseService {
 
   public static getReleaseStackName(releaseId: string): string {
     return `elsa-data-release-${releaseId}`;
-  }
-
-  private static bucketNameAsResource(bucketName: string): string {
-    return Buffer.from(bucketName, "ascii").toString("hex");
-  }
-
-  private static resourceNameAsBucketName(resourceName: string): string {
-    return new Buffer(resourceName, "hex").toString("ascii");
   }
 
   /**
@@ -65,7 +55,11 @@ export class AwsAccessPointService extends AwsBaseService {
   public async getInstalledAccessPointResources(
     user: AuthenticatedUser,
     releaseId: string
-  ): Promise<{ stackName: string; stackId: string; outputs: any } | null> {
+  ): Promise<{
+    stackName: string;
+    stackId: string;
+    bucketNameMap: { [x: string]: string };
+  } | null> {
     const releaseStackName =
       AwsAccessPointService.getReleaseStackName(releaseId);
 
@@ -78,26 +72,22 @@ export class AwsAccessPointService extends AwsBaseService {
         })
       );
     } catch (e) {
-      console.log(e);
+      // describing a stack that is not present throws an exception so we take that to mean it is
+      // not present
+      // TODO tighten the error code here so we don't gobble up other "unexpected" errors
       return null;
     }
 
     if (!releaseStack.Stacks || releaseStack.Stacks.length != 1) return null;
 
     // TODO check stack status?? - should be complete_ok?
-    const outputs: { [k: string]: string } = {};
 
-    if (releaseStack.Stacks[0].Outputs) {
-      releaseStack.Stacks[0].Outputs.forEach((o) => {
-        outputs[AwsAccessPointService.resourceNameAsBucketName(o.OutputKey!)] =
-          o.OutputValue!;
-      });
-    }
+    const outputs = correctAccessPointTemplateOutputs(releaseStack.Stacks[0]);
 
     return {
       stackName: releaseStackName,
       stackId: releaseStack.Stacks[0].StackId!,
-      outputs: outputs,
+      bucketNameMap: outputs,
     };
   }
 
@@ -130,8 +120,8 @@ export class AwsAccessPointService extends AwsBaseService {
       );
 
     for (const f of filesArray) {
-      if (f.s3Bucket in stackResources.outputs) {
-        f.s3Bucket = stackResources.outputs[f.s3Bucket];
+      if (f.s3Bucket in stackResources.bucketNameMap) {
+        f.s3Bucket = stackResources.bucketNameMap[f.s3Bucket];
         f.s3Url = `s3://${f.s3Bucket}/${f.s3Key}`;
       }
     }
@@ -192,193 +182,41 @@ export class AwsAccessPointService extends AwsBaseService {
     // find all the files encompassed by this release as a flat array of S3 URLs
     const filesArray = await this.getAllFileRecords(user, releaseId);
 
-    // the access points can only wrap a single bucket - so we need to
-    // first group by bucket
-    const filesByBucket: { [bucket: string]: ReleaseAwsFileRecord[] } = {};
+    // make a (nested) CloudFormation templates that will expose only these
+    // files via an access point
+    const accessPointTemplates =
+      createAccessPointTemplateFromReleaseFileEntries(
+        this.settings.awsTempBucket,
+        REGION,
+        releaseId,
+        filesArray,
+        accountIds,
+        vpcId
+      );
 
-    for (const af of filesArray) {
-      if (!has(filesByBucket, af.s3Bucket)) {
-        filesByBucket[af.s3Bucket] = [];
-      }
+    // we've made the templates - but we need to save them to known locations in S3 so that we
+    // can install them
+    let rootTemplate;
 
-      filesByBucket[af.s3Bucket].push(af);
+    for (const apt of accessPointTemplates) {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: apt.templateBucket,
+          Key: apt.templateKey,
+          ContentType: "application/json",
+          Body: Buffer.from(apt.content),
+        })
+      );
+
+      if (apt.root) rootTemplate = apt;
     }
 
-    // for our S3 paths we want to make sure every time we do this it is in someway unique
-    const stackId = randomBytes(8).toString("hex");
+    if (!rootTemplate)
+      throw new Error(
+        "Created an access point template but none of them were designated the root template that we can install"
+      );
 
-    let subStackCount = 0;
-    let subStackCurrent: any = {};
-    let subStackAccessPointName = "";
-    let subStackStackName = "";
-
-    // const stackNamesByBucket: { [bucket: string]: string } = {};
-
-    const rootStack: any = {
-      AWSTemplateFormatVersion: "2010-09-09",
-      Resources: {
-        // as we add nested stacks (for each access point) we will place them here
-      },
-      Outputs: {
-        // as we add nested stack (for each access point) we need to capture the outputs here
-      },
-    };
-
-    const closeStack = async () => {
-      // we are safe from calling close() before we have even started making substacks
-      if (subStackCount > 0) {
-        rootStack.Resources[subStackStackName] = {
-          Type: "AWS::CloudFormation::Stack",
-          Properties: {
-            TemplateURL: `https://${BUCKET}.s3.${REGION}.amazonaws.com/${stackId}/${subStackAccessPointName}.template`,
-          },
-        };
-        rootStack.Outputs[subStackStackName] = {
-          Value: {
-            "Fn::GetAtt": [subStackStackName, "Outputs.S3AccessPointAlias"],
-          },
-        };
-
-        await this.s3Client.send(
-          new PutObjectCommand({
-            Bucket: BUCKET,
-            Key: `${stackId}/${subStackAccessPointName}.template`,
-            ContentType: "application/json",
-            Body: Buffer.from(JSON.stringify(subStackCurrent)),
-          })
-        );
-      }
-    };
-
-    /**
-     * Add a new stack as an access point for files in the given bucket.
-     *
-     * @param bucketName
-     */
-    const addNewStack = (bucketName: string) => {
-      subStackCount++;
-      subStackAccessPointName = `${releaseId}-${subStackCount}`;
-      subStackStackName =
-        AwsAccessPointService.bucketNameAsResource(bucketName);
-
-      subStackCurrent = {
-        AWSTemplateFormatVersion: "2010-09-09",
-        Description: `S3 AccessPoint template for allowing access in bucket ${bucketName} to files released in release ${releaseId}`,
-        Resources: {
-          S3AccessPoint: {
-            Type: "AWS::S3::AccessPoint",
-            Properties: {
-              Bucket: bucketName,
-              Name: subStackAccessPointName,
-              PublicAccessBlockConfiguration: {
-                BlockPublicAcls: true,
-                IgnorePublicAcls: true,
-                BlockPublicPolicy: true,
-                RestrictPublicBuckets: true,
-              },
-              Policy: {
-                Version: "2012-10-17",
-                Statement: [
-                  {
-                    Action: ["s3:GetObject"],
-                    Effect: "Allow",
-                    Resource: [],
-                    Principal: {
-                      AWS: accountIds.map((ac) => `arn:aws:iam::${ac}:root`),
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        },
-        Outputs: {
-          S3AccessPointAlias: {
-            Value: {
-              "Fn::GetAtt": ["S3AccessPoint", "Alias"],
-            },
-            Description: "Alias of the S3 access point.",
-          },
-        },
-      };
-
-      if (vpcId) {
-        subStackCurrent.Resources.S3AccessPoint.Properties["VpcConfiguration"] =
-          {
-            VpcId: vpcId,
-          };
-      }
-    };
-
-    for (const bucket of Object.keys(filesByBucket)) {
-      await closeStack();
-
-      addNewStack(bucket);
-
-      for (const file of filesByBucket[bucket]) {
-        subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[0].Resource.push(
-          `arn:aws:s3:ap-southeast-2:843407916570:accesspoint/${subStackAccessPointName}/object/${file.s3Key}*`
-        );
-      }
-    }
-
-    await closeStack();
-
-    await this.s3Client.send(
-      new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: `${stackId}/install.template`,
-        ContentType: "application/json",
-        Body: Buffer.from(JSON.stringify(rootStack)),
-      })
-    );
-
-    return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${stackId}/install.template`;
+    // return the HTTPS path to the root template that can then be passed to the install job
+    return rootTemplate.templateHttps;
   }
 }
-
-/*
-    await waitUntilStackCreateComplete(
-      { client: this.cfnClient, maxWaitTime: 300 },
-      {
-        StackName: releaseStackName,
-      }
-    );
-
-    const madeReleaseStack = await this.cfnClient.send(
-      new DescribeStacksCommand({
-        StackName: releaseStackName,
-      })
-    );
-
-    if (
-      madeReleaseStack &&
-      madeReleaseStack.Stacks &&
-      madeReleaseStack.Stacks.length > 0
-    ) {
-      const bucketToAliases: { [x: string]: string } = {};
-
-      for (const o of madeReleaseStack.Stacks[0].Outputs || []) {
-        bucketToAliases[
-          AwsAccessPointService.resourceNameAsBucketName(o.OutputKey!)
-        ] = o.OutputValue!;
-      }
-
-      for (const f of filesArray) {
-        if (f.s3Bucket in bucketToAliases) {
-          f.s3Bucket = bucketToAliases[f.s3Bucket];
-          f.s3Url = `s3://${f.s3Bucket}/${f.s3Key}`;
-        } else {
-          throw new Error(`Bucket ${f.s3Bucket} found not in stack outputs`);
-        }
-      }
-
-      console.log(filesArray);
-    } else {
-      console.log("Stack not found");
-    }
-
-    //console.log(`WROTE SCRIPTS IN FOLDER ${stackId}`);
-    //console.log(stackNamesByBucket);
-
- */

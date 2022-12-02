@@ -66,6 +66,13 @@ export const configDefinition = {
       default: undefined,
       env: `${env_prefix}AWS_SIGNING_SECRET_ACCESS_KEY`,
     },
+    tempBucket: {
+      doc: "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day",
+      format: "*",
+      sensitive: false,
+      default: undefined,
+      env: `${env_prefix}AWS_TEMP_BUCKET`,
+    },
   },
   // the rate limiting options are basically a pass through to the Fastify rate limit plugin
   // for the moment we have picked only a subset of the full configuration items

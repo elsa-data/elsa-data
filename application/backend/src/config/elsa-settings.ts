@@ -26,6 +26,7 @@ export type ElsaSettings = {
 
   awsSigningAccessKeyId: string;
   awsSigningSecretAccessKey: string;
+  awsTempBucket: string;
 
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;

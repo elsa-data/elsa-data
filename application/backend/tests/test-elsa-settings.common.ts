@@ -52,5 +52,6 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   ontoFhirUrl: "",
   awsSigningSecretAccessKey: "A",
   awsSigningAccessKeyId: "B",
+  awsTempBucket: "a-temp-bucket",
   rateLimit: {},
 });

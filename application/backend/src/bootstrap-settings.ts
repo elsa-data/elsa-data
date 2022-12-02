@@ -61,6 +61,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     oidcIssuer: issuer,
     awsSigningAccessKeyId: config.get("aws.signingAccessKeyId")!,
     awsSigningSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
+    awsTempBucket: config.get("aws.tempBucket")!,
     sessionSecret: config.get("session.secret")!,
     sessionSalt: config.get("session.salt")!,
     remsBotKey: config.get("rems.botKey")!,
