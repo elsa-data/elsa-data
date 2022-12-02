@@ -1,26 +1,25 @@
 import React from "react";
-import {Navigate, Route, Routes, useLocation} from "react-router-dom";
-import {HomePage} from "./pages/landing-page";
-import {ReleasesPage} from "./pages/releases-dashboard/releases-dashboard-page";
-import {ReleasesDetailPage} from "./pages/releases/detail/releases-detail-page";
-import {DatasetsDashboardPage} from "./pages/datasets-dashboard/datasets-dashboard-page";
-import {DatasetsDetailPage} from "./pages/datasets-detail/datasets-detail-page";
-import {LoginPage} from "./pages/login-page";
-import {useLoggedInUser} from "./providers/logged-in-user-provider";
-import {NotAuthorisedPage} from "./pages/not-authorised-page";
-import {LoginDevPage} from "./pages/login-dev-page";
-import {UsersDashboardPage} from "./pages/users-dashboard/users-dashboard-page";
-import {AuditEntryPage} from "./pages/releases/detail/logs-box/audit-entry-page";
-import {ErrorBoundary} from "./components/error-boundary";
-import {DacImportPage} from "./pages/dac-import/dac-import-page";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { HomePage } from "./pages/landing-page";
+import { ReleasesPage } from "./pages/releases-dashboard/releases-dashboard-page";
+import { ReleasesDetailPage } from "./pages/releases/detail/releases-detail-page";
+import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
+import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page";
+import { LoginPage } from "./pages/login-page";
+import { useLoggedInUser } from "./providers/logged-in-user-provider";
+import { NotAuthorisedPage } from "./pages/not-authorised-page";
+import { LoginDevPage } from "./pages/login-dev-page";
+import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
+import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
+import { EagerErrorBoundary } from "./components/error-boundary";
+import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
-import {Base7807Error, Base7807Response} from "@umccr/elsa-types/error-types";
 
 function NoMatch() {
   let location = useLocation();
 
   return (
-    <ErrorBoundary
+    <EagerErrorBoundary
       message={
         <div>
           <p>
@@ -37,7 +36,6 @@ function NoMatch() {
           </p>
         </div>
       }
-      displayEagerly={true}
     />
   );
 }

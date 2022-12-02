@@ -7,7 +7,7 @@ import { Box } from "../../components/boxes";
 import { DatasetDeepType } from "@umccr/elsa-types";
 import { MyModal } from "../../components/modals";
 import { LayoutBase } from "../../layouts/layout-base";
-import { ErrorBoundary } from "../../components/error-boundary";
+import { EagerErrorBoundary } from "../../components/error-boundary";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -58,9 +58,8 @@ export const DatasetsDetailPage: React.FC = () => {
             </>
           )}
         </div>
-        {error && <ErrorBoundary message={"Something went wrong fetching datasets."}
+        {error && <EagerErrorBoundary message={"Something went wrong fetching datasets."}
                                  error={error}
-                                 displayEagerly={true}
                                  styling={"bg-red-100"} />}
       </>
     </LayoutBase>

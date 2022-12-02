@@ -10,7 +10,7 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { isUndefined } from "lodash";
-import {ErrorBoundary} from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -145,7 +145,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       <p></p>
                     </>
                   )}
-                  {isErrorSet && <ErrorBoundary displayEagerly={true} error={error} styling={"bg-red-100"} />}
+                  {isErrorSet && <EagerErrorBoundary error={error} styling={"bg-red-100"} />}
                 </div>
               </div>
             </div>

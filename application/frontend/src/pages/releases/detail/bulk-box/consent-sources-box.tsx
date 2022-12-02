@@ -5,7 +5,7 @@ import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
 import { RhInput } from "../../../../components/rh/rh-input";
-import { ErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -98,7 +98,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseId }) => {
           <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
             <div className="grid grid-cols-3 gap-6">
               {lastMutateError && (
-                <ErrorBoundary message={lastMutateError} displayEagerly={true} styling={"bg-red-100"} />
+                <EagerErrorBoundary message={lastMutateError} styling={"bg-red-100"} />
               )}
               <RhRadios label={"Consent Defaults"}>
                 {typeRadio("Absent consent information = Consent", "YES")}

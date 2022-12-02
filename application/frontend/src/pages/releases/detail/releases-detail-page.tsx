@@ -17,7 +17,7 @@ import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
-import { ErrorBoundary } from "../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../components/error-boundary";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -124,9 +124,8 @@ export const ReleasesDetailPage: React.FC = () => {
             <DataAccessSummaryBox releaseId={releaseId} />
           </>
         )}
-        {releaseQuery.isError && <ErrorBoundary message={"Something went wrong fetching release data."}
+        {releaseQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching release data."}
                                                 error={releaseQuery.error}
-                                                displayEagerly={true}
                                                 styling={"bg-red-100"} />}
       </div>
     </LayoutBase>

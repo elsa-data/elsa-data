@@ -13,7 +13,7 @@ import { isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
-import { ErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -112,9 +112,8 @@ function DataAccessLogsBox() {
           ))
         }
       />
-      {dataAccessQuery.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."}
+      {dataAccessQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching audit logs."}
                                                  error={dataAccessQuery.error}
-                                                 displayEagerly={true}
                                                  styling={"bg-red-100"} />}
       <BoxPaginator
         currentPage={currentPage}

@@ -11,7 +11,7 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import { ErrorBoundary } from "../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../components/error-boundary";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {
@@ -100,9 +100,8 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
           <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
         </table>
-        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching users."}
+        {dataQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching users."}
                                              error={dataQuery.error}
-                                             displayEagerly={true}
                                              styling={"bg-red-100"} />}
       </div>
     </BoxNoPad>

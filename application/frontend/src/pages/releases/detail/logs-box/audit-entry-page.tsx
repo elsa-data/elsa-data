@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { ErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 import { BoxNoPad } from "../../../../components/boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -31,14 +31,13 @@ export const AuditEntryPage = (): JSX.Element => {
 
   if (!releaseId || !objectId) {
     return (
-      <ErrorBoundary
+      <EagerErrorBoundary
         message={
           <div>
             Error: this component should not be rendered outside a route with a
             <code>releaseId</code> or <code>objectId</code> param
           </div>
         }
-        displayEagerly={true}
       />
     );
   }
@@ -48,9 +47,8 @@ export const AuditEntryPage = (): JSX.Element => {
       <BoxNoPad heading={`Audit event for ${objectId}`} errorMessage={"Something went wrong audit event."}>
         <div className="flex flex-row flex-wrap flex-grow mt-2 overflow-auto">
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
-          {query.isError && <ErrorBoundary message={"Something went wrong fetching audit logs."}
+          {query.isError && <EagerErrorBoundary message={"Something went wrong fetching audit logs."}
                                            error={query.error}
-                                           displayEagerly={true}
                                            styling={"bg-red-100"} />}
         </div>
       </BoxNoPad>

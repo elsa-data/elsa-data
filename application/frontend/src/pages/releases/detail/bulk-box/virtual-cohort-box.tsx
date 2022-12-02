@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
-import { ErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -55,7 +55,7 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
           <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
             <div className="grid-cols-5 flex flex-col">
               {lastMutateError && (
-                <ErrorBoundary message={lastMutateError} displayEagerly={true} styling={"bg-red-100"} />
+                <EagerErrorBoundary message={lastMutateError} styling={"bg-red-100"} />
               )}
             </div>
           </div>

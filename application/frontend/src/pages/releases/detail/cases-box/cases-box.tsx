@@ -9,7 +9,7 @@ import { Box, BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
-import { ErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 type Props = {
@@ -219,9 +219,8 @@ export const CasesBox: React.FC<Props> = ({
             </tbody>
           </table>
         )}
-        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching cases."}
+        {dataQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching cases."}
                                              error={dataQuery.error}
-                                             displayEagerly={true}
                                              styling={"bg-red-100"} />}
       </div>
       <div id="popup-root" />

@@ -15,7 +15,7 @@ import {
   doLookup,
 } from "../../../../helpers/ontology-helper";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
-import {ErrorBoundary} from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
 type Props = {
   releaseId: string;
@@ -198,8 +198,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
           })}
         </div>
       }
-      {isErrorSet && <ErrorBoundary message={"Something went wrong resolving duos."}
-                                    displayEagerly={true}
+      {isErrorSet && <EagerErrorBoundary message={"Something went wrong resolving duos."}
                                     error={error}
                                     styling={"bg-red-100"} />}
     </Popup>

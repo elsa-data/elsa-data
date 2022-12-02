@@ -8,7 +8,7 @@ import classNames from "classnames";
 import { BoxNoPad } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { fileSize } from "humanize-plus";
-import { ErrorBoundary } from "../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../components/error-boundary";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {
@@ -108,9 +108,8 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             </tbody>
           </table>
         )}
-        {dataQuery.isError && <ErrorBoundary message={"Something went wrong fetching datasets."}
+        {dataQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching datasets."}
                                              error={dataQuery.error}
-                                             displayEagerly={true}
                                              styling={"bg-red-100"} />}
       </div>
     </BoxNoPad>

@@ -40,9 +40,9 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
-import { ErrorBoundary } from "../../../../components/error-boundary";
-import {handleTotalCountHeaders} from "../../../../helpers/paging-helper";
-import {Base7807Error} from "@umccr/elsa-types/error-types";
+import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -86,7 +86,6 @@ export const useAuditEventQuery = (
       orderAscending,
     ],
     async () => {
-      throw new Base7807Error("Internal Server Error", 500);
       return await axios
         .get<AuditEntryType[]>(
           `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
@@ -106,8 +105,6 @@ export const useAuditEventQuery = (
         setError(null);
       },
       onError: (err) => {
-        console.log("HERE");
-        console.log(err);
         setData([]);
         setIsSuccess(false);
         setError(err);
@@ -205,8 +202,6 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
     setIsSuccess,
     setError
   );
-  console.log('HERE2');
-  console.log(error);
 
   useEffect(() => {
     if (updateData) {
@@ -322,9 +317,8 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
               </Fragment>
             ))
           }
-        /> : <ErrorBoundary message={"Could not display logs table."}
+        /> : <EagerErrorBoundary message={"Could not display logs table."}
                             error={error}
-                            displayEagerly={true}
                             styling={"bg-red-100"}
                             key={isSuccess.toString()} />}
         <BoxPaginator
@@ -376,9 +370,8 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
       )}
     </div>
   ) : detailsQuery.isError ? (
-    <ErrorBoundary message={"Something went wrong displaying audit log details."}
+    <EagerErrorBoundary message={"Something went wrong displaying audit log details."}
                    error={detailsQuery.error}
-                   displayEagerly={true}
                    styling={"bg-red-100"} />
     ) : (
     <></>
