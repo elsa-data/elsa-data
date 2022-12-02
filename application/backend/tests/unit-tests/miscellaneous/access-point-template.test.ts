@@ -63,8 +63,11 @@ describe("Creating Access Point CloudFormation Templates", () => {
         "AWSTemplateFormatVersion",
         "2010-09-09"
       );
-      expect(rootTemplateJson).toHaveProperty("Resources.S3AccessPoint");
-      expect(rootTemplateJson).toHaveProperty("Outputs.S3AccessPointAlias");
+      expect(rootTemplateJson).toHaveProperty("Resources");
+
+      const onlySubStack = Object.values(rootTemplateJson.Resources)[0];
+
+      expect(onlySubStack).toHaveProperty("Type", "AWS::CloudFormation::Stack");
     }
   });
 
@@ -87,8 +90,6 @@ describe("Creating Access Point CloudFormation Templates", () => {
         "AWSTemplateFormatVersion",
         "2010-09-09"
       );
-      expect(rootTemplateJson).toHaveProperty("Resources.S3AccessPoint");
-      expect(rootTemplateJson).toHaveProperty("Outputs.S3AccessPointAlias");
     }
   });
 
