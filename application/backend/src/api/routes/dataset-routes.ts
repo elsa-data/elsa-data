@@ -8,36 +8,43 @@ import {
 import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
 import { container } from "tsyringe";
 import { DatasetService } from "../../business/services/dataset-service";
-import { AGService } from "../../business/services/ag-service";
+import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
+import { Static, Type } from "@sinclair/typebox";
 import { ElsaSettings } from "../../config/elsa-settings";
+
+export const DatasetSummaryQuerySchema = Type.Object({
+  includeDeletedFile: Type.Optional(Type.String()),
+});
+export type DatasetSummaryQueryType = Static<typeof DatasetSummaryQuerySchema>;
 
 export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
-  const agService = container.resolve(AGService);
-
+  const agService = container.resolve(S3IndexApplicationService);
+  const settings = container.resolve<ElsaSettings>("Settings");
   /**
    * Pageable fetching of top-level dataset information (summary level info)
    */
-  fastify.get<{ Reply: DatasetLightType[] }>(
-    "/api/datasets",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
+  fastify.get<{
+    Querystring: DatasetSummaryQueryType;
+    Reply: DatasetLightType[];
+  }>("/api/datasets/", {}, async function (request, reply) {
+    const { authenticatedUser, pageSize, offset } =
+      authenticatedRouteOnEntryHelper(request);
 
-      const datasetsPagedResult = await datasetsService.getAll(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
+    const { includeDeletedFile = "false" } = request.query;
+    const datasetsPagedResult = await datasetsService.getSummary(
+      authenticatedUser,
+      pageSize,
+      offset,
+      includeDeletedFile === "true" ? true : false
+    );
 
-      sendPagedResult(reply, datasetsPagedResult);
-    }
-  );
+    sendPagedResult(reply, datasetsPagedResult);
+  });
 
   fastify.get<{ Params: { did: string }; Reply: DatasetDeepType }>(
     "/api/datasets/:did",
@@ -76,16 +83,19 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     });
   });
 
-  fastify.post<{ Body: { keyPrefix: string } }>(
-    "/api/datasets/ag/import",
+  fastify.post<{ Body: { datasetURI: string } }>(
+    "/api/datasets/sync/",
     {},
     async function (request, reply) {
       const body = request.body;
-      const keyPrefix = body.keyPrefix;
+      const datasetUri = body.datasetURI;
+      const elsaSettings: ElsaSettings = (request as any).settings;
 
-      agService.syncDbFromS3KeyPrefix(keyPrefix);
+      // TODO: Support more import method accordingly
+      // TODO: Some error when datasetUri not found
+      agService.syncDbFromDatasetUri(datasetUri);
       reply.send(
-        "OK! \nTo prevent API timeout, returning the OK value while the script is still running. "
+        "OK! \nTo prevent API timeout, returning the OK while importing might still run in the background. "
       );
     }
   );
