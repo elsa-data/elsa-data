@@ -198,6 +198,8 @@ export class AwsAccessPointService extends AwsBaseService {
     // can install them
     let rootTemplate;
 
+    console.log(JSON.stringify(accessPointTemplates));
+
     for (const apt of accessPointTemplates) {
       await this.s3Client.send(
         new PutObjectCommand({

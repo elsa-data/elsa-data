@@ -75,9 +75,8 @@ export abstract class AwsBaseService {
       return await createReleaseFileList(
         tx,
         releaseSelectedSpecimens,
-        // the data owner always can get *all* the data - they are not bound by the 'is allowed' setting
-        userRole === "DataOwner" || releaseInfo.isAllowedReadData,
-        userRole === "DataOwner" || releaseInfo.isAllowedVariantData
+        releaseInfo.isAllowedReadData,
+        releaseInfo.isAllowedVariantData
       );
     });
   }

@@ -5,7 +5,8 @@ import {
 } from "../../../src/business/services/_access-point-template-helper";
 
 describe("Creating Access Point CloudFormation Templates", () => {
-  let files: ReleaseFileListEntry[];
+  let singleBucketFiles: ReleaseFileListEntry[];
+  let dualBucketFiles: ReleaseFileListEntry[];
 
   const getTemplateJson = (apt: AccessPointTemplateToSave): any =>
     JSON.parse(apt.content);
@@ -30,21 +31,50 @@ describe("Creating Access Point CloudFormation Templates", () => {
     };
   };
   beforeEach(() => {
-    files = [
+    singleBucketFiles = [
+      makeEntry("s3://umccr-dev/1.bam"),
+      makeEntry("s3://umccr-dev/2.bam"),
+      makeEntry("s3://umccr-dev/main.vcf.gz"),
+    ];
+    dualBucketFiles = [
       makeEntry("s3://umccr-dev/1.bam"),
       makeEntry("s3://umccr-dev/2.bam"),
       makeEntry("s3://umccr-prod/main.vcf.gz"),
     ];
   });
 
-  it("Test Basic Creation of an Access Point Template", () => {
+  it("Test Basic Creation of an Single Bucket Access Point Template", () => {
     const result = createAccessPointTemplateFromReleaseFileEntries(
       "BUCKET",
       "REGION",
       "RELEASEID",
-      files,
+      singleBucketFiles,
       ["123456789"],
       "vpc-123456"
+    );
+
+    expect(result).toHaveLength(2);
+    expect(result.filter((x) => x.root)).toHaveLength(1);
+
+    {
+      const rootTemplateJson = getTemplateJson(result.filter((x) => x.root)[0]);
+
+      expect(rootTemplateJson).toHaveProperty(
+        "AWSTemplateFormatVersion",
+        "2010-09-09"
+      );
+      expect(rootTemplateJson).toHaveProperty("Resources.S3AccessPoint");
+      expect(rootTemplateJson).toHaveProperty("Outputs.S3AccessPointAlias");
+    }
+  });
+
+  it("Test Basic Creation of an Dual Bucket Access Point Template", () => {
+    const result = createAccessPointTemplateFromReleaseFileEntries(
+      "BUCKET",
+      "REGION",
+      "RELEASEID",
+      dualBucketFiles,
+      ["123456789"]
     );
 
     expect(result).toHaveLength(3);

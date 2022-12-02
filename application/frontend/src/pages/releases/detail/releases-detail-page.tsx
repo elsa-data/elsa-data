@@ -187,6 +187,10 @@ export const ReleasesDetailPage: React.FC = () => {
               </VerticalTabs>
             </Box>
 
+            <a href="https://products.aspose.app/cells/viewer" target="_blank">
+              TSV Viewer (useful link for demo purposes)
+            </a>
+
             <LogsBox releaseId={releaseId} pageSize={pageSize} />
             <DataAccessSummaryBox releaseId={releaseId} />
           </>

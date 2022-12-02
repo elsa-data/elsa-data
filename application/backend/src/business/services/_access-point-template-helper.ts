@@ -69,6 +69,8 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   shareToAccountIds: string[],
   shareToVpcId?: string
 ): AccessPointTemplateToSave[] {
+  const rootTemplateName = "install.template";
+
   const results: AccessPointTemplateToSave[] = [];
 
   // unlike the file entries array which has other fields (like specimenId etc) - we only interested in
@@ -224,10 +226,10 @@ export function createAccessPointTemplateFromReleaseFileEntries(
 
   results.push({
     root: true,
-    templateHttps: `https://${templateBucket}.s3.${templateRegion}.amazonaws.com/${stackId}/install.template`,
+    templateHttps: `https://${templateBucket}.s3.${templateRegion}.amazonaws.com/${stackId}/${rootTemplateName}`,
     templateBucket: templateBucket,
-    templateKey: `${stackId}/install.template`,
-    content: JSON.stringify(subStackCurrent),
+    templateKey: `${stackId}/${rootTemplateName}`,
+    content: JSON.stringify(rootStack),
   });
 
   return results;

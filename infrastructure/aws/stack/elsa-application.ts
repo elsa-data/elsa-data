@@ -4,6 +4,7 @@ import {
   aws_route53 as route53,
   CfnOutput,
   NestedStack,
+  Stack,
   StackProps,
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
@@ -84,20 +85,43 @@ export class ElsaApplicationStack extends NestedStack {
         }
       );
 
-    // the running container gets its settings from a secret (independant of the secrets used to actually
-    // spin up the container)
+    // the permissions of the running container (i.e all AWS functionality used by Elsa Data code)
     privateServiceWithLoadBalancer.service.taskDefinition.taskRole.attachInlinePolicy(
       new Policy(this, "FargateServiceTaskPolicy", {
         statements: [
           // need to be able to fetch secrets - we wildcard to everything with our designated prefix
           new PolicyStatement({
             actions: ["secretsmanager:GetSecretValue"],
-            resources: ["arn:aws:secretsmanager:*:*:secret:ElsaData*"],
+            resources: [
+              `arn:aws:secretsmanager:${Stack.of(this).region}:${
+                Stack.of(this).account
+              }:secret:ElsaData*`,
+            ],
           }),
           // need to be able to invoke lambdas
           new PolicyStatement({
             actions: ["lambda:InvokeFunction"],
-            resources: ["arn:aws:lambda:*:*:function:elsa-data-*"],
+            resources: [
+              `arn:aws:lambda:${Stack.of(this).region}:${
+                Stack.of(this).account
+              }:function:elsa-data-*`,
+            ],
+          }),
+          // access points need the ability to do CloudFormation
+          // TODO: tighten the policy on the CreateStack as that is a powerful function
+          //     possibly restrict the source of the template url
+          //     possibly restrict the user enacting the CreateStack to only them to create access points
+          new PolicyStatement({
+            actions: [
+              "cloudformation:CreateStack",
+              "cloudformation:DescribeStacks",
+              "cloudformation:DeleteStack",
+            ],
+            resources: [
+              `arn:aws:cloudformation:${Stack.of(this).region}:${
+                Stack.of(this).account
+              }:stack/elsa-data-*`,
+            ],
           }),
         ],
       })

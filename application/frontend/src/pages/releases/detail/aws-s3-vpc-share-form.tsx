@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
-import { useQuery } from "react-query";
-import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import {
+  axiosPostArgMutationFn,
+  axiosPostNullMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+  specificReleaseQuery,
+} from "./queries";
 import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
+import { isUndefined } from "lodash";
 
 type Props = {
   releaseId: string;
@@ -17,6 +23,27 @@ type Props = {
  * @constructor
  */
 export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
+  const queryClient = useQueryClient();
+
+  const afterMutateForceRefresh = (result: ReleaseTypeLocal) => {
+    return queryClient.invalidateQueries(
+      REACT_QUERY_RELEASE_KEYS.detail(releaseId)
+    );
+  };
+
+  const installCloudFormationMutate = useMutation(
+    axiosPostArgMutationFn<{ accounts: string[] }>(
+      `/api/releases/${releaseId}/cfn`
+    )
+  );
+
+  // TODO this doesn't actually delete yet as there is no delete operation
+  const deleteCloudFormationMutate = useMutation(
+    axiosPostArgMutationFn<{ accounts: string[] }>(
+      `/api/releases/${releaseId}/THISISNOTWORKINGYET`
+    )
+  );
+
   const cfnQuery = useQuery({
     queryKey: REACT_QUERY_RELEASE_KEYS.cfn(releaseId),
     queryFn: async () => {
@@ -42,6 +69,9 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
     </div>
   );
 
+  const [accountId, setAccountId] = useState("409003025053");
+  const [vpcId, setVpcId] = useState("");
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4 divide-x">
@@ -56,8 +86,9 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
               </span>
               <input
                 type="text"
-                defaultValue="409003025053"
-                name="accounts"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                name="account"
                 className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
               />
             </label>
@@ -67,34 +98,53 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
               </span>
               <input
                 type="text"
-                defaultValue="vpc-123456788"
+                value={vpcId}
+                onChange={(e) => setVpcId(e.target.value)}
                 name="vpc"
-                className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                disabled={true}
+                className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 disabled:opacity-50"
               />
             </label>
-            <div className="prose">
-              <button
-                type="button"
-                className="btn-normal"
-                value="Enable Endpoint"
-                onClick={async () => {
-                  await axios
-                    .post<any>(`/api/releases/${releaseId}/cfn`, {
-                      accounts: ["409003025053"],
-                    })
-                    .then((response) => response.data);
-                }}
-              >
-                Enable Access Point
-              </button>
-            </div>
-            <div>
-              {cfnQuery.isSuccess && (
-                <pre className="text-xs">
-                  {JSON.stringify(cfnQuery.data, null, 2)}
-                </pre>
-              )}
-            </div>
+            {(!cfnQuery.isSuccess || cfnQuery.data === null) && (
+              <div className="prose">
+                <button
+                  type="button"
+                  className="btn-normal"
+                  onClick={async () => {
+                    installCloudFormationMutate.mutate(
+                      {
+                        accounts: [accountId],
+                      },
+                      {
+                        onSuccess: afterMutateForceRefresh,
+                      }
+                    );
+                  }}
+                >
+                  Enable Access Point
+                </button>
+              </div>
+            )}
+            {cfnQuery.isSuccess && cfnQuery.data && (
+              <div className="prose">
+                <button
+                  type="button"
+                  className="btn-normal"
+                  onClick={async () => {
+                    deleteCloudFormationMutate.mutate(
+                      {
+                        accounts: [accountId],
+                      },
+                      {
+                        onSuccess: afterMutateForceRefresh,
+                      }
+                    );
+                  }}
+                >
+                  Disable Access Point (not working)
+                </button>
+              </div>
+            )}
           </div>
         </form>
         {/* we use a POST form action here (rather than a onSubmit handler) because
