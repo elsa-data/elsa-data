@@ -1,6 +1,6 @@
 {
   datasets: [
-    // TODO: Need to move Cardiac Out from the following record!
+    // TODO: Need to move Cardiac out from this config!
     {
       name: "Cardiac",
       description: "An Australian Genomics flagship.",
@@ -22,13 +22,20 @@
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10f-data-dev",
     },
-    // Comment the following to show variety of test-data that is not inclduded in config file
+    {
+      name: "10C",
+      description: "UMCCR 10C",
+      uri: "urn:fdc:umccr.org:2022:dataset/10c",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10c-data-dev",
+    },
+    // The following is intentionally commented out to show variety of test-data that is not inclduded in config file.
     // {
-    //   name: "10C",
-    //   description: "UMCCR 10C",
-    //   uri: "urn:fdc:umccr.org:2022:dataset/10c",
+    //   name: "10M",
+    //   description: "UMCCR 10M",
+    //   uri: "urn:fdc:umccr.org:2022:dataset/10m",
     //   storageLocation: "aws-s3",
-    //   storageUriPrefix: "s3://umccr-10c-data-dev",
+    //   storageUriPrefix: "s3://umccr-10m-data-dev",
     // },
   ],
 }
