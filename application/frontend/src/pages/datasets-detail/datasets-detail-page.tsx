@@ -97,7 +97,7 @@ export const DatasetsDetailPage: React.FC = () => {
  */
 
 const configurationChip = (isConfig: boolean) => {
-  if (isConfig === true) {
+  if (isConfig) {
     return (
       <span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-green-200 text-green-700 rounded-full">
         OK

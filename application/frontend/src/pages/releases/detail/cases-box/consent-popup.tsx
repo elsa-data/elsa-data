@@ -94,19 +94,19 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
   const [error, setError] = useState<any>(undefined);
-  const [isErrorSet, setIsErrorSet] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
     const duos = await axios
       .get<DuoLimitationCodedType[]>(u)
       .then((response) => {
         setError(undefined);
-        setIsErrorSet(false);
+        setIsSuccess(true);
         return response.data;
       })
       .catch((error: any) => {
         setError(error);
-        setIsErrorSet(true);
+        setIsSuccess(false);
         return [];
       });
 
@@ -148,7 +148,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
-      {!isErrorSet && (
+      {isSuccess && (
         <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
           {duos.map(function (resolvedDuo: ResolvedDuo) {
             return (
@@ -196,7 +196,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
           })}
         </div>
       )}
-      {isErrorSet && (
+      {!isSuccess && (
         <EagerErrorBoundary
           message={"Something went wrong resolving duos."}
           error={error}

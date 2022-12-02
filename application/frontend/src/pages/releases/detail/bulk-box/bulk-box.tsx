@@ -21,7 +21,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
 
   const [error, setError] = useState<any>(undefined);
-  const [isErrorSet, setIsErrorSet] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
   // *only* when running a job in the background - we want to set up a polling loop of the backend
   // so we set this effect up with a dependency on the runningJob field - and switch the
@@ -45,12 +45,12 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
       result
     );
     setError(undefined);
-    setIsErrorSet(false);
+    setIsSuccess(true);
   };
 
   const onError = (error: any) => {
     setError(error);
-    setIsErrorSet(true);
+    setIsSuccess(false);
   };
 
   const applyAllMutate = useMutation(
@@ -122,7 +122,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                     </button>
                   </div>
 
-                  {!isErrorSet && releaseData.runningJob && (
+                  {isSuccess && releaseData.runningJob && (
                     <>
                       <div className="flex justify-between mb-1">
                         <span className="text-base font-medium text-blue-700">
@@ -145,7 +145,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       <p></p>
                     </>
                   )}
-                  {isErrorSet && (
+                  {!isSuccess && (
                     <EagerErrorBoundary error={error} styling={"bg-red-100"} />
                   )}
                 </div>
