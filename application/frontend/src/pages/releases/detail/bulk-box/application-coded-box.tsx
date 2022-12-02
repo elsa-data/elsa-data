@@ -201,7 +201,10 @@ export const ApplicationCodedBox: React.FC<Props> = ({
           <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
             <div className="grid grid-cols-3 gap-6">
               {lastMutateError && (
-                <EagerErrorBoundary message={lastMutateError} styling={"bg-red-100"} />
+                <EagerErrorBoundary
+                  message={lastMutateError}
+                  styling={"bg-red-100"}
+                />
               )}
               <RhRadios label={"Study Type"}>
                 {typeRadio("Disease Specific", "DS")}

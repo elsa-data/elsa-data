@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
@@ -94,7 +94,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       onClick={async () => {
                         applyAllMutate.mutate(null, {
                           onSuccess: afterMutateUpdateQueryData,
-                          onError: (error: any) => onError(error)
+                          onError: (error: any) => onError(error),
                         });
                       }}
                       disabled={!isUndefined(releaseData.runningJob)}
@@ -107,7 +107,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       onClick={async () => {
                         cancelMutate.mutate(null, {
                           onSuccess: afterMutateUpdateQueryData,
-                          onError: (error: any) => onError(error)
+                          onError: (error: any) => onError(error),
                         });
                       }}
                       disabled={
@@ -145,7 +145,9 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       <p></p>
                     </>
                   )}
-                  {isErrorSet && <EagerErrorBoundary error={error} styling={"bg-red-100"} />}
+                  {isErrorSet && (
+                    <EagerErrorBoundary error={error} styling={"bg-red-100"} />
+                  )}
                 </div>
               </div>
             </div>

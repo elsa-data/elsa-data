@@ -108,7 +108,7 @@ export const useAuditEventQuery = (
         setData([]);
         setIsSuccess(false);
         setError(err);
-      }
+      },
     }
   );
 };
@@ -239,37 +239,40 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
   return (
-    <BoxNoPad heading="Audit Logs" errorMessage={"Something went wrong fetching audit logs."}>
+    <BoxNoPad
+      heading="Audit Logs"
+      errorMessage={"Something went wrong fetching audit logs."}
+    >
       <div className="flex flex-col">
-        {isSuccess ? <Table
-          tableHead={table.getHeaderGroups().map((headerGroup) => (
-            <tr
-              key={headerGroup.id}
-              className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"
-            >
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  onClick={
-                    header.id === "objectId"
-                      ? table.getToggleAllRowsExpandedHandler()
-                      : () => {}
-                  }
-                  className={
-                    !header.column.columnDef.meta?.headerStyling
-                      ? "py-4 text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg"
-                      : header.column.columnDef.meta.headerStyling
-                  }
-                >
-                  {header.isPlaceholder ? undefined : (
-                    <AuditEntryTableHeader header={header} />
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-          tableBody={
-            table.getRowModel().rows.map((row) => (
+        {isSuccess ? (
+          <Table
+            tableHead={table.getHeaderGroups().map((headerGroup) => (
+              <tr
+                key={headerGroup.id}
+                className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"
+              >
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    onClick={
+                      header.id === "objectId"
+                        ? table.getToggleAllRowsExpandedHandler()
+                        : () => {}
+                    }
+                    className={
+                      !header.column.columnDef.meta?.headerStyling
+                        ? "py-4 text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg"
+                        : header.column.columnDef.meta.headerStyling
+                    }
+                  >
+                    {header.isPlaceholder ? undefined : (
+                      <AuditEntryTableHeader header={header} />
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+            tableBody={table.getRowModel().rows.map((row) => (
               <Fragment key={row.id}>
                 <tr
                   key={row.id}
@@ -315,12 +318,16 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     </tr>
                   )}
               </Fragment>
-            ))
-          }
-        /> : <EagerErrorBoundary message={"Could not display logs table."}
-                            error={error}
-                            styling={"bg-red-100"}
-                            key={isSuccess.toString()} />}
+            ))}
+          />
+        ) : (
+          <EagerErrorBoundary
+            message={"Could not display logs table."}
+            error={error}
+            styling={"bg-red-100"}
+            key={isSuccess.toString()}
+          />
+        )}
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {
@@ -370,10 +377,12 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
       )}
     </div>
   ) : detailsQuery.isError ? (
-    <EagerErrorBoundary message={"Something went wrong displaying audit log details."}
-                   error={detailsQuery.error}
-                   styling={"bg-red-100"} />
-    ) : (
+    <EagerErrorBoundary
+      message={"Something went wrong displaying audit log details."}
+      error={detailsQuery.error}
+      styling={"bg-red-100"}
+    />
+  ) : (
     <></>
   );
 };

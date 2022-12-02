@@ -4,16 +4,11 @@ import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUnlock } from "@fortawesome/free-solid-svg-icons";
 
-import {
-  DuoLimitationCodedType,
-  DuoModifierType,
-} from "@umccr/elsa-types";
+import { DuoLimitationCodedType, DuoModifierType } from "@umccr/elsa-types";
 import axios from "axios";
 import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
-import {
-  doLookup,
-} from "../../../../helpers/ontology-helper";
+import { doLookup } from "../../../../helpers/ontology-helper";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { EagerErrorBoundary } from "../../../../components/error-boundary";
 
@@ -31,7 +26,7 @@ type ResolvedDuo = {
   resolvedDiseaseCode?: string;
   diseaseSystem?: string;
   modifiers: DuoModifierType[];
-}
+};
 
 const Flags: React.FC<FlagsProps> = ({ regions }) => {
   if (regions.length === 0) {
@@ -54,15 +49,15 @@ const Flags: React.FC<FlagsProps> = ({ regions }) => {
     );
 };
 
-const resolveDuoCode = function(duoCode: string): string {
+const resolveDuoCode = function (duoCode: string): string {
   const duoDescription = isKnownDuoCode(duoCode)
     ? duoCodeToDescription[duoCode]
     : null;
 
   return duoDescription ? `${duoCode} (${duoDescription})` : duoCode;
-}
+};
 
-const resolveDiseaseCode = async function(
+const resolveDiseaseCode = async function (
   terminologyFhirUrl: string,
   mondoSystem: string | undefined,
   mondoCode: string | undefined
@@ -74,13 +69,13 @@ const resolveDiseaseCode = async function(
     return undefined;
   }
 
-  const oldCode = {system: mondoSystem, code: mondoCode};
+  const oldCode = { system: mondoSystem, code: mondoCode };
   const newCode = await doLookup(terminologyFhirUrl, oldCode);
 
   const mondoDescription = newCode && newCode.display;
 
   return mondoDescription ? `${mondoCode} (${mondoDescription})` : mondoCode;
-}
+};
 
 /**
  * The consent popup is a delayed effect popup that can show details of consent
@@ -103,31 +98,34 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
     const duos = await axios
-        .get<DuoLimitationCodedType[]>(u)
-        .then((response) => {
-          setError(undefined);
-          setIsErrorSet(false);
-          return response.data;
-        })
-        .catch((error: any) => {
-          setError(error);
-          setIsErrorSet(true);
-          return [];
-        });
+      .get<DuoLimitationCodedType[]>(u)
+      .then((response) => {
+        setError(undefined);
+        setIsErrorSet(false);
+        return response.data;
+      })
+      .catch((error: any) => {
+        setError(error);
+        setIsErrorSet(true);
+        return [];
+      });
 
     const resolvedDuos = await Promise.all(
-      duos.map(async function(duo: DuoLimitationCodedType): Promise<ResolvedDuo> {
+      duos.map(async function (
+        duo: DuoLimitationCodedType
+      ): Promise<ResolvedDuo> {
         const duoCode: string = (duo as any)?.code;
 
         const diseaseCode: string | undefined = (duo as any)?.diseaseCode;
         const diseaseSystem: string | undefined = (duo as any)?.diseaseSystem;
 
         const resolvedDuoCode: string = resolveDuoCode(duoCode);
-        const resolvedDiseaseCode: string | undefined = await resolveDiseaseCode(
-          terminologyFhirUrl,
-          diseaseSystem,
-          diseaseCode,
-        );
+        const resolvedDiseaseCode: string | undefined =
+          await resolveDiseaseCode(
+            terminologyFhirUrl,
+            diseaseSystem,
+            diseaseCode
+          );
 
         const modifiers: DuoModifierType[] = (duo as any)?.modifiers;
 
@@ -150,14 +148,13 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
-      {!isErrorSet &&
+      {!isErrorSet && (
         <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
           {duos.map(function (resolvedDuo: ResolvedDuo) {
             return (
               <div>
                 <div>
-                  <b>Code:</b>
-                  {" "}
+                  <b>Code:</b>{" "}
                   <span className="capitalize">{resolvedDuo.resolvedCode}</span>
                 </div>
                 {resolvedDuo.modifiers && (
@@ -183,9 +180,10 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
                 )}
                 {resolvedDuo.resolvedDiseaseCode && (
                   <div>
-                    <b>Disease Code:</b>
-                    {" "}
-                    <span className="capitalize">{resolvedDuo.resolvedDiseaseCode}</span>
+                    <b>Disease Code:</b>{" "}
+                    <span className="capitalize">
+                      {resolvedDuo.resolvedDiseaseCode}
+                    </span>
                   </div>
                 )}
                 {resolvedDuo.diseaseSystem && (
@@ -197,10 +195,14 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
             );
           })}
         </div>
-      }
-      {isErrorSet && <EagerErrorBoundary message={"Something went wrong resolving duos."}
-                                    error={error}
-                                    styling={"bg-red-100"} />}
+      )}
+      {isErrorSet && (
+        <EagerErrorBoundary
+          message={"Something went wrong resolving duos."}
+          error={error}
+          styling={"bg-red-100"}
+        />
+      )}
     </Popup>
   );
 };

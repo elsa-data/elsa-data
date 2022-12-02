@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
-import {ErrorBoundary} from "./components/error-boundary";
+import { ErrorBoundary } from "./components/error-boundary";
 
 const root = document.getElementById("root");
 
@@ -40,7 +40,7 @@ if (root != null) {
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
       <ErrorBoundary rethrowError={(_: any) => false}>
-      {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
+        {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
         <EnvRelayProvider
           semanticVersion={sv}
           buildVersion={bv}
@@ -54,7 +54,7 @@ if (root != null) {
             <CookiesProvider>
               <LoggedInUserProvider>
                 <BrowserRouter>
-                    <App />
+                  <App />
                 </BrowserRouter>
               </LoggedInUserProvider>
             </CookiesProvider>

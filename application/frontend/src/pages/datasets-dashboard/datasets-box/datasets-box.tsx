@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import {
-  DatasetLightType,
-} from "@umccr/elsa-types";
+import { DatasetLightType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery } from "react-query";
 import classNames from "classnames";
@@ -44,7 +42,10 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
     "min-h-[10em] w-full flex items-center justify-center";
 
   return (
-    <BoxNoPad heading="Datasets" errorMessage={"Something went wrong fetching datasets."}>
+    <BoxNoPad
+      heading="Datasets"
+      errorMessage={"Something went wrong fetching datasets."}
+    >
       <div className="flex flex-col">
         <BoxPaginator
           currentPage={currentPage}
@@ -108,9 +109,13 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             </tbody>
           </table>
         )}
-        {dataQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching datasets."}
-                                             error={dataQuery.error}
-                                             styling={"bg-red-100"} />}
+        {dataQuery.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching datasets."}
+            error={dataQuery.error}
+            styling={"bg-red-100"}
+          />
+        )}
       </div>
     </BoxNoPad>
   );

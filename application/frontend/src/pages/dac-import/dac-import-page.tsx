@@ -17,7 +17,10 @@ export const DacImportPage: React.FC = () => {
       <div className="flex flex-row flex-wrap flex-grow mt-2">
         {/* SYNCHRONISE DAC BOX */}
         {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
-          <Box heading="Import from DAC" errorMessage={"Something went wrong importing from DAC."}>
+          <Box
+            heading="Import from DAC"
+            errorMessage={"Something went wrong importing from DAC."}
+          >
             <VerticalTabs tabHeadings={["REMS", "Australian Genomics Redcap"]}>
               <div className="flex flex-col gap-6">
                 <div className="prose">

@@ -79,7 +79,7 @@ describe("Redcap Import for AG", () => {
       daf_applicant_pi_yn: "0",
       // but we have an explicit PI - that we know!
       daf_pi_name: "Test User Who Isn't Allowed Any Access",
-      daf_pi_email: "subject1@elsa.net",  // refer to release.common.ts file
+      daf_pi_email: "subject1@elsa.net", // refer to release.common.ts file
       daf_pi_institution: "Made Up",
       daf_pi_institution_same: "0",
       // one other collaborator (who is unknown)

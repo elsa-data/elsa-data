@@ -55,7 +55,10 @@ function DataAccessLogsBox() {
   const data: AuditDataAccessType[] | undefined = dataAccessQuery.data;
   if (isNil(data) && dataAccessQuery.isSuccess) return <>No Data Found!</>;
   return (
-    <BoxNoPad heading="Data Access Log Summary" errorMessage={"Something went wrong fetching data access logs."}>
+    <BoxNoPad
+      heading="Data Access Log Summary"
+      errorMessage={"Something went wrong fetching data access logs."}
+    >
       <Table
         tableHead={
           <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">
@@ -112,9 +115,13 @@ function DataAccessLogsBox() {
           ))
         }
       />
-      {dataAccessQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching audit logs."}
-                                                 error={dataAccessQuery.error}
-                                                 styling={"bg-red-100"} />}
+      {dataAccessQuery.isError && (
+        <EagerErrorBoundary
+          message={"Something went wrong fetching audit logs."}
+          error={dataAccessQuery.error}
+          styling={"bg-red-100"}
+        />
+      )}
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}

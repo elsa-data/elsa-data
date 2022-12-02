@@ -114,7 +114,10 @@ export const CasesBox: React.FC<Props> = ({
     );
 
   return (
-    <BoxNoPad heading="Cases" errorMessage={"Something went wrong fetching cases."}>
+    <BoxNoPad
+      heading="Cases"
+      errorMessage={"Something went wrong fetching cases."}
+    >
       <div className="flex flex-col">
         <BoxPaginator
           currentPage={currentPage}
@@ -219,9 +222,13 @@ export const CasesBox: React.FC<Props> = ({
             </tbody>
           </table>
         )}
-        {dataQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching cases."}
-                                             error={dataQuery.error}
-                                             styling={"bg-red-100"} />}
+        {dataQuery.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching cases."}
+            error={dataQuery.error}
+            styling={"bg-red-100"}
+          />
+        )}
       </div>
       <div id="popup-root" />
     </BoxNoPad>

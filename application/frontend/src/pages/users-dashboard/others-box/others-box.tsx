@@ -88,7 +88,10 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
   };
 
   return (
-    <BoxNoPad heading="Users (not you)" errorMessage={"Something went wrong fetching users."}>
+    <BoxNoPad
+      heading="Users (not you)"
+      errorMessage={"Something went wrong fetching users."}
+    >
       <div className="flex flex-col">
         <BoxPaginator
           currentPage={currentPage}
@@ -100,9 +103,13 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
         <table className="w-full text-sm text-left text-gray-500 table-fixed">
           <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
         </table>
-        {dataQuery.isError && <EagerErrorBoundary message={"Something went wrong fetching users."}
-                                             error={dataQuery.error}
-                                             styling={"bg-red-100"} />}
+        {dataQuery.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching users."}
+            error={dataQuery.error}
+            styling={"bg-red-100"}
+          />
+        )}
       </div>
     </BoxNoPad>
   );

@@ -107,7 +107,8 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
           <>
             <div className="mt-2 prose">
               <p className="text-sm text-gray-500">
-                This is a list of applications in the given REMS instance that are
+                This is a list of applications in the given REMS instance that
+                are
                 <ul className="text-sm text-gray-500 list-disc">
                   <li>approved</li>
                   <li>not already associated with an Elsa Data release</li>

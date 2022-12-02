@@ -70,8 +70,6 @@ export class Base7807Error extends Error {
   }
 
   public static isBase7807Error(object: any): object is Base7807Response {
-    return "type" in object
-      && "title" in object
-      && "status" in object;
+    return "type" in object && "title" in object && "status" in object;
   }
 }
