@@ -111,14 +111,14 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             onClick={() => setIncludeDeletedFile((p) => !p)}
           >
             <input
-              className="h-3 w-3 rounded-sm mr-2"
+              className="h-3 w-3 rounded-sm mr-2 cursor-pointer"
               type="checkbox"
               checked={includeDeletedFile}
             />
             <label className="flex text-gray-800">
               <ToolTip
                 trigger={
-                  <div className="flex items-center text-xs">
+                  <div className="flex items-center text-xs cursor-pointer">
                     Include deleted files
                   </div>
                 }
