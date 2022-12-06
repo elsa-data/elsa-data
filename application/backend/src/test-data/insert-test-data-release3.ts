@@ -48,6 +48,10 @@ export async function insertRelease3() {
       datasetIndividualUrisOrderPreference: [""],
       releaseIdentifier: "P4RF4AC5BR",
       selectedSpecimens: e.set(),
+      isAllowedReadData: true,
+      isAllowedVariantData: true,
+      isAllowedPhenotypeData: true,
+
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",

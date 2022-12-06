@@ -74,6 +74,10 @@ export const ReleaseDetailSchema = Type.Object({
   accessStartDate: Type.Optional(TypeDate),
   accessEndDate: Type.Optional(TypeDate),
 
+  isAllowedReadData: Type.Boolean(),
+  isAllowedVariantData: Type.Boolean(),
+  isAllowedPhenotypeData: Type.Boolean(),
+
   // the logically interpreted access start/end and current time - from the perspective of the server
   // (i.e. this could have been computed by the front end from start date and end date - but we want the logic
   // only in one spot)

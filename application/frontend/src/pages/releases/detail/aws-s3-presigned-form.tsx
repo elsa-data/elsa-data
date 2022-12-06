@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FileRecordHeaderType } from "@umccr/elsa-types";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
+
 type Props = {
   releaseId: string;
   releaseData: any;
@@ -18,11 +19,13 @@ const FILE_RECORD_HEADER: FileRecordHeaderType[] = [
   "s3Bucket",
   "s3Key",
 ];
+
 /**
  * A form that is used to ask for AWS S3
  * presigned URLS.
  *
- * @param releaseId
+ * @param releaseId the id of the release
+ * @param releaseData the backend release information
  * @constructor
  */
 export const AwsS3PresignedForm: React.FC<Props> = ({
@@ -73,17 +76,8 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               possession of the data itself.
             </p>
             <p>
-              Presigned URLs are only useable for seven (7) days from the time
-              of download.
-            </p>
-            <p>
-              FOR DEMO:{" "}
-              <a
-                href="https://products.aspose.app/cells/viewer"
-                target="_blank"
-              >
-                TSV Viewer
-              </a>
+              Presigned URLs are only usable for seven (7) days from the time of
+              download.
             </p>
           </article>
 

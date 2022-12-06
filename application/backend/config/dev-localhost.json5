@@ -8,4 +8,8 @@
   rateLimit: {
     allowList: ["127.0.0.1", "::1"],
   },
+  aws: {
+    // we have a permanent tmp bucket with a generous expiry lifespan shared for localhost dev
+    tempBucket: "elsa-data-tmp",
+  },
 }

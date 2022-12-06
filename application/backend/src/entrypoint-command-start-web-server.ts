@@ -8,6 +8,7 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { getFromEnv } from "./entrypoint-command-helper";
 import { DatasetService } from "./business/services/dataset-service";
+import { JobsService } from "./business/services/jobs/jobs-base-service";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -19,7 +20,7 @@ export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
  * @param scenario
  */
 export async function startWebServer(scenario: number | null): Promise<number> {
-  const settings = await getFromEnv();
+  const { settings, config } = await getFromEnv();
 
   container.register<ElsaSettings>("Settings", {
     useValue: settings,
@@ -47,7 +48,8 @@ export async function startWebServer(scenario: number | null): Promise<number> {
 
   // Insert datasets from config
   const datasetService = container.resolve(DatasetService);
-  datasetService.configureDataset(settings.datasets);
+
+  await datasetService.configureDataset(settings.datasets);
 
   console.log("Starting job queue");
 
@@ -55,9 +57,10 @@ export async function startWebServer(scenario: number | null): Promise<number> {
     root: path.resolve("jobs"),
     jobs: [
       {
-        name: "select-job.ts",
-        timeout: "5s",
-        interval: "20s",
+        name: "entrypoint-job-handler.ts",
+        worker: {
+          workerData: config,
+        },
       },
     ],
   });
@@ -72,7 +75,6 @@ export async function startWebServer(scenario: number | null): Promise<number> {
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down
-    // to best support Docker - which will be our normal deployment - we listen on 0.0.0.0
     await server.listen({ port: settings.port, host: settings.host });
 
     // TODO possibly replace Bree with our own direct Jobs query and handle that here
