@@ -3,7 +3,9 @@ import {
   aws_ecs as ecs,
   aws_route53 as route53,
   CfnOutput,
+  Duration,
   NestedStack,
+  RemovalPolicy,
   Stack,
   StackProps,
 } from "aws-cdk-lib";
@@ -14,6 +16,7 @@ import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { DockerServiceWithHttpsLoadBalancerConstruct } from "../lib/docker-service-with-https-load-balancer-construct";
 import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
+import { Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 
 interface Props extends StackProps {
   vpc: ec2.IVpc;
@@ -43,6 +46,20 @@ export class ElsaApplicationStack extends NestedStack {
       this,
       "cert_apse2_arn"
     );
+
+    const tempBucket = new Bucket(this, "TempBucket", {
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      versioned: false,
+      publicReadAccess: false,
+      encryption: BucketEncryption.S3_MANAGED,
+      lifecycleRules: [
+        {
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
+          expiration: Duration.days(1),
+        },
+      ],
+    });
 
     const dockerImageFolder = path.join(__dirname, "../../../application");
 
@@ -76,6 +93,7 @@ export class ElsaApplicationStack extends NestedStack {
             // override any file based setting of the deployed url
             ELSA_DATA_CONFIG_DEPLOYED_URL: `https://${hostedPrefix}.${hostedZoneName}`,
             ELSA_DATA_CONFIG_PORT: "80",
+            ELSA_DATA_CONFIG_AWS_TEMP_BUCKET: tempBucket.bucketName,
           },
           secrets: {
             EDGEDB_PASSWORD: ecs.Secret.fromSecretsManager(
@@ -84,6 +102,11 @@ export class ElsaApplicationStack extends NestedStack {
           },
         }
       );
+
+    // 👇 grant access to bucket
+    tempBucket.grantReadWrite(
+      privateServiceWithLoadBalancer.service.taskDefinition.taskRole
+    );
 
     // the permissions of the running container (i.e all AWS functionality used by Elsa Data code)
     privateServiceWithLoadBalancer.service.taskDefinition.taskRole.attachInlinePolicy(
@@ -97,6 +120,17 @@ export class ElsaApplicationStack extends NestedStack {
                 Stack.of(this).account
               }:secret:ElsaData*`,
             ],
+          }),
+          // temporarily give all S3 accesspoint perms - can we tighten?
+          new PolicyStatement({
+            actions: [
+              "s3:CreateAccessPoint",
+              "s3:DeleteAccessPoint",
+              "s3:GetAccessPoint",
+              "s3:GetAccessPointPolicy",
+              "s3:ListAccessPoints",
+            ],
+            resources: [`*`],
           }),
           // need to be able to invoke lambdas
           new PolicyStatement({
