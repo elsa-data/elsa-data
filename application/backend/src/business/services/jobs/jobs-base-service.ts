@@ -4,7 +4,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { doRoleInReleaseCheck, getReleaseInfo } from "../helpers";
 import { Base7807Error } from "../../../api/errors/_error.types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
+import { inject, injectable, singleton } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
@@ -15,9 +15,7 @@ import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import {
   CloudFormationClient,
   CreateStackCommand,
-  DescribeStackResourcesCommand,
   DescribeStacksCommand,
-  StackResource,
 } from "@aws-sdk/client-cloudformation";
 import { AwsAccessPointService } from "../aws-access-point-service";
 
@@ -45,6 +43,14 @@ export class JobsService {
     private selectService: SelectService
   ) {}
 
+  /**
+   * The internal mechanism for subclasses to generically start a long
+   * running job.
+   *
+   * @param releaseId
+   * @param finalJobStartStep
+   * @protected
+   */
   protected async startGenericJob(
     releaseId: string,
     finalJobStartStep: (tx: Transaction) => Promise<void>
@@ -86,18 +92,19 @@ export class JobsService {
    */
   public async getInProgressJobs() {
     const jobsInProgress = await e
-      .select(e.job.Job, (sj) => ({
+      .select(e.job.Job, (j) => ({
         __type__: { name: true },
         id: true,
         forRelease: { id: true },
         requestedCancellation: true,
         auditEntry: true,
         started: true,
-        filter: e.op(sj.status, "=", e.job.JobStatus.running),
+        filter: e.op(j.status, "=", e.job.JobStatus.running),
       }))
       .run(this.edgeDbClient);
 
     return jobsInProgress.map((j) => {
+      // we need to return the job type so the job system can know which 'work' to do
       const typeName = j.__type__.name;
 
       if (typeName.startsWith("job::")) {
@@ -114,32 +121,6 @@ export class JobsService {
           "Our job type name no longer starts with the expected module of job::"
         );
     });
-  }
-
-  public async getCloudFormationAccessPointStackForRelease(
-    user: AuthenticatedUser,
-    releaseId: string
-  ): Promise<StackResource | null> {
-    const releaseStackName =
-      AwsAccessPointService.getReleaseStackName(releaseId);
-
-    const releaseReleaseStack = await this.cfnClient.send(
-      new DescribeStackResourcesCommand({
-        StackName: releaseStackName,
-      })
-    );
-
-    if (!releaseReleaseStack.StackResources) return null;
-
-    if (releaseReleaseStack.StackResources.length > 1) {
-      throw new Error(
-        "Unexpected result of two cloud formation stacks with the same name"
-      );
-    }
-
-    if (releaseReleaseStack.StackResources.length < 1) return null;
-
-    return releaseReleaseStack.StackResources[0];
   }
 
   /**
@@ -186,7 +167,7 @@ export class JobsService {
           Capabilities: ["CAPABILITY_IAM"],
           OnFailure: "DELETE",
           // need to determine this number - but creating access points is pretty simple so
-          // we need to set this to above the upper limit
+          // we only need to set this generously above the upper limit we see in practice
           TimeoutInMinutes: 5,
         })
       );
@@ -221,7 +202,16 @@ export class JobsService {
     return await this.releasesService.getBase(releaseId, userRole);
   }
 
+  /**
+   * Do the busy work of the cloud formation install job. As it turns out,
+   * the busy work just involves asking AWS if the script has finished installing - and
+   * returning a status.
+   *
+   * @param jobId
+   */
   public async doCloudFormationInstallJob(jobId: string): Promise<number> {
+    // TODO some security level here? does the user have permissions?
+
     const cfInstallJobQuery = e
       .select(e.job.CloudFormationInstallJob, (j) => ({
         forRelease: true,
@@ -235,30 +225,33 @@ export class JobsService {
     if (!cfInstallJob)
       throw new Error("Job id passed in was not a Cloud Formation Install Job");
 
-    const releaseReleaseStack = await this.cfnClient.send(
+    const describeStacksResult = await this.cfnClient.send(
       new DescribeStacksCommand({
         StackName: cfInstallJob.awsStackId,
       })
     );
 
-    if (!releaseReleaseStack.Stacks || releaseReleaseStack.Stacks.length < 1) {
+    if (
+      !describeStacksResult.Stacks ||
+      describeStacksResult.Stacks.length < 1
+    ) {
       // the stack has disappeared.. abort the job
       console.log("Stack has disappeared");
       return 0;
     }
 
-    if (releaseReleaseStack.Stacks.length > 1) {
+    if (describeStacksResult.Stacks.length > 1) {
       throw new Error(
         "Unexpected result of two cloud formation stacks with the same name"
       );
     }
 
-    const theStack = releaseReleaseStack.Stacks[0];
+    const theStack = describeStacksResult.Stacks[0];
 
-    if (theStack.StackStatus === "CREATE_IN_PROGRESS") {
-      return 1;
-    }
-    if (theStack.StackStatus === "DELETE_IN_PROGRESS") {
+    if (
+      theStack.StackStatus === "CREATE_IN_PROGRESS" ||
+      theStack.StackStatus === "DELETE_IN_PROGRESS"
+    ) {
       return 1;
     }
     if (theStack.StackStatus === "CREATE_COMPLETE") {

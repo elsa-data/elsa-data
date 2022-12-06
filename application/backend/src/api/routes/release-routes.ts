@@ -404,13 +404,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       releaseId,
       s3HttpsUrl
     );
-
-    /*await awsAccessPointService.installCloudFormationAccessPointForRelease(
-      authenticatedUser,
-      releaseId,
-      ["831090136584"],
-      "vpc-03d735d10b6cec468"
-    ); */
   });
 
   // const PresignedT = Type.Object({

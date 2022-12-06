@@ -32,14 +32,14 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
   };
 
   const installCloudFormationMutate = useMutation(
-    axiosPostArgMutationFn<{ accounts: string[] }>(
+    axiosPostArgMutationFn<{ accounts: string[]; vpcId?: string }>(
       `/api/releases/${releaseId}/cfn`
     )
   );
 
   // TODO this doesn't actually delete yet as there is no delete operation
   const deleteCloudFormationMutate = useMutation(
-    axiosPostArgMutationFn<{ accounts: string[] }>(
+    axiosPostArgMutationFn<{ accounts: string[]; vpcId?: string }>(
       `/api/releases/${releaseId}/THISISNOTWORKINGYET`
     )
   );
@@ -69,8 +69,9 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
     </div>
   );
 
-  const [accountId, setAccountId] = useState("409003025053");
-  const [vpcId, setVpcId] = useState("");
+  // for umccr demo purposes - to be removed - a demo VPC in a throwaway account
+  const [accountId, setAccountId] = useState("842385035780");
+  const [vpcId, setVpcId] = useState("vpc-0ae1fbadcf21859f3");
 
   return (
     <>
@@ -88,7 +89,6 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
                 type="text"
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                name="account"
                 className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
               />
             </label>
@@ -100,9 +100,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
                 type="text"
                 value={vpcId}
                 onChange={(e) => setVpcId(e.target.value)}
-                name="vpc"
-                disabled={true}
-                className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 disabled:opacity-50"
+                className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
               />
             </label>
             {(!cfnQuery.isSuccess || cfnQuery.data === null) && (
@@ -114,6 +112,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
                     installCloudFormationMutate.mutate(
                       {
                         accounts: [accountId],
+                        vpcId: vpcId,
                       },
                       {
                         onSuccess: afterMutateForceRefresh,
@@ -130,6 +129,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
                 <button
                   type="button"
                   className="btn-normal"
+                  disabled={true}
                   onClick={async () => {
                     deleteCloudFormationMutate.mutate(
                       {
@@ -148,8 +148,8 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
           </div>
         </form>
         {/* we use a POST form action here (rather than a onSubmit handler) because
-            form POSTS can be converted natively into a browser file save dialog
-             i.e. if the POST returned a Content-Disposition header */}
+            form POSTS will be converted natively into a browser file save dialog
+             when the POST returned a Content-Disposition header */}
         <form action={`/api/releases/${releaseId}/cfn/manifest`} method="POST">
           <div className="flex flex-col gap-6">
             <label className="block prose">

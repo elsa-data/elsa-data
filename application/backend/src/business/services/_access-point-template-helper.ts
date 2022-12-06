@@ -187,6 +187,16 @@ export function createAccessPointTemplateFromReleaseFileEntries(
                     ),
                   },
                 },
+                {
+                  Action: ["s3:ListBucket"],
+                  Effect: "Allow",
+                  Resource: [],
+                  Principal: {
+                    AWS: shareToAccountIds.map(
+                      (ac) => `arn:aws:iam::${ac}:root`
+                    ),
+                  },
+                },
               ],
             },
           },
@@ -209,17 +219,35 @@ export function createAccessPointTemplateFromReleaseFileEntries(
     }
   };
 
+  // TODO reshape this loop/outer block to do a JSON.stringify() on each step - and if the size of the
+  //      serialized JSON becomes too large - then also close/add a new stack
+
+  // Maximum size of a template body that you can pass in an Amazon S3 object for a CreateStack, UpdateStack, ValidateTemplate request with an Amazon S3 template URL.
+  // 1 MB
+
   for (const bucket of Object.keys(filesByBucket)) {
     closeStack();
 
     addNewStack(bucket);
 
+    // note the subtle difference between the substitutions we want NodeJs to make versus the substitutions we want
+    // CloudFormation to make - ${} vs \${ }
+
+    // statement 0 is our GetObject statement
     for (const file of filesByBucket[bucket]) {
       subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[0].Resource.push(
-        // TODO: ?{ "Fn::Sub" : String } to replace Account Id
-        `arn:aws:s3:ap-southeast-2:843407916570:accesspoint/${subStackAccessPointName}/object/${file.s3Key}*`
+        {
+          "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${subStackAccessPointName}/object/${file.s3Key}*`,
+        }
       );
     }
+
+    // statement 1 is our ListBucket statement
+    subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[1].Resource.push(
+      {
+        "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${subStackAccessPointName}`,
+      }
+    );
   }
 
   closeStack();
