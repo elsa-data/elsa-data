@@ -20,11 +20,11 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
             ref={ref}
             {...props}
             type="checkbox"
-            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded disabled:opacity-50"
           />
         </div>
         <div className="ml-3 text-sm">
-          <label htmlFor="comments" className="font-medium text-gray-700">
+          <label htmlFor={id} className="font-medium text-gray-700">
             {props.label}
           </label>
           {props.extra && <p className="text-gray-500">{props.extra}</p>}

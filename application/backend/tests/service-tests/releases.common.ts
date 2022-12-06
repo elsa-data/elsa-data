@@ -53,6 +53,9 @@ export async function beforeEachCommon() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
+      isAllowedReadData: true,
+      isAllowedVariantData: true,
+      isAllowedPhenotypeData: true,
 
       // we set up the test data so that in no circumstances should SINGLETONMARIA->MARIA->HG00174 specimens ever
       // be allowed to be selected

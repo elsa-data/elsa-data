@@ -14,7 +14,7 @@ import {
 } from "../api-routes";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { container } from "tsyringe";
-import { JobsService } from "../../business/services/jobs-service";
+import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
@@ -169,7 +169,67 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     }
   );
 
-  // TODO: this probably should be a Graphql mutate endpoint rather than this hack..
+  fastify.post<{
+    Params: {
+      rid: string;
+      field: "allowed-read" | "allowed-variant" | "allowed-phenotype";
+      op: "set";
+    };
+    Body: {
+      value: boolean;
+    };
+  }>(
+    "/api/releases/:rid/fields/:field/:op",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+      const field = request.params.field;
+      const op = request.params.op;
+      const body = request.body;
+
+      // we are pretty safe to add these fields together - even though they come from the user supplied route
+      // if someone makes either field something unexpected - we'll fall through to the 400 reply
+      switch (field + "-" + op) {
+        case "allowed-read-set":
+          reply.send(
+            await releasesService.setIsAllowed(
+              authenticatedUser,
+              releaseId,
+              "read",
+              body.value!
+            )
+          );
+          return;
+        case "allowed-variant-set":
+          reply.send(
+            await releasesService.setIsAllowed(
+              authenticatedUser,
+              releaseId,
+              "variant",
+              body.value!
+            )
+          );
+          return;
+        case "allowed-phenotype-set":
+          reply.send(
+            await releasesService.setIsAllowed(
+              authenticatedUser,
+              releaseId,
+              "phenotype",
+              body.value!
+            )
+          );
+          return;
+        default:
+          reply.status(400).send();
+          return;
+      }
+    }
+  );
+
+  // TODO: these probably should be a Graphql mutate endpoint rather than this hack..
 
   fastify.post<{
     Params: {
@@ -298,26 +358,51 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     );
   });
 
+  fastify.get<{
+    Params: { rid: string };
+  }>("/api/releases/:rid/cfn", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseId = request.params.rid;
+
+    if (!awsAccessPointService.isEnabled)
+      throw new Error(
+        "The AWS service was not started so AWS VPC sharing will not work"
+      );
+
+    const res = await awsAccessPointService.getInstalledAccessPointResources(
+      authenticatedUser,
+      releaseId
+    );
+
+    reply.send(res);
+  });
+
   fastify.post<{
-    Body: any;
+    Body: { accounts: string[]; vpcId?: string };
     Params: { rid: string };
   }>("/api/releases/:rid/cfn", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
 
-    console.log(request.body);
-
-    if (!awsPresignedUrlsService.isEnabled)
+    if (!awsAccessPointService.isEnabled)
       throw new Error(
         "The AWS service was not started so AWS VPC sharing will not work"
       );
 
-    await awsAccessPointService.installCloudFormationAccessPointForRelease(
+    const s3HttpsUrl =
+      await awsAccessPointService.createAccessPointCloudFormationTemplate(
+        authenticatedUser,
+        releaseId,
+        request.body.accounts,
+        request.body.vpcId
+      );
+
+    await jobsService.startCloudFormationInstallJob(
       authenticatedUser,
       releaseId,
-      ["831090136584"],
-      "vpc-03d735d10b6cec468"
+      s3HttpsUrl
     );
   });
 
@@ -356,6 +441,40 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       });
 
       presignResult.archive.pipe(reply.raw);
+    }
+  );
+
+  fastify.post<{
+    Body: ReleaseAwsS3PresignRequestType;
+    Params: { rid: string };
+  }>(
+    "/api/releases/:rid/cfn/manifest",
+    {
+      schema: {
+        body: ReleaseAwsS3PresignRequestSchema,
+      },
+    },
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+      if (!awsAccessPointService.isEnabled)
+        throw new Error(
+          "The AWS service was not started so AWS S3 Access Points will not work"
+        );
+
+      const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
+        authenticatedUser,
+        releaseId,
+        request.body.presignHeader
+      );
+
+      reply.header(
+        "Content-disposition",
+        `attachment; filename=${accessPointTsv.filename}`
+      );
+      reply.type("text/tab-separated-values");
+      reply.send(accessPointTsv.content);
     }
   );
 };

@@ -3,10 +3,16 @@ import { container } from "tsyringe";
 import { S3Client } from "@aws-sdk/client-s3";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
+import { Duration } from "edgedb";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
-    useFactory: () => edgedb.createClient(),
+    useFactory: () =>
+      edgedb.createClient().withConfig({
+        // we do some bioinformatics activities within a transaction context (looking up variants)
+        // and the default 10 seconds sometimes is a bit short
+        session_idle_transaction_timeout: Duration.from({ seconds: 60 }),
+      }),
   });
 
   // whilst it is possible to create these AWS clients close to where they are needed - it then becomes

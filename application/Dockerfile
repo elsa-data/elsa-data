@@ -129,6 +129,6 @@ ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
 #RUN cd backend && npx esbuild src/entrypoint-container.ts --bundle --external:sodium-native --external:node-gyp-build --platform=node --target=node18 --outfile=./elsa.cjs
 
 # we also bundle each Bree job as an individual bundle
-#RUN cd backend && npx esbuild jobs/select-job.ts --bundle --platform=node --target=node18 --outfile=./select-job.js
+#RUN cd backend && npx esbuild jobs/entrypoint-job-handler.ts --bundle --platform=node --target=node18 --outfile=./select-job.js
 
 # ENTRYPOINT [ "node", "elsa.cjs" ]

@@ -61,6 +61,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     oidcIssuer: issuer,
     awsSigningAccessKeyId: config.get("aws.signingAccessKeyId")!,
     awsSigningSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
+    awsTempBucket: config.get("aws.tempBucket")!,
     sessionSecret: config.get("session.secret")!,
     sessionSalt: config.get("session.salt")!,
     remsBotKey: config.get("rems.botKey")!,
@@ -69,20 +70,20 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     ontoFhirUrl: config.get("ontoFhirUrl"),
     mondoSystem: {
       uri: config.get("mondoSystem.uri"),
-      oid: config.get("mondoSystem.oid")
+      oid: config.get("mondoSystem.oid"),
     },
     hgncGenesSystem: {
       uri: config.get("hgncGenesSystem.uri"),
-      oid: config.get("hgncGenesSystem.oid")
+      oid: config.get("hgncGenesSystem.oid"),
     },
     hpoSystem: {
       uri: config.get("hpoSystem.uri"),
-      nonPreferredUri: config.get("hpoSystem.nonPreferredUri")
+      nonPreferredUri: config.get("hpoSystem.nonPreferredUri"),
     },
     isoCountrySystemUri: config.get("isoCountrySystemUri"),
     snomedSystem: {
       uri: config.get("snomedSystem.uri"),
-      oid: config.get("snomedSystem.oid")
+      oid: config.get("snomedSystem.oid"),
     },
     datasets: (config.get("datasets") as any[]) ?? [],
     superAdmins: (config.get("superAdmins") as any[]) ?? [],

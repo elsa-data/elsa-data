@@ -9,7 +9,7 @@ export const ADD_SCENARIO_COMMAND = "add-scenario";
  * @param scenario
  */
 export async function commandAddScenario(scenario: number): Promise<number> {
-  const settings = await getFromEnv();
+  const { settings } = await getFromEnv();
 
   // TODO make multiple scenarios
   await insertTestData(settings);

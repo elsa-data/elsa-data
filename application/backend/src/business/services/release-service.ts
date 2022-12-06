@@ -627,4 +627,41 @@ export class ReleaseService extends ReleaseBaseService {
 
     return await this.getBase(releaseId, userRole);
   }
+
+  public async setIsAllowed(
+    user: AuthenticatedUser,
+    releaseId: string,
+    type: "read" | "variant" | "phenotype",
+    value: boolean
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    const fieldToSet =
+      type === "read"
+        ? {
+            isAllowedReadData: value,
+          }
+        : type === "variant"
+        ? {
+            isAllowedVariantData: value,
+          }
+        : {
+            isAllowedPhenotypeData: value,
+          };
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      await e
+        .update(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          set: fieldToSet,
+        }))
+        .run(tx);
+    });
+
+    return await this.getBase(releaseId, userRole);
+  }
 }

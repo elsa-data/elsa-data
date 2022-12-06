@@ -268,6 +268,9 @@ ${roleTable.join("\n")}
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
+          isAllowedReadData: false,
+          isAllowedVariantData: false,
+          isAllowedPhenotypeData: false,
           releaseIdentifier: generate({
             length: 10,
             capitalization: "uppercase",

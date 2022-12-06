@@ -63,7 +63,10 @@ Ethics form XYZ.
 `,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: ApplicationCodedStudyType.DS,
-        countriesInvolved: makeSingleCodeArray(settings.isoCountrySystemUri, "AUS"),
+        countriesInvolved: makeSingleCodeArray(
+          settings.isoCountrySystemUri,
+          "AUS"
+        ),
         diseasesOfStudy: makeDoubleCodeArray(
           settings.mondoSystem.uri,
           "MONDO:0008678",
@@ -87,6 +90,9 @@ Ethics form XYZ.
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
+      isAllowedReadData: false,
+      isAllowedVariantData: true,
+      isAllowedPhenotypeData: false,
       selectedSpecimens: e.set(
         // we fully select one trio
         findSpecimenQuery(BART_SPECIMEN),

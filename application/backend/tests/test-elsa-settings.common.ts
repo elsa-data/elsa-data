@@ -52,22 +52,23 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   ontoFhirUrl: "",
   mondoSystem: {
     uri: "",
-    oid: ""
+    oid: "",
   },
   hgncGenesSystem: {
     uri: "",
-    oid: ""
+    oid: "",
   },
   hpoSystem: {
     uri: "",
-    nonPreferredUri: ""
+    nonPreferredUri: "",
   },
   isoCountrySystemUri: "",
   snomedSystem: {
     uri: "",
-    oid: ""
+    oid: "",
   },
   awsSigningSecretAccessKey: "A",
   awsSigningAccessKeyId: "B",
+  awsTempBucket: "a-temp-bucket",
   rateLimit: {},
 });

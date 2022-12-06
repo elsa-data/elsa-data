@@ -10,6 +10,8 @@ export const REACT_QUERY_RELEASE_KEYS = {
   all: ["releases"] as const,
   details: () => [...REACT_QUERY_RELEASE_KEYS.all, "detail"] as const,
   detail: (id: string) => [...REACT_QUERY_RELEASE_KEYS.details(), id] as const,
+  cfn: (id: string) =>
+    [...REACT_QUERY_RELEASE_KEYS.details(), id, "cfn"] as const,
 
   // an accessor function to get the release id back out of any given key array
   getReleaseId: (keys: readonly unknown[]) => keys[2],

@@ -7,6 +7,8 @@
     "frontend": "vite serve",
     "//build:dev": "Builds a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
     "build:dev": "vite build --mode development",
+    "//watch:dev": "Watches the source and triggers a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
+    "watch:dev": "vite build --watch --mode development",
     "//build:prod": "Builds a prod build in the ../backend/client/dist/ folder where it can be found by the production server",
     "build:prod": "vite build --mode production"
   },

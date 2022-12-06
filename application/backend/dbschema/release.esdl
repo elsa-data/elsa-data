@@ -50,6 +50,12 @@ module release {
             on target delete allow;
         }
 
+        # which file types are allowed to be accessed for the selectedSpecimens
+        #
+        required property isAllowedReadData -> bool;
+        required property isAllowedVariantData -> bool;
+        required property isAllowedPhenotypeData -> bool;
+
         # if present indicates that a running job is active in the context of this release
         #
         optional link runningJob := (

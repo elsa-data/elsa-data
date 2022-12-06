@@ -15,6 +15,10 @@ module job {
         #
         required property status -> JobStatus;
 
+        # we regularly need to find only the jobs of a certain type and we want this to be quick
+        #
+        index on (.status);
+
         # the database time the job was created
         #
         required property created -> datetime {
@@ -59,13 +63,41 @@ module job {
         required property initialTodoCount -> int32;
 
         multi link todoQueue -> dataset::DatasetCase {
+            # because jobs are retained forever - we want to make sure any links to objects
+            # are weak links that don't prevent the target from being deleted
+            #
             on target delete allow;
         };
 
         multi link selectedSpecimens -> dataset::DatasetSpecimen {
+            # because jobs are retained forever - we want to make sure any links to objects
+            # are weak links that don't prevent the target from being deleted
+            #
             on target delete allow;
         };
-
-
     }
+
+    type CloudFormationInstallJob extending Job {
+
+        # the S3 location of the cloud formation template we are installing
+        #
+        required property s3HttpsUrl -> str;
+
+        # the stack id of the cloud formation we are creating
+        # NOTE after the installation process finishes - we do not use this binding any more
+        #      i.e. a stack could be replaced with a different one of a similar name outside Elsa Data and
+        #      we would not notice
+        #      this is solely used *during* the install to track progress
+        #
+        required property awsStackId -> str;
+    }
+
+    type CloudFormationDeleteJob extending Job {
+
+        # the stack id of the cloud formation we are deleting
+        # NOTE this is solely used *during* the delete to track progress
+        #
+        required property awsStackId -> str;
+    }
+
 }
