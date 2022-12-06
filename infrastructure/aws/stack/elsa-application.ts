@@ -126,9 +126,13 @@ export class ElsaApplicationStack extends NestedStack {
             actions: [
               "s3:CreateAccessPoint",
               "s3:DeleteAccessPoint",
+              "s3:DeleteAccessPointPolicy",
               "s3:GetAccessPoint",
               "s3:GetAccessPointPolicy",
+              "s3:GetAccessPointPolicyStatus",
               "s3:ListAccessPoints",
+              "s3:PutAccessPointPolicy",
+              "s3:PutAccessPointPublicAccessBlock",
             ],
             resources: [`*`],
           }),
