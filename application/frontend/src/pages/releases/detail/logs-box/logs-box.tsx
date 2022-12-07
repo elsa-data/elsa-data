@@ -40,7 +40,7 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
-import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import {EagerErrorBoundary, ErrorState} from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 declare module "@tanstack/table-core" {
@@ -73,8 +73,7 @@ export const useAuditEventQuery = (
   orderAscending: boolean,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
-  setIsSuccess: Dispatch<SetStateAction<boolean>>,
-  setError: Dispatch<SetStateAction<any | null>>
+  setError: Dispatch<SetStateAction<ErrorState>>,
 ) => {
   return useQuery(
     [
@@ -100,13 +99,11 @@ export const useAuditEventQuery = (
       enabled: false,
       onSuccess: (data) => {
         setData(data ?? []);
-        setIsSuccess(data !== undefined);
-        setError(null);
+        setError({error: null, isSuccess: data !== undefined});
       },
-      onError: (err) => {
+      onError: (error) => {
         setData([]);
-        setIsSuccess(false);
-        setError(err);
+        setError({error, isSuccess: false});
       },
     }
   );
@@ -120,8 +117,7 @@ export const useAllAuditEventQueries = (
   releaseId: string,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
-  setIsSuccess: Dispatch<SetStateAction<boolean>>,
-  setError: Dispatch<SetStateAction<any | null>>
+  setError: Dispatch<SetStateAction<ErrorState>>,
 ): { [key: string]: UseQueryResult<AuditEntryType[]> } => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
@@ -134,7 +130,6 @@ export const useAllAuditEventQueries = (
       orderAscending,
       setCurrentTotal,
       setData,
-      setIsSuccess,
       setError
     );
   };
@@ -190,15 +185,13 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   const [updateData, setUpdateData] = useState(true);
 
   const [data, setData] = useState([] as AuditEntryType[]);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState<any | null>(null);
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
     releaseId,
     setCurrentTotal,
     setData,
-    setIsSuccess,
     setError
   );
 
@@ -243,7 +236,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
       errorMessage={"Something went wrong fetching audit logs."}
     >
       <div className="flex flex-col">
-        {isSuccess ? (
+        {error.isSuccess ? (
           <Table
             tableHead={table.getHeaderGroups().map((headerGroup) => (
               <tr
@@ -322,9 +315,8 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         ) : (
           <EagerErrorBoundary
             message={"Could not display logs table."}
-            error={error}
+            error={error.error}
             styling={"bg-red-100"}
-            key={isSuccess.toString()}
           />
         )}
         <BoxPaginator

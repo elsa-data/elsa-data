@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/errors";
 import { BoxNoPad } from "../../../../components/boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 

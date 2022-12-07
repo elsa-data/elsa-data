@@ -13,7 +13,7 @@ import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
 import { fileSize } from "humanize-plus";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
-import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{

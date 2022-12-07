@@ -7,7 +7,7 @@ import { isNil } from "lodash";
 import { REACT_QUERY_RELEASE_KEYS } from "../../releases/detail/queries";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
-import { ErrorBoundary } from "../../../components/error-boundary";
+import { ErrorBoundary } from "../../../components/errors";
 
 type Props = {
   showing: boolean;

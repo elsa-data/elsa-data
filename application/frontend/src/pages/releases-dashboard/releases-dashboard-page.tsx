@@ -5,7 +5,7 @@ import { Box } from "../../components/boxes";
 import { ReleaseSummaryType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
-import { EagerErrorBoundary } from "../../components/error-boundary";
+import { EagerErrorBoundary } from "../../components/errors";
 
 export const ReleasesPage: React.FC = () => {
   const query = useQuery(

@@ -10,7 +10,7 @@ import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { doLookup } from "../../../../helpers/ontology-helper";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
-import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import {EagerErrorBoundary, ErrorState} from "../../../../components/errors";
 
 type Props = {
   releaseId: string;
@@ -93,20 +93,17 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
-  const [error, setError] = useState<any>(undefined);
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
 
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
     const duos = await axios
       .get<DuoLimitationCodedType[]>(u)
       .then((response) => {
-        setError(undefined);
-        setIsSuccess(true);
+        setError({error: null, isSuccess: true});
         return response.data;
       })
       .catch((error: any) => {
-        setError(error);
-        setIsSuccess(false);
+        setError({error, isSuccess: false});
         return [];
       });
 
@@ -148,7 +145,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
-      {isSuccess && (
+      {error.isSuccess && (
         <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
           {duos.map(function (resolvedDuo: ResolvedDuo) {
             return (
@@ -196,10 +193,10 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
           })}
         </div>
       )}
-      {!isSuccess && (
+      {!error.isSuccess && (
         <EagerErrorBoundary
           message={"Something went wrong resolving duos."}
-          error={error}
+          error={error.error}
           styling={"bg-red-100"}
         />
       )}

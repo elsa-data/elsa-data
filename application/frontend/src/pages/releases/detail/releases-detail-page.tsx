@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
-import { Box, BoxNoPad } from "../../../components/boxes";
+import { Box } from "../../../components/boxes";
 import { LayoutBase } from "../../../layouts/layout-base";
 import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
@@ -22,7 +22,7 @@ import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
 import { ReleaseTypeLocal } from "./shared-types";
-import { EagerErrorBoundary } from "../../../components/error-boundary";
+import {EagerErrorBoundary, ErrorState} from "../../../components/errors";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -33,6 +33,8 @@ import { EagerErrorBoundary } from "../../../components/error-boundary";
  */
 export const ReleasesDetailPage: React.FC = () => {
   const { releaseId } = useParams<{ releaseId: string }>();
+
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
 
   if (!releaseId)
     throw new Error(
@@ -46,6 +48,8 @@ export const ReleasesDetailPage: React.FC = () => {
   const releaseQuery = useQuery({
     queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseId),
     queryFn: specificReleaseQuery,
+    onError: (error: any) => setError({error, isSuccess: false}),
+    onSuccess: (_: any) => setError({error: null, isSuccess: true})
   });
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
@@ -53,6 +57,7 @@ export const ReleasesDetailPage: React.FC = () => {
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
       result
     );
+    setError({error: null, isSuccess: true});
   };
 
   const cancelMutate = useMutation(
@@ -104,6 +109,7 @@ export const ReleasesDetailPage: React.FC = () => {
                 onClick={async () => {
                   cancelMutate.mutate(null, {
                     onSuccess: afterMutateUpdateQueryData,
+                    onError: (error: any) => setError({error, isSuccess: false})
                   });
                 }}
                 disabled={releaseQuery.data.runningJob.requestedCancellation}
@@ -196,10 +202,10 @@ export const ReleasesDetailPage: React.FC = () => {
             <DataAccessSummaryBox releaseId={releaseId} />
           </>
         )}
-        {releaseQuery.isError && (
+        {!error.isSuccess && (
           <EagerErrorBoundary
             message={"Something went wrong fetching release data."}
-            error={releaseQuery.error}
+            error={error.error}
             styling={"bg-red-100"}
           />
         )}

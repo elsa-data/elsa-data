@@ -263,3 +263,11 @@ export class ErrorBoundary extends Component<
     );
   }
 }
+
+/**
+ * State that handles an error.
+ */
+export type ErrorState = {
+  error: any;
+  isSuccess: boolean;
+}

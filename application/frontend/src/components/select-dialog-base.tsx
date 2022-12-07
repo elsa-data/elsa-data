@@ -1,6 +1,6 @@
 import React, { Fragment, MutableRefObject, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { EagerErrorBoundary } from "./error-boundary";
+import { EagerErrorBoundary } from "./errors";
 import { AiOutlineClose } from "react-icons/ai";
 
 type Props = {

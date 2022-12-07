@@ -7,7 +7,7 @@ import { convertCamelCaseToTitle } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
-import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/errors";
 import { fileSize } from "humanize-plus";
 
 function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {

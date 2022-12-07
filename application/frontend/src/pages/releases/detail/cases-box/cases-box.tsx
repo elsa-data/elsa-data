@@ -9,7 +9,7 @@ import { Box, BoxNoPad } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
-import { EagerErrorBoundary } from "../../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 type Props = {

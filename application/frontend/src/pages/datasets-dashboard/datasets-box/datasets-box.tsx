@@ -9,7 +9,7 @@ import { fileSize, oxford } from "humanize-plus";
 import { useNavigate } from "react-router-dom";
 import { ToolTip } from "../../../components/tooltip";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import { EagerErrorBoundary } from "../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {

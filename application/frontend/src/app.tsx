@@ -11,7 +11,7 @@ import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
 import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
-import { EagerErrorBoundary } from "./components/error-boundary";
+import { EagerErrorBoundary } from "./components/errors";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 

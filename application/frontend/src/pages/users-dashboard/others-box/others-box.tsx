@@ -11,7 +11,7 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import { EagerErrorBoundary } from "../../../components/error-boundary";
+import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {

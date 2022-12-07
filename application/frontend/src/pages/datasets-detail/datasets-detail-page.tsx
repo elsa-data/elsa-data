@@ -7,7 +7,7 @@ import { DatasetDeepType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
-import { EagerErrorBoundary } from "../../components/error-boundary";
+import { EagerErrorBoundary } from "../../components/errors";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
