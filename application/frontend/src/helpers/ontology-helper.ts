@@ -1,10 +1,6 @@
 import axios from "axios";
-import {
-  partial,
-  zipWith,
-} from "lodash";
+import { partial, zipWith } from "lodash";
 import LRUCache from "lru-cache";
-import { Options as LRUCacheOptions } from "lru-cache";
 import { CodingType } from "@umccr/elsa-types";
 import {
   countriesEnglishNames,
@@ -12,59 +8,61 @@ import {
 } from "../ontology/countries";
 
 export type ResolvedCodingType = Omit<CodingType, "display"> & {
-  display: string
+  display: string;
 };
 
 export type LookupResult = {
-  resolved: ResolvedCodingType[],
-  unresolved: CodingType[],
-}
+  resolved: ResolvedCodingType[];
+  unresolved: CodingType[];
+};
 
 const ontologyLookupCache = new LRUCache<string, ResolvedCodingType>({
-  max: 1024
+  max: 1024,
 });
 
 function cacheKey(code: CodingType) {
-  return JSON.stringify({code: code.code, system: code.system});
+  return JSON.stringify({ code: code.code, system: code.system });
 }
 
 function mergeLookupResults(lookupResults: LookupResult[]): LookupResult {
   return {
-    resolved:   lookupResults.flatMap(lookupResult => lookupResult.resolved),
-    unresolved: lookupResults.flatMap(lookupResult => lookupResult.unresolved),
+    resolved: lookupResults.flatMap((lookupResult) => lookupResult.resolved),
+    unresolved: lookupResults.flatMap(
+      (lookupResult) => lookupResult.unresolved
+    ),
   };
 }
 
 function tryLookupInCode1(code: CodingType): LookupResult {
   const display = code.display;
   if (display === undefined) {
-    return {resolved: [], unresolved: [code]};
+    return { resolved: [], unresolved: [code] };
   } else {
-    return {resolved: [{display, ...code}], unresolved: []}
+    return { resolved: [{ display, ...code }], unresolved: [] };
   }
 }
 
 function tryLookupInCache1(code: CodingType): LookupResult {
   const lookupResult = ontologyLookupCache.get(cacheKey(code));
   return {
-    resolved:   lookupResult !== undefined ? [lookupResult] : [],
+    resolved: lookupResult !== undefined ? [lookupResult] : [],
     unresolved: lookupResult === undefined ? [code] : [],
   };
 }
 
 function tryLookupInCountryMap1(code: CodingType): LookupResult {
-  const lookupResult
-    = code.system === ISO3166_SYTEM_URI && code.code in countriesEnglishNames
-    ? {
-      system: code.system,
-      code: code.code,
-      display: countriesEnglishNames[code.code]
-    }
-    : undefined;
+  const lookupResult =
+    code.system === ISO3166_SYTEM_URI && code.code in countriesEnglishNames
+      ? {
+          system: code.system,
+          code: code.code,
+          display: countriesEnglishNames[code.code],
+        }
+      : undefined;
   return {
-    resolved:   lookupResult !== undefined ? [lookupResult] : [],
+    resolved: lookupResult !== undefined ? [lookupResult] : [],
     unresolved: lookupResult === undefined ? [code] : [],
-  }
+  };
 }
 
 async function tryLookupInCode(codes: CodingType[]): Promise<LookupResult> {
@@ -75,7 +73,9 @@ async function tryLookupInCache(codes: CodingType[]): Promise<LookupResult> {
   return mergeLookupResults(codes.map(tryLookupInCache1));
 }
 
-async function tryLookupInCountryMap(codes: CodingType[]): Promise<LookupResult> {
+async function tryLookupInCountryMap(
+  codes: CodingType[]
+): Promise<LookupResult> {
   return mergeLookupResults(codes.map(tryLookupInCountryMap1));
 }
 
@@ -84,33 +84,31 @@ async function tryLookupInTerminologyServer(
   codes: CodingType[]
 ): Promise<LookupResult> {
   if (codes.length === 0) {
-    return {resolved: [], unresolved: []};
+    return { resolved: [], unresolved: [] };
   }
 
   const data = {
     type: "batch",
     resourceType: "Bundle",
-    entry: codes.map(code => (
-      {
-        request: {
-          method: "POST",
-          url: "CodeSystem/$lookup",
-        },
-        resource: {
-          resourceType: "Parameters",
-          parameter: [
-            {
-              valueUri: code.system,
-              name: "system",
-            },
-            {
-              valueCode: code.code,
-              name: "code",
-            },
-          ],
-        },
-      }
-    )),
+    entry: codes.map((code) => ({
+      request: {
+        method: "POST",
+        url: "CodeSystem/$lookup",
+      },
+      resource: {
+        resourceType: "Parameters",
+        parameter: [
+          {
+            valueUri: code.system,
+            name: "system",
+          },
+          {
+            valueCode: code.code,
+            name: "code",
+          },
+        ],
+      },
+    })),
   };
 
   const config = {
@@ -123,7 +121,7 @@ async function tryLookupInTerminologyServer(
 
   let results = null;
   try {
-    results = (await axios.post(url, data, config)).data
+    results = (await axios.post(url, data, config)).data;
   } catch (e) {
     console.log(e);
     return {
@@ -133,9 +131,9 @@ async function tryLookupInTerminologyServer(
   }
 
   type EntryCodePair = {
-    entry: any
-    code: CodingType
-  }
+    entry: any;
+    code: CodingType;
+  };
 
   function coerceEntryToArray(entry: any): any[] {
     return Array.isArray(entry) ? entry : [];
@@ -144,7 +142,7 @@ async function tryLookupInTerminologyServer(
   const entryCodePairs: EntryCodePair[] = zipWith(
     coerceEntryToArray(results?.entry),
     codes,
-    (entry, code) => ({ entry: entry, code: code})
+    (entry, code) => ({ entry: entry, code: code })
   );
 
   const resolved: ResolvedCodingType[] = [];
@@ -153,7 +151,7 @@ async function tryLookupInTerminologyServer(
     if (pair.entry?.response?.status !== "200") {
       console.log(
         `Dropping code ${JSON.stringify(pair.code)} as the lookup of ` +
-        `it resulted in ${JSON.stringify(pair.entry?.response)}`
+          `it resulted in ${JSON.stringify(pair.entry?.response)}`
       );
       unresolved.push(pair.code);
       continue;
@@ -163,16 +161,14 @@ async function tryLookupInTerminologyServer(
       const valueString = param?.valueString;
       if (name !== "display") continue;
       if (valueString === undefined) continue;
-      resolved.push(
-        {
-          code: pair.code.code,
-          system: pair.code.system,
-          display: String(valueString),
-        }
-      );
+      resolved.push({
+        code: pair.code.code,
+        system: pair.code.system,
+        display: String(valueString),
+      });
     }
   }
-  return {resolved, unresolved};
+  return { resolved, unresolved };
 }
 
 /**
@@ -181,7 +177,7 @@ async function tryLookupInTerminologyServer(
  * @param code the code that has a display field
  */
 export function putIntoCache(code: ResolvedCodingType) {
-  ontologyLookupCache.set(cacheKey(code), code)
+  ontologyLookupCache.set(cacheKey(code), code);
 }
 
 /**
@@ -204,7 +200,7 @@ export function putManyIntoCache(codes: ResolvedCodingType[]) {
 export async function doLookup(
   url: string,
   code: CodingType,
-  forceRefresh: boolean = false,
+  forceRefresh: boolean = false
 ): Promise<ResolvedCodingType | undefined> {
   return (await doBatchLookup(url, [code], forceRefresh)).resolved[0];
 }
@@ -223,11 +219,13 @@ export async function doBatchLookup(
   forceAllRefresh: boolean = false
 ): Promise<LookupResult> {
   const tryLookupInSpecificTerminologyServer = partial(
-    tryLookupInTerminologyServer, url);
+    tryLookupInTerminologyServer,
+    url
+  );
 
   const lookupFuncs = [
-    ...(forceAllRefresh ? []: [tryLookupInCode]),
-    ...(forceAllRefresh ? []: [tryLookupInCache]),
+    ...(forceAllRefresh ? [] : [tryLookupInCode]),
+    ...(forceAllRefresh ? [] : [tryLookupInCache]),
     tryLookupInCountryMap,
     tryLookupInSpecificTerminologyServer,
   ];

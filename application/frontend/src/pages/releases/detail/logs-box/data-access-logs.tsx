@@ -8,11 +8,12 @@ import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { categoryToDescription } from "./logs-box";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { isEmpty, isNil } from "lodash";
+import { isNil } from "lodash";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { usePageSizer } from "../../../../hooks/page-sizer";
 import { fileSize } from "humanize-plus";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -54,7 +55,10 @@ function DataAccessLogsBox() {
   const data: AuditDataAccessType[] | undefined = dataAccessQuery.data;
   if (isNil(data) && dataAccessQuery.isSuccess) return <>No Data Found!</>;
   return (
-    <BoxNoPad heading="Data Access Log Summary">
+    <BoxNoPad
+      heading="Data Access Log Summary"
+      errorMessage={"Something went wrong fetching data access logs."}
+    >
       <Table
         tableHead={
           <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">
@@ -111,6 +115,13 @@ function DataAccessLogsBox() {
           ))
         }
       />
+      {dataAccessQuery.isError && (
+        <EagerErrorBoundary
+          message={"Something went wrong fetching audit logs."}
+          error={dataAccessQuery.error}
+          styling={"bg-red-100"}
+        />
+      )}
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}

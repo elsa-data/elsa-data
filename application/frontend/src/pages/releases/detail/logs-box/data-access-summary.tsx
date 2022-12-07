@@ -7,6 +7,7 @@ import { convertCamelCaseToTitle } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
+import { EagerErrorBoundary } from "../../../../components/errors";
 import { fileSize } from "humanize-plus";
 
 function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
@@ -91,6 +92,13 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
           ))
         }
       />
+      {dataAccessQuery.isError && (
+        <EagerErrorBoundary
+          message={"Something went wrong fetching audit logs."}
+          error={dataAccessQuery.error}
+          styling={"bg-red-100"}
+        />
+      )}
     </BoxNoPad>
   );
 }

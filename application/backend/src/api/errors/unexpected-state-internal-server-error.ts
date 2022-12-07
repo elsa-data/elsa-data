@@ -1,4 +1,4 @@
-import { Base7807Error } from "./_error.types";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 
 /**
  * This error is the error we should throw whenever we have done a check/guard

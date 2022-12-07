@@ -7,6 +7,7 @@ import { DatasetDeepType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
+import { EagerErrorBoundary } from "../../components/errors";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -17,7 +18,7 @@ const DATASET_REACT_QUERY_KEY = "dataset";
 export const DatasetsDetailPage: React.FC = () => {
   const { datasetId: datasetIdParam } = useParams<DatasetsSpecificPageParams>();
 
-  const { data: datasetData, isLoading: datasetIsLoading } = useQuery({
+  const { data: datasetData, error } = useQuery({
     queryKey: [DATASET_REACT_QUERY_KEY, datasetIdParam],
     queryFn: async ({ queryKey }) => {
       const did = queryKey[1];
@@ -79,6 +80,13 @@ export const DatasetsDetailPage: React.FC = () => {
             </Box>
           </>
         )}
+        {error && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching datasets."}
+            error={error}
+            styling={"bg-red-100"}
+          />
+        )}
       </div>
     </LayoutBase>
   );
@@ -89,7 +97,7 @@ export const DatasetsDetailPage: React.FC = () => {
  */
 
 const configurationChip = (isConfig: boolean) => {
-  if (isConfig === true) {
+  if (isConfig) {
     return (
       <span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-green-200 text-green-700 rounded-full">
         OK
