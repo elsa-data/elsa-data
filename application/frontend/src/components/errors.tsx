@@ -12,7 +12,7 @@ export type ErrorDisplayProps = {
   message?: ReactNode;
   styling?: string;
   // Whether this error should be rethrown to a higher up component.
-  rethrowError?: (error: any) => boolean;
+  rethrowError?: (error: unknown) => boolean;
 };
 
 export type EagerErrorDisplayProps = ErrorFormatterDetailProps &
@@ -23,7 +23,7 @@ export type ErrorFormatterProps = {
 } & EagerErrorDisplayProps;
 
 export type ErrorFormatterDetailProps = {
-  error?: any;
+  error?: unknown;
 };
 
 export type Format7807ErrorProps = {
@@ -135,9 +135,9 @@ export const ErrorFormatterDetail = ({
       }
     } else if (error instanceof Error) {
       return <div className="pl-4 pt-4">{error.message}</div>;
+    } else if (typeof error === "object" && error !== null && "toString" in error) {
+      return <div className="pl-4 pt-4">{error.toString()}</div>;
     }
-
-    return <div className="pl-4 pt-4">{error}</div>;
   }
 
   return <></>;
@@ -182,15 +182,19 @@ export const ErrorFormatter = ({
     if (isAuthenticationError(error)) {
       return (
         <ErrorBox styling={styling}>
-          Failed to authenticate, check your crendentials.
-          {error && <ErrorFormatterWithMessage error={error} />}
+          <>
+            Failed to authenticate, check your crendentials.
+            {error && <ErrorFormatterWithMessage error={error} />}
+          </>
         </ErrorBox>
       );
     } else {
       return (
         <ErrorBox styling={styling}>
-          {message ? <div>{message}</div> : <div>Something went wrong.</div>}
-          {error && <ErrorFormatterWithMessage error={error} />}
+          <>
+            {message ? <div>{message}</div> : <div>Something went wrong.</div>}
+            {error && <ErrorFormatterWithMessage error={error} />}
+          </>
         </ErrorBox>
       );
     }
