@@ -20,7 +20,7 @@ type Props = {
 export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
 
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
@@ -76,7 +76,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                     </button>
                   </div>
                   {!error.isSuccess && (
-                    <EagerErrorBoundary error={error.error} styling={"bg-red-100"} />
+                    <EagerErrorBoundary error={error.error} styling={"bg-red-400"} />
                   )}
                 </div>
               </div>

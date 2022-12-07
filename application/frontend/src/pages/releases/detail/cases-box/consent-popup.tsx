@@ -93,7 +93,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
 
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
     const duos = await axios

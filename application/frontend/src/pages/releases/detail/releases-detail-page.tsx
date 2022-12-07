@@ -34,7 +34,7 @@ import {EagerErrorBoundary, ErrorState} from "../../../components/errors";
 export const ReleasesDetailPage: React.FC = () => {
   const { releaseId } = useParams<{ releaseId: string }>();
 
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
 
   if (!releaseId)
     throw new Error(

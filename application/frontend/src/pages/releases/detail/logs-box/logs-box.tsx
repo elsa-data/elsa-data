@@ -185,7 +185,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   const [updateData, setUpdateData] = useState(true);
 
   const [data, setData] = useState([] as AuditEntryType[]);
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: false});
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
