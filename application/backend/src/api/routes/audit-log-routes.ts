@@ -14,6 +14,7 @@ import {
   AuditEntryDetailsType,
   AuditEntryFullType,
 } from "@umccr/elsa-types/schemas-audit";
+import { AwsCloudTrailLakeService } from "../../business/services/aws-cloudtrail-lake-service";
 
 export const AuditEventForReleaseQuerySchema = Type.Object({
   page: Type.Optional(Type.Number()),
@@ -41,6 +42,7 @@ export type AuditEventDetailsQueryType = Static<
 export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
+  const awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
 
   fastify.get<{
     Params: { releaseId: string };
@@ -169,6 +171,33 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       );
 
       sendResult(reply, events);
+    }
+  );
+
+  fastify.post<{
+    Params: { rid: string };
+    Query: { accessType: "aws-presign" }; // Expansion: ['aws-access-point', 'gcp-presign', ...]
+    Body: {};
+  }>(
+    "/api/releases/:rid/access-log/import",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+      const query = request.query as { accessType: "aws-presign" };
+
+      switch (query.accessType) {
+        case "aws-presign":
+          const eventDataStoreId = "functionToGetFromConfig";
+          //  if eventDataStoreId not found return warning here!
+
+          await awsCloudTrailLakeService.syncPresignCloudTrailLakeLog({
+            releaseId,
+            eventDataStoreId,
+          });
+          return;
+      }
     }
   );
 };

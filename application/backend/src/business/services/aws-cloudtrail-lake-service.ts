@@ -1,5 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
+import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
   CloudTrailClient,
@@ -12,15 +13,19 @@ import { AuditLogService } from "./audit-log-service";
 
 type CloudTrailInputQueryType = {
   eventDataStoreId: string;
-  auditId: string;
+  releaseId: string;
   s3KeyObject?: string;
   startTimestamp?: string /* Unix time in 'YYYY-DD-MM 00:00:00.000', example: '2022-07-05 22:00:00.000' */;
   endTimestamp?: string /* Unix time in 'YYYY-DD-MM 00:00:00.000', example: '2022-07-05 23:00:00.000' */;
 };
 
-type CloudTrailGetQueryResultParam = {
-  queryId: string;
-  eventDataStoreId: string;
+type CloudTrailLakeResponseType = {
+  releaseId: string;
+  eventTime: string;
+  sourceIPAddress: string;
+  bucketName: string;
+  key: string;
+  bytesTransferredOut: string;
 };
 
 @injectable()
@@ -36,33 +41,9 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
 
   /**
-   * Getting logs from cloudtrail query
+   * CloudTrailLake Helper function
    */
-
-  async requestS3CloudTrailLakeQuery(
-    props: CloudTrailInputQueryType
-  ): Promise<string> {
-    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
-    const requestedField =
-      "element_at(requestParameters, 'x-releaseId'), " +
-      "eventTime, " +
-      "sourceIPAddress, " +
-      "element_at(requestParameters, 'bucketName') as bucketName, " +
-      "element_at(requestParameters, 'key') as key, " +
-      "element_at(additionalEventData, 'bytesTransferredOut') as bytesTransferredOut";
-
-    let sqlStatement =
-      `SELECT ${requestedField} FROM ${props.eventDataStoreId} ` +
-      `WHERE (element_at(requestParameters, 'x-releaseId') = '${props.auditId}') `;
-
-    // Additional filter
-    if (props.startTimestamp)
-      sqlStatement += `AND eventtime > '${props.startTimestamp}'`;
-    if (props.endTimestamp)
-      sqlStatement += `AND eventtime < '${props.endTimestamp}'`;
-    if (props.s3KeyObject)
-      sqlStatement += `AND element_at(requestParameters, 'key') = '${props.s3KeyObject}'`;
-
+  async startCommandQueryCloudTrailLake(sqlStatement: string): Promise<string> {
     // Sending request to query
     const command = new StartQueryCommand({ QueryStatement: sqlStatement });
     const queryResponse = await this.cloudTrailClient.send(command);
@@ -74,9 +55,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
   }
 
-  async getResultS3CloudTrailLakeQuery(
-    params: CloudTrailGetQueryResultParam
-  ): Promise<Record<string, string>[]> {
+  async getResultQueryCloudTrailLakeQuery(params: {
+    queryId: string;
+    eventDataStoreId: string;
+  }): Promise<Record<string, string>[]> {
     // Setting up init variables
     let nextToken: undefined | string;
     const queryResult: Record<string, string>[] = [];
@@ -94,7 +76,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       if (!cloudtrail_query_result_response.QueryResultRows) break;
 
       for (const row of cloudtrail_query_result_response.QueryResultRows) {
-        let record = {};
+        let record: any = {};
         for (const stringMap of row) {
           record = { ...record, ...stringMap };
         }
@@ -105,76 +87,118 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return queryResult;
   }
 
-  async getCloudTrailLakeEvents(): Promise<Record<string, any>[]> {
-    // TODO: Uncomment and need to replace the params below.
-    //       It will need to get eventDataStoreId gotten from the stack of where CloudTrail lake is created.
+  async findCloudTrailStartTimestamp(
+    releaseId: string
+  ): Promise<string | null> {
+    const lastQueryDate = (
+      await e
+        .select(e.release.Release, (r) => ({
+          lastDateTimeDataAccessLogQuery: true,
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.lastDateTimeDataAccessLogQuery;
 
-    // const queryId = await this.requestS3CloudTrailLakeQuery(param);
-    // const s3CloudTrailLogs = await this.getResultS3CloudTrailLakeQuery({
-    //   queryId: queryId,
-    //   eventDataStoreId: param.eventDataStoreId,
-    // });
-    // return s3CloudTrailLogs;
-    // For now, mock data is as below.
-    return [
-      {
-        releaseId: "abcd-efgh-ijkl-mnop",
-        eventTime: "2022-01-01 05:56:40.000",
-        sourceIPAddress: "123.123.123.123",
-        bucketName: "agha-gdr-elsa-2.0",
-        key: "Elsa/20220202/ELSA001.vcf.gz.tbi",
-        bytesTransferredOut: 75,
-      },
-      {
-        releaseId: "abcd-efgh-ijkl-mnop",
-        eventTime: "2022-01-01 05:51:29.000",
-        sourceIPAddress: "123.123.123.123",
-        bucketName: "agha-gdr-store-2.0",
-        key: "Elsa/20220202/ELS001.bam.bai",
-        bytesTransferredOut: 25,
-      },
-      {
-        releaseId: "abcd-efgh-ijkl-mnop",
-        eventTime: "2022-01-01 05:56:43.000",
-        sourceIPAddress: "123.123.123.123",
-        bucketName: "agha-gdr-store-2.0",
-        key: "Elsa/20220202/ELS002.vcf.gz",
-        bytesTransferredOut: 100,
-      },
-      {
-        releaseId: "abcd-efgh-ijkl-mnop",
-        eventTime: "2022-01-01 05:51:30.000",
-        sourceIPAddress: "123.123.123.123",
-        bucketName: "agha-gdr-store-2.0",
-        key: "Elsa/20220202/ELS002.vcf.gz.tbi",
-        bytesTransferredOut: 50,
-      },
-    ];
+    // First time query no need startTime let it query all records available
+    if (!lastQueryDate) return null;
+
+    // Adding 1 ms from previous query to prevent overlap results.
+    const dateObj = new Date(lastQueryDate);
+    dateObj.setTime(dateObj.getTime() + 1);
+
+    return dateObj.toISOString();
   }
 
-  // Ideally might be an interval job (perhaps run weekly? or maybe 7days after releaseAudit)
-  async recordCloudTrailLogByReleaseId({ releaseId }: { releaseId: string }) {
-    const cloudTrailEventArray = await this.getCloudTrailLakeEvents();
-
-    // Recording this into database
-    // Must make this idempotent, perhaps check if auditId has exceed more than 7 days.
-
-    for (const trailEvent of cloudTrailEventArray) {
+  async recordCloudTrailLake(records: CloudTrailLakeResponseType[]) {
+    for (const trailEvent of records) {
       const s3Url = `s3://${trailEvent.bucketName}/${trailEvent.key}`;
 
       // CloudTrail time always UTC time, adding UTC postfix to make sure recorded properly.
       const utcDate = new Date(`${trailEvent.eventTime} UTC`);
 
-      // Improvement do it in batch?
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseId: releaseId,
+        releaseId: trailEvent.releaseId,
         who: trailEvent.sourceIPAddress,
         fileUrl: s3Url,
         description: "Presigned URL accessed.",
-        egressBytes: trailEvent.bytesTransferredOut,
+        egressBytes: parseInt(trailEvent.bytesTransferredOut),
         date: utcDate,
       });
     }
+  }
+  /**
+   * Function specific for presignedUrl CloudTrailLake query
+   */
+  createSQLQueryByReleaseIdParams(props: CloudTrailInputQueryType): string {
+    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
+    const requestedField =
+      "element_at(requestParameters, 'x-releaseId') as releaseId, " +
+      "eventTime, " +
+      "sourceIPAddress, " +
+      "element_at(requestParameters, 'bucketName') as bucketName, " +
+      "element_at(requestParameters, 'key') as key, " +
+      "element_at(additionalEventData, 'bytesTransferredOut') as bytesTransferredOut";
+
+    let sqlStatement =
+      `SELECT ${requestedField} FROM ${props.eventDataStoreId} ` +
+      `WHERE (element_at(requestParameters, 'x-releaseId') = '${props.releaseId}') `;
+
+    // Additional filter
+    if (props.startTimestamp)
+      sqlStatement += `AND eventTime >= '${props.startTimestamp}'`;
+    if (props.endTimestamp)
+      sqlStatement += `AND eventTime <= '${props.endTimestamp}'`;
+    if (props.s3KeyObject)
+      sqlStatement += `AND element_at(requestParameters, 'key') = '${props.s3KeyObject}'`;
+
+    return sqlStatement;
+  }
+
+  // Ideally might be an interval job (perhaps run weekly? or maybe 7days after releaseAudit)
+  async syncPresignCloudTrailLakeLog({
+    releaseId,
+    eventDataStoreId,
+  }: {
+    releaseId: string;
+    eventDataStoreId: string;
+  }) {
+    // CloudTrailLake record is partition by timestamp. To save querying cost (by minimizing record scanned),
+    // we would specify the timestamp interval for each query.
+    // Ref: https://www.linkedin.com/pulse/querying-aws-cloudtrail-athena-vs-lake-steve-kinsman?trk=pulse-article_more-articles_related-content-card
+
+    // Also note that from cloudtrail-lake docs, it may take 15 minutes or more before logs appear in CloudTrail lake
+    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html
+
+    const startQueryDate = await this.findCloudTrailStartTimestamp(releaseId);
+    const endQueryDate = new Date().toISOString();
+
+    const sqlQueryStatement = this.createSQLQueryByReleaseIdParams({
+      startTimestamp: startQueryDate ?? undefined,
+      endTimestamp: endQueryDate,
+      releaseId: releaseId,
+      eventDataStoreId: eventDataStoreId,
+    });
+
+    const queryId = await this.startCommandQueryCloudTrailLake(
+      sqlQueryStatement
+    );
+    const s3CloudTrailLogs = (await this.getResultQueryCloudTrailLakeQuery({
+      queryId: queryId,
+      eventDataStoreId: eventDataStoreId,
+    })) as CloudTrailLakeResponseType[];
+
+    // Update last query date to release record
+    await e
+      .update(e.release.Release, (r) => ({
+        filter: e.op(r.id, "=", e.uuid(releaseId)),
+        set: {
+          lastDateTimeDataAccessLogQuery: e.datetime(endQueryDate),
+        },
+      }))
+      .run(this.edgeDbClient);
+
+    await this.recordCloudTrailLake(s3CloudTrailLogs);
   }
 }

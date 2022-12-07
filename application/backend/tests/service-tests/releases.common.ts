@@ -92,6 +92,7 @@ export async function beforeEachCommon() {
           occurredDateTime: e.datetime_current(),
         })
       ),
+      lastDateTimeDataAccessLogQuery: e.datetime_current(),
     })
     .run(edgeDbClient);
 

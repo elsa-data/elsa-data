@@ -1,5 +1,6 @@
 import { container } from "tsyringe";
 import { S3Client } from "@aws-sdk/client-s3";
+import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import * as edgedb from "edgedb";
 import { exec } from "child_process";
@@ -18,6 +19,10 @@ export async function registerTypes() {
 
   testContainer.register<S3Client>("S3Client", {
     useFactory: () => new S3Client({}),
+  });
+
+  testContainer.register<CloudTrailClient>("CloudTrailClient", {
+    useFactory: () => new CloudTrailClient({}),
   });
 
   testContainer.register<CloudFormationClient>("CloudFormationClient", {
