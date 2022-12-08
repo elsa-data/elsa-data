@@ -50,11 +50,45 @@ function DataAccessLogsBox() {
     { key: "occurredDateTime", value: "Occurred Date Time" },
     { key: "egressBytes", value: "Number of Bytes Accessed" },
   ];
-
+  const BoxHeader = () => (
+    <div className="flex items-center	justify-between">
+      <div>Data Access Log Summary</div>
+      <button
+        onClick={async () =>
+          await axios.post<any>(
+            `/api/releases/${releaseId}/access-log/import`,
+            {
+              accessType: "aws-presign",
+            }
+          )
+        }
+        type="button"
+        className="text-white bg-gray-400 hover:bg-gray-500 focus:ring-1 shadow-gray-500 focus:outline-none focus:ring-gray-600 font-medium rounded-lg text-xs px-3 py-2 text-center inline-flex items-center mr-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="icon icon-tabler icon-tabler-refresh mr-2 -ml-1 w-5 h-5"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="#ffffff"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+          <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+        </svg>
+        Sync (Presigned URL access)
+      </button>
+    </div>
+  );
   const data: AuditDataAccessType[] | undefined = dataAccessQuery.data;
   if (isNil(data) && dataAccessQuery.isSuccess) return <>No Data Found!</>;
   return (
-    <BoxNoPad heading="Data Access Log Summary">
+    <BoxNoPad heading={<BoxHeader />}>
       <Table
         tableHead={
           <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">

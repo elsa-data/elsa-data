@@ -179,18 +179,33 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   fastify.post<{
     Params: {
       rid: string;
-      accessType: "aws-presign"; // Expansion: ['aws-access-point', 'gcp-presign', ...]
     };
-    Body: {};
+    Body: {
+      accessType: "aws-presign";
+    };
     Reply: string;
   }>(
-    "/api/releases/:rid/access-log/import/:accessType",
-    {},
+    "/api/releases/:rid/access-log/import",
+    {
+      schema: {
+        body: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            accessType: {
+              type: "string",
+              enum: ["aws-presign"],
+            },
+          },
+          required: ["accessType"], // Expansion: ['aws-access-point', 'gcp-presign', ...]
+        },
+      },
+    },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-      const accessType = request.params.accessType;
+      const accessType = request.body.accessType;
 
       let replyMessage = "";
 

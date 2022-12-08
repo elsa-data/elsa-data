@@ -101,7 +101,7 @@ export default DataAccessSummaryBox;
  * Helper Component
  */
 function DisplayDownloadStatus({ status }: { status: string }) {
-  let classNameStr = ``;
+  let classNameStr = `p-1 rounded-md w-fit font-semibold `;
 
   if (status === "multiple-download") {
     classNameStr += "bg-amber-200	text-amber-500";
@@ -110,9 +110,5 @@ function DisplayDownloadStatus({ status }: { status: string }) {
   } else {
     classNameStr += "bg-neutral-200	text-neutral-500";
   }
-  return (
-    <div className={`${classNameStr} p-1 rounded-md w-fit font-semibold`}>
-      {status}
-    </div>
-  );
+  return <div className={classNameStr}>{status}</div>;
 }
