@@ -52,6 +52,8 @@ const Chip: React.FC<{
 };
 
 type Props = {
+  className: string;
+
   systemUri: string; // "http://purl.obolibrary.org/obo/hp.owl"
   systemVersion?: string; // "20191108"
 
@@ -199,7 +201,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <div className="col-span-3">
+    <div className={props.className}>
       <label
         {...getLabelProps()}
         className="block text-sm font-medium text-gray-700"
@@ -229,7 +231,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
       {/* if the input element is open, render the div else render nothing*/}
       {isOpen && searchHits && searchHits.length > 0 && (
         <div
-          className="origin-top-left overflow-auto absolute z-10 mt-1 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+          className="origin-top-left overflow-auto absolute z-10 mt-1 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="menu-button"

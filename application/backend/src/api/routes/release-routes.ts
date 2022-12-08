@@ -6,6 +6,10 @@ import {
   ReleaseCaseType,
   ReleaseDetailType,
   ReleaseMasterAccessRequestType,
+  ReleasePatchOperationSchema,
+  ReleasePatchOperationsSchema,
+  ReleasePatchOperationsType,
+  ReleasePatchOperationType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import {
@@ -18,6 +22,7 @@ import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
+import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
@@ -98,46 +103,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     reply.send(r);
   });
 
-  fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
-    "/api/releases/:rid/specimens/select",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseId = request.params.rid;
-
-      const specs: string[] = request.body;
-
-      const setResult = await releasesService.setSelected(
-        authenticatedUser,
-        releaseId,
-        specs
-      );
-
-      reply.send("ok");
-    }
-  );
-
-  fastify.post<{ Body: string[]; Params: { rid: string }; Reply: string }>(
-    "/api/releases/:rid/specimens/unselect",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseId = request.params.rid;
-
-      const specs: string[] = request.body;
-
-      const unsetResult = await releasesService.setUnselected(
-        authenticatedUser,
-        releaseId,
-        specs
-      );
-
-      reply.send("ok");
-    }
-  );
-
   fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
     "/api/releases/:rid/jobs/select",
     {},
@@ -169,162 +134,168 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     }
   );
 
-  fastify.post<{
+  /**
+   * The main route for altering fields in a release. Normally the UI component for the
+   * field is tied to a mutator which makes the corresponding patch operation.
+   */
+  fastify.patch<{
     Params: {
       rid: string;
-      field: "allowed-read" | "allowed-variant" | "allowed-phenotype";
-      op: "set";
     };
-    Body: {
-      value: boolean;
-    };
+    Body: ReleasePatchOperationsType;
   }>(
-    "/api/releases/:rid/fields/:field/:op",
-    {},
+    "/api/releases/:rid",
+    {
+      schema: {
+        body: ReleasePatchOperationsSchema,
+      },
+    },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
       const releaseId = request.params.rid;
-      const field = request.params.field;
-      const op = request.params.op;
-      const body = request.body;
 
-      // we are pretty safe to add these fields together - even though they come from the user supplied route
-      // if someone makes either field something unexpected - we'll fall through to the 400 reply
-      switch (field + "-" + op) {
-        case "allowed-read-set":
-          reply.send(
-            await releasesService.setIsAllowed(
-              authenticatedUser,
-              releaseId,
-              "read",
-              body.value!
-            )
-          );
-          return;
-        case "allowed-variant-set":
-          reply.send(
-            await releasesService.setIsAllowed(
-              authenticatedUser,
-              releaseId,
-              "variant",
-              body.value!
-            )
-          );
-          return;
-        case "allowed-phenotype-set":
-          reply.send(
-            await releasesService.setIsAllowed(
-              authenticatedUser,
-              releaseId,
-              "phenotype",
-              body.value!
-            )
-          );
-          return;
-        default:
-          reply.status(400).send();
-          return;
-      }
-    }
-  );
+      if (request.body.length > 1)
+        // the JSON patch standard says that all operations if more than 1 need to succeed/fail
+        // so we would need transactions to achieve this
+        // until we hit a need for it - we just disallow
+        throw new Error(
+          "Due to our services not having transaction support we don't allow multiple operations in one PATCH"
+        );
 
-  // TODO: these probably should be a Graphql mutate endpoint rather than this hack..
+      for (const op of request.body) {
+        switch (op.op) {
+          case "add":
+            switch (op.path) {
+              case "/specimens":
+                reply.send(
+                  await releasesService.setSelected(
+                    authenticatedUser,
+                    releaseId,
+                    op.value
+                  )
+                );
+                return;
+              case "/applicationCoded/diseases":
+                reply.send(
+                  await releasesService.addDiseaseToApplicationCoded(
+                    authenticatedUser,
+                    releaseId,
+                    op.value.system,
+                    op.value.code
+                  )
+                );
+                return;
+              case "/applicationCoded/countries":
+                reply.send(
+                  await releasesService.addCountryToApplicationCoded(
+                    authenticatedUser,
+                    releaseId,
+                    op.value.system,
+                    op.value.code
+                  )
+                );
+                return;
+              default:
+                throw new Error(
+                  `Unknown "add" operation path ${(op as any).path}`
+                );
+            }
 
-  fastify.post<{
-    Params: {
-      rid: string;
-      field: "diseases" | "countries" | "type" | "beacon";
-      op: "add" | "remove" | "set";
-    };
-    Body: {
-      type?: "HMB" | "DS" | "CC" | "GRU" | "POA";
-      system?: string;
-      code?: string;
-      query?: any;
-    };
-  }>(
-    "/api/releases/:rid/application-coded/:field/:op",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+          case "remove":
+            switch (op.path) {
+              case "/specimens":
+                reply.send(
+                  await releasesService.setUnselected(
+                    authenticatedUser,
+                    releaseId,
+                    op.value
+                  )
+                );
+                return;
+              case "/applicationCoded/diseases":
+                reply.send(
+                  await releasesService.removeDiseaseFromApplicationCoded(
+                    authenticatedUser,
+                    releaseId,
+                    op.value.system,
+                    op.value.code
+                  )
+                );
+                return;
+              case "/applicationCoded/countries":
+                reply.send(
+                  await releasesService.removeCountryFromApplicationCoded(
+                    authenticatedUser,
+                    releaseId,
+                    op.value.system,
+                    op.value.code
+                  )
+                );
+                return;
+              default:
+                throw new Error(
+                  `Unknown "remove" operation path ${(op as any).path}`
+                );
+            }
 
-      const releaseId = request.params.rid;
-      const field = request.params.field;
-      const op = request.params.op;
-      const body = request.body;
-
-      // we are pretty safe to add these fields together - even though they come from the user supplied route
-      // if someone makes either field something unexpected - we'll fall through to the 400 reply
-      switch (field + "-" + op) {
-        case "diseases-add":
-          reply.send(
-            await releasesService.addDiseaseToApplicationCoded(
-              authenticatedUser,
-              releaseId,
-              body.system!,
-              body.code!
-            )
-          );
-          return;
-        case "diseases-remove":
-          reply.send(
-            await releasesService.removeDiseaseFromApplicationCoded(
-              authenticatedUser,
-              releaseId,
-              body.system!,
-              body.code!
-            )
-          );
-          return;
-        case "countries-add":
-          reply.send(
-            await releasesService.addCountryToApplicationCoded(
-              authenticatedUser,
-              releaseId,
-              body.system!,
-              body.code!
-            )
-          );
-          return;
-        case "countries-remove":
-          reply.send(
-            await releasesService.removeCountryFromApplicationCoded(
-              authenticatedUser,
-              releaseId,
-              body.system!,
-              body.code!
-            )
-          );
-          return;
-        case "type-set":
-          // an example of error handling - to be removed
-          if ((body.type as string) === "AWS")
-            throw new Base7807Error(
-              "Invalid research type",
-              400,
-              `The type ${body.type} is invalid`
-            );
-          reply.send(
-            await releasesService.setTypeOfApplicationCoded(
-              authenticatedUser,
-              releaseId,
-              body.type!
-            )
-          );
-          return;
-        case "beacon-set":
-          reply.send(
-            await releasesService.setBeaconQuery(
-              authenticatedUser,
-              releaseId,
-              body.query!
-            )
-          );
-          return;
-        default:
-          reply.status(400).send();
-          return;
+          case "replace":
+            switch (op.path) {
+              case "/applicationCoded/type":
+                reply.send(
+                  await releasesService.setTypeOfApplicationCoded(
+                    authenticatedUser,
+                    releaseId,
+                    op.value as any
+                  )
+                );
+                return;
+              case "/applicationCoded/beacon":
+                reply.send(
+                  await releasesService.setBeaconQuery(
+                    authenticatedUser,
+                    releaseId,
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedRead":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseId,
+                    "read",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedVariant":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseId,
+                    "variant",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedPhenotype":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseId,
+                    "phenotype",
+                    op.value
+                  )
+                );
+                return;
+              default:
+                throw new Error(
+                  `Unknown "replace" operation path ${(op as any).path}`
+                );
+            }
+          default:
+            throw new Error(`Unknown operation op ${(op as any).op}`);
+        }
       }
     }
   );

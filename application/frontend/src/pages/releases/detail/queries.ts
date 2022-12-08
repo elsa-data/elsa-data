@@ -2,7 +2,11 @@ import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
 import { doBatchLookup } from "../../../helpers/ontology-helper";
 import { QueryFunctionContext } from "react-query";
-import { CodingType, ReleaseDetailType } from "@umccr/elsa-types";
+import {
+  CodingType,
+  ReleaseDetailType,
+  ReleasePatchOperationType,
+} from "@umccr/elsa-types";
 import { createDatasetMap } from "./dataset-map";
 
 export const REACT_QUERY_RELEASE_KEYS = {
@@ -48,6 +52,12 @@ export const axiosPostArgMutationFn =
   (c: T) =>
     axios
       .post<ReleaseDetailType>(apiUrl, c)
+      .then((response) => makeReleaseTypeLocal(response.data));
+
+export const axiosPatchOperationMutationFn =
+  (url: string) => (c: ReleasePatchOperationType) =>
+    axios
+      .patch<ReleaseDetailType>(url, [c])
       .then((response) => makeReleaseTypeLocal(response.data));
 
 export async function specificReleaseQuery(context: QueryFunctionContext) {

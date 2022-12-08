@@ -19,15 +19,17 @@ type Props = {
  * @param props
  * @constructor
  */
-export const MondoChooser: React.FC<Props> = ({
+export const MondoChooser: React.FC<Props & { className: string }> = ({
   label,
   selected,
   addToSelected,
   removeFromSelected,
   disabled,
+  className,
 }) => {
   return (
     <ConceptChooser
+      className={className}
       systemUri="http://purl.obolibrary.org/obo/mondo.owl?vs"
       //systemVersion="2022-03-01"
       rootConceptId="MONDO:0000001"

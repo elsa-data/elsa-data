@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import { Box } from "../../../components/boxes";
@@ -14,7 +14,7 @@ import {
 } from "./queries";
 import { BulkBox } from "./bulk-box/bulk-box";
 import { isUndefined } from "lodash";
-import { FutherRestrictionsBox } from "./further-restrictions-box";
+import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { MasterAccessControlBox } from "./master-access-control-box";
 import { LogsBox } from "./logs-box/logs-box";
@@ -22,7 +22,7 @@ import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
 import { ReleaseTypeLocal } from "./shared-types";
-import {EagerErrorBoundary, ErrorState} from "../../../components/errors";
+import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -34,7 +34,10 @@ import {EagerErrorBoundary, ErrorState} from "../../../components/errors";
 export const ReleasesDetailPage: React.FC = () => {
   const { releaseId } = useParams<{ releaseId: string }>();
 
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
+  const [error, setError] = useState<ErrorState>({
+    error: null,
+    isSuccess: true,
+  });
 
   if (!releaseId)
     throw new Error(
@@ -48,8 +51,8 @@ export const ReleasesDetailPage: React.FC = () => {
   const releaseQuery = useQuery({
     queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseId),
     queryFn: specificReleaseQuery,
-    onError: (error: any) => setError({error, isSuccess: false}),
-    onSuccess: (_: any) => setError({error: null, isSuccess: true})
+    onError: (error: any) => setError({ error, isSuccess: false }),
+    onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
   });
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
@@ -57,7 +60,7 @@ export const ReleasesDetailPage: React.FC = () => {
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
       result
     );
-    setError({error: null, isSuccess: true});
+    setError({ error: null, isSuccess: true });
   };
 
   const cancelMutate = useMutation(
@@ -83,11 +86,11 @@ export const ReleasesDetailPage: React.FC = () => {
 
   return (
     <LayoutBase>
-      <div className="flex flex-row flex-wrap flex-grow mt-2">
+      <div className="mt-2 flex flex-grow flex-row flex-wrap">
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
           <>
             <Box heading="Background Job">
-              <div className="flex justify-between mb-1">
+              <div className="mb-1 flex justify-between">
                 <span className="text-base font-medium text-blue-700">
                   Running
                 </span>
@@ -95,9 +98,9 @@ export const ReleasesDetailPage: React.FC = () => {
                   {releaseQuery.data.runningJob.percentDone.toString()}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="h-2.5 w-full rounded-full bg-gray-200">
                 <div
-                  className="bg-blue-600 h-2.5 rounded-full"
+                  className="h-2.5 rounded-full bg-blue-600"
                   style={{
                     width:
                       releaseQuery.data.runningJob.percentDone.toString() + "%",
@@ -109,7 +112,8 @@ export const ReleasesDetailPage: React.FC = () => {
                 onClick={async () => {
                   cancelMutate.mutate(null, {
                     onSuccess: afterMutateUpdateQueryData,
-                    onError: (error: any) => setError({error, isSuccess: false})
+                    onError: (error: any) =>
+                      setError({ error, isSuccess: false }),
                   });
                 }}
                 disabled={releaseQuery.data.runningJob.requestedCancellation}
@@ -142,7 +146,7 @@ export const ReleasesDetailPage: React.FC = () => {
             />
 
             {releaseQuery.data.permissionEditSelections && (
-              <FutherRestrictionsBox
+              <FurtherRestrictionsBox
                 releaseId={releaseId}
                 releaseData={releaseQuery.data}
               />

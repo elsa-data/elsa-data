@@ -1,13 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { CodingType, ReleaseApplicationCodedType } from "@umccr/elsa-types";
+import { ReleaseApplicationCodedType } from "@umccr/elsa-types";
 import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
 import { RhSelect } from "../../../../components/rh/rh-select";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
-import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
+import {
+  axiosPatchOperationMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
 import { RhTextArea } from "../../../../components/rh/rh-text-area";
+import { RhCheckItem, RhChecks } from "../../../../components/rh/rh-checks";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
@@ -105,81 +109,52 @@ export const ApplicationCodedBox: React.FC<Props> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const [lastMutateError, setLastMutateError] = useState<string | null>(null);
-
-  // whenever we do a mutation of application coded data - our API returns the complete updated
-  // state of the whole release
-  // we set this as the success function to take advantage of that
-  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
-    queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-      result
-    );
-    setLastMutateError(null);
-  };
-
-  const afterMutateError = (err: any) => {
-    setLastMutateError(err?.response?.data?.detail || "Error");
-  };
-
-  // all of our coded application apis follow the same pattern - post new value to API and get
-  // returned the updated release data - this generic mutator handles them all
-
-  const diseaseAddMutate = useMutation(
-    axiosPostArgMutationFn<CodingType>(
-      `/api/releases/${releaseId}/application-coded/diseases/add`
-    )
+  // a mutator that can alter any field set up using our REST PATCH mechanism
+  // the argument to the mutator needs to be a single ReleasePatchOperationType operation
+  const releasePatchMutate = useMutation(
+    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    {
+      // whenever we do a mutation of application coded data - our API returns the complete updated
+      // state of the *whole* release - and we can use that data to replace the stored react-query state
+      onSuccess: (result: ReleaseTypeLocal) => {
+        queryClient.setQueryData(
+          REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+          result
+        );
+      },
+    }
   );
 
-  const diseaseRemoveMutate = useMutation(
-    axiosPostArgMutationFn<CodingType>(
-      `/api/releases/${releaseId}/application-coded/diseases/remove`
-    )
-  );
-
-  const typeSetMutate = useMutation(
-    axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseId}/application-coded/type/set`
-    )
-  );
-
-  const beaconQueryMutate = useMutation(
-    axiosPostArgMutationFn<{ query: any }>(
-      `/api/releases/${releaseId}/application-coded/beacon/set`
-    )
-  );
-
-  const typeRadio = (label: string, value: string) => (
+  const ApplicationTypeRadio = (
+    label: string,
+    value: "HMB" | "POA" | "DS" | "GRU" | "UN"
+  ) => (
     <RhRadioItem
       label={label}
-      name="study"
+      name="studyType"
       checked={applicationCoded.type === value}
       onChange={(e) =>
-        typeSetMutate.mutate(
-          { type: value },
-          {
-            onSuccess: afterMutateUpdateQueryData,
-            onError: afterMutateError,
-          }
-        )
+        releasePatchMutate.mutate({
+          op: "replace",
+          path: "/applicationCoded/type",
+          value: value,
+        })
       }
     />
   );
 
-  const ExampleLink = (label: string, query: any) => (
+  const ExampleBeaconQueryLink = (label: string, query: any) => (
     <a
-      className="underline cursor-pointer"
+      className="cursor-pointer underline"
       onClick={() => {
         if (textAreaRef.current) {
           textAreaRef.current.value = JSON.stringify(query, null, 2);
         }
-        beaconQueryMutate.mutate(
-          { query: query },
-          {
-            onSuccess: afterMutateUpdateQueryData,
-            onError: afterMutateError,
-          }
-        );
+        releasePatchMutate.mutate({
+          op: "replace",
+          path: "/applicationCoded/beacon",
+          value: query,
+        });
       }}
     >
       {label}
@@ -198,20 +173,88 @@ export const ApplicationCodedBox: React.FC<Props> = ({
       />
       <RightDiv>
         <div className="shadow sm:rounded-md">
-          <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-            <div className="grid grid-cols-3 gap-6">
-              {lastMutateError && (
+          <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
+            <div className="grid grid-cols-1 gap-6">
+              {releasePatchMutate.isError && (
                 <EagerErrorBoundary
-                  message={lastMutateError}
+                  error={releasePatchMutate.error}
                   styling={"bg-red-100"}
                 />
               )}
-              <RhRadios label={"Study Type"}>
-                {typeRadio("Disease Specific", "DS")}
-                {typeRadio("Health/Medical/Bio", "HMB")}
-                {typeRadio("POA", "POA")}
-                {typeRadio("AWS", "AWS")}
-              </RhRadios>
+              <RhChecks label={"Assertions"}>
+                <RhCheckItem
+                  disabled={true}
+                  checked={true}
+                  label={"Applicant Has Documented Ethics Approval"}
+                />
+                <RhCheckItem
+                  disabled={true}
+                  label={"Applicant Has Agreed to Publish the Results"}
+                />
+                <RhCheckItem
+                  disabled={true}
+                  label={"Applicant Asserts the Study is Non-Commercial"}
+                />
+                <RhCheckItem
+                  disabled={true}
+                  label={
+                    "Applicant Asserts the Organisations Receiving Data are Not-for-Profit"
+                  }
+                />
+                <RhCheckItem
+                  disabled={true}
+                  label={"Applicant Asserts the Data Use is for Clinical Care"}
+                />
+                <RhCheckItem
+                  disabled={true}
+                  label={"Applicant Agrees to Return Derived/Enriched Data"}
+                />
+                <RhCheckItem
+                  disabled={true}
+                  label={
+                    "Applicant Asserts the Study Involves Method Development (e.g software or algorithms)"
+                  }
+                />
+              </RhChecks>
+              <div className="grid grid-cols-2 gap-4">
+                <RhRadios label={"Study Type"}>
+                  {ApplicationTypeRadio("Unspecified", "UN")}
+                  {ApplicationTypeRadio(
+                    "Population Origins or Ancestry Research Only",
+                    "POA"
+                  )}
+                  {ApplicationTypeRadio("General Research Use", "GRU")}
+                  {ApplicationTypeRadio(
+                    "Health or Medical or Biomedical Research",
+                    "HMB"
+                  )}
+                  {ApplicationTypeRadio("Disease Specific Research", "DS")}
+                </RhRadios>
+                {applicationCoded.type && applicationCoded.type === "DS" && (
+                  <MondoChooser
+                    className="self-end"
+                    label="Disease/Condition(s)"
+                    selected={applicationCoded.diseases}
+                    addToSelected={(c) =>
+                      releasePatchMutate.mutate({
+                        op: "add",
+                        path: "/applicationCoded/diseases",
+                        value: c,
+                      })
+                    }
+                    removeFromSelected={(c) =>
+                      releasePatchMutate.mutate({
+                        op: "remove",
+                        path: "/applicationCoded/diseases",
+                        value: c,
+                      })
+                    }
+                    disabled={false}
+                  />
+                )}
+              </div>
+
+              {/* this needs to be converted to a proper ontology search/set like "diseases"
               <RhSelect
                 label={"Country of Research"}
                 options={[
@@ -220,31 +263,12 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   { label: "United States", value: "USA" },
                 ]}
               />
+              */}
 
-              {applicationCoded.type && applicationCoded.type === "DS" && (
-                <MondoChooser
-                  label="Research of Disease/Condition(s)"
-                  selected={applicationCoded.diseases}
-                  addToSelected={(c) =>
-                    diseaseAddMutate.mutate(c, {
-                      onSuccess: afterMutateUpdateQueryData,
-                      onError: afterMutateError,
-                    })
-                  }
-                  removeFromSelected={(c) =>
-                    diseaseRemoveMutate.mutate(c, {
-                      onSuccess: afterMutateUpdateQueryData,
-                      onError: afterMutateError,
-                    })
-                  }
-                  disabled={false}
-                />
-              )}
-
-              <div className="col-span-3">
+              <div>
                 <RhTextArea
                   label={"Beacon v2 Query"}
-                  className="font-mono rounded-md border border-gray-300 w-full"
+                  className="w-full rounded-md border border-gray-300 font-mono"
                   rows={15}
                   defaultValue={JSON.stringify(
                     applicationCoded.beaconQuery,
@@ -255,28 +279,26 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   // value={beaconText}
                   // onChange={(e) => setBeaconText(e.target.value)}
                   onBlur={(e) =>
-                    beaconQueryMutate.mutate(
-                      { query: JSON.parse(e.target.value) },
-                      {
-                        onSuccess: afterMutateUpdateQueryData,
-                        onError: afterMutateError,
-                      }
-                    )
+                    releasePatchMutate.mutate({
+                      op: "replace",
+                      path: "/applicationCoded/beacon",
+                      value: JSON.parse(e.target.value),
+                    })
                   }
                 />
-                <div className="col-span-3 text-right text-xs space-x-2 text-blue-500">
+                <div className="space-x-2 text-right text-xs text-blue-500">
                   <span className="text-black">examples: </span>
-                  {ExampleLink("Males", malesQuery)}
-                  {ExampleLink("Not Males", notMalesQuery)}
-                  {ExampleLink(
+                  {ExampleBeaconQueryLink("Males", malesQuery)}
+                  {ExampleBeaconQueryLink("Not Males", notMalesQuery)}
+                  {ExampleBeaconQueryLink(
                     "Males with Variant 0101101111",
                     malesWithChr1VariantQuery
                   )}
-                  {ExampleLink(
+                  {ExampleBeaconQueryLink(
                     "All with Variant 1111111000",
                     allWithChr2VariantQuery
                   )}
-                  {ExampleLink(
+                  {ExampleBeaconQueryLink(
                     "Females with Variant 1100101111",
                     femalesWithChr20VariantQuery
                   )}

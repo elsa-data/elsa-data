@@ -49,11 +49,11 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   remsUrl: "https://hgpp-rems.dev.umccr.org",
   remsBotKey: "a",
   remsBotUser: "b",
-  oidcClientId: "",
-  oidcClientSecret: "",
+  oidcClientId: "12345",
+  oidcClientSecret: "abcd", // pragma: allowlist secret
   oidcIssuer: ciLogonIssuer,
-  sessionSalt: "ABCD",
-  sessionSecret: "XYZ",
+  sessionSalt: "0123456789012345", // pragma: allowlist secret
+  sessionSecret: "XYZ Is the Text That is A certain length", // pragma: allowlist secret
   ontoFhirUrl: "",
   mondoSystem: {
     uri: "",
@@ -72,8 +72,13 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     uri: "",
     oid: "",
   },
-  awsSigningSecretAccessKey: "A",
-  awsSigningAccessKeyId: "B",
+  awsSigningSecretAccessKey: "A", // pragma: allowlist secret
+  awsSigningAccessKeyId: "B", // pragma: allowlist secret
   awsTempBucket: "a-temp-bucket",
   rateLimit: {},
+  devTesting: {
+    sourceFrontEndDirect: false,
+    allowTestRoutes: true,
+    allowTestUsers: true,
+  },
 });

@@ -190,7 +190,7 @@ export abstract class ReleaseBaseService {
     releaseId: string,
     specimenIds: string[],
     statusToSet: boolean
-  ): Promise<void> {
+  ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
@@ -255,6 +255,8 @@ export abstract class ReleaseBaseService {
         }))
         .run(this.edgeDbClient);
     }
+
+    return await this.getBase(releaseId, userRole);
   }
 
   /**
