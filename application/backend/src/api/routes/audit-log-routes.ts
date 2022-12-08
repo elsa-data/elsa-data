@@ -22,7 +22,7 @@ export const AuditEventForReleaseQuerySchema = Type.Object({
   orderByProperty: Type.Optional(Type.String()),
   orderAscending: Type.Optional(Type.Boolean()),
 });
-export type AuditEventForReleasQueryType = Static<
+export type AuditEventForReleaseQueryType = Static<
   typeof AuditEventForReleaseQuerySchema
 >;
 
@@ -49,7 +49,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   fastify.get<{
     Params: { releaseId: string };
     Reply: AuditEntryType[];
-    Querystring: AuditEventForReleasQueryType;
+    Querystring: AuditEventForReleaseQueryType;
   }>(
     "/api/releases/:releaseId/audit-log",
     {
@@ -128,7 +128,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   fastify.get<{
     Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
-    Querystring: AuditEventForReleasQueryType;
+    Querystring: AuditEventForReleaseQueryType;
   }>(
     "/api/releases/:releaseId/audit-log/data-access",
     {
