@@ -1,8 +1,8 @@
 import React, { useState, PropsWithChildren } from "react";
 import { NavLink } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
-import { LayoutBaseFooter } from "./layout-base-footer";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
+import { ErrorBoundary } from "../components/errors";
 
 type Props = {};
 
@@ -160,7 +160,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
 
       <div className="container w-full mx-auto pt-10 lg:pt-20 grow">
         <div className="w-full mt-8 mb-8 text-gray-800 leading-normal">
-          {children}
+          <ErrorBoundary rethrowError={(_: any) => false}>
+            {children}
+          </ErrorBoundary>
         </div>
       </div>
 

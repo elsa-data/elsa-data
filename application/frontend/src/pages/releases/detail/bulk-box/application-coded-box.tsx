@@ -12,6 +12,7 @@ import {
 import { ReleaseTypeLocal } from "../shared-types";
 import { RhTextArea } from "../../../../components/rh/rh-text-area";
 import { RhCheckItem, RhChecks } from "../../../../components/rh/rh-checks";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseId: string;
@@ -177,7 +178,10 @@ export const ApplicationCodedBox: React.FC<Props> = ({
               {/* to be replaced by the new error box */}
               {releasePatchMutate.isError && (
                 <p className="col-span-3 font-bold text-red-700 border-gray-800 border-2 p-2">
-                  {JSON.stringify(releasePatchMutate.error)}
+                   <EagerErrorBoundary
+                     message={releasePatchMutate.error}
+                     styling={"bg-red-100"}
+                   />
                 </p>
               )}
               <RhChecks label={"Assertions"} className="col-span-3">

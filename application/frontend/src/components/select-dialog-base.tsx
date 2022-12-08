@@ -1,6 +1,7 @@
 import React, { Fragment, MutableRefObject, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { ErrorDisplay } from "./error-display";
+import { EagerErrorBoundary } from "./errors";
+import { AiOutlineClose } from "react-icons/ai";
 
 type Props = {
   showing: boolean;
@@ -55,6 +56,16 @@ export const SelectDialogBase: React.FC<Props> = ({
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-3xl sm:w-full">
+                <button
+                  type="button"
+                  className="w-full absolute top-2 right-2 inline-flex justify-center rounded-md
+                   border border-gray-300 shadow-sm px-3 py-3 bg-white text-base font-medium text-gray-700
+                   hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                   sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => cancelShowing()}
+                >
+                  <AiOutlineClose />
+                </button>
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <Dialog.Title
@@ -66,7 +77,14 @@ export const SelectDialogBase: React.FC<Props> = ({
                     {content}
                   </div>
                 </div>
-                <ErrorDisplay message={errorMessage} />
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  {errorMessage && (
+                    <EagerErrorBoundary
+                      message={errorMessage}
+                      styling={"bg-red-100"}
+                    />
+                  )}
+                </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   {buttons}
                 </div>

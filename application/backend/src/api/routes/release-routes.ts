@@ -16,7 +16,7 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
-import { Base7807Error } from "../errors/_error.types";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../business/services/release-service";

@@ -47,6 +47,13 @@ export interface Base7807Response {
   [x: string | number | symbol]: unknown;
 }
 
+/**
+ * Is this object a Base7807Response.
+ */
+export const isBase7807Response = (object: any): object is Base7807Response => {
+  return "type" in object && "title" in object && "status" in object;
+};
+
 export class Base7807Error extends Error {
   constructor(
     title: string,

@@ -9,7 +9,7 @@ import { fileSize, oxford } from "humanize-plus";
 import { useNavigate } from "react-router-dom";
 import { ToolTip } from "../../../components/tooltip";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import { Box } from "../../../components/boxes";
+import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 
 type Props = {
@@ -103,7 +103,10 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
   return (
-    <BoxNoPad heading="Datasets">
+    <BoxNoPad
+      heading="Datasets"
+      errorMessage={"Something went wrong fetching datasets."}
+    >
       <div className="p-5 bg-gray-50 text-right sm:px-6 border-b">
         <div className="flex justify-start">
           <div
@@ -127,7 +130,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             </label>
           </div>
         </div>
-      </div> 
+      </div>
       <div className="flex flex-col overflow-auto">
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
@@ -231,6 +234,13 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
               })}
             </tbody>
           </table>
+        )}
+        {dataQuery.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching datasets."}
+            error={dataQuery.error}
+            styling={"bg-red-100"}
+          />
         )}
       </div>
       <BoxPaginator
