@@ -1,22 +1,24 @@
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws-cloudtrail-lake-service";
-import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { container, DependencyContainer } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import { registerTypes } from "./setup";
 import { Client } from "edgedb";
-import { blankTestData } from "../../src/test-data/blank-test-data";
 import { beforeEachCommon } from "./releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
+import { ElsaSettings } from "../../src/config/elsa-settings";
+import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 
 let edgeDbClient: Client;
 let cloudTrailClient: CloudTrailClient;
 let testReleaseId: string;
 let testContainer: DependencyContainer;
+let elsaSetting: ElsaSettings;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
     testContainer = await registerTypes();
-
+    elsaSetting = testContainer.resolve("Settings");
     edgeDbClient = testContainer.resolve("Database");
     cloudTrailClient = testContainer.resolve("CloudTrailClient");
   });
@@ -56,6 +58,19 @@ describe("Test CloudTrailLake Service", () => {
 
     const singleLog = daArr[0];
     expect(singleLog.egressBytes).toEqual(101);
+  });
+
+  it("Test getEventDataStoreIdFromReleaseId", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+
+    const eventDataStoreIdArr =
+      await awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris([
+        TENG_URI,
+      ]);
+
+    expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
   });
 
   it("Test syncPresignCloudTrailLakeLog", async () => {

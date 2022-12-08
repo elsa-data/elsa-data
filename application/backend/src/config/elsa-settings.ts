@@ -47,7 +47,7 @@ export type ElsaSettings = {
     storageLocation: string;
     storageUriPrefix: string;
     aws?: {
-      eventDataStoreId: string;
+      eventDataStoreId?: string;
     };
   }[];
   // options to pass into the rate limiter

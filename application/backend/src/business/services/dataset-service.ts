@@ -31,6 +31,20 @@ export class DatasetService {
     return null;
   }
 
+  async getDatasetUrisFromReleaseId(
+    releaseId: string
+  ): Promise<string[] | undefined> {
+    return (
+      await e
+        .select(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          datasetUris: true,
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.datasetUris;
+  }
+
   /**
    * Return a paged result of datasets in summary form.
    *

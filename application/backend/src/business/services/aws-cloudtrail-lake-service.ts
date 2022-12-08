@@ -10,6 +10,7 @@ import {
 import { UsersService } from "./users-service";
 import { AwsBaseService } from "./aws-base-service";
 import { AuditLogService } from "./audit-log-service";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 type CloudTrailInputQueryType = {
   eventDataStoreId: string;
@@ -32,12 +33,27 @@ type CloudTrailLakeResponseType = {
 @singleton()
 export class AwsCloudTrailLakeService extends AwsBaseService {
   constructor(
+    @inject("Settings") private settings: ElsaSettings,
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
     usersService: UsersService,
     auditLogService: AuditLogService
   ) {
     super(edgeDbClient, usersService, auditLogService);
+  }
+
+  async getEventDataStoreIdFromDatasetUris(
+    datasetUris: string[]
+  ): Promise<string[] | undefined> {
+    const eventDataStoreIdArr: string[] = [];
+    for (const dataset of this.settings.datasets) {
+      if (datasetUris.includes(dataset.uri)) {
+        const id = dataset.aws?.eventDataStoreId;
+
+        if (id) eventDataStoreIdArr.push(id);
+      }
+    }
+    return eventDataStoreIdArr;
   }
 
   /**
@@ -159,10 +175,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   // Ideally might be an interval job (perhaps run weekly? or maybe 7days after releaseAudit)
   async syncPresignCloudTrailLakeLog({
     releaseId,
-    eventDataStoreId,
+    eventDataStoreIds,
   }: {
     releaseId: string;
-    eventDataStoreId: string;
+    eventDataStoreIds: string[];
   }) {
     // CloudTrailLake record is partition by timestamp. To save querying cost (by minimizing record scanned),
     // we would specify the timestamp interval for each query.
@@ -174,20 +190,24 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseId);
     const endQueryDate = new Date().toISOString();
 
-    const sqlQueryStatement = this.createSQLQueryByReleaseIdParams({
-      startTimestamp: startQueryDate ?? undefined,
-      endTimestamp: endQueryDate,
-      releaseId: releaseId,
-      eventDataStoreId: eventDataStoreId,
-    });
+    for (const edsi of eventDataStoreIds) {
+      const sqlQueryStatement = this.createSQLQueryByReleaseIdParams({
+        startTimestamp: startQueryDate ?? undefined,
+        endTimestamp: endQueryDate,
+        releaseId: releaseId,
+        eventDataStoreId: edsi,
+      });
 
-    const queryId = await this.startCommandQueryCloudTrailLake(
-      sqlQueryStatement
-    );
-    const s3CloudTrailLogs = (await this.getResultQueryCloudTrailLakeQuery({
-      queryId: queryId,
-      eventDataStoreId: eventDataStoreId,
-    })) as CloudTrailLakeResponseType[];
+      const queryId = await this.startCommandQueryCloudTrailLake(
+        sqlQueryStatement
+      );
+      const s3CloudTrailLogs = (await this.getResultQueryCloudTrailLakeQuery({
+        queryId: queryId,
+        eventDataStoreId: edsi,
+      })) as CloudTrailLakeResponseType[];
+
+      await this.recordCloudTrailLake(s3CloudTrailLogs);
+    }
 
     // Update last query date to release record
     await e
@@ -198,7 +218,5 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         },
       }))
       .run(this.edgeDbClient);
-
-    await this.recordCloudTrailLake(s3CloudTrailLogs);
   }
 }
