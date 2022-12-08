@@ -1,76 +1,114 @@
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws-cloudtrail-lake-service";
-import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { container } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import { registerTypes } from "./setup";
+import { Client } from "edgedb";
+import { beforeEachCommon } from "./releases.common";
+import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
+import { ElsaSettings } from "../../src/config/elsa-settings";
+import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 
-import { blankTestData } from "../../src/test-data/blank-test-data";
+let edgeDbClient: Client;
+let cloudTrailClient: CloudTrailClient;
+let testReleaseId: string;
+let testContainer: DependencyContainer;
+let elsaSetting: ElsaSettings;
 
-let awsCloudTrailLakeService: AwsCloudTrailLakeService;
-const edgedbClient = edgedb.createClient();
-
-describe("AWS s3 client", () => {
+describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
-    container.register<edgedb.Client>("Database", {
-      useFactory: () => edgedbClient,
-    });
-
-    const testContainer = await registerTypes();
-    awsCloudTrailLakeService = testContainer.resolve(AwsCloudTrailLakeService);
+    testContainer = await registerTypes();
+    elsaSetting = testContainer.resolve("Settings");
+    edgeDbClient = testContainer.resolve("Database");
+    cloudTrailClient = testContainer.resolve("CloudTrailClient");
   });
 
   beforeEach(async () => {
-    await blankTestData();
-    awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
+    ({ testReleaseId } = await beforeEachCommon());
   });
 
-  it("Test load CloudTrail events to DB", async () => {
-    const BUCKET_NAME = "elsa-bucket";
-    const KEY = "FAM007.fastq.gz";
+  it("Test recordCloudTrailLake", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+    const BUCKET_NAME = "umccr-10g-data-dev";
+    const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
 
-    jest
-      .spyOn(awsCloudTrailLakeService, "getCloudTrailLakeEvents")
-      .mockImplementation(async () => [
-        {
-          releaseId: "abcd-defg-hijk-lmno",
-          eventTime: "2022-10-24 05:56:40.000",
-          sourceIPAddress: "192.19.192.192",
-          bucketName: BUCKET_NAME,
-          key: KEY,
-          bytesTransferredOut: 100,
-        },
+    const mockData = [
+      {
+        releaseId: testReleaseId,
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+      },
+    ];
+
+    await awsCloudTrailLakeService.recordCloudTrailLake(mockData);
+
+    const daArr = await e
+      .select(e.audit.DataAccessAuditEvent, (da) => ({
+        ...da["*"],
+        filter: e.op(da.release_.id, "=", e.uuid(testReleaseId)),
+      }))
+      .run(edgeDbClient);
+
+    expect(daArr.length).toEqual(1);
+
+    const singleLog = daArr[0];
+    expect(singleLog.egressBytes).toEqual(101);
+  });
+
+  it("Test getEventDataStoreIdFromReleaseId", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+
+    const eventDataStoreIdArr =
+      await awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris([
+        TENG_URI,
       ]);
 
-    // Insert a new releaseAuditEvent as the parent schema
-    const aeId = await e
-      .insert(e.audit.ReleaseAuditEvent, {
-        whoId: "abcd",
-        whoDisplayName: "John",
-        actionCategory: e.audit.ActionType.R,
-        actionDescription: "Test load CloudTrail event",
-        occurredDateTime: new Date(),
-        outcome: 0,
-      })
-      .run(edgedbClient);
+    expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
+  });
 
-    // Insert a file that links to
-    await e
-      .insert(e.storage.File, {
-        url: `s3://${BUCKET_NAME}/${KEY}`,
-        size: 123,
-        checksums: [{ type: "MD5", value: "abcde123" }],
-      })
-      .run(edgedbClient);
+  it("Test syncPresignCloudTrailLakeLog", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+    const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
+    const BUCKET_NAME = "umccr-10g-data-dev";
+    const mockData = [
+      {
+        releaseId: testReleaseId,
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+      },
+    ];
 
-    // COMPILE ERROR NEEDS FIXING - HAVE JUST COMMENTED OUT
-    // await awsCloudTrailLakeService.recordCloudTrailLogByReleaseId({
-    //releaseAuditEventId: aeId.id,
-    //});
+    jest
+      .spyOn(awsCloudTrailLakeService, "startCommandQueryCloudTrailLake")
+      .mockImplementation(async () => "RANDOM_ID");
+    jest
+      .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
+      .mockImplementation(async () => mockData);
+    await awsCloudTrailLakeService.syncPresignCloudTrailLakeLog({
+      releaseId: testReleaseId,
+      eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+    });
 
-    const dataAccessAudit = await e
-      .select(e.audit.DataAccessAuditEvent, () => ({}))
-      .run(edgedbClient);
-    console.log(dataAccessAudit);
-    expect(dataAccessAudit.length).toEqual(1);
+    const daArr = await e
+      .select(e.audit.DataAccessAuditEvent, (da) => ({
+        ...da["*"],
+        filter: e.op(da.release_.id, "=", e.uuid(testReleaseId)),
+      }))
+      .run(edgeDbClient);
+    expect(daArr.length).toEqual(1);
+    const singleLog = daArr[0];
+    expect(singleLog.egressBytes).toEqual(101);
   });
 });

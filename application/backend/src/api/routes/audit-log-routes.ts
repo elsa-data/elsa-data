@@ -14,13 +14,15 @@ import {
   AuditEntryDetailsType,
   AuditEntryFullType,
 } from "@umccr/elsa-types/schemas-audit";
+import { AwsCloudTrailLakeService } from "../../business/services/aws-cloudtrail-lake-service";
+import { DatasetService } from "../../business/services/dataset-service";
 
 export const AuditEventForReleaseQuerySchema = Type.Object({
   page: Type.Optional(Type.Number()),
   orderByProperty: Type.Optional(Type.String()),
   orderAscending: Type.Optional(Type.Boolean()),
 });
-export type AuditEventForReleastQueryType = Static<
+export type AuditEventForReleaseQueryType = Static<
   typeof AuditEventForReleaseQuerySchema
 >;
 
@@ -40,12 +42,14 @@ export type AuditEventDetailsQueryType = Static<
 
 export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
+  const datasetService = container.resolve<DatasetService>(DatasetService);
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
+  const awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
 
   fastify.get<{
     Params: { releaseId: string };
     Reply: AuditEntryType[];
-    Querystring: AuditEventForReleastQueryType;
+    Querystring: AuditEventForReleaseQueryType;
   }>(
     "/api/releases/:releaseId/audit-log",
     {
@@ -124,7 +128,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   fastify.get<{
     Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
-    Querystring: AuditEventForReleastQueryType;
+    Querystring: AuditEventForReleaseQueryType;
   }>(
     "/api/releases/:releaseId/audit-log/data-access",
     {
@@ -169,6 +173,75 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       );
 
       sendResult(reply, events);
+    }
+  );
+
+  fastify.post<{
+    Params: {
+      rid: string;
+    };
+    Body: {
+      accessType: "aws-presign";
+    };
+    Reply: string;
+  }>(
+    "/api/releases/:rid/access-log/sync",
+    {
+      schema: {
+        body: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            accessType: {
+              type: "string",
+              enum: ["aws-presign"], // Expansion: ['aws-access-point', 'gcp-presign', ...]
+            },
+          },
+          required: ["accessType"],
+        },
+      },
+    },
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+      const accessType = request.body.accessType;
+
+      let replyMessage = "";
+
+      switch (accessType) {
+        case "aws-presign":
+          // Get datasets URI
+          const datasetUriArr =
+            await datasetService.getDatasetUrisFromReleaseId(releaseId);
+          if (!datasetUriArr) {
+            replyMessage = "No dataset found!";
+            break;
+          }
+
+          const eventDataStoreIds =
+            await awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris(
+              datasetUriArr
+            );
+          if (!eventDataStoreIds) {
+            replyMessage =
+              "No AWS Event Data Store Id found in configuration file!";
+            break;
+          }
+
+          if (datasetUriArr.length != eventDataStoreIds.length) {
+            replyMessage =
+              "Not all dataset in this release have corresponding AWS config for presign URL sync.";
+          }
+
+          await awsCloudTrailLakeService.syncPresignCloudTrailLakeLog({
+            releaseId,
+            eventDataStoreIds,
+          });
+          replyMessage +=
+            "\nSuccessfully sync from AWS Cloud Trail Lake events!";
+      }
+      reply.send(replyMessage);
     }
   );
 };

@@ -1,6 +1,8 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
 
+export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
+
 // even though our elsa settings are a factory - we don't want to have to do this work every
 // time as it has to go to the internet and discover the CIlogon OIDC settings
 const ciLogonIssuer = new Issuer({
@@ -24,6 +26,9 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       uri: "urn:fdc:umccr.org:2022:dataset/10g",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10g-data-dev",
+      aws: {
+        eventDataStoreId: TENG_AWS_EVENT_DATA_STORE_ID,
+      },
     },
     {
       name: "10F",

@@ -64,31 +64,28 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
         tableBody={
           dataAccessQuery.isSuccess &&
           data &&
-          data.map((row, idx) => (
-            <>
-              <tr
-                key={idx}
-                className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
-              >
-                {COLUMN_TO_SHOW.map((column, idx) => (
-                  <td
-                    className="p-4 text-sm text-gray-500 whitespace-nowrap border-b"
-                    key={idx}
-                  >
-                    {column === "dataAccessedInBytes" ||
-                    column === "fileSize" ? (
-                      fileSize(row[column])
-                    ) : column === "downloadStatus" ? (
-                      <DisplayDownloadStatus status={row[column]} />
-                    ) : column === "lastAccessedTime" ? (
-                      formatLocalDateTime(row[column])
-                    ) : (
-                      row[column]
-                    )}
-                  </td>
-                ))}
-              </tr>
-            </>
+          data.map((row, rowIdx) => (
+            <tr
+              key={`body-row-${rowIdx}`}
+              className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+            >
+              {COLUMN_TO_SHOW.map((column, colIdx) => (
+                <td
+                  className="p-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                  key={`body-row-${rowIdx}-col-${colIdx}`}
+                >
+                  {column === "dataAccessedInBytes" || column === "fileSize" ? (
+                    fileSize(row[column])
+                  ) : column === "downloadStatus" ? (
+                    <DisplayDownloadStatus status={row[column]} />
+                  ) : column === "lastAccessedTime" ? (
+                    formatLocalDateTime(row[column])
+                  ) : (
+                    row[column]
+                  )}
+                </td>
+              ))}
+            </tr>
           ))
         }
       />
@@ -109,7 +106,7 @@ export default DataAccessSummaryBox;
  * Helper Component
  */
 function DisplayDownloadStatus({ status }: { status: string }) {
-  let classNameStr = ``;
+  let classNameStr = `p-1 rounded-md w-fit font-semibold `;
 
   if (status === "multiple-download") {
     classNameStr += "bg-amber-200	text-amber-500";
@@ -118,9 +115,5 @@ function DisplayDownloadStatus({ status }: { status: string }) {
   } else {
     classNameStr += "bg-neutral-200	text-neutral-500";
   }
-  return (
-    <div className={`${classNameStr} p-1 rounded-md w-fit font-semibold`}>
-      {status}
-    </div>
-  );
+  return <div className={classNameStr}>{status}</div>;
 }

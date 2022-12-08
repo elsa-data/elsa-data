@@ -102,6 +102,7 @@ module release {
             # the audit events can be deleted if the release itself is
             on source delete delete target
         }
+        property lastDateTimeDataAccessLogQuery -> datetime;
 
 
     }

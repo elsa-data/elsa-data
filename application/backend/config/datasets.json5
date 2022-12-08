@@ -14,6 +14,9 @@
       uri: "urn:fdc:umccr.org:2022:dataset/10g",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10g-data-dev",
+      aws: {
+        eventDataStoreId: "327383f8-3273-3273-3273-327383f8fc43",
+      },
     },
     {
       name: "10F",

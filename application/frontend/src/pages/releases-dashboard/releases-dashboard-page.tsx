@@ -57,8 +57,11 @@ export const ReleasesPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {query.data.map((r) => (
-                  <tr className="bg-white border-b light:bg-gray-800 light:border-gray-700 hover:bg-gray-50 light:hover:bg-gray-600">
+                {query.data.map((r, idx) => (
+                  <tr
+                    key={idx}
+                    className="bg-white border-b light:bg-gray-800 light:border-gray-700 hover:bg-gray-50 light:hover:bg-gray-600"
+                  >
                     {/*<td className="w-4 p-4">
                       <div className="flex items-center">
                         <input
