@@ -194,10 +194,10 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
           properties: {
             accessType: {
               type: "string",
-              enum: ["aws-presign"],
+              enum: ["aws-presign"], // Expansion: ['aws-access-point', 'gcp-presign', ...]
             },
           },
-          required: ["accessType"], // Expansion: ['aws-access-point', 'gcp-presign', ...]
+          required: ["accessType"],
         },
       },
     },
