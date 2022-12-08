@@ -59,8 +59,17 @@ export function ErrorHandler(
     if (error instanceof Base7807Error) {
       problemResponse = error.toResponse();
     } else {
-      if (error.message) {
+      // we have known validation errors thrown by the Fastify API infrastructure
+      if ((error as any).validation) {
+        problemResponse.type = "about:blank";
+        problemResponse.title = "Validation Error";
+        problemResponse.status = 400;
         problemResponse.detail = error.message;
+        problemResponse["validation-errors"] = (error as any).validation;
+      } else {
+        if (error.message) {
+          problemResponse.detail = error.message;
+        }
       }
     }
   } else {

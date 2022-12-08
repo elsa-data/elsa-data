@@ -4,7 +4,12 @@ import { ReleaseTypeLocal } from "./shared-types";
 import { HrDiv, LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import { useMutation, UseMutationResult, useQueryClient } from "react-query";
-import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "./queries";
+import {
+  axiosPatchOperationMutationFn,
+  axiosPostArgMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "./queries";
+import { ReleasePatchOperationType } from "@umccr/elsa-types";
 
 type Props = {
   releaseId: string;
@@ -17,64 +22,38 @@ export const FutherRestrictionsBox: React.FC<Props> = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const [lastMutateError, setLastMutateError] = useState<string | null>(null);
-
-  // whenever we do a mutation of application coded data - our API returns the complete updated
-  // state of the whole release
-  // we set this as the success function to take advantage of that
-  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
-    queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-      result
-    );
-    setLastMutateError(null);
-  };
-
-  const afterMutateError = (err: any) => {
-    setLastMutateError(err?.response?.data?.detail || "Error");
-  };
-
-  const changeAllowedRead = useMutation(
-    axiosPostArgMutationFn<{ value: boolean }>(
-      `/api/releases/${releaseId}/fields/allowed-read/set`
-    )
-  );
-
-  const changeAllowedVariant = useMutation(
-    axiosPostArgMutationFn<{ value: boolean }>(
-      `/api/releases/${releaseId}/fields/allowed-variant/set`
-    )
-  );
-
-  const changeAllowedPhenotype = useMutation(
-    axiosPostArgMutationFn<{ value: boolean }>(
-      `/api/releases/${releaseId}/fields/allowed-phenotype/set`
-    )
+  // a mutator that can alter any field set up using our REST PATCH mechanism
+  // the argument to the mutator needs to be a single ReleasePatchOperationType operation
+  const releasePatchMutate = useMutation(
+    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    {
+      // whenever we do a mutation of application coded data - our API returns the complete updated
+      // state of the *whole* release - and we can use that data to replace the stored react-query state
+      onSuccess: (result: ReleaseTypeLocal) => {
+        queryClient.setQueryData(
+          REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+          result
+        );
+      },
+    }
   );
 
   const isAllowedCheck = (
     label: string,
-    mutate: UseMutationResult<
-      ReleaseTypeLocal,
-      unknown,
-      { value: boolean },
-      unknown
-    > | null,
+    path: "/allowedRead" | "/allowedVariant" | "/allowedPhenotype" | null,
     current: boolean
   ) => (
     <RhCheckItem
       label={label}
       checked={current}
-      disabled={!mutate}
+      disabled={!path}
       onChange={(e) => {
-        if (mutate) {
-          mutate.mutate(
-            { value: !current },
-            {
-              onSuccess: afterMutateUpdateQueryData,
-              onError: afterMutateError,
-            }
-          );
+        if (path) {
+          releasePatchMutate.mutate({
+            op: "replace",
+            path: path,
+            value: !current,
+          });
         }
       }}
     />
@@ -94,17 +73,17 @@ export const FutherRestrictionsBox: React.FC<Props> = ({
             {isAllowedCheck("Manifest (always allowed)", null, true)}
             {isAllowedCheck(
               "Read Data (e.g. BAM, CRAM, FASTQ, ORA)",
-              changeAllowedRead,
+              "/allowedRead",
               releaseData.isAllowedReadData
             )}
             {isAllowedCheck(
               "Variant Data (e.g. VCF)",
-              changeAllowedVariant,
+              "/allowedVariant",
               releaseData.isAllowedVariantData
             )}
             {isAllowedCheck(
               "Phenotype Data (e.g. FHIR, Phenopackets)",
-              changeAllowedPhenotype,
+              "/allowedPhenotype",
               releaseData.isAllowedPhenotypeData
             )}
           </RhChecks>

@@ -36,12 +36,12 @@ export const RhRadioItem = React.forwardRef<HTMLInputElement, Props>(
 
 /**
  */
-export const RhRadios: React.FC<PropsWithChildren<{ label: string }>> = ({
-  label,
-  children,
-}) => {
+export const RhRadios: React.FC<
+  PropsWithChildren<{ label: string }> &
+    React.HTMLAttributes<HTMLFieldSetElement>
+> = ({ label, children, className }) => {
   return (
-    <fieldset>
+    <fieldset className={className}>
       <legend className="sr-only">{label}</legend>
       <div className="text-base font-medium text-gray-900" aria-hidden="true">
         {label}

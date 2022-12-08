@@ -10,11 +10,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { ReleasePatientType } from "@umccr/elsa-types";
-import axios from "axios";
-import { useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import classNames from "classnames";
 import Popup from "reactjs-popup";
 import { ConsentPopup } from "./consent-popup";
+import {
+  axiosPatchOperationMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "../queries";
+import { ReleaseTypeLocal } from "../shared-types";
 
 type Props = {
   releaseId: string;
@@ -39,16 +43,32 @@ export const PatientsFlexRow: React.FC<Props> = ({
 }) => {
   const queryClient = useQueryClient();
 
+  // a mutator that can alter any field set up using our REST PATCH mechanism
+  // the argument to the mutator needs to be a single ReleasePatchOperationType operation
+  const releasePatchMutate = useMutation(
+    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    {
+      // we want to trigger the refresh of the entire release page
+      // TODO can we optimise this to just invalidate the cases?
+      onSuccess: async (result: ReleaseTypeLocal) =>
+        await queryClient.invalidateQueries(),
+    }
+  );
+
   const onSelectChange = async (id: string) => {
-    await axios.post<any>(`/api/releases/${releaseId}/specimens/select`, [id]);
-    await queryClient.invalidateQueries();
+    releasePatchMutate.mutate({
+      op: "add",
+      path: "/specimens",
+      value: [id],
+    });
   };
 
   const onUnselectChange = async (id: string) => {
-    await axios.post<any>(`/api/releases/${releaseId}/specimens/unselect`, [
-      id,
-    ]);
-    await queryClient.invalidateQueries();
+    releasePatchMutate.mutate({
+      op: "remove",
+      path: "/specimens",
+      value: [id],
+    });
   };
 
   const patientDiv = (patient: ReleasePatientType) => {
@@ -62,6 +82,10 @@ export const PatientsFlexRow: React.FC<Props> = ({
       "lg:flex-row",
       "lg:justify-between",
     ];
+
+    // the select/unselect operation can be a bit complex on the backend - so we want to give visual feedback
+    // as the operation applies
+    if (releasePatchMutate.isLoading) patientClasses.push("opacity-50");
 
     // at these sizes on screen the icons are barely distinguishable but whatever
     if (patient.sexAtBirth === "male") {

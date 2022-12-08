@@ -21,6 +21,7 @@ export * from "./schemas-coding";
 export * from "./schemas-dataset";
 export * from "./schemas-duo";
 export * from "./schemas-releases";
+export * from "./schemas-release-operations";
 export * from "./schemas-testing";
 
 export * from "./csv-australian-genomics";
