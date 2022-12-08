@@ -1,4 +1,5 @@
 import React, { PropsWithChildren, useId } from "react";
+import classNames from "classnames";
 
 type Props = {
   label: string;
@@ -13,14 +14,14 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
     const id = useId();
 
     return (
-      <div className="flex items-start">
-        <div className="flex items-center h-5">
+      <div className={classNames(props.className, "flex", "items-start")}>
+        <div className="flex h-5 items-center">
           <input
             id={id}
             ref={ref}
             {...props}
             type="checkbox"
-            className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded disabled:opacity-50"
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
           />
         </div>
         <div className="ml-3 text-sm">

@@ -1,22 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
+import classNames from "classnames";
+import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "./shared-types";
-import { HrDiv, LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
+import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
-import { useMutation, UseMutationResult, useQueryClient } from "react-query";
 import {
   axiosPatchOperationMutationFn,
-  axiosPostArgMutationFn,
   REACT_QUERY_RELEASE_KEYS,
 } from "./queries";
-import { ReleasePatchOperationType } from "@umccr/elsa-types";
 
 type Props = {
   releaseId: string;
   releaseData: ReleaseTypeLocal;
 };
 
-export const FutherRestrictionsBox: React.FC<Props> = ({
+export const FurtherRestrictionsBox: React.FC<Props> = ({
   releaseId,
   releaseData,
 }) => {
@@ -47,6 +46,7 @@ export const FutherRestrictionsBox: React.FC<Props> = ({
       label={label}
       checked={current}
       disabled={!path}
+      className={classNames({ "opacity-50": releasePatchMutate.isLoading })}
       onChange={(e) => {
         if (path) {
           releasePatchMutate.mutate({

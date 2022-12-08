@@ -145,7 +145,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
 
   const ExampleBeaconQueryLink = (label: string, query: any) => (
     <a
-      className="underline cursor-pointer"
+      className="cursor-pointer underline"
       onClick={() => {
         if (textAreaRef.current) {
           textAreaRef.current.value = JSON.stringify(query, null, 2);
@@ -173,18 +173,15 @@ export const ApplicationCodedBox: React.FC<Props> = ({
       />
       <RightDiv>
         <div className="shadow sm:rounded-md">
-          <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-            <div className="grid grid-cols-3 gap-6">
-              {/* to be replaced by the new error box */}
+          <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
+            <div className="grid grid-cols-1 gap-6">
               {releasePatchMutate.isError && (
-                <p className="col-span-3 font-bold text-red-700 border-gray-800 border-2 p-2">
-                   <EagerErrorBoundary
-                     message={releasePatchMutate.error}
-                     styling={"bg-red-100"}
-                   />
-                </p>
+                <EagerErrorBoundary
+                  error={releasePatchMutate.error}
+                  styling={"bg-red-100"}
+                />
               )}
-              <RhChecks label={"Assertions"} className="col-span-3">
+              <RhChecks label={"Assertions"}>
                 <RhCheckItem
                   disabled={true}
                   checked={true}
@@ -219,7 +216,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   }
                 />
               </RhChecks>
-              <div className="col-span-3 grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <RhRadios label={"Study Type"}>
                   {ApplicationTypeRadio("Unspecified", "UN")}
                   {ApplicationTypeRadio(
@@ -268,10 +265,10 @@ export const ApplicationCodedBox: React.FC<Props> = ({
               />
               */}
 
-              <div className="col-span-3">
+              <div>
                 <RhTextArea
                   label={"Beacon v2 Query"}
-                  className="font-mono rounded-md border border-gray-300 w-full"
+                  className="w-full rounded-md border border-gray-300 font-mono"
                   rows={15}
                   defaultValue={JSON.stringify(
                     applicationCoded.beaconQuery,
@@ -289,7 +286,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                     })
                   }
                 />
-                <div className="col-span-3 text-right text-xs space-x-2 text-blue-500">
+                <div className="space-x-2 text-right text-xs text-blue-500">
                   <span className="text-black">examples: </span>
                   {ExampleBeaconQueryLink("Males", malesQuery)}
                   {ExampleBeaconQueryLink("Not Males", notMalesQuery)}
