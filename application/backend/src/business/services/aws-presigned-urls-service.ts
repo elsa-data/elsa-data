@@ -189,7 +189,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
         who: ipAddress,
         fileUrl: lastFile.s3Url,
         description: "Data read from presigned URL.",
-        egressBytes: Number(lastFile.size) - 1,
+        egressBytes: Math.floor(Number(lastFile.size) / 2),
         date: mockTimeAccessed,
       });
     }
