@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
@@ -10,8 +10,7 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { isUndefined } from "lodash";
-import { ConsentSourcesBox } from "./consent-sources-box";
-import { VirtualCohortBox } from "./virtual-cohort-box";
+import {EagerErrorBoundary, ErrorState} from "../../../../components/errors";
 
 type Props = {
   releaseId: string;
@@ -21,11 +20,14 @@ type Props = {
 export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
 
+  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
+
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
       result
     );
+    setError({error: null, isSuccess: true});
   };
 
   const applyAllMutate = useMutation(
@@ -65,6 +67,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       onClick={async () => {
                         applyAllMutate.mutate(null, {
                           onSuccess: afterMutateUpdateQueryData,
+                          onError: (error: any) => setError({error, isSuccess: false}),
                         });
                       }}
                       disabled={!isUndefined(releaseData.runningJob)}
@@ -72,6 +75,9 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                       Apply All
                     </button>
                   </div>
+                  {!error.isSuccess && (
+                    <EagerErrorBoundary error={error.error} styling={"bg-red-400"} />
+                  )}
                 </div>
               </div>
             </div>

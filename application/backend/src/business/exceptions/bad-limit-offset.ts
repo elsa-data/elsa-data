@@ -1,4 +1,4 @@
-import { Base7807Error } from "../../api/errors/_error.types";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 
 export class BadLimitOffset extends Base7807Error {
   constructor(limit: any, offset: any) {

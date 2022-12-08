@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { ErrorDisplay } from "../../../../components/error-display";
+import { EagerErrorBoundary } from "../../../../components/errors";
 import { BoxNoPad } from "../../../../components/boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -31,7 +31,7 @@ export const AuditEntryPage = (): JSX.Element => {
 
   if (!releaseId || !objectId) {
     return (
-      <ErrorDisplay
+      <EagerErrorBoundary
         message={
           <div>
             Error: this component should not be rendered outside a route with a
@@ -44,9 +44,19 @@ export const AuditEntryPage = (): JSX.Element => {
 
   return (
     <LayoutBase>
-      <BoxNoPad heading={`Audit event for ${objectId}`}>
+      <BoxNoPad
+        heading={`Audit event for ${objectId}`}
+        errorMessage={"Something went wrong audit event."}
+      >
         <div className="flex flex-row flex-wrap flex-grow mt-2 overflow-auto">
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
+          {query.isError && (
+            <EagerErrorBoundary
+              message={"Something went wrong fetching audit logs."}
+              error={query.error}
+              styling={"bg-red-100"}
+            />
+          )}
         </div>
       </BoxNoPad>
     </LayoutBase>

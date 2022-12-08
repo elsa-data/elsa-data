@@ -1,14 +1,9 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
-import { CodingType, ReleaseApplicationCodedType } from "@umccr/elsa-types";
-import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
-import { RhSelect } from "../../../../components/rh/rh-select";
-import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
-import { RhInput } from "../../../../components/rh/rh-input";
-import { RhTextArea } from "../../../../components/rh/rh-text-area";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseId: string;
@@ -60,9 +55,10 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
           <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
             <div className="grid-cols-5 flex flex-col">
               {lastMutateError && (
-                <p className="col-span-3 font-bold text-red-700 border-gray-800 border-2 p-2">
-                  {lastMutateError}
-                </p>
+                <EagerErrorBoundary
+                  message={lastMutateError}
+                  styling={"bg-red-100"}
+                />
               )}
             </div>
           </div>

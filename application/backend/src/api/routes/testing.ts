@@ -4,7 +4,7 @@ import {
   DatasetGen3SyncRequestType,
   DatasetGen3SyncResponseType,
 } from "@umccr/elsa-types";
-import { Base7807Error } from "../errors/_error.types";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 import {
   datasetGen3SyncRequestValidate,
   testingRequestValidate,

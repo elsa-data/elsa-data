@@ -1,4 +1,4 @@
-import { Base7807Error, Base7807Response } from "./_error.types";
+import { Base7807Error, Base7807Response } from "@umccr/elsa-types/error-types";
 import { ErrorObject } from "ajv";
 
 export class ApiRequestValidationError extends Base7807Error {

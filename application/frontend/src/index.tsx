@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import { App } from "./app";
 import { BrowserRouter } from "react-router-dom";
@@ -11,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
+import { ErrorBoundary } from "./components/errors";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -40,27 +40,28 @@ if (rootElement != null) {
   root.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
-
-      {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
-      <EnvRelayProvider
-        semanticVersion={sv}
-        buildVersion={bv}
-        deployedEnvironment={de}
-        deployedLocation={dl}
-        terminologyFhirUrl={tfu}
-      >
-        {/* the query provider comes from react-query and provides standardised remote query semantics */}
-        <QueryClientProvider client={queryClient}>
-          {/* we use session cookies for auth and use this provider to make them easily available */}
-          <CookiesProvider>
-            <LoggedInUserProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </LoggedInUserProvider>
-          </CookiesProvider>
-        </QueryClientProvider>
-      </EnvRelayProvider>
+      <ErrorBoundary rethrowError={(_: any) => false}>
+        {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
+        <EnvRelayProvider
+          semanticVersion={sv}
+          buildVersion={bv}
+          deployedEnvironment={de}
+          deployedLocation={dl}
+          terminologyFhirUrl={tfu}
+        >
+          {/* the query provider comes from react-query and provides standardised remote query semantics */}
+          <QueryClientProvider client={queryClient}>
+            {/* we use session cookies for auth and use this provider to make them easily available */}
+            <CookiesProvider>
+              <LoggedInUserProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </LoggedInUserProvider>
+            </CookiesProvider>
+          </QueryClientProvider>
+        </EnvRelayProvider>
+      </ErrorBoundary>
     </React.StrictMode>
   );
 }
