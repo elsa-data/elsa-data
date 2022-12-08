@@ -96,7 +96,10 @@ describe("Test CloudTrailLake Service", () => {
     jest
       .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
       .mockImplementation(async () => mockData);
-    await awsCloudTrailLakeService.recordCloudTrailLake(mockData);
+    await awsCloudTrailLakeService.syncPresignCloudTrailLakeLog({
+      releaseId: testReleaseId,
+      eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+    });
 
     const daArr = await e
       .select(e.audit.DataAccessAuditEvent, (da) => ({
