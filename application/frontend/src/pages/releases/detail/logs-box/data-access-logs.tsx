@@ -55,12 +55,9 @@ function DataAccessLogsBox() {
       <div>Data Access Log Summary</div>
       <button
         onClick={async () =>
-          await axios.post<any>(
-            `/api/releases/${releaseId}/access-log/import`,
-            {
-              accessType: "aws-presign",
-            }
-          )
+          await axios.post<any>(`/api/releases/${releaseId}/access-log/sync`, {
+            accessType: "aws-presign",
+          })
         }
         type="button"
         className="text-white bg-gray-400 hover:bg-gray-500 focus:ring-1 shadow-gray-500 focus:outline-none focus:ring-gray-600 font-medium rounded-lg text-xs px-3 py-2 text-center inline-flex items-center mr-2"

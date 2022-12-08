@@ -185,7 +185,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     };
     Reply: string;
   }>(
-    "/api/releases/:rid/access-log/import",
+    "/api/releases/:rid/access-log/sync",
     {
       schema: {
         body: {
