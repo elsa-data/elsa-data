@@ -72,8 +72,8 @@ function DataAccessLogsBox() {
           strokeWidth="1.5"
           stroke="#ffffff"
           fill="none"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
           <path stroke="none" d="M0 0h24v24H0z" fill="none" />
           <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
@@ -95,7 +95,7 @@ function DataAccessLogsBox() {
           <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">
             {COLUMN_TO_SHOW.map((header, idx) => (
               <th
-                key={idx}
+                key={`header-${idx}`}
                 className="p-4 text-sm text-gray-600 whitespace-nowrap border-b hover:rounded-lg"
               >
                 <div className="flex flex-nowrap space-x-1">{header.value}</div>
@@ -106,43 +106,40 @@ function DataAccessLogsBox() {
         tableBody={
           dataAccessQuery.isSuccess &&
           data &&
-          data.map((row, idx) => (
-            <>
-              <tr
-                key={idx}
-                className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
-              >
-                {COLUMN_TO_SHOW.map((col, idx) => {
-                  const objKey = col.key;
-                  return (
-                    <td
-                      className="p-4 text-sm text-gray-500 whitespace-nowrap border-b"
-                      key={idx}
-                    >
-                      {objKey === "egressBytes" ? (
-                        fileSize(row[objKey])
-                      ) : objKey === "occurredDateTime" ? (
-                        formatLocalDateTime(row[objKey])
-                      ) : objKey === "actionCategory" ? (
-                        <ToolTip
-                          trigger={
-                            <div className="flex items-center w-8 h-8">
-                              {row[objKey]}
-                            </div>
-                          }
-                          description={categoryToDescription(row[objKey])}
-                        />
-                      ) : objKey === "whoDisplayName" ||
-                        objKey === "fileUrl" ? (
-                        row[objKey]
-                      ) : (
-                        ""
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            </>
+          data.map((row, rowIdx) => (
+            <tr
+              key={`body-row-${rowIdx}`}
+              className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+            >
+              {COLUMN_TO_SHOW.map((col, colIdx) => {
+                const objKey = col.key;
+                return (
+                  <td
+                    className="p-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                    key={`body-row-${rowIdx}-col-${colIdx}`}
+                  >
+                    {objKey === "egressBytes" ? (
+                      fileSize(row[objKey])
+                    ) : objKey === "occurredDateTime" ? (
+                      formatLocalDateTime(row[objKey])
+                    ) : objKey === "actionCategory" ? (
+                      <ToolTip
+                        trigger={
+                          <div className="flex items-center w-8 h-8">
+                            {row[objKey]}
+                          </div>
+                        }
+                        description={categoryToDescription(row[objKey])}
+                      />
+                    ) : objKey === "whoDisplayName" || objKey === "fileUrl" ? (
+                      row[objKey]
+                    ) : (
+                      ""
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
           ))
         }
       />

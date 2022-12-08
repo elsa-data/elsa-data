@@ -121,7 +121,9 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
   return (
     <div className="grid grid-flow-row-dense grid-cols-3 gap-2">
-      {patients.map((pat, index) => patientDiv(pat))}
+      {patients.map((pat, index) => (
+        <div key={index}>{patientDiv(pat)}</div>
+      ))}
     </div>
   );
 };

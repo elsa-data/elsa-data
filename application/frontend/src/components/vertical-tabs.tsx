@@ -33,8 +33,9 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
             "space-y-4" // with some spacing between tab headers
           )}
         >
-          {tabHeadings.map((t) => (
+          {tabHeadings.map((t, idx) => (
             <Tab
+              key={idx}
               as="a"
               className={({ selected }) =>
                 classNames(
