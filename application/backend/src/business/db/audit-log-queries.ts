@@ -139,7 +139,11 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
     ...e.audit.DataAccessAuditEvent["*"],
     fileSize: da.file.size,
     fileUrl: da.file.url,
-    filter: e.op(da.release_.id, "=", e.uuid(releaseId)),
+    filter: e.op(
+      e.op(da.release_.id, "=", e.uuid(releaseId)),
+      "and",
+      e.op("exists", da.file)
+    ),
     order_by: [
       {
         expression:

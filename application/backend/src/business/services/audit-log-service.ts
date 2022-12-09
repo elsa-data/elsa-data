@@ -295,8 +295,8 @@ export class AuditLogService {
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
         egressBytes: entry.egressBytes,
-        fileUrl: entry.fileUrl,
-        fileSize: entry.fileSize,
+        fileUrl: entry.fileUrl as string,
+        fileSize: entry.fileSize as number,
       })),
       totalEntries
     );
@@ -337,6 +337,9 @@ export class AuditLogService {
     // Grouping result by fileUrl
     const groupedByFileUrl = dataAccessLogArray.reduce((group: any, log) => {
       const { fileUrl } = log;
+
+      if (!fileUrl) return group;
+
       group[fileUrl] = group[fileUrl] ?? [];
       group[fileUrl].push(log);
       return group;
