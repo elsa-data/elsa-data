@@ -65,7 +65,7 @@ module audit {
         link release_ := .<dataAccessAuditLog[is release::Release];
         
         # Intended file access
-        required link file -> storage::File{
+        link file -> storage::File{
             on target delete allow
         };
 

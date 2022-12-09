@@ -4,27 +4,45 @@ module lab {
     }
 
     type ArtifactBcl extending ArtifactBase {
-        required link bclFile -> storage::File;
+        required link bclFile -> storage::File{
+            on source delete delete target;
+        };
     }
 
     type ArtifactFastqPair extending ArtifactBase {
-        required link forwardFile -> storage::File;
-        required link reverseFile -> storage::File;
+        required link forwardFile -> storage::File{
+            on source delete delete target;
+        };
+        required link reverseFile -> storage::File{
+            on source delete delete target;
+        };
     }
 
     type ArtifactVcf extending ArtifactBase {
-        required link vcfFile -> storage::File;
-        required link tbiFile -> storage::File;
+        required link vcfFile -> storage::File{
+            on source delete delete target;
+        };
+        required link tbiFile -> storage::File{
+            on source delete delete target;
+        };
     }
 
     type ArtifactBam extending ArtifactBase {
-        required link bamFile -> storage::File;
-        required link baiFile -> storage::File;
+        required link bamFile -> storage::File{
+            on source delete delete target;
+        };
+        required link baiFile -> storage::File{
+            on source delete delete target;
+        };
     }
 
     type ArtifactCram extending ArtifactBase {
-        required link cramFile -> storage::File;
-        required link craiFile -> storage::File;
+        required link cramFile -> storage::File{
+            on source delete delete target;
+        };
+        required link craiFile -> storage::File{
+            on source delete delete target;
+        };
     }
 
     # a collection of artifacts uploaded/submitted in a batch that has no information about run/analyses
@@ -35,6 +53,7 @@ module lab {
 
         multi link artifactsIncluded -> ArtifactBase {
             constraint exclusive;
+            on source delete delete target;
             on target delete allow;
        };
     }
@@ -47,6 +66,7 @@ module lab {
 
         multi link artifactsProduced -> ArtifactBase {
             constraint exclusive;
+            on source delete delete target;
             on target delete allow;
        };
     }
@@ -59,6 +79,7 @@ module lab {
 
         multi link output -> ArtifactBase {
               constraint exclusive;
+              on source delete delete target;
               on target delete allow;
         };
     }
