@@ -1,4 +1,4 @@
-CREATE MIGRATION m1vuc2hgenr5r2u52wte3ywt4islpgis2glborur3ljqwegzevt2oa
+CREATE MIGRATION m1kdjoaxubenhff2v3hc257x3vudq4o322v6nzcqr6cxrwzeidgajq
     ONTO m1kam4c6otwvcv4io5ye3x3hf7hknqwdbv7tnrp2b2ienujrc6pj5a
 {
   ALTER TYPE audit::DataAccessAuditEvent {
@@ -32,11 +32,6 @@ CREATE MIGRATION m1vuc2hgenr5r2u52wte3ywt4islpgis2glborur3ljqwegzevt2oa
   };
   ALTER TYPE dataset::DatasetPatient {
       ALTER LINK specimens {
-          ON SOURCE DELETE DELETE TARGET;
-      };
-  };
-  ALTER TYPE dataset::DatasetSpecimen {
-      ALTER LINK artifacts {
           ON SOURCE DELETE DELETE TARGET;
       };
   };

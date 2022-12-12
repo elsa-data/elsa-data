@@ -115,8 +115,6 @@ module dataset {
 
         # the specimen links to all actual genomic artifacts (files) that have been
         # created in any lab process
-        multi link artifacts -> lab::ArtifactBase{
-            on source delete delete target;
-        };
+        multi link artifacts -> lab::ArtifactBase;
     }
 }

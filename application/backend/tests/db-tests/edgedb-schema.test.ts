@@ -61,17 +61,20 @@ describe("edgedb tests", () => {
       await e.select(e.dataset.DatasetPatient, () => ({})).run(edgeDbClient);
     const selectSpecimen = async () =>
       await e.select(e.dataset.DatasetSpecimen, () => ({})).run(edgeDbClient);
-    const selectFile = async () =>
-      await e.select(e.storage.File, () => ({})).run(edgeDbClient);
     const selectConsent = async () =>
       await e.select(e.consent.Consent, () => ({})).run(edgeDbClient);
+    const selectFile = async () =>
+      await e.select(e.storage.File, () => ({})).run(edgeDbClient);
+    const selectArtifactBase = async () =>
+      await e.select(e.lab.ArtifactBase, () => ({})).run(edgeDbClient);
 
     // Making sure it exist
     expect((await selectDataset()).length).toEqual(1);
     expect((await selectPatient()).length).toEqual(1);
     expect((await selectSpecimen()).length).toEqual(1);
-    expect((await selectFile()).length).toEqual(1);
     expect((await selectConsent()).length).toEqual(1);
+    expect((await selectFile()).length).toEqual(1);
+    expect((await selectArtifactBase()).length).toEqual(1);
 
     // Delete dataset to ensure all hierarchy deleted
     await e.delete(e.dataset.Dataset).run(edgeDbClient);
@@ -80,7 +83,43 @@ describe("edgedb tests", () => {
     expect((await selectDataset()).length).toEqual(0);
     expect((await selectPatient()).length).toEqual(0);
     expect((await selectSpecimen()).length).toEqual(0);
-    expect((await selectFile()).length).toEqual(0);
     expect((await selectConsent()).length).toEqual(0);
+
+    // Expecting lab::ArtifactBase -> storage::File is not deleted as it is not owned by a dataset.
+    expect((await selectFile()).length).toEqual(1);
+    expect((await selectArtifactBase()).length).toEqual(1);
+  });
+
+  it("Check cascading artifactBase", async () => {
+    const insertArtifact = e.insert(e.lab.ArtifactBcl, {
+      bclFile: e.insert(e.storage.File, {
+        url: "s3://test-file.bcl",
+        size: 101,
+        checksums: [
+          {
+            type: "MD5",
+            value: "RANDOM_CHECKSUM",
+          },
+        ],
+      }),
+    });
+
+    await insertArtifact.run(edgeDbClient);
+
+    const selectFile = async () =>
+      await e.select(e.storage.File, () => ({})).run(edgeDbClient);
+    const selectArtifactBase = async () =>
+      await e.select(e.lab.ArtifactBase, () => ({})).run(edgeDbClient);
+
+    // Making sure it exist
+    expect((await selectFile()).length).toEqual(1);
+    expect((await selectArtifactBase()).length).toEqual(1);
+
+    // Delete dataset to ensure all hierarchy deleted
+    await e.delete(e.lab.ArtifactBase).run(edgeDbClient);
+
+    // Expecting lab::ArtifactBase -> storage::File IS deleted.
+    expect((await selectFile()).length).toEqual(0);
+    expect((await selectArtifactBase()).length).toEqual(0);
   });
 });

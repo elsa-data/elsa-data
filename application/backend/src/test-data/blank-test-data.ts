@@ -37,6 +37,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     .run(edgeDbClient);
   const casesDeleted = await e.delete(e.dataset.DatasetCase).run(edgeDbClient);
   const datasetsDeleted = await e.delete(e.dataset.Dataset).run(edgeDbClient);
+  const consentDeleted = await e.delete(e.consent.Consent).run(edgeDbClient);
 
   const analysesDeleted = await e.delete(e.lab.Analyses).run(edgeDbClient);
   const runsDeleted = await e.delete(e.lab.Run).run(edgeDbClient);
@@ -74,6 +75,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(
       `  ${specimensDeleted.length}/${patientsDeleted.length}/${casesDeleted.length}/${datasetsDeleted.length} dataset specimen(s)/patient(s)/case(s)/set(s)`
     );
+    console.log(`  ${consentDeleted.length} consent(s)`);
 
     console.log(`  ${analysesDeleted.length} lab analyses(s)`);
     console.log(`  ${runsDeleted.length} lab run(s)`);
