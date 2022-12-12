@@ -83,13 +83,13 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
 
           <div
             onClick={() => setIsHeaderSelectionOpen((prev) => !prev)}
-            className="flex rounded -my-3 w-full items-center justify-between bg-white py-3 text-sm cursor-pointer hover:bg-gray-100"
+            className="-my-3 flex w-full cursor-pointer items-center justify-between rounded bg-white py-3 text-sm hover:bg-gray-100"
           >
             <span>
               <span className="font-medium text-gray-900">
                 {`TSV Header: `}
               </span>
-              <span className="uppercase font-normal text-gray-900">
+              <span className="font-normal uppercase text-gray-900">
                 {`${headerSelected.join(", ")}`}
               </span>
             </span>
@@ -117,7 +117,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
                   />
                   <label
                     htmlFor={`filter-${fieldIdx}`}
-                    className="uppercase ml-3 text-sm text-gray-600"
+                    className="ml-3 text-sm uppercase text-gray-600"
                   >
                     {field}
                   </label>
@@ -126,7 +126,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
             </div>
           </div>
           <label className="prose">
-            <span className="text-xs font-bold text-gray-700 uppercase">
+            <span className="text-xs font-bold uppercase text-gray-700">
               Current Password
             </span>
             <input
@@ -134,7 +134,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               disabled={true}
               required={false}
               defaultValue={displayPassword}
-              className="chx mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              className="chx mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
             />
           </label>
           <div className="prose">

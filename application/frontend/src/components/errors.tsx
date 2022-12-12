@@ -46,12 +46,12 @@ export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
   return (
     <div
       className={classNames(
-        "p-4 flex place-content-center justify-center items-center",
+        "flex place-content-center items-center justify-center p-4",
         styling
       )}
     >
       <div
-        className={classNames("p-4 text-sm text-red-700 bg-red-100 rounded-lg")}
+        className={classNames("rounded-lg bg-red-100 p-4 text-sm text-red-700")}
       >
         {children}
       </div>
@@ -135,7 +135,11 @@ export const ErrorFormatterDetail = ({
       }
     } else if (error instanceof Error) {
       return <div className="pl-4 pt-4">{error.message}</div>;
-    } else if (typeof error === "object" && error !== null && "toString" in error) {
+    } else if (
+      typeof error === "object" &&
+      error !== null &&
+      "toString" in error
+    ) {
       return <div className="pl-4 pt-4">{error.toString()}</div>;
     }
   }
@@ -274,4 +278,4 @@ export class ErrorBoundary extends Component<
 export type ErrorState = {
   error: any;
   isSuccess: boolean;
-}
+};

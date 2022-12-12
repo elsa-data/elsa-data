@@ -16,10 +16,10 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
 }) => {
   return (
     <div className="w-full py-3">
-      <div className="bg-white border rounded-b-xl shadow">
+      <div className="rounded-b-xl border bg-white shadow">
         <div
           className={classNames(
-            "border-b p-3 bg-gradient-to-r",
+            "border-b bg-gradient-to-r p-3",
             headerFromColour
           )}
         >
@@ -41,10 +41,10 @@ export const BoxNoPad: React.FC<PropsWithChildren<BoxProps>> = ({
 }) => {
   return (
     <div className="w-full py-3">
-      <div className="bg-white border rounded-b-xl shadow">
+      <div className="rounded-b-xl border bg-white shadow">
         <div
           className={classNames(
-            "border-b p-3 bg-gradient-to-r",
+            "border-b bg-gradient-to-r p-3",
             headerFromColour
           )}
         >

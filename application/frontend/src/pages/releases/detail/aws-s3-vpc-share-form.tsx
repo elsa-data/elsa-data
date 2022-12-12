@@ -65,7 +65,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
         value={field}
         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
       />
-      <label className="uppercase ml-3 text-sm text-gray-600">{field}</label>
+      <label className="ml-3 text-sm uppercase text-gray-600">{field}</label>
     </div>
   );
 
@@ -78,29 +78,29 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
       <div className="grid grid-cols-2 gap-4 divide-x">
         <form>
           <div className="flex flex-col gap-6">
-            <label className="block prose">
+            <label className="prose block">
               The functionality from the perspective of the data holder.
             </label>
-            <label className="block prose">
-              <span className="text-xs font-bold text-gray-700 uppercase">
+            <label className="prose block">
+              <span className="text-xs font-bold uppercase text-gray-700">
                 AWS Account(s)
               </span>
               <input
                 type="text"
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                className="mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
               />
             </label>
-            <label className="block prose">
-              <span className="text-xs font-bold text-gray-700 uppercase">
+            <label className="prose block">
+              <span className="text-xs font-bold uppercase text-gray-700">
                 VPC ID
               </span>
               <input
                 type="text"
                 value={vpcId}
                 onChange={(e) => setVpcId(e.target.value)}
-                className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                className="mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
               />
             </label>
             {(!cfnQuery.isSuccess || cfnQuery.data === null) && (
@@ -152,7 +152,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
              when the POST returned a Content-Disposition header */}
         <form action={`/api/releases/${releaseId}/cfn/manifest`} method="POST">
           <div className="flex flex-col gap-6">
-            <label className="block prose">
+            <label className="prose block">
               The functionality from the perspective of a researcher.
             </label>
             {tsvColumnCheck("fileType")}

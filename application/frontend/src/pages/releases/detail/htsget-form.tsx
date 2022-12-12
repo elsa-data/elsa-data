@@ -38,7 +38,7 @@ export const HtsgetForm: React.FC<Props> = ({ releaseId, releaseData }) => {
             </p>
           </article>
           <label className="prose">
-            <span className="text-xs font-bold text-gray-700 uppercase">
+            <span className="text-xs font-bold uppercase text-gray-700">
               htsget Endpoint
             </span>
             <input
@@ -46,7 +46,7 @@ export const HtsgetForm: React.FC<Props> = ({ releaseId, releaseData }) => {
               disabled={true}
               required={false}
               defaultValue={"https://htsget.umccr.org/releases/abcdef"}
-              className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 font-mono"
+              className="mt-1 block w-full rounded-md border-transparent bg-gray-50 font-mono focus:border-gray-500 focus:bg-white focus:ring-0"
             />
           </label>
           <div className="prose">

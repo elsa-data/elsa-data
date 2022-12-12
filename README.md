@@ -4,6 +4,17 @@ Genomic data sharing support software ("let the data go").
 
 ## Dev
 
+### On Checkout
+
+Elsa Data uses `pre-commit` to maintain some coding norms for all checked in code.
+
+As a one-off activity, on first checkout, devs should run the following in the root
+of the project. Pre-commit will need to have been installed globally (e.g `brew install pre-commit` on a Mac).
+
+```bash
+pre-commit install
+```
+
 ### Setup
 
 The following are assumed to be installed

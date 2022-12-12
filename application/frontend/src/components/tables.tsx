@@ -10,7 +10,7 @@ export type TableProps = {
  */
 export const Table = ({ tableHead, tableBody }: TableProps): JSX.Element => {
   return (
-    <table className="table-auto overflow-auto border-collapse w-full h-full text-sm text-left text-gray-800 py-4">
+    <table className="h-full w-full table-auto border-collapse overflow-auto py-4 text-left text-sm text-gray-800">
       <thead>{tableHead}</thead>
       <tbody>{tableBody}</tbody>
     </table>

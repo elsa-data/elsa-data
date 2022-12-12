@@ -8,7 +8,7 @@ function JSONToTable(props: Props) {
   const { jsonObj } = props;
 
   return (
-    <table className="table-auto w-full">
+    <table className="w-full table-auto">
       <tbody>
         {Object.keys(jsonObj).map((key) => {
           const val = jsonObj[key];

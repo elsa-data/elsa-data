@@ -57,7 +57,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 items-end">
+        <div className="flex flex-col items-end gap-2">
           {releaseData.accessEnabled && (
             <div className={classNames(alertBoxClasses, "border-green-400")}>
               <p>Data access is currently enabled.</p>
@@ -80,7 +80,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
                   className="flex flex-row justify-end align-middle"
                 >
                   <span className="mr-6 font-mono">{uri}</span>
-                  <span className="w-6 h-6">{vis}</span>
+                  <span className="h-6 w-6">{vis}</span>
                 </li>
               )
             )}

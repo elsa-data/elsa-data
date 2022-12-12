@@ -10,7 +10,7 @@ import Popup from "reactjs-popup";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { doLookup } from "../../../../helpers/ontology-helper";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
-import {EagerErrorBoundary, ErrorState} from "../../../../components/errors";
+import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 
 type Props = {
   releaseId: string;
@@ -93,17 +93,20 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
   const u = `/api/releases/${releaseId}/consent/${nodeId}`;
 
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
+  const [error, setError] = useState<ErrorState>({
+    error: null,
+    isSuccess: true,
+  });
 
   const onOpenHandler = async (ev: SyntheticEvent | undefined) => {
     const duos = await axios
       .get<DuoLimitationCodedType[]>(u)
       .then((response) => {
-        setError({error: null, isSuccess: true});
+        setError({ error: null, isSuccess: true });
         return response.data;
       })
       .catch((error: any) => {
-        setError({error, isSuccess: false});
+        setError({ error, isSuccess: false });
         return [];
       });
 
@@ -146,7 +149,7 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
       onOpen={onOpenHandler}
     >
       {error.isSuccess && (
-        <div className="p-2 space-y-4 bg-white text-sm border rounded drop-shadow-lg">
+        <div className="space-y-4 rounded border bg-white p-2 text-sm drop-shadow-lg">
           {duos.map(function (resolvedDuo: ResolvedDuo) {
             return (
               <div>

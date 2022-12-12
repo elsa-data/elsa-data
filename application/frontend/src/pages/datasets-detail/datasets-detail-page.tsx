@@ -31,7 +31,7 @@ export const DatasetsDetailPage: React.FC = () => {
 
   return (
     <LayoutBase>
-      <div className="flex flex-row flex-wrap flex-grow mt-2">
+      <div className="mt-2 flex flex-grow flex-row flex-wrap">
         {datasetData && (
           <>
             <Box heading="Summary">
@@ -65,7 +65,7 @@ export const DatasetsDetailPage: React.FC = () => {
                       })
                     }
                     type="button"
-                    className="cursor-pointer	inline-block px-6 py-2.5 bg-slate-200	text-slate-500	font-medium text-xs rounded shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
+                    className="inline-block	cursor-pointer rounded bg-slate-200 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
                   >
                     SYNC
                   </button>
@@ -99,14 +99,14 @@ export const DatasetsDetailPage: React.FC = () => {
 const configurationChip = (isConfig: boolean) => {
   if (isConfig) {
     return (
-      <span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-green-200 text-green-700 rounded-full">
+      <span className="inline-block whitespace-nowrap rounded-full bg-green-200 py-1 px-2.5 text-center align-baseline text-xs leading-none text-green-700">
         OK
       </span>
     );
   }
 
   return (
-    <span className="text-xs inline-block py-1 px-2.5 leading-none text-center whitespace-nowrap align-baseline bg-orange-200 text-orange-600 rounded-full">
+    <span className="inline-block whitespace-nowrap rounded-full bg-orange-200 py-1 px-2.5 text-center align-baseline text-xs leading-none text-orange-600">
       Missing configuration
     </span>
   );

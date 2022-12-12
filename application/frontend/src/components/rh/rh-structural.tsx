@@ -34,5 +34,5 @@ export const LeftDiv: React.FC<{ heading: string; extra?: string }> = (
 };
 
 export const RightDiv: React.FC<PropsWithChildren<{}>> = (props) => {
-  return <div className="mt-5 md:mt-0 md:col-span-4">{props.children}</div>;
+  return <div className="mt-5 md:col-span-4 md:mt-0">{props.children}</div>;
 };

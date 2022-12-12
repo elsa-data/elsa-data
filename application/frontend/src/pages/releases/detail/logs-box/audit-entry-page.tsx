@@ -48,7 +48,7 @@ export const AuditEntryPage = (): JSX.Element => {
         heading={`Audit event for ${objectId}`}
         errorMessage={"Something went wrong audit event."}
       >
-        <div className="flex flex-row flex-wrap flex-grow mt-2 overflow-auto">
+        <div className="mt-2 flex flex-grow flex-row flex-wrap overflow-auto">
           {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
           {query.isError && (
             <EagerErrorBoundary

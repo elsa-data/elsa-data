@@ -40,7 +40,7 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
-import {EagerErrorBoundary, ErrorState} from "../../../../components/errors";
+import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 
 declare module "@tanstack/table-core" {
@@ -73,7 +73,7 @@ export const useAuditEventQuery = (
   orderAscending: boolean,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>,
+  setError: Dispatch<SetStateAction<ErrorState>>
 ) => {
   return useQuery(
     [
@@ -99,11 +99,11 @@ export const useAuditEventQuery = (
       enabled: false,
       onSuccess: (data) => {
         setData(data ?? []);
-        setError({error: null, isSuccess: data !== undefined});
+        setError({ error: null, isSuccess: data !== undefined });
       },
       onError: (error) => {
         setData([]);
-        setError({error, isSuccess: false});
+        setError({ error, isSuccess: false });
       },
     }
   );
@@ -117,7 +117,7 @@ export const useAllAuditEventQueries = (
   releaseId: string,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEntryType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>,
+  setError: Dispatch<SetStateAction<ErrorState>>
 ): { [key: string]: UseQueryResult<AuditEntryType[]> } => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
@@ -185,7 +185,10 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   const [updateData, setUpdateData] = useState(true);
 
   const [data, setData] = useState([] as AuditEntryType[]);
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
+  const [error, setError] = useState<ErrorState>({
+    error: null,
+    isSuccess: true,
+  });
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
@@ -241,7 +244,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
             tableHead={table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
-                className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700"
+                className="whitespace-nowrap border-b border-slate-700 bg-slate-50 text-sm text-gray-500"
               >
                 {headerGroup.headers.map((header) => (
                   <th
@@ -253,7 +256,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     }
                     className={
                       !header.column.columnDef.meta?.headerStyling
-                        ? "py-4 text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg"
+                        ? "whitespace-nowrap border-b py-4 text-sm text-gray-600 hover:rounded-lg hover:bg-slate-100"
                         : header.column.columnDef.meta.headerStyling
                     }
                   >
@@ -273,14 +276,14 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     row.getValue("hasDetails") &&
                     row.toggleExpanded()
                   }
-                  className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+                  className="group whitespace-nowrap border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50 hover:rounded-lg hover:bg-slate-100"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
                       className={
                         !cell.column.columnDef.meta?.cellStyling
-                          ? "py-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                          ? "whitespace-nowrap border-b py-4 text-sm text-gray-500"
                           : cell.column.columnDef.meta?.cellStyling
                       }
                     >
@@ -295,12 +298,12 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                   (row.getValue("hasDetails") as boolean) && (
                     <tr
                       key={row.original.objectId}
-                      className="text-sm text-gray-500 border-b odd:bg-white even:bg-slate-50 border-slate-700"
+                      className="border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50"
                     >
                       <td
                         key={row.original.objectId}
                         colSpan={row.getVisibleCells().length}
-                        className="p-4 left text-sm text-gray-500 border-b"
+                        className="left border-b p-4 text-sm text-gray-500"
                       >
                         <DetailsRow
                           releaseId={releaseId}
@@ -357,10 +360,10 @@ const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
   );
 
   return detailsQuery.isSuccess && detailsQuery.data?.details ? (
-    <div className="text-sm font-mono whitespace-pre-wrap">
+    <div className="whitespace-pre-wrap font-mono text-sm">
       {detailsQuery.data.details}
       {detailsQuery.data.truncated ? (
-        <div className="pl-8 pt-2 text-sm font-mono whitespace-pre-wrap italic text-gray-400 font-bold">
+        <div className="whitespace-pre-wrap pl-8 pt-2 font-mono text-sm font-bold italic text-gray-400">
           ...
         </div>
       ) : (
@@ -489,7 +492,7 @@ export const createColumns = (releaseId: string) => {
                 <a
                   href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
                   className={classNames(
-                    "block hover:bg-slate-200 hover:rounded-lg invisible group-hover:visible",
+                    "invisible block hover:rounded-lg hover:bg-slate-200 group-hover:visible",
                     CELL_BOX
                   )}
                 >
@@ -553,7 +556,7 @@ export const createColumns = (releaseId: string) => {
         const value = info.getValue();
         return (
           <ToolTip
-            trigger={<div className="flex items-center w-8 h-8">{value}</div>}
+            trigger={<div className="flex h-8 w-8 items-center">{value}</div>}
             description={categoryToDescription(value)}
           ></ToolTip>
         );

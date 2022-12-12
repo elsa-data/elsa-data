@@ -71,7 +71,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
             <button
               type="button"
               disabled={isNil(newId)}
-              className="w-full inline-flex disabled:opacity-50 justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+              className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
               onClick={() => {
                 createNewReleaseMutate.mutate(newId, {
                   onSuccess: (newReleaseId) => {
@@ -95,7 +95,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
             </button>
             <button
               type="button"
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               onClick={() => cancelShowing()}
               ref={cancelButtonRef}
             >
@@ -105,11 +105,11 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
         }
         content={
           <>
-            <div className="mt-2 prose">
+            <div className="prose mt-2">
               <p className="text-sm text-gray-500">
                 This is a list of applications in the given REMS instance that
                 are
-                <ul className="text-sm text-gray-500 list-disc">
+                <ul className="list-disc text-sm text-gray-500">
                   <li>approved</li>
                   <li>not already associated with an Elsa Data release</li>
                   <li>
@@ -119,7 +119,7 @@ export const ReleasesAddReleaseDialog: React.FC<Props> = ({
                 </ul>
               </p>
             </div>
-            <table className="w-full table-auto text-sm mt-4">
+            <table className="mt-4 w-full table-auto text-sm">
               <tbody>
                 {newReleases &&
                   newReleases

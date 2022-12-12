@@ -100,7 +100,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
           rowsPerPage={pageSize}
           rowWord="other users"
         />
-        <table className="w-full text-sm text-left text-gray-500 table-fixed">
+        <table className="w-full table-fixed text-left text-sm text-gray-500">
           <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
         </table>
         {dataQuery.isError && (

@@ -3,9 +3,9 @@ import React from "react";
 export const LayoutBaseFooter: React.FC = () => {
   return (
     <>
-      <footer className="bg-white border-t border-gray-400 shadow">
-        <div className="container max-w-md mx-auto flex py-2">
-          <div className="w-full mx-auto flex flex-wrap">
+      <footer className="border-t border-gray-400 bg-white shadow">
+        <div className="container mx-auto flex max-w-md py-2">
+          <div className="mx-auto flex w-full flex-wrap">
             <div className="flex w-full md:w-1/2 ">
               <div className="px-8">
                 <h3 className="font-bold font-bold text-gray-900">About</h3>
