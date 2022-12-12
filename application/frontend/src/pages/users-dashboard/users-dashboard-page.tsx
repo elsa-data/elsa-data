@@ -14,7 +14,7 @@ export const UsersDashboardPage: React.FC = () => {
 
   return (
     <LayoutBase>
-      <div className="flex flex-row flex-wrap flex-grow mt-2">
+      <div className="mt-2 flex flex-grow flex-row flex-wrap">
         <YouBox />
         <OthersBox pageSize={pageSize} />
         {/* only the super admins can change other admins so they are the only ones to get this box */}

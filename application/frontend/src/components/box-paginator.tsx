@@ -50,26 +50,26 @@ export const BoxPaginator: React.FC<Props> = (props) => {
   );
 
   return (
-    <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 border-b">
+    <div className="border-b bg-gray-50 px-4 py-3 text-right sm:px-6">
       <>
         {/* prev/next buttons only on small devices */}
-        <div className="flex-1 flex justify-between sm:hidden">
+        <div className="flex flex-1 justify-between sm:hidden">
           <a
             onClick={() => props.setPage(props.currentPage - 1)}
-            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Previous
           </a>
           {/* TODO what about the search UI on small devices? */}
           <a
             onClick={() => props.setPage(props.currentPage + 1)}
-            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Next
           </a>
         </div>
         {/* a full pagination UI if space */}
-        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
           {!isTextSearchHappening && (
             <div className="mr-8">
               <p className="text-sm text-gray-700">
@@ -83,10 +83,10 @@ export const BoxPaginator: React.FC<Props> = (props) => {
           {/* the search UI is only enabled if set/clear action functions are provided */}
           {props.setSearchText && props.clearSearchText && (
             <div className="relative sm:grow">
-              <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg
                   aria-hidden="true"
-                  className="w-5 h-5 text-gray-500"
+                  className="h-5 w-5 text-gray-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -102,7 +102,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               </div>
               <input
                 type="search"
-                className="block px-4 pl-10 w-full text-sm text-gray-700 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full rounded-lg border border-gray-300 px-4 pl-10 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Search Identifiers"
                 value={props.currentSearchText}
                 onChange={(e) => props.setSearchText!(e.target.value)}
@@ -117,13 +117,13 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                 totalPages={maxPage}
                 edgePageCount={2}
                 middlePagesSiblingCount={1}
-                className="relative z-0 inline-flex text-sm text-gray-700 -space-x-px"
+                className="relative z-0 inline-flex -space-x-px text-sm text-gray-700"
                 truncableText="..."
                 truncableClassName="w-10 px-0.5 text-center"
               >
                 <Pagination.PrevButton
                   className={classNames(
-                    "flex items-center mr-2 text-gray-700 hover:text-gray-600 focus:outline-none",
+                    "mr-2 flex items-center text-gray-700 hover:text-gray-600 focus:outline-none",
                     {
                       "cursor-pointer": props.currentPage !== 1,
                       "opacity-50": props.currentPage === 1,
@@ -148,19 +148,19 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                   </span>
                 </Pagination.PrevButton>
 
-                <div className="flex items-center justify-center flex-grow">
+                <div className="flex flex-grow items-center justify-center">
                   <Pagination.PageButton
                     activeClassName="bg-blue-50 text-blue-600"
                     inactiveClassName="text-gray-500"
                     className={
-                      "flex items-center justify-center h-10 w-10 rounded-full cursor-pointer"
+                      "flex h-10 w-10 cursor-pointer items-center justify-center rounded-full"
                     }
                   />
                 </div>
 
                 <Pagination.NextButton
                   className={classNames(
-                    "flex items-center ml-2 text-gray-700 hover:text-gray-600 focus:outline-none",
+                    "ml-2 flex items-center text-gray-700 hover:text-gray-600 focus:outline-none",
                     {
                       "cursor-pointer": props.currentPage !== maxPage,
                       "opacity-50": props.currentPage === maxPage,

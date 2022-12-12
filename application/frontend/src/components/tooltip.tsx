@@ -21,8 +21,8 @@ export const ToolTip = ({
     >
       {trigger}
       <span
-        className="absolute hidden group-hover/tooltip:flex items-center -left-5 -top-2 -translate-y-full px-2 py-1
-          bg-gray-600/75 rounded-lg text-center text-white text-sm whitespace-nowrap"
+        className="absolute -left-5 -top-2 hidden -translate-y-full items-center whitespace-nowrap rounded-lg bg-gray-600/75
+          px-2 py-1 text-center text-sm text-white group-hover/tooltip:flex"
       >
         {description}
       </span>

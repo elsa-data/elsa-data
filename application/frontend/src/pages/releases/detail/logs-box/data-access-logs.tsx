@@ -61,11 +61,11 @@ function DataAccessLogsBox() {
           })
         }
         type="button"
-        className="text-white bg-gray-400 hover:bg-gray-500 focus:ring-1 shadow-gray-500 focus:outline-none focus:ring-gray-600 font-medium rounded-lg text-xs px-3 py-2 text-center inline-flex items-center mr-2"
+        className="mr-2 inline-flex items-center rounded-lg bg-gray-400 px-3 py-2 text-center text-xs font-medium text-white shadow-gray-500 hover:bg-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="icon icon-tabler icon-tabler-refresh mr-2 -ml-1 w-5 h-5"
+          className="icon icon-tabler icon-tabler-refresh mr-2 -ml-1 h-5 w-5"
           width="24"
           height="24"
           viewBox="0 0 24 24"
@@ -92,11 +92,11 @@ function DataAccessLogsBox() {
     >
       <Table
         tableHead={
-          <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">
+          <tr className="whitespace-nowrap border-b border-slate-700 bg-slate-50 text-sm text-gray-500">
             {COLUMN_TO_SHOW.map((header, idx) => (
               <th
                 key={`header-${idx}`}
-                className="p-4 text-sm text-gray-600 whitespace-nowrap border-b hover:rounded-lg"
+                className="whitespace-nowrap border-b p-4 text-sm text-gray-600 hover:rounded-lg"
               >
                 <div className="flex flex-nowrap space-x-1">{header.value}</div>
               </th>
@@ -109,13 +109,13 @@ function DataAccessLogsBox() {
           data.map((row, rowIdx) => (
             <tr
               key={`body-row-${rowIdx}`}
-              className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+              className="group whitespace-nowrap border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50 hover:rounded-lg hover:bg-slate-100"
             >
               {COLUMN_TO_SHOW.map((col, colIdx) => {
                 const objKey = col.key;
                 return (
                   <td
-                    className="p-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                    className="whitespace-nowrap border-b p-4 text-sm text-gray-500"
                     key={`body-row-${rowIdx}-col-${colIdx}`}
                   >
                     {objKey === "egressBytes" ? (
@@ -125,7 +125,7 @@ function DataAccessLogsBox() {
                     ) : objKey === "actionCategory" ? (
                       <ToolTip
                         trigger={
-                          <div className="flex items-center w-8 h-8">
+                          <div className="flex h-8 w-8 items-center">
                             {row[objKey]}
                           </div>
                         }

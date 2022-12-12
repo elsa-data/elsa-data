@@ -14,7 +14,7 @@ export const DacImportPage: React.FC = () => {
 
   return (
     <LayoutBase>
-      <div className="flex flex-row flex-wrap flex-grow mt-2">
+      <div className="mt-2 flex flex-grow flex-row flex-wrap">
         {/* SYNCHRONISE DAC BOX */}
         {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
           <Box
@@ -25,13 +25,13 @@ export const DacImportPage: React.FC = () => {
               <div className="flex flex-col gap-6">
                 <div className="prose">
                   <label className="block">
-                    <span className="text-xs font-bold text-gray-700 uppercase">
+                    <span className="text-xs font-bold uppercase text-gray-700">
                       Instance URL
                     </span>
                     <input
                       type="text"
                       defaultValue="https://hgpp-rems.dev.umccr.org"
-                      className="mt-1 block w-full rounded-md bg-gray-50 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+                      className="mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
                     />
                   </label>
                   <button

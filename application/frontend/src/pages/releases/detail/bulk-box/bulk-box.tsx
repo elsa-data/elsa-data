@@ -10,7 +10,7 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 import { isUndefined } from "lodash";
-import {EagerErrorBoundary, ErrorState} from "../../../../components/errors";
+import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 
 type Props = {
   releaseId: string;
@@ -20,14 +20,17 @@ type Props = {
 export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   const queryClient = useQueryClient();
 
-  const [error, setError] = useState<ErrorState>({error: null, isSuccess: true});
+  const [error, setError] = useState<ErrorState>({
+    error: null,
+    isSuccess: true,
+  });
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseId),
       result
     );
-    setError({error: null, isSuccess: true});
+    setError({ error: null, isSuccess: true });
   };
 
   const applyAllMutate = useMutation(
@@ -58,16 +61,17 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
         />
         <RightDiv>
           <div className="shadow sm:rounded-md">
-            <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
+            <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
               <div className="grid grid-cols-3 gap-6">
-                <div className="flex flex-col gap-6 col-span-3">
+                <div className="col-span-3 flex flex-col gap-6">
                   <div className="flex flex-row space-x-1">
                     <button
                       className="btn-normal"
                       onClick={async () => {
                         applyAllMutate.mutate(null, {
                           onSuccess: afterMutateUpdateQueryData,
-                          onError: (error: any) => setError({error, isSuccess: false}),
+                          onError: (error: any) =>
+                            setError({ error, isSuccess: false }),
                         });
                       }}
                       disabled={!isUndefined(releaseData.runningJob)}
@@ -76,7 +80,10 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
                     </button>
                   </div>
                   {!error.isSuccess && (
-                    <EagerErrorBoundary error={error.error} styling={"bg-red-400"} />
+                    <EagerErrorBoundary
+                      error={error.error}
+                      styling={"bg-red-400"}
+                    />
                   )}
                 </div>
               </div>

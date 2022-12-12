@@ -133,10 +133,10 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
 
   return (
     <>
-      <div {...getRootProps()} className="flex flex-col gap-6 items-center">
-        <div className="w-96 h-60 items-center bg-gray-200 hover:bg-gray-100 border-dashed border-slate-400 border-2 flex flex-col rounded-2xl justify-center p-12">
+      <div {...getRootProps()} className="flex flex-col items-center gap-6">
+        <div className="flex h-60 w-96 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-400 bg-gray-200 p-12 hover:bg-gray-100">
           <input {...getInputProps()} />
-          <FontAwesomeIcon icon={faUpload} className="text-6xl p-5" />
+          <FontAwesomeIcon icon={faUpload} className="p-5 text-6xl" />
           <p className="text-center">Drop CSV file here or click to upload</p>
         </div>
       </div>

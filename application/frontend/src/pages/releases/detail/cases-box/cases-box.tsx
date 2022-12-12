@@ -150,7 +150,7 @@ export const CasesBox: React.FC<Props> = ({
           </div>
         )}
         {dataQuery.data && dataQuery.data.length > 0 && (
-          <table className="w-full text-sm text-left text-gray-500 table-fixed">
+          <table className="w-full table-fixed text-left text-sm text-gray-500">
             <tbody>
               {dataQuery.data.map((row, rowIndex) => {
                 return (

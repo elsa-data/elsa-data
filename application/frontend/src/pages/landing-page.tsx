@@ -80,7 +80,7 @@ export const HomePage: React.FC = () => {
       <p className="prose text-xs">
         Current page size in practice is therefore {pageSize}
       </p>
-      <div className="flex flex-row space-x-2 mt-2 mb-2">
+      <div className="mt-2 mb-2 flex flex-row space-x-2">
         <button
           className="btn-normal text-xs"
           onClick={() => mutatePageSizeCookie(5)}

@@ -26,12 +26,12 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
     const whenInactive = `text-gray-500 border-white ${hoverClass} ${always}`;
 
     return (
-      <div className="mr-6 my-2 md:my-0">
+      <div className="my-2 mr-6 md:my-0">
         <NavLink
           to={to}
           className={({ isActive }) => (isActive ? whenActive : whenInactive)}
         >
-          <span className="pb-1 md:pb-0 text-sm">{label}</span>
+          <span className="pb-1 text-sm md:pb-0">{label}</span>
         </NavLink>
       </div>
     );
@@ -44,18 +44,18 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       {/* NAV START */}
       <nav
         id="header"
-        className="bg-white fixed w-full z-10 top-0 shadow min-w-max"
+        className="fixed top-0 z-10 w-full min-w-max bg-white shadow"
       >
-        <div className="w-full container mx-auto">
-          <div className="w-full justify-between flex flex-wrap items-center mt-0 pt-3 pb-3 lg:pb-0">
-            <div className="block lg:hidden pr-4">
+        <div className="container mx-auto w-full">
+          <div className="mt-0 flex w-full flex-wrap items-center justify-between pt-3 pb-3 lg:pb-0">
+            <div className="block pr-4 lg:hidden">
               <button
                 onClick={() => setIsMenuBarOpen((prev: boolean) => !prev)}
                 id="nav-toggle"
-                className="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-900 hover:border-teal-500 appearance-none focus:outline-none"
+                className="flex appearance-none items-center rounded border border-gray-600 px-3 py-2 text-gray-500 hover:border-teal-500 hover:text-gray-900 focus:outline-none"
               >
                 <svg
-                  className="fill-current h-3 w-3"
+                  className="h-3 w-3 fill-current"
                   viewBox="0 0 20 20"
                   xmlns="http://www.w3.org/2000/svg"
                 >
@@ -67,26 +67,26 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
 
             <div className="pl-2 md:pl-0">
               <a
-                className="text-gray-900 text-base xl:text-xl no-underline hover:no-underline font-bold"
+                className="text-base font-bold text-gray-900 no-underline hover:no-underline xl:text-xl"
                 href="/"
               >
                 Elsa Data
               </a>
             </div>
-            <div className="flex relative float-right">
+            <div className="relative float-right flex">
               {loggedInUser && <LayoutBaseHeaderUser user={loggedInUser} />}
             </div>
           </div>
 
           <div
-            className={`w-full flex-grow lg:flex lg:items-center lg:w-auto mt-2 lg:mt-0 bg-white ${
+            className={`mt-2 w-full flex-grow bg-white lg:mt-0 lg:flex lg:w-auto lg:items-center ${
               isMenuBarOpen ? "" : "hidden"
             }`}
             id="nav-content"
           >
             {loggedInUser ? (
-              <ul className="list-reset lg:flex flex-1 items-center px-4 md:px-0 pb-4 lg:pb-0">
-                <li className="mr-6 my-2 md:my-0">
+              <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
+                <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/",
                     "Home",
@@ -95,7 +95,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-orange-600"
                   )}
                 </li>
-                <li className="mr-6 my-2 md:my-0">
+                <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/releases",
                     "Releases",
@@ -104,7 +104,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-purple-500"
                   )}
                 </li>
-                <li className="mr-6 my-2 md:my-0">
+                <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/datasets",
                     "Datasets",
@@ -113,7 +113,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-green-500"
                   )}
                 </li>
-                <li className="mr-6 my-2 md:my-0">
+                <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/dac",
                     "DAC",
@@ -122,7 +122,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-yellow-500"
                   )}
                 </li>
-                <li className="mr-6 my-2 md:my-0">
+                <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/users",
                     "Users",
@@ -133,8 +133,8 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </li>
               </ul>
             ) : (
-              <ul className="list-reset lg:flex flex-1 items-center px-4 md:px-0">
-                <li className="mr-6 my-2 md:my-0">
+              <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">
+                <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/",
                     "Login",
@@ -158,8 +158,8 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       </nav>
       {/* NAV END */}
 
-      <div className="container w-full mx-auto pt-10 lg:pt-20 grow">
-        <div className="w-full mt-8 mb-8 text-gray-800 leading-normal">
+      <div className="container mx-auto w-full grow pt-10 lg:pt-20">
+        <div className="mt-8 mb-8 w-full leading-normal text-gray-800">
           <ErrorBoundary rethrowError={(_: any) => false}>
             {children}
           </ErrorBoundary>

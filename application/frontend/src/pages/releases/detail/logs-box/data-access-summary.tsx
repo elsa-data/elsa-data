@@ -36,7 +36,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
     <div className="flex justify-between">
       <div>Data Access Log Summary</div>
       <a
-        className="normal-case	bg-transparent flex cursor-pointer hover:bg-slate-200 p-1 rounded-md"
+        className="flex	cursor-pointer rounded-md bg-transparent p-1 normal-case hover:bg-slate-200"
         href={`/releases/${releaseId}/audit-log/data-access`}
       >
         <BiLinkExternal />
@@ -48,11 +48,11 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
     <BoxNoPad heading={<BoxHeader />}>
       <Table
         tableHead={
-          <tr className="text-sm text-gray-500 whitespace-nowrap border-b bg-slate-50 border-slate-700">
+          <tr className="whitespace-nowrap border-b border-slate-700 bg-slate-50 text-sm text-gray-500">
             {COLUMN_TO_SHOW.map((header) => (
               <th
                 key={header}
-                className="p-4 text-sm text-gray-600 whitespace-nowrap border-b hover:rounded-lg"
+                className="whitespace-nowrap border-b p-4 text-sm text-gray-600 hover:rounded-lg"
               >
                 <div className="flex flex-nowrap space-x-1">
                   {convertCamelCaseToTitle(header)}
@@ -67,11 +67,11 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
           data.map((row, rowIdx) => (
             <tr
               key={`body-row-${rowIdx}`}
-              className="group text-sm text-gray-500 whitespace-nowrap border-b odd:bg-white even:bg-slate-50 border-slate-700 hover:bg-slate-100 hover:rounded-lg"
+              className="group whitespace-nowrap border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50 hover:rounded-lg hover:bg-slate-100"
             >
               {COLUMN_TO_SHOW.map((column, colIdx) => (
                 <td
-                  className="p-4 text-sm text-gray-500 whitespace-nowrap border-b"
+                  className="whitespace-nowrap border-b p-4 text-sm text-gray-500"
                   key={`body-row-${rowIdx}-col-${colIdx}`}
                 >
                   {column === "dataAccessedInBytes" || column === "fileSize" ? (

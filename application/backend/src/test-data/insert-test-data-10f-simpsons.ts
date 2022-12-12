@@ -118,7 +118,8 @@ export async function makeSimpsonsTrio() {
       {
         code: "DUO:0000007",
         // inherited auditory system disease
-        diseaseSystem: container.resolve<ElsaSettings>("Settings").mondoSystem.uri,
+        diseaseSystem:
+          container.resolve<ElsaSettings>("Settings").mondoSystem.uri,
         diseaseCode: "MONDO:0037940",
         // also SCTID:362991006
         modifiers: [

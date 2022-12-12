@@ -23,7 +23,7 @@ export const LayoutBaseHeaderUser: React.FC<Props> = ({ user }) => {
         >
           {user.displayName}
           {user.displayEmail && (
-            <span className="font-mono ml-2">{user.displayEmail}</span>
+            <span className="ml-2 font-mono">{user.displayEmail}</span>
           )}
           <ChevronDownIcon className="-mr-1 ml-2 h-3 w-3" aria-hidden="true" />
         </Menu.Button>

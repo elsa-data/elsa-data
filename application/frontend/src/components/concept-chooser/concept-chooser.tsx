@@ -25,10 +25,10 @@ const Chip: React.FC<{
   });
 
   return (
-    <li className="px-4 py-2 rounded-full text-gray-500 bg-gray-200 text-sm flex-none flex align-center w-max cursor-pointer active:bg-gray-300 transition duration-300 ease">
+    <li className="align-center ease flex w-max flex-none cursor-pointer rounded-full bg-gray-200 px-4 py-2 text-sm text-gray-500 transition duration-300 active:bg-gray-300">
       {display ?? c.code}
       <button
-        className="bg-transparent hover focus:outline-none"
+        className="hover bg-transparent focus:outline-none"
         onClick={() => removeFromSelected(c)}
       >
         <svg
@@ -36,7 +36,7 @@ const Chip: React.FC<{
           focusable="false"
           data-prefix="fas"
           data-icon="times"
-          className="w-3 ml-3"
+          className="ml-3 w-3"
           role="img"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 352 512"
@@ -209,7 +209,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
         {props.label}
       </label>
 
-      <div className="mt-1 p-2 rounded-md w-full border border-gray-300">
+      <div className="mt-1 w-full rounded-md border border-gray-300 p-2">
         <ul className="flex flex-row flex-wrap gap-2">
           {!_.isEmpty(props.selected) && (
             <>
@@ -224,14 +224,14 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
               placeholder: props.placeholder,
               disabled: props.disabled,
             })}
-            className="min-w-[15em] flex-grow border-none border-white focus:border-none p-0"
+            className="min-w-[15em] flex-grow border-none border-white p-0 focus:border-none"
           />
         </ul>
       </div>
       {/* if the input element is open, render the div else render nothing*/}
       {isOpen && searchHits && searchHits.length > 0 && (
         <div
-          className="origin-top-left overflow-auto absolute z-10 mt-1 w-96 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+          className="absolute z-10 mt-1 w-96 origin-top-left overflow-auto rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="menu-button"

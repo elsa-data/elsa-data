@@ -54,7 +54,7 @@ export const DatasetsDashboardPage: React.FC = () => {
         type="text"
         {...register("uri", { required: true })}
         className={classNames(
-          "mt-1 block rounded-md w-full bg-gray-50 border-transparent font-mono focus:border-gray-500 focus:bg-white focus:ring-0",
+          "mt-1 block w-full rounded-md border-transparent bg-gray-50 font-mono focus:border-gray-500 focus:bg-white focus:ring-0",
           errors.uri ? "ring-2 ring-red-500" : ""
         )}
         placeholder="urn:fdc:domain.org:year:id"
@@ -64,7 +64,7 @@ export const DatasetsDashboardPage: React.FC = () => {
 
   return (
     <LayoutBase>
-      <div className="flex flex-row flex-wrap flex-grow mt-2">
+      <div className="mt-2 flex flex-grow flex-row flex-wrap">
         <DatasetsBox pageSize={pageSize} />
 
         {/*<Box heading="Import/Update Dataset">

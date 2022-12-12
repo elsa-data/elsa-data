@@ -30,7 +30,7 @@ export const RhSelect = React.forwardRef<HTMLSelectElement, Props>(
           id={id}
           ref={ref}
           {...props}
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
         >
           {props.options.map(({ label, value }) => (
             <option value={value}>{label}</option>
