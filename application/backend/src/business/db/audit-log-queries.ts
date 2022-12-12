@@ -137,8 +137,8 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
 ) => {
   return e.select(e.audit.DataAccessAuditEvent, (da) => ({
     ...e.audit.DataAccessAuditEvent["*"],
-    fileSize: da.file.size,
-    fileUrl: da.file.url,
+    fileSize: da.details.size,
+    fileUrl: da.details.url,
     filter: e.op(da.release_.id, "=", e.uuid(releaseId)),
     order_by: [
       {
@@ -161,10 +161,10 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
             ? da.occurredDuration
             : orderByProperty === "outcome"
             ? da.outcome
-            : orderByProperty === "details"
-            ? da.details
             : orderByProperty === "fileUrl"
-            ? da.file.url
+            ? da.details.url
+            : orderByProperty === "fileSize"
+            ? da.details.size
             : orderByProperty === "egressBytes"
             ? da.egressBytes
             : da.occurredDateTime,

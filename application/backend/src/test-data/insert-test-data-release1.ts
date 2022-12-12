@@ -102,7 +102,7 @@ Ethics form XYZ.
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
       releaseAuditLog: makeSytheticAuditLog(),
-      dataAccessAuditLog: makeSyntheticDataAccessLog(),
+      dataAccessAuditLog: await makeSyntheticDataAccessLog(),
     })
     .run(edgeDbClient);
 }
@@ -190,24 +190,36 @@ function makeSytheticAuditLog() {
   );
 }
 
-const makeSyntheticDataAccessLog = () => {
-  const makeDataAccessLog = (fileUrl: string) => ({
-    file: e
+const makeSyntheticDataAccessLog = async () => {
+  const makeDataAccessLog = async (fileUrl: string) => {
+    const fileJson = await e
       .select(e.storage.File, (f) => ({
+        ...f["*"],
         filter: e.op(f.url, "ilike", `%${fileUrl}`),
       }))
-      .assert_single(),
-    egressBytes: 10188721080,
-    whoId: "123.123.123.123",
-    whoDisplayName: "123.123.123.123",
-    actionCategory: e.audit.ActionType.R,
-    actionDescription: "Data Access",
-    occurredDateTime: e.datetime(new Date()),
-    outcome: 0,
-  });
+      .assert_single()
+      .run(edgeDbClient);
+
+    return {
+      details: e.json(fileJson),
+      egressBytes: 10188721080,
+      whoId: "123.123.123.123",
+      whoDisplayName: "123.123.123.123",
+      actionCategory: e.audit.ActionType.R,
+      actionDescription: "Data Access",
+      occurredDateTime: e.datetime(new Date()),
+      outcome: 0,
+    };
+  };
 
   return e.set(
-    e.insert(e.audit.DataAccessAuditEvent, makeDataAccessLog(MARGE_BAM_S3)),
-    e.insert(e.audit.DataAccessAuditEvent, makeDataAccessLog(MARGE_BAI_S3))
+    e.insert(
+      e.audit.DataAccessAuditEvent,
+      await makeDataAccessLog(MARGE_BAM_S3)
+    ),
+    e.insert(
+      e.audit.DataAccessAuditEvent,
+      await makeDataAccessLog(MARGE_BAI_S3)
+    )
   );
 };
