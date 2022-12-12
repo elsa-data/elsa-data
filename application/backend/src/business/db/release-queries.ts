@@ -1,46 +1,31 @@
 import e from "../../../dbschema/edgeql-js";
 
 /**
- * An EdgeDb query for all the dataset details for those datasets
- * associated with a given release.
- */
-const allReleaseDatasetsQuery = e.params({ releaseId: e.uuid }, (params) =>
-  e.select(e.dataset.Dataset, (ds) => ({
-    ...e.dataset.Dataset["*"],
-    filter: e.op(
-      ds.uri,
-      "=",
-      e.array_unpack(
-        e
-          .select(e.release.Release, (r) => ({
-            filter: e.op(r.id, "=", params.releaseId),
-          }))
-          .assert_single().datasetUris
-      )
-    ),
-  }))
-);
-
-/**
- * An EdgeDb query that returns all releases (filter so the specified user only sees their releases)
- * and with various summary level data included.
+ * For the given user return all the associated releases with paging.
  */
 export const allReleasesSummaryByUserQuery = e.params(
-  { userDbId: e.uuid },
+  { userDbId: e.uuid, limit: e.int32, offset: e.int32 },
   (params) =>
-    e.select(e.release.Release, (r) => ({
-      ...e.release.Release["*"],
-      runningJob: {
-        percentDone: true,
-      },
-      userRoles: e.select(
-        r["<releaseParticipant[is permission::User]"],
-        (u) => ({
-          id: true,
-          filter: e.op(u.id, "=", params.userDbId),
-          // got to work out how to extract the link property values... this was broken in Edge pre 2.0
-          // "@role": true
-        })
-      ),
+    e.select(e.permission.User, (u) => ({
+      releaseParticipant: (rp) => ({
+        id: true,
+        datasetUris: true,
+        releaseIdentifier: true,
+        applicationDacTitle: true,
+        applicationDacIdentifier: true,
+        "@role": true,
+        runningJob: {
+          percentDone: true,
+        },
+        // we could possibly think of reverse ordering by some time/last updated - might be more meaningful
+        // as release identifier is essentially a meaningless random string
+        order_by: {
+          expression: rp.releaseIdentifier,
+          direction: e.ASC,
+        },
+        limit: params.limit,
+        offset: params.offset,
+      }),
+      filter: e.op(u.id, "=", params.userDbId),
     }))
 );

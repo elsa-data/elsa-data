@@ -11,6 +11,7 @@ import { ToolTip } from "../../../components/tooltip";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
+import { IsLoadingDiv } from "../../../components/is-loading-div";
 
 type Props = {
   // the (max) number of items shown on any single page
@@ -20,7 +21,7 @@ type Props = {
 const warningIcon = (
   <ToolTip
     trigger={
-      <span className="text-xs inline-block p-1 leading-none text-center whitespace-nowrap align-baseline font-bold text-white rounded-full">
+      <span className="inline-block whitespace-nowrap rounded-full p-1 text-center align-baseline text-xs font-bold leading-none text-white">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="icon icon-tabler icon-tabler-alert-triangle"
@@ -107,21 +108,21 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
       heading="Datasets"
       errorMessage={"Something went wrong fetching datasets."}
     >
-      <div className="p-5 bg-gray-50 text-right sm:px-6 border-b">
+      <div className="border-b bg-gray-50 p-5 text-right sm:px-6">
         <div className="flex justify-start">
           <div
             className="inline-flex cursor-pointer items-center"
             onClick={() => setIncludeDeletedFile((p) => !p)}
           >
             <input
-              className="h-3 w-3 rounded-sm mr-2 cursor-pointer"
+              className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
               type="checkbox"
               checked={includeDeletedFile}
             />
             <label className="flex text-gray-800">
               <ToolTip
                 trigger={
-                  <div className="flex items-center text-xs cursor-pointer">
+                  <div className="flex cursor-pointer items-center text-xs">
                     Include deleted files
                   </div>
                 }
@@ -132,9 +133,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
         </div>
       </div>
       <div className="flex flex-col overflow-auto">
-        {dataQuery.isLoading && (
-          <div className={classNames(baseMessageDivClasses)}>Loading...</div>
-        )}
+        {dataQuery.isLoading && <IsLoadingDiv />}
         {dataQuery.data && dataQuery.data.length === 0 && (
           <div className={classNames(baseMessageDivClasses)}>
             <p>There are no visible dataset(s)</p>
@@ -149,7 +148,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
           </div>
         )}
         {dataQuery.data && dataQuery.data.length > 0 && (
-          <table className="w-full text-sm text-left text-gray-500 table-auto">
+          <table className="w-full table-auto text-left text-sm text-gray-500">
             <tbody>
               {/* Column Title */}
               <tr>
@@ -172,7 +171,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                 return (
                   <tr
                     key={row.id}
-                    className="border-b cursor-pointer hover:bg-gray-50"
+                    className="cursor-pointer border-b hover:bg-gray-50"
                     onClick={() => navigate(`${row.id}`)}
                   >
                     <td className={classNames(baseColumnClasses, "text-left")}>
@@ -188,7 +187,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
                         "h-full"
                       )}
                     >
-                      <div className={`inline-block truncate w-full`}>
+                      <div className={`inline-block w-full truncate`}>
                         {row.uri}
                       </div>
                     </td>

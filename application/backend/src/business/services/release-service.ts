@@ -33,6 +33,15 @@ export class ReleaseService extends ReleaseBaseService {
     super(edgeDbClient, usersService);
   }
 
+  /**
+   * Return summary information about all the releases that are of interest to the user.
+   * For the moment, "interest" is defined as being a participant in the release with
+   * a defined role.
+   *
+   * @param user
+   * @param limit
+   * @param offset
+   */
   public async getAll(
     user: AuthenticatedUser,
     limit: number,
@@ -40,20 +49,22 @@ export class ReleaseService extends ReleaseBaseService {
   ): Promise<ReleaseSummaryType[]> {
     const allReleasesByUser = await allReleasesSummaryByUserQuery.run(
       this.edgeDbClient,
-      { userDbId: user.dbId }
+      { userDbId: user.dbId, limit: limit, offset: offset }
     );
 
-    return allReleasesByUser
-      .filter((a) => a.userRoles != null)
-      .map((a) => ({
-        id: a.id,
-        datasetUris: a.datasetUris,
-        releaseIdentifier: a.releaseIdentifier,
-        applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
-        applicationDacIdentifierValue: a.applicationDacIdentifier.value,
-        applicationDacTitle: a.applicationDacTitle,
-        isRunningJobPercentDone: undefined,
-      }));
+    // this shouldn't happen (user doesn't exist?) but if it does return no releases
+    if (allReleasesByUser == null) return [];
+
+    return allReleasesByUser.releaseParticipant.map((a) => ({
+      id: a.id,
+      datasetUris: a.datasetUris,
+      releaseIdentifier: a.releaseIdentifier,
+      applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
+      applicationDacIdentifierValue: a.applicationDacIdentifier.value,
+      applicationDacTitle: a.applicationDacTitle,
+      isRunningJobPercentDone: undefined,
+      roleInRelease: a["@role"]!,
+    }));
   }
 
   /**
