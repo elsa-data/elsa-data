@@ -177,7 +177,7 @@ export abstract class ReleaseBaseService {
    *
    * @param user the user attempting the changes
    * @param releaseId the release id of the release to alter
-   * @param specimenIds the edgedb ids of specimens from datasets of our release
+   * @param specimenIds the edgedb ids of specimens from datasets of our release, or an empty list if the status should be applied to all specimens in the release
    * @param statusToSet the status to set i.e. selected = true means shared, selected = false means not shared
    *
    * TODO: make this work with any node - not just specimen nodes (i.e. setStatus of patient)
@@ -187,18 +187,15 @@ export abstract class ReleaseBaseService {
    */
   protected async setSelectedStatus(
     user: AuthenticatedUser,
+    statusToSet: boolean,
     releaseId: string,
-    specimenIds: string[],
-    statusToSet: boolean
+    specimenIds: string[] = []
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
       releaseId
     );
-
-    if (specimenIds.length === 0)
-      throw new Error("You must supply some ids to change the status of");
 
     // note this db set we get is likely to be small (bounded by the number of datasets in a release)
     // so we can get away with some use of a edgedb literal 'X in { "A", "B", "C" }'
@@ -220,7 +217,9 @@ export abstract class ReleaseBaseService {
         filter: e.op(
           e.op(s.dataset.id, "in", releaseAllDatasetIdDbSet),
           "and",
-          e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a))))
+          specimenIds.length === 0
+            ? e.bool(true)
+            : e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a))))
         ),
       })
     );
@@ -229,7 +228,7 @@ export abstract class ReleaseBaseService {
       this.edgeDbClient
     );
 
-    if (actualSpecimens.length != specimenIds.length)
+    if (specimenIds.length > 0 && actualSpecimens.length != specimenIds.length)
       throw Error(
         "Mismatch between the specimens that we passed in and those that are allowed specimens in this release"
       );

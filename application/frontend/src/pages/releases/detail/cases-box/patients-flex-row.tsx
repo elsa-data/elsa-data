@@ -24,6 +24,7 @@ type Props = {
   releaseId: string;
   patients: ReleasePatientType[];
   showCheckboxes: boolean;
+  onCheckboxClicked?: () => void;
 };
 
 /**
@@ -40,6 +41,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
   releaseId,
   patients,
   showCheckboxes,
+  onCheckboxClicked,
 }) => {
   const queryClient = useQueryClient();
 
@@ -55,20 +57,25 @@ export const PatientsFlexRow: React.FC<Props> = ({
     }
   );
 
-  const onSelectChange = async (id: string) => {
-    releasePatchMutate.mutate({
-      op: "add",
-      path: "/specimens",
-      value: [id],
-    });
-  };
+  const onSelectChange = async (
+    ce: React.ChangeEvent<HTMLInputElement>,
+    id: string
+  ) => {
+    if (onCheckboxClicked !== undefined) onCheckboxClicked();
 
-  const onUnselectChange = async (id: string) => {
-    releasePatchMutate.mutate({
-      op: "remove",
-      path: "/specimens",
-      value: [id],
-    });
+    if (ce.target.checked) {
+      releasePatchMutate.mutate({
+        op: "add",
+        path: "/specimens",
+        value: [id],
+      });
+    } else {
+      releasePatchMutate.mutate({
+        op: "remove",
+        path: "/specimens",
+        value: [id],
+      });
+    }
   };
 
   const patientDiv = (patient: ReleasePatientType) => {
@@ -125,11 +132,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
                     type="checkbox"
                     className="ml-2"
                     checked={spec.nodeStatus == "selected"}
-                    onChange={async (ce) =>
-                      ce.target.checked
-                        ? await onSelectChange(spec.id)
-                        : await onUnselectChange(spec.id)
-                    }
+                    onChange={async (ce) => onSelectChange(ce, spec.id)}
                   />
                 </label>
               )}
