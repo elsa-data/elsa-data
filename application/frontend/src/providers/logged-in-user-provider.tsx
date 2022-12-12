@@ -21,13 +21,13 @@ export type LoggedInUser = {
  * @constructor
  */
 export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
-  const [cookies, setCookie, removeCookie] = useCookies<any>();
+  const [cookies, _setCookie, removeCookie] = useCookies<any>();
 
   // Removing Cookie when token is no longer valid when using Axios (by 403 Status Code Response).
   axios.interceptors.response.use(
     (res) => res,
     (err) => {
-      const errCode = err.response.status;
+      const errCode = err?.response?.status;
       if (errCode === 403) {
         removeCookie(USER_SUBJECT_COOKIE_NAME);
       }
