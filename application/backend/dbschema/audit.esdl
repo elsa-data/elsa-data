@@ -64,11 +64,6 @@ module audit {
         # Link back which audit owns this
         link release_ := .<dataAccessAuditLog[is release::Release];
         
-        # Intended file access
-        link file -> storage::File{
-            on target delete allow
-        };
-
         # Number of bytes transfer out from storage
         required property egressBytes -> int64;
 

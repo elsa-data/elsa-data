@@ -145,17 +145,21 @@ export class AuditLogService {
     egressBytes: number;
     date: Date;
   }) {
+    const fileJson = await e
+      .select(e.storage.File, (f) => ({
+        ...f['*'],
+        filter: e.op(f.url, "=", fileUrl),
+      }))
+      .assert_single()
+      .run(executor);
+
     await e
       .update(e.release.Release, (r) => ({
         filter: e.op(r.id, "=", e.uuid(releaseId)),
         set: {
           dataAccessAuditLog: {
             "+=": e.insert(e.audit.DataAccessAuditEvent, {
-              file: e
-                .select(e.storage.File, (f) => ({
-                  filter: e.op(f.url, "=", fileUrl),
-                }))
-                .assert_single(),
+              details: e.json(fileJson),
               egressBytes: egressBytes,
               whoId: who,
               whoDisplayName: who,
@@ -336,9 +340,7 @@ export class AuditLogService {
 
     // Grouping result by fileUrl
     const groupedByFileUrl = dataAccessLogArray.reduce((group: any, log) => {
-      const { fileUrl } = log;
-
-      if (!fileUrl) return group;
+      const fileUrl = log.fileUrl as string;
 
       group[fileUrl] = group[fileUrl] ?? [];
       group[fileUrl].push(log);

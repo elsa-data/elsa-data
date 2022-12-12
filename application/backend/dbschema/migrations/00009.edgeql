@@ -1,10 +1,8 @@
-CREATE MIGRATION m1rcbiz5zvkftqdfqr6lan6sj2k4f6umywxupdj3dn4fwo2ojplmvq
+CREATE MIGRATION m1vuc2hgenr5r2u52wte3ywt4islpgis2glborur3ljqwegzevt2oa
     ONTO m1kam4c6otwvcv4io5ye3x3hf7hknqwdbv7tnrp2b2ienujrc6pj5a
 {
   ALTER TYPE audit::DataAccessAuditEvent {
-      ALTER LINK file {
-          RESET OPTIONALITY;
-      };
+      DROP LINK file;
   };
   ALTER TYPE consent::Consent {
       ALTER LINK statements {
