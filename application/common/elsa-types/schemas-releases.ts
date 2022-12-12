@@ -25,7 +25,7 @@ export const ReleaseSummarySchema = Type.Object({
   isRunningJobPercentDone: Type.Optional(Type.Number()),
 
   // once we get @role link properties working we should enable this
-  // roleInRelease: Type.String(),
+  roleInRelease: Type.String(),
 });
 
 export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
