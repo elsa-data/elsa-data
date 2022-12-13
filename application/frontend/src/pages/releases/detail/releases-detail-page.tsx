@@ -34,21 +34,21 @@ import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 export const ReleasesDetailPage: React.FC = () => {
   const { releaseId } = useParams<{ releaseId: string }>();
 
+  if (!releaseId)
+    throw new Error(
+      `The component ReleasesDetailPage cannot be rendered outside a route with a releaseId param`
+    );
+
   const [error, setError] = useState<ErrorState>({
     error: null,
     isSuccess: true,
   });
 
-  if (!releaseId)
-    throw new Error(
-      "This component should not be rendered outside a route with a releaseId param"
-    );
-
   const pageSize = usePageSizer();
 
   const queryClient = useQueryClient();
 
-  const releaseQuery = useQuery({
+  const releaseQuery = useQuery<ReleaseTypeLocal>({
     queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseId),
     queryFn: specificReleaseQuery,
     onError: (error: any) => setError({ error, isSuccess: false }),
@@ -90,7 +90,7 @@ export const ReleasesDetailPage: React.FC = () => {
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
           <>
             <Box heading="Background Job">
-              <div className="mb-1 flex justify-between">
+              <div className="mb-4 flex justify-between">
                 <span className="text-base font-medium text-blue-700">
                   Running
                 </span>
@@ -98,7 +98,7 @@ export const ReleasesDetailPage: React.FC = () => {
                   {releaseQuery.data.runningJob.percentDone.toString()}%
                 </span>
               </div>
-              <div className="h-2.5 w-full rounded-full bg-gray-200">
+              <div className="mb-4 h-2.5 w-full rounded-full bg-gray-200">
                 <div
                   className="h-2.5 rounded-full bg-blue-600"
                   style={{
@@ -152,12 +152,13 @@ export const ReleasesDetailPage: React.FC = () => {
               />
             )}
 
+            {/*
             {releaseQuery.data.permissionEditSelections && (
               <MasterAccessControlBox
                 releaseId={releaseId}
                 releaseData={releaseQuery.data}
               />
-            )}
+            )}*/}
 
             <Box heading="Access Data">
               <VerticalTabs
@@ -165,8 +166,8 @@ export const ReleasesDetailPage: React.FC = () => {
                   "Manifest",
                   "AWS S3 Presigned URL",
                   "AWS S3 VPC Share",
-                  "GCP Cloud Storage Signed URL",
                   "htsget",
+                  // "GCP Cloud Storage Signed URL",
                 ]}
               >
                 <div className="prose">
@@ -187,14 +188,14 @@ export const ReleasesDetailPage: React.FC = () => {
                   releaseData={releaseQuery.data}
                 />
                 <AwsS3VpcShareForm releaseId={releaseId} />
-                <div className="prose">
-                  <p>Not implemented</p>
-                  <p>Will enable a GCP sharing as per AWS S3</p>
-                </div>
                 <HtsgetForm
                   releaseId={releaseId}
                   releaseData={releaseQuery.data}
                 />
+                {/*<div className="prose">
+                  <p>Not implemented</p>
+                  <p>Will enable a GCP sharing as per AWS S3</p>
+                </div>*/}
               </VerticalTabs>
             </Box>
 
