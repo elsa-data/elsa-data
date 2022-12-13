@@ -8,6 +8,7 @@ module consent {
         #
 
         multi link statements -> ConsentStatement {
+            on source delete delete target;
             on target delete allow;
             constraint exclusive;
         };

@@ -12,7 +12,10 @@ module dataset {
         # if present - represents consent rules that apply to this shareable entity
         # consent statements in parent items in the dataset tree also always apply if present
 
-        link consent -> consent::Consent;
+        link consent -> consent::Consent{
+            on target delete allow;
+            on source delete delete target;
+        };
     }
 
     # a abstract type that represents a location to store identifiers for
@@ -38,6 +41,7 @@ module dataset {
         optional link previous -> Dataset;
 
         multi link cases -> DatasetCase {
+            on source delete delete target;
             on target delete allow;
             constraint exclusive;
         };
@@ -60,12 +64,14 @@ module dataset {
         link dataset := .<cases[is Dataset];
 
         multi link patients -> DatasetPatient {
+            on source delete delete target;
             on target delete allow;
             constraint exclusive;
         }
 
         # pedigree data structure
         optional link pedigree -> pedigree::Pedigree{
+            on source delete delete target;
             on target delete allow;
             constraint exclusive;
         };
@@ -85,6 +91,7 @@ module dataset {
         link dataset := .<patients[is DatasetCase].<cases[is Dataset];
 
         multi link specimens -> DatasetSpecimen {
+            on source delete delete target;
             on target delete allow;
             constraint exclusive;
         }

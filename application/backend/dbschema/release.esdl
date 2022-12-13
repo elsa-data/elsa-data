@@ -89,18 +89,11 @@ module release {
             # audit events should not be able to be deleted (singly)
             #
             on target delete restrict;
-
-            # the audit events can be deleted if the release itself is
-            #
-            on source delete delete target
         }
 
         multi link dataAccessAuditLog -> audit::DataAccessAuditEvent {
             # audit events should not be able to be deleted (singly)
             on target delete restrict;
-
-            # the audit events can be deleted if the release itself is
-            on source delete delete target
         }
         property lastDateTimeDataAccessLogQuery -> datetime;
 
