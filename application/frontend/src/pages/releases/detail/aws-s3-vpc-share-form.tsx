@@ -11,6 +11,7 @@ import {
 import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
 import { isUndefined } from "lodash";
+import { Checkbox, Label } from "flowbite-react";
 
 type Props = {
   releaseId: string;
@@ -56,16 +57,16 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
   });
 
   const tsvColumnCheck = (field: string) => (
-    <div key={field} className="flex items-center">
-      <input
+    <div key={field} className="flex items-center gap-2">
+      <Checkbox
         defaultChecked={true}
         name={"presignHeader"}
-        id={`chx`}
-        type="checkbox"
+        id={`chx-${field}`}
         value={field}
-        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
       />
-      <label className="ml-3 text-sm uppercase text-gray-600">{field}</label>
+      <Label className={`uppercase`} htmlFor={`chx-${field}`}>
+        {field}
+      </Label>
     </div>
   );
 
@@ -150,17 +151,19 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
         {/* we use a POST form action here (rather than a onSubmit handler) because
             form POSTS will be converted natively into a browser file save dialog
              when the POST returned a Content-Disposition header */}
-        <form action={`/api/releases/${releaseId}/cfn/manifest`} method="POST">
-          <div className="flex flex-col gap-6">
-            <label className="prose block">
-              The functionality from the perspective of a researcher.
-            </label>
-            {tsvColumnCheck("fileType")}
-            {tsvColumnCheck("patientId")}
-            {tsvColumnCheck("s3Url")}
-            {tsvColumnCheck("md5")}
-            <input type="submit" className="btn-normal" value="Download TSV" />
-          </div>
+        <form
+          action={`/api/releases/${releaseId}/cfn/manifest`}
+          method="POST"
+          className="flex flex-col gap-4 p-6"
+        >
+          <label className="prose block">
+            The functionality from the perspective of a researcher.
+          </label>
+          {tsvColumnCheck("fileType")}
+          {tsvColumnCheck("patientId")}
+          {tsvColumnCheck("s3Url")}
+          {tsvColumnCheck("md5")}
+          <input type="submit" className="btn-normal" value="Download TSV" />
         </form>
       </div>
     </>

@@ -2,13 +2,14 @@ import React from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { BoxNoPad } from "../../../../components/boxes";
-import { Table } from "../../../../components/tables";
+// import { Table } from "../../../../components/tables";
 import { convertCamelCaseToTitle } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { fileSize } from "humanize-plus";
+import { Badge, Table } from "flowbite-react";
 
 function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
   const dataAccessQuery = useQuery(
@@ -46,49 +47,37 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
 
   return (
     <BoxNoPad heading={<BoxHeader />}>
-      <Table
-        tableHead={
-          <tr className="whitespace-nowrap border-b border-slate-700 bg-slate-50 text-sm text-gray-500">
-            {COLUMN_TO_SHOW.map((header) => (
-              <th
-                key={header}
-                className="whitespace-nowrap border-b p-4 text-sm text-gray-600 hover:rounded-lg"
-              >
-                <div className="flex flex-nowrap space-x-1">
-                  {convertCamelCaseToTitle(header)}
-                </div>
-              </th>
+      <Table striped>
+        <Table.Head>
+          {COLUMN_TO_SHOW.map((header) => (
+            <Table.HeadCell key={header}>
+              {convertCamelCaseToTitle(header)}
+            </Table.HeadCell>
+          ))}
+        </Table.Head>
+        <Table.Body>
+          {dataAccessQuery.isSuccess &&
+            data &&
+            data.map((row, rowIdx) => (
+              <Table.Row key={`body-row-${rowIdx}`}>
+                {COLUMN_TO_SHOW.map((column, colIdx) => (
+                  <Table.Cell key={`body-row-${rowIdx}-col-${colIdx}`}>
+                    {column === "dataAccessedInBytes" ||
+                    column === "fileSize" ? (
+                      fileSize(row[column])
+                    ) : column === "downloadStatus" ? (
+                      <DisplayDownloadStatus status={row[column]} />
+                    ) : column === "lastAccessedTime" ? (
+                      formatLocalDateTime(row[column])
+                    ) : (
+                      row[column]
+                    )}
+                  </Table.Cell>
+                ))}
+              </Table.Row>
             ))}
-          </tr>
-        }
-        tableBody={
-          dataAccessQuery.isSuccess &&
-          data &&
-          data.map((row, rowIdx) => (
-            <tr
-              key={`body-row-${rowIdx}`}
-              className="group whitespace-nowrap border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50 hover:rounded-lg hover:bg-slate-100"
-            >
-              {COLUMN_TO_SHOW.map((column, colIdx) => (
-                <td
-                  className="whitespace-nowrap border-b p-4 text-sm text-gray-500"
-                  key={`body-row-${rowIdx}-col-${colIdx}`}
-                >
-                  {column === "dataAccessedInBytes" || column === "fileSize" ? (
-                    fileSize(row[column])
-                  ) : column === "downloadStatus" ? (
-                    <DisplayDownloadStatus status={row[column]} />
-                  ) : column === "lastAccessedTime" ? (
-                    formatLocalDateTime(row[column])
-                  ) : (
-                    row[column]
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))
-        }
-      />
+        </Table.Body>
+      </Table>
       {dataAccessQuery.isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching audit logs."}
@@ -106,14 +95,11 @@ export default DataAccessSummaryBox;
  * Helper Component
  */
 function DisplayDownloadStatus({ status }: { status: string }) {
-  let classNameStr = `p-1 rounded-md w-fit font-semibold `;
-
   if (status === "multiple-download") {
-    classNameStr += "bg-amber-200	text-amber-500";
+    return <Badge color="warning">{status}</Badge>;
   } else if (status === "complete") {
-    classNameStr += "bg-green-200	text-green-600";
-  } else {
-    classNameStr += "bg-neutral-200	text-neutral-500";
+    return <Badge color="success">{status}</Badge>;
   }
-  return <div className={classNameStr}>{status}</div>;
+
+  return <Badge color="gray">{status}</Badge>;
 }
