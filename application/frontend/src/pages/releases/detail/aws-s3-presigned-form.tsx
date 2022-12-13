@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FileRecordHeaderType } from "@umccr/elsa-types";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
+import { Checkbox } from "flowbite-react";
 
 type Props = {
   releaseId: string;
@@ -60,6 +61,7 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
       <form
         action={`/api/releases/${releaseId}/aws-s3-presigned`}
         method="POST"
+        className="p-6"
       >
         <div className="flex flex-col gap-6">
           <article className="prose">
@@ -80,52 +82,49 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               download.
             </p>
           </article>
-
-          <div
-            onClick={() => setIsHeaderSelectionOpen((prev) => !prev)}
-            className="-my-3 flex w-full cursor-pointer items-center justify-between rounded bg-white py-3 text-sm hover:bg-gray-100"
-          >
-            <span>
-              <span className="font-medium text-gray-900">
-                {`TSV Header: `}
-              </span>
+          <div id="tsv-header-selector">
+            <div className="text-xs font-bold uppercase text-gray-700">
+              {`TSV Header: `}
+            </div>
+            <div
+              onClick={() => setIsHeaderSelectionOpen((prev) => !prev)}
+              className="mt-2 flex w-full cursor-pointer items-center justify-between rounded-lg	bg-gray-100 p-3 text-sm hover:bg-gray-200 "
+            >
               <span className="font-normal uppercase text-gray-900">
                 {`${headerSelected.join(", ")}`}
               </span>
-            </span>
 
-            <span className="ml-6 flex items-center">
-              {isHeaderSelectionOpen ? (
-                <MinusIcon className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <PlusIcon className="h-5 w-5" aria-hidden="true" />
-              )}
-            </span>
-          </div>
-          <div className={`${isHeaderSelectionOpen ? "" : "hidden"}`}>
-            <div className="space-y-4">
-              {FILE_RECORD_HEADER.map((field: string, fieldIdx: number) => (
-                <div key={field} className="flex items-center">
-                  <input
-                    defaultChecked={headerSelected.includes(field)}
-                    onChange={updateText}
-                    name={"presignHeader"}
-                    id={`chx`}
-                    type="checkbox"
-                    value={field}
-                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <label
-                    htmlFor={`filter-${fieldIdx}`}
-                    className="ml-3 text-sm uppercase text-gray-600"
-                  >
-                    {field}
-                  </label>
-                </div>
-              ))}
+              <span className="ml-6 flex items-center">
+                {isHeaderSelectionOpen ? (
+                  <MinusIcon className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <PlusIcon className="h-5 w-5" aria-hidden="true" />
+                )}
+              </span>
+            </div>
+            <div className={`${isHeaderSelectionOpen ? "" : "hidden"} mt-3`}>
+              <div className="space-y-4">
+                {FILE_RECORD_HEADER.map((field: string, fieldIdx: number) => (
+                  <div key={field} className="flex items-center px-3">
+                    <Checkbox
+                      id={`chx`}
+                      defaultChecked={headerSelected.includes(field)}
+                      value={field}
+                      onChange={updateText}
+                      name={"presignHeader"}
+                    />
+                    <label
+                      htmlFor={`filter-${fieldIdx}`}
+                      className="ml-3 text-sm uppercase text-gray-600"
+                    >
+                      {field}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          <label className="prose">
+          <div id="current-password">
             <span className="text-xs font-bold uppercase text-gray-700">
               Current Password
             </span>
@@ -134,9 +133,9 @@ export const AwsS3PresignedForm: React.FC<Props> = ({
               disabled={true}
               required={false}
               defaultValue={displayPassword}
-              className="chx mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
+              className="chx mt-1 block w-full rounded-md border-transparent bg-gray-100 focus:border-gray-500 focus:bg-white focus:ring-0"
             />
-          </label>
+          </div>
           <div className="prose">
             <input type="submit" className="btn-normal" value="Download Zip" />
           </div>
