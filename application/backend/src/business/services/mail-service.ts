@@ -14,15 +14,16 @@ export class MailService {
   ) {}
 
   /**
-   * Setup the mail service using settings.
+   * Setup the mail service.
    */
   public setup() {
-    if (this.settings.mailer?.SES?.options) {
+    if (this.settings.mailer?.SES?.options != null) {
       const sesConfig = this.settings.mailer.SES;
       const ses = new aws.SES({
         ...sesConfig.options,
-        credentials: defaultProvider,
+        credentialDefaultProvider: defaultProvider,
       });
+      console.log(ses);
 
       this.transporter = createTransport(
         {
@@ -32,7 +33,7 @@ export class MailService {
         },
         this.settings.mailer.defaults
       );
-    } else if (this.settings.mailer?.options) {
+    } else if (this.settings.mailer?.options != null) {
       this.transporter = createTransport(this.settings.mailer.options, this.settings.mailer.defaults);
     }
 
@@ -46,7 +47,7 @@ export class MailService {
   }
 
   /**
-   * Send mail.
+   * Send email.
    */
   public async sendMail(mail: Mail.Options): Promise<any> {
     return await this.transporter?.sendMail(mail)

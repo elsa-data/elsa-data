@@ -12,4 +12,13 @@
     // we have a permanent tmp bucket with a generous expiry lifespan shared for localhost dev
     tempBucket: "elsa-data-tmp",
   },
+  mailer: {
+    SES: {
+      // Use default credentials sourced from environment variables.
+      options: {}
+    },
+    options: {
+
+    }
+  }
 }
