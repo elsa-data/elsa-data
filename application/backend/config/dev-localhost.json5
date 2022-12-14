@@ -16,9 +16,6 @@
     SES: {
       // Use default credentials sourced from environment variables.
       options: {}
-    },
-    options: {
-
     }
   }
 }
