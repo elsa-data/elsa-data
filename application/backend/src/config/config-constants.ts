@@ -175,6 +175,29 @@ export const configDefinition = {
     env: `${env_prefix}PORT`,
     arg: "port",
   },
+  mailer: {
+    SES: {
+      doc: "Set this to use SES. These aws settings passed directly to the SES client.",
+      format: "Object",
+      default: {},
+      env: `${env_prefix}MAILER_SES`,
+      arg: "mailer-ses",
+    },
+    options: {
+      doc: "Set this when not using SES. These are passed directly to the nodemailer createTransport.",
+      format: "Object",
+      default: {},
+      env: `${env_prefix}MAILER_OPTIONS`,
+      arg: "mailer-options",
+    },
+    defaults: {
+      doc: "Set defaults that get merged into every message object. These are passed directly to the nodemailer createTransport.",
+      format: "Object",
+      default: {},
+      env: `${env_prefix}MAILER_DEFAULTS`,
+      arg: "mailer-defaults",
+    }
+  },
   deployedUrl: {
     doc: "The externally accessible Url for the deployed location of Elsa Data",
     format: "*",

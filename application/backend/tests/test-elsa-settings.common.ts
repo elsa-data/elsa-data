@@ -1,5 +1,6 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
+import { SES } from "@aws-sdk/client-ses";
 
 export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
 
@@ -18,6 +19,11 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   //      more sophisticated
   port: 3000,
   host: "127.0.0.1",
+  mailer: {
+    SES: { SES: new SES({}) },
+    options: {},
+    defaults: {},
+  },
   deployedUrl: "http://localhost:3000",
   datasets: [
     {
