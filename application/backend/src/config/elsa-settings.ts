@@ -14,10 +14,10 @@ export type ElsaSettings = {
 
   host: string;
   port: number;
-  mailer: {
-    SES: SESTransport.Options,
-    options: SMTPTransport.Options | string,
-    defaults: Object
+  mailer?: {
+    SES?: SESTransport.Options,
+    options?: SMTPTransport.Options | string,
+    defaults?: any
   }
 
   sessionSecret: string;

@@ -8,7 +8,7 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { getFromEnv } from "./entrypoint-command-helper";
 import { DatasetService } from "./business/services/dataset-service";
-import { JobsService } from "./business/services/jobs/jobs-base-service";
+import {MailService} from "./business/services/mail-service";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -72,6 +72,9 @@ export async function startWebServer(scenario: number | null): Promise<number> {
   const server = await app.setupServer();
 
   console.log(`Listening on ${settings.host} on port ${settings.port}`);
+
+  const mailService = container.resolve(MailService);
+  mailService.setup();
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down
