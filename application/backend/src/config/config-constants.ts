@@ -177,11 +177,29 @@ export const configDefinition = {
   },
   mailer: {
     SES: {
-      doc: "Set this to use SES. These aws settings passed directly to the SES client.",
-      format: "Object",
-      default: {},
-      env: `${env_prefix}MAILER_SES`,
-      arg: "mailer-ses",
+      options: {
+        doc: "Set this to use SES. These aws settings passed directly to the SES client.",
+        format: "Object",
+        default: {},
+        env: `${env_prefix}MAILER_SES_OPTIONS`,
+        arg: "mailer-ses-options"
+      },
+      maxConnections: {
+        doc: "Optional max connections to use with SES.",
+        format: "nat",
+        nullable: true,
+        default: null,
+        env: `${env_prefix}MAILER_SES_MAX_CONNECTIONS`,
+        arg: "mailer-ses-max-connections"
+      },
+      sendingRate: {
+        doc: "Optional number of messages to send when using SES.",
+        format: "nat",
+        nullable: true,
+        default: null,
+        env: `${env_prefix}MAILER_SES_SENDING_RATE`,
+        arg: "mailer-ses-sending-rate"
+      }
     },
     options: {
       doc: "Set this when not using SES. These are passed directly to the nodemailer createTransport.",

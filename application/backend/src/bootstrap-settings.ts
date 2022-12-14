@@ -57,7 +57,11 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     host: config.get("host"),
     port: config.get("port"),
     mailer: {
-      SES: config.get("mailer.SES"),
+      SES: {
+        options: config.get("mailer.SES.options"),
+        maxConnections: config.get("mailer.SES.maxConnections"),
+        sendingRate: config.get("mailer.SES.sendingRate"),
+      },
       options: config.get("mailer.options"),
       defaults: config.get("mailer.defaults")
     },

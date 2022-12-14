@@ -18,12 +18,20 @@ export class MailService {
    */
   public setup() {
     if (this.settings.mailer?.SES !== undefined) {
+      const sesConfig = this.settings.mailer.SES;
       const ses = new aws.SES({
-        ...this.settings.mailer.SES,
+        ...sesConfig.options,
         credentials: defaultProvider,
       });
 
-      this.transporter = createTransport({ SES: { ses, aws } }, this.settings.mailer.defaults);
+      this.transporter = createTransport(
+        {
+          SES: { ses, aws },
+          maxConnections: sesConfig.maxConnections,
+          sendingRate: sesConfig.sendingRate
+        },
+        this.settings.mailer.defaults
+      );
     } else if (this.settings.mailer?.options !== undefined) {
       this.transporter = createTransport(this.settings.mailer.options, this.settings.mailer.defaults);
     }
