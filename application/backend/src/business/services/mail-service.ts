@@ -17,7 +17,7 @@ export class MailService {
    * Setup the mail service using settings.
    */
   public setup() {
-    if (this.settings.mailer?.SES !== undefined) {
+    if (this.settings.mailer?.SES?.options) {
       const sesConfig = this.settings.mailer.SES;
       const ses = new aws.SES({
         ...sesConfig.options,
@@ -32,15 +32,15 @@ export class MailService {
         },
         this.settings.mailer.defaults
       );
-    } else if (this.settings.mailer?.options !== undefined) {
+    } else if (this.settings.mailer?.options) {
       this.transporter = createTransport(this.settings.mailer.options, this.settings.mailer.defaults);
     }
 
     this.transporter?.verify((error, _) => {
       if (error) {
-        console.log(`Failed to setup mail server:\n ${error}`);
+        console.log(`Failed to setup mail server:\n  ${error}`);
       } else {
-        console.log("mail server ready");
+        console.log("Mail server ready");
       }
     });
   }

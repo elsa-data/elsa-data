@@ -180,7 +180,8 @@ export const configDefinition = {
       options: {
         doc: "Set this to use SES. These aws settings passed directly to the SES client.",
         format: "Object",
-        default: {},
+        nullable: true,
+        default: null,
         env: `${env_prefix}MAILER_SES_OPTIONS`,
         arg: "mailer-ses-options"
       },
@@ -204,14 +205,16 @@ export const configDefinition = {
     options: {
       doc: "Set this when not using SES. These are passed directly to the nodemailer createTransport.",
       format: "Object",
-      default: {},
+      nullable: true,
+      default: null,
       env: `${env_prefix}MAILER_OPTIONS`,
       arg: "mailer-options",
     },
     defaults: {
       doc: "Set defaults that get merged into every message object. These are passed directly to the nodemailer createTransport.",
       format: "Object",
-      default: {},
+      nullable: true,
+      default: null,
       env: `${env_prefix}MAILER_DEFAULTS`,
       arg: "mailer-defaults",
     }
