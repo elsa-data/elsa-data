@@ -87,6 +87,8 @@
     "openid-client": "5.2.1",
     "p-throttle": "^5.0.0",
     "patch-package": "6.4.7",
+    "pino": "^8.7.0",
+    "pino-pretty": "^9.1.1",
     "protobufjs": "7.1.2",
     "qs": "6.11.0",
     "randomstring": "^1.2.3",

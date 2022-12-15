@@ -1,6 +1,7 @@
 import { Issuer } from "openid-client";
 import { RateLimitPluginOptions } from "@fastify/rate-limit";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
+import { LoggerOptions } from "pino";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -31,6 +32,8 @@ export type ElsaSettings = {
   remsUrl: string;
   remsBotUser: string;
   remsBotKey: string;
+
+  logger: LoggerOptions;
 
   awsSigningAccessKeyId: string;
   awsSigningSecretAccessKey: string;
