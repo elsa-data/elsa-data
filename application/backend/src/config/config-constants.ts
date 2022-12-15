@@ -176,43 +176,43 @@ export const configDefinition = {
     arg: "port",
   },
   mailer: {
-    SES: {
-      options: {
-        doc:
-          "Set this to use the aws SES api directly. " +
-          "These settings passed to the SES client when constructing the SES object: " +
-          "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ses/index.html#v2-compatible-style",
-        format: "Object",
-        nullable: true,
-        default: null,
-        env: `${env_prefix}MAILER_SES_OPTIONS`,
-        arg: "mailer-ses-options",
+    mode: {
+      doc:
+        'Set the mode of the mailer, either "None", "SES" or "SMTP".' +
+        '"None" will not start the mail server, "SES" with use the SES api directly, and ' +
+        '"SMTP" will configure the server manually using the options below.',
+      format: function check(value: string): value is "None" | "SES" | "SMTP" {
+        return value === "None" || value === "SES" || value === "SMTP";
       },
-      maxConnections: {
-        doc: "Optional max connections to use with SES.",
-        format: "nat",
-        nullable: true,
-        default: null,
-        env: `${env_prefix}MAILER_SES_MAX_CONNECTIONS`,
-        arg: "mailer-ses-max-connections",
-      },
-      sendingRate: {
-        doc: "Optional number of messages to send when using SES.",
-        format: "nat",
-        nullable: true,
-        default: null,
-        env: `${env_prefix}MAILER_SES_SENDING_RATE`,
-        arg: "mailer-ses-sending-rate",
-      },
+      nullable: false,
+      default: "None",
+      env: `${env_prefix}MAILER_MODE`,
+      arg: "mailer-mode",
+    },
+    maxConnections: {
+      doc: "Optional max connections to use with SES.",
+      format: "nat",
+      nullable: true,
+      default: null,
+      env: `${env_prefix}MAILER_SES_MAX_CONNECTIONS`,
+      arg: "mailer-ses-max-connections",
+    },
+    sendingRate: {
+      doc: "Optional number of messages to send when using SES.",
+      format: "nat",
+      nullable: true,
+      default: null,
+      env: `${env_prefix}MAILER_SES_SENDING_RATE`,
+      arg: "mailer-ses-sending-rate",
     },
     options: {
       doc:
-        "Set this when not using SES and manually configuring the SMTP server. " +
+        'Set this when using the "SMTP" mode to manually configuring the SMTP server. ' +
         "These are passed to the nodemailer createTransport in the options property: " +
         "https://nodemailer.com/smtp/#general-options",
       format: "Object",
       nullable: true,
-      default: null,
+      default: {},
       env: `${env_prefix}MAILER_OPTIONS`,
       arg: "mailer-options",
     },

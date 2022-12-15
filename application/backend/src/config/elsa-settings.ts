@@ -13,12 +13,10 @@ export type ElsaSettings = {
 
   host: string;
   port: number;
-  mailer?: {
-    SES?: {
-      options: any;
-      maxConnections?: number | undefined;
-      sendingRate?: number | undefined;
-    };
+  mailer: {
+    mode: "None" | "SES" | "SMTP";
+    maxConnections?: number | undefined;
+    sendingRate?: number | undefined;
     options?: SMTPTransport.Options | string;
     defaults?: any;
   };

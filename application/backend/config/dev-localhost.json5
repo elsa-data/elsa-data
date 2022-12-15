@@ -13,9 +13,6 @@
     tempBucket: "elsa-data-tmp",
   },
   mailer: {
-    SES: {
-      // Use default credentials sourced from environment variables.
-      options: {},
-    },
+    mode: "SES",
   },
 }
