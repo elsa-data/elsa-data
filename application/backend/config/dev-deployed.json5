@@ -1,1 +1,7 @@
-{}
+{
+  // for deployed dev we are happy with standard logging output to stdout (goes to CloudWatch)
+  // but we want to get all the logs so level of debug
+  logger: {
+    level: "debug",
+  },
+}

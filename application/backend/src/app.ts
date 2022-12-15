@@ -20,6 +20,7 @@ import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
 import { ElsaSettings } from "./config/elsa-settings";
 import { container } from "tsyringe";
 import fastifyTraps from "@dnlup/fastify-traps";
+import pino from "pino";
 
 export class App {
   public server: FastifyInstance;
@@ -43,7 +44,7 @@ export class App {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
 
-    this.server = Fastify({ logger: true });
+    this.server = Fastify({ logger: settings.logger });
 
     // inject a copy of the Elsa settings into every request
     this.server.decorateRequest("settings", null);

@@ -2,9 +2,14 @@ import convict from "convict";
 import { parseMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
-import { configDefinition } from "./config-constants";
+import {
+  configDefinition,
+  loggerTransportTargetsArray,
+} from "./config-constants";
 import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
 import { ProviderLinuxPass } from "./providers/provider-linux-pass";
+
+convict.addFormat(loggerTransportTargetsArray);
 
 // an array of user records designated in the config for extra permissions etc
 convict.addFormat({

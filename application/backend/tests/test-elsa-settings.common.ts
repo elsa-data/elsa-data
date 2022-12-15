@@ -46,6 +46,9 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     },
   ],
   superAdmins: [],
+  logger: {
+    level: "debug",
+  },
   remsUrl: "https://hgpp-rems.dev.umccr.org",
   remsBotKey: "a",
   remsBotUser: "b",

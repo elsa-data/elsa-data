@@ -1,7 +1,29 @@
+import convict from "convict";
+import _ from "lodash";
+
 const env_prefix = "ELSA_DATA_CONFIG_";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
+
+export const loggerTransportTargetsArray = {
+  name: "logger-transport-array",
+  validate: (items: any[], schema: any) => {
+    if (!Array.isArray(items)) {
+      throw new Error("Must be of type Array");
+    }
+
+    for (const child of items) {
+      const errorMsg =
+        "Each logger transport must have a string field called target";
+      if (!("target" in child)) throw new Error(errorMsg);
+      if (!_.isString(child["target"])) throw new Error(errorMsg);
+
+      // TODO: any other validation?
+      // we really want to just pass through options to Pino so we don't really need any checking ourselves?
+    }
+  },
+};
 
 export const configDefinition = {
   edgeDb: {
@@ -180,6 +202,21 @@ export const configDefinition = {
     format: "*",
     default: undefined,
     env: `${env_prefix}DEPLOYED_URL`,
+  },
+  logger: {
+    level: {
+      doc: "The logging level as per Pino (all the standard level strings + silent)",
+      format: String,
+      default: "info",
+      nullable: false,
+      env: `${env_prefix}LOGGER_LEVEL`,
+    },
+    transportTargets: {
+      doc: "An array of Pino logger transport targets configurations",
+      format: "logger-transport-array",
+      default: [],
+      nullable: false,
+    },
   },
   datasets: {
     doc: "A collection datasets configurations that will are registered in Elsa Data.",
