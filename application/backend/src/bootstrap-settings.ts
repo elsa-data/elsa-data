@@ -63,7 +63,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
         sendingRate: config.get("mailer.SES.sendingRate"),
       },
       options: config.get("mailer.options"),
-      defaults: config.get("mailer.defaults")
+      defaults: config.get("mailer.defaults"),
     },
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,

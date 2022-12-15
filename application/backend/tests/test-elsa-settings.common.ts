@@ -22,7 +22,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     SES: {
       options: {},
       maxConnections: Infinity,
-      sendingRate: Infinity
+      sendingRate: Infinity,
     },
     options: {},
     defaults: {},

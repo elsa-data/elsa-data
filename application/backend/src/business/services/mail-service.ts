@@ -1,6 +1,6 @@
-import {inject, injectable} from "tsyringe";
-import {ElsaSettings} from "../../config/elsa-settings";
-import {createTransport, Transporter} from "nodemailer";
+import { inject, injectable } from "tsyringe";
+import { ElsaSettings } from "../../config/elsa-settings";
+import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
 import Mail from "nodemailer/lib/mailer";
 let { defaultProvider } = require("@aws-sdk/credential-provider-node");
@@ -9,9 +9,7 @@ let { defaultProvider } = require("@aws-sdk/credential-provider-node");
 export class MailService {
   private transporter?: Transporter;
 
-  constructor(
-    @inject("Settings") private settings: ElsaSettings
-  ) {}
+  constructor(@inject("Settings") private settings: ElsaSettings) {}
 
   /**
    * Setup the mail service.
@@ -29,12 +27,15 @@ export class MailService {
         {
           SES: { ses, aws },
           maxConnections: sesConfig.maxConnections,
-          sendingRate: sesConfig.sendingRate
+          sendingRate: sesConfig.sendingRate,
         },
         this.settings.mailer.defaults
       );
     } else if (this.settings.mailer?.options != null) {
-      this.transporter = createTransport(this.settings.mailer.options, this.settings.mailer.defaults);
+      this.transporter = createTransport(
+        this.settings.mailer.options,
+        this.settings.mailer.defaults
+      );
     }
 
     this.transporter?.verify((error, _) => {
@@ -50,6 +51,6 @@ export class MailService {
    * Send email.
    */
   public async sendMail(mail: Mail.Options): Promise<any> {
-    return await this.transporter?.sendMail(mail)
+    return await this.transporter?.sendMail(mail);
   }
 }

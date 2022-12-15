@@ -15,13 +15,13 @@ export type ElsaSettings = {
   port: number;
   mailer?: {
     SES?: {
-      options: any,
-      maxConnections?: number | undefined,
-      sendingRate?: number | undefined,
-    },
-    options?: SMTPTransport.Options | string,
-    defaults?: any
-  }
+      options: any;
+      maxConnections?: number | undefined;
+      sendingRate?: number | undefined;
+    };
+    options?: SMTPTransport.Options | string;
+    defaults?: any;
+  };
 
   sessionSecret: string;
   sessionSalt: string;

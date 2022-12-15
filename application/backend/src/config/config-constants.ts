@@ -178,14 +178,15 @@ export const configDefinition = {
   mailer: {
     SES: {
       options: {
-        doc: "Set this to use the aws SES api directly. " +
+        doc:
+          "Set this to use the aws SES api directly. " +
           "These settings passed to the SES client when constructing the SES object: " +
           "https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-ses/index.html#v2-compatible-style",
         format: "Object",
         nullable: true,
         default: null,
         env: `${env_prefix}MAILER_SES_OPTIONS`,
-        arg: "mailer-ses-options"
+        arg: "mailer-ses-options",
       },
       maxConnections: {
         doc: "Optional max connections to use with SES.",
@@ -193,7 +194,7 @@ export const configDefinition = {
         nullable: true,
         default: null,
         env: `${env_prefix}MAILER_SES_MAX_CONNECTIONS`,
-        arg: "mailer-ses-max-connections"
+        arg: "mailer-ses-max-connections",
       },
       sendingRate: {
         doc: "Optional number of messages to send when using SES.",
@@ -201,11 +202,12 @@ export const configDefinition = {
         nullable: true,
         default: null,
         env: `${env_prefix}MAILER_SES_SENDING_RATE`,
-        arg: "mailer-ses-sending-rate"
-      }
+        arg: "mailer-ses-sending-rate",
+      },
     },
     options: {
-      doc: "Set this when not using SES and manually configuring the SMTP server. " +
+      doc:
+        "Set this when not using SES and manually configuring the SMTP server. " +
         "These are passed to the nodemailer createTransport in the options property: " +
         "https://nodemailer.com/smtp/#general-options",
       format: "Object",
@@ -215,14 +217,15 @@ export const configDefinition = {
       arg: "mailer-options",
     },
     defaults: {
-      doc: "Set defaults that get merged into every message object. " +
+      doc:
+        "Set defaults that get merged into every message object. " +
         "These are passed directly to the nodemailer createTransport.",
       format: "Object",
       nullable: true,
       default: null,
       env: `${env_prefix}MAILER_DEFAULTS`,
       arg: "mailer-defaults",
-    }
+    },
   },
   deployedUrl: {
     doc: "The externally accessible Url for the deployed location of Elsa Data",
