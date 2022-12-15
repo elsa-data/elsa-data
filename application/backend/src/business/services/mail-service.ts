@@ -3,7 +3,6 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
 import Mail from "nodemailer/lib/mailer";
-import { SES } from "@aws-sdk/client-ses";
 
 @injectable()
 export class MailService {
@@ -11,7 +10,7 @@ export class MailService {
 
   constructor(
     @inject("Settings") private settings: ElsaSettings,
-    @inject("SESClient") private ses: SES
+    @inject("SESClient") private ses: aws.SES
   ) {}
 
   /**
