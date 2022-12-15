@@ -2,6 +2,8 @@ import { Issuer } from "openid-client";
 import { writeFile } from "fs/promises";
 import * as temp from "temp";
 import { ElsaSettings } from "./config/elsa-settings";
+import { TransportMultiOptions } from "pino";
+import _ from "lodash";
 
 export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
   console.log("The raw configuration found is");
@@ -52,6 +54,17 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       );
   }
 
+  let loggerTransportTargets: any[] = config.get("logger.transportTargets");
+
+  // grab the targets from our config - but default to a sensible default that just logs to stdout
+  // (if someone wants no logs they can set the level to silent)
+  if (!_.isArray(loggerTransportTargets) || loggerTransportTargets.length < 1)
+    loggerTransportTargets = [
+      {
+        target: "pino/file",
+      },
+    ];
+
   return {
     deployedUrl: deployedUrl,
     host: config.get("host"),
@@ -67,6 +80,13 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     remsBotKey: config.get("rems.botKey")!,
     remsBotUser: config.get("rems.botUser")!,
     remsUrl: "https://hgpp-rems.dev.umccr.org",
+    logger: {
+      name: "elsa-data",
+      level: config.get("logger.level"),
+      transport: {
+        targets: loggerTransportTargets,
+      },
+    },
     ontoFhirUrl: config.get("ontoFhirUrl"),
     mondoSystem: {
       uri: config.get("mondoSystem.uri"),
