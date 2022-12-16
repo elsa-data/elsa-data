@@ -188,14 +188,16 @@ export const CasesBox: React.FC<Props> = ({
           <>
             <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
               <div class="flex flex-wrap items-center border-b py-4">
-                <div className="w-12 whitespace-nowrap text-center font-medium text-gray-900">
-                  <IndeterminateCheckbox
-                    disabled={releasePatchMutate.isLoading}
-                    indeterminate={isSelectAllIndeterminate}
-                    onChange={onSelectAllChange}
-                  />
-                </div>
-                <div>Select all</div>
+                <label>
+                  <div className="inline-block w-12 text-center">
+                    <IndeterminateCheckbox
+                      disabled={releasePatchMutate.isLoading}
+                      indeterminate={isSelectAllIndeterminate}
+                      onChange={onSelectAllChange}
+                    />
+                  </div>
+                  Select All
+                </label>
               </div>
               <table className="w-full table-fixed text-left text-sm text-gray-500">
                 <tbody>
