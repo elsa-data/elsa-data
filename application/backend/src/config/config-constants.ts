@@ -1,4 +1,3 @@
-import convict from "convict";
 import _ from "lodash";
 
 const env_prefix = "ELSA_DATA_CONFIG_";
@@ -196,6 +195,58 @@ export const configDefinition = {
     default: 3000,
     env: `${env_prefix}PORT`,
     arg: "port",
+  },
+  mailer: {
+    mode: {
+      doc:
+        'Set the mode of the mail server, either "None", "SES" or "SMTP".' +
+        '"None" will not start the mail server, "SES" will use the SES api directly, and ' +
+        '"SMTP" will configure the server manually using the options below.',
+      format: function check(value: string): value is "None" | "SES" | "SMTP" {
+        return value === "None" || value === "SES" || value === "SMTP";
+      },
+      nullable: false,
+      default: "None",
+      env: `${env_prefix}MAILER_MODE`,
+      arg: "mailer-mode",
+    },
+    maxConnections: {
+      doc: "Optional max connections to use with SES.",
+      format: "nat",
+      nullable: true,
+      default: null,
+      env: `${env_prefix}MAILER_SES_MAX_CONNECTIONS`,
+      arg: "mailer-ses-max-connections",
+    },
+    sendingRate: {
+      doc: "Optional number of messages to send when using SES.",
+      format: "nat",
+      nullable: true,
+      default: null,
+      env: `${env_prefix}MAILER_SES_SENDING_RATE`,
+      arg: "mailer-ses-sending-rate",
+    },
+    options: {
+      doc:
+        'Set this when using the "SMTP" mode to manually configuring the SMTP server. ' +
+        "These are passed to the nodemailer createTransport function using the options property: " +
+        "https://nodemailer.com/smtp/#general-options",
+      format: "Object",
+      nullable: true,
+      default: {},
+      env: `${env_prefix}MAILER_OPTIONS`,
+      arg: "mailer-options",
+    },
+    defaults: {
+      doc:
+        "Set defaults that get merged into every message object. " +
+        "These are passed directly to the nodemailer createTransport.",
+      format: "Object",
+      nullable: true,
+      default: null,
+      env: `${env_prefix}MAILER_DEFAULTS`,
+      arg: "mailer-defaults",
+    },
   },
   deployedUrl: {
     doc: "The externally accessible Url for the deployed location of Elsa Data",

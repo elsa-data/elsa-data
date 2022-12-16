@@ -11,6 +11,7 @@ import { DatasetService } from "./business/services/dataset-service";
 import { JobsService } from "./business/services/jobs/jobs-base-service";
 import { Logger } from "pino";
 import { getServices } from "./di-helpers";
+import { MailService } from "./business/services/mail-service";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -53,6 +54,9 @@ export async function startWebServer(scenario: number | null): Promise<number> {
   const app = container.resolve(App);
 
   const server = await app.setupServer();
+
+  const mailService = container.resolve(MailService);
+  mailService.setup();
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down

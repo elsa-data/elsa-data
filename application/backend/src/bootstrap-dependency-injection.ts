@@ -4,6 +4,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { Duration } from "edgedb";
+import { SES } from "@aws-sdk/client-ses";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -36,5 +37,9 @@ export function bootstrapDependencyInjection() {
 
   container.register<CloudFormationClient>("CloudFormationClient", {
     useFactory: () => new CloudFormationClient(awsClientConfig),
+  });
+
+  container.register<SES>("SESClient", {
+    useFactory: () => new SES(awsClientConfig),
   });
 }

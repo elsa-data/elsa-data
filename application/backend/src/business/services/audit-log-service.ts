@@ -147,7 +147,7 @@ export class AuditLogService {
   }) {
     const fileJson = await e
       .select(e.storage.File, (f) => ({
-        ...f['*'],
+        ...f["*"],
         filter: e.op(f.url, "=", fileUrl),
       }))
       .assert_single()
