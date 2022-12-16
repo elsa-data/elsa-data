@@ -2,8 +2,6 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
 import { bootstrapSettings } from "./bootstrap-settings";
 import { getMetaConfig } from "./config/config-schema";
-import { schema } from "../dbschema/edgeql-js";
-import Tuple = schema.Tuple;
 
 export type EntrypointCommandHelper = {
   command: string;
@@ -55,8 +53,10 @@ export function getCommands(argv: string[]): EntrypointCommandHelper[] {
 
 // TODO - decide on a proper 'default' behaviour for config sources and replace this
 export async function getFromEnv(): Promise<{
+  sources: string;
   settings: ElsaSettings;
   config: any;
+  redactedConfig: any;
 }> {
   const metaSources = process.env[CONFIG_SOURCES_ENVIRONMENT_VAR];
 
@@ -68,7 +68,13 @@ export async function getFromEnv(): Promise<{
   const convictConfig = await getMetaConfig(metaSources);
 
   return {
+    sources: metaSources,
     settings: await bootstrapSettings(convictConfig),
     config: convictConfig.getProperties(),
+    // waiting for this and then we can just return the redacted JSON direct
+    // https://github.com/mozilla/node-convict/pull/407
+    // we are returning the redacted config just basically so we can do a log dump of its content
+    // which we can't do here because we have a chicken/egg problem of constructing the logger first
+    redactedConfig: JSON.parse(convictConfig.toString()),
   };
 }

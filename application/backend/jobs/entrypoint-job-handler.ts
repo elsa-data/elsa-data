@@ -6,22 +6,29 @@ import { JobsService } from "../src/business/services/jobs/jobs-base-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
-import {
-  Worker,
-  isMainThread,
-  workerData as breeWorkerData,
-} from "node:worker_threads";
+import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
 import { getDirectConfig } from "../src/config/config-schema";
+import pino, { Logger } from "pino";
 
 // global settings for DI
 bootstrapDependencyInjection();
 
 (async () => {
+  const settings = await bootstrapSettings(
+    await getDirectConfig(breeWorkerData.job.worker.workerData)
+  );
+
+  // we create a logger that always has a a field telling us the context was the
+  // job handler
+  const logger = pino(settings.logger).child({ context: "job-handler" });
+
   container.register<ElsaSettings>("Settings", {
-    useValue: await bootstrapSettings(
-      await getDirectConfig(breeWorkerData.job.worker.workerData)
-    ),
+    useValue: settings,
+  });
+
+  container.register<Logger>("Logger", {
+    useValue: logger,
   });
 
   // store boolean if the job is cancelled
@@ -47,6 +54,8 @@ bootstrapDependencyInjection();
 
       const jobs = await jobsService.getInProgressJobs();
 
+      logger.debug(`Check for in progress jobs resulted in set ${jobs}`);
+
       if (jobs && jobs.length > 0) {
         // our jobs will be a mixture of 'compute' and 'io'.. what we want to do is structure them
         // into small chunks of work (be that compute or io)
@@ -61,15 +70,15 @@ bootstrapDependencyInjection();
         jobPromises.push(sleep(secondsChunk * 1000));
 
         for (const j of jobs) {
-          console.log("JOB");
-          console.log(j);
+          logger.debug("JOB");
+          logger.debug(j);
 
           if (j.requestedCancellation) {
-            console.log(
+            logger.info(
               `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseId}`
             );
           } else {
-            console.log(
+            logger.info(
               `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseId}`
             );
           }
@@ -114,7 +123,7 @@ bootstrapDependencyInjection();
               break;
 
             default:
-              console.error(`Unknown job type ${j.jobType}`);
+              logger.error(`Unknown job type ${j.jobType}`);
           }
         }
 
@@ -124,16 +133,22 @@ bootstrapDependencyInjection();
         await sleep(secondsChunk * 1000);
       }
 
+      logger.flush();
+
       // the only way we finish the job service is if the parent asks us
       if (isCancelled) process.exit(0);
     } catch (e) {
-      console.error("JOB SERVICE FAILED");
-      console.error(e);
-
       // TODO replace with a better failure mechanism
-      // if we hit 1000 failures then chances are we *are* just looping with failure
+      // if we hit 1000 failures then chances are we *are* just looping with failure and we probably do want to exit
       if (failureCount++ > 1000) {
+        logger.fatal(
+          e,
+          "JOB SERVICE FAILURE - HIT FAILURE COUNT OF 1000 SO EXITING"
+        );
+        logger.flush();
         process.exit(0);
+      } else {
+        logger.error(e, "JOB SERVICE FAILURE - RESTARTING");
       }
 
       // make sure if we are looping that we aren't consuming *all* the CPU

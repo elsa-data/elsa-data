@@ -1,7 +1,6 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../service-tests/setup";
-import { createTestElsaSettings } from "../test-elsa-settings.common";
 import { createClient } from "edgedb";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
@@ -28,7 +27,7 @@ describe("http patch schema handling tests", () => {
 
   beforeAll(async () => {
     const testContainer = await registerTypes();
-    const app = new App(createTestElsaSettings());
+    const app = testContainer.resolve(App);
     server = await app.setupServer();
     await server.ready();
     const loginResponse = await server.inject({

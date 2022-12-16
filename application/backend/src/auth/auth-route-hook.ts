@@ -79,9 +79,11 @@ export function createAuthRouteHook(
       const sessionTokenPrimary = request.session.get(SESSION_TOKEN_PRIMARY);
 
       if (!sessionTokenPrimary || !sessionDbObject) {
-        console.log("NO SESSSION COOKIE DATA PRESENT TO ENABLE AUTH");
-        reply.code(403).send();
-        return;
+        request.log.error(
+          "createAuthRouteHook: no session cookie data present so failing authentication"
+        );
+
+        return reply.code(401).send();
       }
 
       // if we are in testing mode - then on every request we take an *extra* step to
@@ -99,7 +101,7 @@ export function createAuthRouteHook(
           );
 
         if (testDbUserDirectFromDb?.dbId != sessionDbObject.id) {
-          console.log(
+          request.log.debug(
             `Did a test scenario correction of the database id of the logged in user ${sessionDbObject.id} to ${testDbUserDirectFromDb?.dbId}`
           );
           sessionDbObject = testDbUserDirectFromDb.asJson();
@@ -109,13 +111,16 @@ export function createAuthRouteHook(
 
       const authedUser = new AuthenticatedUser(sessionDbObject);
 
-      console.log(`Auth route hook for user ${JSON.stringify(authedUser)}`);
+      request.log.trace(authedUser, `createAuthRouteHook: user details`);
 
       // set the full authenticated user into the request state for the rest of the request handling
       (request as any).user = authedUser;
     } catch (error) {
-      console.log(error);
-      reply.code(403).send();
+      request.log.error(error, "createAuthRouteHook: overall error");
+
+      // we are interpreting a failure here as an authentication failure 401
+      // (where are 403 would have meant we parsed all the auth data, but then decided to reject it)
+      reply.code(401).send();
     }
   };
 }

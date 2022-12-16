@@ -9,6 +9,8 @@ import { sleep } from "edgedb/dist/utils";
 import { getFromEnv } from "./entrypoint-command-helper";
 import { DatasetService } from "./business/services/dataset-service";
 import { JobsService } from "./business/services/jobs/jobs-base-service";
+import { Logger } from "pino";
+import { getServices } from "./di-helpers";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -20,11 +22,7 @@ export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
  * @param scenario
  */
 export async function startWebServer(scenario: number | null): Promise<number> {
-  const { settings, config } = await getFromEnv();
-
-  container.register<ElsaSettings>("Settings", {
-    useValue: settings,
-  });
+  const { settings } = getServices(container);
 
   // in a real deployment - "add scenario", "db blank" etc would all be handled by 'commands'.
   // we have one dev use case though - where we nodemon the local code base and restart the server
@@ -51,8 +49,36 @@ export async function startWebServer(scenario: number | null): Promise<number> {
 
   await datasetService.configureDataset(settings.datasets);
 
-  console.log("Starting job queue");
+  // create the actual webserver/app
+  const app = container.resolve(App);
 
+  const server = await app.setupServer();
+
+  try {
+    // this waits until the server has started up - but does not wait for the server to close down
+    await server.listen({ port: settings.port, host: settings.host });
+
+    // we don't want to fall out the end of the 'start-server' command until we have been signalled
+    // to shut down
+    while (true) {
+      // TODO detect close() event from the server
+      await sleep(5000);
+    }
+  } catch (err) {
+    server.log.error(err);
+
+    return 1;
+  }
+}
+
+/**
+ * A function to start up the background job handler. This is only ever started at the
+ * same time as the web server but was split out because it is the only code that needs
+ * the raw 'config'.
+ *
+ * @param config
+ */
+export async function startJobQueue(config: any) {
   const bree = new Bree({
     root: path.resolve("jobs"),
     jobs: [
@@ -66,28 +92,4 @@ export async function startWebServer(scenario: number | null): Promise<number> {
   });
 
   await bree.start();
-
-  const app = new App(settings);
-
-  const server = await app.setupServer();
-
-  console.log(`Listening on ${settings.host} on port ${settings.port}`);
-
-  try {
-    // this waits until the server has started up - but does not wait for the server to close down
-    await server.listen({ port: settings.port, host: settings.host });
-
-    // TODO possibly replace Bree with our own direct Jobs query and handle that here
-
-    // we don't want to fall out the end of the 'start-server' command until we have been signalled
-    // to shut down
-    while (true) {
-      // TODO detect close() event from the server
-      await sleep(5000);
-    }
-  } catch (err) {
-    server.log.error(err);
-
-    return 1;
-  }
 }
