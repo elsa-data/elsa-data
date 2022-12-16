@@ -5,7 +5,6 @@ import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { Duration } from "edgedb";
 import { SES } from "@aws-sdk/client-ses";
-import { defaultProvider } from "@aws-sdk/credential-provider-node";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -26,7 +25,7 @@ export function bootstrapDependencyInjection() {
   // provided here
   // in all deployed AWS this is true
   // for local dev we should set AWS_REGION explicitly when setting shell credentials (aws-vault etc)
-  const awsClientConfig = { credentialDefaultProvider: defaultProvider };
+  const awsClientConfig = {};
 
   container.register<S3Client>("S3Client", {
     useFactory: () => new S3Client(awsClientConfig),
