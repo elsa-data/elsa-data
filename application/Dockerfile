@@ -66,6 +66,8 @@ RUN cd common/elsa-types && npm ci
 
 COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/edgeql-js/
 
+# add in an extra compile step - which whilst not needed for runtime, does help keep
+# crazy errors away (ts-node does not actually do type checking)
 RUN : \
   && cd backend && npx tsc --noEmit
 
