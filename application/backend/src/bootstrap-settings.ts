@@ -69,6 +69,13 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     deployedUrl: deployedUrl,
     host: config.get("host"),
     port: config.get("port"),
+    mailer: {
+      mode: config.get("mailer.mode"),
+      maxConnections: config.get("mailer.maxConnections"),
+      sendingRate: config.get("mailer.sendingRate"),
+      options: config.get("mailer.options"),
+      defaults: config.get("mailer.defaults"),
+    },
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
     oidcIssuer: issuer,

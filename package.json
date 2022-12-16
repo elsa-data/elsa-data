@@ -7,8 +7,6 @@
     "install:frontend": "cd application/frontend && npm install",
     "install:e2e": "cd e2e && npm install",
     "install:aws": "cd infrastructure/aws && npm install",
-    "install:cloudtrail_s3": "cd utils/cloudtrail_s3 && npm install",
-    "install:cloudtrail_s3:infrastructure": "cd utils/cloudtrail_s3/infrastructure && npm install",
     "postinstall": "run-p install:*",
     "migrate-db": "cd application/backend && edgedb migration create || true && edgedb migrate",
     "init-db": "cd application/backend && edgedb project init",

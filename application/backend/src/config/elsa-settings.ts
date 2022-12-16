@@ -1,5 +1,6 @@
 import { Issuer } from "openid-client";
 import { RateLimitPluginOptions } from "@fastify/rate-limit";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { LoggerOptions } from "pino";
 
 /**
@@ -13,6 +14,13 @@ export type ElsaSettings = {
 
   host: string;
   port: number;
+  mailer: {
+    mode: "None" | "SES" | "SMTP";
+    maxConnections?: number | undefined;
+    sendingRate?: number | undefined;
+    options?: SMTPTransport.Options | string;
+    defaults?: any;
+  };
 
   sessionSecret: string;
   sessionSalt: string;

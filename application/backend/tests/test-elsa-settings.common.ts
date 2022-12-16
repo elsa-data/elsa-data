@@ -18,6 +18,9 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   //      more sophisticated
   port: 3000,
   host: "127.0.0.1",
+  mailer: {
+    mode: "None",
+  },
   deployedUrl: "http://localhost:3000",
   datasets: [
     {
