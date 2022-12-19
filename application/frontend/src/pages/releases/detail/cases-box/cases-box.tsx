@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from "react";
 import { ReleaseCaseType } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
@@ -11,6 +11,7 @@ import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
+import { axiosPatchOperationMutationFn } from "../queries";
 
 type Props = {
   releaseId: string;
@@ -36,6 +37,9 @@ export const CasesBox: React.FC<Props> = ({
   isEditable,
   isInBulkProcessing,
 }) => {
+  const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
+    useState<boolean>(true);
+
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -72,6 +76,37 @@ export const CasesBox: React.FC<Props> = ({
     },
     { keepPreviousData: true }
   );
+
+  const queryClient = useQueryClient();
+
+  // a mutator that can alter any field set up using our REST PATCH mechanism
+  // the argument to the mutator needs to be a single ReleasePatchOperationType operation
+  const releasePatchMutate = useMutation(
+    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    {
+      // we want to trigger the refresh of the entire release page
+      // TODO can we optimise this to just invalidate the cases?
+      onSuccess: async () => await queryClient.invalidateQueries(),
+    }
+  );
+
+  const onSelectAllChange = async (ce: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSelectAllIndeterminate(false);
+
+    if (ce.target.checked) {
+      releasePatchMutate.mutate({
+        op: "add",
+        path: "/specimens",
+        value: [],
+      });
+    } else {
+      releasePatchMutate.mutate({
+        op: "remove",
+        path: "/specimens",
+        value: [],
+      });
+    }
+  };
 
   const rowSpans: number[] = [];
 
@@ -150,77 +185,99 @@ export const CasesBox: React.FC<Props> = ({
           </div>
         )}
         {dataQuery.data && dataQuery.data.length > 0 && (
-          <table className="w-full table-fixed text-left text-sm text-gray-500">
-            <tbody>
-              {dataQuery.data.map((row, rowIndex) => {
-                return (
-                  <tr key={row.id} className="border-b">
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "w-12",
-                        "text-center"
-                      )}
-                    >
-                      <IndeterminateCheckbox
-                        disabled={true}
-                        checked={row.nodeStatus === "selected"}
-                        indeterminate={row.nodeStatus === "indeterminate"}
-                      />
-                    </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "text-left",
-                        "w-40"
-                      )}
-                    >
-                      {row.externalId}{" "}
-                      {row.customConsent && (
-                        <>
-                          {" "}
-                          <ConsentPopup releaseId={releaseId} nodeId={row.id} />
-                        </>
-                      )}
-                    </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "text-left",
-                        "pr-4"
-                      )}
-                    >
-                      <PatientsFlexRow
-                        releaseId={releaseId}
-                        patients={row.patients}
-                        showCheckboxes={isEditable}
-                      />
-                    </td>
-                    {/* if we only have one dataset - then we don't show this column at all */}
-                    {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
-                    {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
-                      <td
-                        className={classNames(
-                          baseColumnClasses,
-                          "w-10",
-                          "px-2",
-                          "border-l",
-                          "border-red-500"
+          <>
+            <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
+              <div class="flex flex-wrap items-center border-b py-4">
+                <label>
+                  <div className="inline-block w-12 text-center">
+                    <IndeterminateCheckbox
+                      disabled={releasePatchMutate.isLoading}
+                      indeterminate={isSelectAllIndeterminate}
+                      onChange={onSelectAllChange}
+                    />
+                  </div>
+                  Select All
+                </label>
+              </div>
+              <table className="w-full table-fixed text-left text-sm text-gray-500">
+                <tbody>
+                  {dataQuery.data.map((row, rowIndex) => {
+                    return (
+                      <tr key={row.id} className="border-b">
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "w-12",
+                            "text-center"
+                          )}
+                        >
+                          <IndeterminateCheckbox
+                            disabled={true}
+                            checked={row.nodeStatus === "selected"}
+                            indeterminate={row.nodeStatus === "indeterminate"}
+                          />
+                        </td>
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "text-left",
+                            "w-40"
+                          )}
+                        >
+                          {row.externalId}{" "}
+                          {row.customConsent && (
+                            <>
+                              {" "}
+                              <ConsentPopup
+                                releaseId={releaseId}
+                                nodeId={row.id}
+                              />
+                            </>
+                          )}
+                        </td>
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "text-left",
+                            "pr-4"
+                          )}
+                        >
+                          <PatientsFlexRow
+                            releaseId={releaseId}
+                            patients={row.patients}
+                            showCheckboxes={isEditable}
+                            onCheckboxClicked={() =>
+                              setIsSelectAllIndeterminate(true)
+                            }
+                          />
+                        </td>
+                        {/* if we only have one dataset - then we don't show this column at all */}
+                        {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                        {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
+                          <td
+                            className={classNames(
+                              baseColumnClasses,
+                              "w-10",
+                              "px-2",
+                              "border-l",
+                              "border-red-500"
+                            )}
+                            rowSpan={
+                              rowSpans[rowIndex] === 1
+                                ? undefined
+                                : rowSpans[rowIndex]
+                            }
+                          >
+                            {datasetMap.get(row.fromDatasetUri)}
+                          </td>
                         )}
-                        rowSpan={
-                          rowSpans[rowIndex] === 1
-                            ? undefined
-                            : rowSpans[rowIndex]
-                        }
-                      >
-                        {datasetMap.get(row.fromDatasetUri)}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
         {dataQuery.isError && (
           <EagerErrorBoundary

@@ -437,17 +437,17 @@ export class ReleaseService extends ReleaseBaseService {
   public async setSelected(
     user: AuthenticatedUser,
     releaseId: string,
-    specimenIds: string[]
+    specimenIds: string[] = []
   ): Promise<any | null> {
-    return await this.setSelectedStatus(user, releaseId, specimenIds, true);
+    return await this.setSelectedStatus(user, true, releaseId, specimenIds);
   }
 
   public async setUnselected(
     user: AuthenticatedUser,
     releaseId: string,
-    specimenIds: string[]
+    specimenIds: string[] = []
   ): Promise<any | null> {
-    return await this.setSelectedStatus(user, releaseId, specimenIds, false);
+    return await this.setSelectedStatus(user, false, releaseId, specimenIds);
   }
 
   public async addDiseaseToApplicationCoded(
