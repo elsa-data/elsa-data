@@ -281,7 +281,7 @@ it("node status changes as leaves are selected and unselected", async () => {
 });
 
 it("(un-)selects all when setSelectedStatus is passed an empty list", async () => {
-  const allSpecimens_ = async () => {
+  const allSpecimens_ = async (): Promise<ReleaseSpecimenType[]> => {
     const result = await releaseService.getCases(
       allowedDataOwnerUser,
       testReleaseId,
