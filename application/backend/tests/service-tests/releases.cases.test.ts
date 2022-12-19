@@ -1,12 +1,13 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import {
+  allSpecimens,
   findCase,
   findDatabaseSpecimenIds,
   findPatientExpected,
   findSpecimen,
 } from "./utils";
-import { ReleaseCaseType } from "@umccr/elsa-types";
+import { ReleaseCaseType, ReleaseSpecimenType } from "@umccr/elsa-types";
 import { PagedResult } from "../../src/api/api-pagination";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
@@ -277,6 +278,36 @@ it("node status changes as leaves are selected and unselected", async () => {
       findSpecimen(afterUnsetResult.data, MARGE_SPECIMEN)?.nodeStatus
     ).toBe("unselected");
   }
+});
+
+it("(un-)selects all when setSelectedStatus is passed an empty list", async () => {
+  const allSpecimens_ = async () => {
+    const result = await releaseService.getCases(
+      allowedDataOwnerUser,
+      testReleaseId,
+      DEFAULT_LIMIT,
+      DEFAULT_OFFSET
+    );
+
+    assert(result != null);
+    assert(result.data != null);
+
+    const specimens = allSpecimens(result.data);
+
+    assert(specimens.length > 0);
+
+    return specimens;
+  };
+
+  await releaseService.setSelected(allowedDataOwnerUser, testReleaseId, []);
+  expect(
+    (await allSpecimens_()).every((s) => s.nodeStatus === "selected")
+  ).toBe(true);
+
+  await releaseService.setUnselected(allowedDataOwnerUser, testReleaseId, []);
+  expect(
+    (await allSpecimens_()).every((s) => s.nodeStatus === "unselected")
+  ).toBe(true);
 });
 
 it("pass in specimen ids that are not valid", async () => {

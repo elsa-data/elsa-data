@@ -28,6 +28,7 @@
     "edgetypes": "edgeql-js --target cjs",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
+    "test:service": "jest --forceExit --detectOpenHandles --runInBand --config jest.service-tests.config.js",
     "test:db": "jest --forceExit --detectOpenHandles --runInBand --config jest.db-tests.config.js",
     "test:unit": "jest --forceExit --detectOpenHandles --runInBand --config jest.unit-tests.config.js",
     "test:integration": "jest --forceExit --detectOpenHandles --runInBand --config jest.integration-tests.config.js",

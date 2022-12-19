@@ -100,15 +100,8 @@ export async function findDatabaseCaseIds(
 export function findSpecimen(
   cases: ReleaseCaseType[],
   externalId: string
-): ReleaseSpecimenType | null {
-  for (const c of cases || []) {
-    for (const p of c.patients || []) {
-      for (const s of p.specimens || []) {
-        if (s.externalId === externalId) return s;
-      }
-    }
-  }
-  return null;
+): ReleaseSpecimenType | undefined {
+  return allSpecimens(cases).find((s) => s.externalId === externalId);
 }
 
 export function findPatient(
@@ -141,4 +134,10 @@ export function findCase(
     if (c.externalId === externalId) return c;
   }
   return null;
+}
+
+export function allSpecimens(cases: ReleaseCaseType[]): ReleaseSpecimenType[] {
+  return cases.flatMap((case_) =>
+    case_.patients.flatMap((patient) => patient.specimens)
+  );
 }
