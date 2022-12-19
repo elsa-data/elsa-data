@@ -1,34 +1,50 @@
-#
-# Database builder
-#
-FROM amazonlinux:2022 AS edgedbbuilder
 
-RUN dnf install -y nodejs npm findutils shadow util-linux
+#
+# Sources Nodejs binaries without having to package install them (ok as long as both images shared common Slim base)
+# Also install the specific EdgeDb packages we use
+# Note unlike the edgedb builder, we have a functional npm which is why we do this here
+# Based on techniques from https://discord.com/channels/841451783728529451/955887885557579788/955946426322522153
+#
+FROM node:18-slim AS node-deps
 
 WORKDIR /build
 
-RUN useradd "build-user" && chown -R "build-user" /build
+COPY backend/package.json package.json
+RUN echo '{"dependencies": {' $(grep -E -o '"edgedb":\s"(.*)"' package.json) '}}' > package.json && npm install
 
-USER "build-user"
 
-COPY --chown=build-user backend/dbschema/ ./backend/dbschema/
-COPY --chown=build-user backend/package* ./backend/
-COPY --chown=build-user backend/common* ./common/
+#
+# Database builder to create all generated files that require the install database
+#
+FROM edgedb/edgedb:2.8 AS edgedb-builder
 
-RUN : \
-  && cd ./backend \
-  && npm install
+# bring in the compatible node binary
+COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
 
-RUN : \
-  && curl --proto '=https' --tlsv1.2 -sSf https://sh.edgedb.com > edgedb.sh \
-  && sh edgedb.sh -y \
-  && rm edgedb.sh
+# setup a /build that edgedb can work in
+RUN mkdir /build && chown edgedb:edgedb /build
+USER edgedb
+WORKDIR /build
 
-RUN : \
-  && cd backend \
-  && export EDGEDB_INSTALL_IN_DOCKER=allow \
-  && ~/.local/bin/edgedb project init --non-interactive \
-  && npm run edgetypes
+# bring in node_modules with our installed packages
+COPY --from=node-deps /build .
+
+# edgedb needs the dbschema folder which has the schemas/migrations
+COPY ./backend/dbschema/ dbschema/
+
+RUN edgedb-server \
+    -D /build/data \
+    --security insecure_dev_mode \
+    --runstate-dir /build/runstate \
+    & edgedb migration apply \
+    -H localhost \
+    --tls-security insecure \
+    --wait-until-available 2m \
+    && node ./node_modules/.bin/edgeql-js \
+    -H localhost \
+    --target cjs \
+    --tls-security insecure \
+    --output-dir generated
 
 
 #
@@ -48,7 +64,12 @@ RUN cd frontend && npm ci
 RUN cd common/elsa-constants && npm ci
 RUN cd common/elsa-types && npm ci
 
-COPY --from=edgedbbuilder /build/backend/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
+COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/edgeql-js/
+
+# add in an extra compile step - which whilst not needed for runtime, does help keep
+# crazy errors away (ts-node does not actually do type checking)
+RUN : \
+  && cd backend && npx tsc --noEmit
 
 RUN : \
   && cd frontend \
