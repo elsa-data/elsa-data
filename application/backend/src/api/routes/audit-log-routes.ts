@@ -181,7 +181,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       rid: string;
     };
     Body: {
-      accessType: "aws-presign";
+      accessType: "aws";
     };
     Reply: string;
   }>(
@@ -194,7 +194,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
           properties: {
             accessType: {
               type: "string",
-              enum: ["aws-presign"], // Expansion: ['aws-access-point', 'gcp-presign', ...]
+              enum: ["aws"], // Expansion: ['aws', 'gcp', ...]
             },
           },
           required: ["accessType"],
@@ -210,7 +210,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       let replyMessage = "";
 
       switch (accessType) {
-        case "aws-presign":
+        case "aws":
           // Get datasets URI
           const datasetUriArr =
             await datasetService.getDatasetUrisFromReleaseId(releaseId);
@@ -231,16 +231,18 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
           if (datasetUriArr.length != eventDataStoreIds.length) {
             replyMessage =
-              "Not all dataset in this release have corresponding AWS config for presign URL sync.";
+              "Not all dataset in this release have corresponding AWS config for access logs";
           }
 
-          await awsCloudTrailLakeService.syncPresignCloudTrailLakeLog({
+          await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+            user: authenticatedUser,
             releaseId,
             eventDataStoreIds,
           });
           replyMessage +=
             "\nSuccessfully sync from AWS Cloud Trail Lake events!";
       }
+
       reply.send(replyMessage);
     }
   );

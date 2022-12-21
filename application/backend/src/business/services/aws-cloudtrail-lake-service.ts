@@ -11,17 +11,21 @@ import { UsersService } from "./users-service";
 import { AwsBaseService } from "./aws-base-service";
 import { AuditLogService } from "./audit-log-service";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { AwsAccessPointService } from "./aws-access-point-service";
+
+enum CloudTrailQueryType {
+  PresignUrl = "PresignUrl",
+  S3AccessPoint = "S3AccessPoint",
+}
 
 type CloudTrailInputQueryType = {
   eventDataStoreId: string;
-  releaseId: string;
   s3KeyObject?: string;
   startTimestamp?: string /* Unix time in 'YYYY-DD-MM 00:00:00.000', example: '2022-07-05 22:00:00.000' */;
   endTimestamp?: string /* Unix time in 'YYYY-DD-MM 00:00:00.000', example: '2022-07-05 23:00:00.000' */;
 };
 
 type CloudTrailLakeResponseType = {
-  releaseId: string;
   eventTime: string;
   sourceIPAddress: string;
   bucketName: string;
@@ -36,6 +40,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     @inject("Settings") private settings: ElsaSettings,
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
+    private awsAccessPointService: AwsAccessPointService,
     usersService: UsersService,
     auditLogService: AuditLogService
   ) {
@@ -54,6 +59,36 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       }
     }
     return eventDataStoreIdArr;
+  }
+  async findCloudTrailStartTimestamp(
+    releaseId: string
+  ): Promise<string | null> {
+    const releaseDates = await e
+      .select(e.release.Release, (r) => ({
+        created: true,
+        lastDateTimeDataAccessLogQuery: true,
+        filter: e.op(r.id, "=", e.uuid(releaseId)),
+      }))
+      .assert_single()
+      .run(this.edgeDbClient);
+
+    if (!releaseDates) {
+      console.warn(
+        `Could not found matching releaseId ('${releaseId}') record`
+      );
+      return null;
+    }
+
+    // If have not been queried before, will be using the release created date.
+    if (!releaseDates.lastDateTimeDataAccessLogQuery) {
+      return releaseDates.created.toISOString();
+    }
+
+    // Adding 1 ms from previous query to prevent overlap results.
+    const dateObj = new Date(releaseDates.lastDateTimeDataAccessLogQuery);
+    dateObj.setTime(dateObj.getTime() + 1);
+
+    return dateObj.toISOString();
   }
 
   /**
@@ -103,31 +138,16 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return queryResult;
   }
 
-  async findCloudTrailStartTimestamp(
-    releaseId: string
-  ): Promise<string | null> {
-    const lastQueryDate = (
-      await e
-        .select(e.release.Release, (r) => ({
-          lastDateTimeDataAccessLogQuery: true,
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-        }))
-        .assert_single()
-        .run(this.edgeDbClient)
-    )?.lastDateTimeDataAccessLogQuery;
-
-    // First time query no need startTime let it query all records available
-    if (!lastQueryDate) return null;
-
-    // Adding 1 ms from previous query to prevent overlap results.
-    const dateObj = new Date(lastQueryDate);
-    dateObj.setTime(dateObj.getTime() + 1);
-
-    return dateObj.toISOString();
-  }
-
-  async recordCloudTrailLake(records: CloudTrailLakeResponseType[]) {
-    for (const trailEvent of records) {
+  async recordCloudTrailLake({
+    lakeResponse,
+    releaseId,
+    description,
+  }: {
+    lakeResponse: CloudTrailLakeResponseType[];
+    description: string;
+    releaseId: string;
+  }) {
+    for (const trailEvent of lakeResponse) {
       const s3Url = `s3://${trailEvent.bucketName}/${trailEvent.key}`;
 
       // CloudTrail time always UTC time, adding UTC postfix to make sure recorded properly.
@@ -135,19 +155,48 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseId: trailEvent.releaseId,
+        releaseId: releaseId,
         who: trailEvent.sourceIPAddress,
         fileUrl: s3Url,
-        description: "Presigned URL accessed.",
+        description: description,
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
         date: utcDate,
       });
     }
   }
+
+  async queryAndRecord({
+    sqlQueryStatement,
+    eventDataStoreId,
+    releaseId,
+    recordDescription,
+  }: {
+    sqlQueryStatement: string;
+    eventDataStoreId: string;
+    releaseId: string;
+    recordDescription: string;
+  }) {
+    const queryId = await this.startCommandQueryCloudTrailLake(
+      sqlQueryStatement
+    );
+    const s3CloudTrailLogs = (await this.getResultQueryCloudTrailLakeQuery({
+      queryId: queryId,
+      eventDataStoreId: eventDataStoreId,
+    })) as CloudTrailLakeResponseType[];
+
+    await this.recordCloudTrailLake({
+      lakeResponse: s3CloudTrailLogs,
+      releaseId: releaseId,
+      description: recordDescription,
+    });
+  }
+
   /**
-   * Function specific for presignedUrl CloudTrailLake query
+   * SQL Queries builder
    */
-  createSQLQueryByReleaseIdParams(props: CloudTrailInputQueryType): string {
+  createSQLQueryByReleaseIdReqParams(
+    props: CloudTrailInputQueryType & { releaseId: string }
+  ): string {
     // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
     const requestedField =
       "element_at(requestParameters, 'x-releaseId') as releaseId, " +
@@ -172,11 +221,44 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return sqlStatement;
   }
 
-  // Ideally might be an interval job (perhaps run weekly? or maybe 7days after releaseAudit)
-  async syncPresignCloudTrailLakeLog({
+  createSQLQueryByAccessPointAlias(
+    props: CloudTrailInputQueryType & {
+      apAlias: string;
+    }
+  ): string {
+    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
+    const requestedField =
+      "eventTime, " +
+      "sourceIPAddress, " +
+      "element_at(requestParameters, 'bucketName') as bucketName, " +
+      "element_at(requestParameters, 'key') as key, " +
+      "element_at(additionalEventData, 'bytesTransferredOut') as bytesTransferredOut";
+
+    const conditionStatement = `element_at(requestParameters, 'Host') LIKE '${props.apAlias}%'`;
+
+    let sqlStatement =
+      `SELECT ${requestedField} ` +
+      `FROM ${props.eventDataStoreId} ` +
+      `WHERE (${conditionStatement}) `;
+
+    // Additional filter
+    if (props.startTimestamp)
+      sqlStatement += `AND eventTime >= '${props.startTimestamp}'`;
+    if (props.endTimestamp)
+      sqlStatement += `AND eventTime <= '${props.endTimestamp}'`;
+    if (props.s3KeyObject)
+      sqlStatement += `AND element_at(requestParameters, 'key') = '${props.s3KeyObject}'`;
+
+    return sqlStatement;
+  }
+
+  // Main Fetching job
+  async fetchCloudTrailLakeLog({
+    user,
     releaseId,
     eventDataStoreIds,
   }: {
+    user: AuthenticatedUser;
     releaseId: string;
     eventDataStoreIds: string[];
   }) {
@@ -191,22 +273,52 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     const endQueryDate = new Date().toISOString();
 
     for (const edsi of eventDataStoreIds) {
-      const sqlQueryStatement = this.createSQLQueryByReleaseIdParams({
-        startTimestamp: startQueryDate ?? undefined,
-        endTimestamp: endQueryDate,
-        releaseId: releaseId,
-        eventDataStoreId: edsi,
-      });
+      for (const method of Object.keys(CloudTrailQueryType)) {
+        if (method == CloudTrailQueryType.PresignUrl) {
+          const sqlQueryStatement = this.createSQLQueryByReleaseIdReqParams({
+            startTimestamp: startQueryDate ?? undefined,
+            endTimestamp: endQueryDate,
+            releaseId: releaseId,
+            eventDataStoreId: edsi,
+          });
 
-      const queryId = await this.startCommandQueryCloudTrailLake(
-        sqlQueryStatement
-      );
-      const s3CloudTrailLogs = (await this.getResultQueryCloudTrailLakeQuery({
-        queryId: queryId,
-        eventDataStoreId: edsi,
-      })) as CloudTrailLakeResponseType[];
+          await this.queryAndRecord({
+            sqlQueryStatement: sqlQueryStatement,
+            eventDataStoreId: edsi,
+            recordDescription: "Accessed via presigned url.",
+            releaseId: releaseId,
+          });
+        } else if (method == CloudTrailQueryType.S3AccessPoint) {
+          const bucketNameMap = (
+            await this.awsAccessPointService.getInstalledAccessPointResources(
+              user,
+              releaseId
+            )
+          )?.bucketNameMap;
 
-      await this.recordCloudTrailLake(s3CloudTrailLogs);
+          const apAlias = bucketNameMap ? Object.values(bucketNameMap) : [];
+
+          for (const a of apAlias) {
+            const sqlQueryStatement = this.createSQLQueryByAccessPointAlias({
+              startTimestamp: startQueryDate ?? undefined,
+              endTimestamp: endQueryDate,
+              eventDataStoreId: edsi,
+              apAlias: a,
+            });
+            console.log("sqlQueryStatement", sqlQueryStatement);
+
+            await this.queryAndRecord({
+              sqlQueryStatement: sqlQueryStatement,
+              eventDataStoreId: edsi,
+              recordDescription: "Accessed via VPC access point.",
+              releaseId: releaseId,
+            });
+          }
+        } else {
+          console.warn("Not expecting to be here.");
+          continue;
+        }
+      }
     }
 
     // Update last query date to release record
