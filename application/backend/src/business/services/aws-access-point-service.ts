@@ -19,6 +19,7 @@ import {
   createAccessPointTemplateFromReleaseFileEntries,
 } from "./_access-point-template-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { Logger } from "pino";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
@@ -30,6 +31,7 @@ export class AwsAccessPointService extends AwsBaseService {
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
+    @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
     private readonly releaseService: ReleaseService,
     @inject("Database") edgeDbClient: edgedb.Client,
@@ -198,7 +200,7 @@ export class AwsAccessPointService extends AwsBaseService {
     // can install them
     let rootTemplate;
 
-    console.log(JSON.stringify(accessPointTemplates));
+    this.logger.debug(accessPointTemplates, "created access point templates");
 
     for (const apt of accessPointTemplates) {
       await this.s3Client.send(

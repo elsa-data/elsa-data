@@ -1,15 +1,13 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../service-tests/setup";
-import { createTestElsaSettings } from "../test-elsa-settings.common";
-
-const testContainer = registerTypes();
 
 describe("http integration tests", () => {
   let server: FastifyInstance;
 
   beforeAll(async () => {
-    const app = new App(createTestElsaSettings());
+    const testContainer = await registerTypes();
+    const app = testContainer.resolve(App);
     server = await app.setupServer();
     await server.ready();
   });

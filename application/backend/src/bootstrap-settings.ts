@@ -6,9 +6,6 @@ import { TransportMultiOptions } from "pino";
 import _ from "lodash";
 
 export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
-  console.log("The raw configuration found is");
-  console.log(config.toString());
-
   // we now have our 'config' - which is the plain text values from all our configuration sources..
   // however our 'settings' are more than that - the settings involve things that need to be
   // constructed/discovered etc.

@@ -98,7 +98,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       nodeId
     );
 
-    console.log(r);
+    request.log.debug(r);
 
     reply.send(r);
   });

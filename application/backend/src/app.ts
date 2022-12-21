@@ -1,13 +1,10 @@
-import Fastify, {
-  FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
-} from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import fastifyStatic from "@fastify/static";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyFormBody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyTraps from "@dnlup/fastify-traps";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
@@ -17,11 +14,12 @@ import { ErrorHandler } from "./api/errors/_error.handler";
 import { registerTestingRoutes } from "./api/routes/testing";
 import { apiRoutes } from "./api/api-routes";
 import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
+import { container, inject, injectable, singleton } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
-import { container } from "tsyringe";
-import fastifyTraps from "@dnlup/fastify-traps";
-import pino from "pino";
+import { Logger } from "pino";
 
+@injectable()
+@singleton()
 export class App {
   public server: FastifyInstance;
 
@@ -37,14 +35,15 @@ export class App {
    * Our constructor does all the setup that can be done without async/await
    * (increasingly almost nothing). It should check settings and establish
    * anything that cannot be changed.
-   *
-   * @param settings the settings
    */
-  constructor(private readonly settings: ElsaSettings) {
+  constructor(
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("Logger") private readonly logger: Logger
+  ) {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
 
-    this.server = Fastify({ logger: settings.logger });
+    this.server = Fastify({ logger: logger });
 
     // inject a copy of the Elsa settings into every request
     this.server.decorateRequest("settings", null);
@@ -55,34 +54,40 @@ export class App {
     });
   }
 
+  /**
+   * The asynchronous portion of the server setup.
+   */
   public async setupServer(): Promise<FastifyInstance> {
-    await this.server.register(fastifyTraps);
-    await this.server.register(fastifyFormBody);
+    // register global fastify plugins
+    {
+      await this.server.register(fastifyTraps);
+      await this.server.register(fastifyFormBody);
 
-    await this.server.register(fastifyHelmet, { contentSecurityPolicy: false });
+      await this.server.register(fastifyHelmet, {
+        contentSecurityPolicy: false,
+      });
 
-    await this.server.register(fastifyStatic, {
-      root: this.staticFilesPath,
-      serve: false,
-    });
+      await this.server.register(fastifyStatic, {
+        root: this.staticFilesPath,
+        serve: false,
+      });
+
+      await this.server.register(
+        fastifySecureSession,
+        getSecureSessionOptions(this.settings)
+      );
+
+      // set rate limits across the entire app surface - including APIs and HTML
+      // NOTE: this rate limit is also applied in the NotFound handler
+      // NOTE: we may need to consider moving this only to the /api section
+      await this.server.register(fastifyRateLimit, this.settings.rateLimit);
+    }
 
     this.server.setErrorHandler(ErrorHandler);
 
     this.server.ready(() => {
-      console.log(this.server.printRoutes({ commonPrefix: false }));
+      this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
     });
-
-    // TODO: compute the redirect URI from the deployment settings
-
-    await this.server.register(
-      fastifySecureSession,
-      getSecureSessionOptions(this.settings)
-    );
-
-    // set rate limits across the entire app surface - including APIs and HTML
-    // NOTE: this rate limit is also applied in the NotFound handler
-    // NOTE: we may need to consider moving this only to the /api section
-    await this.server.register(fastifyRateLimit, this.settings.rateLimit);
 
     this.server.register(apiRoutes, {
       container: container,

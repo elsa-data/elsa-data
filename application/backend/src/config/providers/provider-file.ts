@@ -82,8 +82,6 @@ export class ProviderFile extends ProviderBase {
           const path = resolve(folder, x.name);
           const content = await json5.parse(await fs.readFile(path, "utf-8"));
 
-          console.log(`Loading configuration from JSON5 file ${path}`);
-
           return content;
         }
       }
