@@ -193,11 +193,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
   /**
    * SQL Queries builder
+   * Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
    */
   createSQLQueryByReleaseIdReqParams(
     props: CloudTrailInputQueryType & { releaseId: string }
   ): string {
-    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
     const requestedField =
       "element_at(requestParameters, 'x-releaseId') as releaseId, " +
       "eventTime, " +
@@ -226,7 +226,6 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       apAlias: string;
     }
   ): string {
-    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
     const requestedField =
       "eventTime, " +
       "sourceIPAddress, " +
