@@ -314,7 +314,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
             await this.queryAndRecord({
               sqlQueryStatement: sqlQueryStatement,
               eventDataStoreId: edsi,
-              recordDescription: "Accessed via VPC access point.",
+              recordDescription: "Accessed via S3 access point.",
               releaseId: releaseId,
             });
           }
