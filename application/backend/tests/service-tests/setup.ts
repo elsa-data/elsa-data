@@ -3,15 +3,18 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import * as edgedb from "edgedb";
-import { exec } from "child_process";
-import { promisify } from "util";
 import { ElsaSettings } from "../../src/config/elsa-settings";
 import { createTestElsaSettings } from "../test-elsa-settings.common";
+import { Logger, pino } from "pino";
 
-const execPromise = promisify(exec);
 export async function registerTypes() {
-  // TO USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME..
+  // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
+  // WE RETURN A CONTAINER IN ANTICIPATION OF ONE DAY DOING THAT
+
   const testContainer = container; //.createChildContainer();
+
+  // we want an independant setup each call to this in testing (unlike in real code)
+  testContainer.reset();
 
   testContainer.register<edgedb.Client>("Database", {
     useFactory: () => edgedb.createClient(),
@@ -33,14 +36,9 @@ export async function registerTypes() {
     useFactory: createTestElsaSettings,
   });
 
-  /*testContainer.beforeResolution(
-    "Database",
-    // Callback signature is (token: InjectionToken<T>, resolutionType: ResolutionType) => void
-    () => {
-      console.log("Database is about to be resolved!");
-    },
-    { frequency: "Always" }
-  ); */
+  testContainer.register<Logger>("Logger", {
+    useValue: pino(createTestElsaSettings().logger),
+  });
 
   return testContainer;
 }

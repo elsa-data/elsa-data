@@ -35,8 +35,6 @@ export class ProviderAwsSecretsManager extends ProviderBase {
       );
     }
 
-    console.log(`Loading configuration from AWS secret ${secretResult.ARN}`);
-
     // because we like to use the secrets manager UI - we record the values there
     // as a flat object of Key/value pairs (with dots in the key name to show nesting).
     // i.e. { "rems.bot": "bot" }

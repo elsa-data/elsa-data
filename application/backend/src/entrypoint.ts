@@ -3,8 +3,9 @@ import "reflect-metadata";
 
 import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
 import { bootstrapGlobalSynchronous } from "./bootstrap-global-synchronous";
-import { getCommands } from "./entrypoint-command-helper";
+import { getCommands, getFromEnv } from "./entrypoint-command-helper";
 import {
+  startJobQueue,
   startWebServer,
   WEB_SERVER_COMMAND,
   WEB_SERVER_WITH_SCENARIO_COMMAND,
@@ -25,6 +26,9 @@ import {
   commandDeleteDataset,
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
+import { container } from "tsyringe";
+import { ElsaSettings } from "./config/elsa-settings";
+import pino, { Logger } from "pino";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -56,8 +60,31 @@ function printHelpText() {
  * to start an Elsa Data web server (but can also do db migrations etc)
  */
 (async () => {
+  // now we are async - we can perform setup operations that themselves need to be async
+  // settings and config are mainly of interest only to the web server - but it is possible some other
+  // operations might need to use services so we get all the setup out of the way here
+  const { settings, config, redactedConfig, sources } = await getFromEnv();
+
+  const logger = pino(settings.logger);
+
+  logger.info(
+    redactedConfig,
+    `Configuration (redacted) was sourced from "${sources}"`
+  );
+
+  // register all these for use in any service that supports DI
+  container.register<ElsaSettings>("Settings", {
+    useValue: settings,
+  });
+
+  container.register<Logger>("Logger", {
+    useValue: logger,
+  });
+
   const commands = getCommands(process.argv);
   const todo = [];
+
+  logger.info(`Invocation commands are ${JSON.stringify(commands)}`);
 
   for (const c of commands) {
     switch (c.command) {
@@ -65,6 +92,7 @@ function printHelpText() {
         printHelpText();
         process.exit(0);
         break;
+
       case "echo":
         // TODO consider if this is in anyway useful / too dangerous
         todo.push(async () => {
@@ -72,17 +100,22 @@ function printHelpText() {
           return 0;
         });
         break;
+
       case WEB_SERVER_COMMAND:
+        todo.push(async () => startJobQueue(config));
         todo.push(async () => startWebServer(null));
         break;
+
       case WEB_SERVER_WITH_SCENARIO_COMMAND:
         if (c.args.length != 1)
           console.error(
             `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
           );
 
+        todo.push(async () => startJobQueue(config));
         todo.push(async () => startWebServer(parseInt(c.args[0])));
         break;
+
       case ADD_SCENARIO_COMMAND:
         if (c.args.length != 1)
           console.error(
@@ -91,9 +124,11 @@ function printHelpText() {
 
         todo.push(async () => commandAddScenario(parseInt(c.args[0])));
         break;
+
       case DB_BLANK_COMMAND:
         todo.push(async () => commandDbBlank());
         break;
+
       case DB_MIGRATE_COMMAND:
         todo.push(async () => commandDbMigrate());
         break;
@@ -101,6 +136,7 @@ function printHelpText() {
       case DELETE_DATASETS_COMMAND:
         todo.push(async () => commandDeleteDataset(c.args));
         break;
+
       default:
         console.error(`Unrecognised command ${c.command}`);
         printHelpText();
@@ -108,9 +144,11 @@ function printHelpText() {
     }
   }
 
-  // if no commands were specified - then our default behaviour is to invoke the web server and wait
-  if (todo.length === 0) await startWebServer(null);
-  else {
+  // if no commands were specified - then our default behaviour is to pretend they asked us todo start-web-server
+  if (todo.length === 0) {
+    await startJobQueue(config);
+    await startWebServer(null);
+  } else {
     for (const t of todo) {
       const returnCode = await t();
 

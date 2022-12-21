@@ -15,6 +15,8 @@ let auditLogService: AuditLogService;
 let edgeDbClient: edgedb.Client;
 
 beforeEach(async () => {
+  const testContainer = await registerTypes();
+
   ({
     testReleaseId,
     allowedDataOwnerUser,
@@ -22,8 +24,6 @@ beforeEach(async () => {
     notAllowedUser,
     edgeDbClient,
   } = await beforeEachCommon());
-
-  const testContainer = await registerTypes();
 
   auditLogService = testContainer.resolve(AuditLogService);
 });

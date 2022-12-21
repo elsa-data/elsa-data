@@ -192,8 +192,9 @@ export const authRoutes = async (
       return;
     }
 
-    console.log(
-      `Login event for ${authUser.dbId} ${authUser.subjectId} ${authUser.displayName}`
+    request.log.info(
+      { resolvedUser: authUser, oidcParams: params, oidcTokens: tokenSet },
+      `authRoutes: Login OIDC callback event`
     );
 
     // the secure session token is HTTP only - so its existence can't even be tracked in
