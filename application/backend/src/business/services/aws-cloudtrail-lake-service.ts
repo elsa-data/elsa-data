@@ -12,6 +12,7 @@ import { AwsBaseService } from "./aws-base-service";
 import { AuditLogService } from "./audit-log-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
+import { Logger } from "pino";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -39,6 +40,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   constructor(
     @inject("Settings") private settings: ElsaSettings,
     @inject("Database") protected edgeDbClient: edgedb.Client,
+    @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
     private awsAccessPointService: AwsAccessPointService,
     usersService: UsersService,
@@ -73,8 +75,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       .run(this.edgeDbClient);
 
     if (!releaseDates) {
-      console.warn(
-        `Could not found matching releaseId ('${releaseId}') record`
+      this.logger.warn(
+        `Could not found matching releaseId ('${releaseId}') record.`
       );
       return null;
     }
@@ -281,6 +283,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
             eventDataStoreId: edsi,
           });
 
+          this.logger.debug("SQL statement: ", sqlQueryStatement);
+
           await this.queryAndRecord({
             sqlQueryStatement: sqlQueryStatement,
             eventDataStoreId: edsi,
@@ -304,7 +308,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
               eventDataStoreId: edsi,
               apAlias: a,
             });
-            console.log("sqlQueryStatement", sqlQueryStatement);
+
+            this.logger.debug("SQL statement: ", sqlQueryStatement);
 
             await this.queryAndRecord({
               sqlQueryStatement: sqlQueryStatement,
@@ -314,7 +319,9 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
             });
           }
         } else {
-          console.warn("Not expecting to be here.");
+          this.logger.warn(
+            `No matching query type for cloudTrailLake. ('${method}')`
+          );
           continue;
         }
       }
