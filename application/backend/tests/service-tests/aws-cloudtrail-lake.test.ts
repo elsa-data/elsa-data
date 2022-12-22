@@ -8,12 +8,14 @@ import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../src/config/elsa-settings";
 import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
+import { AuthenticatedUser } from "../../src/business/authenticated-user";
 
 let edgeDbClient: Client;
 let cloudTrailClient: CloudTrailClient;
 let testReleaseId: string;
 let testContainer: DependencyContainer;
 let elsaSetting: ElsaSettings;
+let allowedDataOwnerUser: AuthenticatedUser;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
@@ -24,7 +26,7 @@ describe("Test CloudTrailLake Service", () => {
   });
 
   beforeEach(async () => {
-    ({ testReleaseId } = await beforeEachCommon());
+    ({ allowedDataOwnerUser, testReleaseId } = await beforeEachCommon());
   });
 
   it("Test recordCloudTrailLake", async () => {
@@ -36,7 +38,6 @@ describe("Test CloudTrailLake Service", () => {
 
     const mockData = [
       {
-        releaseId: testReleaseId,
         eventTime: "2022-10-24 05:56:40.000",
         sourceIPAddress: "192.19.192.192",
         bucketName: BUCKET_NAME,
@@ -45,7 +46,11 @@ describe("Test CloudTrailLake Service", () => {
       },
     ];
 
-    await awsCloudTrailLakeService.recordCloudTrailLake(mockData);
+    await awsCloudTrailLakeService.recordCloudTrailLake({
+      lakeResponse: mockData,
+      releaseId: testReleaseId,
+      description: "Object accessed",
+    });
 
     const daArr = await e
       .select(e.audit.DataAccessAuditEvent, (da) => ({
@@ -73,7 +78,7 @@ describe("Test CloudTrailLake Service", () => {
     expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
   });
 
-  it("Test syncPresignCloudTrailLakeLog", async () => {
+  it("Test fetchCloudTrailLakeLog", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
       AwsCloudTrailLakeService
     );
@@ -81,7 +86,6 @@ describe("Test CloudTrailLake Service", () => {
     const BUCKET_NAME = "umccr-10g-data-dev";
     const mockData = [
       {
-        releaseId: testReleaseId,
         eventTime: "2022-10-24 05:56:40.000",
         sourceIPAddress: "192.19.192.192",
         bucketName: BUCKET_NAME,
@@ -96,7 +100,8 @@ describe("Test CloudTrailLake Service", () => {
     jest
       .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
       .mockImplementation(async () => mockData);
-    await awsCloudTrailLakeService.syncPresignCloudTrailLakeLog({
+    await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+      user: allowedDataOwnerUser,
       releaseId: testReleaseId,
       eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
     });

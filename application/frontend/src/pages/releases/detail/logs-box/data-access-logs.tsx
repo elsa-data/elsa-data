@@ -57,7 +57,7 @@ function DataAccessLogsBox() {
       <Button
         onClick={async () =>
           await axios.post<any>(`/api/releases/${releaseId}/access-log/sync`, {
-            accessType: "aws-presign",
+            accessType: "aws",
           })
         }
         className="cursor-pointer"
@@ -79,7 +79,7 @@ function DataAccessLogsBox() {
           <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
           <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
         </svg>
-        Sync (Presigned URL access)
+        Sync (AWS)
       </Button>
     </div>
   );
