@@ -2,6 +2,7 @@ import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
+import { lookup } from "geoip-lite";
 import {
   CloudTrailClient,
   StartQueryCommand,
@@ -155,10 +156,15 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       // CloudTrail time always UTC time, adding UTC postfix to make sure recorded properly.
       const utcDate = new Date(`${trailEvent.eventTime} UTC`);
 
+      // Find location based on IP
+      const ipInfo = lookup(trailEvent.sourceIPAddress);
+      const loc = [ipInfo?.city, ipInfo?.region, ipInfo?.country].join(", ");
+
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
         releaseId: releaseId,
-        who: trailEvent.sourceIPAddress,
+        whoId: trailEvent.sourceIPAddress,
+        whoDisplayName: loc,
         fileUrl: s3Url,
         description: description,
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
