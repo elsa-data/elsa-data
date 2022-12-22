@@ -154,6 +154,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
      * ************************************************************************* */
 
     const ipAddress = "128.250.161.231";
+    const ipLocation = "Melbourne, VIC, AU";
     const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
 
     // Insert all records except the last to be able to demonstrate incomplete download log
@@ -161,7 +162,8 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
         releaseId: releaseId,
-        who: ipAddress,
+        whoId: ipAddress,
+        whoDisplayName: ipLocation,
         fileUrl: file.s3Url,
         description: "Data read from presigned URL.",
         egressBytes: Number(file.size),
@@ -173,7 +175,8 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     await this.auditLogService.updateDataAccessAuditEvent({
       executor: this.edgeDbClient,
       releaseId: releaseId,
-      who: ipAddress,
+      whoId: ipAddress,
+      whoDisplayName: ipLocation,
       fileUrl: allFiles[0].s3Url,
       description: "Data read from presigned URL.",
       egressBytes: Number(allFiles[0].size),
@@ -186,7 +189,8 @@ export class AwsPresignedUrlsService extends AwsBaseService {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
         releaseId: releaseId,
-        who: ipAddress,
+        whoId: ipAddress,
+        whoDisplayName: ipLocation,
         fileUrl: lastFile.s3Url,
         description: "Data read from presigned URL.",
         egressBytes: Math.floor(Number(lastFile.size) / 2),
