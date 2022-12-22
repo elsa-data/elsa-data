@@ -1,20 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "react-query";
 import axios from "axios";
-import { Box } from "../../components/boxes";
+import { BoxNoPad } from "../../components/boxes";
 import { ReleaseSummaryType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
 import { EagerErrorBoundary } from "../../components/errors";
 import { IsLoadingDiv } from "../../components/is-loading-div";
+import { useNavigate } from "react-router-dom";
+import { BoxPaginator } from "../../components/box-paginator";
+import { handleTotalCountHeaders } from "../../helpers/paging-helper";
+import { usePageSizer } from "../../hooks/page-sizer";
 
 export const ReleasesPage: React.FC = () => {
+  const navigate = useNavigate();
+  const pageSize = usePageSizer();
+  // our internal state for which page we are on
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+  const [currentTotal, setCurrentTotal] = useState<number>(1);
+
   const query = useQuery(
     REACT_QUERY_RELEASE_KEYS.all,
     async () => {
       return await axios
         .get<ReleaseSummaryType[]>(`/api/releases`)
-        .then((response) => response.data);
+        .then((response) => {
+          handleTotalCountHeaders(response, setCurrentTotal);
+          return response.data;
+        });
     },
     {}
   );
@@ -22,14 +37,14 @@ export const ReleasesPage: React.FC = () => {
   return (
     <LayoutBase>
       <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <Box
+        <BoxNoPad
           heading="Releases"
           errorMessage={"Something went wrong fetching releases."}
         >
           {query.isLoading && <IsLoadingDiv />}
           {query.isSuccess && query.data && (
             <table className="light:text-gray-400 w-full text-left text-sm text-gray-500">
-              <thead className="light:bg-gray-700 light:text-gray-400 bg-gray-50 text-xs uppercase text-gray-700">
+              <thead className="light:bg-gray-700 light:text-gray-400 border-b uppercase text-gray-700">
                 <tr>
                   {/* Left in as an example of checkbox columns if we want to enable bulk ops
                     <th scope="col" className="p-4">
@@ -44,20 +59,17 @@ export const ReleasesPage: React.FC = () => {
                       </label>
                     </div>
                   </th> */}
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="px-6 py-6">
                     Release Id
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="px-6 py-6">
                     DAC Id
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="px-6 py-6">
                     Title
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="px-6 py-6">
                     Role (in release)
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    <span className="sr-only">Edit</span>
                   </th>
                 </tr>
               </thead>
@@ -65,7 +77,8 @@ export const ReleasesPage: React.FC = () => {
                 {query.data.map((r, idx) => (
                   <tr
                     key={idx}
-                    className="light:bg-gray-800 light:border-gray-700 light:hover:bg-gray-600 border-b bg-white hover:bg-gray-50"
+                    className="light:bg-gray-800 light:border-gray-700 light:hover:bg-gray-600 border-b bg-white hover:cursor-pointer hover:bg-gray-50"
+                    onClick={() => navigate(`${r.id}`)}
                   >
                     <th
                       scope="row"
@@ -77,22 +90,19 @@ export const ReleasesPage: React.FC = () => {
                       scope="row"
                       className="whitespace-nowrap px-6 py-4 font-mono"
                     >
-                      <span className="text-xs">
-                        {r.applicationDacIdentifierSystem}
-                      </span>
-                      <br />
-                      {r.applicationDacIdentifierValue}
+                      <a
+                        href={`/releases/${r.id}`}
+                        className="hover:text-blue-500"
+                      >
+                        <span className="text-xs">
+                          {r.applicationDacIdentifierSystem}
+                        </span>
+                        <br />
+                        {r.applicationDacIdentifierValue}
+                      </a>
                     </th>
                     <td className="px-6 py-4">{r.applicationDacTitle}</td>
                     <td className="px-6 py-4">{r.roleInRelease}</td>
-                    <td className="px-6 py-4 text-right">
-                      <a
-                        href={`/releases/${r.id}`}
-                        className="light:text-blue-500 font-medium text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </a>
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -105,7 +115,14 @@ export const ReleasesPage: React.FC = () => {
               styling={"bg-red-100"}
             />
           )}
-        </Box>
+          <BoxPaginator
+            currentPage={currentPage}
+            setPage={setCurrentPage}
+            rowCount={currentTotal}
+            rowsPerPage={pageSize}
+            rowWord="releases"
+          />
+        </BoxNoPad>
       </div>
     </LayoutBase>
   );
