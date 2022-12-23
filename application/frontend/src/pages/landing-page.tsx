@@ -1,36 +1,10 @@
-import React, { useState } from "react";
-import { useEnvRelay } from "../providers/env-relay-provider";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import { LayoutBase } from "../layouts/layout-base";
-import { useCookies } from "react-cookie";
-import {
-  UI_PAGE_SIZE_COOKIE_NAME,
-  UI_PAGE_SIZE_DEFAULT,
-  USER_ALLOWED_COOKIE_NAME,
-} from "@umccr/elsa-constants";
+
 import { useUiAllowed } from "../hooks/ui-allowed";
 import blockDiagram from "./landing-block-diagram.png";
 
 export const HomePage: React.FC = () => {
-  const navigate = useNavigate();
-
-  const [cookies, setCookie, removeCookie] = useCookies<any>([
-    UI_PAGE_SIZE_COOKIE_NAME,
-    USER_ALLOWED_COOKIE_NAME,
-  ]);
-
-  const pageSizeFromCookie = parseInt(cookies[UI_PAGE_SIZE_COOKIE_NAME]);
-
-  const pageSize = isFinite(pageSizeFromCookie)
-    ? pageSizeFromCookie
-    : UI_PAGE_SIZE_DEFAULT;
-
-  const mutatePageSizeCookie = (newVal?: number) => {
-    if (newVal)
-      setCookie(UI_PAGE_SIZE_COOKIE_NAME, newVal.toString(), { path: "/" });
-    else removeCookie(UI_PAGE_SIZE_COOKIE_NAME, { path: "/" });
-  };
-
   const uiAllowed = useUiAllowed();
 
   if (uiAllowed.size == 0)
@@ -74,44 +48,6 @@ export const HomePage: React.FC = () => {
 
       <hr className="mt-6 mb-6" />
 
-      <p className="prose text-xs">
-        Current page size literal from cookie is '{pageSizeFromCookie}'
-      </p>
-      <p className="prose text-xs">
-        Current page size in practice is therefore {pageSize}
-      </p>
-      <div className="mt-2 mb-2 flex flex-row space-x-2">
-        <button
-          className="btn-normal text-xs"
-          onClick={() => mutatePageSizeCookie(5)}
-        >
-          Set page size 5
-        </button>
-        <button
-          className="btn-normal text-xs"
-          onClick={() => mutatePageSizeCookie(10)}
-        >
-          Set page size 10
-        </button>
-        <button
-          className="btn-normal text-xs"
-          onClick={() => mutatePageSizeCookie(15)}
-        >
-          Set page size 15
-        </button>
-        <button
-          className="btn-normal text-xs"
-          onClick={() => mutatePageSizeCookie(20)}
-        >
-          Set page size 20
-        </button>
-        <button
-          className="btn-normal text-xs"
-          onClick={() => mutatePageSizeCookie(undefined)}
-        >
-          Clear page size
-        </button>
-      </div>
       {/*
       <div className="w-20 h-20 mt-2">
         <svg
