@@ -31,7 +31,7 @@ export default AccountPage;
  * Helper Component
  */
 const PageSizeSetting = () => {
-  const PAGE_SIZE_OPTIONS = [5, 10, 15, 20];
+  const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
   const [cookies, setCookie, removeCookie] = useCookies<any>([
     UI_PAGE_SIZE_COOKIE_NAME,
