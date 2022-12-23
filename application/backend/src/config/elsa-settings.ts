@@ -42,6 +42,9 @@ export type ElsaSettings = {
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
 
+  // maxmind database for IP Geo lookup
+  maxmindAssetPath: string;
+
   // NOTE: https://confluence.hl7.org/display/TA/External+Terminologies+-+Information is a good reference for these
   mondoSystem: { uri: string; oid: string };
   hgncGenesSystem: { uri: string; oid: string };

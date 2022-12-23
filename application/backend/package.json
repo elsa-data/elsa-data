@@ -34,8 +34,8 @@
     "test:integration": "jest --forceExit --detectOpenHandles --runInBand --config jest.integration-tests.config.js",
     "//postinstall": "Give us the ability to locally patch packages after install",
     "postinstall": "patch-package",
-    "//updateMaxMindDb": "Update MaxMind Database for IP lookup. Set MaxMind key into environment variable 'MAXMIND_KEY'",
-    "updateMaxMindDb": "cd node_modules/geoip-lite && npm run-script updatedb license_key=${MAXMIND_KEY}"
+    "//updateMaxmindDb": "Update MaxMind Database for IP lookup. This will download maxmind file to /asset/maxmind/GeoLite2-City.mmdb. Please set MAXMIND_KEY as the environment variable.",
+    "updateMaxmindDb": "mkdir -p asset/maxmind && cd asset/maxmind && curl \"https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${MAXMIND_KEY}&suffix=tar.gz\" --output GeoLite2-City.tar.gz"
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "3.128.0",
@@ -78,13 +78,13 @@
     "esbuild": "0.15.12",
     "fastify": "4.10.2",
     "fastify-favicon": "4.2.0",
-    "geoip-lite": "^1.4.6",
     "http-link-header": "1.0.5",
     "humanize-plus": "1.8.2",
     "i18n": "0.15.1",
     "json5": "2.2.1",
     "jszip": "3.10.1",
     "lodash": "4.17.21",
+    "maxmind": "^4.3.8",
     "moo": "^0.5.2",
     "nodemailer": "^6.8.0",
     "openid-client": "5.2.1",
@@ -102,7 +102,6 @@
   "devDependencies": {
     "@types/archiver": "5.3.1",
     "@types/convict": "6.1.1",
-    "@types/geoip-lite": "^1.4.1",
     "@types/http-link-header": "^1.0.3",
     "@types/i18n": "^0.13.4",
     "@types/jest": "27.5.2",

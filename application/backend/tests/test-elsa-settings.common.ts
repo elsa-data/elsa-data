@@ -96,4 +96,5 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     allowTestRoutes: true,
     allowTestUsers: true,
   },
+  maxmindAssetPath: "asset/maxmind/GeoLite2-City.mmdb",
 });
