@@ -3,12 +3,15 @@ import React, { Fragment } from "react";
 import { LoggedInUser } from "../providers/logged-in-user-provider";
 import classNames from "classnames";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   user: LoggedInUser;
 };
 
 export const LayoutBaseHeaderUser: React.FC<Props> = ({ user }) => {
+  const navigate = useNavigate();
+
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
@@ -40,19 +43,19 @@ export const LayoutBaseHeaderUser: React.FC<Props> = ({ user }) => {
       >
         <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1">
-            {/*<Menu.Item>
+            <Menu.Item>
               {({ active }) => (
-                <a
-                  href="#"
+                <button
+                  onClick={() => navigate(`/account`)}
                   className={classNames(
                     active ? "bg-gray-100 text-gray-900" : "text-gray-700",
-                    "block px-4 py-2 text-sm"
+                    "block w-full px-4 py-2 text-left text-sm"
                   )}
                 >
                   Account settings
-                </a>
+                </button>
               )}
-            </Menu.Item> */}
+            </Menu.Item>
             <form method="POST" action="/auth/logout">
               <Menu.Item>
                 {({ active }) => (

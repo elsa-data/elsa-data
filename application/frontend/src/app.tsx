@@ -14,6 +14,7 @@ import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-pag
 import { EagerErrorBoundary } from "./components/errors";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
+import AccountPage from "./pages/account-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -50,6 +51,7 @@ export const App: React.FC = () => {
     return (
       <Routes>
         <Route path={`/`} element={<HomePage />} />
+        <Route path={`/account`} element={<AccountPage />} />
         <Route path={`/users`} element={<UsersDashboardPage />} />
         <Route path={`/dac`} element={<DacImportPage />} />
 
