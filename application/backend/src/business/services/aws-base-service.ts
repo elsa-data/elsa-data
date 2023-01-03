@@ -3,7 +3,7 @@ import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import * as edgedb from "edgedb";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import { UsersService } from "./users-service";
-import { ReleaseAuditLogService } from "./release-audit-log-service";
+import { AuditLogService } from "./audit-log-service";
 import {
   createReleaseFileList,
   ReleaseFileListEntry,
@@ -15,7 +15,7 @@ export abstract class AwsBaseService {
   protected constructor(
     protected readonly edgeDbClient: edgedb.Client,
     protected readonly usersService: UsersService,
-    protected readonly auditLogService: ReleaseAuditLogService
+    protected readonly auditLogService: AuditLogService
   ) {
     // until we get proof our AWS commands have succeeded we assume AWS functionality is not available
     this.enabled = false;

@@ -60,3 +60,6 @@ export const AuditDataSummarySchema = Type.Object({
   target: Type.String(),
 });
 export type AuditDataSummaryType = Static<typeof AuditDataSummarySchema>;
+
+export const SystemAuditEventSchema = Type.Object({});
+export type SystemAuditEventType = Static<typeof SystemAuditEventSchema>;

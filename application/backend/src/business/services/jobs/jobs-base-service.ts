@@ -10,7 +10,7 @@ import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { UsersService } from "../users-service";
 import { Transaction } from "edgedb/dist/transaction";
-import { ReleaseAuditLogService } from "../release-audit-log-service";
+import { AuditLogService } from "../audit-log-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import {
   CloudFormationClient,
@@ -38,7 +38,7 @@ export class JobsService {
     private readonly cfnClient: CloudFormationClient,
 
     private usersService: UsersService,
-    private releaseAuditLogService: ReleaseAuditLogService,
+    private releaseAuditLogService: AuditLogService,
     private releasesService: ReleaseService,
     private selectService: SelectService
   ) {}

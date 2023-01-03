@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { AuditEntryType } from "@umccr/elsa-types";
+import { AuditEntryType, SystemAuditEventType } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
@@ -7,7 +7,7 @@ import {
 } from "../api-routes";
 import * as edgedb from "edgedb";
 import { container } from "tsyringe";
-import { ReleaseAuditLogService } from "../../business/services/release-audit-log-service";
+import { AuditLogService } from "../../business/services/audit-log-service";
 import { Static, Type } from "@sinclair/typebox";
 import {
   AuditDataAccessType,
@@ -40,15 +40,18 @@ export type AuditEventDetailsQueryType = Static<
   typeof AuditEventDetailsQuerySchema
 >;
 
+export const SystemAuditEventQuerySchema = Type.Object({});
+export type SystemAuditEventQueryType = Static<
+  typeof SystemAuditEventQuerySchema
+>;
+
 export const releaseAuditLogRoutes = async (
   fastify: FastifyInstance,
   _opts: any
 ) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const datasetService = container.resolve<DatasetService>(DatasetService);
-  const auditLogService = container.resolve<ReleaseAuditLogService>(
-    ReleaseAuditLogService
-  );
+  const auditLogService = container.resolve<AuditLogService>(AuditLogService);
   const awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
 
   fastify.get<{
@@ -249,6 +252,25 @@ export const releaseAuditLogRoutes = async (
       }
 
       reply.send(replyMessage);
+    }
+  );
+
+  fastify.get<{
+    Params: { releaseId: string };
+    Reply: SystemAuditEventType[];
+    Querystring: SystemAuditEventQueryType;
+  }>(
+    "/api/system-audit-events",
+    {
+      schema: {
+        querystring: SystemAuditEventQuerySchema,
+      },
+    },
+    async function (request, reply) {
+      const { authenticatedUser, pageSize, page } =
+        authenticatedRouteOnEntryHelper(request);
+
+      sendPagedResult(reply, null);
     }
   );
 };

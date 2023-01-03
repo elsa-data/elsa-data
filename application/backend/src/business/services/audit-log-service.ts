@@ -27,7 +27,7 @@ export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
-export class ReleaseAuditLogService {
+export class AuditLogService {
   private readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
@@ -197,7 +197,7 @@ export class ReleaseAuditLogService {
     ).run(executor);
 
     console.log(
-      `${ReleaseAuditLogService.name}.getEntries(releaseId=${releaseId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditLogService.name}.getEntries(releaseId=${releaseId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(

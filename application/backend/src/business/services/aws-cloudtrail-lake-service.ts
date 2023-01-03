@@ -9,7 +9,7 @@ import {
 } from "@aws-sdk/client-cloudtrail";
 import { UsersService } from "./users-service";
 import { AwsBaseService } from "./aws-base-service";
-import { ReleaseAuditLogService } from "./release-audit-log-service";
+import { AuditLogService } from "./audit-log-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
@@ -44,7 +44,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
     private awsAccessPointService: AwsAccessPointService,
     usersService: UsersService,
-    auditLogService: ReleaseAuditLogService
+    auditLogService: AuditLogService
   ) {
     super(edgeDbClient, usersService, auditLogService);
   }
