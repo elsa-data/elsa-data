@@ -1,5 +1,5 @@
 {
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
-  maxmindAssetPath: "asset/maxmind/GeoLite2-City.mmdb",
+  maxmindAssetPath: "asset/maxmind/db/GeoLite2-City.mmdb",
 }
