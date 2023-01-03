@@ -15,6 +15,7 @@ import { EagerErrorBoundary } from "./components/errors";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 import AccountPage from "./pages/account-page";
+import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 
 function NoMatch() {
   let location = useLocation();
@@ -68,6 +69,7 @@ export const App: React.FC = () => {
 
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
         <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
+        <Route path={`/audit-events`} element={<AuditEventsPage />} />
         <Route path="*" element={<NoMatch />} />
       </Routes>
     );
