@@ -92,6 +92,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       },
     },
     ontoFhirUrl: config.get("ontoFhirUrl"),
+    maxmindDbAssetPath: config.get("maxmindDbAssetPath"),
     mondoSystem: {
       uri: config.get("mondoSystem.uri"),
       oid: config.get("mondoSystem.oid"),

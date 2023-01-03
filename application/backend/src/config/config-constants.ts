@@ -138,6 +138,11 @@ export const configDefinition = {
     format: "*",
     default: "",
   },
+  maxmindDbAssetPath: {
+    doc: "The path where maxmind city database live.",
+    format: "*",
+    default: "asset/maxmind/db/",
+  },
   mondoSystem: {
     uri: {
       format: String,

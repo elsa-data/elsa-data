@@ -33,7 +33,9 @@
     "test:unit": "jest --forceExit --detectOpenHandles --runInBand --config jest.unit-tests.config.js",
     "test:integration": "jest --forceExit --detectOpenHandles --runInBand --config jest.integration-tests.config.js",
     "//postinstall": "Give us the ability to locally patch packages after install",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "//updateMaxmindDb": "Update MaxMind Database for City IP lookup. This will download maxmind database to /asset/maxmind/db/GeoLite2-City.mmdb. Please set maxmind key to 'MAXMIND_KEY' as environment variable.",
+    "updateMaxmindDb": "rm -rf asset/maxmind/db && mkdir -p asset/maxmind/db && cd asset/maxmind/db && curl \"https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${MAXMIND_KEY}&suffix=tar.gz\" --output GeoLite2-City.tar.gz && tar -xvf GeoLite2-City.tar.gz && find . -name \"*GeoLite2-City.mmdb\" -print0 | xargs -0 -I {} mv {} . "
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "3.128.0",
@@ -76,12 +78,14 @@
     "esbuild": "0.15.12",
     "fastify": "4.10.2",
     "fastify-favicon": "4.2.0",
+    "gunzip-maybe": "^1.4.2",
     "http-link-header": "1.0.5",
     "humanize-plus": "1.8.2",
     "i18n": "0.15.1",
     "json5": "2.2.1",
     "jszip": "3.10.1",
     "lodash": "4.17.21",
+    "maxmind": "^4.3.8",
     "moo": "^0.5.2",
     "nodemailer": "^6.8.0",
     "openid-client": "5.2.1",
@@ -93,12 +97,14 @@
     "qs": "6.11.0",
     "randomstring": "^1.2.3",
     "reflect-metadata": "0.1.13",
+    "tar-stream": "^3.0.0",
     "temp": "0.9.4",
     "tsyringe": "4.7.0"
   },
   "devDependencies": {
     "@types/archiver": "5.3.1",
     "@types/convict": "6.1.1",
+    "@types/gunzip-maybe": "^1.4.0",
     "@types/http-link-header": "^1.0.3",
     "@types/i18n": "^0.13.4",
     "@types/jest": "27.5.2",
@@ -106,6 +112,7 @@
     "@types/node": "18.11.9",
     "@types/qs": "^6.9.7",
     "@types/supertest": "2.0.12",
+    "@types/tar-stream": "^2.2.2",
     "@types/temp": "^0.9.1",
     "aws-sdk-client-mock": "2.0.1",
     "cross-env": "7.0.3",
