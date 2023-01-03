@@ -204,7 +204,7 @@ const makeSyntheticDataAccessLog = async () => {
       details: e.json(fileJson),
       egressBytes: 10188721080,
       whoId: "123.123.123.123",
-      whoDisplayName: "123.123.123.123",
+      whoDisplayName: "Melbourne, Australia",
       actionCategory: e.audit.ActionType.R,
       actionDescription: "Data Access",
       occurredDateTime: e.datetime(new Date()),
