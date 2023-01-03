@@ -138,10 +138,10 @@ export const configDefinition = {
     format: "*",
     default: "",
   },
-  maxmindAssetPath: {
+  maxmindDbAssetPath: {
     doc: "The path where maxmind city database live.",
     format: "*",
-    default: "asset/maxmind/db/GeoLite2-City.mmdb",
+    default: "asset/maxmind/db/",
   },
   mondoSystem: {
     uri: {

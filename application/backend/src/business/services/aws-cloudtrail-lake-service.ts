@@ -291,7 +291,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     // Try initiate maxmind reader if available
     try {
       this.maxmindLookup = await maxmind.open<CityResponse>(
-        this.settings.maxmindAssetPath
+        `${this.settings.maxmindDbAssetPath}/GeoLite2-City.mmdb`
       );
     } catch (error) {
       this.logger.warn(

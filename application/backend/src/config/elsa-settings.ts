@@ -43,7 +43,7 @@ export type ElsaSettings = {
   ontoFhirUrl: string;
 
   // maxmind database for IP Geo lookup
-  maxmindAssetPath: string;
+  maxmindDbAssetPath: string;
 
   // NOTE: https://confluence.hl7.org/display/TA/External+Terminologies+-+Information is a good reference for these
   mondoSystem: { uri: string; oid: string };
