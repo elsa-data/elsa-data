@@ -4,7 +4,7 @@ import * as edgedb from "edgedb";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
 import { AwsBaseService } from "./aws-base-service";
-import { AuditLogService } from "./audit-log-service";
+import { ReleaseAuditLogService } from "./release-audit-log-service";
 import { Readable } from "stream";
 import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
@@ -25,7 +25,7 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     @inject("Settings") private settings: ElsaSettings,
     private releaseService: ReleaseService,
     usersService: UsersService,
-    auditLogService: AuditLogService
+    auditLogService: ReleaseAuditLogService
   ) {
     super(edgeDbClient, usersService, auditLogService);
   }

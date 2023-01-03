@@ -9,7 +9,7 @@ import {
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
 } from "@aws-sdk/client-cloudformation";
-import { AuditLogService } from "./audit-log-service";
+import { ReleaseAuditLogService } from "./release-audit-log-service";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
@@ -36,7 +36,7 @@ export class AwsAccessPointService extends AwsBaseService {
     private readonly releaseService: ReleaseService,
     @inject("Database") edgeDbClient: edgedb.Client,
     usersService: UsersService,
-    auditLogService: AuditLogService
+    auditLogService: ReleaseAuditLogService
   ) {
     super(edgeDbClient, usersService, auditLogService);
   }

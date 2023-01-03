@@ -10,7 +10,7 @@ import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { UsersService } from "../users-service";
 import { Transaction } from "edgedb/dist/transaction";
-import { AuditLogService } from "../audit-log-service";
+import { ReleaseAuditLogService } from "../release-audit-log-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import {
   CloudFormationClient,
@@ -38,7 +38,7 @@ export class JobsService {
     private readonly cfnClient: CloudFormationClient,
 
     private usersService: UsersService,
-    private auditLogService: AuditLogService,
+    private releaseAuditLogService: ReleaseAuditLogService,
     private releasesService: ReleaseService,
     private selectService: SelectService
   ) {}
@@ -148,14 +148,15 @@ export class JobsService {
       // by placing the audit event in the transaction I guess we miss out on
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
-      const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
-        user,
-        releaseId,
-        "E",
-        "Install S3 Access Point",
-        new Date()
-      );
+      const newAuditEventId =
+        await this.releaseAuditLogService.startReleaseAuditEvent(
+          tx,
+          user,
+          releaseId,
+          "E",
+          "Install S3 Access Point",
+          new Date()
+        );
 
       const releaseStackName =
         AwsAccessPointService.getReleaseStackName(releaseId);
@@ -293,14 +294,15 @@ export class JobsService {
       // by placing the audit event in the transaction I guess we miss out on
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
-      const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
-        user,
-        releaseId,
-        "E",
-        "Ran Dynamic Consent",
-        new Date()
-      );
+      const newAuditEventId =
+        await this.releaseAuditLogService.startReleaseAuditEvent(
+          tx,
+          user,
+          releaseId,
+          "E",
+          "Ran Dynamic Consent",
+          new Date()
+        );
 
       // create a new select job entry
       await e
@@ -594,7 +596,7 @@ export class JobsService {
         }
       }
 
-      await this.auditLogService.completeReleaseAuditEvent(
+      await this.releaseAuditLogService.completeReleaseAuditEvent(
         tx,
         selectJob.auditEntry.id,
         isCancellation ? 4 : 0,
@@ -644,7 +646,7 @@ export class JobsService {
           "Job id passed in was not a Cloud Formation Install Job"
         );
 
-      await this.auditLogService.completeReleaseAuditEvent(
+      await this.releaseAuditLogService.completeReleaseAuditEvent(
         tx,
         cloudFormationInstallJob.auditEntry.id,
         isCancellation ? 4 : 0,

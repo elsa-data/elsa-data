@@ -7,7 +7,7 @@ import {
 } from "../api-routes";
 import * as edgedb from "edgedb";
 import { container } from "tsyringe";
-import { AuditLogService } from "../../business/services/audit-log-service";
+import { ReleaseAuditLogService } from "../../business/services/release-audit-log-service";
 import { Static, Type } from "@sinclair/typebox";
 import {
   AuditDataAccessType,
@@ -40,10 +40,15 @@ export type AuditEventDetailsQueryType = Static<
   typeof AuditEventDetailsQuerySchema
 >;
 
-export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
+export const releaseAuditLogRoutes = async (
+  fastify: FastifyInstance,
+  _opts: any
+) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const datasetService = container.resolve<DatasetService>(DatasetService);
-  const auditLogService = container.resolve<AuditLogService>(AuditLogService);
+  const auditLogService = container.resolve<ReleaseAuditLogService>(
+    ReleaseAuditLogService
+  );
   const awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
 
   fastify.get<{

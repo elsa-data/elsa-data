@@ -1,4 +1,3 @@
-import * as edgedb from "edgedb";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ALLOWED_CHANGE_ADMINS,
@@ -24,7 +23,7 @@ import {
   TEST_SUBJECT_2,
   TEST_SUBJECT_3,
 } from "../test-data/insert-test-data";
-import { AuditLogService } from "../business/services/audit-log-service";
+import { ReleaseAuditLogService } from "../business/services/release-audit-log-service";
 import { AuthenticatedUser } from "../business/authenticated-user";
 
 /**
@@ -110,7 +109,7 @@ export const authRoutes = async (
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
   const userService = opts.container.resolve(UsersService);
-  const auditLogService = opts.container.resolve(AuditLogService);
+  const auditLogService = opts.container.resolve(ReleaseAuditLogService);
 
   const client = new settings.oidcIssuer.Client({
     client_id: settings.oidcClientId,

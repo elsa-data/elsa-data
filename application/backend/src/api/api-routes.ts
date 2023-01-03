@@ -9,8 +9,8 @@ import {
 } from "./api-pagination";
 import { container, DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";
-import { isEmpty, isNil, isString, trim } from "lodash";
-import { auditLogRoutes } from "./routes/audit-log-routes";
+import { isEmpty, isString, trim } from "lodash";
+import { releaseAuditLogRoutes } from "./routes/release-audit-log-routes";
 import { dacRoutes } from "./routes/dac-routes";
 import { ElsaSettings } from "../config/elsa-settings";
 import { createAuthRouteHook } from "../auth/auth-route-hook";
@@ -118,7 +118,7 @@ export const apiRoutes = async (
 
   // now register the auth hook and then register all the rest of our routes nested within
   fastify.addHook("onRequest", authHook).after(() => {
-    fastify.register(auditLogRoutes, opts);
+    fastify.register(releaseAuditLogRoutes, opts);
     fastify.register(releaseRoutes, opts);
     fastify.register(dacRoutes, opts);
     fastify.register(datasetRoutes, opts);

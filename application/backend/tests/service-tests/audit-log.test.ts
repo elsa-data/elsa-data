@@ -3,7 +3,7 @@ import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
-import { AuditLogService } from "../../src/business/services/audit-log-service";
+import { ReleaseAuditLogService } from "../../src/business/services/release-audit-log-service";
 import { addSeconds } from "date-fns";
 
 let testReleaseId: string;
@@ -11,7 +11,7 @@ let testReleaseId: string;
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
-let auditLogService: AuditLogService;
+let auditLogService: ReleaseAuditLogService;
 let edgeDbClient: edgedb.Client;
 
 beforeEach(async () => {
@@ -25,7 +25,7 @@ beforeEach(async () => {
     edgeDbClient,
   } = await beforeEachCommon());
 
-  auditLogService = testContainer.resolve(AuditLogService);
+  auditLogService = testContainer.resolve(ReleaseAuditLogService);
 });
 
 /**

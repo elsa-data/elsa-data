@@ -6,23 +6,19 @@ import {
   ReleaseCaseType,
   ReleaseDetailType,
   ReleaseMasterAccessRequestType,
-  ReleasePatchOperationSchema,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
-  ReleasePatchOperationType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../api-routes";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { container } from "tsyringe";
 import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
-import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
