@@ -59,14 +59,13 @@ module audit {
         property details -> json;
     }
 
-    type DataAccessAuditEvent extending AuditEvent{
+    type DataAccessAuditEvent extending AuditEvent {
 
         # Link back which audit owns this
         link release_ := .<dataAccessAuditLog[is release::Release];
         
         # Number of bytes transfer out from storage
         required property egressBytes -> int64;
-
     }
 
     type ReleaseAuditEvent extending AuditEvent {
@@ -75,8 +74,12 @@ module audit {
         link release_ := .<releaseAuditLog[is release::Release];
     }
 
+    type UserAuditEvent extending AuditEvent {
+        # Link back to the user which this event belongs to.
+        link user_ := .<userAuditEvent[is permission::User];
+    }
+
     type SystemAuditEvent extending AuditEvent {
 
     }
-
 }
