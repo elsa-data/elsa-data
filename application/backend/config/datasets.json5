@@ -1,13 +1,5 @@
 {
   datasets: [
-    // TODO: Need to move Cardiac out from this config!
-    {
-      name: "Cardiac",
-      description: "An Australian Genomics flagship.",
-      uri: "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
-      storageLocation: "aws-s3",
-      storageUriPrefix: "s3://agha-gdr-store-2.0/Cardiac",
-    },
     {
       name: "10G",
       description: "UMCCR 10G",
@@ -32,7 +24,7 @@
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10c-data-dev",
     },
-    // The following is intentionally commented out to show variety of test-data that is not inclduded in config file.
+    // The following is intentionally commented out to show variety of test-data that is not included in config file.
     // {
     //   name: "10M",
     //   description: "UMCCR 10M",
