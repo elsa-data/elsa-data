@@ -29,7 +29,51 @@ it("basic parsing with right most providers overriding", async () => {
   expect(config.getProperties()).toHaveProperty("port", 8001);
 });
 
+it("plus minus operations for arrays", async () => {
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+    "./tests/unit-tests/config/real-like";
+
+  // with just the single file we have two datasets
+  {
+    const config = await getMetaConfig("file('datasets')");
+
+    expect(config.getProperties()).toHaveProperty("datasets");
+
+    const datasets = config.getProperties()["datasets"];
+
+    expect(datasets).toHaveLength(2);
+
+    const datasetUris = datasets.map((ds: any) => ds.uri).sort();
+
+    expect(datasetUris).toStrictEqual([
+      "urn:elsa.net:2022:dataset001",
+      "urn:elsa.net:2022:dataset002",
+    ]);
+  }
+
+  // with the add-delete config added - we add two and remove 1
+  {
+    const config = await getMetaConfig("file('datasets') file('add-delete')");
+
+    expect(config.getProperties()).toHaveProperty("datasets");
+
+    const datasets = config.getProperties()["datasets"];
+
+    expect(datasets).toHaveLength(3);
+
+    const datasetUris = datasets.map((ds: any) => ds.uri).sort();
+
+    expect(datasetUris).toStrictEqual([
+      "urn:elsa.net:2022:dataset002",
+      "urn:elsa.net:2022:datasetadd1",
+      "urn:elsa.net:2022:datasetadd2",
+    ]);
+  }
+});
+
 it("basic parsing but with env variable override", async () => {
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+    "./tests/unit-tests/config/real-like";
   process.env["ELSA_DATA_CONFIG_PORT"] = "9999";
 
   const config = await getMetaConfig(
