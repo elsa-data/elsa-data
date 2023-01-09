@@ -103,9 +103,15 @@ function handleConfigArraysBeforeConvict(
 
         if (deleteKey in newStrippedConfig) {
           for (const toDelete of newStrippedConfig[deleteKey]) {
+            const startLength = arrayProcessed[am].length;
             arrayProcessed[am] = arrayProcessed[am].filter(
               (v) => !idPresent(toDelete, v)
             );
+            if (startLength === arrayProcessed[am].length) {
+              throw new Error(
+                `The configuration instruction ${deleteKey} of ${toDelete} did not do anything as no existing config had an entry with an id,uri or name of ${toDelete}`
+              );
+            }
           }
 
           // strip out the -?? key as we have handled it and we don't want to pass it on to convict (which won't understand it)

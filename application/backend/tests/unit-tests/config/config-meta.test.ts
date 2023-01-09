@@ -71,6 +71,18 @@ it("plus minus operations for arrays", async () => {
   }
 });
 
+it("minus an entry that doesn't exist is an error", async () => {
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+    "./tests/unit-tests/config/real-like";
+
+  expect.assertions(1);
+  try {
+    await getMetaConfig("file('datasets') file('delete-doesnt-exist')");
+  } catch (e: any) {
+    expect(e.toString()).toContain("did not do anything");
+  }
+});
+
 it("basic parsing but with env variable override", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
     "./tests/unit-tests/config/real-like";
