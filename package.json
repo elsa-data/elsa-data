@@ -6,7 +6,6 @@
     "install:elsa-types": "cd application/common/elsa-types && npm install",
     "install:frontend": "cd application/frontend && npm install",
     "install:e2e": "cd e2e && npm install",
-    "install:aws": "cd infrastructure/aws && npm install",
     "postinstall": "run-p install:*",
     "migrate-db": "cd application/backend && edgedb migration create || true && edgedb migrate",
     "init-db": "cd application/backend && edgedb project init",
