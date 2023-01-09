@@ -7,5 +7,12 @@
       storageLocation: "aws-s3",
       storageUriPrefix: "example/dataset001",
     },
+    {
+      name: "dataset002",
+      description: "Another dataset sample.",
+      uri: "urn:elsa.net:2022:dataset002",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "example/dataset002",
+    },
   ],
 }

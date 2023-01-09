@@ -21,10 +21,13 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     // as a file on disk
     const rootCaLocation = temp.path();
 
-    console.log(
-      `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`
-    );
-    console.log(rootCa);
+    // We do not yet have a logger available at this point in the bootstrapper
+    // So only enable this console logging if debugging the CA config
+    // (in general this mechanism has been working well since initial implementation)
+    //console.log(
+    //  `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`
+    //);
+    // console.log(rootCa);
 
     await writeFile(rootCaLocation, rootCa);
 
@@ -110,8 +113,6 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       uri: config.get("snomedSystem.uri"),
       oid: config.get("snomedSystem.oid"),
     },
-    datasets: (config.get("datasets") as any[]) ?? [],
-    superAdmins: (config.get("superAdmins") as any[]) ?? [],
     rateLimit: {
       // for the moment we set up the rate limiting across the entire Elsa Data surface
       // (includes APIs and HTML/CSS fetches etc)
@@ -127,5 +128,8 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
           sourceFrontEndDirect: true,
         }
       : undefined,
+    // these are our special arrays that can be constructed with + and - definitions
+    datasets: (config.get("datasets") as any[]) ?? [],
+    superAdmins: (config.get("superAdmins") as any[]) ?? [],
   };
 }
