@@ -36,7 +36,10 @@ type Props = {
 export const BoxPaginator: React.FC<Props> = (props) => {
   // for our pagination buttons and text we need to do some page calculations
   const maxPage = Math.ceil(props.rowCount / props.rowsPerPage);
-  const from = (props.currentPage - 1) * props.rowsPerPage + 1;
+  const from = Math.min(
+    (props.currentPage - 1) * props.rowsPerPage + 1,
+    props.rowCount
+  );
   const to = Math.min(
     (props.currentPage - 1) * props.rowsPerPage + props.rowsPerPage,
     props.rowCount

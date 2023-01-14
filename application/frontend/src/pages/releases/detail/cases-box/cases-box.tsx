@@ -180,14 +180,16 @@ export const CasesBox: React.FC<Props> = ({
               </p>
             </div>
           )}
-        {dataQuery.data && dataQuery.data.length === 0 && (
-          <div className={classNames(baseMessageDivClasses)}>
-            <p>
-              Searching for the identifier <b>{searchText}</b> returned no
-              results
-            </p>
-          </div>
-        )}
+        {dataQuery.data &&
+          dataQuery.data.length === 0 &&
+          makeUseableSearchText(searchText) && (
+            <div className={classNames(baseMessageDivClasses)}>
+              <p>
+                Searching for the identifier <b>{searchText}</b> returned no
+                results
+              </p>
+            </div>
+          )}
         {dataQuery.data && dataQuery.data.length > 0 && (
           <>
             <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
