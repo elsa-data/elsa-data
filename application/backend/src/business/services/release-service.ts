@@ -4,10 +4,12 @@ import {
   DuoLimitationCodedType,
   ReleaseCaseType,
   ReleaseDetailType,
+  ReleaseNodeStatusSchema,
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
   ReleaseSummaryType,
+  RemsApprovedApplicationSchema,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isObjectLike, isSafeInteger } from "lodash";
@@ -23,6 +25,11 @@ import { ReleaseBaseService } from "./release-base-service";
 import { allReleasesSummaryByUserQuery } from "../db/release-queries";
 import { $scopify } from "edgedb/dist/reflection";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
+import { Static, Type } from "@sinclair/typebox";
+import {
+  createReleaseManifest,
+  ManifestType,
+} from "./_release-manifest-helper";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -639,6 +646,14 @@ export class ReleaseService extends ReleaseBaseService {
     return await this.getBase(releaseId, userRole);
   }
 
+  /**
+   * Change the 'is allowed' status of one of the is allowed fields in the release.
+   *
+   * @param user
+   * @param releaseId
+   * @param type
+   * @param value
+   */
   public async setIsAllowed(
     user: AuthenticatedUser,
     releaseId: string,
@@ -675,4 +690,45 @@ export class ReleaseService extends ReleaseBaseService {
 
     return await this.getBase(releaseId, userRole);
   }
+
+  /**
+   * For the current state of the release, return a manifest showing all the sharing
+   * information that would be useful for other downstream services.
+   *
+   * @param releaseId
+   * @protected
+   */
+  protected async createManifest(releaseId: string): Promise<ManifestType> {
+    return await createReleaseManifest(
+      this.edgeDbClient,
+      releaseId,
+      true,
+      true
+    );
+  }
+
+  protected async activateRelease(user: AuthenticatedUser, releaseId: string) {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    if (userRole !== "DataOwner") {
+      // TODO: replace with real error class
+      throw new Error("must be a data owner");
+    }
+
+    await e.insert(e.release.Activation, {
+      activatedById: user.subjectId,
+      activatedByDisplayName: user.displayName,
+      manifest: e.json({ hi: "there" }),
+      manifestEtag: "aaaa",
+    });
+  }
+
+  protected async deactivateRelease(
+    user: AuthenticatedUser,
+    releaseId: string
+  ) {}
 }

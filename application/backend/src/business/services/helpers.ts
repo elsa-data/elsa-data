@@ -1,5 +1,5 @@
 import e from "../../../dbschema/edgeql-js";
-import { Client } from "edgedb";
+import { Client, Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UsersService } from "./users-service";
 
@@ -46,7 +46,10 @@ export async function doRoleInReleaseCheck(
  * @param edgeDbClient an edgedb client
  * @param releaseId the release to load
  */
-export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
+export async function getReleaseInfo(
+  edgeDbClient: Executor,
+  releaseId: string
+) {
   // the base (id only) query that will give us just the release
   const releaseQuery = e
     .select(e.release.Release, (r) => ({
@@ -67,12 +70,9 @@ export async function getReleaseInfo(edgeDbClient: Client, releaseId: string) {
     runningJob: {
       ...e.job.Job["*"],
     },
+    // TBD replace
     // the master computation of whether we are currently enabled for access
-    accessEnabled: e.op(
-      e.op(e.datetime_current(), ">=", r.releaseStarted),
-      "and",
-      e.op(e.datetime_current(), "<=", r.releaseEnded)
-    ),
+    accessEnabled: e.bool(true),
     // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
     //manualExclusions: true,
     // we are loosely linked (by uri) to datasets which this release draws data from

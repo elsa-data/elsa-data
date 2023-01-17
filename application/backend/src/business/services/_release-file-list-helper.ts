@@ -1,6 +1,7 @@
 import e from "../../../dbschema/edgeql-js";
 import { collapseExternalIds } from "./helpers";
 import { Executor } from "edgedb";
+import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
 
 // TODO possibly this is a 'db' function that could like in that folder
 //      it is very close - but it does some 'business' in collapsing identifiers etc
@@ -42,47 +43,7 @@ export async function createReleaseFileList(
   includeVariantData: boolean
 ): Promise<ReleaseFileListEntry[]> {
   // a query to retrieve all the files associated with the given specimen ids
-  const filesQuery = e.params(
-    { specimenIds: e.array(e.uuid) },
-    ({ specimenIds }) =>
-      e.select(e.dataset.DatasetSpecimen, (rs) => ({
-        externalIdentifiers: true,
-        patient: {
-          externalIdentifiers: true,
-        },
-        case_: {
-          externalIdentifiers: true,
-        },
-        dataset: {
-          externalIdentifiers: true,
-        },
-        artifacts: {
-          ...e.is(e.lab.ArtifactBcl, {
-            bclFile: { url: true, size: true, checksums: true },
-          }),
-          ...e.is(e.lab.ArtifactFastqPair, {
-            forwardFile: { url: true, size: true, checksums: true },
-            reverseFile: { url: true, size: true, checksums: true },
-          }),
-          ...e.is(e.lab.ArtifactBam, {
-            bamFile: { url: true, size: true, checksums: true },
-            baiFile: { url: true, size: true, checksums: true },
-          }),
-          ...e.is(e.lab.ArtifactCram, {
-            cramFile: { url: true, size: true, checksums: true },
-            craiFile: { url: true, size: true, checksums: true },
-          }),
-          ...e.is(e.lab.ArtifactVcf, {
-            vcfFile: { url: true, size: true, checksums: true },
-            tbiFile: { url: true, size: true, checksums: true },
-          }),
-        },
-        filter: e.op(rs.id, "in", e.array_unpack(specimenIds)),
-      }))
-  );
-
-  // execute it
-  const filesResult = await filesQuery.run(executor, {
+  const filesResult = await artifactFilesForSpecimensQuery.run(executor, {
     specimenIds: specimens.map((s) => s.id),
   });
 

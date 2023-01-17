@@ -155,9 +155,10 @@ export abstract class ReleaseBaseService {
           }
         : undefined,
       visibleCasesCount: visibleCasesCount,
-      accessStartDate: releaseInfo.releaseStarted ?? undefined,
-      accessEndDate: releaseInfo.releaseEnded ?? undefined,
-      accessEnabled: releaseInfo.accessEnabled ?? false,
+      // TODO: replace with activation mechanism
+      accessStartDate: undefined,
+      accessEndDate: undefined,
+      accessEnabled: false,
       isAllowedReadData: releaseInfo.isAllowedReadData,
       isAllowedVariantData: releaseInfo.isAllowedVariantData,
       isAllowedPhenotypeData: releaseInfo.isAllowedPhenotypeData,

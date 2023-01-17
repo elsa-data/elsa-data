@@ -1,16 +1,30 @@
 import { createClient } from "edgedb";
 import e, { lab, storage } from "../../dbschema/edgeql-js";
+import _ from "lodash";
 
 const edgeDbClient = createClient();
 
-export function makeDictionaryIdentifierArray(dict: { [k: string]: string }) {
-  const asArrayEntries = Array.from(
-    Object.entries(dict).map((ent) => ({ system: ent[0], value: ent[1] }))
-  );
+export function makeDictionaryIdentifierArray(dict: {
+  [k: string]: string | string[];
+}) {
+  const asArray: { system: string; value: string }[] = [];
+
+  for (const ent of Object.entries(dict)) {
+    if (_.isString(ent[1])) {
+      asArray.push({ system: ent[0], value: ent[1] });
+    } else if (_.isArray(ent[1])) {
+      for (const entValueItem of ent[1]) {
+        asArray.push({ system: ent[0], value: entValueItem });
+      }
+    } else
+      throw new Error(
+        "Tried to construct an identifier array where one of the dictionary values was neither a string not an array of strings"
+      );
+  }
 
   const tupleArrayType = e.array(e.tuple({ system: e.str, value: e.str }));
 
-  return e.cast(tupleArrayType, e.literal(tupleArrayType, asArrayEntries));
+  return e.cast(tupleArrayType, e.literal(tupleArrayType, asArray));
 }
 
 export function makeSystemlessIdentifier(entry1: string) {
@@ -355,7 +369,7 @@ export async function createArtifacts(
   return e.op(r1select, "union", a1select);
 }
 
-export type IdentifierMap = { [system: string]: string };
+export type IdentifierMap = { [system: string]: string | string[] };
 export type ChecksumMap = {
   [ct in storage.ChecksumType]: string;
 };

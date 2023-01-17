@@ -12,6 +12,12 @@ module release {
              readonly := true;
         };
 
+        # the public "friendly" identifier for this release
+        #
+        required property releaseIdentifier -> str {
+            constraint exclusive;
+        }
+
         # imported DAC application identifier
         #
         required property applicationDacIdentifier -> tuple<system: str, value: str> {
@@ -31,18 +37,36 @@ module release {
         # once a release is started - it is possible for the data owner to encode some
         # details of the application to help with automation
         #
-        required link applicationCoded -> ApplicationCoded;
-
-        required property releaseIdentifier -> str {
+        required link applicationCoded -> ApplicationCoded {
             constraint exclusive;
+
+            # we cascade delete our activation if the release itself is removed
+            #
+            on source delete delete target;
         }
 
         # 1..n datasets that we the sources of items in this release
         #
         required property datasetUris -> array<str>;
 
-        property releaseStarted -> datetime;
-        property releaseEnded -> datetime;
+        optional link activated -> Activation {
+            constraint exclusive;
+
+            # we cascade delete our activation if the release itself is removed
+            #
+            on source delete delete target;
+        }
+
+        optional multi link previouslyActivated -> Activation {
+            constraint exclusive;
+
+            # we cascade delete our activations if the release itself is removed
+            #
+            on source delete delete target;
+        }
+
+        # property releaseStarted -> datetime;
+        # property releaseEnded -> datetime;
 
         # all the specimens that are included in this release
         #
@@ -128,6 +152,33 @@ module release {
         # https://github.com/ga4gh-beacon/beacon-v2/blob/main/models/json/beacon-v2-default-model/genomicVariations/requestParameters.json
         #
         required property beaconQuery -> json;
+    }
+
+    # A release activation is a record of any time the administrator has activated actual data
+    # sharing on the release - thereby locking the editing of most details of the release
+    #
+    type Activation {
+
+        required property activatedAt -> datetime {
+            default := datetime_current();
+            readonly := true;
+        }
+
+        # we record who did the activation of the release (with a weak link as we don't want to pin the User record)
+        #
+        required property activatedById -> str;
+        required property activatedByDisplayName -> str;
+
+        # a JSON formatted manifest with details of all the files and ids that are included in the active release
+        #
+        required property manifest -> json;
+
+        # a fixed etag representing this activation of the release - as a combination of the manifest content
+        # and time of activation - this can be used to help clients perform extremely aggressive cacheing
+        # of the manifest information
+        #
+        required property manifestEtag -> str;
+
     }
 
 }
