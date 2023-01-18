@@ -1,12 +1,16 @@
-import e from "../../../../dbschema/edgeql-js";
-import { getReleaseInfo } from "../helpers";
-import { Executor } from "edgedb";
 import { Static, Type } from "@sinclair/typebox";
-import { artifactFilesForSpecimensQuery } from "../../db/artifact-queries";
-import _ from "lodash";
 
+/**
+ * A dictionary storing external identifiers, keyed by the "system" of the
+ * identifier. e.g. see https://www.hl7.org/fhir/identifier-registry.html. We
+ * have a special designated system value of "" which means "no system".
+ */
 export const ManifestExternalIdentifiersSchema = Type.Record(
+  // the identifier system
   Type.String(),
+  // note we handle the case here
+  // a) the most normal case where each system has a single value
+  // b) the edge case where a system can have multiple identifier values in it (most likely when system = "")
   Type.Union([Type.String(), Type.Array(Type.String())])
 );
 
