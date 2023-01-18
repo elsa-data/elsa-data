@@ -89,7 +89,7 @@ Ethics form XYZ.
       //
       //
       releaseIdentifier: "C5YR7P2PE1",
-      activated: e.insert(e.release.Activation, {
+      activation: e.insert(e.release.Activation, {
         activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
         activatedById: TEST_SUBJECT_2,
         activatedByDisplayName: TEST_SUBJECT_2_DISPLAY,

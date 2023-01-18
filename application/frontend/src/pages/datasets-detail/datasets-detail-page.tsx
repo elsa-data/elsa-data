@@ -32,61 +32,66 @@ export const DatasetsDetailPage: React.FC = () => {
   return (
     <LayoutBase>
       <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        {datasetData && (
-          <>
-            <Box heading="Summary">
-              <JSONToTable
-                jsonObj={{
-                  ID: datasetData.id,
-                  URI: datasetData.uri,
-                  Description: datasetData.description,
-                  "Artifact Count": datasetData.summaryArtifactCount,
-                  "Artifact Filetypes":
-                    datasetData.summaryArtifactIncludes != ""
-                      ? datasetData.summaryArtifactIncludes.replaceAll(" ", "/")
-                      : "-",
-                  "Artifact Size": fileSize(
-                    datasetData.summaryArtifactSizeBytes
-                  ),
-                  Configuration: configurationChip(datasetData.isInConfig),
-                }}
-              />
-            </Box>
+        <>
+          {datasetData && (
+            <>
+              <Box heading="Summary">
+                <JSONToTable
+                  jsonObj={{
+                    ID: datasetData.id,
+                    URI: datasetData.uri,
+                    Description: datasetData.description,
+                    "Artifact Count": datasetData.summaryArtifactCount,
+                    "Artifact Filetypes":
+                      datasetData.summaryArtifactIncludes != ""
+                        ? datasetData.summaryArtifactIncludes.replaceAll(
+                            " ",
+                            "/"
+                          )
+                        : "-",
+                    "Artifact Size": fileSize(
+                      datasetData.summaryArtifactSizeBytes
+                    ),
+                    Configuration: configurationChip(datasetData.isInConfig),
+                  }}
+                />
+              </Box>
 
-            <Box
-              heading={
-                <div className="flex items-center	justify-between">
-                  <div>Content</div>
-                  <button
-                    disabled={!datasetData.id}
-                    onClick={async () =>
-                      await axios.post<any>(`/api/datasets/sync/`, {
-                        datasetURI: datasetData.uri,
-                      })
-                    }
-                    type="button"
-                    className="inline-block	cursor-pointer rounded bg-slate-200 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
-                  >
-                    SYNC
-                  </button>
+              <Box
+                heading={
+                  <div className="flex items-center	justify-between">
+                    <div>Content</div>
+                    <button
+                      disabled={!datasetData.id}
+                      onClick={async () =>
+                        await axios.post<any>(`/api/datasets/sync/`, {
+                          datasetURI: datasetData.uri,
+                        })
+                      }
+                      type="button"
+                      className="inline-block	cursor-pointer rounded bg-slate-200 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
+                    >
+                      SYNC
+                    </button>
+                  </div>
+                }
+              >
+                <div>
+                  {datasetData && (
+                    <pre>{JSON.stringify(datasetData, null, 2)}</pre>
+                  )}
                 </div>
-              }
-            >
-              <div>
-                {datasetData && (
-                  <pre>{JSON.stringify(datasetData, null, 2)}</pre>
-                )}
-              </div>
-            </Box>
-          </>
-        )}
-        {error && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching datasets."}
-            error={error}
-            styling={"bg-red-100"}
-          />
-        )}
+              </Box>
+            </>
+          )}
+          {error && (
+            <EagerErrorBoundary
+              message={"Something went wrong fetching datasets."}
+              error={error}
+              styling={"bg-red-100"}
+            />
+          )}
+        </>
       </div>
     </LayoutBase>
   );
