@@ -76,6 +76,7 @@
     "dotenv": "16.0.3",
     "edgedb": "0.22.8",
     "esbuild": "0.15.12",
+    "etag": "^1.8.1",
     "fastify": "4.10.2",
     "fastify-favicon": "4.2.0",
     "gunzip-maybe": "^1.4.2",
@@ -104,6 +105,7 @@
   "devDependencies": {
     "@types/archiver": "5.3.1",
     "@types/convict": "6.1.1",
+    "@types/etag": "^1.8.1",
     "@types/gunzip-maybe": "^1.4.0",
     "@types/http-link-header": "^1.0.3",
     "@types/i18n": "^0.13.4",

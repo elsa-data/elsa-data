@@ -49,7 +49,7 @@ module release {
         #
         required property datasetUris -> array<str>;
 
-        optional link activated -> Activation {
+        optional link activation -> Activation {
             constraint exclusive;
 
             # we cascade delete our activation if the release itself is removed
@@ -60,7 +60,7 @@ module release {
         optional multi link previouslyActivated -> Activation {
             constraint exclusive;
 
-            # we cascade delete our activations if the release itself is removed
+            # we cascade delete our old activations if the release itself is removed
             #
             on source delete delete target;
         }

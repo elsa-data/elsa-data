@@ -2,6 +2,7 @@ import e from "../../../dbschema/edgeql-js";
 import { Client, Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UsersService } from "./users-service";
+import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate
@@ -70,11 +71,9 @@ export async function getReleaseInfo(
     runningJob: {
       ...e.job.Job["*"],
     },
-    // TBD replace
-    // the master computation of whether we are currently enabled for access
-    accessEnabled: e.bool(true),
-    // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
-    //manualExclusions: true,
+    activation: {
+      ...e.release.Activation["*"],
+    },
     // we are loosely linked (by uri) to datasets which this release draws data from
     // TODO: revisit the loose linking
     datasetIds: e.select(e.dataset.Dataset, (ds) => ({
@@ -86,10 +85,7 @@ export async function getReleaseInfo(
 
   const releaseInfo = await releaseInfoQuery.run(edgeDbClient);
 
-  if (!releaseInfo)
-    throw new Error(
-      `Case fetch attempted on non-existent release ${releaseId}`
-    );
+  if (!releaseInfo) throw new ReleaseDisappearedError(releaseId);
 
   const datasetUriToIdMap = new Map(
     releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)])

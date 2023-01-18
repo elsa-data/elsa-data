@@ -92,6 +92,9 @@ export async function createReleaseManifest(
   const { releaseSelectedSpecimensQuery, datasetUriToIdMap } =
     await getReleaseInfo(executor, releaseId);
 
+  // get the tree of cases/patients/specimens - that we want to put into the manifest
+  // (currently just shows the tree of data and key linkages - but could contain *actual*
+  // data I guess (age etc)
   const tree = await e
     .select(e.dataset.DatasetCase, (c) => ({
       ...e.dataset.DatasetCase["*"],
@@ -195,6 +198,7 @@ export async function createReleaseManifest(
     id: releaseId,
     reads: includeReadData ? readDictionary : {},
     variants: includeVariantData ? variantDictionary : {},
+    // TODO implement a restrictions mechanism both here and in the htsget server
     restrictions: {},
     cases: tree.map((c) => {
       return {
@@ -213,8 +217,6 @@ export async function createReleaseManifest(
       };
     }),
   };
-
-  console.log(JSON.stringify(manifest, null, 2));
 
   return manifest;
 }

@@ -18,17 +18,19 @@ describe("http integration tests", () => {
     // we haven't yet determined what the auth schema for external is - but we are proving here
     // that the base concept works
     const res = await server.inject({
-      url: "/api/manifest",
+      url: "/api/manifest/areleaseid",
       headers: {
         authorization: "Blah",
       },
     });
-    expect(res.statusCode).toEqual(200);
+    // NOTE: this indicates that we have got past auth - and that we are getting a 404 to mean the
+    // release doesn't exist
+    expect(res.statusCode).toEqual(404);
   });
 
   it("get fail testing external manifest auth request with no bearer", async () => {
     const res = await server.inject({
-      url: "/api/manifest",
+      url: "/api/manifest/areleaseid",
     });
     expect(res.statusCode).toEqual(401);
   });
