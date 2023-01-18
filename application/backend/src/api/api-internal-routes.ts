@@ -1,22 +1,23 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { releaseRoutes } from "./routes/release-routes";
-import { datasetRoutes } from "./routes/dataset-routes";
+import { releaseRoutes } from "./routes/internal/release-routes";
+import { datasetRoutes } from "./routes/internal/dataset-routes";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
   PagedResult,
   TOTAL_COUNT_HEADER_NAME,
-} from "./api-pagination";
-import { container, DependencyContainer } from "tsyringe";
+} from "./helpers/pagination-helpers";
+import { DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";
-import { isEmpty, isNil, isString, trim } from "lodash";
-import { auditLogRoutes } from "./routes/audit-log-routes";
-import { dacRoutes } from "./routes/dac-routes";
+import { isEmpty, isString, trim } from "lodash";
+import { auditLogRoutes } from "./routes/internal/audit-log-routes";
+import { dacRoutes } from "./routes/internal/dac-routes";
 import { ElsaSettings } from "../config/elsa-settings";
-import { createAuthRouteHook } from "../auth/auth-route-hook";
-import { userRoutes } from "./routes/user-routes";
+import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
+import { userRoutes } from "./routes/internal/user-routes";
 
 type Opts = {
+  container: DependencyContainer;
   allowTestCookieEquals?: string;
 };
 
@@ -92,37 +93,40 @@ export function sendPagedResult<T>(
 }
 
 /**
- * The main API routes plugin point, defining a set of authenticated and
- * unauthenticated routes for use as an API
+ * Defined a set of internal session/cookie authenticated
+ * routes.
  *
  * @param fastify
  * @param opts
  */
-export const apiRoutes = async (
+export const apiInternalRoutes = async (
   fastify: FastifyInstance,
   opts: {
     container: DependencyContainer;
     allowTestCookieEquals?: string;
   }
 ) => {
-  const usersService = container.resolve(UsersService);
-  //const settings = container.resolve<ElsaSettings>("Settings");
+  const usersService = opts.container.resolve(UsersService);
 
-  // TODO place any unauthenticated routes first here
-
-  const authHook = createAuthRouteHook(
+  const authInternalHook = createSessionCookieRouteHook(
     usersService,
-    opts.allowTestCookieEquals != null,
-    opts.allowTestCookieEquals
+    opts.allowTestCookieEquals != null
   );
 
   // now register the auth hook and then register all the rest of our routes nested within
-  fastify.addHook("onRequest", authHook).after(() => {
-    fastify.register(auditLogRoutes, opts);
-    fastify.register(releaseRoutes, opts);
-    fastify.register(dacRoutes, opts);
-    fastify.register(datasetRoutes, opts);
+  fastify.addHook("onRequest", authInternalHook).after(() => {
+    // we want to make a new opts object as there are some values (like prefix) that can appear
+    // in `opts` that we *don't* want to pass through
+    const routeOpts: Opts = {
+      container: opts.container,
+      allowTestCookieEquals: opts.allowTestCookieEquals,
+    };
 
-    fastify.register(userRoutes, opts);
+    fastify.register(auditLogRoutes, routeOpts);
+    fastify.register(releaseRoutes, routeOpts);
+    fastify.register(dacRoutes, routeOpts);
+    fastify.register(datasetRoutes, routeOpts);
+
+    fastify.register(userRoutes, routeOpts);
   });
 };

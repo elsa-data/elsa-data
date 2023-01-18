@@ -13,7 +13,10 @@ import {
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isObjectLike, isSafeInteger } from "lodash";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import {
   collapseExternalIds,
   doRoleInReleaseCheck,

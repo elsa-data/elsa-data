@@ -12,7 +12,10 @@ import {
   AuditEntryFullType,
   AuditEntryType,
 } from "@umccr/elsa-types/schemas-audit";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import {
   auditLogDetailsForIdQuery,
   auditLogFullForIdQuery,

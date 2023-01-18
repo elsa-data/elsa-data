@@ -1,15 +1,38 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import {
   SESSION_TOKEN_PRIMARY,
   SESSION_USER_DB_OBJECT,
-} from "./auth-constants";
+} from "./session-cookie-constants";
 import { UsersService } from "../business/services/users-service";
 import { ElsaSettings } from "../config/elsa-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import { SingleUserBySubjectIdType } from "../business/db/user-queries";
+import { SecureSessionPluginOptions } from "@fastify/secure-session";
+import { SECURE_COOKIE_NAME } from "@umccr/elsa-constants";
 
-export type FastifyRequestAuthed = FastifyRequest & { user: AuthenticatedUser };
+/**
+ * Return a secure sessions plugin options object.
+ * NOTES: the code is here just so all the auth stuff is in one spot.
 
+ * @param settings
+ */
+export function getSecureSessionOptions(
+  settings: ElsaSettings
+): SecureSessionPluginOptions {
+  return {
+    secret: settings.sessionSecret,
+    salt: settings.sessionSalt,
+    cookieName: SECURE_COOKIE_NAME,
+    cookie: {
+      // use across the entire site
+      path: "/",
+      // even though the session cookie is strongly encrypted - we also mind as well restrict it to https
+      secure: true,
+      // the session cookie is for use by the backend - not by frontend code
+      httpOnly: true,
+    },
+  };
+}
 export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
   for (const sa of settings.superAdmins || []) {
     if (sa.id === user.subjectId) return true;
@@ -18,44 +41,27 @@ export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
 }
 
 /**
- * Creates a hook that does a barrier check on super admin functionality.
- *
- * @param settings
- */
-/*export function createSuperAdminAuthRouteHook(settings: ElsaSettings) {
-  return async (request: FastifyRequestAuthed, reply: FastifyReply) => {
-    if (!request.user) throw Error("Shouldn't be able to happen");
-
-    const isa = isSuperAdmin(settings, request.user);
-
-    if (!isa) {
-      reply.code(403).send();
-      // to be really clear - we aren't proceeding or doing anything else as the person is not superadmin
-      return;
-    }
-  };
-}*/
-
-/**
  * Creates a hook that does all the auth setup for each request needing authenticated users (does the cookie handling,
  * creating a User object etc). This hook is a barrier function to all routes registered
- * on it - that is - it prevents any unauthenticated requests from continuing.
+ * on it - that is - it prevents any unauthenticated requests from continuing. The authentication
+ * that is required for this hook is that which is setup for internal use i.e. login and cookie sessions.
  *
  * @param usersService the Users service
  * @param allowSessionCookieUserNotMatchingDb if true, then do an extra check to make sure the session user matches the same user in the database (needed where the dev db can refresh)
- * @param allowTestCookieEquals if the primary session token is present with this value - create a test user
+ * // @param allowTestCookieEquals if the primary session token is present with this value - create a test user
  */
-export function createAuthRouteHook(
+export function createSessionCookieRouteHook(
   usersService: UsersService,
-  allowSessionCookieUserNotMatchingDb: boolean,
-  allowTestCookieEquals?: string
+  allowSessionCookieUserNotMatchingDb: boolean
+  // allowTestCookieEquals?: string
 ) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // if we are in test mode - then we want to accept a manually constructed cookie in lieu of a real
       // session cookie - so we can simulate with Postman/Curl etc
       // TODO - the cookie will have to allow us as testers to set group info etc
-      if (allowTestCookieEquals) {
+      /* NOT CURRENTLY BEING USED Jan 2023 - disabling and if no use cases arise then delete
+        if (allowTestCookieEquals) {
         const rawCookie = request.cookies[SESSION_TOKEN_PRIMARY];
 
         if (rawCookie == allowTestCookieEquals) {
@@ -65,7 +71,7 @@ export function createAuthRouteHook(
           );
           return;
         }
-      }
+      } */
 
       // TODO: get all the HTTP return codes correct
 
@@ -80,7 +86,7 @@ export function createAuthRouteHook(
 
       if (!sessionTokenPrimary || !sessionDbObject) {
         request.log.error(
-          "createAuthRouteHook: no session cookie data present so failing authentication"
+          "createSessionCookieRouteHook: no session cookie data present so failing authentication"
         );
 
         return reply.code(401).send();
@@ -111,12 +117,15 @@ export function createAuthRouteHook(
 
       const authedUser = new AuthenticatedUser(sessionDbObject);
 
-      request.log.trace(authedUser, `createAuthRouteHook: user details`);
+      request.log.trace(
+        authedUser,
+        `createSessionCookieRouteHook: user details`
+      );
 
       // set the full authenticated user into the request state for the rest of the request handling
       (request as any).user = authedUser;
     } catch (error) {
-      request.log.error(error, "createAuthRouteHook: overall error");
+      request.log.error(error, "createSessionCookieRouteHook: overall error");
 
       // we are interpreting a failure here as an authentication failure 401
       // (where are 403 would have meant we parsed all the auth data, but then decided to reject it)

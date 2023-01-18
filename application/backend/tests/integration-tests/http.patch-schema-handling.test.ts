@@ -17,7 +17,7 @@ import {
 } from "../../src/test-data/insert-test-data-10f-simpsons";
 import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
-import { TEST_SUBJECT_1 } from "../../src/test-data/insert-test-data";
+import { TEST_SUBJECT_1 } from "../../src/test-data/insert-test-users";
 
 describe("http patch schema handling tests", () => {
   let server: FastifyInstance;

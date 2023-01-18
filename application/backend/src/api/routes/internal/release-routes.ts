@@ -15,13 +15,13 @@ import {
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
-} from "../api-routes";
+} from "../../api-internal-routes";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { container } from "tsyringe";
-import { JobsService } from "../../business/services/jobs/jobs-base-service";
-import { ReleaseService } from "../../business/services/release-service";
-import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
-import { AwsPresignedUrlsService } from "../../business/services/aws-presigned-urls-service";
+import { JobsService } from "../../../business/services/jobs/jobs-base-service";
+import { ReleaseService } from "../../../business/services/release-service";
+import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
+import { AwsPresignedUrlsService } from "../../../business/services/aws-presigned-urls-service";
 import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
@@ -31,7 +31,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   const releasesService = container.resolve(ReleaseService);
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
-    "/api/releases",
+    "/releases",
     {},
     async function (request, reply) {
       const { authenticatedUser, pageSize, offset } =
@@ -48,7 +48,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   );
 
   fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/api/releases/:rid",
+    "/releases/:rid",
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
@@ -63,7 +63,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   );
 
   fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
-    "/api/releases/:rid/cases",
+    "/releases/:rid/cases",
     {},
     async function (request, reply) {
       const { authenticatedUser, pageSize, page, q } =
@@ -86,7 +86,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   fastify.get<{
     Params: { rid: string; nid: string };
     Reply: DuoLimitationCodedType[];
-  }>("/api/releases/:rid/consent/:nid", {}, async function (request, reply) {
+  }>("/releases/:rid/consent/:nid", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
@@ -104,7 +104,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   });
 
   fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/api/releases/:rid/jobs/select",
+    "/releases/:rid/jobs/select",
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
@@ -118,7 +118,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   );
 
   fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/api/releases/:rid/jobs/cancel",
+    "/releases/:rid/jobs/cancel",
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
@@ -144,7 +144,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     };
     Body: ReleasePatchOperationsType;
   }>(
-    "/api/releases/:rid",
+    "/releases/:rid",
     {
       schema: {
         body: ReleasePatchOperationsSchema,
@@ -316,7 +316,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   fastify.post<{
     Body: ReleaseMasterAccessRequestType;
     Params: { rid: string };
-  }>("/api/releases/:rid/access", {}, async function (request) {
+  }>("/releases/:rid/access", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
@@ -331,7 +331,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
   fastify.get<{
     Params: { rid: string };
-  }>("/api/releases/:rid/cfn", {}, async function (request, reply) {
+  }>("/releases/:rid/cfn", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
@@ -352,7 +352,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   fastify.post<{
     Body: { accounts: string[]; vpcId?: string };
     Params: { rid: string };
-  }>("/api/releases/:rid/cfn", {}, async function (request) {
+  }>("/releases/:rid/cfn", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const releaseId = request.params.rid;
@@ -385,7 +385,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     Body: ReleaseAwsS3PresignRequestType;
     Params: { rid: string };
   }>(
-    "/api/releases/:rid/aws-s3-presigned",
+    "/releases/:rid/aws-s3-presigned",
     {
       schema: {
         body: ReleaseAwsS3PresignRequestSchema,
@@ -419,7 +419,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     Body: ReleaseAwsS3PresignRequestType;
     Params: { rid: string };
   }>(
-    "/api/releases/:rid/cfn/manifest",
+    "/releases/:rid/cfn/manifest",
     {
       schema: {
         body: ReleaseAwsS3PresignRequestSchema,

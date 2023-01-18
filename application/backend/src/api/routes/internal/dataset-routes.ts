@@ -5,16 +5,16 @@ import {
   DatasetGen3SyncResponseType,
   DatasetLightType,
 } from "@umccr/elsa-types";
-import { datasetGen3SyncRequestValidate } from "../../validators/validate-json";
+import { datasetGen3SyncRequestValidate } from "../../../validators/validate-json";
 import { container } from "tsyringe";
-import { DatasetService } from "../../business/services/dataset-service";
-import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
+import { DatasetService } from "../../../business/services/dataset-service";
+import { S3IndexApplicationService } from "../../../business/services/australian-genomics/s3-index-import-service";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
-} from "../api-routes";
+} from "../../api-internal-routes";
 import { Static, Type } from "@sinclair/typebox";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { ElsaSettings } from "../../../config/elsa-settings";
 
 export const DatasetSummaryQuerySchema = Type.Object({
   includeDeletedFile: Type.Optional(Type.String()),
@@ -31,7 +31,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   fastify.get<{
     Querystring: DatasetSummaryQueryType;
     Reply: DatasetLightType[];
-  }>("/api/datasets/", {}, async function (request, reply) {
+  }>("/datasets/", {}, async function (request, reply) {
     const { authenticatedUser, pageSize, offset } =
       authenticatedRouteOnEntryHelper(request);
 
@@ -47,7 +47,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   });
 
   fastify.get<{ Params: { did: string }; Reply: DatasetDeepType }>(
-    "/api/datasets/:did",
+    "/datasets/:did",
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
@@ -66,7 +66,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   fastify.post<{
     Request: DatasetGen3SyncRequestType;
     Reply: DatasetGen3SyncResponseType;
-  }>("/api/datasets", {}, async function (request, reply) {
+  }>("/datasets", {}, async function (request, reply) {
     if (!datasetGen3SyncRequestValidate(request.body)) {
       //reply
       //    .code(200)
@@ -84,7 +84,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   });
 
   fastify.post<{ Body: { datasetURI: string } }>(
-    "/api/datasets/sync/",
+    "/datasets/sync/",
     {},
     async function (request, reply) {
       const body = request.body;
