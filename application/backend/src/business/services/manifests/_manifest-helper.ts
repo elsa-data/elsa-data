@@ -1,87 +1,28 @@
-import e from "../../../dbschema/edgeql-js";
-import { collapseExternalIds, getReleaseInfo } from "./helpers";
+import e from "../../../../dbschema/edgeql-js";
+import { getReleaseInfo } from "../helpers";
 import { Executor } from "edgedb";
-import { Static, Type } from "@sinclair/typebox";
-import { createReleaseFileList } from "./_release-file-list-helper";
-import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
+import { artifactFilesForSpecimensQuery } from "../../db/artifact-queries";
 import _ from "lodash";
-
-export const ManifestExternalIdentifiersSchema = Type.Record(
-  Type.String(),
-  Type.Union([Type.String(), Type.Array(Type.String())])
-);
-
-export const ManifestSpecimenSchema = Type.Object({
-  // the htsget key that points to the corresponding read/variants records declared in the manifest
-  htsgetId: Type.String(),
-
-  // external identifiers attached to this specimen for linkage
-  ids: ManifestExternalIdentifiersSchema,
-});
-
-export const ManifestPatientSchema = Type.Object({
-  // external identifiers attached to this patient for linkage
-  ids: ManifestExternalIdentifiersSchema,
-
-  specimens: Type.Array(ManifestSpecimenSchema),
-});
-
-export const ManifestCaseSchema = Type.Object({
-  // external identifiers attached to this case for linkage
-  ids: ManifestExternalIdentifiersSchema,
-
-  patients: Type.Array(ManifestPatientSchema),
-});
-
-export const ManifestRegionRestrictionSchema = Type.Object({
-  // TBD
-  // need to think about what sort of restrictions we want here and how much burden to put on htsget
-  // to calculate them
-  // at the simplest - this would be an array of start/end regions
-  // byGene: Type.Record(Type.String(), Type.Number())
-});
-
-export const ManifestReadsFileSchema = Type.Object({
-  url: Type.String(),
-
-  restriction: Type.Optional(Type.String()),
-});
-
-export const ManifestVariantsFileSchema = Type.Object({
-  url: Type.String(),
-  variantSampleId: Type.String(),
-
-  restriction: Type.Optional(Type.String()),
-});
-
-export const ManifestSchema = Type.Object({
-  // the release identifier from Elsa Data
-  id: Type.String(),
-
-  // a dictionary of reads keyed by the htsget {id}
-  reads: Type.Record(Type.String(), ManifestReadsFileSchema),
-
-  // a dictionary of variants keyed by the htsget {id}
-  variants: Type.Record(Type.String(), ManifestVariantsFileSchema),
-
-  // a dictionary of restriction types keyed by arbitrary name/id
-  // TBD
-  restrictions: Type.Record(Type.String(), ManifestRegionRestrictionSchema),
-
-  cases: Type.Array(ManifestCaseSchema),
-});
-
-export type ManifestType = Static<typeof ManifestSchema>;
-export type ManifestReadsFileType = Static<typeof ManifestReadsFileSchema>;
-export type ManifestVariantsFileType = Static<
-  typeof ManifestVariantsFileSchema
->;
+import type {
+  ManifestReadsFileType,
+  ManifestType,
+  ManifestVariantsFileType,
+} from "./manifest-types";
 
 /**
+ * Create a structured/tree manifest for the data included in a release.
+ * The job of the manifest is to give the structure of the data and enough
+ * ids/file paths to enable a user with the manifest to understand where the files
+ * are and how they relate to each other.
+ *
+ * The primary use case *for this manifest* is to be something that can be shared
+ * by htsget endpoints and the user - giving them details of which files are
+ * available and on which identifiers.
+ *
  * @param executor the client or transaction to execute this query in
  * @param releaseId the release whose selected entries should go into the manifest
- * @param includeReadData whether to include BAM/FASTQ etc
- * @param includeVariantData whether to include VCF etc
+ * @param includeReadData whether to include BAM access to htsget
+ * @param includeVariantData whether to include VCF access to htsget
  */
 export async function createReleaseManifest(
   executor: Executor,
@@ -89,8 +30,10 @@ export async function createReleaseManifest(
   includeReadData: boolean,
   includeVariantData: boolean
 ): Promise<ManifestType> {
-  const { releaseSelectedSpecimensQuery, datasetUriToIdMap } =
-    await getReleaseInfo(executor, releaseId);
+  const { releaseSelectedSpecimensQuery } = await getReleaseInfo(
+    executor,
+    releaseId
+  );
 
   // get the tree of cases/patients/specimens - that we want to put into the manifest
   // (currently just shows the tree of data and key linkages - but could contain *actual*
@@ -114,6 +57,7 @@ export async function createReleaseManifest(
       }),
       // this filter is needed otherwise we end up with 'empty' cases
       filter: e.op(c.patients.specimens, "in", releaseSelectedSpecimensQuery),
+      // order is kind of irrelevant but we aim for it to at least be stable
       order_by: [
         {
           expression: c.dataset.uri,
@@ -136,6 +80,7 @@ export async function createReleaseManifest(
     specimenIds: releaseSelectedSpecimens.map((s) => s.id),
   });
 
+  // a little tidy up of the uuids so they look not quite as uuids
   const uuidToHtsgetId = (uuid: string): string => {
     return uuid.replaceAll("-", "").toUpperCase();
   };
@@ -151,7 +96,8 @@ export async function createReleaseManifest(
   for (const filesResult of filesResults) {
     // NOTE: we prefer the specimen id over the artifact id here - because of the VCF with multiple samples problem
     // it is entirely possible we might have 3 specimens say (a trio) all pointing to a single VCF artifact
-    // when we expose via htsget - we are talking about access at the specimen level (i.e. one sample in the VCF)
+    // when we expose via htsget - we are talking about access at the specimen level (i.e. one sample in the VCF is
+    // exposed via htsget per request)
     const htsgetId: string = uuidToHtsgetId(filesResult.id);
 
     for (const art of filesResult.artifacts) {
@@ -194,7 +140,7 @@ export async function createReleaseManifest(
     return result;
   };
 
-  const manifest: ManifestType = {
+  return {
     id: releaseId,
     reads: includeReadData ? readDictionary : {},
     variants: includeVariantData ? variantDictionary : {},
@@ -217,6 +163,4 @@ export async function createReleaseManifest(
       };
     }),
   };
-
-  return manifest;
 }

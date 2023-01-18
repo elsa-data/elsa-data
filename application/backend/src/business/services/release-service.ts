@@ -28,11 +28,6 @@ import { ReleaseBaseService } from "./release-base-service";
 import { allReleasesSummaryByUserQuery } from "../db/release-queries";
 import { $scopify } from "edgedb/dist/reflection";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
-import { Static, Type } from "@sinclair/typebox";
-import {
-  createReleaseManifest,
-  ManifestType,
-} from "./_release-manifest-helper";
 import etag from "etag";
 import {
   ReleaseActivationPermissionError,
@@ -41,6 +36,7 @@ import {
 } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { uuid } from "edgedb/dist/codecs/ifaces";
+import { createReleaseManifest } from "./manifests/_manifest-helper";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -695,45 +691,6 @@ export class ReleaseService extends ReleaseBaseService {
     });
 
     return await this.getBase(releaseId, userRole);
-  }
-
-  /**
-   * Return the manifest for this release if present, else return null.
-   *
-   * NOTE: this has no User on this call because we haven't yet worked out what
-   * the caller for this is (another service??).
-   *
-   * @param releaseId
-   */
-  public async getActiveManifest(
-    releaseId: string
-  ): Promise<ManifestType | null> {
-    let releaseUuid: any;
-
-    // whilst we are sorting out what exactly our release id should be - this
-    // is a simple boundary check that the format is ok according to edgedb
-    try {
-      releaseUuid = await e.uuid(releaseId).run(this.edgeDbClient);
-    } catch (e) {
-      return null;
-    }
-
-    const releaseWithManifest = await e
-      .select(e.release.Release, (r) => ({
-        id: true,
-        activation: {
-          manifest: true,
-        },
-        filter: e.op(r.id, "=", releaseUuid),
-      }))
-      .assert_single()
-      .run(this.edgeDbClient);
-
-    if (!releaseWithManifest) return null;
-
-    if (!releaseWithManifest.activation) return null;
-
-    return releaseWithManifest.activation.manifest as ManifestType;
   }
 
   /**

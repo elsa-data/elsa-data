@@ -9,9 +9,11 @@ import {
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
 } from "../../src/business/exceptions/release-activation";
+import { ManifestService } from "../../src/business/services/manifests/manifest-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
+let manifestService: ManifestService;
 let testReleaseId: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
@@ -23,6 +25,7 @@ beforeAll(async () => {
 
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
+  manifestService = testContainer.resolve(ManifestService);
 });
 
 beforeEach(async () => {
@@ -46,7 +49,7 @@ it("releases can be activated", async () => {
 it("active releases have a manifest", async () => {
   await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
 
-  const result = await releaseService.getActiveManifest(testReleaseId);
+  const result = await manifestService.getActiveManifest(testReleaseId);
 
   assert(result != null);
 

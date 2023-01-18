@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
-import { ReleaseService } from "../../../business/services/release-service";
-import { ManifestType } from "../../../business/services/_release-manifest-helper";
+import { ManifestService } from "../../../business/services/manifests/manifest-service";
+import { ManifestType } from "../../../business/services/manifests/manifest-types";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,
@@ -9,7 +9,7 @@ export const manifestRoutes = async (
     container: DependencyContainer;
   }
 ) => {
-  const releaseService = opts.container.resolve(ReleaseService);
+  const manifestService = opts.container.resolve(ManifestService);
 
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
@@ -22,7 +22,7 @@ export const manifestRoutes = async (
 
       console.log(releaseId);
 
-      const manifest = await releaseService.getActiveManifest(releaseId);
+      const manifest = await manifestService.getActiveManifest(releaseId);
 
       // whether it be lack of permissions, or bad release id, or non active release - we return 404 Not Found
       // if we have nothing correct to send
