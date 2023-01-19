@@ -68,6 +68,7 @@ export class DatasetService {
       limit: limit,
       offset: offset,
       includeDeletedFile: includeDeletedFile,
+      // datasetId: "abcd",
     });
 
     const converted: DatasetLightType[] = fullDatasets.map((fd) => {
@@ -107,8 +108,15 @@ export class DatasetService {
         //  ds.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactBase).
         //),
         cases: {
+          consent: {
+            id: true,
+          },
           externalIdentifiers: true,
           patients: {
+            sexAtBirth: true,
+            consent: {
+              id: true,
+            },
             externalIdentifiers: true,
             specimens: {
               externalIdentifiers: true,
@@ -119,7 +127,7 @@ export class DatasetService {
       }))
       .run(this.edgeDbClient);
 
-    if (singleDataset != null) {
+    if (singleDataset) {
       return {
         id: singleDataset.id,
         uri: singleDataset.uri,
@@ -132,7 +140,7 @@ export class DatasetService {
         summarySpecimenCount: 0,
         summaryPatientCount: 0,
         summaryArtifactSizeBytes: 0,
-        cases: [],
+        cases: singleDataset.cases,
       };
     }
 

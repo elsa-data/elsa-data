@@ -32,9 +32,9 @@ export async function startWebServer(scenario: number | null): Promise<number> {
     if (process.env.NODE_ENV === "development") {
       console.log(`Resetting the database to contain scenario ${scenario}`);
 
-      await blankTestData();
-      // TODO allow different scenarios to be inserted based on the value
-      await insertTestData(settings);
+      // await blankTestData();
+      // // TODO allow different scenarios to be inserted based on the value
+      // await insertTestData(settings);
     } else {
       // a simple guard to hopefully stop an accident in prod
       console.log(
