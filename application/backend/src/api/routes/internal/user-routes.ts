@@ -2,23 +2,18 @@ import { FastifyInstance } from "fastify";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
-} from "../api-routes";
+} from "../../api-internal-routes";
 import { container } from "tsyringe";
-import { UsersService } from "../../business/services/users-service";
+import { UsersService } from "../../../business/services/users-service";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import { getServices } from "../../di-helpers";
+import { getServices } from "../../../di-helpers";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   const userService = container.resolve(UsersService);
   const { settings } = getServices(container);
 
-  // const superAdminAuthHook = createSuperAdminAuthRouteHook(settings);
-  //fastify.addHook("onRequest", superAdminAuthHook, () => {
-  //
-  //});
-
   fastify.get<{ Reply: UserSummaryType[] }>(
-    "/api/users",
+    "/users",
     {},
     async function (request, reply) {
       const { authenticatedUser, pageSize, page } =

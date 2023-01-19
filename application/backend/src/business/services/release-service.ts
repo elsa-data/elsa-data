@@ -4,14 +4,19 @@ import {
   DuoLimitationCodedType,
   ReleaseCaseType,
   ReleaseDetailType,
+  ReleaseNodeStatusSchema,
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
   ReleaseSummaryType,
+  RemsApprovedApplicationSchema,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isObjectLike, isSafeInteger } from "lodash";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import {
   collapseExternalIds,
   doRoleInReleaseCheck,
@@ -23,6 +28,15 @@ import { ReleaseBaseService } from "./release-base-service";
 import { allReleasesSummaryByUserQuery } from "../db/release-queries";
 import { $scopify } from "edgedb/dist/reflection";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
+import etag from "etag";
+import {
+  ReleaseActivationPermissionError,
+  ReleaseActivationStateError,
+  ReleaseDeactivationStateError,
+} from "../exceptions/release-activation";
+import { ReleaseDisappearedError } from "../exceptions/release-disappear";
+import { uuid } from "edgedb/dist/codecs/ifaces";
+import { createReleaseManifest } from "./manifests/_manifest-helper";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -63,6 +77,7 @@ export class ReleaseService extends ReleaseBaseService {
       applicationDacIdentifierValue: a.applicationDacIdentifier.value,
       applicationDacTitle: a.applicationDacTitle,
       isRunningJobPercentDone: undefined,
+      isActivated: a.activation != null,
       roleInRelease: a["@role"]!,
     }));
   }
@@ -572,10 +587,7 @@ export class ReleaseService extends ReleaseBaseService {
         .assert_single()
         .run(tx);
 
-      if (!releaseWithAppCoded)
-        throw new Error(
-          `Release ${releaseId} that existed just before this code has now disappeared!`
-        );
+      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseId);
 
       await e
         .update(e.release.ApplicationCoded, (ac) => ({
@@ -617,10 +629,7 @@ export class ReleaseService extends ReleaseBaseService {
         .assert_single()
         .run(tx);
 
-      if (!releaseWithAppCoded)
-        throw new Error(
-          `Release ${releaseId} that existed just before this code has now disappeared!`
-        );
+      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseId);
 
       await e
         .update(e.release.ApplicationCoded, (ac) => ({
@@ -639,6 +648,14 @@ export class ReleaseService extends ReleaseBaseService {
     return await this.getBase(releaseId, userRole);
   }
 
+  /**
+   * Change the 'is allowed' status of one of the is allowed fields in the release.
+   *
+   * @param user
+   * @param releaseId
+   * @param type
+   * @param value
+   */
   public async setIsAllowed(
     user: AuthenticatedUser,
     releaseId: string,
@@ -674,5 +691,87 @@ export class ReleaseService extends ReleaseBaseService {
     });
 
     return await this.getBase(releaseId, userRole);
+  }
+
+  /**
+   * For the current state of a release, 'activate' it which means to switch
+   * on all necessary flags that enable actual data sharing.
+   *
+   * @param user
+   * @param releaseId
+   * @protected
+   */
+  public async activateRelease(user: AuthenticatedUser, releaseId: string) {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    if (userRole !== "DataOwner") {
+      // TODO: replace with real error class
+      throw new Error("must be a data owner");
+    }
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      const { releaseInfo } = await getReleaseInfo(tx, releaseId);
+
+      if (!releaseInfo) throw new ReleaseDisappearedError(releaseId);
+
+      if (releaseInfo.activation)
+        throw new ReleaseActivationStateError(releaseId);
+
+      const manifest = await createReleaseManifest(
+        tx,
+        releaseId,
+        releaseInfo.isAllowedReadData,
+        releaseInfo.isAllowedVariantData
+      );
+
+      await e
+        .update(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          set: {
+            activation: e.insert(e.release.Activation, {
+              activatedById: user.subjectId,
+              activatedByDisplayName: user.displayName,
+              manifest: e.json(manifest),
+              manifestEtag: etag(JSON.stringify(manifest)),
+            }),
+          },
+        }))
+        .run(tx);
+    });
+  }
+
+  public async deactivateRelease(user: AuthenticatedUser, releaseId: string) {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    if (userRole !== "DataOwner") {
+      throw new ReleaseActivationPermissionError(releaseId);
+    }
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      const { releaseInfo } = await getReleaseInfo(tx, releaseId);
+
+      if (!releaseInfo) throw new Error("release has disappeared");
+
+      if (!releaseInfo.activation)
+        throw new ReleaseDeactivationStateError(releaseId);
+
+      await e
+        .update(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          set: {
+            previouslyActivated: { "+=": r.activation },
+            activation: null,
+          },
+        }))
+        .run(tx);
+    });
   }
 }

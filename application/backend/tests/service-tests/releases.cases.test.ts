@@ -8,7 +8,7 @@ import {
   findSpecimen,
 } from "./utils";
 import { ReleaseCaseType, ReleaseSpecimenType } from "@umccr/elsa-types";
-import { PagedResult } from "../../src/api/api-pagination";
+import { PagedResult } from "../../src/api/helpers/pagination-helpers";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "./setup";
 import { ReleaseService } from "../../src/business/services/release-service";

@@ -155,9 +155,13 @@ export abstract class ReleaseBaseService {
           }
         : undefined,
       visibleCasesCount: visibleCasesCount,
-      accessStartDate: releaseInfo.releaseStarted ?? undefined,
-      accessEndDate: releaseInfo.releaseEnded ?? undefined,
-      accessEnabled: releaseInfo.accessEnabled ?? false,
+      activation:
+        releaseInfo.activation != null
+          ? {
+              activatedByDisplayName:
+                releaseInfo.activation.activatedByDisplayName,
+            }
+          : undefined,
       isAllowedReadData: releaseInfo.isAllowedReadData,
       isAllowedVariantData: releaseInfo.isAllowedVariantData,
       isAllowedPhenotypeData: releaseInfo.isAllowedPhenotypeData,
