@@ -2,7 +2,7 @@ import getUnicodeFlagIcon from "country-flag-icons/unicode";
 import { hasFlag } from "country-flag-icons";
 import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUnlock } from "@fortawesome/free-solid-svg-icons";
+import { faFileContract } from "@fortawesome/free-solid-svg-icons";
 
 import { DuoLimitationCodedType, DuoModifierType } from "@umccr/elsa-types";
 import axios from "axios";
@@ -13,8 +13,9 @@ import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 
 type Props = {
-  releaseId: string;
-  nodeId: string;
+  releaseId?: string;
+  nodeId?: string;
+  consentId?: string;
 };
 
 type FlagsProps = {
@@ -36,8 +37,8 @@ const Flags: React.FC<FlagsProps> = ({ regions }) => {
       <>
         (
         <ul className="inline-list comma-list">
-          {regions.map((region) => (
-            <li>
+          {regions.map((region, idx) => (
+            <li key={`region-${idx}`}>
               <span title={region}>
                 {hasFlag(region) ? getUnicodeFlagIcon(region) : `(${region})`}
               </span>
@@ -85,13 +86,22 @@ const resolveDiseaseCode = async function (
  * @param nodeId
  * @constructor
  */
-export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
+export const ConsentPopup: React.FC<Props> = ({
+  consentId,
+  releaseId,
+  nodeId,
+}) => {
   const [duos, setDuos] = useState<ResolvedDuo[]>([]);
   const envRelay = useEnvRelay();
 
   const terminologyFhirUrl = envRelay.terminologyFhirUrl;
 
-  const u = `/api/releases/${releaseId}/consent/${nodeId}`;
+  let u = "";
+  if (consentId) {
+    u = `/api/datasets/consent/${consentId}`;
+  } else {
+    u = `/api/releases/${releaseId}/consent/${nodeId}`;
+  }
 
   const [error, setError] = useState<ErrorState>({
     error: null,
@@ -143,16 +153,18 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
 
   return (
     <Popup
-      trigger={<FontAwesomeIcon icon={faUnlock} />}
+      trigger={
+        <FontAwesomeIcon className={`cursor-pointer`} icon={faFileContract} />
+      }
       position={["top center", "bottom right", "bottom left"]}
       on={["hover", "focus"]}
       onOpen={onOpenHandler}
     >
       {error.isSuccess && (
         <div className="space-y-4 rounded border bg-white p-2 text-sm drop-shadow-lg">
-          {duos.map(function (resolvedDuo: ResolvedDuo) {
+          {duos.map(function (resolvedDuo: ResolvedDuo, duoIdx: number) {
             return (
-              <div>
+              <div key={`duo-${duoIdx}`}>
                 <div>
                   <b>Code:</b>{" "}
                   <span className="capitalize">{resolvedDuo.resolvedCode}</span>
@@ -161,10 +173,10 @@ export const ConsentPopup: React.FC<Props> = ({ releaseId, nodeId }) => {
                   <div>
                     <b>Modifiers:</b>{" "}
                     <ul className="inline-list comma-list">
-                      {resolvedDuo.modifiers.map(function (modifier) {
+                      {resolvedDuo.modifiers.map(function (modifier, modIdx) {
                         const regions: string[] = (modifier as any)?.regions;
                         return (
-                          <li>
+                          <li key={`duo-${duoIdx}-mod-${modIdx}`}>
                             {modifier.code}
                             {regions && (
                               <>

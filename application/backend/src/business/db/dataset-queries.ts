@@ -12,7 +12,11 @@ export const datasetAllCountQuery = e.count(e.dataset.Dataset);
  * query elements need to be added elsewhere
  */
 export const datasetSummaryQuery = e.params(
-  { limit: e.int32, offset: e.int32, includeDeletedFile: e.bool },
+  {
+    limit: e.int32,
+    offset: e.int32,
+    includeDeletedFile: e.bool,
+  },
   (params) =>
     e.select(e.dataset.Dataset, (ds) => {
       const isDeletedFileFilter = params.includeDeletedFile;

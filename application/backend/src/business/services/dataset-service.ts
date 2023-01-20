@@ -1,6 +1,10 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
+import {
+  DatasetDeepType,
+  DatasetLightType,
+  DuoLimitationCodedType,
+} from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable, singleton } from "tsyringe";
 import { createPagedResult, PagedResult } from "../../api/api-pagination";
@@ -291,5 +295,30 @@ export class DatasetService {
         },
       }))
       .run(this.edgeDbClient);
+  }
+
+  public async getDatasetsConsent(
+    user: AuthenticatedUser,
+    consentId: string
+  ): Promise<DuoLimitationCodedType[]> {
+    // Should be some mechanism to check if user is authorize to see the consent
+
+    const consentQuery = e
+      .select(e.consent.Consent, (c) => ({
+        id: true,
+        statements: {
+          ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
+        },
+        filter: e.op(c.id, "=", e.uuid(consentId)),
+      }))
+      .assert_single();
+
+    const consent = await consentQuery.run(this.edgeDbClient);
+
+    if (!consent) return [];
+
+    return consent.statements.map(
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
+    );
   }
 }

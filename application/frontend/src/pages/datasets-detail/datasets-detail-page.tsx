@@ -8,8 +8,9 @@ import { LayoutBase } from "../../layouts/layout-base";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
-import { Badge, Button, Card, Table } from "flowbite-react";
+import { Table } from "flowbite-react";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
+import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -59,7 +60,7 @@ export const DatasetsDetailPage: React.FC = () => {
               <Box
                 heading={
                   <div className="flex items-center	justify-between">
-                    <div>Content</div>
+                    <div>{`Dataset`}</div>
                     <button
                       disabled={!datasetData.id}
                       onClick={async () =>
@@ -110,66 +111,74 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
         ))}
       </Table.Head>
       <Table.Body className="divide-y">
-        {cases.map((caseVal: DatasetCaseType, caseIndex: number) => {
+        {cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
           const exId = getFirstExternalIdentifierValue(
             caseVal.externalIdentifiers ?? undefined
           );
-          const caseConsent = caseVal.consent;
           const patients = caseVal.patients;
-          return (
-            <>
-              {patients.map((patient, indexPatient) => {
-                const patientId = getFirstExternalIdentifierValue(
-                  patient.externalIdentifiers ?? undefined
-                );
-                return (
-                  <Table.Row>
-                    {DATASET_COLUMN.map(
-                      (col: Record<string, string>, colIndex: number) => {
-                        return (
+
+          return patients.map((patient, patientIdx) => {
+            const patientId = getFirstExternalIdentifierValue(
+              patient.externalIdentifiers ?? undefined
+            );
+            return (
+              <Table.Row key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
+                {DATASET_COLUMN.map(
+                  (col: Record<string, string>, colIdx: number) => {
+                    return (
+                      <React.Fragment
+                        key={`${caseIdx}-${patientIdx}-${colIdx}`}
+                      >
+                        {col.jsonKey == "caseId" ? (
                           <>
-                            {col.jsonKey == "caseId" ? (
-                              <>
-                                {indexPatient == 0 && (
-                                  <Table.Cell
-                                    rowSpan={patients.length}
-                                    className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                                  >
-                                    {exId}
-                                  </Table.Cell>
-                                )}
-                              </>
-                            ) : col.jsonKey == "caseConsentId" ? (
-                              <>
-                                {indexPatient == 0 && (
-                                  <Table.Cell
-                                    rowSpan={patients.length}
-                                    className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                                  >
-                                    {JSON.stringify(caseConsent?.id) ?? `-`}
-                                  </Table.Cell>
-                                )}
-                              </>
-                            ) : col.jsonKey == "patientId" ? (
-                              <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                                {`${patientId}`}
+                            {patientIdx == 0 && (
+                              <Table.Cell
+                                rowSpan={patients.length}
+                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                              >
+                                {exId}
                               </Table.Cell>
-                            ) : col.jsonKey == "patientConsentId" ? (
-                              <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                                {JSON.stringify(patient.consent?.id) ?? `-`}
-                              </Table.Cell>
-                            ) : (
-                              <Table.Cell>{col.jsonKey}</Table.Cell>
                             )}
                           </>
-                        );
-                      }
-                    )}
-                  </Table.Row>
-                );
-              })}
-            </>
-          );
+                        ) : col.jsonKey == "caseConsentId" ? (
+                          <>
+                            {patientIdx == 0 && (
+                              <Table.Cell
+                                rowSpan={patients.length}
+                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                              >
+                                {caseVal.consent?.id ? (
+                                  <ConsentPopup
+                                    consentId={caseVal.consent.id}
+                                  />
+                                ) : (
+                                  `-`
+                                )}
+                              </Table.Cell>
+                            )}
+                          </>
+                        ) : col.jsonKey == "patientId" ? (
+                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                            {`${patientId}`}
+                          </Table.Cell>
+                        ) : col.jsonKey == "patientConsentId" ? (
+                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                            {patient.consent?.id ? (
+                              <ConsentPopup consentId={patient.consent.id} />
+                            ) : (
+                              `-`
+                            )}
+                          </Table.Cell>
+                        ) : (
+                          <Table.Cell>{col.jsonKey}</Table.Cell>
+                        )}
+                      </React.Fragment>
+                    );
+                  }
+                )}
+              </Table.Row>
+            );
+          });
         })}
       </Table.Body>
     </Table>
