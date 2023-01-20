@@ -67,7 +67,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   fastify.get<{
     Params: { cid: string };
     Reply: DuoLimitationCodedType[];
-  }>("/api/datasets/consent/:cid", {}, async function (request, reply) {
+  }>("/datasets/consent/:cid", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
     const cid = request.params.cid;
