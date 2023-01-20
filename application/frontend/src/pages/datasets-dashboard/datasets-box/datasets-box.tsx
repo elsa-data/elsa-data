@@ -118,6 +118,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
               className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
               type="checkbox"
               checked={includeDeletedFile}
+              onChange={() => setIncludeDeletedFile((p) => !p)}
             />
             <label className="flex text-gray-800">
               <ToolTip
@@ -152,8 +153,9 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
             <tbody>
               {/* Column Title */}
               <tr>
-                {columnProps.map((props) => (
+                {columnProps.map((props, idx) => (
                   <td
+                    key={idx}
                     className={classNames(
                       baseColumnClasses,
                       "font-semibold",
