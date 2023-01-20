@@ -11,6 +11,8 @@ import { EagerErrorBoundary } from "../../components/errors";
 import { Table } from "flowbite-react";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMale, faFemale } from "@fortawesome/free-solid-svg-icons";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -159,7 +161,17 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
                           </>
                         ) : col.jsonKey == "patientId" ? (
                           <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                            {`${patientId}`}
+                            <>
+                              {patient.sexAtBirth == "female" ? (
+                                <FontAwesomeIcon icon={faFemale} />
+                              ) : patient.sexAtBirth == "male" ? (
+                                <FontAwesomeIcon icon={faMale} />
+                              ) : (
+                                <></>
+                              )}
+
+                              {` - ${patientId}`}
+                            </>
                           </Table.Cell>
                         ) : col.jsonKey == "patientConsentId" ? (
                           <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
