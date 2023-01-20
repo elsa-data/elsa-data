@@ -13,6 +13,7 @@ import { AuditLogService } from "./audit-log-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
+import maxmind, { CityResponse, Reader } from "maxmind";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -48,6 +49,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   ) {
     super(edgeDbClient, usersService, auditLogService);
   }
+
+  maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
   async getEventDataStoreIdFromDatasetUris(
     datasetUris: string[]
@@ -155,10 +158,22 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       // CloudTrail time always UTC time, adding UTC postfix to make sure recorded properly.
       const utcDate = new Date(`${trailEvent.eventTime} UTC`);
 
+      // Find location based on IP
+      let loc = "-";
+      if (this.maxmindLookup) {
+        const ipInfo = this.maxmindLookup.get(trailEvent.sourceIPAddress);
+        const city = ipInfo?.city?.names.en;
+        const country = ipInfo?.country?.names.en;
+        if (city || country) {
+          loc = `${ipInfo?.city?.names.en}, ${ipInfo?.country?.names.en}`;
+        }
+      }
+
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
         releaseId: releaseId,
-        who: trailEvent.sourceIPAddress,
+        whoId: trailEvent.sourceIPAddress,
+        whoDisplayName: loc,
         fileUrl: s3Url,
         description: description,
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
@@ -272,6 +287,17 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseId);
     const endQueryDate = new Date().toISOString();
+
+    // Try initiate maxmind reader if available
+    try {
+      this.maxmindLookup = await maxmind.open<CityResponse>(
+        `${this.settings.maxmindDbAssetPath}/GeoLite2-City.mmdb`
+      );
+    } catch (error) {
+      this.logger.warn(
+        "No maxmind db is configured and therefore will not perform IP city lookup."
+      );
+    }
 
     for (const edsi of eventDataStoreIds) {
       for (const method of Object.keys(CloudTrailQueryType)) {

@@ -38,10 +38,10 @@ export const MasterAccessControlBox: React.FC<Props> = ({
         />
         <RightDiv>
           <div className="flex flex-row gap-2">
-            {releaseData.accessEnabled && (
+            {releaseData.activation && (
               <button className="btn-danger">Stop All Access</button>
             )}
-            {!releaseData.accessEnabled && (
+            {!releaseData.activation && (
               <button className="btn-normal">Start</button>
             )}
           </div>

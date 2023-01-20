@@ -3,7 +3,10 @@ import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { isEmpty, isNil } from "lodash";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 import {
   countAllUserQuery,

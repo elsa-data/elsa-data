@@ -73,7 +73,7 @@ export async function makeSimpsonsTrio() {
     ],
     // Male	45 YR	White
     {
-      "": "BART",
+      "": ["BART", "BARTHOLOMEW"],
       [THOUSAND_GENOMES_SYSTEM]: BART_PATIENT_1KGP,
       [PGP_SYSTEM]: BART_PATIENT_PGP,
     },

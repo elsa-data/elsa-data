@@ -7,7 +7,10 @@ import {
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable, singleton } from "tsyringe";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import {

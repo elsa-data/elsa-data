@@ -46,7 +46,8 @@ function DataAccessLogsBox() {
 
   const COLUMN_TO_SHOW = [
     { key: "fileUrl", value: "File URL" },
-    { key: "whoDisplayName", value: "IP Address" },
+    { key: "whoId", value: "IP Address" },
+    { key: "whoDisplayName", value: "Location" },
     { key: "actionCategory", value: "Category" },
     { key: "occurredDateTime", value: "Occurred Date Time" },
     { key: "egressBytes", value: "Number of Bytes Accessed" },
@@ -121,6 +122,7 @@ function DataAccessLogsBox() {
                           description={categoryToDescription(row[objKey])}
                         />
                       ) : objKey === "whoDisplayName" ||
+                        objKey === "whoId" ||
                         objKey === "fileUrl" ? (
                         row[objKey]
                       ) : (

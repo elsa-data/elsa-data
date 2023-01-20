@@ -12,6 +12,7 @@ import { JobsService } from "./business/services/jobs/jobs-base-service";
 import { Logger } from "pino";
 import { getServices } from "./di-helpers";
 import { MailService } from "./business/services/mail-service";
+import { downloadMaxmindDb } from "./app-helpers";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -45,14 +46,22 @@ export async function startWebServer(scenario: number | null): Promise<number> {
     }
   }
 
+  // Download MaxMind Db if key is provided
+  const MAXMIND_KEY = process.env.MAXMIND_KEY;
+  if (MAXMIND_KEY) {
+    await downloadMaxmindDb({
+      dbPath: "asset/maxmind/db",
+      maxmindKey: MAXMIND_KEY,
+    });
+    console.log("MaxMind DB loaded");
+  }
+
   // Insert datasets from config
   const datasetService = container.resolve(DatasetService);
-
   await datasetService.configureDataset(settings.datasets);
 
   // create the actual webserver/app
   const app = container.resolve(App);
-
   const server = await app.setupServer();
 
   const mailService = container.resolve(MailService);
