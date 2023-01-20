@@ -46,7 +46,7 @@ export const DatasetsDetailPage: React.FC = () => {
                     ID: datasetData.id,
                     URI: datasetData.uri,
                     Description: datasetData.description,
-                    "Last Updated": datasetData.updatedDateTime,
+                    "Last Updated": datasetData.updatedDateTime ?? "-",
                     "Artifact Count": datasetData.summaryArtifactCount,
                     "Artifact Filetypes": datasetData.summaryArtifactIncludes
                       ? datasetData.summaryArtifactIncludes.replaceAll(" ", "/")

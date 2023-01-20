@@ -15,7 +15,8 @@ import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
-  datasetSummaryQuery,
+  allDatasetSummaryQuery,
+  singleDatasetSummaryQuery,
   selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -71,11 +72,10 @@ export class DatasetService {
     // all data owners can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-    const fullDatasets = await datasetSummaryQuery.run(this.edgeDbClient, {
+    const fullDatasets = await allDatasetSummaryQuery.run(this.edgeDbClient, {
       limit: limit,
       offset: offset,
       includeDeletedFile: includeDeletedFile,
-      // datasetId: "abcd",
     });
 
     const converted: DatasetLightType[] = fullDatasets.map((fd) => {
@@ -107,51 +107,35 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetId: string
   ): Promise<DatasetDeepType | null> {
-    const singleDataset = await e
-      .select(e.dataset.Dataset, (ds) => ({
-        ...e.dataset.Dataset["*"],
-        summaryArtifactBytes: e.int16(0),
-        //e.sum(
-        //  ds.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactBase).
-        //),
-        cases: {
-          consent: {
-            id: true,
-          },
-          externalIdentifiers: true,
-          patients: {
-            sexAtBirth: true,
-            consent: {
-              id: true,
-            },
-            externalIdentifiers: true,
-            specimens: {
-              externalIdentifiers: true,
-            },
-          },
-        },
-        filter: e.op(ds.id, "=", e.uuid(datasetId)),
-      }))
-      .run(this.edgeDbClient);
+    const sd = await singleDatasetSummaryQuery.run(this.edgeDbClient, {
+      includeDeletedFile: false,
+      datasetId: datasetId,
+    });
 
-    if (singleDataset) {
+    if (sd) {
+      const includes: string[] = [];
+      if (sd.summaryBamCount > 0) includes.push("BAM");
+      if (sd.summaryBclCount > 0) includes.push("BCL");
+      if (sd.summaryCramCount > 0) includes.push("CRAM");
+      if (sd.summaryFastqCount > 0) includes.push("FASTQ");
+      if (sd.summaryVcfCount > 0) includes.push("VCF");
       return {
-        id: singleDataset.id,
-        uri: singleDataset.uri,
-        updatedDateTime: singleDataset.updatedDateTime,
-        isInConfig: singleDataset.isInConfig,
-        description: singleDataset.description,
-        summaryArtifactCount: 0,
-        summaryArtifactIncludes: "",
-        summaryCaseCount: 0,
-        summarySpecimenCount: 0,
-        summaryPatientCount: 0,
-        summaryArtifactSizeBytes: 0,
-        cases: singleDataset.cases,
+        id: sd.id,
+        uri: sd.uri,
+        updatedDateTime: sd.updatedDateTime,
+        isInConfig: sd.isInConfig,
+        description: sd.description,
+        summaryCaseCount: sd.summaryCaseCount,
+        summaryPatientCount: sd.summaryPatientCount,
+        summarySpecimenCount: sd.summarySpecimenCount,
+        summaryArtifactCount: sd.summaryArtifactCount,
+        summaryArtifactIncludes: includes.join(" "),
+        summaryArtifactSizeBytes: sd.summaryArtifactBytes,
+        cases: sd.cases,
       };
     }
 
-    return singleDataset;
+    return sd;
   }
 
   /**
