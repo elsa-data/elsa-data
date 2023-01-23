@@ -335,16 +335,26 @@ export async function createArtifacts(
       input: r1select,
       output: e.set(
         e.insert(e.lab.ArtifactVcf, {
-          vcfFile: e.insert(e.storage.File, {
-            url: vcf.url,
-            size: vcf.size,
-            checksums: vcf.checksums,
-          }),
-          tbiFile: e.insert(e.storage.File, {
-            url: vcfIndex.url,
-            size: vcfIndex.size,
-            checksums: vcfIndex.checksums,
-          }),
+          vcfFile: e
+            .insert(e.storage.File, {
+              url: vcf.url,
+              size: vcf.size,
+              checksums: vcf.checksums,
+            })
+            .unlessConflict((file) => ({
+              on: file.url,
+              else: file,
+            })),
+          tbiFile: e
+            .insert(e.storage.File, {
+              url: vcfIndex.url,
+              size: vcfIndex.size,
+              checksums: vcfIndex.checksums,
+            })
+            .unlessConflict((file) => ({
+              on: file.url,
+              else: file,
+            })),
         }),
         e.insert(e.lab.ArtifactBam, {
           bamFile: e.insert(e.storage.File, {
