@@ -45,7 +45,16 @@ export async function makeJetsonsTrio() {
       [CORIELL_CELL_SYSTEM]: "GM24631",
     },
     "male",
-    [createFile(s3base + `vcf.gz`, 1), createFile(s3base + `vcf.gz.csi`, 1)],
+    [
+      createFile(
+        s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz`,
+        1
+      ),
+      createFile(
+        s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz.csi`,
+        1
+      ),
+    ],
     [createFile(s3base + `.bam`, 1), createFile(s3base + `.bam.bai`, 1)],
     [],
     [],
@@ -57,12 +66,18 @@ export async function makeJetsonsTrio() {
       [CORIELL_CELL_SYSTEM]: "GM24694",
     },
     [
-      createFile(s3base + `AAHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
-      createFile(s3base + `BBHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
+      createFile(
+        s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz`,
+        1
+      ),
+      createFile(
+        s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz.csi`,
+        1
+      ),
     ],
     [
-      createFile(s3base + `CCHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
-      createFile(s3base + `DDHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
+      createFile(s3base + `${GEORGE_PATIENT_PGP}HG002-HG003-HG004.bam`, 1),
+      createFile(s3base + `${GEORGE_PATIENT_PGP}HG002-HG003-HG004.bam.bai`, 1),
     ],
     [],
     [],
@@ -74,12 +89,18 @@ export async function makeJetsonsTrio() {
       [CORIELL_CELL_SYSTEM]: "GM24694",
     },
     [
-      createFile(s3base + `EEHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
-      createFile(s3base + `FFHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
+      createFile(
+        s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz`,
+        1
+      ),
+      createFile(
+        s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz.csi`,
+        1
+      ),
     ],
     [
-      createFile(s3base + `GGHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
-      createFile(s3base + `HHHG002-HG003-HG004.joint.filter.vcf.gz`, 1),
+      createFile(s3base + `${JUDY_PATIENT_PGP}HG002-HG003-HG004.bam`, 1),
+      createFile(s3base + `${JUDY_PATIENT_PGP}HG002-HG003-HG004.bam.bai`, 1),
     ],
     [],
     []

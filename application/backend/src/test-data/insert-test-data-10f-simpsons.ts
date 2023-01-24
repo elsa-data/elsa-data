@@ -148,14 +148,14 @@ export async function makeSimpsonsTrio() {
     },
     [
       createFile(
-        "HOMER" + SIMPSONS_JOINT_VCF_S3,
+        SIMPSONS_JOINT_VCF_S3,
         7732022,
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "05d0e321052ae1c59eda9ce9e6691304dbafc214" // pragma: allowlist secret
       ),
       createFile(
-        "HOMER" + SIMPSONS_JOINT_VCF_CSI_S3,
+        SIMPSONS_JOINT_VCF_CSI_S3,
         294561,
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
@@ -192,14 +192,14 @@ export async function makeSimpsonsTrio() {
     },
     [
       createFile(
-        "MARGE" + SIMPSONS_JOINT_VCF_S3,
+        SIMPSONS_JOINT_VCF_S3,
         7732022,
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "22557caf3f2e2d27d8d1c6e4ea893ece", // pragma: allowlist secret
         "05d0e321052ae1c59eda9ce9e6691304dbafc214" // pragma: allowlist secret
       ),
       createFile(
-        "MARGE" + SIMPSONS_JOINT_VCF_CSI_S3,
+        SIMPSONS_JOINT_VCF_CSI_S3,
         294561,
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
         "ce6bc9942886ba3eb8cd08481a23cb7a", // pragma: allowlist secret
