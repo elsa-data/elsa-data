@@ -47,9 +47,14 @@ type manifestType = {
   agha_study_id: string;
   filename: string;
 };
-type s3ManifestType = {
+type s3IndividualManifestType = {
   checksum: string;
   agha_study_id: string;
+  s3Url: string;
+};
+type s3ManifestType = {
+  checksum: string;
+  agha_study_id_array: string[];
   s3Url: string;
 };
 type manifestDict = Record<string, s3ManifestType>;
@@ -114,9 +119,9 @@ export class S3IndexApplicationService {
    * @returns An object where key is studyId and value is a list of manifest type
    */
   groupManifestByStudyId(
-    manifestContentList: s3ManifestType[]
-  ): Record<string, s3ManifestType[]> {
-    const studyIdGroup: Record<string, s3ManifestType[]> = {};
+    manifestContentList: s3IndividualManifestType[]
+  ): Record<string, s3IndividualManifestType[]> {
+    const studyIdGroup: Record<string, s3IndividualManifestType[]> = {};
     for (const manifestObject of manifestContentList) {
       const studyId = manifestObject.agha_study_id;
 
@@ -159,7 +164,7 @@ export class S3IndexApplicationService {
         s3UrlManifestObj[s3Url] = {
           s3Url: s3Url,
           checksum: manifestObj.checksum,
-          agha_study_id: manifestObj.agha_study_id,
+          agha_study_id_array: manifestObj.agha_study_id.split(","),
         };
       }
     }
@@ -328,7 +333,7 @@ export class S3IndexApplicationService {
    * @returns
    */
   converts3ManifestTypeToFileRecord(
-    manifestRecordList: s3ManifestType[],
+    manifestRecordList: s3IndividualManifestType[],
     s3MetadataList: S3ObjectMetadata[]
   ): File[] {
     const result: File[] = [];
@@ -511,8 +516,10 @@ export class S3IndexApplicationService {
 
     // Turning artifact records to s3ManifestType object
     for (const artifact of artifactList) {
-      // One studyId is expected at this point.
-      const agha_study_id = artifact.studyIdList[0][0].value;
+      // Multiple studyId is expected at this point.
+      const externalIdentifiersArray = artifact.studyIdList;
+      // Will assume that only one externalIdentifier exist in the array.
+      const studyIdList = externalIdentifiersArray.map((ei) => ei[0].value);
 
       for (const fileId of artifact.fileIdList) {
         // Finding matching files object fields from fileId
@@ -527,7 +534,7 @@ export class S3IndexApplicationService {
         s3UrlManifestObj[file.url] = {
           s3Url: file.url,
           checksum: getMd5FromChecksumsArray(file.checksums),
-          agha_study_id: agha_study_id,
+          agha_study_id_array: studyIdList,
         };
       }
     }
@@ -545,8 +552,16 @@ export class S3IndexApplicationService {
   diffManifestAlphaAndManifestBeta(
     manifestAlpha: manifestDict,
     manifestBeta: manifestDict
-  ): s3ManifestType[] {
-    const result: s3ManifestType[] = [];
+  ): s3IndividualManifestType[] {
+    const result: s3IndividualManifestType[] = [];
+
+    const insertRes = (manifest: s3ManifestType, studyId: string) => {
+      result.push({
+        checksum: manifest.checksum,
+        s3Url: manifest.s3Url,
+        agha_study_id: studyId,
+      });
+    };
 
     for (const key in manifestAlpha) {
       const valueAlpha = manifestAlpha[key];
@@ -554,11 +569,19 @@ export class S3IndexApplicationService {
 
       // Check if alpha exist in Beta
       if (!valueBeta) {
-        result.push(valueAlpha);
+        valueAlpha.agha_study_id_array.map((SID) => {
+          insertRes(valueAlpha, SID);
+        });
+        continue;
+      }
 
-        // Check if studyId change
-      } else if (valueAlpha["agha_study_id"] != valueBeta["agha_study_id"]) {
-        result.push(valueAlpha);
+      // Check if studyId in Alpha does not exist in Beta
+      const studyIdAlpha = valueAlpha["agha_study_id_array"];
+      const studyIdBeta = valueBeta["agha_study_id_array"];
+      for (const studyId of studyIdAlpha) {
+        if (!studyIdBeta.includes(studyId)) {
+          insertRes(valueAlpha, studyId);
+        }
       }
     }
     return result;
@@ -573,8 +596,8 @@ export class S3IndexApplicationService {
   checkDiffChecksumRecordBetweenManifestDict(
     newManifest: manifestDict,
     oldManifest: manifestDict
-  ): s3ManifestType[] {
-    const result: s3ManifestType[] = [];
+  ): s3IndividualManifestType[] {
+    const result: s3IndividualManifestType[] = [];
     for (const key in newManifest) {
       const newVal = newManifest[key];
       const oldVal = oldManifest[key];
@@ -585,7 +608,11 @@ export class S3IndexApplicationService {
 
       // Check if alpha exist in Beta
       if (newVal["checksum"] != oldVal["checksum"]) {
-        result.push(newVal);
+        result.push({
+          agha_study_id: newVal.agha_study_id_array.join(","),
+          checksum: newVal.checksum,
+          s3Url: newVal.s3Url,
+        });
       }
     }
     return result;
@@ -715,8 +742,8 @@ export class S3IndexApplicationService {
         this.groupManifestByStudyId(missingFileFromDb);
 
       const patientIdAndDataCaseIdLinkingArray = [];
-      const listOfStudyId = Object.keys(groupedMissingRecByStudyId);
-      for (const studyId of listOfStudyId) {
+      const listOfStudyIds = Object.keys(groupedMissingRecByStudyId);
+      for (const studyId of listOfStudyIds) {
         const manifestRecord = groupedMissingRecByStudyId[studyId];
 
         // Convert to FILE record (storage::File schema)

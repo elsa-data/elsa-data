@@ -12,6 +12,8 @@ import {
 import { fileByUrlQuery } from "../../src/business/db/storage-queries";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import {
+  S3_URL_PREFIX,
+  MOCK_STORAGE_PREFIX_URL,
   MOCK_DATASET_URI,
   MOCK_BAM_FILE_SET,
   MOCK_FASTQ_PAIR_FILE_SET,
@@ -30,7 +32,9 @@ import {
   MOCK_2_BAI_FILE_RECORD,
   MOCK_3_CARDIAC_S3_OBJECT_LIST,
   MOCK_3_CARDIAC_MANIFEST,
-  S3_URL_PREFIX,
+  MOCK_4_CARDIAC_MANIFEST,
+  MOCK_4_STUDY_ID_1,
+  MOCK_4_STUDY_ID_2,
 } from "./ag.common";
 import * as awsHelper from "../../src/business/services/aws-helper";
 import {
@@ -65,7 +69,7 @@ describe("AWS s3 client", () => {
       MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
     expect(manifestObjectList).toEqual([
-      "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/manifest.txt",
+      `${MOCK_STORAGE_PREFIX_URL}/2019-11-21/manifest.txt`,
     ]);
   });
 
@@ -382,11 +386,11 @@ describe("AWS s3 client", () => {
     expect(totalFileList.length).toEqual(2);
     const expected = [
       {
-        url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
+        url: `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
         checksums: [{ type: "MD5", value: "UPDATED_CHECKSUM" }],
       },
       {
-        url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
+        url: `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam.bai`,
         checksums: [{ type: "MD5", value: "UPDATED_CHECKSUM" }],
       },
     ];
@@ -440,8 +444,8 @@ describe("AWS s3 client", () => {
     await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
 
     const expectedFileMarked = [
-      "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
-      "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
+      `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
+      `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam.bai`,
     ];
 
     for (const e of expectedFileMarked) {
@@ -453,5 +457,52 @@ describe("AWS s3 client", () => {
       const newIsDeleted = newFileRec?.isDeleted;
       expect(newIsDeleted).toEqual(true);
     }
+  });
+
+  it("Test MOCK 4 Multi Study Id", async () => {
+    const agService = container.resolve(S3IndexApplicationService);
+    const datasetService = container.resolve(DatasetService);
+    await datasetService.selectOrInsertDataset({
+      datasetUri: MOCK_DATASET_URI,
+      datasetName: "Cardiac",
+      datasetDescription: "A test flagship",
+    });
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => MOCK_1_CARDIAC_S3_OBJECT_LIST);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Url")
+      .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
+
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+
+    // FILE schema expected values
+    const totalFileList = await e
+      .select(e.storage.File, () => ({
+        url: true,
+      }))
+      .run(edgedbClient);
+    expect(totalFileList.length).toEqual(2);
+    const expected = [
+      {
+        url: `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
+      },
+      {
+        url: `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
+      },
+    ];
+    expect(totalFileList).toEqual(expect.arrayContaining(expected));
+
+    const totalDatasetPatient = await e
+      .select(e.dataset.DatasetPatient, () => ({
+        externalIdentifiers: true,
+      }))
+      .run(edgedbClient);
+    expect(totalDatasetPatient.length).toEqual(2);
+    console.log("totalDatasetPatient", totalDatasetPatient);
+    expect(totalDatasetPatient).toEqual([
+      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
+      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
+    ]);
   });
 });
