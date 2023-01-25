@@ -39,13 +39,12 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
               as="a"
               className={({ selected }) =>
                 classNames(
-                  "cursor-pointer px-4 py-2 text-sm uppercase",
-                  "focus-visible:border-l-2 focus-visible:border-blue-300 focus-visible:ring-0",
-                  "focus:outline-0",
+                  "cursor-pointer px-4 py-2 text-sm uppercase outline-0 ring-0",
+                  "translate-x-2 transform border-l-2 font-bold",
                   {
-                    "translate-x-2 transform border-l-2 border-blue-500 font-bold":
-                      selected,
-                    "-translate-x-2 transform": !selected,
+                    "border-blue-500": selected,
+                    "border-slate-200 transition duration-200 ease-in-out hover:border-blue-300":
+                      !selected,
                   }
                 )
               }

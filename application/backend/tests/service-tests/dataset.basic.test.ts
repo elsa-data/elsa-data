@@ -26,7 +26,7 @@ beforeEach(async () => {
 });
 
 it("basic summary get all works", async () => {
-  const result = await datasetService.getSummary(adminUser, 1000, 0, true);
+  const result = await datasetService.getSummary(adminUser, true, 1000, 0);
 
   expect(result).not.toBeNull();
   assert(result && result.data);
@@ -35,7 +35,7 @@ it("basic summary get all works", async () => {
 });
 
 it("basic summary get all has correct summary values for family dataset", async () => {
-  const result = await datasetService.getSummary(adminUser, 1000, 0, true);
+  const result = await datasetService.getSummary(adminUser, true, 1000, 0);
 
   expect(result).not.toBeNull();
   assert(result && result.data);
@@ -58,7 +58,7 @@ it("basic summary get all has correct summary values for family dataset", async 
 
 it("basic summary get all is sorted by dataset URI", async () => {
   {
-    const result = await datasetService.getSummary(adminUser, 1000, 0, true);
+    const result = await datasetService.getSummary(adminUser, true, 1000, 0);
 
     assert(result && result.data);
     expect(result.data.length).toBe(2);
@@ -70,7 +70,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   await insert10C();
 
   {
-    const result = await datasetService.getSummary(adminUser, 1000, 0, true);
+    const result = await datasetService.getSummary(adminUser, true, 1000, 0);
 
     assert(result && result.data);
     expect(result.data.length).toBe(3);

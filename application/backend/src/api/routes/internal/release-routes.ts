@@ -5,11 +5,13 @@ import {
   ReleaseAwsS3PresignRequestType,
   ReleaseCaseType,
   ReleaseDetailType,
+  ReleaseManualSchema,
+  ReleaseManualType,
   ReleaseMasterAccessRequestType,
   ReleasePatchOperationSchema,
+  ReleasePatchOperationType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
-  ReleasePatchOperationType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import {
@@ -446,6 +448,22 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       );
       reply.type("text/tab-separated-values");
       reply.send(accessPointTsv.content);
+    }
+  );
+
+  fastify.post<{
+    Body: ReleaseManualType;
+    Reply: string;
+  }>(
+    "/release",
+    {
+      schema: {
+        body: ReleaseManualSchema,
+      },
+    },
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+      reply.send(await releasesService.new(authenticatedUser, request.body));
     }
   );
 };

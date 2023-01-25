@@ -153,6 +153,19 @@ export const ReleaseCaseSchema = Type.Object({
   customConsent: Type.Boolean(),
 });
 
+// Schema for manually creating a release instead importing it from a DAC
+export const ReleaseManualSchema = Type.Object({
+  releaseTitle: Type.String(),
+  releaseDescription: Type.String(),
+
+  studyType: ReleaseApplicationCodedTypeSchema,
+  studyAgreesToPublish: Type.Boolean(),
+  studyIsNotCommercial: Type.Boolean(),
+
+  datasetUris: Type.Array(Type.String()),
+  applicantEmailAddresses: Type.String(),
+});
+
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
@@ -160,3 +173,5 @@ export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
 
 export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
+
+export type ReleaseManualType = Static<typeof ReleaseManualSchema>;
