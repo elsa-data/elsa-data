@@ -86,6 +86,7 @@ export async function insert10G() {
               `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
               0
             ),
+            [],
             []
           ),
         }),

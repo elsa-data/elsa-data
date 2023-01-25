@@ -103,6 +103,7 @@ export async function makeJetsonsTrio() {
       createFile(s3base + `${JUDY_PATIENT_PGP}HG002-HG003-HG004.bam.bai`, 1),
     ],
     [],
-    []
+    [],
+    ["ELROY", GEORGE_PATIENT_PGP, JUDY_PATIENT_PGP]
   );
 }

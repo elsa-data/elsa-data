@@ -42,22 +42,21 @@ import { DatasetService } from "./../dataset-service";
 /**
  * Manifest Type as what current AG manifest data will look like
  */
-type manifestType = {
+export type manifestType = {
   checksum: string;
   agha_study_id: string;
   filename: string;
 };
-type s3IndividualManifestType = {
-  checksum: string;
-  agha_study_id: string;
-  s3Url: string;
-};
-type s3ManifestType = {
+export type s3ManifestType = {
   checksum: string;
   agha_study_id_array: string[];
   s3Url: string;
 };
-type manifestDict = Record<string, s3ManifestType>;
+export type s3IndividualManifestType = s3ManifestType & {
+  agha_study_id: string;
+};
+export type artifactType = { sampleIdsArray: string[] } & File;
+export type manifestDict = Record<string, s3ManifestType>;
 
 @injectable()
 @singleton()
@@ -179,9 +178,9 @@ export class S3IndexApplicationService {
    * E.g. From {FASTQ : { A00001 : [File1, File2] } }
    */
   groupManifestFileByArtifactTypeAndFilename(
-    fileRecordListedInManifest: File[]
-  ): Record<string, Record<string, File[]>> {
-    const groupFiletype: Record<string, Record<string, File[]>> = {};
+    fileRecordListedInManifest: artifactType[]
+  ): Record<string, Record<string, artifactType[]>> {
+    const groupFiletype: Record<string, Record<string, artifactType[]>> = {};
 
     /**
      * A helper function to fill the above variable
@@ -189,7 +188,7 @@ export class S3IndexApplicationService {
     function addOrCreateNewArtifactGroup(
       artifactType: string,
       filenameId: string,
-      manifestObj: File
+      manifestObj: artifactType
     ) {
       if (!groupFiletype[artifactType]) {
         groupFiletype[artifactType] = {};
@@ -282,15 +281,15 @@ export class S3IndexApplicationService {
    * @returns
    */
   insertNewArtifactListQuery(
-    artifactTypeRecord: Record<string, Record<string, File[]>>
+    artifactTypeRecord: Record<string, Record<string, artifactType[]>>
   ) {
     /**
      * Sorting url function to identify which is forward/reversed/indexed file
      * Index 0 is Forward file or base file
      * Index 1 if Reverse file or index file
      */
-    const sortFileRec = (fileSet: File[]) =>
-      fileSet.sort((a, b) =>
+    const sortArtifactRec = (artifactSet: artifactType[]) =>
+      artifactSet.sort((a, b) =>
         a.url.toLowerCase() > b.url.toLowerCase() ? 1 : -1
       );
 
@@ -301,7 +300,7 @@ export class S3IndexApplicationService {
       const fileRecByFilenameId = artifactTypeRecord[artifactType];
 
       for (const filenameId in fileRecByFilenameId) {
-        const fileSet = sortFileRec(fileRecByFilenameId[filenameId]);
+        const fileSet = sortArtifactRec(fileRecByFilenameId[filenameId]);
 
         if (fileSet.length != 2) {
           console.log(
@@ -312,31 +311,52 @@ export class S3IndexApplicationService {
 
         if (artifactType == ArtifactType.FASTQ) {
           artifactArray.push(
-            insertArtifactFastqPairQuery(fileSet[0], fileSet[1])
+            insertArtifactFastqPairQuery(
+              fileSet[0],
+              fileSet[1],
+              fileSet[0].sampleIdsArray
+            )
           );
         } else if (artifactType == ArtifactType.VCF) {
-          artifactArray.push(insertArtifactVcfQuery(fileSet[0], fileSet[1]));
+          artifactArray.push(
+            insertArtifactVcfQuery(
+              fileSet[0],
+              fileSet[1],
+              fileSet[0].sampleIdsArray
+            )
+          );
         } else if (artifactType == ArtifactType.BAM) {
-          artifactArray.push(insertArtifactBamQuery(fileSet[0], fileSet[1]));
+          artifactArray.push(
+            insertArtifactBamQuery(
+              fileSet[0],
+              fileSet[1],
+              fileSet[0].sampleIdsArray
+            )
+          );
         } else if (artifactType == ArtifactType.CRAM) {
-          artifactArray.push(insertArtifactCramQuery(fileSet[0], fileSet[1]));
+          artifactArray.push(
+            insertArtifactCramQuery(
+              fileSet[0],
+              fileSet[1],
+              fileSet[0].sampleIdsArray
+            )
+          );
         }
       }
     }
     return artifactArray;
   }
-
   /**
    * Convert manifest record to a File record as file Db is stored as file record.
    * @param manifestRecordList A list of s3ManifestType record
    * @param s3MetadataList An S3ObjectMetadata list for the particular manifest. (This will populate the size value)
    * @returns
    */
-  converts3ManifestTypeToFileRecord(
+  converts3ManifestTypeToArtifactTypeRecord(
     manifestRecordList: s3IndividualManifestType[],
     s3MetadataList: S3ObjectMetadata[]
-  ): File[] {
-    const result: File[] = [];
+  ): artifactType[] {
+    const result: artifactType[] = [];
 
     const s3MetadataDict: Record<string, S3ObjectMetadata> = {};
     for (const s3Metadata of s3MetadataList) {
@@ -359,6 +379,7 @@ export class S3IndexApplicationService {
             value: manifestRecord.checksum,
           },
         ],
+        sampleIdsArray: manifestRecord.agha_study_id_array,
       });
     }
 
@@ -559,6 +580,7 @@ export class S3IndexApplicationService {
       result.push({
         checksum: manifest.checksum,
         s3Url: manifest.s3Url,
+        agha_study_id_array: manifest.agha_study_id_array,
         agha_study_id: studyId,
       });
     };
@@ -610,6 +632,7 @@ export class S3IndexApplicationService {
       if (newVal["checksum"] != oldVal["checksum"]) {
         result.push({
           agha_study_id: newVal.agha_study_id_array.join(","),
+          agha_study_id_array: newVal.agha_study_id_array,
           checksum: newVal.checksum,
           s3Url: newVal.s3Url,
         });
@@ -726,7 +749,7 @@ export class S3IndexApplicationService {
 
     // Handle for checksum different
     if (differentChecksum.length) {
-      const fileRecChangeList = this.converts3ManifestTypeToFileRecord(
+      const fileRecChangeList = this.converts3ManifestTypeToArtifactTypeRecord(
         differentChecksum,
         s3MetadataList
       );
@@ -746,15 +769,15 @@ export class S3IndexApplicationService {
       for (const studyId of listOfStudyIds) {
         const manifestRecord = groupedMissingRecByStudyId[studyId];
 
-        // Convert to FILE record (storage::File schema)
-        const fileRecordList = this.converts3ManifestTypeToFileRecord(
+        // Convert to artifactType containing FILE record (storage::File schema).
+        const artifactList = this.converts3ManifestTypeToArtifactTypeRecord(
           manifestRecord,
           s3MetadataList
         );
 
         // Group file for further processing
         const groupArtifactType =
-          this.groupManifestFileByArtifactTypeAndFilename(fileRecordList);
+          this.groupManifestFileByArtifactTypeAndFilename(artifactList);
 
         // Insert Artifact
         const insertArtifactListQuery =

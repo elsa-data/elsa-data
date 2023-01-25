@@ -223,6 +223,7 @@ export async function makeSimpsonsTrio() {
       ),
     ],
     [],
-    []
+    [],
+    ["HOMER", "HOMER", "MARGE"]
   );
 }

@@ -36,6 +36,7 @@ export async function insert10C() {
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.bam.bai`,
         3424
       ),
+      [],
       []
     );
   };

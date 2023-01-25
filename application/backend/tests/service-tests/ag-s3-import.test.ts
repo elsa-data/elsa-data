@@ -1,4 +1,7 @@
-import { S3IndexApplicationService } from "../../src/business/services/australian-genomics/s3-index-import-service";
+import {
+  S3IndexApplicationService,
+  artifactType,
+} from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e, { dataset, storage } from "../../dbschema/edgeql-js";
@@ -44,7 +47,7 @@ import {
 } from "../../src/business/db/helper";
 import { registerTypes } from "./setup";
 import { DatasetService } from "../../src/business/services/dataset-service";
-
+import { f } from "edgedb/dist/reflection/builders";
 const edgedbClient = edgedb.createClient();
 const s3ClientMock = mockClient(S3Client);
 let testContainer: DependencyContainer;
@@ -98,24 +101,41 @@ describe("AWS s3 client", () => {
       ...MOCK_BAM_FILE_SET,
       ...MOCK_VCF_FILE_SET,
     ];
+    const convertArtifactType = fileRecordListedInManifest.map((f) => ({
+      ...f,
+      sampleIdsArray: ["ID0001"],
+    }));
     const groupArtifactContent =
-      agService.groupManifestFileByArtifactTypeAndFilename(
-        fileRecordListedInManifest
-      );
+      agService.groupManifestFileByArtifactTypeAndFilename(convertArtifactType);
 
     expect(
       groupArtifactContent[ArtifactType.FASTQ][
         `${S3_URL_PREFIX}/FILE_L001.fastq`
       ]
-    ).toEqual(MOCK_FASTQ_PAIR_FILE_SET);
+    ).toEqual(
+      MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
+        ...f,
+        sampleIdsArray: ["ID0001"],
+      }))
+    );
     expect(
       groupArtifactContent[ArtifactType.BAM][`${S3_URL_PREFIX}/A0000001.bam`]
-    ).toEqual(MOCK_BAM_FILE_SET);
+    ).toEqual(
+      MOCK_BAM_FILE_SET.map((f) => ({
+        ...f,
+        sampleIdsArray: ["ID0001"],
+      }))
+    );
     expect(
       groupArtifactContent[ArtifactType.VCF][
         `${S3_URL_PREFIX}/19W001062.individual.norm.vcf`
       ]
-    ).toEqual(MOCK_VCF_FILE_SET);
+    ).toEqual(
+      MOCK_VCF_FILE_SET.map((f) => ({
+        ...f,
+        sampleIdsArray: ["ID0001"],
+      }))
+    );
   });
 
   it("Test updateFileRecordFromManifest", async () => {
@@ -195,10 +215,25 @@ describe("AWS s3 client", () => {
 
   it("Test insertNewArtifact", async () => {
     const agService = container.resolve(S3IndexApplicationService);
-    const dataToInsert = {
-      FASTQ: { FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET },
-      BAM: { BAMFILENAMEID: MOCK_BAM_FILE_SET },
-      VCF: { VCFFILENAMEID: MOCK_VCF_FILE_SET },
+    const dataToInsert: Record<string, Record<string, artifactType[]>> = {
+      FASTQ: {
+        FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
+          ...f,
+          sampleIdsArray: ["ID001"],
+        })),
+      },
+      BAM: {
+        BAMFILENAMEID: MOCK_BAM_FILE_SET.map((f) => ({
+          ...f,
+          sampleIdsArray: ["ID002"],
+        })),
+      },
+      VCF: {
+        VCFFILENAMEID: MOCK_VCF_FILE_SET.map((f) => ({
+          ...f,
+          sampleIdsArray: ["ID003"],
+        })),
+      },
     };
 
     const insArtifactQueryList =
@@ -226,12 +261,12 @@ describe("AWS s3 client", () => {
   it("Test converts3ManifestTypeToFileRecord", async () => {
     const agService = container.resolve(S3IndexApplicationService);
 
-    const newFileRec = agService.converts3ManifestTypeToFileRecord(
+    const artRec = agService.converts3ManifestTypeToArtifactTypeRecord(
       MOCK_1_S3URL_MANIFEST_OBJECT,
       MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
 
-    expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
+    expect(artRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
   it("Test linkPedigreeRelationship", async () => {
@@ -341,7 +376,8 @@ describe("AWS s3 client", () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
-      MOCK_2_BAI_FILE_RECORD
+      MOCK_2_BAI_FILE_RECORD,
+      [MOCK_2_STUDY_ID]
     );
     const preExistingData = e.insert(e.dataset.DatasetPatient, {
       externalIdentifiers: makeSystemlessIdentifierArray(MOCK_2_STUDY_ID),
@@ -408,7 +444,8 @@ describe("AWS s3 client", () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
-      MOCK_2_BAI_FILE_RECORD
+      MOCK_2_BAI_FILE_RECORD,
+      [MOCK_2_STUDY_ID]
     );
 
     const preExistingData = e.insert(e.dataset.DatasetPatient, {

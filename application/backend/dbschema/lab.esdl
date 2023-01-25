@@ -1,6 +1,7 @@
 module lab {
 
     abstract type ArtifactBase  {
+        property sampleIds -> array<str>;
     }
 
     type ArtifactBcl extending ArtifactBase {

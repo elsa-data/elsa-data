@@ -30,12 +30,14 @@ function createManifestObject(
 function createS3UrlManifestObject(
   s3Url = `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
   agha_study_id = "A0000001",
+  agha_study_id_array = ["A0000001"],
   checksum = "RANDOMCHECKSUM"
 ) {
   return {
     checksum: checksum,
     s3Url: s3Url,
     agha_study_id: agha_study_id,
+    agha_study_id_array: agha_study_id_array,
   };
 }
 
