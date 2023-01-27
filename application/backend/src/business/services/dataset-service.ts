@@ -57,19 +57,23 @@ export class DatasetService {
    */
   public async getSummary(
     user: AuthenticatedUser,
-    limit: number,
-    offset: number,
-    includeDeletedFile: boolean
+    includeDeletedFile: boolean,
+    limit?: number,
+    offset?: number
   ): Promise<PagedResult<DatasetLightType>> {
-    if (limit <= 0 || offset < 0) throw new BadLimitOffset(limit, offset);
+    if (
+      (limit !== undefined && limit <= 0) ||
+      (offset !== undefined && offset < 0)
+    )
+      throw new BadLimitOffset(limit, offset);
 
     // TODO: if we introduce any security model into dataset (i.e. at the moment
     // all data owners can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
     const fullDatasets = await datasetSummaryQuery.run(this.edgeDbClient, {
-      limit: limit,
-      offset: offset,
+      ...(limit === undefined ? {} : { limit }),
+      ...(offset === undefined ? {} : { offset }),
       includeDeletedFile: includeDeletedFile,
     });
 
