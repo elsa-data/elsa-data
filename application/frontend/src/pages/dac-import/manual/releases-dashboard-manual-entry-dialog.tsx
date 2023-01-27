@@ -110,8 +110,8 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
             <div className="prose mt-2">
               <p className="text-sm text-gray-500">
                 This form should only be used in the case where an application
-                could not be imported via an upstream DAC such as REMS or
-                REDCap.
+                for data could not be imported via an upstream DAC such as REMS
+                or REDCap.
               </p>
             </div>
             <div>
@@ -199,16 +199,6 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
                 )}
               />
               {errors.studyType && <Required />}
-              <RhChecks label="Assertions" className="my-4">
-                <RhCheckItem
-                  label="Applicant Has Agreed to Publish the Results"
-                  {...register("studyAgreesToPublish")}
-                />
-                <RhCheckItem
-                  label="Applicant Asserts the Study is Non-Commercial"
-                  {...register("studyIsNotCommercial")}
-                />
-              </RhChecks>
               <input
                 type="text"
                 className="my-4 block w-full rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"

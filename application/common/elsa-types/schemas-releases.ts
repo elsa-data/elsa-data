@@ -159,8 +159,6 @@ export const ReleaseManualSchema = Type.Object({
   releaseDescription: Type.String(),
 
   studyType: ReleaseApplicationCodedTypeSchema,
-  studyAgreesToPublish: Type.Boolean(),
-  studyIsNotCommercial: Type.Boolean(),
 
   datasetUris: Type.Array(Type.String()),
   applicantEmailAddresses: Type.String(),
