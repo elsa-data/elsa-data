@@ -11,12 +11,14 @@ import {
   strictServeRealFileIfPresent,
 } from "./app-helpers";
 import { ErrorHandler } from "./api/errors/_error.handler";
-import { registerTestingRoutes } from "./api/routes/testing";
-import { apiRoutes } from "./api/api-routes";
-import { authRoutes, getSecureSessionOptions } from "./auth/auth-routes";
+import { apiInternalRoutes } from "./api/api-internal-routes";
+import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
 import { container, inject, injectable, singleton } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
 import { Logger } from "pino";
+import { apiExternalRoutes } from "./api/api-external-routes";
+import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
+import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
 
 @injectable()
 @singleton()
@@ -89,22 +91,38 @@ export class App {
       this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
     });
 
-    this.server.register(apiRoutes, {
+    this.server.register(apiExternalRoutes, {
+      prefix: "/api",
       container: container,
-      allowTestCookieEquals: undefined,
-      // this.settings.environment === "development" ? "hello" : undefined,
     });
 
-    this.server.register(authRoutes, {
+    this.server.register(apiInternalRoutes, {
+      prefix: "/api",
+      container: container,
+      allowTestCookieEquals: undefined,
+    });
+
+    this.server.register(apiUnauthenticatedRoutes, {
+      prefix: "/api",
+      container: container,
+      addDevTestingRoutes: this.settings.devTesting?.allowTestRoutes ?? false,
+    });
+
+    // TODO: think about how/where auth routes can go
+    //       including callback as a special case (because it has to be registered with the OIDC provider)
+    this.server.register(apiAuthRoutes, {
+      prefix: "/auth",
       container: container,
       redirectUri: this.settings.deployedUrl + "/cb",
       includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
     });
 
-    registerTestingRoutes(
-      this.server,
-      this.settings.devTesting?.allowTestRoutes ?? false
-    );
+    this.server.register(callbackRoutes, {
+      prefix: "/cb",
+      container: container,
+      redirectUri: this.settings.deployedUrl + "/cb",
+      includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
+    });
 
     // our behaviour for React routed websites is that NotFound responses should be replaced
     // with serving up index.html

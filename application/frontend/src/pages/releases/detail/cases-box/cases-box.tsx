@@ -40,6 +40,8 @@ export const CasesBox: React.FC<Props> = ({
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
     useState<boolean>(true);
 
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -48,7 +50,11 @@ export const CasesBox: React.FC<Props> = ({
 
   const [searchText, setSearchText] = useState("");
 
-  const clearSearchText = () => setSearchText("");
+  const onSearchTextChange = (text: string) => {
+    setIsLoading(true);
+    setCurrentPage(1);
+    setSearchText(text);
+  };
 
   const makeUseableSearchText = (t: string | undefined) => {
     if (!isEmpty(t) && !isEmpty(trim(t))) return trim(t);
@@ -62,15 +68,13 @@ export const CasesBox: React.FC<Props> = ({
       const useableSearchText = makeUseableSearchText(searchText);
       if (useableSearchText) {
         urlParams.append("q", useableSearchText);
-      } else {
-        urlParams.append("page", currentPage.toString());
       }
+      urlParams.append("page", currentPage.toString());
       const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
       return await axios.get<ReleaseCaseType[]>(u).then((response) => {
-        if (!useableSearchText) {
-          handleTotalCountHeaders(response, setCurrentTotal);
-        }
+        handleTotalCountHeaders(response, setCurrentTotal);
 
+        setIsLoading(false);
         return response.data;
       });
     },
@@ -148,6 +152,8 @@ export const CasesBox: React.FC<Props> = ({
       </Box>
     );
 
+  console.log("dataQuery.data", dataQuery.data);
+
   return (
     <BoxNoPad
       heading="Cases"
@@ -161,8 +167,8 @@ export const CasesBox: React.FC<Props> = ({
           rowsPerPage={pageSize}
           rowWord="cases"
           currentSearchText={searchText}
-          setSearchText={setSearchText}
-          clearSearchText={clearSearchText}
+          onSearchTextChange={onSearchTextChange}
+          isLoading={isLoading}
         />
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
@@ -176,18 +182,20 @@ export const CasesBox: React.FC<Props> = ({
               </p>
             </div>
           )}
-        {dataQuery.data && dataQuery.data.length === 0 && currentTotal > 0 && (
-          <div className={classNames(baseMessageDivClasses)}>
-            <p>
-              No cases are being displayed due to the identifier filter you have
-              selected
-            </p>
-          </div>
-        )}
+        {dataQuery.data &&
+          dataQuery.data.length === 0 &&
+          makeUseableSearchText(searchText) && (
+            <div className={classNames(baseMessageDivClasses)}>
+              <p>
+                Searching for the identifier <b>{searchText}</b> returned no
+                results
+              </p>
+            </div>
+          )}
         {dataQuery.data && dataQuery.data.length > 0 && (
           <>
             <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
-              <div class="flex flex-wrap items-center border-b py-4">
+              <div className="flex flex-wrap items-center border-b py-4">
                 <label>
                   <div className="inline-block w-12 text-center">
                     <IndeterminateCheckbox
@@ -227,7 +235,7 @@ export const CasesBox: React.FC<Props> = ({
                           {row.externalId}{" "}
                           {row.customConsent && (
                             <>
-                              {" "}
+                              {" - "}
                               <ConsentPopup
                                 releaseId={releaseId}
                                 nodeId={row.id}

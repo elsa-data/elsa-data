@@ -1,0 +1,4 @@
+{
+  // this dataset doesn't exist and so this should generate an error
+  "-datasets": ["THISDATASETIDOESNOTEXIST"],
+}

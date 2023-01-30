@@ -10,21 +10,23 @@ import { CodingSchema } from "./schemas-coding";
 import { StringUnion, TypeDate } from "./typebox-helpers";
 
 export const ReleaseSummarySchema = Type.Object({
+  // the edge db id of this release
   id: Type.String(),
 
+  // the primary public identifier for this release
   releaseIdentifier: Type.String(),
 
   applicationDacIdentifierSystem: Type.String(),
   applicationDacIdentifierValue: Type.String(),
   applicationDacTitle: Type.String(),
 
-  // if this release is in the time period of sharing
-  //isSharingEnabled: Type.Boolean(),
+  // if this release has been activated for allowing actual data sharing activity
+  isActivated: Type.Boolean(),
 
   // if a job is running then this is the percent it is complete
   isRunningJobPercentDone: Type.Optional(Type.Number()),
 
-  // once we get @role link properties working we should enable this
+  // the role the caller has in this particular release
   roleInRelease: Type.String(),
 });
 
@@ -54,6 +56,10 @@ export const ReleaseRunningJobSchema = Type.Object({
   requestedCancellation: Type.Boolean(),
 });
 
+export const ReleaseActivationSchema = Type.Object({
+  activatedByDisplayName: Type.String(),
+});
+
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
@@ -69,20 +75,15 @@ export const ReleaseDetailSchema = Type.Object({
 
   applicationCoded: ReleaseApplicationCodedSchema,
 
-  // the start and end dates of enabling access
-  // both must be specified in order that access is started
-  accessStartDate: Type.Optional(TypeDate),
-  accessEndDate: Type.Optional(TypeDate),
-
+  // which categories of data are allowed to be shared
   isAllowedReadData: Type.Boolean(),
   isAllowedVariantData: Type.Boolean(),
   isAllowedPhenotypeData: Type.Boolean(),
 
-  // the logically interpreted access start/end and current time - from the perspective of the server
-  // (i.e. this could have been computed by the front end from start date and end date - but we want the logic
-  // only in one spot)
-  accessEnabled: Type.Boolean(),
+  // if present, means that this release has been activated for data sharing
+  activation: Type.Optional(ReleaseActivationSchema),
 
+  // if present, means that this release is in the process of running a background job
   runningJob: Type.Optional(ReleaseRunningJobSchema),
 
   // if present, is the password used for all download artifacts (zip files etc)
@@ -152,6 +153,17 @@ export const ReleaseCaseSchema = Type.Object({
   customConsent: Type.Boolean(),
 });
 
+// Schema for manually creating a release instead importing it from a DAC
+export const ReleaseManualSchema = Type.Object({
+  releaseTitle: Type.String(),
+  releaseDescription: Type.String(),
+
+  studyType: ReleaseApplicationCodedTypeSchema,
+
+  datasetUris: Type.Array(Type.String()),
+  applicantEmailAddresses: Type.String(),
+});
+
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
@@ -159,3 +171,5 @@ export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
 
 export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
+
+export type ReleaseManualType = Static<typeof ReleaseManualSchema>;

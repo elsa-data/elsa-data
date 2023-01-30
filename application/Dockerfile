@@ -32,6 +32,7 @@ COPY --from=node-deps /build .
 # edgedb needs the dbschema folder which has the schemas/migrations
 COPY ./backend/dbschema/ dbschema/
 
+# NOTE: the & and && here has some pretty subtle interaction - be careful working on this
 RUN edgedb-server \
     -D /build/data \
     --security insecure_dev_mode \
@@ -66,6 +67,9 @@ RUN cd common/elsa-types && npm ci
 
 COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/edgeql-js/
 
+# we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
+COPY --from=edgedb-builder /usr/bin/edgedb ./backend/
+
 # add in an extra compile step - which whilst not needed for runtime, does help keep
 # crazy errors away (ts-node does not actually do type checking)
 RUN : \
@@ -74,11 +78,6 @@ RUN : \
 RUN : \
   && cd frontend \
   && npm run build:prod
-
-# when running in the real Docker image the frontend is expected to be bundled local to the backend
-#RUN mkdir backend/client
-#RUN mv frontend/build backend/client
-#RUN cd backend/client && mv build dist
 
 ARG ELSA_DATA_VERSION
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION

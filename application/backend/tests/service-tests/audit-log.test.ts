@@ -123,7 +123,8 @@ it("audit data access log", async () => {
   const se = await auditLogService.updateDataAccessAuditEvent({
     executor: edgeDbClient,
     fileUrl: fileUrl,
-    who: "123.123.12.123",
+    whoId: "123.123.12.123",
+    whoDisplayName: "Melbourne, VIC, AU",
     egressBytes: 123456,
     description: "Test data access log.",
     date: new Date("2022-10-24 05:56:40.000"),

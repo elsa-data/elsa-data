@@ -3,12 +3,15 @@ import { Box } from "../../components/boxes";
 import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
 import { ReleasesAddReleaseDialog } from "./rems-dac/releases-dashboard-add-release-dialog";
+import { ReleasesManualEntryDialog } from "./manual/releases-dashboard-manual-entry-dialog";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { ALLOWED_CREATE_NEW_RELEASES } from "@umccr/elsa-constants";
 import { AustralianGenomicsDacRedcapUploadDiv } from "./australian-genomics-dac-redcap/australian-genomics-dac-redcap-upload-div";
 
 export const DacImportPage: React.FC = () => {
   const [showingRemsDialog, setShowingRemsDialog] = useState(false);
+  const [showingManualEntryDialog, setShowingManualEntryDialog] =
+    useState(false);
 
   const uiAllowed = useUiAllowed();
 
@@ -21,7 +24,13 @@ export const DacImportPage: React.FC = () => {
             heading="Import from DAC"
             errorMessage={"Something went wrong importing from DAC."}
           >
-            <VerticalTabs tabHeadings={["REMS", "Australian Genomics Redcap"]}>
+            <VerticalTabs
+              tabHeadings={[
+                "REMS",
+                "Australian Genomics Redcap",
+                "Manual Entry",
+              ]}
+            >
               <div className="flex flex-col gap-6">
                 <div className="prose">
                   <label className="block">
@@ -43,6 +52,12 @@ export const DacImportPage: React.FC = () => {
                 </div>
               </div>
               <AustralianGenomicsDacRedcapUploadDiv />
+              <button
+                className="btn-normal"
+                onClick={() => setShowingManualEntryDialog(true)}
+              >
+                Enter Release Details
+              </button>
             </VerticalTabs>
           </Box>
         )}
@@ -50,6 +65,10 @@ export const DacImportPage: React.FC = () => {
       <ReleasesAddReleaseDialog
         showing={showingRemsDialog}
         cancelShowing={() => setShowingRemsDialog(false)}
+      />
+      <ReleasesManualEntryDialog
+        showing={showingManualEntryDialog}
+        cancelShowing={() => setShowingManualEntryDialog(false)}
       />
     </LayoutBase>
   );

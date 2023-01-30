@@ -24,6 +24,12 @@ import * as MOCK_JSON from "./mock-json.json";
 import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { container } from "tsyringe";
 import { ElsaSettings } from "../config/elsa-settings";
+import {
+  TEST_SUBJECT_2,
+  TEST_SUBJECT_2_DISPLAY,
+  TEST_SUBJECT_3,
+  TEST_SUBJECT_3_DISPLAY,
+} from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -83,9 +89,23 @@ Ethics form XYZ.
       //
       //
       releaseIdentifier: "C5YR7P2PE1",
+      activation: e.insert(e.release.Activation, {
+        activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
+        activatedById: TEST_SUBJECT_2,
+        activatedByDisplayName: TEST_SUBJECT_2_DISPLAY,
+        manifest: e.json({}),
+        manifestEtag: "123456",
+      }),
+      previouslyActivated: e.set(
+        e.insert(e.release.Activation, {
+          activatedAt: e.datetime(new Date(2022, 6, 7)),
+          activatedById: TEST_SUBJECT_3,
+          activatedByDisplayName: TEST_SUBJECT_3_DISPLAY,
+          manifest: e.json({}),
+          manifestEtag: "abcdef",
+        })
+      ),
       releasePassword: "abcd", // pragma: allowlist secret
-      releaseStarted: new Date(2022, 1, 23),
-      releaseEnded: new Date(2023, 1, 1),
       datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
@@ -204,7 +224,7 @@ const makeSyntheticDataAccessLog = async () => {
       details: e.json(fileJson),
       egressBytes: 10188721080,
       whoId: "123.123.123.123",
-      whoDisplayName: "123.123.123.123",
+      whoDisplayName: "Melbourne, Australia",
       actionCategory: e.audit.ActionType.R,
       actionDescription: "Data Access",
       occurredDateTime: e.datetime(new Date()),

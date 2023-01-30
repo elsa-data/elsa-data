@@ -104,3 +104,4 @@ dist
 .tern-port
 /.idea/
 application/infrastructure/cdk.context.json
+application/backend/asset/maxmind/

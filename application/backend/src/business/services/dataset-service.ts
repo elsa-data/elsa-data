@@ -1,14 +1,22 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { DatasetDeepType, DatasetLightType } from "@umccr/elsa-types";
+import {
+  DatasetDeepType,
+  DatasetLightType,
+  DuoLimitationCodedType,
+} from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable, singleton } from "tsyringe";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
-  datasetSummaryQuery,
+  datasetAllSummaryQuery,
+  singleDatasetSummaryQuery,
   selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -54,23 +62,27 @@ export class DatasetService {
    */
   public async getSummary(
     user: AuthenticatedUser,
-    limit: number,
-    offset: number,
-    includeDeletedFile: boolean
+    includeDeletedFile: boolean,
+    limit?: number,
+    offset?: number
   ): Promise<PagedResult<DatasetLightType>> {
-    if (limit <= 0 || offset < 0) throw new BadLimitOffset(limit, offset);
+    if (
+      (limit !== undefined && limit <= 0) ||
+      (offset !== undefined && offset < 0)
+    )
+      throw new BadLimitOffset(limit, offset);
 
     // TODO: if we introduce any security model into dataset (i.e. at the moment
     // all data owners can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-    const fullDatasets = await datasetSummaryQuery.run(this.edgeDbClient, {
-      limit: limit,
-      offset: offset,
+    const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
+      ...(limit === undefined ? {} : { limit }),
+      ...(offset === undefined ? {} : { offset }),
       includeDeletedFile: includeDeletedFile,
     });
 
-    const converted: DatasetLightType[] = fullDatasets.map((fd) => {
+    const converted: DatasetLightType[] = fullDatasets.map((fd: any) => {
       const includes: string[] = [];
       if (fd.summaryBamCount > 0) includes.push("BAM");
       if (fd.summaryBclCount > 0) includes.push("BCL");
@@ -99,44 +111,35 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetId: string
   ): Promise<DatasetDeepType | null> {
-    const singleDataset = await e
-      .select(e.dataset.Dataset, (ds) => ({
-        ...e.dataset.Dataset["*"],
-        summaryArtifactBytes: e.int16(0),
-        //e.sum(
-        //  ds.cases.patients.specimens.artifacts.is(e.lab.AnalysesArtifactBase).
-        //),
-        cases: {
-          externalIdentifiers: true,
-          patients: {
-            externalIdentifiers: true,
-            specimens: {
-              externalIdentifiers: true,
-            },
-          },
-        },
-        filter: e.op(ds.id, "=", e.uuid(datasetId)),
-      }))
-      .run(this.edgeDbClient);
+    const sd = await singleDatasetSummaryQuery.run(this.edgeDbClient, {
+      includeDeletedFile: false,
+      datasetId: datasetId,
+    });
 
-    if (singleDataset != null) {
+    if (sd) {
+      const includes: string[] = [];
+      if (sd.summaryBamCount > 0) includes.push("BAM");
+      if (sd.summaryBclCount > 0) includes.push("BCL");
+      if (sd.summaryCramCount > 0) includes.push("CRAM");
+      if (sd.summaryFastqCount > 0) includes.push("FASTQ");
+      if (sd.summaryVcfCount > 0) includes.push("VCF");
       return {
-        id: singleDataset.id,
-        uri: singleDataset.uri,
-        updatedDateTime: singleDataset.updatedDateTime,
-        isInConfig: singleDataset.isInConfig,
-        description: singleDataset.description,
-        summaryArtifactCount: 0,
-        summaryArtifactIncludes: "",
-        summaryCaseCount: 0,
-        summarySpecimenCount: 0,
-        summaryPatientCount: 0,
-        summaryArtifactSizeBytes: 0,
-        cases: [],
+        id: sd.id,
+        uri: sd.uri,
+        updatedDateTime: sd.updatedDateTime,
+        isInConfig: sd.isInConfig,
+        description: sd.description,
+        summaryCaseCount: sd.summaryCaseCount,
+        summaryPatientCount: sd.summaryPatientCount,
+        summarySpecimenCount: sd.summarySpecimenCount,
+        summaryArtifactCount: sd.summaryArtifactCount,
+        summaryArtifactIncludes: includes.join(" "),
+        summaryArtifactSizeBytes: sd.summaryArtifactBytes,
+        cases: sd.cases,
       };
     }
 
-    return singleDataset;
+    return sd;
   }
 
   /**
@@ -283,5 +286,30 @@ export class DatasetService {
         },
       }))
       .run(this.edgeDbClient);
+  }
+
+  public async getDatasetsConsent(
+    user: AuthenticatedUser,
+    consentId: string
+  ): Promise<DuoLimitationCodedType[]> {
+    // Should be some mechanism to check if user is authorize to see the consent
+
+    const consentQuery = e
+      .select(e.consent.Consent, (c) => ({
+        id: true,
+        statements: {
+          ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
+        },
+        filter: e.op(c.id, "=", e.uuid(consentId)),
+      }))
+      .assert_single();
+
+    const consent = await consentQuery.run(this.edgeDbClient);
+
+    if (!consent) return [];
+
+    return consent.statements.map(
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
+    );
   }
 }

@@ -58,16 +58,12 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          {releaseData.accessEnabled && (
+          {releaseData.activation && (
             <div className={classNames(alertBoxClasses, "border-green-400")}>
-              <p>Data access is currently enabled.</p>
-              <p>Access will automatically cease</p>
-              <p title="2022-03-05">
-                <b>in six months.</b>
-              </p>
+              <p>This release is activated for data access</p>
             </div>
           )}
-          {!releaseData.accessEnabled && (
+          {!releaseData.activation && (
             <div className={classNames(alertBoxClasses, "border-red-400")}>
               <p>Data access is currently disabled</p>
             </div>

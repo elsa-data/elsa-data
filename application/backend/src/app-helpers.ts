@@ -3,6 +3,12 @@ import { resolve } from "path";
 import { FastifyReply } from "fastify";
 import { template } from "lodash";
 import { existsSync } from "fs";
+import axios from "axios";
+import * as fs from "fs";
+import * as tar from "tar-stream";
+import gunzip from "gunzip-maybe";
+import { promisify } from "util";
+import * as stream from "stream";
 
 /**
  * Finds the location of the already built React/Vue/HTML website that we want to
@@ -98,4 +104,57 @@ export async function strictServeRealFileIfPresent(
     // we don't want the send() code trying to locate index.html files, we will handle that
     index: false,
   });
+}
+
+export async function downloadMaxmindDb({
+  dbPath,
+  maxmindKey,
+}: {
+  dbPath: string;
+  maxmindKey: string;
+}) {
+  // Download maxmind tar.gz
+  const url = `https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${maxmindKey}&suffix=tar.gz`;
+  const tarFile = `${dbPath}/GeoLite2-City.tar.gz`;
+
+  if (!fs.existsSync(dbPath)) {
+    fs.mkdirSync(dbPath);
+  }
+
+  const finished = promisify(stream.finished);
+  const writer = fs.createWriteStream(tarFile);
+  const response = await axios.get(url, { responseType: "stream" });
+  response.data.pipe(writer);
+  await finished(writer);
+
+  // Extract file
+  let extract = tar.extract();
+  let chunks: any = [];
+
+  extract.on("entry", function (header, stream, cb) {
+    stream.on("data", function (chunk) {
+      if (
+        header.name.endsWith("GeoLite2-City.mmdb") &&
+        header.type === "file"
+      ) {
+        chunks.push(chunk);
+      }
+    });
+
+    stream.on("end", function () {
+      cb();
+    });
+    stream.on("error", cb);
+    stream.resume();
+  });
+
+  extract.on("finish", function () {
+    fs.writeFile(
+      `${dbPath}/GeoLite2-City.mmdb`,
+      Buffer.concat(chunks),
+      () => {}
+    );
+  });
+
+  fs.createReadStream(tarFile).pipe(gunzip()).pipe(extract);
 }

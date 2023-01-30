@@ -12,7 +12,10 @@ import {
   AuditEntryFullType,
   AuditEntryType,
 } from "@umccr/elsa-types/schemas-audit";
-import { createPagedResult, PagedResult } from "../../api/api-pagination";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import {
   auditLogDetailsForIdQuery,
   auditLogFullForIdQuery,
@@ -131,7 +134,8 @@ export class AuditLogService {
   public async updateDataAccessAuditEvent({
     executor,
     releaseId,
-    who,
+    whoId,
+    whoDisplayName,
     fileUrl,
     egressBytes,
     description,
@@ -139,7 +143,8 @@ export class AuditLogService {
   }: {
     executor: Executor;
     releaseId: string;
-    who: string;
+    whoId: string;
+    whoDisplayName: string;
     fileUrl: string;
     description: string;
     egressBytes: number;
@@ -161,8 +166,8 @@ export class AuditLogService {
             "+=": e.insert(e.audit.DataAccessAuditEvent, {
               details: e.json(fileJson),
               egressBytes: egressBytes,
-              whoId: who,
-              whoDisplayName: who,
+              whoId: whoId,
+              whoDisplayName: whoDisplayName,
               actionCategory: e.audit.ActionType.R,
               actionDescription: description,
               occurredDateTime: e.datetime(date),

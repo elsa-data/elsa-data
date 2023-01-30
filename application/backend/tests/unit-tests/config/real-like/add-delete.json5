@@ -1,0 +1,21 @@
+{
+  // use the + notation to add into the existing datasets
+  "+datasets": [
+    {
+      name: "datasetadd1",
+      description: "A dataset sample added as 1",
+      uri: "urn:elsa.net:2022:datasetadd1",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "example/datasetadd1",
+    },
+    {
+      name: "datasetadd2",
+      description: "A dataset sample added as 2",
+      uri: "urn:elsa.net:2022:datasetadd2",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "example/datasetadd2",
+    },
+  ],
+  // and use the - notation to remove an existing dataset (by name but could also be by uri or id)
+  "-datasets": ["dataset001"],
+}

@@ -15,7 +15,13 @@ export const allReleasesSummaryByUserQuery = e.params(
         applicationDacIdentifier: true,
         "@role": true,
         runningJob: {
+          // we are avoiding fetching the message/details etc (which could be large) in this summary
+          id: true,
           percentDone: true,
+        },
+        activation: {
+          // we are avoiding fetching the manifest etc (which could be large) in this summary
+          id: true,
         },
         // we could possibly think of reverse ordering by some time/last updated - might be more meaningful
         // as release identifier is essentially a meaningless random string

@@ -10,16 +10,19 @@ import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
 import { insertRelease4 } from "./insert-test-data-release4";
 import { ElsaSettings } from "../config/elsa-settings";
+import {
+  TEST_SUBJECT_1,
+  TEST_SUBJECT_1_DISPLAY,
+  TEST_SUBJECT_1_EMAIL,
+  TEST_SUBJECT_2,
+  TEST_SUBJECT_2_DISPLAY,
+  TEST_SUBJECT_2_EMAIL,
+  TEST_SUBJECT_3,
+  TEST_SUBJECT_3_DISPLAY,
+  TEST_SUBJECT_3_EMAIL,
+} from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
-
-// these are 3 constants for users that are created *only* in development/test mode
-// NOTE: when enabled - these subjects go beyond having some test data in the db - these
-// users are enabled in the APIs to do a variety of things
-// DON'T LEAVE ON TEST MODE IN AN INSTANCE NOT MEANT FOR TESTING!
-export const TEST_SUBJECT_1 = "http://subject1.com";
-export const TEST_SUBJECT_2 = "http://subject2.com";
-export const TEST_SUBJECT_3 = "http://subject3.com";
 
 export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
@@ -85,24 +88,24 @@ export async function insertTestData(settings: ElsaSettings) {
 
   await createTestUser(
     TEST_SUBJECT_1,
-    "Test User 1",
-    "subject1@elsa.net",
+    TEST_SUBJECT_1_DISPLAY,
+    TEST_SUBJECT_1_EMAIL,
     [r1.id, r4.id],
     [r2.id],
     []
   );
   await createTestUser(
     TEST_SUBJECT_2,
-    "Test User 2",
-    "subject2@elsa.net",
+    TEST_SUBJECT_2_DISPLAY,
+    TEST_SUBJECT_2_EMAIL,
     [],
     [r1.id],
     []
   );
   await createTestUser(
     TEST_SUBJECT_3,
-    "Test User 3",
-    "subject3@elsa.net",
+    TEST_SUBJECT_3_DISPLAY,
+    TEST_SUBJECT_3_EMAIL,
     [],
     [],
     []
