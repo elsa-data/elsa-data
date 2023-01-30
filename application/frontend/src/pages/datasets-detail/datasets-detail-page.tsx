@@ -13,6 +13,7 @@ import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMale, faFemale } from "@fortawesome/free-solid-svg-icons";
+import ConsentSummary from "../releases/detail/cases-box/consent-summary";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -150,7 +151,7 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
                                 className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
                               >
                                 {caseVal.consent?.id ? (
-                                  <ConsentPopup
+                                  <ConsentSummary
                                     consentId={caseVal.consent.id}
                                   />
                                 ) : (
@@ -176,7 +177,7 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
                         ) : col.jsonKey == "patientConsentId" ? (
                           <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                             {patient.consent?.id ? (
-                              <ConsentPopup consentId={patient.consent.id} />
+                              <ConsentSummary consentId={patient.consent.id} />
                             ) : (
                               `-`
                             )}
