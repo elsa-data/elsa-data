@@ -235,7 +235,7 @@ export const CasesBox: React.FC<Props> = ({
                           {row.externalId}{" "}
                           {row.customConsent && (
                             <>
-                              {" "}
+                              {" - "}
                               <ConsentPopup
                                 releaseId={releaseId}
                                 nodeId={row.id}
