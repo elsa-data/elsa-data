@@ -62,7 +62,7 @@ export const DatasetsDetailPage: React.FC = () => {
               <Box
                 heading={
                   <div className="flex items-center	justify-between">
-                    <div>{`Dataset`}</div>
+                    <div>Dataset</div>
                     <button
                       disabled={!datasetData.id}
                       onClick={async () =>
