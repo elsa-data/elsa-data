@@ -33,15 +33,15 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     Querystring: DatasetSummaryQueryType;
     Reply: DatasetLightType[];
   }>("/datasets/", {}, async function (request, reply) {
-    const { authenticatedUser, pageSize, offset } =
+    const { authenticatedUser, pageSize, rawPage, offset } =
       authenticatedRouteOnEntryHelper(request);
 
     const { includeDeletedFile = "false" } = request.query;
     const datasetsPagedResult = await datasetsService.getSummary(
       authenticatedUser,
-      pageSize,
-      offset,
-      includeDeletedFile === "true" ? true : false
+      includeDeletedFile === "true" ? true : false,
+      rawPage === undefined ? undefined : pageSize,
+      rawPage === undefined ? undefined : offset
     );
 
     sendPagedResult(reply, datasetsPagedResult);
