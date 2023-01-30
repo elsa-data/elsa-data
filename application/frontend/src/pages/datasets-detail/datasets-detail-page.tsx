@@ -3,11 +3,17 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { DatasetDeepType } from "@umccr/elsa-types";
+import { DatasetDeepType, DatasetCaseType } from "@umccr/elsa-types";
 import { LayoutBase } from "../../layouts/layout-base";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
+import { Table } from "flowbite-react";
+import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
+import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMale, faFemale } from "@fortawesome/free-solid-svg-icons";
+import ConsentSummary from "../releases/detail/cases-box/consent-summary";
 
 type DatasetsSpecificPageParams = {
   datasetId: string;
@@ -41,16 +47,13 @@ export const DatasetsDetailPage: React.FC = () => {
                     ID: datasetData.id,
                     URI: datasetData.uri,
                     Description: datasetData.description,
+                    "Last Updated": datasetData.updatedDateTime ?? "-",
                     "Artifact Count": datasetData.summaryArtifactCount,
-                    "Artifact Filetypes":
-                      datasetData.summaryArtifactIncludes != ""
-                        ? datasetData.summaryArtifactIncludes.replaceAll(
-                            " ",
-                            "/"
-                          )
-                        : "-",
+                    "Artifact Filetypes": datasetData.summaryArtifactIncludes
+                      ? datasetData.summaryArtifactIncludes.replaceAll(" ", "/")
+                      : "-",
                     "Artifact Size": fileSize(
-                      datasetData.summaryArtifactSizeBytes
+                      datasetData.summaryArtifactSizeBytes ?? 0
                     ),
                     Configuration: configurationChip(datasetData.isInConfig),
                   }}
@@ -60,7 +63,7 @@ export const DatasetsDetailPage: React.FC = () => {
               <Box
                 heading={
                   <div className="flex items-center	justify-between">
-                    <div>Content</div>
+                    <div>Dataset</div>
                     <button
                       disabled={!datasetData.id}
                       onClick={async () =>
@@ -77,11 +80,10 @@ export const DatasetsDetailPage: React.FC = () => {
                 }
               >
                 <div>
-                  {datasetData && (
-                    <pre>{JSON.stringify(datasetData, null, 2)}</pre>
-                  )}
+                  {datasetData && <DatasetTable cases={datasetData.cases} />}
                 </div>
               </Box>
+              {/* <ConsentBox /> */}
             </>
           )}
           {error && (
@@ -94,6 +96,105 @@ export const DatasetsDetailPage: React.FC = () => {
         </>
       </div>
     </LayoutBase>
+  );
+};
+
+const DATASET_COLUMN = [
+  { columnTitle: "Case Id", jsonKey: "caseId" },
+  { columnTitle: "Case Consent", jsonKey: "caseConsentId" },
+  { columnTitle: "Patient Id", jsonKey: "patientId" },
+  { columnTitle: "Patient Consent", jsonKey: "patientConsentId" },
+];
+const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
+  return (
+    <Table striped={true}>
+      <Table.Head>
+        {DATASET_COLUMN.map((val, i) => (
+          <Table.HeadCell key={i}>{val.columnTitle}</Table.HeadCell>
+        ))}
+      </Table.Head>
+      <Table.Body className="divide-y">
+        {cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
+          const exId = getFirstExternalIdentifierValue(
+            caseVal.externalIdentifiers ?? undefined
+          );
+          const patients = caseVal.patients;
+
+          return patients.map((patient, patientIdx) => {
+            const patientId = getFirstExternalIdentifierValue(
+              patient.externalIdentifiers ?? undefined
+            );
+            return (
+              <Table.Row key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
+                {DATASET_COLUMN.map(
+                  (col: Record<string, string>, colIdx: number) => {
+                    return (
+                      <React.Fragment
+                        key={`${caseIdx}-${patientIdx}-${colIdx}`}
+                      >
+                        {col.jsonKey == "caseId" ? (
+                          <>
+                            {patientIdx == 0 && (
+                              <Table.Cell
+                                rowSpan={patients.length}
+                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                              >
+                                {exId}
+                              </Table.Cell>
+                            )}
+                          </>
+                        ) : col.jsonKey == "caseConsentId" ? (
+                          <>
+                            {patientIdx == 0 && (
+                              <Table.Cell
+                                rowSpan={patients.length}
+                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                              >
+                                {caseVal.consent?.id ? (
+                                  <ConsentSummary
+                                    consentId={caseVal.consent.id}
+                                  />
+                                ) : (
+                                  `-`
+                                )}
+                              </Table.Cell>
+                            )}
+                          </>
+                        ) : col.jsonKey == "patientId" ? (
+                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                            <>
+                              {patient.sexAtBirth == "female" ? (
+                                <FontAwesomeIcon icon={faFemale} />
+                              ) : patient.sexAtBirth == "male" ? (
+                                <FontAwesomeIcon icon={faMale} />
+                              ) : (
+                                <></>
+                              )}
+
+                              {` - ${patientId}`}
+                            </>
+                          </Table.Cell>
+                        ) : col.jsonKey == "patientConsentId" ? (
+                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                            {patient.consent?.id ? (
+                              <ConsentSummary consentId={patient.consent.id} />
+                            ) : (
+                              `-`
+                            )}
+                          </Table.Cell>
+                        ) : (
+                          <Table.Cell>{col.jsonKey}</Table.Cell>
+                        )}
+                      </React.Fragment>
+                    );
+                  }
+                )}
+              </Table.Row>
+            );
+          });
+        })}
+      </Table.Body>
+    </Table>
   );
 };
 
