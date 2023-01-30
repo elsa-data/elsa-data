@@ -122,7 +122,7 @@ const artifactDatasetQuery = (ds: any, isDeletedFileFilter: any) => {
  * however recurse deep into the dataset structures for all the sub cases/patients etc - those
  * query elements need to be added elsewhere
  */
-export const datasetSummaryQuery = e.params(
+export const datasetAllSummaryQuery = e.params(
   {
     limit: e.optional(e.int32),
     offset: e.optional(e.int32),

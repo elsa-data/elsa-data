@@ -15,7 +15,7 @@ import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
-  allDatasetSummaryQuery,
+  datasetAllSummaryQuery,
   singleDatasetSummaryQuery,
   selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
@@ -76,13 +76,13 @@ export class DatasetService {
     // all data owners can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-    const fullDatasets = await datasetSummaryQuery.run(this.edgeDbClient, {
+    const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
       ...(limit === undefined ? {} : { limit }),
       ...(offset === undefined ? {} : { offset }),
       includeDeletedFile: includeDeletedFile,
     });
 
-    const converted: DatasetLightType[] = fullDatasets.map((fd) => {
+    const converted: DatasetLightType[] = fullDatasets.map((fd: any) => {
       const includes: string[] = [];
       if (fd.summaryBamCount > 0) includes.push("BAM");
       if (fd.summaryBclCount > 0) includes.push("BCL");
