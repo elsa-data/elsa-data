@@ -146,13 +146,30 @@ export const MOCK_3_CARDIAC_S3_OBJECT_LIST = [
 
 export const MOCK_3_CARDIAC_MANIFEST = `checksum\tfilename\tagha_study_id\n`;
 
-// Mock 4 - Multi studyId
-export const MOCK_4_CARDIAC_MANIFEST =
-  `checksum\tfilename\tagha_study_id\n` +
-  `RANDOMCHECKSUM\tFILE_L001_R1.fastq.gz\tA0000001,A0000002\n` +
-  `RANDOMCHECKSUM\tFILE_L001_R2.fastq.gz\tA0000001,A0000002\n`;
+// Mock 4 - Multi studyId (VCF trios)
+export const MOCK_4_CARDIAC_KEY_PREFIX = "Cardiac/2019-11-21/";
+export const MOCK_4_CARDIAC_VCF_FILENAME = "MOCK_4_FILE_VCF.trio.vcf";
+export const MOCK_4_CARDIAC_VCF_TBI_FILENAME = "MOCK_4_FILE_VCF.trio.vcf.tbi";
+export const MOCK_4_CARDIAC_MANIFEST_FILENAME = "manifest.txt";
+export const MOCK_4_STUDY_ID = "A0000001,A0000002,A0000003";
 export const MOCK_4_STUDY_ID_1 = "A0000001";
 export const MOCK_4_STUDY_ID_2 = "A0000002";
+export const MOCK_4_STUDY_ID_3 = "A0000003";
+export const MOCK_4_CARDIAC_S3_OBJECT_LIST = [
+  createS3ObjectList(
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_FILENAME}`
+  ),
+  createS3ObjectList(
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_TBI_FILENAME}`
+  ),
+  createS3ObjectList(
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_MANIFEST_FILENAME}`
+  ),
+];
+export const MOCK_4_CARDIAC_MANIFEST =
+  `checksum\tfilename\tagha_study_id\n` +
+  `RANDOMCHECKSUM\t${MOCK_4_CARDIAC_VCF_FILENAME}\t${MOCK_4_STUDY_ID}\n` +
+  `RANDOMCHECKSUM\t${MOCK_4_CARDIAC_VCF_TBI_FILENAME}\t${MOCK_4_STUDY_ID}\n`;
 
 /**
  * FILE set mock data

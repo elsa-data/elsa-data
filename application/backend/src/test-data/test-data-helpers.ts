@@ -301,11 +301,10 @@ export async function createArtifacts(
   bam: File,
   bamIndex: File,
   fastqs: File[][],
-  sampleIds: string[]
+  vcfSampleIds?: string[]
 ) {
   const fastqPair = fastqs.map((fq) =>
     e.insert(e.lab.ArtifactFastqPair, {
-      sampleIds: sampleIds,
       forwardFile: e.insert(e.storage.File, {
         url: fq[0].url,
         size: fq[0].size,
@@ -337,7 +336,7 @@ export async function createArtifacts(
       input: r1select,
       output: e.set(
         e.insert(e.lab.ArtifactVcf, {
-          sampleIds: sampleIds,
+          sampleIds: vcfSampleIds,
           vcfFile: e
             .insert(e.storage.File, {
               url: vcf.url,
@@ -360,7 +359,6 @@ export async function createArtifacts(
             })),
         }),
         e.insert(e.lab.ArtifactBam, {
-          sampleIds: sampleIds,
           bamFile: e.insert(e.storage.File, {
             url: bam.url,
             size: bam.size,

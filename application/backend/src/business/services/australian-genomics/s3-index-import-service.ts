@@ -311,11 +311,7 @@ export class S3IndexApplicationService {
 
         if (artifactType == ArtifactType.FASTQ) {
           artifactArray.push(
-            insertArtifactFastqPairQuery(
-              fileSet[0],
-              fileSet[1],
-              fileSet[0].sampleIdsArray
-            )
+            insertArtifactFastqPairQuery(fileSet[0], fileSet[1])
           );
         } else if (artifactType == ArtifactType.VCF) {
           artifactArray.push(
@@ -326,21 +322,9 @@ export class S3IndexApplicationService {
             )
           );
         } else if (artifactType == ArtifactType.BAM) {
-          artifactArray.push(
-            insertArtifactBamQuery(
-              fileSet[0],
-              fileSet[1],
-              fileSet[0].sampleIdsArray
-            )
-          );
+          artifactArray.push(insertArtifactBamQuery(fileSet[0], fileSet[1]));
         } else if (artifactType == ArtifactType.CRAM) {
-          artifactArray.push(
-            insertArtifactCramQuery(
-              fileSet[0],
-              fileSet[1],
-              fileSet[0].sampleIdsArray
-            )
-          );
+          artifactArray.push(insertArtifactCramQuery(fileSet[0], fileSet[1]));
         }
       }
     }

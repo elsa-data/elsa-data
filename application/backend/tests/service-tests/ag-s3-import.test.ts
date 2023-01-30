@@ -36,8 +36,12 @@ import {
   MOCK_3_CARDIAC_S3_OBJECT_LIST,
   MOCK_3_CARDIAC_MANIFEST,
   MOCK_4_CARDIAC_MANIFEST,
-  MOCK_4_STUDY_ID_1,
+  MOCK_4_STUDY_ID,
+  MOCK_4_CARDIAC_S3_OBJECT_LIST,
+  MOCK_4_STUDY_ID_3,
   MOCK_4_STUDY_ID_2,
+  MOCK_4_STUDY_ID_1,
+  MOCK_4_CARDIAC_VCF_FILENAME,
 } from "./ag.common";
 import * as awsHelper from "../../src/business/services/aws-helper";
 import {
@@ -376,8 +380,7 @@ describe("AWS s3 client", () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
-      MOCK_2_BAI_FILE_RECORD,
-      [MOCK_2_STUDY_ID]
+      MOCK_2_BAI_FILE_RECORD
     );
     const preExistingData = e.insert(e.dataset.DatasetPatient, {
       externalIdentifiers: makeSystemlessIdentifierArray(MOCK_2_STUDY_ID),
@@ -444,8 +447,7 @@ describe("AWS s3 client", () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
-      MOCK_2_BAI_FILE_RECORD,
-      [MOCK_2_STUDY_ID]
+      MOCK_2_BAI_FILE_RECORD
     );
 
     const preExistingData = e.insert(e.dataset.DatasetPatient, {
@@ -506,7 +508,7 @@ describe("AWS s3 client", () => {
     });
     jest
       .spyOn(awsHelper, "awsListObjects")
-      .mockImplementation(async () => MOCK_1_CARDIAC_S3_OBJECT_LIST);
+      .mockImplementation(async () => MOCK_4_CARDIAC_S3_OBJECT_LIST);
     jest
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
@@ -522,10 +524,7 @@ describe("AWS s3 client", () => {
     expect(totalFileList.length).toEqual(2);
     const expected = [
       {
-        url: `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
-      },
-      {
-        url: `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
+        url: `${S3_URL_PREFIX}/${MOCK_4_CARDIAC_VCF_FILENAME}`,
       },
     ];
     expect(totalFileList).toEqual(expect.arrayContaining(expected));
@@ -535,11 +534,12 @@ describe("AWS s3 client", () => {
         externalIdentifiers: true,
       }))
       .run(edgedbClient);
-    expect(totalDatasetPatient.length).toEqual(2);
+    expect(totalDatasetPatient.length).toEqual(3);
     console.log("totalDatasetPatient", totalDatasetPatient);
     expect(totalDatasetPatient).toEqual([
       { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
       { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
+      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_3 }] },
     ]);
   });
 });

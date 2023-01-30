@@ -32,23 +32,16 @@ function insertFile(file: File) {
 
 export function insertArtifactFastqPairQuery(
   forwardFile: File,
-  reverseFile: File,
-  sampleIds: string[]
+  reverseFile: File
 ) {
   return e.insert(e.lab.ArtifactFastqPair, {
-    sampleIds: sampleIds,
     forwardFile: insertFile(forwardFile),
     reverseFile: insertFile(reverseFile),
   });
 }
 
-export function insertArtifactBamQuery(
-  bamFile: File,
-  baiFile: File,
-  sampleIds: string[]
-) {
+export function insertArtifactBamQuery(bamFile: File, baiFile: File) {
   return e.insert(e.lab.ArtifactBam, {
-    sampleIds: sampleIds,
     bamFile: insertFile(bamFile),
     baiFile: insertFile(baiFile),
   });
@@ -57,7 +50,7 @@ export function insertArtifactBamQuery(
 export function insertArtifactVcfQuery(
   vcfFile: File,
   tbiFile: File,
-  sampleIds: string[]
+  sampleIds?: string[]
 ) {
   return e.insert(e.lab.ArtifactVcf, {
     sampleIds: sampleIds,
@@ -66,13 +59,8 @@ export function insertArtifactVcfQuery(
   });
 }
 
-export function insertArtifactCramQuery(
-  cramFile: File,
-  craiFile: File,
-  sampleIds: string[]
-) {
+export function insertArtifactCramQuery(cramFile: File, craiFile: File) {
   return e.insert(e.lab.ArtifactCram, {
-    sampleIds: sampleIds,
     cramFile: insertFile(cramFile),
     craiFile: insertFile(craiFile),
   });
