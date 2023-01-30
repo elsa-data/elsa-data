@@ -12,6 +12,10 @@ module release {
              readonly := true;
         };
 
+        required property lastUpdated -> datetime {
+             default := datetime_current();
+        };
+
         # the public "friendly" identifier for this release
         #
         required property releaseIdentifier -> str {
@@ -120,7 +124,6 @@ module release {
             on target delete restrict;
         }
         property lastDateTimeDataAccessLogQuery -> datetime;
-
 
     }
 

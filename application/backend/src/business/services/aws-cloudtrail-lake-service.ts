@@ -14,6 +14,7 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
+import { touchRelease } from "../db/release-queries";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -362,5 +363,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         },
       }))
       .run(this.edgeDbClient);
+
+    await touchRelease.run(this.edgeDbClient, { releaseId });
   }
 }
