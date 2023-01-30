@@ -4,6 +4,7 @@ import {
   DatasetGen3SyncRequestType,
   DatasetGen3SyncResponseType,
   DatasetLightType,
+  DuoLimitationCodedType,
 } from "@umccr/elsa-types";
 import { datasetGen3SyncRequestValidate } from "../../../validators/validate-json";
 import { container } from "tsyringe";
@@ -32,15 +33,15 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     Querystring: DatasetSummaryQueryType;
     Reply: DatasetLightType[];
   }>("/datasets/", {}, async function (request, reply) {
-    const { authenticatedUser, pageSize, offset } =
+    const { authenticatedUser, pageSize, rawPage, offset } =
       authenticatedRouteOnEntryHelper(request);
 
     const { includeDeletedFile = "false" } = request.query;
     const datasetsPagedResult = await datasetsService.getSummary(
       authenticatedUser,
-      pageSize,
-      offset,
-      includeDeletedFile === "true" ? true : false
+      includeDeletedFile === "true" ? true : false,
+      rawPage === undefined ? undefined : pageSize,
+      rawPage === undefined ? undefined : offset
     );
 
     sendPagedResult(reply, datasetsPagedResult);
@@ -62,6 +63,21 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
       else reply.status(403).send();
     }
   );
+
+  fastify.get<{
+    Params: { cid: string };
+    Reply: DuoLimitationCodedType[];
+  }>("/datasets/consent/:cid", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const cid = request.params.cid;
+
+    const r = await datasetsService.getDatasetsConsent(authenticatedUser, cid);
+
+    request.log.debug(r);
+
+    reply.send(r);
+  });
 
   fastify.post<{
     Request: DatasetGen3SyncRequestType;

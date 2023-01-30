@@ -1,6 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
-
+import { ReleasePatientBirthSexSchema } from "./schemas-releases";
 /**
  * We use typebox to provide us with JSON schema compatible definitions
  * AND Typescript compatible types.
@@ -22,9 +22,34 @@ export const DatasetSpecimenSchema = Type.Object({
 
 export const DatasetPatientSchema = Type.Object({
   specimens: Type.Array(DatasetSpecimenSchema),
+  externalIdentifiers: Type.Union([
+    Type.Optional(
+      Type.Array(
+        Type.Object({
+          system: Type.String(),
+          value: Type.String(),
+        })
+      )
+    ),
+    Type.Null(),
+  ]),
+  sexAtBirth: Type.Union([ReleasePatientBirthSexSchema, Type.Null()]),
+  consent: Type.Union([Type.Object({ id: Type.String() }), Type.Null()]),
 });
 
 export const DatasetCaseSchema = Type.Object({
+  consent: Type.Union([Type.Object({ id: Type.String() }), Type.Null()]),
+  externalIdentifiers: Type.Union([
+    Type.Optional(
+      Type.Array(
+        Type.Object({
+          system: Type.String(),
+          value: Type.String(),
+        })
+      )
+    ),
+    Type.Null(),
+  ]),
   patients: Type.Array(DatasetPatientSchema),
 });
 
@@ -53,3 +78,4 @@ export const DatasetSchemaDeep = Type.Intersect([
 
 export type DatasetLightType = Static<typeof DatasetSchemaLight>;
 export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;
+export type DatasetCaseType = Static<typeof DatasetCaseSchema>;

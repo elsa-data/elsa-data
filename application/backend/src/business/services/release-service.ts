@@ -4,7 +4,7 @@ import {
   DuoLimitationCodedType,
   ReleaseCaseType,
   ReleaseDetailType,
-  ReleaseNodeStatusSchema,
+  ReleaseManualType,
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
@@ -37,11 +37,15 @@ import {
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { uuid } from "edgedb/dist/codecs/ifaces";
 import { createReleaseManifest } from "./manifests/_manifest-helper";
+import { ElsaSettings } from "../../config/elsa-settings";
+import { randomUUID } from "crypto";
+import { format } from "date-fns";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Settings") private settings: ElsaSettings,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);
@@ -99,6 +103,81 @@ export class ReleaseService extends ReleaseBaseService {
     );
 
     return this.getBase(releaseId, userRole);
+  }
+
+  /**
+   * Create a new release using user input.
+   *
+   * @param user
+   * @param release
+   */
+  public async new(
+    user: AuthenticatedUser,
+    release: ReleaseManualType
+  ): Promise<string> {
+    const releaseIdentifier = randomUUID();
+
+    const releaseRow = await e
+      .insert(e.release.Release, {
+        applicationDacTitle: release.releaseTitle,
+        applicationDacIdentifier: e.tuple({
+          system: this.settings.host,
+          value: releaseIdentifier,
+        }),
+        applicationDacDetails: `
+#### Source
+
+This application was manually created via Elsa Data on ${format(
+          new Date(),
+          "dd/MM/yyyy"
+        )}.
+
+#### Summary
+
+##### Description
+
+${release.releaseDescription}
+
+##### Applicant
+~~~
+${release.applicantEmailAddresses}
+~~~
+`,
+        applicationCoded: e.insert(e.release.ApplicationCoded, {
+          studyType: release.studyType,
+          countriesInvolved: [],
+          diseasesOfStudy: [],
+          studyAgreesToPublish: false,
+          studyIsNotCommercial: false,
+          beaconQuery: {},
+        }),
+        releaseIdentifier: releaseIdentifier,
+        releasePassword: randomUUID(),
+        datasetUris: release.datasetUris,
+        datasetCaseUrisOrderPreference: [],
+        datasetSpecimenUrisOrderPreference: [],
+        datasetIndividualUrisOrderPreference: [],
+        isAllowedReadData: true,
+        isAllowedVariantData: true,
+        isAllowedPhenotypeData: true,
+      })
+      .run(this.edgeDbClient);
+
+    await e
+      .update(e.permission.User, (u) => ({
+        filter: e.op(e.uuid(user.dbId), "=", u.id),
+        set: {
+          releaseParticipant: {
+            "+=": e.select(e.release.Release, (r) => ({
+              filter: e.op(e.uuid(releaseRow.id), "=", r.id),
+              "@role": e.str("Member"),
+            })),
+          },
+        },
+      }))
+      .run(this.edgeDbClient);
+
+    return releaseRow.id;
   }
 
   /**

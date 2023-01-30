@@ -41,8 +41,9 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
   const elsaSettings: ElsaSettings = (request as any).settings;
   // page size is either a session cookie kind of setting, or a default - but we always have a value here
   const pageSize = currentPageSize(request);
+  const rawPage = (request.query as any).page;
   // we have a sensible default page across the entire system, even if not specified
-  const page = parseInt((request.query as any).page) || 1;
+  const page = parseInt(rawPage) || 1;
   const offset = (page - 1) * pageSize;
 
   const qRaw = (request.query as any).q;
@@ -56,6 +57,7 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
     elsaSettings,
     authenticatedUser,
     pageSize,
+    rawPage,
     page,
     q,
     offset,
