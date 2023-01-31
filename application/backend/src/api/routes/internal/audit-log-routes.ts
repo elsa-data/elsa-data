@@ -40,15 +40,7 @@ export type AuditEventDetailsQueryType = Static<
   typeof AuditEventDetailsQuerySchema
 >;
 
-export const SystemAuditEventQuerySchema = Type.Object({});
-export type SystemAuditEventQueryType = Static<
-  typeof SystemAuditEventQuerySchema
->;
-
-export const releaseAuditLogRoutes = async (
-  fastify: FastifyInstance,
-  _opts: any
-) => {
+export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const datasetService = container.resolve<DatasetService>(DatasetService);
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
@@ -73,7 +65,7 @@ export const releaseAuditLogRoutes = async (
       const { orderByProperty = "occurredDateTime", orderAscending = false } =
         request.query;
 
-      const events = await auditLogService.getEntries(
+      const events = await auditLogService.getReleaseEntries(
         edgeDbClient,
         authenticatedUser,
         releaseId,
@@ -256,14 +248,14 @@ export const releaseAuditLogRoutes = async (
   );
 
   fastify.get<{
-    Params: { releaseId: string };
-    Reply: SystemAuditEventType[];
-    Querystring: SystemAuditEventQueryType;
+    Params: { userId: string };
+    Reply: AuditEntryType[];
+    Querystring: AuditEventForReleaseQueryType;
   }>(
-    "/api/system-audit-events",
+    "/users/:userId/audit-log",
     {
       schema: {
-        querystring: SystemAuditEventQuerySchema,
+        querystring: AuditEventForReleaseQuerySchema,
       },
     },
     async function (request, reply) {

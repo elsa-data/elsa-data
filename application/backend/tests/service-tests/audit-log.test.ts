@@ -54,7 +54,7 @@ it("audit stuff instant", async () => {
     }
   );
 
-  const events = await auditLogService.getEntries(
+  const events = await auditLogService.getReleaseEntries(
     edgeDbClient,
     allowedPiUser,
     testReleaseId,
@@ -88,7 +88,7 @@ it("audit stuff duration", async () => {
     }
   );
 
-  const events = await auditLogService.getEntries(
+  const events = await auditLogService.getReleaseEntries(
     edgeDbClient,
     allowedPiUser,
     testReleaseId,

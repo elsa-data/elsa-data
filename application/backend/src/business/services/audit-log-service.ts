@@ -179,7 +179,7 @@ export class AuditLogService {
       .run(executor);
   }
 
-  public async getEntries(
+  public async getReleaseEntries(
     executor: Executor,
     user: AuthenticatedUser,
     releaseId: string,
