@@ -53,7 +53,8 @@ export async function makeTrio(
   motherVcf: [File, File],
   motherBam: [File, File],
   motherConsents: DuoLimitationCodedType[],
-  motherSpecimenConsents: DuoLimitationCodedType[]
+  motherSpecimenConsents: DuoLimitationCodedType[],
+  artifactSampleIds: string[]
 ) {
   return e.insert(e.dataset.DatasetCase, {
     externalIdentifiers: makeDictionaryIdentifierArray(familyId),
@@ -71,7 +72,8 @@ export async function makeTrio(
             probandVcf[1],
             probandBam[0],
             probandBam[1],
-            []
+            [],
+            artifactSampleIds
           ),
         }),
       }),
@@ -87,7 +89,8 @@ export async function makeTrio(
             fatherVcf[1],
             fatherBam[0],
             fatherBam[1],
-            []
+            [],
+            artifactSampleIds
           ),
         }),
       }),
@@ -103,7 +106,8 @@ export async function makeTrio(
             motherVcf[1],
             motherBam[0],
             motherBam[1],
-            []
+            [],
+            artifactSampleIds
           ),
         }),
       })

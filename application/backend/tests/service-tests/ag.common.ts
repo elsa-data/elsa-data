@@ -3,14 +3,13 @@ import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 /**
  * Will declare some mock test data here
  */
-
-export const MOCK_DATASET_URI = AG_CARDIAC_FLAGSHIP;
-export const MOCK_STORAGE_PREFIX_URL = "s3://agha-gdr-store-2.0/Cardiac";
-export const S3_URL_PREFIX = "s3://agha-gdr-store-2.0/Cardiac/2019-11-21";
+export const MOCK_DATASET_URI = "urn:fdc:umccr.org:2022:dataset/10g"; // SYNC with 10g URI in elsa settings
+export const MOCK_STORAGE_PREFIX_URL = "s3://umccr-10g-data-dev/Cardiac";
+export const S3_URL_PREFIX = "s3://umccr-10g-data-dev/Cardiac/2019-11-21";
 
 function createS3ObjectList(key = "S3_KEY", etag = "AWS_ETAG", size = 1) {
   return {
-    s3Url: `s3://agha-gdr-store-2.0/${key}`,
+    s3Url: `s3://umccr-10g-data-dev/${key}`,
     eTag: etag,
     size: size,
   };
@@ -31,12 +30,14 @@ function createManifestObject(
 function createS3UrlManifestObject(
   s3Url = `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
   agha_study_id = "A0000001",
+  agha_study_id_array = ["A0000001"],
   checksum = "RANDOMCHECKSUM"
 ) {
   return {
     checksum: checksum,
     s3Url: s3Url,
     agha_study_id: agha_study_id,
+    agha_study_id_array: agha_study_id_array,
   };
 }
 
@@ -119,11 +120,11 @@ export const MOCK_2_MANIFEST_OBJECT = [
 
 export const MOCK_2_BAM_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `s3://agha-gdr-store-2.0/${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAM_FILENAME}`,
+  url: `s3://umccr-10g-data-dev/${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAM_FILENAME}`,
 };
 export const MOCK_2_BAI_FILE_RECORD = {
   ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `s3://agha-gdr-store-2.0/${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAI_FILENAME}`,
+  url: `s3://umccr-10g-data-dev/${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAI_FILENAME}`,
 };
 
 export const MOCK_2_BAM_FILE_SET = [
@@ -144,6 +145,31 @@ export const MOCK_3_CARDIAC_S3_OBJECT_LIST = [
 ];
 
 export const MOCK_3_CARDIAC_MANIFEST = `checksum\tfilename\tagha_study_id\n`;
+
+// Mock 4 - Multi studyId (VCF trios)
+export const MOCK_4_CARDIAC_KEY_PREFIX = "Cardiac/2019-11-21/";
+export const MOCK_4_CARDIAC_VCF_FILENAME = "MOCK_4_FILE_VCF.trio.vcf";
+export const MOCK_4_CARDIAC_VCF_TBI_FILENAME = "MOCK_4_FILE_VCF.trio.vcf.tbi";
+export const MOCK_4_CARDIAC_MANIFEST_FILENAME = "manifest.txt";
+export const MOCK_4_STUDY_ID = "A0000001,A0000002,A0000003";
+export const MOCK_4_STUDY_ID_1 = "A0000001";
+export const MOCK_4_STUDY_ID_2 = "A0000002";
+export const MOCK_4_STUDY_ID_3 = "A0000003";
+export const MOCK_4_CARDIAC_S3_OBJECT_LIST = [
+  createS3ObjectList(
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_FILENAME}`
+  ),
+  createS3ObjectList(
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_TBI_FILENAME}`
+  ),
+  createS3ObjectList(
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_MANIFEST_FILENAME}`
+  ),
+];
+export const MOCK_4_CARDIAC_MANIFEST =
+  `checksum\tfilename\tagha_study_id\n` +
+  `RANDOMCHECKSUM\t${MOCK_4_CARDIAC_VCF_FILENAME}\t${MOCK_4_STUDY_ID}\n` +
+  `RANDOMCHECKSUM\t${MOCK_4_CARDIAC_VCF_TBI_FILENAME}\t${MOCK_4_STUDY_ID}\n`;
 
 /**
  * FILE set mock data

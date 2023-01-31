@@ -19,6 +19,10 @@ module lab {
     }
 
     type ArtifactVcf extending ArtifactBase {
+        # To list sampleIds related for the given VCF
+        # String of array if contain multiple sampleIds for trios.
+        property sampleIds -> array<str>;
+
         required link vcfFile -> storage::File{
             on source delete delete target;
         };

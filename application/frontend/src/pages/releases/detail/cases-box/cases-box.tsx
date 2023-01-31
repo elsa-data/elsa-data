@@ -152,6 +152,8 @@ export const CasesBox: React.FC<Props> = ({
       </Box>
     );
 
+  console.log("dataQuery.data", dataQuery.data);
+
   return (
     <BoxNoPad
       heading="Cases"
@@ -193,7 +195,7 @@ export const CasesBox: React.FC<Props> = ({
         {dataQuery.data && dataQuery.data.length > 0 && (
           <>
             <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
-              <div class="flex flex-wrap items-center border-b py-4">
+              <div className="flex flex-wrap items-center border-b py-4">
                 <label>
                   <div className="inline-block w-12 text-center">
                     <IndeterminateCheckbox
@@ -233,7 +235,7 @@ export const CasesBox: React.FC<Props> = ({
                           {row.externalId}{" "}
                           {row.customConsent && (
                             <>
-                              {" "}
+                              {" - "}
                               <ConsentPopup
                                 releaseId={releaseId}
                                 nodeId={row.id}

@@ -1,9 +1,7 @@
-CREATE MIGRATION m1hdqyfgs5bkbuoxpn4vnojyunci335vehctsnaknvk2bzzvxxiybq
+CREATE MIGRATION m1yfjhn2ltzvdj6lbbe5img2e6vkr5cv6tdgjtkzxqatojg2ck5hvq
     ONTO m1k2lbbf5wm2doned3xkdtnbapq3st6rnfoobmbfotgmvihcsjduiq
 {
-  ALTER TYPE release::Release {
-      CREATE REQUIRED PROPERTY lastUpdated -> std::datetime {
-          SET default := (std::datetime_current());
-      };
+  ALTER TYPE lab::ArtifactVcf {
+      CREATE PROPERTY sampleIds -> array<std::str>;
   };
 };

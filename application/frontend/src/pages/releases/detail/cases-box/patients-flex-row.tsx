@@ -110,7 +110,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
           {patient.externalId} {patientIcon}
           {patient.customConsent && (
             <>
-              {"-"}
+              {" - "}
               <ConsentPopup releaseId={releaseId} nodeId={patient.id} />
             </>
           )}
@@ -121,7 +121,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
               <FontAwesomeIcon icon={faDna} />
               {spec.customConsent && (
                 <>
-                  {"-"}
+                  {" - "}
                   <ConsentPopup releaseId={releaseId} nodeId={spec.id} />
                 </>
               )}{" "}

@@ -4,6 +4,7 @@ import {
   DatasetGen3SyncRequestType,
   DatasetGen3SyncResponseType,
   DatasetLightType,
+  DuoLimitationCodedType,
 } from "@umccr/elsa-types";
 import { datasetGen3SyncRequestValidate } from "../../../validators/validate-json";
 import { container } from "tsyringe";
@@ -62,6 +63,21 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
       else reply.status(403).send();
     }
   );
+
+  fastify.get<{
+    Params: { cid: string };
+    Reply: DuoLimitationCodedType[];
+  }>("/datasets/consent/:cid", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const cid = request.params.cid;
+
+    const r = await datasetsService.getDatasetsConsent(authenticatedUser, cid);
+
+    request.log.debug(r);
+
+    reply.send(r);
+  });
 
   fastify.post<{
     Request: DatasetGen3SyncRequestType;
