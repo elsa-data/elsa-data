@@ -20,8 +20,10 @@ import {
   auditLogDetailsForIdQuery,
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
+  countAuditLogEntriesForUserQuery,
   countDataAccessAuditLogEntriesQuery,
   pageableAuditLogEntriesForReleaseQuery,
+  pageableAuditLogEntriesForUserQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -203,6 +205,49 @@ export class AuditLogService {
 
     console.log(
       `${AuditLogService.name}.getEntries(releaseId=${releaseId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+    );
+
+    return createPagedResult(
+      pageOfEntries.map((entry) => ({
+        objectId: entry.id,
+        whoId: entry.whoId,
+        whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory,
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime,
+        occurredDuration: entry.occurredDuration?.toString(),
+        outcome: entry.outcome,
+        hasDetails: entry.hasDetails,
+      })),
+      totalEntries
+    );
+  }
+
+  public async getUserEntries(
+    executor: Executor,
+    user: AuthenticatedUser,
+    userId: string,
+    limit: number,
+    offset: number,
+    orderByProperty: string = "occurredDateTime",
+    orderAscending: boolean = false
+  ): Promise<PagedResult<AuditEntryType> | null> {
+    const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
+      userId,
+    });
+
+    const pageOfEntries = await pageableAuditLogEntriesForUserQuery(
+      userId,
+      limit,
+      offset,
+      orderByProperty,
+      orderAscending
+    ).run(executor);
+
+    console.log(
+      `${AuditLogService.name}.getEntries(userId=${userId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(

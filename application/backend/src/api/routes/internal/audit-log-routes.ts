@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { AuditEntryType, SystemAuditEventType } from "@umccr/elsa-types";
+import { AuditEntryType } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
@@ -262,7 +262,21 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      sendPagedResult(reply, null);
+      const userId = request.params.userId;
+      const { orderByProperty = "occurredDateTime", orderAscending = false } =
+        request.query;
+
+      const events = await auditLogService.getUserEntries(
+        edgeDbClient,
+        authenticatedUser,
+        userId,
+        pageSize,
+        (page - 1) * pageSize,
+        orderByProperty,
+        orderAscending
+      );
+
+      sendPagedResult(reply, events);
     }
   );
 };

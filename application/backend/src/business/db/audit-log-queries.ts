@@ -25,6 +25,22 @@ export const countAuditLogEntriesForReleaseQuery = e.params(
 );
 
 /**
+ * An EdgeDb query to count the audit log entries associated
+ * with a given user.
+ */
+export const countAuditLogEntriesForUserQuery = e.params(
+  {
+    userId: e.uuid,
+  },
+  (params) =>
+    e.count(
+      e.select(e.audit.UserAuditEvent, (ae) => ({
+        filter: e.op(ae.user_.id, "=", params.userId),
+      }))
+    )
+);
+
+/**
  * An EdgeDb query to count the DataAccessAudit log entries associated
  * with a given release.
  */
@@ -92,6 +108,66 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     outcome: true,
     hasDetails: e.op("exists", auditEvent.details),
     filter: e.op(auditEvent.release_.id, "=", e.uuid(releaseId)),
+    order_by: [
+      {
+        expression:
+          orderByProperty === "whoId"
+            ? auditEvent.whoId
+            : orderByProperty === "whoDisplayName"
+            ? auditEvent.whoDisplayName
+            : orderByProperty === "actionCategory"
+            ? e.cast(e.str, auditEvent.actionCategory)
+            : orderByProperty === "actionDescription"
+            ? auditEvent.actionDescription
+            : orderByProperty === "recordedDateTime"
+            ? auditEvent.recordedDateTime
+            : orderByProperty === "updatedDateTime"
+            ? auditEvent.updatedDateTime
+            : orderByProperty === "occurredDateTime"
+            ? auditEvent.occurredDateTime
+            : orderByProperty === "occurredDuration"
+            ? auditEvent.occurredDuration
+            : orderByProperty === "outcome"
+            ? auditEvent.outcome
+            : orderByProperty === "details"
+            ? auditEvent.details
+            : auditEvent.occurredDateTime,
+        direction: orderAscending ? e.ASC : e.DESC,
+      },
+      {
+        expression: auditEvent.occurredDateTime,
+        direction: e.DESC,
+      },
+    ],
+    limit: limit,
+    offset: offset,
+  }));
+};
+
+/**
+ * A pageable EdgeDb query for the audit log entries associated with
+ * a given user.
+ */
+export const pageableAuditLogEntriesForUserQuery = (
+  userId: string,
+  limit: number,
+  offset: number,
+  orderByProperty: string = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  return e.select(e.audit.UserAuditEvent, (auditEvent) => ({
+    id: true,
+    whoId: true,
+    whoDisplayName: true,
+    actionCategory: true,
+    actionDescription: true,
+    recordedDateTime: true,
+    updatedDateTime: true,
+    occurredDateTime: true,
+    occurredDuration: true,
+    outcome: true,
+    hasDetails: e.op("exists", auditEvent.details),
+    filter: e.op(auditEvent.user_.id, "=", e.uuid(userId)),
     order_by: [
       {
         expression:
