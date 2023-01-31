@@ -95,6 +95,58 @@ export class AuditLogService {
   }
 
   /**
+   * Start the entry for an audit event that occurs in a user context.
+   *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param user
+   * @param releaseId
+   * @param actionCategory
+   * @param actionDescription
+   * @param start
+   */
+  public async startUserAuditEvent(
+    executor: Executor,
+    user: AuthenticatedUser,
+    userId: string,
+    actionCategory: AuditEventAction,
+    actionDescription: string,
+    start: Date
+  ): Promise<string> {
+    const auditEvent = await e
+      .insert(e.audit.UserAuditEvent, {
+        whoId: user.subjectId,
+        whoDisplayName: user.displayName,
+        occurredDateTime: start,
+        actionCategory: actionCategory,
+        actionDescription: actionDescription,
+        // by default, we assume failure (i.e. 500 response) - it is only when
+        // we successfully 'complete' the audit event we get a real outcome
+        outcome: 8,
+        details: e.json({
+          errorMessage: "Audit entry not completed",
+        }),
+      })
+      .run(executor);
+
+    // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
+    // the id of the newly inserted event (instead we can only get the release id)
+    await e
+      .update(e.permission.User, (user) => ({
+        filter: e.op(e.uuid(userId), "=", user.id),
+        set: {
+          userAuditEvent: {
+            "+=": e.select(e.audit.UserAuditEvent, (ae) => ({
+              filter: e.op(e.uuid(auditEvent.id), "=", ae.id).assert_single(),
+            })),
+          },
+        },
+      }))
+      .run(executor);
+
+    return auditEvent.id;
+  }
+
+  /**
    * Complete the entry for an audit event that occurs in a release context.
    *
    * @param executor the EdgeDb execution context (either client or transaction)
@@ -116,6 +168,42 @@ export class AuditLogService {
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
     await e
       .update(e.audit.ReleaseAuditEvent, (ae) => ({
+        filter: e.op(e.uuid(auditEventId), "=", ae.id),
+        set: {
+          outcome: outcome,
+          details: e.json(details),
+          occurredDuration:
+            diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+              ? e.duration(diffDuration)
+              : null,
+          updatedDateTime: e.datetime_current(),
+        },
+      }))
+      .run(executor);
+  }
+
+  /**
+   * Complete the entry for an audit event that occurs in a user context.
+   *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param auditEventId
+   * @param outcome
+   * @param start
+   * @param end
+   * @param details
+   */
+  public async completeUserAuditEvent(
+    executor: Executor,
+    auditEventId: string,
+    outcome: AuditEventOutcome,
+    start: Date,
+    end: Date,
+    details: any
+  ): Promise<void> {
+    const diffSeconds = differenceInSeconds(end, start);
+    const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
+    await e
+      .update(e.audit.UserAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
           outcome: outcome,
