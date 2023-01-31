@@ -39,11 +39,6 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const datasetsDeleted = await e.delete(e.dataset.Dataset).run(edgeDbClient);
   const consentDeleted = await e.delete(e.consent.Consent).run(edgeDbClient);
 
-  const analysesDeleted = await e.delete(e.lab.Analyses).run(edgeDbClient);
-  const runsDeleted = await e.delete(e.lab.Run).run(edgeDbClient);
-  const submissionsBatchesDeleted = await e
-    .delete(e.lab.SubmissionBatch)
-    .run(edgeDbClient);
   const bclsDeleted = await e.delete(e.lab.ArtifactBcl).run(edgeDbClient);
   const fastqsDeleted = await e
     .delete(e.lab.ArtifactFastqPair)
@@ -51,6 +46,12 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const bamsDeleted = await e.delete(e.lab.ArtifactBam).run(edgeDbClient);
   const cramsDeleted = await e.delete(e.lab.ArtifactCram).run(edgeDbClient);
   const vcfsDeleted = await e.delete(e.lab.ArtifactVcf).run(edgeDbClient);
+
+  const analysesDeleted = await e.delete(e.lab.Analyses).run(edgeDbClient);
+  const runsDeleted = await e.delete(e.lab.Run).run(edgeDbClient);
+  const submissionsBatchesDeleted = await e
+    .delete(e.lab.SubmissionBatch)
+    .run(edgeDbClient);
 
   const filesDeleted = await e.delete(e.storage.File).run(edgeDbClient);
 

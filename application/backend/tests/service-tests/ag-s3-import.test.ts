@@ -1,4 +1,7 @@
-import { S3IndexApplicationService } from "../../src/business/services/australian-genomics/s3-index-import-service";
+import {
+  S3IndexApplicationService,
+  artifactType,
+} from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e, { dataset, storage } from "../../dbschema/edgeql-js";
@@ -12,6 +15,8 @@ import {
 import { fileByUrlQuery } from "../../src/business/db/storage-queries";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import {
+  S3_URL_PREFIX,
+  MOCK_STORAGE_PREFIX_URL,
   MOCK_DATASET_URI,
   MOCK_BAM_FILE_SET,
   MOCK_FASTQ_PAIR_FILE_SET,
@@ -30,7 +35,13 @@ import {
   MOCK_2_BAI_FILE_RECORD,
   MOCK_3_CARDIAC_S3_OBJECT_LIST,
   MOCK_3_CARDIAC_MANIFEST,
-  S3_URL_PREFIX,
+  MOCK_4_CARDIAC_MANIFEST,
+  MOCK_4_STUDY_ID,
+  MOCK_4_CARDIAC_S3_OBJECT_LIST,
+  MOCK_4_STUDY_ID_3,
+  MOCK_4_STUDY_ID_2,
+  MOCK_4_STUDY_ID_1,
+  MOCK_4_CARDIAC_VCF_FILENAME,
 } from "./ag.common";
 import * as awsHelper from "../../src/business/services/aws-helper";
 import {
@@ -65,7 +76,7 @@ describe("AWS s3 client", () => {
       MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
     expect(manifestObjectList).toEqual([
-      "s3://agha-gdr-store-2.0/Cardiac/2019-11-21/manifest.txt",
+      `${MOCK_STORAGE_PREFIX_URL}/2019-11-21/manifest.txt`,
     ]);
   });
 
@@ -94,24 +105,41 @@ describe("AWS s3 client", () => {
       ...MOCK_BAM_FILE_SET,
       ...MOCK_VCF_FILE_SET,
     ];
+    const convertArtifactType = fileRecordListedInManifest.map((f) => ({
+      ...f,
+      sampleIdsArray: ["ID0001"],
+    }));
     const groupArtifactContent =
-      agService.groupManifestFileByArtifactTypeAndFilename(
-        fileRecordListedInManifest
-      );
+      agService.groupManifestFileByArtifactTypeAndFilename(convertArtifactType);
 
     expect(
       groupArtifactContent[ArtifactType.FASTQ][
         `${S3_URL_PREFIX}/FILE_L001.fastq`
       ]
-    ).toEqual(MOCK_FASTQ_PAIR_FILE_SET);
+    ).toEqual(
+      MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
+        ...f,
+        sampleIdsArray: ["ID0001"],
+      }))
+    );
     expect(
       groupArtifactContent[ArtifactType.BAM][`${S3_URL_PREFIX}/A0000001.bam`]
-    ).toEqual(MOCK_BAM_FILE_SET);
+    ).toEqual(
+      MOCK_BAM_FILE_SET.map((f) => ({
+        ...f,
+        sampleIdsArray: ["ID0001"],
+      }))
+    );
     expect(
       groupArtifactContent[ArtifactType.VCF][
         `${S3_URL_PREFIX}/19W001062.individual.norm.vcf`
       ]
-    ).toEqual(MOCK_VCF_FILE_SET);
+    ).toEqual(
+      MOCK_VCF_FILE_SET.map((f) => ({
+        ...f,
+        sampleIdsArray: ["ID0001"],
+      }))
+    );
   });
 
   it("Test updateFileRecordFromManifest", async () => {
@@ -191,10 +219,25 @@ describe("AWS s3 client", () => {
 
   it("Test insertNewArtifact", async () => {
     const agService = container.resolve(S3IndexApplicationService);
-    const dataToInsert = {
-      FASTQ: { FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET },
-      BAM: { BAMFILENAMEID: MOCK_BAM_FILE_SET },
-      VCF: { VCFFILENAMEID: MOCK_VCF_FILE_SET },
+    const dataToInsert: Record<string, Record<string, artifactType[]>> = {
+      FASTQ: {
+        FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
+          ...f,
+          sampleIdsArray: ["ID001"],
+        })),
+      },
+      BAM: {
+        BAMFILENAMEID: MOCK_BAM_FILE_SET.map((f) => ({
+          ...f,
+          sampleIdsArray: ["ID002"],
+        })),
+      },
+      VCF: {
+        VCFFILENAMEID: MOCK_VCF_FILE_SET.map((f) => ({
+          ...f,
+          sampleIdsArray: ["ID003"],
+        })),
+      },
     };
 
     const insArtifactQueryList =
@@ -222,12 +265,12 @@ describe("AWS s3 client", () => {
   it("Test converts3ManifestTypeToFileRecord", async () => {
     const agService = container.resolve(S3IndexApplicationService);
 
-    const newFileRec = agService.converts3ManifestTypeToFileRecord(
+    const artRec = agService.converts3ManifestTypeToArtifactTypeRecord(
       MOCK_1_S3URL_MANIFEST_OBJECT,
       MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
 
-    expect(newFileRec[0].size).toBeGreaterThanOrEqual(0);
+    expect(artRec[0].size).toBeGreaterThanOrEqual(0);
   });
 
   it("Test linkPedigreeRelationship", async () => {
@@ -382,11 +425,11 @@ describe("AWS s3 client", () => {
     expect(totalFileList.length).toEqual(2);
     const expected = [
       {
-        url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
+        url: `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
         checksums: [{ type: "MD5", value: "UPDATED_CHECKSUM" }],
       },
       {
-        url: "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
+        url: `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam.bai`,
         checksums: [{ type: "MD5", value: "UPDATED_CHECKSUM" }],
       },
     ];
@@ -440,8 +483,8 @@ describe("AWS s3 client", () => {
     await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
 
     const expectedFileMarked = [
-      "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam",
-      "s3://agha-gdr-store-2.0/Cardiac/2022-02-22/A0000002.bam.bai",
+      `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
+      `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam.bai`,
     ];
 
     for (const e of expectedFileMarked) {
@@ -453,5 +496,50 @@ describe("AWS s3 client", () => {
       const newIsDeleted = newFileRec?.isDeleted;
       expect(newIsDeleted).toEqual(true);
     }
+  });
+
+  it("Test MOCK 4 Multi Study Id", async () => {
+    const agService = container.resolve(S3IndexApplicationService);
+    const datasetService = container.resolve(DatasetService);
+    await datasetService.selectOrInsertDataset({
+      datasetUri: MOCK_DATASET_URI,
+      datasetName: "Cardiac",
+      datasetDescription: "A test flagship",
+    });
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => MOCK_4_CARDIAC_S3_OBJECT_LIST);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Url")
+      .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
+
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+
+    // FILE schema expected values
+    const totalFileList = await e
+      .select(e.storage.File, () => ({
+        url: true,
+      }))
+      .run(edgedbClient);
+    expect(totalFileList.length).toEqual(2);
+    const expected = [
+      {
+        url: `${S3_URL_PREFIX}/${MOCK_4_CARDIAC_VCF_FILENAME}`,
+      },
+    ];
+    expect(totalFileList).toEqual(expect.arrayContaining(expected));
+
+    const totalDatasetPatient = await e
+      .select(e.dataset.DatasetPatient, () => ({
+        externalIdentifiers: true,
+      }))
+      .run(edgedbClient);
+    expect(totalDatasetPatient.length).toEqual(3);
+    console.log("totalDatasetPatient", totalDatasetPatient);
+    expect(totalDatasetPatient).toEqual([
+      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
+      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
+      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_3 }] },
+    ]);
   });
 });

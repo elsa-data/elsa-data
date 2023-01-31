@@ -39,6 +39,7 @@ export async function insert10F() {
       blankFile(),
       blankFile(),
       blankFile(),
+      [],
       []
     );
     await e
@@ -106,7 +107,8 @@ export async function insert10F() {
           [blankFile(), blankFile()],
           [blankFile(), blankFile()],
           [],
-          []
+          [],
+          ["ADDAMS", "QUINGGOMEZ", "QUINMORTICIA"]
           // PUGSLEY
           // UNCLE FESTER - brother of GOMEZ
           // Esmeralda ADDAMS (Grandmama) - mother of MORITICIA
@@ -134,7 +136,8 @@ export async function insert10F() {
           [blankFile(), blankFile()],
           [blankFile(), blankFile()],
           [],
-          []
+          [],
+          ["DUCK", "UNKNOWNDUCK", "DELLA"]
           // DELLA and DONALD are twins
           // DELLA is mother of
           // HUEY, DEWEY and LOUIE (triplets)
