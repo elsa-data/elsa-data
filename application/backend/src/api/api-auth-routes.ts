@@ -30,6 +30,7 @@ import {
   TEST_SUBJECT_3_EMAIL,
 } from "../test-data/insert-test-users";
 import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
+import { Client } from "edgedb";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
   return new settings.oidcIssuer.Client({
@@ -57,6 +58,7 @@ export const apiAuthRoutes = async (
   }
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
+  const dbClient = opts.container.resolve<Client>("Database");
   const userService = opts.container.resolve(UsersService);
   const auditLogService = opts.container.resolve(AuditLogService);
 
@@ -80,7 +82,23 @@ export const apiAuthRoutes = async (
 
   // clean *our* cookies - meaning the browser is no longer authorised into Elsa Data for
   // web browsing or API calls
-  const clearOurLoginState = (request: FastifyRequest, reply: FastifyReply) => {
+  const clearOurLoginState = (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    auditDetails: any = {}
+  ) => {
+    const dbUser = request.session.get(SESSION_USER_DB_OBJECT);
+    if (dbUser !== undefined) {
+      auditLogService.createUserAuditEvent(
+        dbClient,
+        dbUser.dbId,
+        dbUser.subjectId,
+        dbUser.displayName,
+        "E",
+        "Logout",
+        auditDetails
+      );
+    }
     // delete all the backend session cookies
     request.session.delete();
 
@@ -96,7 +114,9 @@ export const apiAuthRoutes = async (
   });
 
   fastify.post("/logout-completely", async (request, reply) => {
-    clearOurLoginState(request, reply);
+    clearOurLoginState(request, reply, {
+      message: "complete logout, redirected to CILogon",
+    });
 
     // TODO: this probably needs to be configurable per OIDC setup - but given we are setting
     // up firstly for CILogon - it can wait till after that

@@ -163,8 +163,8 @@ export class AuditLogService {
     whoDisplayName: string,
     actionCategory: AuditEventAction,
     actionDescription: string,
-    outcome: number = 0,
-    details: any = null
+    details: any = null,
+    outcome: number = 0
   ): Promise<void> {
     const auditEvent = await e
       .insert(e.audit.UserAuditEvent, {
