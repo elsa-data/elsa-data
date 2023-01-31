@@ -16,6 +16,7 @@ import {
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { AuditLogService } from "./audit-log-service";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
@@ -24,7 +25,8 @@ export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
 export class UsersService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Settings") private settings: ElsaSettings,
+    private auditLogService: AuditLogService
   ) {}
 
   /**
@@ -88,6 +90,7 @@ export class UsersService {
    *
    * @param subjectId
    * @param displayName
+   * @param email
    */
   public async upsertUserForLogin(
     subjectId: string,
@@ -160,7 +163,18 @@ export class UsersService {
     if (dbUser != null) {
       const newOrUpdatedUser = await this.getBySubjectId(subjectId);
 
-      if (newOrUpdatedUser) return newOrUpdatedUser;
+      if (newOrUpdatedUser) {
+        await this.auditLogService.createUserAuditEvent(
+          this.edgeDbClient,
+          newOrUpdatedUser.dbId,
+          subjectId,
+          displayName,
+          "E",
+          "Login"
+        );
+
+        return newOrUpdatedUser;
+      }
     }
 
     throw new Error("Couldn't create user");

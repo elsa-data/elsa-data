@@ -3,7 +3,6 @@ import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
 import { differenceInSeconds } from "date-fns";
 import {
   AuditDataSummaryType,
@@ -36,10 +35,7 @@ export class AuditLogService {
   private readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
-    @inject("Settings") private settings: ElsaSettings,
-    // NOTE: we don't define an edgeDbClient here as the audit log functionality
-    // is designed to work either standalone or in a transaction context
-    private _usersService: UsersService
+    @inject("Settings") private settings: ElsaSettings // NOTE: we don't define an edgeDbClient here as the audit log functionality // is designed to work either standalone or in a transaction context
   ) {}
 
   /**
@@ -58,7 +54,7 @@ export class AuditLogService {
     releaseId: string,
     actionCategory: AuditEventAction,
     actionDescription: string,
-    start: Date
+    start: Date = new Date()
   ): Promise<string> {
     const auditEvent = await e
       .insert(e.audit.ReleaseAuditEvent, {
@@ -98,24 +94,26 @@ export class AuditLogService {
    * Start the entry for an audit event that occurs in a user context.
    *
    * @param executor the EdgeDb execution context (either client or transaction)
-   * @param user
-   * @param releaseId
+   * @param whoId
+   * @param whoDisplayName
+   * @param userId
    * @param actionCategory
    * @param actionDescription
    * @param start
    */
   public async startUserAuditEvent(
     executor: Executor,
-    user: AuthenticatedUser,
+    whoId: string,
+    whoDisplayName: string,
     userId: string,
     actionCategory: AuditEventAction,
     actionDescription: string,
-    start: Date
+    start: Date = new Date()
   ): Promise<string> {
     const auditEvent = await e
       .insert(e.audit.UserAuditEvent, {
-        whoId: user.subjectId,
-        whoDisplayName: user.displayName,
+        whoId: whoId,
+        whoDisplayName: whoDisplayName,
         occurredDateTime: start,
         actionCategory: actionCategory,
         actionDescription: actionDescription,
@@ -147,6 +145,54 @@ export class AuditLogService {
   }
 
   /**
+   * Create a UserAuditEvent in one go.
+   *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param whoId
+   * @param whoDisplayName
+   * @param userId
+   * @param actionCategory
+   * @param actionDescription
+   * @param outcome
+   * @param details
+   */
+  public async createUserAuditEvent(
+    executor: Executor,
+    userId: string,
+    whoId: string,
+    whoDisplayName: string,
+    actionCategory: AuditEventAction,
+    actionDescription: string,
+    outcome: number = 0,
+    details: any = null
+  ): Promise<void> {
+    const auditEvent = await e
+      .insert(e.audit.UserAuditEvent, {
+        whoId: whoId,
+        whoDisplayName: whoDisplayName,
+        occurredDateTime: new Date(),
+        actionCategory: actionCategory,
+        actionDescription: actionDescription,
+        outcome: outcome,
+        details: e.json(details),
+      })
+      .run(executor);
+
+    await e
+      .update(e.permission.User, (user) => ({
+        filter: e.op(e.uuid(userId), "=", user.id),
+        set: {
+          userAuditEvent: {
+            "+=": e.select(e.audit.UserAuditEvent, (ae) => ({
+              filter: e.op(e.uuid(auditEvent.id), "=", ae.id).assert_single(),
+            })),
+          },
+        },
+      }))
+      .run(executor);
+  }
+
+  /**
    * Complete the entry for an audit event that occurs in a release context.
    *
    * @param executor the EdgeDb execution context (either client or transaction)
@@ -162,7 +208,7 @@ export class AuditLogService {
     outcome: AuditEventOutcome,
     start: Date,
     end: Date,
-    details: any
+    details: any = {}
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
