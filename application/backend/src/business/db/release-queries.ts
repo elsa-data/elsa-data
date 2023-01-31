@@ -35,3 +35,18 @@ export const allReleasesSummaryByUserQuery = e.params(
       filter: e.op(u.id, "=", params.userDbId),
     }))
 );
+
+/**
+ * Set the `lastUpdated` field of a release (specified by a `releaseId`) to the
+ * current time.
+ */
+export const touchRelease = e.params(
+  {
+    releaseId: e.uuid,
+  },
+  (params) =>
+    e.update(e.release.Release, (r) => ({
+      filter: e.op(r.id, "=", params.releaseId),
+      set: { lastUpdated: e.datetime_current() },
+    }))
+);
