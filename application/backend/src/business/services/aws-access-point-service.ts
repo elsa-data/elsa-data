@@ -20,6 +20,7 @@ import {
 } from "./_access-point-template-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { Logger } from "pino";
+import { doRoleInReleaseCheck } from "./helpers";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
@@ -62,6 +63,12 @@ export class AwsAccessPointService extends AwsBaseService {
     stackId: string;
     bucketNameMap: { [x: string]: string };
   } | null> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
     const releaseStackName =
       AwsAccessPointService.getReleaseStackName(releaseId);
 
@@ -178,6 +185,12 @@ export class AwsAccessPointService extends AwsBaseService {
     accountIds: string[],
     vpcId?: string
   ): Promise<string> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
     // the AWS guard is switched on as this needs to write out to S3
     this.enabledGuard();
 

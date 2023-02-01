@@ -18,8 +18,13 @@ import {
   datasetAllSummaryQuery,
   singleDatasetSummaryQuery,
   selectDatasetIdByDatasetUri,
+  selectOrUpsertDataset,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import {
+  doOwnerRoleInConsentCheck,
+  doOwnerRoleInDatasetCheck,
+} from "./helpers";
 
 @injectable()
 @singleton()
@@ -29,28 +34,39 @@ export class DatasetService {
     @inject("Settings") private settings: ElsaSettings
   ) {}
 
-  getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
-    for (const d of this.settings.datasets) {
-      if (d.uri === datasetUri) {
-        return d.storageUriPrefix;
-      }
-    }
+  /* ********************************
+   * API Service functions
+   * ******************************** /
 
-    return null;
-  }
+  /**
+   * Get detailed consent from consentId
+   * @param user
+   * @param consentId
+   * @returns
+   */
+  public async getDatasetsConsent(
+    user: AuthenticatedUser,
+    consentId: string
+  ): Promise<DuoLimitationCodedType[]> {
+    const { authUser } = await doOwnerRoleInConsentCheck(this, user, consentId);
 
-  async getDatasetUrisFromReleaseId(
-    releaseId: string
-  ): Promise<string[] | undefined> {
-    return (
-      await e
-        .select(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-          datasetUris: true,
-        }))
-        .assert_single()
-        .run(this.edgeDbClient)
-    )?.datasetUris;
+    const consentQuery: any = e
+      .select(e.consent.Consent, (c) => ({
+        id: true,
+        statements: {
+          ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
+        },
+        filter: e.op(c.id, "=", e.uuid(consentId)),
+      }))
+      .assert_single();
+
+    const consent = await consentQuery.run(this.edgeDbClient);
+
+    if (!consent) return [];
+
+    return consent.statements.map(
+      (stmt: any) => stmt.dataUseLimitation as DuoLimitationCodedType
+    );
   }
 
   /**
@@ -72,14 +88,15 @@ export class DatasetService {
     )
       throw new BadLimitOffset(limit, offset);
 
-    // TODO: if we introduce any security model into dataset (i.e. at the moment
-    // all data owners can see all datasets) - we need to add some filtering to these
-    // queries
-    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
+    const authEmail = user.email;
+    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient, {
+      authEmail,
+    });
     const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
       ...(limit === undefined ? {} : { limit }),
       ...(offset === undefined ? {} : { offset }),
       includeDeletedFile: includeDeletedFile,
+      authEmail: authEmail,
     });
 
     const converted: DatasetLightType[] = fullDatasets.map((fd: any) => {
@@ -111,6 +128,8 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetId: string
   ): Promise<DatasetDeepType | null> {
+    const { authUser } = await doOwnerRoleInDatasetCheck(this, user, datasetId);
+
     const sd = await singleDatasetSummaryQuery.run(this.edgeDbClient, {
       includeDeletedFile: false,
       datasetId: datasetId,
@@ -156,6 +175,8 @@ export class DatasetService {
     limit: number,
     offset: number
   ): Promise<any | null> {
+    const { authUser } = await doOwnerRoleInDatasetCheck(this, user, datasetId);
+
     const pageCases = await e
       .select(e.dataset.DatasetCase, (dsc) => ({
         ...e.dataset.DatasetCase["*"],
@@ -174,83 +195,22 @@ export class DatasetService {
 
     return pageCases;
   }
-
-  /**
-   * Select or insert new dataset if doesn't exist in Db
-   * @returns Dataset Id
-   */
-  public async selectOrInsertDataset({
-    datasetUri,
-    datasetDescription,
-    datasetName,
-  }: {
-    datasetUri: string;
-    datasetDescription: string;
-    datasetName: string;
-  }): Promise<string> {
-    // Find current Dataset
-    const datasetId = (
-      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
-    )?.id;
-    if (datasetId) return datasetId;
-
-    // Else, create new dataset
-    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
-      uri: datasetUri,
-      externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
-      description: datasetDescription,
-    });
-    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
-    return newDataset.id;
-  }
-
-  /**
-   * Select dataset from datasetUri
-   */
-  public async selectDatasetIdFromDatasetUri(
-    datasetUri: string
-  ): Promise<string | null> {
-    const datasetId = (
-      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
-    )?.id;
-    if (datasetId) return datasetId;
-
-    return null;
-  }
-
-  /**
-   * Delete given dataset URI from database.
-   * @returns DatasetId
-   */
-  public async deleteDataset({
-    datasetUri,
-  }: {
-    datasetUri: string;
-  }): Promise<string | undefined> {
-    const deleteDataset = e
-      .delete(e.dataset.Dataset, (d) => ({
-        filter: e.op(d.uri, "=", datasetUri),
-      }))
-      .assert_single();
-
-    const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
-    return datasetDeleted?.id;
-  }
-
   public async configureDataset(
     datasetConfigArray: ({
       uri: string;
       description: string;
       name: string;
+      dataOwnerEmailArray?: string[];
     } & Record<string, any>)[]
   ): Promise<void> {
     // Insert new dataset
     for (const dc of datasetConfigArray) {
-      await this.selectOrInsertDataset({
+      await selectOrUpsertDataset({
         datasetDescription: dc.description,
         datasetName: dc.name,
         datasetUri: dc.uri,
-      });
+        dataOwnerEmailArray: dc.dataOwnerEmailArray,
+      }).run(this.edgeDbClient);
     }
 
     // Mark for dataset no longer in config file
@@ -277,6 +237,66 @@ export class DatasetService {
     }
   }
 
+  /**
+   * Helper Functions
+   */
+
+  async getDatasetIdFromDatasetUri(
+    datasetUri: string
+  ): Promise<string | undefined> {
+    return (
+      await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
+    )?.id;
+  }
+
+  /**
+   * Grab storage prefix for a given datasetUri. (e.g. Prefix of AWS storage from the datasetURI)
+   * @param datasetUri
+   * @returns
+   */
+  getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
+    for (const d of this.settings.datasets) {
+      if (d.uri === datasetUri) {
+        return d.storageUriPrefix;
+      }
+    }
+
+    return null;
+  }
+
+  async getDatasetUrisFromReleaseId(
+    releaseId: string
+  ): Promise<string[] | undefined> {
+    return (
+      await e
+        .select(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          datasetUris: true,
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.datasetUris;
+  }
+
+  /**
+   * Delete given dataset URI from database.
+   * @returns DatasetId
+   */
+  public async deleteDataset({
+    datasetUri,
+  }: {
+    datasetUri: string;
+  }): Promise<string | undefined> {
+    const deleteDataset = e
+      .delete(e.dataset.Dataset, (d) => ({
+        filter: e.op(d.uri, "=", datasetUri),
+      }))
+      .assert_single();
+
+    const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
+    return datasetDeleted?.id;
+  }
+
   public async updateDatasetCurrentTimestamp(datasetId: string) {
     await e
       .update(e.dataset.Dataset, (d) => ({
@@ -288,28 +308,77 @@ export class DatasetService {
       .run(this.edgeDbClient);
   }
 
-  public async getDatasetsConsent(
-    user: AuthenticatedUser,
-    consentId: string
-  ): Promise<DuoLimitationCodedType[]> {
-    // Should be some mechanism to check if user is authorize to see the consent
+  /* ********************************
+   * Dataset auth checking functions
+   * ******************************** /
 
-    const consentQuery = e
-      .select(e.consent.Consent, (c) => ({
-        id: true,
-        statements: {
-          ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
-        },
-        filter: e.op(c.id, "=", e.uuid(consentId)),
-      }))
+  /**
+   * Check if datasetId own by the user given
+   * @param user
+   * @param datasetId
+   * @returns
+   */
+
+  public async isUserOwnerOfDatasetId(
+    user: AuthenticatedUser,
+    datasetId: string
+  ): Promise<boolean> {
+    const dataOwnerEmailArray = (
+      await e
+        .select(e.dataset.Dataset, (d) => ({
+          dataOwnerEmailArray: true,
+          filter: e.op(e.uuid(datasetId), "=", d.id),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.dataOwnerEmailArray;
+
+    if (dataOwnerEmailArray)
+      for (const e of dataOwnerEmailArray) {
+        if (user.email == e) {
+          return true;
+        }
+      }
+
+    return false;
+  }
+
+  /**
+   * Return datasetId if consentId belongs to a dataset
+   * @param consentId
+   * @returns
+   */
+  public async findDatasetIdFromConsentId(
+    consentId: string
+  ): Promise<string | undefined> {
+    const datasetIdQuery = e
+      .select(e.dataset.Dataset, (d) => {
+        // ConsentId can be from Dataset, DatasetCase, DatasetPatient, or DatasetSpecimen
+        const dQ = e.op(d.consent.id, "=", e.uuid(consentId));
+        const dCaseQ = e.op(d.cases.consent.id, "=", e.uuid(consentId));
+        const dPatientQ = e.op(
+          d.cases.patients.consent.id,
+          "=",
+          e.uuid(consentId)
+        );
+        const dSpecimensQ = e.op(
+          d.cases.patients.specimens.consent.id,
+          "=",
+          e.uuid(consentId)
+        );
+
+        // Filter in logic expression: (dQ V dCaseQ) V (dPatientQ V dSpecimensQ)
+        return {
+          id: true,
+          filter: e.op(
+            e.op(dQ, "or", dCaseQ),
+            "or",
+            e.op(dPatientQ, "or", dSpecimensQ)
+          ),
+        };
+      })
       .assert_single();
 
-    const consent = await consentQuery.run(this.edgeDbClient);
-
-    if (!consent) return [];
-
-    return consent.statements.map(
-      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
-    );
+    return (await datasetIdQuery.run(this.edgeDbClient))?.id;
   }
 }

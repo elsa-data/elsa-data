@@ -9,6 +9,7 @@
       aws: {
         eventDataStoreId: "327383f8-3273-3273-3273-327383f8fc43",
       },
+      dataOwnerEmailArray: ["subject1@elsa.net"],
     },
     {
       name: "10F",

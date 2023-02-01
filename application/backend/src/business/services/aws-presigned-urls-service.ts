@@ -16,6 +16,7 @@ import { parseUrl } from "@aws-sdk/url-parser";
 import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { doRoleInReleaseCheck } from "./helpers";
 
 @injectable()
 @singleton()
@@ -43,6 +44,12 @@ export class AwsPresignedUrlsService extends AwsBaseService {
     releaseId: string,
     presignHeader: string[]
   ): Promise<any> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
     // abort immediately if we don't have AWS enabled
     this.enabledGuard();
 

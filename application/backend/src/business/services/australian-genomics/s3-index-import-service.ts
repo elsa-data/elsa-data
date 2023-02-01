@@ -38,6 +38,8 @@ import {
   selectDatasetIdByDatasetUri,
 } from "../../db/dataset-queries";
 import { DatasetService } from "./../dataset-service";
+import { doOwnerRoleInDatasetCheck } from "../helpers";
+import { AuthenticatedUser } from "../../authenticated-user";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -679,11 +681,10 @@ export class S3IndexApplicationService {
   /**
    * @param datasetUri s3 URI prefix to sync the files
    */
-  async syncDbFromDatasetUri(datasetUri: string) {
+  async syncDbFromDatasetUri(user: AuthenticatedUser, datasetUri: string) {
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
     )?.id;
-
     if (!datasetId) {
       console.warn("No Dataset URI found from given key prefix.");
       console.warn(
@@ -691,6 +692,12 @@ export class S3IndexApplicationService {
       );
       return;
     }
+
+    const { authUser } = await doOwnerRoleInDatasetCheck(
+      this.datasetService,
+      user,
+      datasetId
+    );
 
     const s3UrlPrefix =
       this.datasetService.getUriPrefixFromFromDatasetUri(datasetUri);

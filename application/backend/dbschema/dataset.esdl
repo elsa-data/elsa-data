@@ -51,6 +51,9 @@ module dataset {
         };
 
         property updatedDateTime -> datetime;
+
+        optional property dataOwnerEmailArray -> array<str>;
+
     }
 
 

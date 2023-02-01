@@ -3,6 +3,7 @@ import { Client, Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UsersService } from "./users-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
+import { DatasetService } from "./dataset-service";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate
@@ -37,6 +38,66 @@ export async function doRoleInReleaseCheck(
 
   return {
     userRole: userRole,
+  };
+}
+
+/**
+ * Do a boundary level check for entry point into most public service functions - that
+ * checks if the user has are the owner of the dataset.
+ *
+ * @param usersService
+ * @param user
+ * @param releaseId
+ */
+export async function doOwnerRoleInDatasetCheck(
+  datasetService: DatasetService,
+  user: AuthenticatedUser,
+  datasetId: string
+) {
+  const isRightfulOwner = await datasetService.isUserOwnerOfDatasetId(
+    user,
+    datasetId
+  );
+
+  if (!isRightfulOwner)
+    throw new Error(
+      "Unauthenticated attempt to access dataset, or dataset does not exist"
+    );
+
+  return {
+    authUser: user,
+  };
+}
+
+/**
+ * Do a boundary level check for entry point into most public service functions - that
+ * checks if the user has are the owner of the dataset.
+ *
+ * @param usersService
+ * @param user
+ * @param releaseId
+ */
+export async function doOwnerRoleInConsentCheck(
+  datasetService: DatasetService,
+  user: AuthenticatedUser,
+  consentId: string
+) {
+  let isRightfulOwner = false;
+  const datasetId = await datasetService.findDatasetIdFromConsentId(consentId);
+  if (datasetId) {
+    isRightfulOwner = await datasetService.isUserOwnerOfDatasetId(
+      user,
+      datasetId
+    );
+  }
+
+  if (!isRightfulOwner)
+    throw new Error(
+      "Unauthenticated attempt to access consent, or consent does not exist"
+    );
+
+  return {
+    authUser: user,
   };
 }
 
