@@ -26,6 +26,7 @@ import {
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
+import { doRoleInReleaseCheck } from "./helpers";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -193,6 +194,12 @@ export class AuditLogService {
     orderByProperty: string = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEntryType> | null> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this._usersService,
+      user,
+      releaseId
+    );
+
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
       { releaseId }
