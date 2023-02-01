@@ -1,7 +1,6 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insertRelease1 } from "../../src/test-data/insert-test-data-release1";
 import { insertRelease2 } from "../../src/test-data/insert-test-data-release2";
 import { insertRelease4 } from "../../src/test-data/insert-test-data-release4";
 import { insertRelease3 } from "../../src/test-data/insert-test-data-release3";
@@ -47,12 +46,16 @@ describe("edgedb release queries tests", () => {
       releaseId: release2.id,
       userDbId: testUserInsert.id,
       role: "PI",
+      whoId: "id1",
+      whoDisplayName: "name1",
     });
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
       releaseId: release3.id,
       userDbId: testUserInsert.id,
       role: "DataOwner",
+      whoId: "id2",
+      whoDisplayName: "name2",
     });
 
     // and we don't add them into release 4 at all
@@ -105,18 +108,24 @@ describe("edgedb release queries tests", () => {
       releaseId: release2.id,
       userDbId: testUserInsert.id,
       role: "PI",
+      whoId: "id1",
+      whoDisplayName: "name1",
     });
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
       releaseId: release3.id,
       userDbId: testUserInsert.id,
       role: "DataOwner",
+      whoId: "id2",
+      whoDisplayName: "name2",
     });
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
       releaseId: release4.id,
       userDbId: testUserInsert.id,
       role: "Member",
+      whoId: "id3",
+      whoDisplayName: "name3",
     });
 
     {

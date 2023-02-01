@@ -9,7 +9,6 @@ import {
   ReleasePatientType,
   ReleaseSpecimenType,
   ReleaseSummaryType,
-  RemsApprovedApplicationSchema,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isObjectLike, isSafeInteger } from "lodash";
@@ -35,7 +34,6 @@ import {
   ReleaseDeactivationStateError,
 } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
-import { uuid } from "edgedb/dist/codecs/ifaces";
 import { createReleaseManifest } from "./manifests/_manifest-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
@@ -172,6 +170,17 @@ ${release.applicantEmailAddresses}
               filter: e.op(e.uuid(releaseRow.id), "=", r.id),
               "@role": e.str("Member"),
             })),
+          },
+          userAuditEvent: {
+            "+=": e.insert(e.audit.UserAuditEvent, {
+              whoId: u.subjectId,
+              whoDisplayName: u.displayName,
+              occurredDateTime: new Date(),
+              actionCategory: "E",
+              actionDescription: "Add user to release",
+              outcome: 0,
+              details: e.json({ role: "Member" }),
+            }),
           },
         },
       }))

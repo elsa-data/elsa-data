@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { isEmpty, isNil } from "lodash";
+import { capitalize, isEmpty, isNil, lowerCase } from "lodash";
 import {
   createPagedResult,
   PagedResult,
@@ -81,12 +81,49 @@ export class UsersService {
   }
 
   /**
+   * Change a permission property for the User. This also creates an audit event for this change.
+   *
+   * @param userId
+   * @param permission
+   * @param value
+   */
+  public async changePermission(
+    userId: string,
+    permission:
+      | "allowedCreateRelease"
+      | "allowedImportDataset"
+      | "allowedChangeReleaseDataOwner",
+    value: boolean
+  ): Promise<void> {
+    await e
+      .update(e.permission.User, (user) => ({
+        filter: e.op(e.uuid(userId), "=", user.id),
+        set: {
+          [permission]: value,
+          userAuditEvent: {
+            "+=": e.insert(e.audit.UserAuditEvent, {
+              whoId: user.subjectId,
+              whoDisplayName: user.displayName,
+              occurredDateTime: new Date(),
+              actionCategory: "E",
+              actionDescription: "Change user permission",
+              outcome: 0,
+              details: e.json({ message: capitalize(lowerCase(permission)) }),
+            }),
+          },
+        },
+      }))
+      .run(this.edgeDbClient);
+  }
+
+  /**
    * Inserts the user - or update
    * their display name if they do. Sets the 'last login' time of their
    * record to the current time. Note that this function takes into account
    * a secondary table of 'potential' users that may already have some default
    * settings - but who have no yet logged in. This means for instance that a new
-   * user can be created already associated with a release.
+   * user can be created already associated with a release. Creates an audit event
+   * for the login.
    *
    * @param subjectId
    * @param displayName
@@ -135,6 +172,15 @@ export class UsersService {
         releasesToAdd = e.cast(e.uuid, e.set());
       }
 
+      const userAuditEvent = e.insert(e.audit.UserAuditEvent, {
+        whoId: subjectId,
+        whoDisplayName: displayName,
+        occurredDateTime: new Date(),
+        actionCategory: "E",
+        actionDescription: "Login",
+        outcome: 0,
+      });
+
       return await e
         .insert(e.permission.User, {
           subjectId: subjectId,
@@ -144,6 +190,7 @@ export class UsersService {
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),
           })),
+          userAuditEvent: userAuditEvent,
         })
         .unlessConflict((u) => ({
           on: u.subjectId,
@@ -151,6 +198,7 @@ export class UsersService {
             set: {
               displayName: displayName,
               lastLoginDateTime: e.datetime_current(),
+              userAuditEvent: { "+=": userAuditEvent },
             },
           })),
         }))
@@ -163,18 +211,7 @@ export class UsersService {
     if (dbUser != null) {
       const newOrUpdatedUser = await this.getBySubjectId(subjectId);
 
-      if (newOrUpdatedUser) {
-        await this.auditLogService.createUserAuditEvent(
-          this.edgeDbClient,
-          newOrUpdatedUser.dbId,
-          subjectId,
-          displayName,
-          "E",
-          "Login"
-        );
-
-        return newOrUpdatedUser;
-      }
+      if (newOrUpdatedUser) return newOrUpdatedUser;
     }
 
     throw new Error("Couldn't create user");
@@ -204,6 +241,17 @@ export class UsersService {
               filter: e.op(e.uuid(releaseId), "=", r.id),
               "@role": e.str(role),
             })),
+          },
+          userAuditEvent: {
+            "+=": e.insert(e.audit.UserAuditEvent, {
+              whoId: u.subjectId,
+              whoDisplayName: u.displayName,
+              occurredDateTime: new Date(),
+              actionCategory: "E",
+              actionDescription: "Add user to release",
+              outcome: 0,
+              details: e.json({ role: role }),
+            }),
           },
         },
       }))
