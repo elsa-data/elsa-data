@@ -262,14 +262,12 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      const userId = request.params.userId;
       const { orderByProperty = "occurredDateTime", orderAscending = false } =
         request.query;
 
       const events = await auditLogService.getUserEntries(
         edgeDbClient,
         authenticatedUser,
-        userId,
         pageSize,
         (page - 1) * pageSize,
         orderByProperty,

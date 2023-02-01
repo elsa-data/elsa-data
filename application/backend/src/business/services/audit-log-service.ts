@@ -165,7 +165,7 @@ export class AuditLogService {
     actionDescription: string,
     details: any = null,
     outcome: number = 0
-  ): Promise<void> {
+  ): Promise<string> {
     const auditEvent = await e
       .insert(e.audit.UserAuditEvent, {
         whoId: whoId,
@@ -190,6 +190,8 @@ export class AuditLogService {
         },
       }))
       .run(executor);
+
+    return auditEvent.id;
   }
 
   /**
@@ -362,18 +364,17 @@ export class AuditLogService {
   public async getUserEntries(
     executor: Executor,
     user: AuthenticatedUser,
-    userId: string,
     limit: number,
     offset: number,
     orderByProperty: string = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEntryType> | null> {
     const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
-      userId,
+      userId: user.dbId,
     });
 
     const pageOfEntries = await pageableAuditLogEntriesForUserQuery(
-      userId,
+      user.dbId,
       limit,
       offset,
       orderByProperty,
@@ -381,7 +382,7 @@ export class AuditLogService {
     ).run(executor);
 
     console.log(
-      `${AuditLogService.name}.getEntries(userId=${userId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditLogService.name}.getEntries(userId=${user.dbId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(
