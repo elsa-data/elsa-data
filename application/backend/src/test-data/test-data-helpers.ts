@@ -1,5 +1,5 @@
 import { createClient } from "edgedb";
-import e, { lab, storage } from "../../dbschema/edgeql-js";
+import e, { storage } from "../../dbschema/edgeql-js";
 import _ from "lodash";
 
 const edgeDbClient = createClient();
@@ -102,6 +102,7 @@ export function makeTripleCodeArray(
  *
  * @param subjectId
  * @param displayName
+ * @param email
  * @param releasesAsDataOwner
  * @param releasesAsPI
  * @param releasesAsMember
@@ -123,6 +124,14 @@ export async function createTestUser(
       allowedChangeReleaseDataOwner: false,
       allowedCreateRelease: false,
       allowedImportDataset: false,
+      userAuditEvent: e.insert(e.audit.UserAuditEvent, {
+        whoId: subjectId,
+        whoDisplayName: displayName,
+        occurredDateTime: new Date(),
+        actionCategory: "E",
+        actionDescription: "Login",
+        outcome: 0,
+      }),
     })
     .run(edgeDbClient);
 
