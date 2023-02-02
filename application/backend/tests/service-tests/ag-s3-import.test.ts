@@ -42,6 +42,7 @@ import {
   MOCK_4_STUDY_ID_2,
   MOCK_4_STUDY_ID_1,
   MOCK_4_CARDIAC_VCF_FILENAME,
+  mockDataset,
 } from "./ag.common";
 import * as awsHelper from "../../src/business/services/aws-helper";
 import {
@@ -327,11 +328,8 @@ describe("AWS s3 client", () => {
 
   it("Test MOCK 1 insert new Cardiac from s3Key", async () => {
     const agService = container.resolve(S3IndexApplicationService);
-    await selectOrUpsertDataset({
-      datasetUri: MOCK_DATASET_URI,
-      datasetName: "Cardiac",
-      datasetDescription: "A test flagship",
-    }).run(edgedbClient);
+    const { datasetId, adminUser } = await mockDataset(edgedbClient);
+
     jest
       .spyOn(awsHelper, "awsListObjects")
       .mockImplementation(async () => MOCK_1_CARDIAC_S3_OBJECT_LIST);
@@ -339,7 +337,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_1_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(adminUser, MOCK_DATASET_URI);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -371,11 +369,8 @@ describe("AWS s3 client", () => {
 
   it("Test MOCK 2 Updating Checksum", async () => {
     const agService = container.resolve(S3IndexApplicationService);
-    await selectOrUpsertDataset({
-      datasetUri: MOCK_DATASET_URI,
-      datasetName: "Cardiac",
-      datasetDescription: "A test Flagship",
-    }).run(edgedbClient);
+    const { datasetId, adminUser } = await mockDataset(edgedbClient);
+
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
@@ -411,7 +406,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_2_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(adminUser, MOCK_DATASET_URI);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -437,11 +432,8 @@ describe("AWS s3 client", () => {
 
   it("Test MOCK 3 Check file mark unavailable", async () => {
     const agService = container.resolve(S3IndexApplicationService);
-    await selectOrUpsertDataset({
-      datasetUri: MOCK_DATASET_URI,
-      datasetName: "Cardiac",
-      datasetDescription: "A test Flagship",
-    }).run(edgedbClient);
+    const { datasetId, adminUser } = await mockDataset(edgedbClient);
+
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
@@ -478,7 +470,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_3_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(adminUser, MOCK_DATASET_URI);
 
     const expectedFileMarked = [
       `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
@@ -498,11 +490,8 @@ describe("AWS s3 client", () => {
 
   it("Test MOCK 4 Multi Study Id", async () => {
     const agService = container.resolve(S3IndexApplicationService);
-    await selectOrUpsertDataset({
-      datasetUri: MOCK_DATASET_URI,
-      datasetName: "Cardiac",
-      datasetDescription: "A test flagship",
-    }).run(edgedbClient);
+    const { datasetId, adminUser } = await mockDataset(edgedbClient);
+
     jest
       .spyOn(awsHelper, "awsListObjects")
       .mockImplementation(async () => MOCK_4_CARDIAC_S3_OBJECT_LIST);
@@ -510,7 +499,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(adminUser, MOCK_DATASET_URI);
 
     // FILE schema expected values
     const totalFileList = await e

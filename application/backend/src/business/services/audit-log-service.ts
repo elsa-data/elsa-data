@@ -27,6 +27,7 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
 import { doRoleInReleaseCheck } from "./helpers";
+import { ReleaseService } from "./release-service";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -39,7 +40,8 @@ export class AuditLogService {
     @inject("Settings") private settings: ElsaSettings,
     // NOTE: we don't define an edgeDbClient here as the audit log functionality
     // is designed to work either standalone or in a transaction context
-    private _usersService: UsersService
+    private _usersService: UsersService,
+    private releaseService: ReleaseService
   ) {}
 
   /**
@@ -242,6 +244,15 @@ export class AuditLogService {
     start: number,
     end: number
   ): Promise<AuditEntryDetailsType | null> {
+    const releaseId =
+      await this.releaseService.getReleaseIdFromReleaseAuditEventId(id);
+    if (!releaseId) throw new Error("Not authorised or no matching id found!");
+    const { userRole } = await doRoleInReleaseCheck(
+      this._usersService,
+      user,
+      releaseId
+    );
+
     const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
 
     if (!entry) {
@@ -260,6 +271,15 @@ export class AuditLogService {
     user: AuthenticatedUser,
     id: string
   ): Promise<AuditEntryFullType | null> {
+    const releaseId =
+      await this.releaseService.getReleaseIdFromReleaseAuditEventId(id);
+    if (!releaseId) throw new Error("Not authorised or no matching id found!");
+    const { userRole } = await doRoleInReleaseCheck(
+      this._usersService,
+      user,
+      releaseId
+    );
+
     const entry = await auditLogFullForIdQuery(id).run(executor);
 
     if (!entry) {
@@ -290,6 +310,12 @@ export class AuditLogService {
     orderByProperty: string = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditDataAccessType> | null> {
+    const { userRole } = await doRoleInReleaseCheck(
+      this._usersService,
+      user,
+      releaseId
+    );
+
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
       executor,
       { releaseId }
@@ -339,6 +365,12 @@ export class AuditLogService {
     releaseId: string
   ): Promise<AuditDataSummaryType[] | null> {
     // TODO: Make this paginate
+
+    const { userRole } = await doRoleInReleaseCheck(
+      this._usersService,
+      user,
+      releaseId
+    );
 
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
       executor,

@@ -310,7 +310,7 @@ export class DatasetService {
 
   /* ********************************
    * Dataset auth checking functions
-   * ******************************** /
+   * ******************************** */
 
   /**
    * Check if datasetId own by the user given
@@ -318,7 +318,6 @@ export class DatasetService {
    * @param datasetId
    * @returns
    */
-
   public async isUserOwnerOfDatasetId(
     user: AuthenticatedUser,
     datasetId: string
@@ -348,7 +347,7 @@ export class DatasetService {
    * @param consentId
    * @returns
    */
-  public async findDatasetIdFromConsentId(
+  public async getDatasetIdFromConsentId(
     consentId: string
   ): Promise<string | undefined> {
     const datasetIdQuery = e

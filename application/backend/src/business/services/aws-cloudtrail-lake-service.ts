@@ -15,6 +15,7 @@ import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
 import { touchRelease } from "../db/release-queries";
+import { doRoleInReleaseCheck } from "./helpers";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -285,6 +286,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
     // Also note that from cloudtrail-lake docs, it may take 15 minutes or more before logs appear in CloudTrail lake
     // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html
+
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseId);
     const endQueryDate = new Date().toISOString();

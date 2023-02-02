@@ -83,7 +83,7 @@ export async function doOwnerRoleInConsentCheck(
   consentId: string
 ) {
   let isRightfulOwner = false;
-  const datasetId = await datasetService.findDatasetIdFromConsentId(consentId);
+  const datasetId = await datasetService.getDatasetIdFromConsentId(consentId);
   if (datasetId) {
     isRightfulOwner = await datasetService.isUserOwnerOfDatasetId(
       user,

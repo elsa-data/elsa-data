@@ -13,7 +13,7 @@ export async function registerTypes() {
 
   const testContainer = container; //.createChildContainer();
 
-  // we want an independant setup each call to this in testing (unlike in real code)
+  // we want an independent setup each call to this in testing (unlike in real code)
   testContainer.reset();
 
   testContainer.register<edgedb.Client>("Database", {

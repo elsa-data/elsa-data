@@ -1,8 +1,46 @@
+import { Client } from "edgedb";
 import e, { storage } from "../../dbschema/edgeql-js";
-import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
+import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { selectOrUpsertDataset } from "../../src/business/db/dataset-queries";
 /**
  * Will declare some mock test data here
  */
+export async function mockDataset(edgeDbClient: Client) {
+  const allowedPiSubject = "http://subject1.com";
+  const allowedPiEmail = "admin-user@elsa.net";
+
+  const datasetId = await selectOrUpsertDataset({
+    datasetUri: MOCK_DATASET_URI,
+    datasetName: "Cardiac",
+    datasetDescription: "A test Flagship",
+    dataOwnerEmailArray: [allowedPiEmail],
+  }).run(edgeDbClient);
+
+  const allowedPiUserInsert = await e
+    .insert(e.permission.User, {
+      subjectId: allowedPiSubject,
+      displayName: "Test User Who Is An Admin",
+      email: allowedPiEmail,
+    })
+    .run(edgeDbClient);
+
+  const adminUser = new AuthenticatedUser({
+    id: allowedPiUserInsert.id,
+    subjectId: allowedPiSubject,
+    displayName: "Allowed PI",
+    email: allowedPiEmail,
+    allowedChangeReleaseDataOwner: true,
+    allowedCreateRelease: true,
+    allowedImportDataset: true,
+    lastLoginDateTime: new Date(),
+  });
+
+  return {
+    datasetId,
+    adminUser,
+  };
+}
+
 export const MOCK_DATASET_URI = "urn:fdc:umccr.org:2022:dataset/10g"; // SYNC with 10g URI in elsa settings
 export const MOCK_STORAGE_PREFIX_URL = "s3://umccr-10g-data-dev/Cardiac";
 export const S3_URL_PREFIX = "s3://umccr-10g-data-dev/Cardiac/2019-11-21";

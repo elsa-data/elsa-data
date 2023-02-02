@@ -860,4 +860,18 @@ ${release.applicantEmailAddresses}
       await touchRelease.run(tx, { releaseId });
     });
   }
+
+  public async getReleaseIdFromReleaseAuditEventId(
+    releaseAuditEventId: string
+  ): Promise<string | undefined> {
+    return (
+      await e
+        .select(e.release.Release, (r) => ({
+          id: true,
+          filter: e.op(e.uuid(releaseAuditEventId), "=", r.releaseAuditLog.id),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.id;
+  }
 }
