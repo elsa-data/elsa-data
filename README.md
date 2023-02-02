@@ -44,7 +44,8 @@ work. We enable this is a way that does not require checking secrets in source c
 
 Depending on your machine, secrets can be stored in different locations. Elsa Data has a powerful
 meta configuration mechanism that lets you specify where all configuration settings are sourced
-(see ELSA_DATA_META_CONFIG_SOURCES below)
+(with the exception of GCP-related secrets. See [GCP Secrets](#gcp-secrets) below.
+For all other secrets, see (ELSA_DATA_META_CONFIG_SOURCES)[#ELSA_DATA_META_CONFIG_SOURCES].)
 
 #### Mac with no cloud
 
@@ -143,6 +144,24 @@ see the actual source in `src/config/meta`. More instructions to follow.
 An example of this though is
 
 `file('base') file('dev-common') file('dev-localhost') file('datasets') osx-keychain('elsa-data')`
+
+### GCP Secrets
+
+GCP credentials are provided using Google's
+[Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials).
+Unlike other configuration which Elsa uses, GCP sources configuration from the
+environment.
+
+Unless running in a GCP environment (e.g. on a local dev machine), a service
+account must be used for authorization. This is important for signing URLs in
+particular. See
+[here](https://cloud.google.com/iam/docs/creating-managing-service-accounts) to
+learn how to create a service account.
+
+When using a service account, you must create a key file as described
+[here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+You must set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the
+`path/to/the/key.json`.
 
 ## Links
 

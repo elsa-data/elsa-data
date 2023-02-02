@@ -20,6 +20,7 @@ import {
 } from "./_access-point-template-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { Logger } from "pino";
+import { getAllFileRecords } from "./_release-file-list-helper";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
@@ -34,11 +35,11 @@ export class AwsAccessPointService extends AwsBaseService {
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
     private readonly releaseService: ReleaseService,
-    @inject("Database") edgeDbClient: edgedb.Client,
-    usersService: UsersService,
-    auditLogService: AuditLogService
+    @inject("Database") private edgeDbClient: edgedb.Client,
+    private usersService: UsersService,
+    private auditLogService: AuditLogService
   ) {
-    super(edgeDbClient, usersService, auditLogService);
+    super();
   }
 
   public static getReleaseStackName(releaseId: string): string {
@@ -109,7 +110,12 @@ export class AwsAccessPointService extends AwsBaseService {
   ) {
     // find all the files encompassed by this release as a flat array of S3 URLs
     // noting that these files will be S3 paths that
-    const filesArray = await this.getAllFileRecords(user, releaseId);
+    const filesArray = await getAllFileRecords(
+      this.edgeDbClient,
+      this.usersService,
+      user,
+      releaseId
+    );
 
     const stackResources = await this.getInstalledAccessPointResources(
       user,
@@ -122,9 +128,9 @@ export class AwsAccessPointService extends AwsBaseService {
       );
 
     for (const f of filesArray) {
-      if (f.s3Bucket in stackResources.bucketNameMap) {
-        f.s3Bucket = stackResources.bucketNameMap[f.s3Bucket];
-        f.s3Url = `s3://${f.s3Bucket}/${f.s3Key}`;
+      if (f.objectStoreBucket in stackResources.bucketNameMap) {
+        f.objectStoreBucket = stackResources.bucketNameMap[f.objectStoreBucket];
+        f.objectStoreUrl = `s3://${f.objectStoreBucket}/${f.objectStoreKey}`;
       }
     }
 
@@ -182,7 +188,12 @@ export class AwsAccessPointService extends AwsBaseService {
     this.enabledGuard();
 
     // find all the files encompassed by this release as a flat array of S3 URLs
-    const filesArray = await this.getAllFileRecords(user, releaseId);
+    const filesArray = await getAllFileRecords(
+      this.edgeDbClient,
+      this.usersService,
+      user,
+      releaseId
+    );
 
     // make a (nested) CloudFormation templates that will expose only these
     // files via an access point

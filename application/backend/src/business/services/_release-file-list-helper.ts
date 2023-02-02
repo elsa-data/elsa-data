@@ -1,7 +1,11 @@
 import e from "../../../dbschema/edgeql-js";
 import { collapseExternalIds } from "./helpers";
 import { Executor } from "edgedb";
+import * as edgedb from "edgedb";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
+import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
+import { AuthenticatedUser } from "../authenticated-user";
+import { UsersService } from "./users-service";
 
 // TODO possibly this is a 'db' function that could like in that folder
 //      it is very close - but it does some 'business' in collapsing identifiers etc
@@ -14,13 +18,13 @@ export type ReleaseFileListEntry = {
   fileType: string;
   size: string;
 
-  // currently only sourcing from AWS S3 but will need to think about this for others
-  s3Url: string;
-  s3Bucket: string;
-  s3Key: string;
+  objectStoreProtocol: string;
+  objectStoreUrl: string;
+  objectStoreBucket: string;
+  objectStoreKey: string;
 
   // optional fields depending on what type of access asked for
-  s3Signed?: string;
+  objectStoreSigned?: string;
 
   // optional depending on what checksums have been entered
   md5?: string;
@@ -54,6 +58,92 @@ export async function createReleaseFileList(
     return "";
   };
 
+  // note that we are processing here every artifact that is accessible from
+  // the chosen specimens
+  // below we apply some simple logic that will rule out classes of artifacts
+  // based on the isAllowedReadData, isAllowedVariantData etc
+  const unpackFileArtifact = (
+    fileArtifact: any
+  ): Pick<
+    ReleaseFileListEntry,
+    "fileType" | "objectStoreUrl" | "size" | "md5"
+  > | null => {
+    if (fileArtifact.bclFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "BCL",
+        objectStoreUrl: fileArtifact.bclFile.url,
+        size: fileArtifact.bclFile.size.toString(),
+        md5: getMd5(fileArtifact.bclFile.checksums),
+      };
+    } else if (fileArtifact.forwardFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "FASTQ",
+        objectStoreUrl: fileArtifact.forwardFile.url,
+        size: fileArtifact.forwardFile.size.toString(),
+        md5: getMd5(fileArtifact.forwardFile.checksums),
+      };
+    } else if (fileArtifact.reverseFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "FASTQ",
+        objectStoreUrl: fileArtifact.reverseFile.url,
+        size: fileArtifact.reverseFile.size.toString(),
+        md5: getMd5(fileArtifact.reverseFile.checksums),
+      };
+    } else if (fileArtifact.bamFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "BAM",
+        objectStoreUrl: fileArtifact.bamFile.url,
+        size: fileArtifact.bamFile.size.toString(),
+        md5: getMd5(fileArtifact.bamFile.checksums),
+      };
+    } else if (fileArtifact.baiFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "BAM",
+        objectStoreUrl: fileArtifact.baiFile.url,
+        size: fileArtifact.baiFile.size.toString(),
+        md5: getMd5(fileArtifact.baiFile.checksums),
+      };
+    } else if (fileArtifact.cramFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "CRAM",
+        objectStoreUrl: fileArtifact.cramFile.url,
+        size: fileArtifact.cramFile.size.toString(),
+        md5: getMd5(fileArtifact.cramFile.checksums),
+      };
+    } else if (fileArtifact.craiFile) {
+      if (!includeReadData) return null;
+      return {
+        fileType: "CRAM",
+        objectStoreUrl: fileArtifact.craiFile.url,
+        size: fileArtifact.craiFile.size.toString(),
+        md5: getMd5(fileArtifact.craiFile.checksums),
+      };
+    } else if (fileArtifact.vcfFile) {
+      if (!includeVariantData) return null;
+      return {
+        fileType: "VCF",
+        objectStoreUrl: fileArtifact.vcfFile.url,
+        size: fileArtifact.vcfFile.size.toString(),
+        md5: getMd5(fileArtifact.vcfFile.checksums),
+      };
+    } else if (fileArtifact.tbiFile) {
+      if (!includeVariantData) return null;
+      return {
+        fileType: "VCF",
+        objectStoreUrl: fileArtifact.tbiFile.url,
+        size: fileArtifact.tbiFile.size.toString(),
+        md5: getMd5(fileArtifact.tbiFile.checksums),
+      };
+    }
+    return null;
+  };
+
   const entries: ReleaseFileListEntry[] = [];
 
   for (const f of filesResult) {
@@ -62,92 +152,72 @@ export async function createReleaseFileList(
     const specimenId = collapseExternalIds(f.externalIdentifiers);
 
     for (const fa of f.artifacts) {
-      const entry: Partial<ReleaseFileListEntry> = {
+      const unpacked = unpackFileArtifact(fa);
+      if (unpacked === null) {
+        continue;
+      }
+
+      // decompose the object URL into protocol, bucket and key
+      const match = unpacked.objectStoreUrl.match(
+        /^([^:]+):\/\/([^\/]+)\/(.+)$/
+      );
+
+      if (!match) {
+        throw new Error(`Bad URL format: ${unpacked.objectStoreUrl}`);
+      }
+
+      const entry: ReleaseFileListEntry = {
         caseId: caseId,
         patientId: patientId,
         specimenId: specimenId,
-        size: "-1",
+        objectStoreProtocol: match[1],
+        objectStoreBucket: match[2],
+        objectStoreKey: match[3],
+        ...unpacked,
       };
 
-      // note that we are processing here every artifact that is accessible from
-      // the chosen specimens
-      // below we apply some simple logic that will rule out classes of artifacts
-      // based on the isAllowedReadData, isAllowedVariantData etc
-
-      if (fa.bclFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "BCL";
-        entry.s3Url = fa.bclFile.url;
-        entry.size = fa.bclFile.size.toString();
-        entry.md5 = getMd5(fa.bclFile.checksums);
-      } else if (fa.forwardFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "FASTQ";
-        entry.s3Url = fa.forwardFile.url;
-        entry.size = fa.forwardFile.size.toString();
-        entry.md5 = getMd5(fa.forwardFile.checksums);
-      } else if (fa.reverseFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "FASTQ";
-        entry.s3Url = fa.reverseFile.url;
-        entry.size = fa.reverseFile.size.toString();
-        entry.md5 = getMd5(fa.reverseFile.checksums);
-      } else if (fa.bamFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "BAM";
-        entry.s3Url = fa.bamFile.url;
-        entry.size = fa.bamFile.size.toString();
-        entry.md5 = getMd5(fa.bamFile.checksums);
-      } else if (fa.baiFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "BAM";
-        entry.s3Url = fa.baiFile.url;
-        entry.size = fa.baiFile.size.toString();
-        entry.md5 = getMd5(fa.baiFile.checksums);
-      } else if (fa.cramFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "CRAM";
-        entry.s3Url = fa.cramFile.url;
-        entry.size = fa.cramFile.size.toString();
-        entry.md5 = getMd5(fa.cramFile.checksums);
-      } else if (fa.craiFile) {
-        if (!includeReadData) continue;
-        entry.fileType = "CRAM";
-        entry.s3Url = fa.craiFile.url;
-        entry.size = fa.craiFile.size.toString();
-        entry.md5 = getMd5(fa.craiFile.checksums);
-      } else if (fa.vcfFile) {
-        if (!includeVariantData) continue;
-        entry.fileType = "VCF";
-        entry.s3Url = fa.vcfFile.url;
-        entry.size = fa.vcfFile.size.toString();
-        entry.md5 = getMd5(fa.vcfFile.checksums);
-      } else if (fa.tbiFile) {
-        if (!includeVariantData) continue;
-        entry.fileType = "VCF";
-        entry.s3Url = fa.tbiFile.url;
-        entry.size = fa.tbiFile.size.toString();
-        entry.md5 = getMd5(fa.tbiFile.checksums);
-      } else {
-        continue;
-      }
-
-      // decompose the S3 url into bucket and key
-      const _match = entry.s3Url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
-
-      if (!_match) {
-        entry.s3Url = "";
-        entry.s3Bucket = "";
-        entry.s3Key = "";
-        continue;
-      } else {
-        entry.s3Bucket = _match[1];
-        entry.s3Key = _match[2];
-      }
-
-      entries.push(entry as ReleaseFileListEntry);
+      entries.push(entry);
     }
   }
 
   return entries;
+}
+
+/**
+ * Retrieve a list of file objects that are available to the given user
+ * for the given release. This function returns *only* raw data from the
+ * database - it does not attempt to 'sign urls' etc.
+ *
+ * @param user
+ * @param releaseId
+ */
+export async function getAllFileRecords(
+  edgeDbClient: edgedb.Client,
+  usersService: UsersService,
+  user: AuthenticatedUser,
+  releaseId: string
+): Promise<ReleaseFileListEntry[]> {
+  const { userRole } = await doRoleInReleaseCheck(
+    usersService,
+    user,
+    releaseId
+  );
+
+  const { releaseSelectedSpecimensQuery, releaseInfo } = await getReleaseInfo(
+    edgeDbClient,
+    releaseId
+  );
+
+  return await edgeDbClient.transaction(async (tx) => {
+    const releaseSelectedSpecimens = await releaseSelectedSpecimensQuery.run(
+      tx
+    );
+
+    return await createReleaseFileList(
+      tx,
+      releaseSelectedSpecimens,
+      releaseInfo.isAllowedReadData,
+      releaseInfo.isAllowedVariantData
+    );
+  });
 }
