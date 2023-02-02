@@ -349,35 +349,53 @@ export class DatasetService {
    */
   public async getDatasetIdFromConsentId(
     consentId: string
-  ): Promise<string | undefined> {
-    const datasetIdQuery = e
-      .select(e.dataset.Dataset, (d) => {
-        // ConsentId can be from Dataset, DatasetCase, DatasetPatient, or DatasetSpecimen
-        const dQ = e.op(d.consent.id, "=", e.uuid(consentId));
-        const dCaseQ = e.op(d.cases.consent.id, "=", e.uuid(consentId));
-        const dPatientQ = e.op(
-          d.cases.patients.consent.id,
-          "=",
-          e.uuid(consentId)
-        );
-        const dSpecimensQ = e.op(
-          d.cases.patients.specimens.consent.id,
-          "=",
-          e.uuid(consentId)
-        );
+  ): Promise<string | undefined | null> {
+    let datasetId: string | undefined | null;
 
-        // Filter in logic expression: (dQ V dCaseQ) V (dPatientQ V dSpecimensQ)
-        return {
-          id: true,
-          filter: e.op(
-            e.op(dQ, "or", dCaseQ),
-            "or",
-            e.op(dPatientQ, "or", dSpecimensQ)
-          ),
-        };
-      })
-      .assert_single();
+    datasetId = (
+      await e
+        .select(e.dataset.Dataset, (d) => ({
+          datasetId: d.id,
+          filter: e.op(d.consent.id, "=", e.uuid(consentId)),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.datasetId;
+    if (datasetId) return datasetId;
 
-    return (await datasetIdQuery.run(this.edgeDbClient))?.id;
+    datasetId = (
+      await e
+        .select(e.dataset.DatasetCase, (dc) => ({
+          datasetId: dc.dataset.id,
+          filter: e.op(dc.consent.id, "=", e.uuid(consentId)),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.datasetId;
+    if (datasetId) return datasetId;
+
+    datasetId = (
+      await e
+        .select(e.dataset.DatasetPatient, (dp) => ({
+          datasetId: dp.dataset.id,
+          filter: e.op(dp.consent.id, "=", e.uuid(consentId)),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.datasetId;
+    if (datasetId) return datasetId;
+
+    datasetId = (
+      await e
+        .select(e.dataset.DatasetSpecimen, (ds) => ({
+          datasetId: ds.dataset.id,
+          filter: e.op(ds.consent.id, "=", e.uuid(consentId)),
+        }))
+        .assert_single()
+        .run(this.edgeDbClient)
+    )?.datasetId;
+    if (datasetId) return datasetId;
+
+    return datasetId;
   }
 }

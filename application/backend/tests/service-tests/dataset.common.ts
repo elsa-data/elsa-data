@@ -22,12 +22,13 @@ export async function beforeEachCommon() {
   const edgeDbClient = createClient({});
 
   await blankTestData();
-  const teng = await insert10G();
-  const tenf = await insert10F();
 
   // TODO: we don't have an admin model for datasets yet so this is very simple
   const allowedPiSubject = "http://subject1.com";
   const allowedPiEmail = "admin-user@elsa.net";
+
+  const teng = await insert10G([allowedPiEmail]);
+  const tenf = await insert10F([allowedPiEmail]);
 
   const allowedPiUserInsert = await e
     .insert(e.permission.User, {

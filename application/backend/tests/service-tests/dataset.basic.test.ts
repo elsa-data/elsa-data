@@ -7,6 +7,7 @@ import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { insert10C, TENC_URI } from "../../src/test-data/insert-test-data-10c";
 import { Client } from "edgedb";
 import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
+import e from "../../dbschema/edgeql-js";
 
 let edgeDbClient: Client;
 let datasetService: DatasetService;
@@ -67,7 +68,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   }
 
   // insert the 10c dataset - which should alphabetically go to the start
-  await insert10C();
+  await insert10C([adminUser.email]);
 
   {
     const result = await datasetService.getSummary(adminUser, true, 1000, 0);
@@ -78,4 +79,55 @@ it("basic summary get all is sorted by dataset URI", async () => {
     expect(result.data[1].uri).toBe(TENF_URI);
     expect(result.data[2].uri).toBe(TENG_URI);
   }
+});
+
+it("Get dataset Id from Consent Id", async () => {
+  const consentId = (await e.insert(e.consent.Consent, {}).run(edgeDbClient))
+    .id;
+  await e
+    .update(e.dataset.Dataset, (d) => ({
+      set: {
+        consent: e
+          .select(e.consent.Consent, (c) => ({
+            filter: e.op(e.uuid(consentId), "=", c.id),
+          }))
+          .assert_single(),
+      },
+      filter: e.op(e.uuid(tenfDatasetId), "=", d.id),
+    }))
+    .run(edgeDbClient);
+
+  if (!consentId) throw new Error("Cannot create mock Consent record.");
+  const dIdResult = await datasetService.getDatasetIdFromConsentId(consentId);
+  expect(dIdResult).toEqual(tenfDatasetId);
+
+  // Test for random consentId
+  const randomUUID = "20cc2e50-a2c1-11ed-a8fc-0242ac120002";
+  const nilResult = await datasetService.getDatasetIdFromConsentId(randomUUID);
+  expect(!nilResult).toEqual(true);
+});
+
+it("Verify if user is the rightful owner of the dataset", async () => {
+  const correctOwner = await datasetService.isUserOwnerOfDatasetId(
+    adminUser,
+    tenfDatasetId
+  );
+  expect(correctOwner).toEqual(true);
+
+  // Test random user
+  const randomUser = new AuthenticatedUser({
+    id: "ID123",
+    subjectId: "Invalid Subject",
+    displayName: "Invalid User",
+    email: "invalid-subject@elsa.net",
+    allowedChangeReleaseDataOwner: false,
+    allowedCreateRelease: false,
+    allowedImportDataset: false,
+    lastLoginDateTime: new Date(),
+  });
+  const wrongOwner = await datasetService.isUserOwnerOfDatasetId(
+    randomUser,
+    tenfDatasetId
+  );
+  expect(!wrongOwner).toEqual(true);
 });

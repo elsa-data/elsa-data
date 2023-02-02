@@ -27,7 +27,7 @@ const blankFile = () =>
  * The 10F dataset is a subset of the 1000 genomes data with a combination of more complex
  * families.
  */
-export async function insert10F() {
+export async function insert10F(ownerEmail?: string[]) {
   const addPatient = async (
     familyId: string,
     patientId: string,
@@ -82,6 +82,7 @@ export async function insert10F() {
       uri: TENF_URI,
       externalIdentifiers: makeSystemlessIdentifierArray("10F"),
       description: "UMCCR 10F",
+      dataOwnerEmailArray: ownerEmail,
       cases: e.set(
         await makeSimpsonsTrio(),
         await makeJetsonsTrio(),

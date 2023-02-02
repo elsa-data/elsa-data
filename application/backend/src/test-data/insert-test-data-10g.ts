@@ -17,7 +17,7 @@ export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
  * to test specific areas of data sharing.
  */
-export async function insert10G() {
+export async function insert10G(ownerEmail?: string[]) {
   const settings = container.resolve<ElsaSettings>("Settings");
 
   const makeCase = async (
@@ -99,6 +99,7 @@ export async function insert10G() {
       uri: TENG_URI,
       externalIdentifiers: makeSystemlessIdentifierArray("10G"),
       description: "UMCCR 10G",
+      dataOwnerEmailArray: ownerEmail,
       cases: e.set(
         await makeCase(
           "SINGLETONCHARLES",

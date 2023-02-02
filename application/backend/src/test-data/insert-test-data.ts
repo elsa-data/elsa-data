@@ -26,9 +26,21 @@ const edgeDbClient = edgedb.createClient();
 
 export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
-  await insert10G();
-  await insert10F();
-  await insert10C();
+  await insert10G([
+    TEST_SUBJECT_1_EMAIL,
+    TEST_SUBJECT_2_EMAIL,
+    TEST_SUBJECT_3_EMAIL,
+  ]);
+  await insert10F([
+    TEST_SUBJECT_1_EMAIL,
+    TEST_SUBJECT_2_EMAIL,
+    TEST_SUBJECT_3_EMAIL,
+  ]);
+  await insert10C([
+    TEST_SUBJECT_1_EMAIL,
+    TEST_SUBJECT_2_EMAIL,
+    TEST_SUBJECT_3_EMAIL,
+  ]);
   await insertBlankDataset("10M", "urn:fdc:umccr.org:2022:dataset/10m");
   // await insertCARDIAC();
 
