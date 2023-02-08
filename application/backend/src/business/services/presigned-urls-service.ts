@@ -41,7 +41,7 @@ export class PresignedUrlsService {
     key: string
   ): Promise<string> {
     for (const p of this.presignedUrlsServices)
-      if (protocol === p.protocol) return p.presign(protocol, bucket, key);
+      if (protocol === p.protocol) return p.presign(releaseId, bucket, key);
 
     throw new Error(`Unhandled protocol ${protocol}`);
   }
