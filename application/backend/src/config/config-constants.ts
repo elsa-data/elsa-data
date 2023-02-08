@@ -311,11 +311,6 @@ export const configDefinition = {
           default: undefined,
         },
       },
-      dataOwnerEmailArray: {
-        doc: "Array of emails for the data owners of the dataset.",
-        format: "*",
-        default: [],
-      },
     },
   },
   superAdmins: {

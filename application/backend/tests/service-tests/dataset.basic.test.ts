@@ -68,7 +68,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   }
 
   // insert the 10c dataset - which should alphabetically go to the start
-  await insert10C([adminUser.email]);
+  await insert10C();
 
   {
     const result = await datasetService.getSummary(adminUser, true, 1000, 0);

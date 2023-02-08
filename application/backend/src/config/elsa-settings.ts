@@ -63,7 +63,6 @@ export type ElsaSettings = {
     aws?: {
       eventDataStoreId?: string;
     };
-    dataOwnerEmailArray?: string[];
   }[];
   // options to pass into the rate limiter
   rateLimit: RateLimitPluginOptions;

@@ -27,8 +27,8 @@ export async function beforeEachCommon() {
   const allowedPiSubject = "http://subject1.com";
   const allowedPiEmail = "admin-user@elsa.net";
 
-  const teng = await insert10G([allowedPiEmail]);
-  const tenf = await insert10F([allowedPiEmail]);
+  const teng = await insert10G();
+  const tenf = await insert10F();
 
   const allowedPiUserInsert = await e
     .insert(e.permission.User, {

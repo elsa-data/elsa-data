@@ -5,21 +5,7 @@ import { makeSystemlessIdentifierArray } from "./helper";
 /**
  * An EdgeDb query for counting datasets.
  */
-export const datasetAllCountQuery = e.params(
-  {
-    authEmail: e.str,
-  },
-  (params) =>
-    e.count(
-      e.select(e.dataset.Dataset, (d) => ({
-        filter: e.op(
-          params.authEmail,
-          "in",
-          e.array_unpack(d.dataOwnerEmailArray)
-        ),
-      }))
-    )
-);
+export const datasetAllCountQuery = e.count(e.select(e.dataset.Dataset));
 
 /**
  * Some Artifact query based on specified datasets
@@ -142,7 +128,6 @@ export const datasetAllSummaryQuery = e.params(
     limit: e.optional(e.int32),
     offset: e.optional(e.int32),
     includeDeletedFile: e.bool,
-    authEmail: e.str,
   },
   (params) =>
     e.select(e.dataset.Dataset, (ds) => {
@@ -189,11 +174,6 @@ export const datasetAllSummaryQuery = e.params(
         ],
         limit: params.limit,
         offset: params.offset,
-        filter: e.op(
-          params.authEmail,
-          "in",
-          e.array_unpack(ds.dataOwnerEmailArray)
-        ),
       };
     })
 );
@@ -289,19 +269,16 @@ export const selectOrUpsertDataset = ({
   datasetUri,
   datasetDescription,
   datasetName,
-  dataOwnerEmailArray,
 }: {
   datasetUri: string;
   datasetDescription: string;
   datasetName: string;
-  dataOwnerEmailArray?: string[];
 }) =>
   e
     .insert(e.dataset.Dataset, {
       uri: datasetUri,
       externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
       description: datasetDescription,
-      dataOwnerEmailArray: dataOwnerEmailArray,
     })
     .unlessConflict((dataset) => ({
       on: dataset.uri,
@@ -309,7 +286,6 @@ export const selectOrUpsertDataset = ({
         set: {
           externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
           description: datasetDescription,
-          dataOwnerEmailArray: dataOwnerEmailArray,
         },
       })),
     }));

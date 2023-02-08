@@ -25,6 +25,18 @@ import {
   doOwnerRoleInConsentCheck,
   doOwnerRoleInDatasetCheck,
 } from "./helpers";
+import { isSuperAdmin } from "../../api/session-cookie-route-hook";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
+
+export class NotAuthorisedDataset extends Base7807Error {
+  constructor(datasetId: string) {
+    super(
+      "Not authorised to access this dataset",
+      403,
+      `User is not a data owner of ${datasetId}`
+    );
+  }
+}
 
 @injectable()
 @singleton()
@@ -88,15 +100,13 @@ export class DatasetService {
     )
       throw new BadLimitOffset(limit, offset);
 
-    const authEmail = user.email;
-    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient, {
-      authEmail,
-    });
+    const { authUser } = await doOwnerRoleInDatasetCheck(this, user, "abcd");
+
+    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
     const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
       ...(limit === undefined ? {} : { limit }),
       ...(offset === undefined ? {} : { offset }),
       includeDeletedFile: includeDeletedFile,
-      authEmail: authEmail,
     });
 
     const converted: DatasetLightType[] = fullDatasets.map((fd: any) => {
@@ -200,7 +210,6 @@ export class DatasetService {
       uri: string;
       description: string;
       name: string;
-      dataOwnerEmailArray?: string[];
     } & Record<string, any>)[]
   ): Promise<void> {
     // Insert new dataset
@@ -209,7 +218,6 @@ export class DatasetService {
         datasetDescription: dc.description,
         datasetName: dc.name,
         datasetUri: dc.uri,
-        dataOwnerEmailArray: dc.dataOwnerEmailArray,
       }).run(this.edgeDbClient);
     }
 
@@ -322,24 +330,8 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetId: string
   ): Promise<boolean> {
-    const dataOwnerEmailArray = (
-      await e
-        .select(e.dataset.Dataset, (d) => ({
-          dataOwnerEmailArray: true,
-          filter: e.op(e.uuid(datasetId), "=", d.id),
-        }))
-        .assert_single()
-        .run(this.edgeDbClient)
-    )?.dataOwnerEmailArray;
-
-    if (dataOwnerEmailArray)
-      for (const e of dataOwnerEmailArray) {
-        if (user.email == e) {
-          return true;
-        }
-      }
-
-    return false;
+    // We currently assume that all superAdmin are dataset owner
+    return isSuperAdmin(this.settings, user);
   }
 
   /**

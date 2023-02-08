@@ -8,7 +8,10 @@ import {
 } from "@umccr/elsa-types";
 import { datasetGen3SyncRequestValidate } from "../../../validators/validate-json";
 import { container } from "tsyringe";
-import { DatasetService } from "../../../business/services/dataset-service";
+import {
+  DatasetService,
+  NotAuthorisedDataset,
+} from "../../../business/services/dataset-service";
 import { S3IndexApplicationService } from "../../../business/services/australian-genomics/s3-index-import-service";
 import {
   authenticatedRouteOnEntryHelper,
@@ -52,9 +55,6 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const elsaSettings: ElsaSettings = (request as any).settings;
-
       const datasetId = request.params.did;
 
       const result = await datasetsService.get(authenticatedUser, datasetId);
@@ -106,11 +106,10 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
       const body = request.body;
       const datasetUri = body.datasetURI;
-      const elsaSettings: ElsaSettings = (request as any).settings;
 
       // Check if dataset exist
       const datasetId = datasetsService.getDatasetIdFromDatasetUri(datasetUri);
-      if (!datasetId) throw new Error("Not authorise or no Dataset found!");
+      if (!datasetId) throw new NotAuthorisedDataset("None");
 
       agService.syncDbFromDatasetUri(authenticatedUser, datasetUri);
       reply.send(

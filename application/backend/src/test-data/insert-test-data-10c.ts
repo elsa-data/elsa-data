@@ -14,7 +14,7 @@ export const TENC_URI = "urn:fdc:umccr.org:2022:dataset/10c";
 /**
  * The 10C dataset is cancer patients
  */
-export async function insert10C(ownerEmail?: string[]) {
+export async function insert10C() {
   const makeArtifacts = async (specimenId: string) => {
     return await createArtifacts(
       createFile(
@@ -76,7 +76,6 @@ export async function insert10C(ownerEmail?: string[]) {
       uri: "urn:fdc:umccr.org:2022:dataset/10c",
       externalIdentifiers: makeSystemlessIdentifierArray("10C"),
       description: "UMCCR 10C",
-      dataOwnerEmailArray: ownerEmail,
       cases: e.set(
         await makeTumourNormal(
           "AG6583",

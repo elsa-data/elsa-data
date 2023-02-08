@@ -13,7 +13,6 @@ export async function mockDataset(edgeDbClient: Client) {
     datasetUri: MOCK_DATASET_URI,
     datasetName: "Cardiac",
     datasetDescription: "A test Flagship",
-    dataOwnerEmailArray: [allowedPiEmail],
   }).run(edgeDbClient);
 
   const allowedPiUserInsert = await e

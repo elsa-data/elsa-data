@@ -3,7 +3,8 @@ import { Client, Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UsersService } from "./users-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
-import { DatasetService } from "./dataset-service";
+import { DatasetService, NotAuthorisedDataset } from "./dataset-service";
+import { NotAuthorisedRelease } from "./release-service";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate
@@ -31,10 +32,7 @@ export async function doRoleInReleaseCheck(
 ) {
   const userRole = await usersService.roleInRelease(user, releaseId);
 
-  if (!userRole)
-    throw new Error(
-      "Unauthenticated attempt to access release, or release does not exist"
-    );
+  if (!userRole) throw new NotAuthorisedRelease(releaseId);
 
   return {
     userRole: userRole,
@@ -58,11 +56,7 @@ export async function doOwnerRoleInDatasetCheck(
     user,
     datasetId
   );
-
-  if (!isRightfulOwner)
-    throw new Error(
-      "Unauthenticated attempt to access dataset, or dataset does not exist"
-    );
+  if (!isRightfulOwner) throw new NotAuthorisedDataset(datasetId);
 
   return {
     authUser: user,

@@ -35,12 +35,22 @@ import {
   ReleaseDeactivationStateError,
 } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
-import { uuid } from "edgedb/dist/codecs/ifaces";
 import { createReleaseManifest } from "./manifests/_manifest-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import { touchRelease } from "../db/release-queries";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
+
+export class NotAuthorisedRelease extends Base7807Error {
+  constructor(releaseId: string) {
+    super(
+      "Unauthenticated attempt to access release, or release does not exist",
+      403,
+      `User do not have a role in the release ${releaseId}`
+    );
+  }
+}
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {

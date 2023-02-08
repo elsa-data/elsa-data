@@ -8,5 +8,9 @@
       id: "http://cilogon.org/serverA/users/46001501",
       email: "andrew@patto.net",
     },
+    {
+      id: "http://subject3.com",
+      email: "subject3@email.com",
+    },
   ],
 }

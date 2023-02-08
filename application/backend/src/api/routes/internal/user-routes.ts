@@ -7,6 +7,7 @@ import { container } from "tsyringe";
 import { UsersService } from "../../../business/services/users-service";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 import { getServices } from "../../../di-helpers";
+import { isSuperAdmin } from "../../session-cookie-route-hook";
 
 export const userRoutes = async (fastify: FastifyInstance) => {
   const userService = container.resolve(UsersService);
@@ -19,10 +20,10 @@ export const userRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      // if (!isSuperAdmin(settings, authenticatedUser)) {
-      //   reply.status(404);
-      //   return;
-      // }
+      if (!isSuperAdmin(settings, authenticatedUser)) {
+        reply.status(404);
+        return;
+      }
 
       const users = await userService.getUsers(
         authenticatedUser,
