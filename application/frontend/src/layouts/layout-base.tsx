@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 import { ErrorBoundary } from "../components/errors";
+import { ALLOWED_CHANGE_ADMINS } from "@umccr/elsa-constants";
 
 type Props = {};
 
@@ -104,15 +105,21 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-purple-500"
                   )}
                 </li>
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
-                    "/datasets",
-                    "Datasets",
-                    "text-green-500",
-                    "border-green-500",
-                    "hover:border-green-500"
-                  )}
-                </li>
+
+                {loggedInUser.authorisationRole == ALLOWED_CHANGE_ADMINS && (
+                  <>
+                    <li className="my-2 mr-6 md:my-0">
+                      {navLink(
+                        "/datasets",
+                        "Datasets",
+                        "text-green-500",
+                        "border-green-500",
+                        "hover:border-green-500"
+                      )}
+                    </li>
+                  </>
+                )}
+
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/dac",

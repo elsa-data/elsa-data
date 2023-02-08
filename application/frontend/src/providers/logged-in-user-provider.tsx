@@ -3,6 +3,7 @@ import axios from "axios";
 import { createCtx } from "./create-ctx";
 import { useCookies } from "react-cookie";
 import {
+  USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
@@ -11,6 +12,7 @@ import {
 export type LoggedInUser = {
   displayName: string;
   displayEmail?: string;
+  authorisationRole: string;
 };
 
 /**
@@ -38,11 +40,13 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
   const isLoggedIn = cookies[USER_SUBJECT_COOKIE_NAME];
   const isLoggedInName = cookies[USER_NAME_COOKIE_NAME];
   const isLoggedInEmail = cookies[USER_EMAIL_COOKIE_NAME];
+  const authorisationRole = cookies[USER_ALLOWED_COOKIE_NAME];
 
   const val = isLoggedIn
     ? {
         displayName: isLoggedInName,
         displayEmail: isLoggedInEmail,
+        authorisationRole: authorisationRole,
       }
     : null;
 

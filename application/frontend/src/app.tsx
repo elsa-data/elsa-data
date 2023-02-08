@@ -15,6 +15,7 @@ import { EagerErrorBoundary } from "./components/errors";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 import AccountPage from "./pages/account-page";
+import { ALLOWED_CHANGE_ADMINS } from "@umccr/elsa-constants";
 
 function NoMatch() {
   let location = useLocation();
@@ -66,8 +67,16 @@ export const App: React.FC = () => {
           </Route>
         </Route>
 
-        <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
-        <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
+        {loggedInUser.authorisationRole == ALLOWED_CHANGE_ADMINS && (
+          <>
+            <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
+            <Route
+              path={`/datasets/:datasetId`}
+              element={<DatasetsDetailPage />}
+            />
+          </>
+        )}
+
         <Route path="*" element={<NoMatch />} />
       </Routes>
     );
