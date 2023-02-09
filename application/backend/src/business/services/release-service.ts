@@ -38,6 +38,7 @@ import { createReleaseManifest } from "./manifests/_manifest-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
+import { touchRelease } from "../db/release-queries";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -776,6 +777,8 @@ ${release.applicantEmailAddresses}
           set: fieldToSet,
         }))
         .run(tx);
+
+      await touchRelease.run(tx, { releaseId });
     });
 
     return await this.getBase(releaseId, userRole);
@@ -829,6 +832,8 @@ ${release.applicantEmailAddresses}
           },
         }))
         .run(tx);
+
+      await touchRelease.run(tx, { releaseId });
     });
   }
 
@@ -860,6 +865,8 @@ ${release.applicantEmailAddresses}
           },
         }))
         .run(tx);
+
+      await touchRelease.run(tx, { releaseId });
     });
   }
 }

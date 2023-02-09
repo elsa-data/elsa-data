@@ -17,12 +17,17 @@ export type File = {
 };
 
 function insertFile(file: File) {
-  return e.insert(e.storage.File, {
-    url: file.url,
-    size: file.size,
-    checksums: file.checksums,
-    isDeleted: false,
-  });
+  return e
+    .insert(e.storage.File, {
+      url: file.url,
+      size: file.size,
+      checksums: file.checksums,
+      isDeleted: false,
+    })
+    .unlessConflict((file) => ({
+      on: file.url,
+      else: file,
+    }));
 }
 
 export function insertArtifactFastqPairQuery(
@@ -42,8 +47,13 @@ export function insertArtifactBamQuery(bamFile: File, baiFile: File) {
   });
 }
 
-export function insertArtifactVcfQuery(vcfFile: File, tbiFile: File) {
+export function insertArtifactVcfQuery(
+  vcfFile: File,
+  tbiFile: File,
+  sampleIds?: string[]
+) {
   return e.insert(e.lab.ArtifactVcf, {
+    sampleIds: sampleIds,
     vcfFile: insertFile(vcfFile),
     tbiFile: insertFile(tbiFile),
   });

@@ -26,6 +26,7 @@ import {
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { touchRelease } from "../db/release-queries";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -86,6 +87,8 @@ export class AuditLogService {
         },
       }))
       .run(executor);
+
+    await touchRelease.run(executor, { releaseId });
 
     return auditEvent.id;
   }
@@ -315,6 +318,8 @@ export class AuditLogService {
         },
       }))
       .run(executor);
+
+    await touchRelease.run(executor, { releaseId });
   }
 
   public async getReleaseEntries(

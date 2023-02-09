@@ -4,6 +4,7 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { UsersService } from "./users-service";
+import { touchRelease } from "../db/release-queries";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -258,6 +259,8 @@ export abstract class ReleaseBaseService {
         }))
         .run(this.edgeDbClient);
     }
+
+    await touchRelease.run(this.edgeDbClient, { releaseId });
 
     return await this.getBase(releaseId, userRole);
   }
