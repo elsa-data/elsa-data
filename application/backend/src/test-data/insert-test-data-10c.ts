@@ -1,8 +1,7 @@
 import * as edgedb from "edgedb";
-import e, { lab } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
   createArtifacts,
-  makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
 } from "./test-data-helpers";

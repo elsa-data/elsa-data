@@ -1,6 +1,5 @@
 import * as edgedb from "edgedb";
-import e, { release } from "../../dbschema/edgeql-js";
-import { insertCARDIAC } from "./insert-test-data-cardiac";
+import e from "../../dbschema/edgeql-js";
 import { insert10G } from "./insert-test-data-10g";
 import { createTestUser, insertBlankDataset } from "./test-data-helpers";
 import { insert10F } from "./insert-test-data-10f";

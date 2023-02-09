@@ -1,6 +1,6 @@
 import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 import * as edgedb from "edgedb";
-import e, { lab, storage } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
   File,
   createArtifacts,
@@ -29,7 +29,7 @@ const createMockFileFromName = (name: string): File => {
     size: 0,
     checksums: [
       {
-        type: storage.ChecksumType.MD5,
+        type: "MD5",
         value: "00000000000000000000000000000000",
       },
     ],

@@ -1,9 +1,9 @@
 import e from "../../../dbschema/edgeql-js";
 
 export const fileByFileIdQuery = e.params({ uuid: e.uuid }, (params) =>
-  e.select(e.storage.File, (file) => ({
+  e.select(e.storage.File, (_) => ({
     ...e.storage.File["*"],
-    filter: e.op(file.id, "=", params.uuid),
+    filter_single: { id: params.uuid },
   }))
 );
 

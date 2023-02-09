@@ -1,6 +1,7 @@
 import { createClient } from "edgedb";
-import e, { lab, storage } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import _ from "lodash";
+import { storage } from "../../dbschema/interfaces";
 
 const edgeDbClient = createClient();
 
@@ -102,6 +103,7 @@ export function makeTripleCodeArray(
  *
  * @param subjectId
  * @param displayName
+ * @param email
  * @param releasesAsDataOwner
  * @param releasesAsPI
  * @param releasesAsMember
@@ -239,28 +241,28 @@ export function createFile(
 
   if (etag) {
     f.checksums.push({
-      type: "AWS_ETAG" as storage.ChecksumType,
+      type: "AWS_ETAG",
       value: etag,
     });
   }
 
   if (md5) {
     f.checksums.push({
-      type: storage.ChecksumType.MD5,
+      type: "MD5",
       value: md5,
     });
   }
 
   if (sha1) {
     f.checksums.push({
-      type: "SHA_1" as storage.ChecksumType,
+      type: "SHA_1",
       value: sha1,
     });
   }
 
   if (sha256) {
     f.checksums.push({
-      type: "SHA_256" as storage.ChecksumType,
+      type: "SHA_256",
       value: sha256,
     });
   }
@@ -268,7 +270,7 @@ export function createFile(
   // if we haven't managed to make a checksum - for the purposes of test data lets make a fake MD5
   if (f.checksums.length === 0) {
     f.checksums.push({
-      type: storage.ChecksumType.MD5,
+      type: "MD5",
       value: "721970cb30906405d4045f702ca72376", // pragma: allowlist secret
     });
   }
@@ -294,6 +296,7 @@ export interface File {
  * @param bam
  * @param bamIndex
  * @param fastqs
+ * @param vcfSampleIds
  */
 export async function createArtifacts(
   vcf: File,
