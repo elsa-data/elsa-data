@@ -5,10 +5,12 @@ import { insert10G } from "./insert-test-data-10g";
 import { createTestUser, insertBlankDataset } from "./test-data-helpers";
 import { insert10F } from "./insert-test-data-10f";
 import { insert10C } from "./insert-test-data-10c";
+import { insertGs } from "./insert-test-data-gs";
 import { insertRelease1 } from "./insert-test-data-release1";
 import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
 import { insertRelease4 } from "./insert-test-data-release4";
+import { insertRelease5 } from "./insert-test-data-release5";
 import { ElsaSettings } from "../config/elsa-settings";
 import {
   TEST_SUBJECT_1,
@@ -29,6 +31,7 @@ export async function insertTestData(settings: ElsaSettings) {
   await insert10G();
   await insert10F();
   await insert10C();
+  await insertGs();
   await insertBlankDataset("10M", "urn:fdc:umccr.org:2022:dataset/10m");
   // await insertCARDIAC();
 
@@ -85,12 +88,13 @@ export async function insertTestData(settings: ElsaSettings) {
   const r2 = await insertRelease2();
   const r3 = await insertRelease3();
   const r4 = await insertRelease4();
+  const r5 = await insertRelease5();
 
   await createTestUser(
     TEST_SUBJECT_1,
     TEST_SUBJECT_1_DISPLAY,
     TEST_SUBJECT_1_EMAIL,
-    [r1.id, r4.id],
+    [r1.id, r4.id, r5.id],
     [r2.id],
     []
   );

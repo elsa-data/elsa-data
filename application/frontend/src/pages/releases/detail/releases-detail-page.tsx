@@ -5,7 +5,7 @@ import { Box } from "../../../components/boxes";
 import { LayoutBase } from "../../../layouts/layout-base";
 import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
-import { AwsS3PresignedForm } from "./aws-s3-presigned-form";
+import { PresignedUrlForm } from "./presigned-url-form";
 import { InformationBox } from "./information-box";
 import {
   axiosPostNullMutationFn,
@@ -164,10 +164,9 @@ export const ReleasesDetailPage: React.FC = () => {
               <VerticalTabs
                 tabHeadings={[
                   "Manifest",
-                  "AWS S3 Presigned URL",
+                  "Presigned URL",
                   "AWS S3 VPC Share",
                   "htsget",
-                  // "GCP Cloud Storage Signed URL",
                 ]}
               >
                 <div className="prose">
@@ -183,7 +182,7 @@ export const ReleasesDetailPage: React.FC = () => {
                     cases grid
                   </p>
                 </div>
-                <AwsS3PresignedForm
+                <PresignedUrlForm
                   releaseId={releaseId}
                   releaseData={releaseQuery.data}
                 />
