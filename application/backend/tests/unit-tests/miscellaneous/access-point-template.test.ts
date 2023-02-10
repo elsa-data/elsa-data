@@ -18,9 +18,10 @@ describe("Creating Access Point CloudFormation Templates", () => {
       throw new Error("Our test data should be valid S3 urls");
     }
     return {
-      s3Url: s3Url,
-      s3Bucket: _match[1],
-      s3Key: _match[2],
+      objectStoreProtocol: "",
+      objectStoreUrl: s3Url,
+      objectStoreBucket: _match[1],
+      objectStoreKey: _match[2],
       // the fields below are not actually used in the template creation - so can be anything
       fileType: "NOTIMPORTANT",
       caseId: "ACASEID",

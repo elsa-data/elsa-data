@@ -39,6 +39,8 @@ export type ElsaSettings = {
   awsSigningSecretAccessKey: string;
   awsTempBucket: string;
 
+  // Read the README.md for GCP-related configuration
+
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
 

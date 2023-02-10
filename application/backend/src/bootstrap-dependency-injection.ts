@@ -5,6 +5,9 @@ import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { Duration } from "edgedb";
 import { SES } from "@aws-sdk/client-ses";
+import { IPresignedUrlProvider } from "./business/services/presigned-urls-service";
+import { AwsPresignedUrlsService } from "./business/services/aws-presigned-urls-service";
+import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-service";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -41,5 +44,12 @@ export function bootstrapDependencyInjection() {
 
   container.register<SES>("SESClient", {
     useFactory: () => new SES(awsClientConfig),
+  });
+
+  container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: AwsPresignedUrlsService,
+  });
+  container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: GcpPresignedUrlsService,
   });
 }

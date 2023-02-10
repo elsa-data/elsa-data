@@ -45,10 +45,9 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
     private awsAccessPointService: AwsAccessPointService,
-    usersService: UsersService,
-    auditLogService: AuditLogService
+    private auditLogService: AuditLogService
   ) {
-    super(edgeDbClient, usersService, auditLogService);
+    super();
   }
 
   maxmindLookup: Reader<CityResponse> | undefined = undefined;
