@@ -163,7 +163,7 @@ describe("AWS s3 client", () => {
       size: 0,
       checksums: [
         {
-          type: "AWS_ETAG",
+          type: "MD5" as storage.ChecksumType,
           value: "OLD_CHECKSUM",
         },
         {
@@ -198,7 +198,7 @@ describe("AWS s3 client", () => {
       size: 0,
       checksums: [
         {
-          type: "AWS_ETAG",
+          type: "MD5" as storage.ChecksumType,
           value: "OLD_CHECKSUM",
         },
       ],

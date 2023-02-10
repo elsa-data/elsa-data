@@ -405,15 +405,15 @@ export class S3IndexApplicationService {
   async getPedigreeByDatasetCaseId(
     datasetCaseId: string
   ): Promise<string | null> {
-    const pedigreeIdArray = await selectPedigreeByDatasetCaseIdQuery(
+    const pedigreeObjId = await selectPedigreeByDatasetCaseIdQuery(
       datasetCaseId
     ).run(this.edgeDbClient);
 
     let pedigreeUUID: string | null;
-    if (!pedigreeIdArray?.length) {
+    if (!pedigreeObjId) {
       pedigreeUUID = null;
     } else {
-      pedigreeUUID = pedigreeIdArray[0].id;
+      pedigreeUUID = pedigreeObjId.id;
     }
 
     return pedigreeUUID;

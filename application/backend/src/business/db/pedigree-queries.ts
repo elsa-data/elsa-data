@@ -3,14 +3,16 @@ import { selectDatasetPatientByExternalIdentifiersQuery } from "./dataset-querie
 import { makeSystemlessIdentifierArray } from "./helper";
 
 export const selectPedigreeByDatasetCaseIdQuery = (datasetCaseId: string) => {
-  return e.select(e.pedigree.Pedigree, (p: { case_: any }) => ({
-    id: true,
-    filter: e.op(
-      p.case_.externalIdentifiers,
-      "=",
-      makeSystemlessIdentifierArray(datasetCaseId)
-    ),
-  }));
+  return e
+    .select(e.pedigree.Pedigree, (p: { case_: any }) => ({
+      id: true,
+      filter: e.op(
+        p.case_.externalIdentifiers,
+        "=",
+        makeSystemlessIdentifierArray(datasetCaseId)
+      ),
+    }))
+    .assert_single();
 };
 
 export const insertPedigreeByDatasetCaseIdQuery = (datasetCaseId: string) => {
