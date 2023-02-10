@@ -410,7 +410,7 @@ export class S3IndexApplicationService {
     ).run(this.edgeDbClient);
 
     let pedigreeUUID: string | null;
-    if (!pedigreeIdArray.length) {
+    if (!pedigreeIdArray?.length) {
       pedigreeUUID = null;
     } else {
       pedigreeUUID = pedigreeIdArray[0].id;
