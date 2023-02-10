@@ -1,12 +1,11 @@
 import * as edgedb from "edgedb";
 import { Duration } from "edgedb";
-import e, { release } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
   makeDoubleCodeArray,
   makeIdentifierTuple,
   makeSingleCodeArray,
-  makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENG_URI } from "./insert-test-data-10g";
 import { TENC_URI } from "./insert-test-data-10c";
@@ -21,7 +20,6 @@ import {
 import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
 import * as MOCK_JSON from "./mock-json.json";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { container } from "tsyringe";
 import { ElsaSettings } from "../config/elsa-settings";
 import {
@@ -68,7 +66,7 @@ Ethics form XYZ.
 | 4 | 5 |
 `,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.DS,
+        studyType: "DS",
         countriesInvolved: makeSingleCodeArray(
           settings.isoCountrySystemUri,
           "AUS"

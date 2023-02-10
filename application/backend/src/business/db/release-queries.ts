@@ -6,7 +6,7 @@ import e from "../../../dbschema/edgeql-js";
 export const allReleasesSummaryByUserQuery = e.params(
   { userDbId: e.uuid, limit: e.int32, offset: e.int32 },
   (params) =>
-    e.select(e.permission.User, (u) => ({
+    e.select(e.permission.User, (_) => ({
       releaseParticipant: (rp) => ({
         id: true,
         datasetUris: true,
@@ -32,7 +32,7 @@ export const allReleasesSummaryByUserQuery = e.params(
         limit: params.limit,
         offset: params.offset,
       }),
-      filter: e.op(u.id, "=", params.userDbId),
+      filter_single: { id: params.userDbId },
     }))
 );
 

@@ -1,5 +1,4 @@
 import * as edgedb from "edgedb";
-import { dataset, release } from "../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
 import {
   InvocationType,
@@ -8,6 +7,7 @@ import {
 } from "@aws-sdk/client-lambda";
 import AmazonS3URI from "amazon-s3-uri";
 import _ from "lodash";
+import { dataset, release } from "../../../dbschema/interfaces";
 
 @injectable()
 export class SelectService {

@@ -1,6 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import e, { storage, dataset } from "../../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
   S3ObjectMetadata,
@@ -37,7 +37,8 @@ import {
   selectDatasetCaseByExternalIdentifiersQuery,
   selectDatasetIdByDatasetUri,
 } from "../../db/dataset-queries";
-import { DatasetService } from "./../dataset-service";
+import { DatasetService } from "../dataset-service";
+import { dataset } from "../../../../dbschema/interfaces";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -359,7 +360,7 @@ export class S3IndexApplicationService {
         size: fileSize,
         checksums: [
           {
-            type: storage.ChecksumType.MD5,
+            type: "MD5",
             value: manifestRecord.checksum,
           },
         ],
@@ -404,19 +405,15 @@ export class S3IndexApplicationService {
   async getPedigreeByDatasetCaseId(
     datasetCaseId: string
   ): Promise<string | null> {
-    const pedigreeIdArray = await selectPedigreeByDatasetCaseIdQuery(
+    const pedigreeObjId = await selectPedigreeByDatasetCaseIdQuery(
       datasetCaseId
     ).run(this.edgeDbClient);
 
     let pedigreeUUID: string | null;
-    if (isNil(pedigreeIdArray)) {
+    if (!pedigreeObjId) {
       pedigreeUUID = null;
-    } else if (Array.isArray(pedigreeIdArray) && !pedigreeIdArray.length) {
-      pedigreeUUID = null;
-    } else if (Array.isArray(pedigreeIdArray)) {
-      pedigreeUUID = pedigreeIdArray[0].id;
     } else {
-      pedigreeUUID = pedigreeIdArray.id;
+      pedigreeUUID = pedigreeObjId.id;
     }
 
     return pedigreeUUID;
@@ -453,10 +450,10 @@ export class S3IndexApplicationService {
     datasetCaseId: string;
     patientId: string;
   }) {
-    let sexAtBirth = patientId.endsWith("_pat")
-      ? dataset.SexAtBirthType.male
+    let sexAtBirth: dataset.SexAtBirthType | null = patientId.endsWith("_pat")
+      ? "male"
       : patientId.endsWith("_mat")
-      ? dataset.SexAtBirthType.female
+      ? "female"
       : null;
 
     const insertDatasetSpecimenQuery = e.insert(e.dataset.DatasetSpecimen, {});

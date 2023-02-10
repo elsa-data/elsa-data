@@ -1,2 +1,6 @@
 dbschema/edgeql-js
 /client/
+
+**/*.edgeql.ts
+dbschema/queries.*
+dbschema/interfaces.ts

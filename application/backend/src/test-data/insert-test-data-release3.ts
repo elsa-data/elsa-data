@@ -1,10 +1,9 @@
 import * as edgedb from "edgedb";
-import e, { release } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 
 const edgeDbClient = edgedb.createClient();
 
@@ -17,7 +16,7 @@ export async function insertRelease3() {
       applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
       applicationDacDetails: "",
       applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.HMB,
+        studyType: "HMB",
         countriesInvolved: makeEmptyCodeArray(),
         diseasesOfStudy: makeEmptyCodeArray(),
         studyAgreesToPublish: true,

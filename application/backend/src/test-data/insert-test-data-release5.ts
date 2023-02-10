@@ -1,11 +1,9 @@
 import * as edgedb from "edgedb";
-import e, { release } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
-  findSpecimenQuery,
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { GS_URI } from "./insert-test-data-gs";
 
 const edgeDbClient = edgedb.createClient();
@@ -18,7 +16,7 @@ export async function insertRelease5() {
         "A release that has all working/matching files in Google Storage - so can do actual sharing",
       applicationDacIdentifier: makeSystemlessIdentifier("GS"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.HMB,
+        studyType: "HMB",
         countriesInvolved: makeEmptyCodeArray(),
         diseasesOfStudy: makeEmptyCodeArray(),
         studyAgreesToPublish: true,

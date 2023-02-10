@@ -25,7 +25,7 @@
     "//edgemigrate": "Brings the current db up to date",
     "edgemigrate": "edgedb migrate",
     "//edgetypes": "Generates Typescript classes that match the schema of the *current* project EdgeDb",
-    "edgetypes": "edgeql-js --target cjs",
+    "edgetypes": "generate queries && generate edgeql-js  && generate interfaces",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
     "test:service": "jest --forceExit --detectOpenHandles --runInBand --config jest.service-tests.config.js",
@@ -75,7 +75,7 @@
     "csv-stringify": "6.2.0",
     "date-fns": "2.29.3",
     "dotenv": "16.0.3",
-    "edgedb": "0.22.8",
+    "edgedb": "^1.0.2",
     "esbuild": "0.15.12",
     "etag": "^1.8.1",
     "fastify": "4.10.2",
@@ -105,6 +105,7 @@
     "tsyringe": "4.7.0"
   },
   "devDependencies": {
+    "@edgedb/generate": "^0.0.7",
     "@types/archiver": "5.3.1",
     "@types/convict": "6.1.1",
     "@types/etag": "^1.8.1",
