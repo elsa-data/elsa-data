@@ -31,6 +31,7 @@ jobs:
             application/common/elsa-types
             application/backend
             application/frontend
+          install-command: npm ci --install-links=false
 
       # Install an EdgeDb for use by the tests
       #- uses: edgedb/setup-edgedb@8bc9e10005674ec772652b86e1fdd476e6462284
