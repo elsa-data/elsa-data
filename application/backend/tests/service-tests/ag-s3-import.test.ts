@@ -2,9 +2,9 @@ import {
   S3IndexApplicationService,
   artifactType,
 } from "../../src/business/services/australian-genomics/s3-index-import-service";
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import e, { dataset, storage } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import { container, DependencyContainer } from "tsyringe";
 import { mockClient } from "aws-sdk-client-mock";
 import {
@@ -36,7 +36,6 @@ import {
   MOCK_3_CARDIAC_S3_OBJECT_LIST,
   MOCK_3_CARDIAC_MANIFEST,
   MOCK_4_CARDIAC_MANIFEST,
-  MOCK_4_STUDY_ID,
   MOCK_4_CARDIAC_S3_OBJECT_LIST,
   MOCK_4_STUDY_ID_3,
   MOCK_4_STUDY_ID_2,
@@ -51,6 +50,7 @@ import {
 } from "../../src/business/db/helper";
 import { registerTypes } from "./setup";
 import { DatasetService } from "../../src/business/services/dataset-service";
+import { storage } from "../../dbschema/interfaces";
 
 const edgedbClient = edgedb.createClient();
 const s3ClientMock = mockClient(S3Client);
@@ -149,7 +149,7 @@ describe("AWS s3 client", () => {
     const newManifestContent = {
       checksums: [
         {
-          type: storage.ChecksumType.MD5,
+          type: "MD5" as storage.ChecksumType,
           value: "UPDATED_CHECKSUM",
         },
       ],
@@ -163,11 +163,11 @@ describe("AWS s3 client", () => {
       size: 0,
       checksums: [
         {
-          type: storage.ChecksumType.MD5,
+          type: "MD5",
           value: "OLD_CHECKSUM",
         },
         {
-          type: storage.ChecksumType.AWS_ETAG,
+          type: "AWS_ETAG",
           value: "AWS_ETAG",
         },
       ],
@@ -198,7 +198,7 @@ describe("AWS s3 client", () => {
       size: 0,
       checksums: [
         {
-          type: storage.ChecksumType.MD5,
+          type: "MD5",
           value: "OLD_CHECKSUM",
         },
       ],

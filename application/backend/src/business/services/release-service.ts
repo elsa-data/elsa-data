@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import e, { dataset } from "../../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import {
   DuoLimitationCodedType,
   ReleaseCaseType,
@@ -25,7 +25,6 @@ import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { allReleasesSummaryByUserQuery } from "../db/release-queries";
-import { $scopify } from "edgedb/dist/reflection";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import etag from "etag";
 import {
@@ -39,6 +38,8 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import { touchRelease } from "../db/release-queries";
+import { dataset } from "../../../dbschema/interfaces";
+import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {

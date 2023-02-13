@@ -12,9 +12,9 @@ export type AccessPointTemplateToSave = {
 };
 
 type AccessPointEntry = {
-  s3Url: string;
-  s3Bucket: string;
-  s3Key: string;
+  objectStoreUrl: string;
+  objectStoreBucket: string;
+  objectStoreKey: string;
 };
 
 function bucketNameAsResource(bucketName: string): string {
@@ -81,13 +81,13 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   // I'd normally use a Set() here but we want to not have to the S3Url -> S3Bucket,S3key logic again
   files
     // skip any entries that don't have a valid url and decomposed
-    .filter((v) => v.s3Url && v.s3Bucket && v.s3Key)
+    .filter((v) => v.objectStoreUrl && v.objectStoreBucket && v.objectStoreKey)
     // key by the s3url therefore removing duplicates
     .forEach((v) => {
-      uniqueEntries[v.s3Url] = {
-        s3Url: v.s3Url,
-        s3Bucket: v.s3Bucket,
-        s3Key: v.s3Key,
+      uniqueEntries[v.objectStoreUrl] = {
+        objectStoreUrl: v.objectStoreUrl,
+        objectStoreBucket: v.objectStoreBucket,
+        objectStoreKey: v.objectStoreKey,
       };
     });
 
@@ -96,11 +96,11 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   const filesByBucket: { [bucket: string]: AccessPointEntry[] } = {};
 
   for (const f of Object.values(uniqueEntries)) {
-    if (!has(filesByBucket, f.s3Bucket)) {
-      filesByBucket[f.s3Bucket] = [];
+    if (!has(filesByBucket, f.objectStoreBucket)) {
+      filesByBucket[f.objectStoreBucket] = [];
     }
 
-    filesByBucket[f.s3Bucket].push(f);
+    filesByBucket[f.objectStoreBucket].push(f);
   }
 
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
@@ -237,7 +237,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
     for (const file of filesByBucket[bucket]) {
       subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[0].Resource.push(
         {
-          "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${subStackAccessPointName}/object/${file.s3Key}*`,
+          "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${subStackAccessPointName}/object/${file.objectStoreKey}*`,
         }
       );
     }

@@ -10,8 +10,10 @@ FROM node:18-slim AS node-deps
 WORKDIR /build
 
 COPY backend/package.json package.json
-RUN echo '{"dependencies": {' $(grep -E -o '"edgedb":\s"(.*)"' package.json) '}}' > package.json && npm install
-
+RUN echo '{ \
+    "dependencies": {' $(grep -E -o '"edgedb":\s"(.*)"' package.json) '}, \
+    "devDependencies": {' $(grep -E -o '"@edgedb/generate":\s"(.*)"' package.json) '} \
+    }' > package.json && npm install
 
 #
 # Database builder to create all generated files that require the install database
@@ -41,11 +43,21 @@ RUN edgedb-server \
     -H localhost \
     --tls-security insecure \
     --wait-until-available 2m \
-    && node ./node_modules/.bin/edgeql-js \
+    && mkdir generated \
+    && cd generated \
+    && node ../node_modules/.bin/generate edgeql-js \
     -H localhost \
-    --target cjs \
+    --target ts \
     --tls-security insecure \
-    --output-dir generated
+    --out edgeql-js \
+    && node ../node_modules/.bin/generate interfaces \
+    -H localhost \
+    --tls-security insecure \
+    --file interfaces.ts \
+    && node ../node_modules/.bin/generate queries \
+    -H localhost \
+    --target ts \
+    --tls-security insecure
 
 
 #
@@ -65,7 +77,7 @@ RUN cd frontend && npm ci
 RUN cd common/elsa-constants && npm ci
 RUN cd common/elsa-types && npm ci
 
-COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/edgeql-js/
+COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/
 
 # we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
 COPY --from=edgedb-builder /usr/bin/edgedb ./backend/

@@ -1,13 +1,10 @@
 import * as edgedb from "edgedb";
-import e, { lab } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
   createArtifacts,
-  makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
   createFile,
   makeSystemlessIdentifier,
-  makeDictionaryIdentifierArray,
-  File,
 } from "./test-data-helpers";
 import { makeSimpsonsTrio } from "./insert-test-data-10f-simpsons";
 import { makeTrio, TENF_URI } from "./insert-test-data-10f-helpers";

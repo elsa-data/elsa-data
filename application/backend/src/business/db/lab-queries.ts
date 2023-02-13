@@ -1,4 +1,5 @@
-import e, { storage } from "../../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
+import { storage } from "../../../dbschema/interfaces";
 
 export enum ArtifactType {
   FASTQ = "FASTQ",

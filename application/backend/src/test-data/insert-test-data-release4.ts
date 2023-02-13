@@ -1,11 +1,9 @@
 import * as edgedb from "edgedb";
-import e, { release } from "../../dbschema/edgeql-js";
+import e from "../../dbschema/edgeql-js";
 import {
-  findSpecimenQuery,
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
-import ApplicationCodedStudyType = release.ApplicationCodedStudyType;
 import { TENG_URI } from "./insert-test-data-10g";
 
 const edgeDbClient = edgedb.createClient();
@@ -18,7 +16,7 @@ export async function insertRelease4() {
         "A release that has all working/matching files in S3 - so can do actual sharing",
       applicationDacIdentifier: makeSystemlessIdentifier("2"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
-        studyType: ApplicationCodedStudyType.HMB,
+        studyType: "HMB",
         countriesInvolved: makeEmptyCodeArray(),
         diseasesOfStudy: makeEmptyCodeArray(),
         studyAgreesToPublish: true,

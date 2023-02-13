@@ -1,5 +1,5 @@
-import e, { storage } from "../../dbschema/edgeql-js";
-import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
+import { storage } from "../../dbschema/interfaces";
+
 /**
  * Will declare some mock test data here
  */
@@ -47,7 +47,7 @@ export const MOCK_FILE_RECORD_TEMPLATE = {
   size: 10,
   checksums: [
     {
-      type: storage.ChecksumType.MD5,
+      type: "MD5" as storage.ChecksumType,
       value: "RANDOMCHECKSUM",
     },
   ],

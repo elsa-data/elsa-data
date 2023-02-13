@@ -11,13 +11,13 @@ import { ElsaSettings } from "../config/elsa-settings";
 
 const edgeDbClient = edgedb.createClient();
 
-export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
+export const GS_URI = "urn:fdc:umccr.org:2022:dataset/gs";
 
 /**
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
  * to test specific areas of data sharing.
  */
-export async function insert10G() {
+export async function insertGs() {
   const settings = container.resolve<ElsaSettings>("Settings");
 
   const makeCase = async (
@@ -67,23 +67,23 @@ export async function insert10G() {
               : undefined,
           artifacts: await createArtifacts(
             createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
               vcfSize,
               vcfEtag,
               vcfMd5
             ),
             createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
               0
             ),
             createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
+              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
               bamSize,
               bamEtag,
               bamMd5
             ),
             createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
+              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
               0
             ),
             [],
@@ -96,9 +96,9 @@ export async function insert10G() {
 
   return await e
     .insert(e.dataset.Dataset, {
-      uri: TENG_URI,
-      externalIdentifiers: makeSystemlessIdentifierArray("10G"),
-      description: "UMCCR 10G",
+      uri: GS_URI,
+      externalIdentifiers: makeSystemlessIdentifierArray("GS"),
+      description: "A Dataset to test Google Storage",
       cases: e.set(
         await makeCase(
           "SINGLETONCHARLES",

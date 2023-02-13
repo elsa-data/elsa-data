@@ -26,39 +26,39 @@ export const ReleaseRemsSyncRequestSchema = Type.Object({
   remsKey: Type.String(),
 });
 
-const AwsFileRecordKey = [
+const ObjectStoreRecordKey = [
   "caseId",
   "patientId",
   "specimenId",
   "fileType",
   "size",
-  "s3Url",
-  "s3Bucket",
-  "s3Key",
-  "s3Signed",
+  "objectStoreUrl",
+  "objectStoreBucket",
+  "objectStoreKey",
+  "objectStoreSigned",
   "md5",
 ] as const;
 
 export const FileRecordHeader = Type.Array(
-  Type.Union(AwsFileRecordKey.map((header: string) => Type.Literal(header)))
+  Type.Union(ObjectStoreRecordKey.map((header: string) => Type.Literal(header)))
 );
 
-export const ReleaseAwsS3PresignRequestSchema = Type.Object({
+export const ReleasePresignRequestSchema = Type.Object({
   // id: Type.String(),
   presignHeader: FileRecordHeader,
 });
 
-export const ReleaseAwsS3PresignResponseSchema = Type.Object({
+export const ReleasePresignResponseSchema = Type.Object({
   id: Type.String(),
   files: Type.Array(Type.String()),
 });
 
-export type FileRecordHeaderType = typeof AwsFileRecordKey[number];
-export type ReleaseAwsS3PresignRequestType = Static<
-  typeof ReleaseAwsS3PresignRequestSchema
+export type FileRecordHeaderType = typeof ObjectStoreRecordKey[number];
+export type ReleasePresignRequestType = Static<
+  typeof ReleasePresignRequestSchema
 >;
-export type ReleaseAwsS3PresignResponseType = Static<
-  typeof ReleaseAwsS3PresignResponseSchema
+export type ReleasePresignResponseType = Static<
+  typeof ReleasePresignResponseSchema
 >;
 
 export const ReleaseMasterAccessRequestSchema = Type.Object({

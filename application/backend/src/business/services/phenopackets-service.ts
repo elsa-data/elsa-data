@@ -1,4 +1,4 @@
-import e, { dataset, release } from "../../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import { Client } from "edgedb";
 import { org } from "../../generated/phenopackets";
@@ -7,7 +7,6 @@ import Phenopacket = org.phenopackets.schema.v2.Phenopacket;
 import Sex = org.phenopackets.schema.v2.core.Sex;
 import KaryotypicSex = org.phenopackets.schema.v2.core.KaryotypicSex;
 import { AuthenticatedUser } from "../authenticated-user";
-import { ReleaseSummaryType } from "@umccr/elsa-types";
 
 @injectable()
 @singleton()

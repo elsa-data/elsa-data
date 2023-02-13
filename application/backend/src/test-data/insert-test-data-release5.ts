@@ -4,17 +4,17 @@ import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
+import { GS_URI } from "./insert-test-data-gs";
 
 const edgeDbClient = edgedb.createClient();
 
-export async function insertRelease3() {
-  // r3 is a test release that no-one has any permissions into - so should not
-  // appear in any queries
+export async function insertRelease5() {
   return await e
     .insert(e.release.Release, {
-      applicationDacTitle: "An Invisible Study",
-      applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
-      applicationDacDetails: "",
+      applicationDacTitle: "A Working Release of Data on Google Storage",
+      applicationDacDetails:
+        "A release that has all working/matching files in Google Storage - so can do actual sharing",
+      applicationDacIdentifier: makeSystemlessIdentifier("GS"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "HMB",
         countriesInvolved: makeEmptyCodeArray(),
@@ -23,9 +23,17 @@ export async function insertRelease3() {
         studyIsNotCommercial: true,
         beaconQuery: {
           filters: [
+            //{
+            //    "scope": "biosamples",
+            //    "id": "HP:0002664",
+            //    "includeDescendantTerms": true,
+            //    "similarity": "exact"
+            //},
             {
-              id: "EFO:0001212",
-              scope: "biosamples",
+              scope: "individuals",
+              id: "sex",
+              operator: "=",
+              value: "male",
             },
           ],
           requestParameters: {
@@ -38,19 +46,16 @@ export async function insertRelease3() {
           },
         },
       }),
-      releasePassword: "apassword", // pragma: allowlist secret
-      datasetUris: e.array([
-        "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
-      ]),
+      datasetUris: e.array([GS_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: "P4RF4AC5BR",
+      releaseIdentifier: "S9DT3Z9NMAGS",
+      releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       isAllowedReadData: true,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
-
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",

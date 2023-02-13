@@ -53,11 +53,11 @@ it("test basic operation of file list helper", async () => {
     expect(bartBamArray[0].specimenId).toBe("NA24385");
     expect(bartBamArray[0].size).toBe("10339494500");
     expect(bartBamArray[0].md5).toBe("2395ff505be3c38744e0473f6daf1389"); // pragma: allowlist secret
-    expect(bartBamArray[0].s3Url).toBe(
+    expect(bartBamArray[0].objectStoreUrl).toBe(
       "s3://umccr-10f-data-dev/ASHKENAZIM/HG002.bam"
     );
-    expect(bartBamArray[0].s3Bucket).toBe("umccr-10f-data-dev");
-    expect(bartBamArray[0].s3Key).toBe("ASHKENAZIM/HG002.bam");
+    expect(bartBamArray[0].objectStoreBucket).toBe("umccr-10f-data-dev");
+    expect(bartBamArray[0].objectStoreKey).toBe("ASHKENAZIM/HG002.bam");
   }
 
   {
@@ -71,11 +71,11 @@ it("test basic operation of file list helper", async () => {
     expect(bartVcfArray[0].specimenId).toBe("NA24385");
     expect(bartVcfArray[0].size).toBe("7732022");
     expect(bartVcfArray[0].md5).toBe("22557caf3f2e2d27d8d1c6e4ea893ece"); // pragma: allowlist secret
-    expect(bartVcfArray[0].s3Url).toBe(
+    expect(bartVcfArray[0].objectStoreUrl).toBe(
       "s3://umccr-10f-data-dev/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz"
     );
-    expect(bartVcfArray[0].s3Bucket).toBe("umccr-10f-data-dev");
-    expect(bartVcfArray[0].s3Key).toBe(
+    expect(bartVcfArray[0].objectStoreBucket).toBe("umccr-10f-data-dev");
+    expect(bartVcfArray[0].objectStoreKey).toBe(
       "ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz"
     );
   }

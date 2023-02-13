@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
 import {
   DuoLimitationCodedType,
-  ReleaseAwsS3PresignRequestSchema,
-  ReleaseAwsS3PresignRequestType,
+  ReleasePresignRequestSchema,
+  ReleasePresignRequestType,
   ReleaseCaseType,
   ReleaseDetailType,
   ReleaseManualSchema,
@@ -23,12 +23,12 @@ import { container } from "tsyringe";
 import { JobsService } from "../../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
-import { AwsPresignedUrlsService } from "../../../business/services/aws-presigned-urls-service";
+import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
 import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
-  const awsPresignedUrlsService = container.resolve(AwsPresignedUrlsService);
+  const presignedUrlsService = container.resolve(PresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
   const releasesService = container.resolve(ReleaseService);
 
@@ -384,25 +384,26 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   // });
 
   fastify.post<{
-    Body: ReleaseAwsS3PresignRequestType;
+    Body: ReleasePresignRequestType;
     Params: { rid: string };
   }>(
-    "/releases/:rid/aws-s3-presigned",
+    "/releases/:rid/presigned",
     {
       schema: {
-        body: ReleaseAwsS3PresignRequestSchema,
+        body: ReleasePresignRequestSchema,
       },
     },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseId = request.params.rid;
-      if (!awsPresignedUrlsService.isEnabled)
+      if (!presignedUrlsService.isEnabled)
         throw new Error(
-          "The AWS service was not started so AWS S3 presign will not work"
+          "The presigned URLs service was not started so URL presigning will " +
+            "not work"
         );
 
-      const presignResult = await awsPresignedUrlsService.getPresigned(
+      const presignResult = await presignedUrlsService.getPresigned(
         authenticatedUser,
         releaseId,
         request.body.presignHeader
@@ -418,13 +419,13 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   );
 
   fastify.post<{
-    Body: ReleaseAwsS3PresignRequestType;
+    Body: ReleasePresignRequestType;
     Params: { rid: string };
   }>(
     "/releases/:rid/cfn/manifest",
     {
       schema: {
-        body: ReleaseAwsS3PresignRequestSchema,
+        body: ReleasePresignRequestSchema,
       },
     },
     async function (request, reply) {
