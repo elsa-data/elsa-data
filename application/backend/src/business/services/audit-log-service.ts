@@ -27,6 +27,7 @@ import {
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
+import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -113,21 +114,15 @@ export class AuditLogService {
     actionDescription: string,
     start: Date = new Date()
   ): Promise<string> {
-    const auditEvent = await e
-      .insert(e.audit.UserAuditEvent, {
-        whoId: whoId,
-        whoDisplayName: whoDisplayName,
-        occurredDateTime: start,
-        actionCategory: actionCategory,
-        actionDescription: actionDescription,
-        // by default, we assume failure (i.e. 500 response) - it is only when
-        // we successfully 'complete' the audit event we get a real outcome
-        outcome: 8,
-        details: e.json({
-          errorMessage: "Audit entry not completed",
-        }),
-      })
-      .run(executor);
+    const auditEvent = await insertUserAuditEvent(executor, {
+      whoId,
+      whoDisplayName,
+      actionCategory,
+      actionDescription,
+      occuredDateTime: start,
+      outcome: 8,
+      details: { errorMessage: "Audit entry not completed" },
+    });
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
@@ -169,17 +164,14 @@ export class AuditLogService {
     details: any = null,
     outcome: number = 0
   ): Promise<string> {
-    const auditEvent = await e
-      .insert(e.audit.UserAuditEvent, {
-        whoId: whoId,
-        whoDisplayName: whoDisplayName,
-        occurredDateTime: new Date(),
-        actionCategory: actionCategory,
-        actionDescription: actionDescription,
-        outcome: outcome,
-        details: e.json(details),
-      })
-      .run(executor);
+    const auditEvent = await insertUserAuditEvent(executor, {
+      whoId,
+      whoDisplayName,
+      actionCategory,
+      actionDescription,
+      outcome,
+      details,
+    });
 
     await e
       .update(e.permission.User, (user) => ({

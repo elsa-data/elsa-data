@@ -1,5 +1,4 @@
-import e, { audit } from "../../../dbschema/edgeql-js";
-import ActionType = audit.ActionType;
+import e from "../../../dbschema/edgeql-js";
 
 /**
  * An EdgeDb query to count the audit log entries not associated
@@ -255,24 +254,4 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
     limit: limit,
     offset: offset,
   }));
-};
-
-/**
- * Insert a user audit event.
- */
-export const insertUserAuditEvent = (
-  whoId: string,
-  whoDisplayName: string,
-  actionDescription: string,
-  actionCategory: ActionType = ActionType.E,
-  outcome: number = 0
-) => {
-  return e.insert(e.audit.UserAuditEvent, {
-    whoId: whoId,
-    whoDisplayName: whoDisplayName,
-    occurredDateTime: new Date(),
-    actionCategory: actionCategory,
-    actionDescription: actionDescription,
-    outcome: outcome,
-  });
 };
