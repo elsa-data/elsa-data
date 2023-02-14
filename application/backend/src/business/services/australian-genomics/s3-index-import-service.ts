@@ -39,6 +39,10 @@ import {
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
+import { AuthenticatedUser } from "../../authenticated-user";
+// Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
+// @ts-ignore
+import { insertUserAuditEvent } from "../../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -674,9 +678,12 @@ export class S3IndexApplicationService {
   }
 
   /**
+   * Sync database.
+   *
    * @param datasetUri s3 URI prefix to sync the files
+   * @param user
    */
-  async syncDbFromDatasetUri(datasetUri: string) {
+  async syncDbFromDatasetUri(datasetUri: string, user: AuthenticatedUser) {
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
     )?.id;
@@ -829,7 +836,18 @@ export class S3IndexApplicationService {
       await this.linkPedigreeRelationship(patientIdAndDataCaseIdLinkingArray);
     }
 
+    const now = new Date();
     // Update last update on Dataset
-    await this.datasetService.updateDatasetCurrentTimestamp(datasetId);
+    await this.datasetService.updateDatasetCurrentTimestamp(datasetId, now);
+
+    // Add user audit event for syncing database
+    await insertUserAuditEvent(this.edgeDbClient, {
+      whoId: user.subjectId,
+      whoDisplayName: user.displayName,
+      actionDescription: "Sync database",
+      actionCategory: "U",
+      occuredDateTime: now,
+      outcome: 0,
+    });
   }
 }

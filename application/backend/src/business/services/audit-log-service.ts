@@ -27,6 +27,8 @@ import {
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
+// Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
+// @ts-ignore
 import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";

@@ -59,6 +59,10 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     .delete(e.audit.ReleaseAuditEvent)
     .run(edgeDbClient);
 
+  const userAuditDeleted = await e
+    .delete(e.audit.UserAuditEvent)
+    .run(edgeDbClient);
+
   const dataAccessAuditDeleted = await e
     .delete(e.audit.DataAccessAuditEvent)
     .run(edgeDbClient);

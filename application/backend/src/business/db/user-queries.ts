@@ -1,4 +1,4 @@
-import e, { $infer, audit } from "../../../dbschema/edgeql-js";
+import e, { $infer } from "../../../dbschema/edgeql-js";
 
 /**
  * Return the details of a single user.

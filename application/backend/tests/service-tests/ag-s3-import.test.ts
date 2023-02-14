@@ -51,10 +51,13 @@ import {
 import { registerTypes } from "./setup";
 import { DatasetService } from "../../src/business/services/dataset-service";
 import { storage } from "../../dbschema/interfaces";
+import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { beforeEachCommon } from "./user.common";
 
-const edgedbClient = edgedb.createClient();
 const s3ClientMock = mockClient(S3Client);
 let testContainer: DependencyContainer;
+let edgedbClient: edgedb.Client;
+let user: AuthenticatedUser;
 
 describe("AWS s3 client", () => {
   beforeAll(async () => {
@@ -63,6 +66,10 @@ describe("AWS s3 client", () => {
 
   beforeEach(async () => {
     s3ClientMock.reset();
+
+    ({ existingUser: user, edgeDbClient: edgedbClient } =
+      await beforeEachCommon());
+
     await blankTestData();
   });
 
@@ -339,7 +346,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_1_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -412,7 +419,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_2_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -480,7 +487,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_3_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
 
     const expectedFileMarked = [
       `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
@@ -513,7 +520,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI);
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -541,5 +548,38 @@ describe("AWS s3 client", () => {
       { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
       { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_3 }] },
     ]);
+  });
+
+  it("Test User Audit Event", async () => {
+    const agService = container.resolve(S3IndexApplicationService);
+    const datasetService = container.resolve(DatasetService);
+    await datasetService.selectOrInsertDataset({
+      datasetUri: MOCK_DATASET_URI,
+      datasetName: "Cardiac",
+      datasetDescription: "A test flagship",
+    });
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => MOCK_4_CARDIAC_S3_OBJECT_LIST);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Url")
+      .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
+
+    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+
+    const userAuditEvent = await e
+      .select(e.audit.UserAuditEvent, (event) => ({
+        whoId: true,
+        whoDisplayName: true,
+        actionCategory: true,
+        filter: e.op(event.whoId, "=", e.str(user.subjectId)),
+        order_by: event.occurredDateTime,
+      }))
+      .run(edgedbClient);
+
+    expect(userAuditEvent.length).toEqual(1);
+    expect(userAuditEvent[0].whoId).toEqual(user.subjectId);
+    expect(userAuditEvent[0].whoDisplayName).toEqual(user.displayName);
+    expect(userAuditEvent[0].actionCategory).toEqual("U");
   });
 });

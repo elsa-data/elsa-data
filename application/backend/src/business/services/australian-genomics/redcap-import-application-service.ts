@@ -322,17 +322,17 @@ ${roleTable.join("\n")}
                     filter: e.op(e.uuid(newRelease.id), "=", r.id),
                     "@role": e.str(role),
                   })),
-                  userAuditEvent: {
-                    "+=": e.insert(e.audit.UserAuditEvent, {
-                      whoId: u.subjectId,
-                      whoDisplayName: u.displayName,
-                      occurredDateTime: new Date(),
-                      actionCategory: "E",
-                      actionDescription: "Add user to release",
-                      outcome: 0,
-                      details: e.json({ role: role }),
-                    }),
-                  },
+                },
+                userAuditEvent: {
+                  "+=": e.insert(e.audit.UserAuditEvent, {
+                    whoId: u.subjectId,
+                    whoDisplayName: u.displayName,
+                    occurredDateTime: new Date(),
+                    actionCategory: "E",
+                    actionDescription: "Add user to release",
+                    outcome: 0,
+                    details: e.json({ role: role }),
+                  }),
                 },
               },
             }))
