@@ -16,7 +16,6 @@ import {
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditLogService } from "./audit-log-service";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
@@ -25,8 +24,7 @@ export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
 export class UsersService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
-    private auditLogService: AuditLogService
+    @inject("Settings") private settings: ElsaSettings
   ) {}
 
   /**
