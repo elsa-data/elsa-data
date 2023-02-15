@@ -191,6 +191,7 @@ export class AuditLogService {
    * @param userId
    * @param actionCategory
    * @param actionDescription
+   * @param occuredDateTime
    * @param outcome
    * @param details
    */
@@ -202,13 +203,15 @@ export class AuditLogService {
     actionCategory: AuditEventAction,
     actionDescription: string,
     details: any = null,
-    outcome: number = 0
+    outcome: number = 0,
+    occuredDateTime: Date = new Date()
   ): Promise<string> {
     const auditEvent = await insertUserAuditEvent(executor, {
       whoId,
       whoDisplayName,
       actionCategory,
       actionDescription,
+      occuredDateTime,
       outcome,
       details,
     });
@@ -292,8 +295,6 @@ export class AuditLogService {
    * Create a system audit event in one go.
    *
    * @param executor the EdgeDb execution context (either client or transaction)
-   * @param whoId
-   * @param whoDisplayName
    * @param actionCategory
    * @param actionDescription
    * @param outcome

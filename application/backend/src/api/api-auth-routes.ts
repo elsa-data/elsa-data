@@ -85,7 +85,7 @@ export const apiAuthRoutes = async (
   const clearOurLoginState = (
     request: FastifyRequest,
     reply: FastifyReply,
-    auditDetails: any = {}
+    auditDetails: any = null
   ) => {
     const dbUser = request.session.get(SESSION_USER_DB_OBJECT);
     if (dbUser !== undefined) {

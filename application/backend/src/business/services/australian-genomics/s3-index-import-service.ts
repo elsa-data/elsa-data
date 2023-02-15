@@ -40,9 +40,7 @@ import {
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../authenticated-user";
-// Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
-// @ts-ignore
-import { insertUserAuditEvent } from "../../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
+import { AuditLogService } from "../audit-log-service";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -69,7 +67,8 @@ export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,
     @inject("Database") private edgeDbClient: edgedb.Client,
-    private datasetService: DatasetService
+    private datasetService: DatasetService,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   /**
@@ -841,13 +840,16 @@ export class S3IndexApplicationService {
     await this.datasetService.updateDatasetCurrentTimestamp(datasetId, now);
 
     // Add user audit event for syncing database
-    await insertUserAuditEvent(this.edgeDbClient, {
-      whoId: user.subjectId,
-      whoDisplayName: user.displayName,
-      actionDescription: "Sync database",
-      actionCategory: "U",
-      occuredDateTime: now,
-      outcome: 0,
-    });
+    await this.auditLogService.createUserAuditEvent(
+      this.edgeDbClient,
+      user.dbId,
+      user.subjectId,
+      user.displayName,
+      "U",
+      "Sync database",
+      null,
+      0,
+      now
+    );
   }
 }

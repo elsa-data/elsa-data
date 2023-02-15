@@ -21,15 +21,15 @@ import {
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 // Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
-// @ts-ignore
-import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
+import { AuditLogService } from "./audit-log-service";
 
 @injectable()
 @singleton()
 export class DatasetService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Settings") private settings: ElsaSettings,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
@@ -60,6 +60,7 @@ export class DatasetService {
    * Return a paged result of datasets in summary form.
    *
    * @param user
+   * @param includeDeletedFile
    * @param limit
    * @param offset
    */
@@ -212,13 +213,14 @@ export class DatasetService {
       const newDataset = await insertDatasetQuery.run(tx);
 
       if (user !== undefined) {
-        await insertUserAuditEvent(tx, {
-          whoId: user.subjectId,
-          whoDisplayName: user.displayName,
-          actionDescription: "Add dataset",
-          actionCategory: "C",
-          outcome: 0,
-        });
+        await this.auditLogService.createUserAuditEvent(
+          tx,
+          user.dbId,
+          user.subjectId,
+          user.displayName,
+          "C",
+          "Add dataset"
+        );
       }
 
       return newDataset.id;
@@ -262,13 +264,14 @@ export class DatasetService {
       const datasetDeleted = await deleteDataset.run(tx);
 
       if (user !== undefined) {
-        await insertUserAuditEvent(tx, {
-          whoId: user.subjectId,
-          whoDisplayName: user.displayName,
-          actionDescription: "Delete dataset",
-          actionCategory: "D",
-          outcome: 0,
-        });
+        await this.auditLogService.createUserAuditEvent(
+          tx,
+          user.dbId,
+          user.subjectId,
+          user.displayName,
+          "D",
+          "Delete dataset"
+        );
       }
 
       return datasetDeleted?.id;

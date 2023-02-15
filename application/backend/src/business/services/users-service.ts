@@ -81,12 +81,12 @@ export class UsersService {
   /**
    * Change a permission property for the User. This also creates an audit event for this change.
    *
-   * @param userId
+   * @param user
    * @param permission
    * @param value
    */
   public async changePermission(
-    userId: string,
+    user: AuthenticatedUser,
     permission:
       | "allowedCreateRelease"
       | "allowedImportDataset"
@@ -94,8 +94,8 @@ export class UsersService {
     value: boolean
   ): Promise<void> {
     await e
-      .update(e.permission.User, (user) => ({
-        filter: e.op(e.uuid(userId), "=", user.id),
+      .update(e.permission.User, (u) => ({
+        filter: e.op(e.uuid(user.dbId), "=", u.id),
         set: {
           [permission]: value,
           userAuditEvent: {
@@ -242,8 +242,8 @@ export class UsersService {
           },
           userAuditEvent: {
             "+=": e.insert(e.audit.UserAuditEvent, {
-              whoId: u.subjectId,
-              whoDisplayName: u.displayName,
+              whoId: user.subjectId,
+              whoDisplayName: user.displayName,
               occurredDateTime: new Date(),
               actionCategory: "E",
               actionDescription: "Add user to release",

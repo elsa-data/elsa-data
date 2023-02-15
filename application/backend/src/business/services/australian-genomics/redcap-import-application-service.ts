@@ -325,8 +325,8 @@ ${roleTable.join("\n")}
                 },
                 userAuditEvent: {
                   "+=": e.insert(e.audit.UserAuditEvent, {
-                    whoId: u.subjectId,
-                    whoDisplayName: u.displayName,
+                    whoId: dbUser.subjectId,
+                    whoDisplayName: dbUser.displayName,
                     occurredDateTime: new Date(),
                     actionCategory: "E",
                     actionDescription: "Add user to release",

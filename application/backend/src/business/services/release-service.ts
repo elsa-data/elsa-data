@@ -175,8 +175,8 @@ ${release.applicantEmailAddresses}
           },
           userAuditEvent: {
             "+=": e.insert(e.audit.UserAuditEvent, {
-              whoId: u.subjectId,
-              whoDisplayName: u.displayName,
+              whoId: user.subjectId,
+              whoDisplayName: user.displayName,
               occurredDateTime: new Date(),
               actionCategory: "E",
               actionDescription: "Add user to release",
