@@ -1,4 +1,9 @@
 import e from "../../../dbschema/edgeql-js";
+import { audit } from "../../../dbschema/interfaces";
+import UserAuditEvent = audit.UserAuditEvent;
+import DataAccessAuditEvent = audit.DataAccessAuditEvent;
+import SystemAuditEvent = audit.SystemAuditEvent;
+import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 
 /**
  * An EdgeDb query to count the audit log entries not associated
@@ -92,7 +97,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   releaseId: string,
   limit: number,
   offset: number,
-  orderByProperty: string = "occurredDateTime",
+  orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
@@ -111,27 +116,9 @@ export const pageableAuditLogEntriesForReleaseQuery = (
     order_by: [
       {
         expression:
-          orderByProperty === "whoId"
-            ? auditEvent.whoId
-            : orderByProperty === "whoDisplayName"
-            ? auditEvent.whoDisplayName
-            : orderByProperty === "actionCategory"
+          orderByProperty === "actionCategory"
             ? e.cast(e.str, auditEvent.actionCategory)
-            : orderByProperty === "actionDescription"
-            ? auditEvent.actionDescription
-            : orderByProperty === "recordedDateTime"
-            ? auditEvent.recordedDateTime
-            : orderByProperty === "updatedDateTime"
-            ? auditEvent.updatedDateTime
-            : orderByProperty === "occurredDateTime"
-            ? auditEvent.occurredDateTime
-            : orderByProperty === "occurredDuration"
-            ? auditEvent.occurredDuration
-            : orderByProperty === "outcome"
-            ? auditEvent.outcome
-            : orderByProperty === "details"
-            ? auditEvent.details
-            : auditEvent.occurredDateTime,
+            : auditEvent[orderByProperty],
         direction: orderAscending ? e.ASC : e.DESC,
       },
       {
@@ -152,7 +139,7 @@ export const pageableAuditLogEntriesForUserQuery = (
   userId: string,
   limit: number,
   offset: number,
-  orderByProperty: string = "occurredDateTime",
+  orderByProperty: keyof UserAuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.UserAuditEvent, (auditEvent) => ({
@@ -171,27 +158,9 @@ export const pageableAuditLogEntriesForUserQuery = (
     order_by: [
       {
         expression:
-          orderByProperty === "whoId"
-            ? auditEvent.whoId
-            : orderByProperty === "whoDisplayName"
-            ? auditEvent.whoDisplayName
-            : orderByProperty === "actionCategory"
+          orderByProperty === "actionCategory"
             ? e.cast(e.str, auditEvent.actionCategory)
-            : orderByProperty === "actionDescription"
-            ? auditEvent.actionDescription
-            : orderByProperty === "recordedDateTime"
-            ? auditEvent.recordedDateTime
-            : orderByProperty === "updatedDateTime"
-            ? auditEvent.updatedDateTime
-            : orderByProperty === "occurredDateTime"
-            ? auditEvent.occurredDateTime
-            : orderByProperty === "occurredDuration"
-            ? auditEvent.occurredDuration
-            : orderByProperty === "outcome"
-            ? auditEvent.outcome
-            : orderByProperty === "details"
-            ? auditEvent.details
-            : auditEvent.occurredDateTime,
+            : auditEvent[orderByProperty],
         direction: orderAscending ? e.ASC : e.DESC,
       },
       {
@@ -208,7 +177,10 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
   releaseId: string,
   limit: number,
   offset: number,
-  orderByProperty: string = "occurredDateTime",
+  orderByProperty:
+    | keyof DataAccessAuditEvent
+    | "fileUrl"
+    | "fileSize" = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.DataAccessAuditEvent, (da) => ({
@@ -219,31 +191,13 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
     order_by: [
       {
         expression:
-          orderByProperty === "whoId"
-            ? da.whoId
-            : orderByProperty === "whoDisplayName"
-            ? da.whoDisplayName
-            : orderByProperty === "actionCategory"
+          orderByProperty === "actionCategory"
             ? e.cast(e.str, da.actionCategory)
-            : orderByProperty === "actionDescription"
-            ? da.actionDescription
-            : orderByProperty === "recordedDateTime"
-            ? da.recordedDateTime
-            : orderByProperty === "updatedDateTime"
-            ? da.updatedDateTime
-            : orderByProperty === "occurredDateTime"
-            ? da.occurredDateTime
-            : orderByProperty === "occurredDuration"
-            ? da.occurredDuration
-            : orderByProperty === "outcome"
-            ? da.outcome
             : orderByProperty === "fileUrl"
             ? da.details.url
             : orderByProperty === "fileSize"
-            ? da.details.size
-            : orderByProperty === "egressBytes"
-            ? da.egressBytes
-            : da.occurredDateTime,
+            ? da.details.fileUrl
+            : da[orderByProperty],
         direction: orderAscending ? e.ASC : e.DESC,
       },
       {
@@ -262,7 +216,7 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
 export const pageableAuditLogEntriesForSystemQuery = (
   limit: number,
   offset: number,
-  orderByProperty: string = "occurredDateTime",
+  orderByProperty: keyof SystemAuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.SystemAuditEvent, (auditEvent) => ({
@@ -280,21 +234,7 @@ export const pageableAuditLogEntriesForSystemQuery = (
         expression:
           orderByProperty === "actionCategory"
             ? e.cast(e.str, auditEvent.actionCategory)
-            : orderByProperty === "actionDescription"
-            ? auditEvent.actionDescription
-            : orderByProperty === "recordedDateTime"
-            ? auditEvent.recordedDateTime
-            : orderByProperty === "updatedDateTime"
-            ? auditEvent.updatedDateTime
-            : orderByProperty === "occurredDateTime"
-            ? auditEvent.occurredDateTime
-            : orderByProperty === "occurredDuration"
-            ? auditEvent.occurredDuration
-            : orderByProperty === "outcome"
-            ? auditEvent.outcome
-            : orderByProperty === "details"
-            ? auditEvent.details
-            : auditEvent.occurredDateTime,
+            : auditEvent[orderByProperty],
         direction: orderAscending ? e.ASC : e.DESC,
       },
       {

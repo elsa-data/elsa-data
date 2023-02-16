@@ -169,6 +169,16 @@ export class AuditLogService {
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
+    await this.updateUser(userId, auditEvent, executor);
+
+    return auditEvent.id;
+  }
+
+  private async updateUser(
+    userId: string,
+    auditEvent: { id: string },
+    executor: Executor
+  ) {
     await e
       .update(e.permission.User, (user) => ({
         filter: e.op(e.uuid(userId), "=", user.id),
@@ -181,8 +191,6 @@ export class AuditLogService {
         },
       }))
       .run(executor);
-
-    return auditEvent.id;
   }
 
   /**
@@ -219,18 +227,8 @@ export class AuditLogService {
       details,
     });
 
-    await e
-      .update(e.permission.User, (user) => ({
-        filter: e.op(e.uuid(userId), "=", user.id),
-        set: {
-          userAuditEvent: {
-            "+=": e.select(e.audit.UserAuditEvent, (ae) => ({
-              filter: e.op(e.uuid(auditEvent.id), "=", ae.id).assert_single(),
-            })),
-          },
-        },
-      }))
-      .run(executor);
+    //todo work out why this throws error.
+    await this.updateUser(userId, auditEvent, executor);
 
     return auditEvent.id;
   }
