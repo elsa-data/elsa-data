@@ -9,6 +9,7 @@ import {
   AuditDataAccessType,
   AuditEntryDetailsType,
   AuditEntryFullType,
+  AuditEntryOwnedType,
   AuditEntryType,
 } from "@umccr/elsa-types/schemas-audit";
 import {
@@ -19,9 +20,11 @@ import {
   auditLogDetailsForIdQuery,
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
+  countAuditLogEntriesForSystemQuery,
   countAuditLogEntriesForUserQuery,
   countDataAccessAuditLogEntriesQuery,
   pageableAuditLogEntriesForReleaseQuery,
+  pageableAuditLogEntriesForSystemQuery,
   pageableAuditLogEntriesForUserQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
@@ -412,7 +415,7 @@ export class AuditLogService {
     offset: number,
     orderByProperty: string = "occurredDateTime",
     orderAscending: boolean = false
-  ): Promise<PagedResult<AuditEntryType> | null> {
+  ): Promise<PagedResult<AuditEntryOwnedType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
       { releaseId }
@@ -455,7 +458,7 @@ export class AuditLogService {
     offset: number,
     orderByProperty: string = "occurredDateTime",
     orderAscending: boolean = false
-  ): Promise<PagedResult<AuditEntryType> | null> {
+  ): Promise<PagedResult<AuditEntryOwnedType> | null> {
     const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
       userId: user.dbId,
     });
@@ -477,6 +480,42 @@ export class AuditLogService {
         objectId: entry.id,
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,
+        actionCategory: entry.actionCategory,
+        actionDescription: entry.actionDescription,
+        recordedDateTime: entry.recordedDateTime,
+        updatedDateTime: entry.updatedDateTime,
+        occurredDateTime: entry.occurredDateTime,
+        occurredDuration: entry.occurredDuration?.toString(),
+        outcome: entry.outcome,
+        hasDetails: entry.hasDetails,
+      })),
+      totalEntries
+    );
+  }
+
+  public async getSystemEntries(
+    executor: Executor,
+    limit: number,
+    offset: number,
+    orderByProperty: string = "occurredDateTime",
+    orderAscending: boolean = false
+  ): Promise<PagedResult<AuditEntryType> | null> {
+    const totalEntries = await countAuditLogEntriesForSystemQuery.run(executor);
+
+    const pageOfEntries = await pageableAuditLogEntriesForSystemQuery(
+      limit,
+      offset,
+      orderByProperty,
+      orderAscending
+    ).run(executor);
+
+    console.log(
+      `${AuditLogService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+    );
+
+    return createPagedResult(
+      pageOfEntries.map((entry) => ({
+        objectId: entry.id,
         actionCategory: entry.actionCategory,
         actionDescription: entry.actionDescription,
         recordedDateTime: entry.recordedDateTime,

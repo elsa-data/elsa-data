@@ -12,8 +12,6 @@ export type ActionCategoryType = Static<typeof ActionCategorySchema>;
 
 const AuditEntryBaseSchema = Type.Object({
   objectId: Type.String(),
-  whoId: Type.String(),
-  whoDisplayName: Type.String(),
   actionCategory: ActionCategorySchema,
   actionDescription: Type.String(),
   recordedDateTime: TypeDate,
@@ -23,11 +21,23 @@ const AuditEntryBaseSchema = Type.Object({
   outcome: Type.Integer(),
 });
 
+const AuditEntryOwnedBaseSchema = Type.Object({
+  ...AuditEntryBaseSchema.properties,
+  whoId: Type.String(),
+  whoDisplayName: Type.String(),
+});
+
 export const AuditEntrySchema = Type.Object({
   ...AuditEntryBaseSchema.properties,
   hasDetails: Type.Boolean(),
 });
 export type AuditEntryType = Static<typeof AuditEntrySchema>;
+
+export const AuditEntryOwnedSchema = Type.Object({
+  ...AuditEntryOwnedBaseSchema.properties,
+  hasDetails: Type.Boolean(),
+});
+export type AuditEntryOwnedType = Static<typeof AuditEntryOwnedSchema>;
 
 export const AuditEntryDetailsSchema = Type.Object({
   objectId: Type.String(),
@@ -37,13 +47,13 @@ export const AuditEntryDetailsSchema = Type.Object({
 export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;
 
 export const AuditEntryFullSchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
+  ...AuditEntryOwnedBaseSchema.properties,
   details: Type.Optional(Type.Any()),
 });
 export type AuditEntryFullType = Static<typeof AuditEntryFullSchema>;
 
 export const AuditDataAccessSchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
+  ...AuditEntryOwnedBaseSchema.properties,
   occurredDateTime: Type.String(),
   fileUrl: Type.String(),
   fileSize: Type.Integer(),

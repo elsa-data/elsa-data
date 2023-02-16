@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { AuditEntryType } from "@umccr/elsa-types";
+import { AuditEntryOwnedType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
 import { BoxNoPad } from "../../../../components/boxes";
@@ -72,7 +72,7 @@ export const useAuditEventQuery = (
   orderByProperty: string,
   orderAscending: boolean,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<AuditEntryType[]>>,
+  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
 ) => {
   return useQuery(
@@ -85,7 +85,7 @@ export const useAuditEventQuery = (
     ],
     async () => {
       return await axios
-        .get<AuditEntryType[]>(
+        .get<AuditEntryOwnedType[]>(
           `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
         )
         .then((response) => {
@@ -116,9 +116,9 @@ export const useAllAuditEventQueries = (
   currentPage: number,
   releaseId: string,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<AuditEntryType[]>>,
+  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
-): { [key: string]: UseQueryResult<AuditEntryType[]> } => {
+): { [key: string]: UseQueryResult<AuditEntryOwnedType[]> } => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
     orderAscending: boolean
@@ -184,7 +184,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [updateData, setUpdateData] = useState(true);
 
-  const [data, setData] = useState([] as AuditEntryType[]);
+  const [data, setData] = useState([] as AuditEntryOwnedType[]);
   const [error, setError] = useState<ErrorState>({
     error: null,
     isSuccess: true,
@@ -449,7 +449,7 @@ export const CELL_BOX = "flex items-center justify-center w-8 h-8";
  * Create the column definition based on the audit entry type.
  */
 export const createColumns = (releaseId: string) => {
-  const columnHelper = createColumnHelper<AuditEntryType>();
+  const columnHelper = createColumnHelper<AuditEntryOwnedType>();
   return [
     columnHelper.accessor("objectId", {
       header: ({ table }) => {

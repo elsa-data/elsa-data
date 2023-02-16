@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { AuditEntryType } from "@umccr/elsa-types";
+import { AuditEntryOwnedType } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
@@ -48,7 +48,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { releaseId: string };
-    Reply: AuditEntryType[];
+    Reply: AuditEntryOwnedType[];
     Querystring: AuditEventForReleaseQueryType;
   }>(
     "/releases/:releaseId/audit-log",
@@ -249,7 +249,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { userId: string };
-    Reply: AuditEntryType[];
+    Reply: AuditEntryOwnedType[];
     Querystring: AuditEventForReleaseQueryType;
   }>(
     "/users/:userId/audit-log",

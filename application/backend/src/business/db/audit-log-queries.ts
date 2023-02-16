@@ -255,3 +255,54 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
     offset: offset,
   }));
 };
+
+/**
+ * A pageable EdgeDb query for system audit log entries.
+ */
+export const pageableAuditLogEntriesForSystemQuery = (
+  limit: number,
+  offset: number,
+  orderByProperty: string = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  return e.select(e.audit.SystemAuditEvent, (auditEvent) => ({
+    id: true,
+    actionCategory: true,
+    actionDescription: true,
+    recordedDateTime: true,
+    updatedDateTime: true,
+    occurredDateTime: true,
+    occurredDuration: true,
+    outcome: true,
+    hasDetails: e.op("exists", auditEvent.details),
+    order_by: [
+      {
+        expression:
+          orderByProperty === "actionCategory"
+            ? e.cast(e.str, auditEvent.actionCategory)
+            : orderByProperty === "actionDescription"
+            ? auditEvent.actionDescription
+            : orderByProperty === "recordedDateTime"
+            ? auditEvent.recordedDateTime
+            : orderByProperty === "updatedDateTime"
+            ? auditEvent.updatedDateTime
+            : orderByProperty === "occurredDateTime"
+            ? auditEvent.occurredDateTime
+            : orderByProperty === "occurredDuration"
+            ? auditEvent.occurredDuration
+            : orderByProperty === "outcome"
+            ? auditEvent.outcome
+            : orderByProperty === "details"
+            ? auditEvent.details
+            : auditEvent.occurredDateTime,
+        direction: orderAscending ? e.ASC : e.DESC,
+      },
+      {
+        expression: auditEvent.occurredDateTime,
+        direction: e.DESC,
+      },
+    ],
+    limit: limit,
+    offset: offset,
+  }));
+};
