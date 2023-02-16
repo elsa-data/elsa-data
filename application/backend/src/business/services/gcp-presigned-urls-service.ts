@@ -21,8 +21,7 @@ export class GcpPresignedUrlsService
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
     private releaseService: ReleaseService,
-    usersService: UsersService,
-    auditLogService: AuditLogService
+    usersService: UsersService
   ) {
     super();
 

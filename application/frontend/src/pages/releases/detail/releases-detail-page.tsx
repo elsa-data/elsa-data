@@ -19,6 +19,7 @@ import { usePageSizer } from "../../../hooks/page-sizer";
 import { MasterAccessControlBox } from "./master-access-control-box";
 import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
+import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
 import { ReleaseTypeLocal } from "./shared-types";
@@ -166,6 +167,7 @@ export const ReleasesDetailPage: React.FC = () => {
                   "Manifest",
                   "Presigned URL",
                   "AWS S3 VPC Share",
+                  "GCP Storage IAM Share",
                   "htsget",
                 ]}
               >
@@ -187,6 +189,7 @@ export const ReleasesDetailPage: React.FC = () => {
                   releaseData={releaseQuery.data}
                 />
                 <AwsS3VpcShareForm releaseId={releaseId} />
+                <GcpStorageIamShareForm releaseId={releaseId} />
                 <HtsgetForm
                   releaseId={releaseId}
                   releaseData={releaseQuery.data}

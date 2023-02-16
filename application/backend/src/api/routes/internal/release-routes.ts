@@ -23,6 +23,7 @@ import { container } from "tsyringe";
 import { JobsService } from "../../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
+import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
 import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 
@@ -30,6 +31,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
   const presignedUrlsService = container.resolve(PresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
+  const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
   const releasesService = container.resolve(ReleaseService);
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
@@ -465,6 +467,93 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
       reply.send(await releasesService.new(authenticatedUser, request.body));
+    }
+  );
+
+  fastify.post<{
+    Params: { rid: string };
+    Body: { users: string[] };
+    Reply: number;
+  }>(
+    "/releases/:rid/gcp-storage/acls/add",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      if (!gcpStorageSharingService.isEnabled)
+        throw new Error(
+          "The GCP storage sharing service was not started so object sharing will not work"
+        );
+
+      const releaseId = request.params.rid;
+      const users = request.body.users;
+
+      reply.send(
+        await gcpStorageSharingService.addUsers(
+          authenticatedUser,
+          releaseId,
+          users
+        )
+      );
+    }
+  );
+
+  fastify.post<{
+    Params: { rid: string };
+    Body: { users: string[] };
+    Reply: number;
+  }>(
+    "/releases/:rid/gcp-storage/acls/remove",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      if (!gcpStorageSharingService.isEnabled)
+        throw new Error(
+          "The GCP storage sharing service was not started so object sharing will not work"
+        );
+
+      const releaseId = request.params.rid;
+      const users = request.body.users;
+
+      reply.send(
+        await gcpStorageSharingService.deleteUsers(
+          authenticatedUser,
+          releaseId,
+          users
+        )
+      );
+    }
+  );
+
+  fastify.get<{
+    Body: ReleasePresignRequestType;
+    Params: { rid: string };
+  }>(
+    "/releases/:rid/gcp-storage/acls/manifest",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      if (!gcpStorageSharingService.isEnabled)
+        throw new Error(
+          "The GCP storage sharing service was not started so object sharing will not work"
+        );
+
+      const releaseId = request.params.rid;
+
+      const manifest = await gcpStorageSharingService.manifest(
+        authenticatedUser,
+        releaseId,
+        request.body.presignHeader
+      );
+
+      reply.header(
+        "Content-disposition",
+        `attachment; filename=${manifest.filename}`
+      );
+      reply.type("text/tab-separated-values");
+      reply.send(manifest.content);
     }
   );
 };
