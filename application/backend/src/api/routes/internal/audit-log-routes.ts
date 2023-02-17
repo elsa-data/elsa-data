@@ -16,7 +16,13 @@ import {
 } from "@umccr/elsa-types/schemas-audit";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
+import { audit } from "../../../../dbschema/interfaces";
+import ReleaseAuditEvent = audit.ReleaseAuditEvent;
+import DataAccessAuditEvent = audit.DataAccessAuditEvent;
+import UserAuditEvent = audit.UserAuditEvent;
 
+// Todo: Potentially generate TypeBox schemas from the EdgeDb interface for fastify validation.
+//       E.g https://github.com/sinclairzx81/typebox/discussions/317
 export const AuditEventForReleaseQuerySchema = Type.Object({
   page: Type.Optional(Type.Number()),
   orderByProperty: Type.Optional(Type.String()),
@@ -71,7 +77,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         releaseId,
         pageSize,
         (page - 1) * pageSize,
-        orderByProperty,
+        orderByProperty as keyof ReleaseAuditEvent,
         orderAscending
       );
 
@@ -150,7 +156,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         releaseId,
         pageSize,
         (page - 1) * pageSize,
-        orderByProperty,
+        orderByProperty as keyof DataAccessAuditEvent | "fileUrl" | "fileSize",
         orderAscending
       );
 
@@ -270,7 +276,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
         authenticatedUser,
         pageSize,
         (page - 1) * pageSize,
-        orderByProperty,
+        orderByProperty as keyof UserAuditEvent,
         orderAscending
       );
 

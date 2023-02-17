@@ -35,6 +35,11 @@ import { touchRelease } from "../db/release-queries";
 import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
 // @ts-ignore
 import { insertSystemAuditEvent } from "../../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
+import { audit } from "../../../dbschema/interfaces";
+import UserAuditEvent = audit.UserAuditEvent;
+import SystemAuditEvent = audit.SystemAuditEvent;
+import ReleaseAuditEvent = audit.ReleaseAuditEvent;
+import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -162,7 +167,7 @@ export class AuditLogService {
       whoDisplayName,
       actionCategory,
       actionDescription,
-      occuredDateTime: start,
+      occurredDateTime: start,
       outcome: 8,
       details: { errorMessage: "Audit entry not completed" },
     });
@@ -202,7 +207,7 @@ export class AuditLogService {
    * @param userId
    * @param actionCategory
    * @param actionDescription
-   * @param occuredDateTime
+   * @param occurredDateTime
    * @param outcome
    * @param details
    */
@@ -215,14 +220,14 @@ export class AuditLogService {
     actionDescription: string,
     details: any = null,
     outcome: number = 0,
-    occuredDateTime: Date = new Date()
+    occurredDateTime: Date = new Date()
   ): Promise<string> {
     const auditEvent = await insertUserAuditEvent(executor, {
       whoId,
       whoDisplayName,
       actionCategory,
       actionDescription,
-      occuredDateTime,
+      occurredDateTime,
       outcome,
       details,
     });
@@ -286,7 +291,7 @@ export class AuditLogService {
     return await insertSystemAuditEvent(executor, {
       actionCategory,
       actionDescription,
-      occuredDateTime: start,
+      occurredDateTime: start,
       outcome: 8,
       details: { errorMessage: "Audit entry not completed" },
     }).id;
@@ -411,7 +416,7 @@ export class AuditLogService {
     releaseId: string,
     limit: number,
     offset: number,
-    orderByProperty: string = "occurredDateTime",
+    orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEntryOwnedType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
@@ -454,7 +459,7 @@ export class AuditLogService {
     user: AuthenticatedUser,
     limit: number,
     offset: number,
-    orderByProperty: string = "occurredDateTime",
+    orderByProperty: keyof UserAuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEntryOwnedType> | null> {
     const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
@@ -495,7 +500,7 @@ export class AuditLogService {
     executor: Executor,
     limit: number,
     offset: number,
-    orderByProperty: string = "occurredDateTime",
+    orderByProperty: keyof SystemAuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEntryType> | null> {
     const totalEntries = await countAuditLogEntriesForSystemQuery.run(executor);
@@ -579,7 +584,10 @@ export class AuditLogService {
     releaseId: string,
     limit: number,
     offset: number,
-    orderByProperty: string = "occurredDateTime",
+    orderByProperty:
+      | keyof DataAccessAuditEvent
+      | "fileUrl"
+      | "fileSize" = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditDataAccessType> | null> {
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(

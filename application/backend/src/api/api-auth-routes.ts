@@ -88,10 +88,11 @@ export const apiAuthRoutes = async (
     auditDetails: any = null
   ) => {
     const dbUser = request.session.get(SESSION_USER_DB_OBJECT);
+
     if (dbUser !== undefined) {
       auditLogService.createUserAuditEvent(
         dbClient,
-        dbUser.dbId,
+        dbUser.id,
         dbUser.subjectId,
         dbUser.displayName,
         "E",
