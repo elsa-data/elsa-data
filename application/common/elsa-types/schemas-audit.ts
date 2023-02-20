@@ -50,7 +50,7 @@ export const AuditEntryFullSchema = Type.Object({
   ...AuditEntryOwnedBaseSchema.properties,
   details: Type.Optional(Type.Any()),
 });
-export type AuditEntryFullType = Static<typeof AuditEntryFullSchema>;
+export type AuditEventFullType = Static<typeof AuditEntryFullSchema>;
 
 export const AuditDataAccessSchema = Type.Object({
   ...AuditEntryOwnedBaseSchema.properties,

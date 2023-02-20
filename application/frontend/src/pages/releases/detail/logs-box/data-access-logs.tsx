@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { BoxNoPad } from "../../../../components/boxes";
 import { ToolTip } from "../../../../components/tooltip";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
-import { categoryToDescription } from "./logs-box";
+import { categoryToDescription } from "../../../../components/audit-event/logs-box";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { isNil } from "lodash";

@@ -10,7 +10,7 @@ import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
-import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
+import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
 import { EagerErrorBoundary } from "./components/errors";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
@@ -61,7 +61,15 @@ export const App: React.FC = () => {
           <Route path={`:releaseId`}>
             <Route index element={<ReleasesDetailPage />} />
             <Route path={`audit-log`}>
-              <Route path={`:objectId`} element={<AuditEntryPage />} />
+              <Route
+                path={`:objectId`}
+                element={
+                  <AuditEventDetailedPage
+                    path="releases"
+                    idParamName="releaseId"
+                  />
+                }
+              />
               <Route path={`data-access`} element={<DataAccessPage />} />
             </Route>
           </Route>

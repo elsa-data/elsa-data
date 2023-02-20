@@ -9,8 +9,8 @@ import React, {
 import { AuditEntryOwnedType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
-import { BoxNoPad } from "../../../../components/boxes";
-import { BoxPaginator } from "../../../../components/box-paginator";
+import { BoxNoPad } from "../boxes";
+import { BoxPaginator } from "../box-paginator";
 import {
   ColumnSizingHeader,
   CoreHeader,
@@ -26,13 +26,13 @@ import {
   formatDuration,
   formatFromNowTime,
   formatLocalDateTime,
-} from "../../../../helpers/datetime-helper";
+} from "../../helpers/datetime-helper";
 import {
   ActionCategoryType,
   AuditEntryDetailsType,
 } from "@umccr/elsa-types/schemas-audit";
-import { Table } from "../../../../components/tables";
-import { ToolTip } from "../../../../components/tooltip";
+import { Table } from "../tables";
+import { ToolTip } from "../tooltip";
 import {
   BiChevronDown,
   BiChevronRight,
@@ -40,8 +40,8 @@ import {
   BiLinkExternal,
 } from "react-icons/bi";
 import classNames from "classnames";
-import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
-import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
+import { EagerErrorBoundary, ErrorState } from "../errors";
+import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
