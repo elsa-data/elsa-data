@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useResolvedPath } from "react-router-dom";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { AuditEventFullType } from "@umccr/elsa-types/schemas-audit";
@@ -8,22 +8,30 @@ import { EagerErrorBoundary } from "../errors";
 import { BoxNoPad } from "../boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-export type AuditEventDetailedPageProps = {
-  path: string;
-  idParamName: string;
+/**
+ * Get the path segment before the id in the current resolved path.
+ * @param id
+ */
+export const usePathSegmentBeforeId = (id?: string): string => {
+  const resolvedPath = useResolvedPath(".").pathname;
+  const substringPath = resolvedPath.substring(
+    0,
+    resolvedPath.indexOf(`/${id}`)
+  );
+
+  return substringPath.substring(substringPath.lastIndexOf("/") + 1);
 };
 
 /**
  * The audit event page shows a full audit entry event as a JSON.
  */
-export const AuditEventDetailedPage = ({
-  path,
-  idParamName,
-}: AuditEventDetailedPageProps): JSX.Element => {
-  const params = useParams();
+export const AuditEventDetailedPage = (): JSX.Element => {
+  const { id, objectId } = useParams<{
+    id: string;
+    objectId: string;
+  }>();
 
-  const id = params[idParamName];
-  const objectId = params.objectId;
+  const path = usePathSegmentBeforeId(id);
 
   const query = useQuery(
     ["audit-event", objectId],
