@@ -16,7 +16,7 @@ import { BulkBox } from "./bulk-box/bulk-box";
 import { isUndefined } from "lodash";
 import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
-import { LogsBox } from "../../../components/audit-event/logs-box";
+import { AuditEventTable } from "../../../components/audit-event/audit-event-table";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
@@ -201,7 +201,11 @@ export const ReleasesDetailPage: React.FC = () => {
               TSV Viewer (useful link for demo purposes)
             </a>
 
-            <LogsBox releaseId={releaseId} pageSize={pageSize} />
+            <AuditEventTable
+              path="releases"
+              id={releaseId}
+              pageSize={pageSize}
+            />
             <DataAccessSummaryBox releaseId={releaseId} />
           </>
         )}

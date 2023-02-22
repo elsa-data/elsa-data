@@ -49,127 +49,32 @@ declare module "@tanstack/table-core" {
   }
 }
 
-type LogsBoxProps = {
-  releaseId: string;
-  // the (max) number of log items shown on any single page
+/**
+ * Props for audit event table.
+ */
+type AuditEventTableProps = {
+  /**
+   * The api path to use when displaying the audit entry table.
+   */
+  path: string;
+  /**
+   * The id of the component in the path.
+   */
+  id: string;
+  /**
+   * Maximum number of items to show in the table.
+   */
   pageSize: number;
 };
 
 /**
- * Wrapper around a useQuery hook for an audit entry event.
+ * The main audit event table component.
  */
-export const useAuditEventQuery = (
-  currentPage: number,
-  releaseId: string,
-  orderByProperty: string,
-  orderAscending: boolean,
-  setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
-) => {
-  return useQuery(
-    [
-      "releases-audit-log",
-      currentPage,
-      releaseId,
-      orderByProperty,
-      orderAscending,
-    ],
-    async () => {
-      return await axios
-        .get<AuditEntryOwnedType[]>(
-          `/api/releases/${releaseId}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
-        )
-        .then((response) => {
-          handleTotalCountHeaders(response, setCurrentTotal);
-
-          return response.data;
-        });
-    },
-    {
-      keepPreviousData: true,
-      enabled: false,
-      onSuccess: (data) => {
-        setData(data ?? []);
-        setError({ error: null, isSuccess: data !== undefined });
-      },
-      onError: (error) => {
-        setData([]);
-        setError({ error, isSuccess: false });
-      },
-    }
-  );
-};
-
-/**
- * Declares all audit entry queries used by the logs box.
- */
-export const useAllAuditEventQueries = (
-  currentPage: number,
-  releaseId: string,
-  setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
-): { [key: string]: UseQueryResult<AuditEntryOwnedType[]> } => {
-  const useAuditEventQueryFn = (
-    occurredDateTime: string,
-    orderAscending: boolean
-  ) => {
-    return useAuditEventQuery(
-      currentPage,
-      releaseId,
-      occurredDateTime,
-      orderAscending,
-      setCurrentTotal,
-      setData,
-      setError
-    );
-  };
-
-  return {
-    occurredDateTimeAsc: useAuditEventQueryFn("occurredDateTime", true),
-    occurredDateTimeDesc: useAuditEventQueryFn("occurredDateTime", false),
-    outcomeAsc: useAuditEventQueryFn("outcome", true),
-    outcomeDesc: useAuditEventQueryFn("outcome", false),
-    actionCategoryAsc: useAuditEventQueryFn("actionCategory", true),
-    actionCategoryDesc: useAuditEventQueryFn("actionCategory", false),
-    actionDescriptionAsc: useAuditEventQueryFn("actionDescription", true),
-    actionDescriptionDesc: useAuditEventQueryFn("actionDescription", false),
-    whoDisplayNameAsc: useAuditEventQueryFn("whoDisplayName", true),
-    whoDisplayNameDesc: useAuditEventQueryFn("whoDisplayName", false),
-    occurredDurationAsc: useAuditEventQueryFn("occurredDuration", true),
-    occurredDurationDesc: useAuditEventQueryFn("occurredDuration", false),
-  };
-};
-
-export type AuditEntryTableHeaderProps<TData, TValue> = {
-  header: CoreHeader<TData, TValue> & ColumnSizingHeader;
-};
-
-/**
- * Refactored code that goes in the main header components of the table.
- */
-export const AuditEntryTableHeader = <TData, TValue>({
-  header,
-}: AuditEntryTableHeaderProps<TData, TValue>): JSX.Element => {
-  return (
-    <div
-      onClick={header.column.getToggleSortingHandler()}
-      className="flex flex-nowrap space-x-1"
-    >
-      {flexRender(header.column.columnDef.header, header.getContext())}
-      {{
-        asc: <BiChevronUp />,
-        desc: <BiChevronDown />,
-      }[header.column.getIsSorted() as string] ?? null}
-    </div>
-  );
-};
-
-/**
- * The main logs box component.
- */
-export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
+export const AuditEventTable = ({
+  path,
+  id,
+  pageSize,
+}: AuditEventTableProps): JSX.Element => {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentTotal, setCurrentTotal] = useState(1);
 
@@ -184,7 +89,8 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
-    releaseId,
+    path,
+    id,
     setCurrentTotal,
     setData,
     setError
@@ -210,7 +116,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   const table = useReactTable({
     data: data,
-    columns: createColumns(releaseId),
+    columns: createColumns(id),
     state: {
       sorting,
     },
@@ -253,7 +159,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                     }
                   >
                     {header.isPlaceholder ? undefined : (
-                      <AuditEntryTableHeader header={header} />
+                      <AuditEventTableHeader header={header} />
                     )}
                   </th>
                 ))}
@@ -299,7 +205,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                       >
                         <DetailsRow
                           path="releases"
-                          id={releaseId}
+                          id={id}
                           objectId={row.original.objectId}
                         />
                       </td>
@@ -328,6 +234,114 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         />
       </div>
     </BoxNoPad>
+  );
+};
+
+/**
+ * Wrapper around a useQuery hook for an audit entry event.
+ */
+export const useAuditEventQuery = (
+  currentPage: number,
+  path: string,
+  id: string,
+  orderByProperty: string,
+  orderAscending: boolean,
+  setCurrentTotal: Dispatch<SetStateAction<number>>,
+  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
+  setError: Dispatch<SetStateAction<ErrorState>>
+) => {
+  return useQuery(
+    [`${path}-audit-log`, currentPage, id, orderByProperty, orderAscending],
+    async () => {
+      return await axios
+        .get<AuditEntryOwnedType[]>(
+          `/api/${path}/${id}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
+        )
+        .then((response) => {
+          handleTotalCountHeaders(response, setCurrentTotal);
+
+          return response.data;
+        });
+    },
+    {
+      keepPreviousData: true,
+      enabled: false,
+      onSuccess: (data) => {
+        setData(data ?? []);
+        setError({ error: null, isSuccess: data !== undefined });
+      },
+      onError: (error) => {
+        setData([]);
+        setError({ error, isSuccess: false });
+      },
+    }
+  );
+};
+
+/**
+ * Declares all audit entry queries used by the logs box.
+ */
+export const useAllAuditEventQueries = (
+  currentPage: number,
+  path: string,
+  id: string,
+  setCurrentTotal: Dispatch<SetStateAction<number>>,
+  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
+  setError: Dispatch<SetStateAction<ErrorState>>
+): { [key: string]: UseQueryResult<AuditEntryOwnedType[]> } => {
+  const useAuditEventQueryFn = (
+    occurredDateTime: string,
+    orderAscending: boolean
+  ) => {
+    return useAuditEventQuery(
+      currentPage,
+      path,
+      id,
+      occurredDateTime,
+      orderAscending,
+      setCurrentTotal,
+      setData,
+      setError
+    );
+  };
+
+  return {
+    occurredDateTimeAsc: useAuditEventQueryFn("occurredDateTime", true),
+    occurredDateTimeDesc: useAuditEventQueryFn("occurredDateTime", false),
+    outcomeAsc: useAuditEventQueryFn("outcome", true),
+    outcomeDesc: useAuditEventQueryFn("outcome", false),
+    actionCategoryAsc: useAuditEventQueryFn("actionCategory", true),
+    actionCategoryDesc: useAuditEventQueryFn("actionCategory", false),
+    actionDescriptionAsc: useAuditEventQueryFn("actionDescription", true),
+    actionDescriptionDesc: useAuditEventQueryFn("actionDescription", false),
+    whoDisplayNameAsc: useAuditEventQueryFn("whoDisplayName", true),
+    whoDisplayNameDesc: useAuditEventQueryFn("whoDisplayName", false),
+    occurredDurationAsc: useAuditEventQueryFn("occurredDuration", true),
+    occurredDurationDesc: useAuditEventQueryFn("occurredDuration", false),
+  };
+};
+
+export type AuditEventTableHeaderProps<TData, TValue> = {
+  header: CoreHeader<TData, TValue> & ColumnSizingHeader;
+};
+
+/**
+ * Refactored code that goes in the main header components of the table.
+ */
+export const AuditEventTableHeader = <TData, TValue>({
+  header,
+}: AuditEventTableHeaderProps<TData, TValue>): JSX.Element => {
+  return (
+    <div
+      onClick={header.column.getToggleSortingHandler()}
+      className="flex flex-nowrap space-x-1"
+    >
+      {flexRender(header.column.columnDef.header, header.getContext())}
+      {{
+        asc: <BiChevronUp />,
+        desc: <BiChevronDown />,
+      }[header.column.getIsSorted() as string] ?? null}
+    </div>
   );
 };
 
@@ -398,7 +412,7 @@ export const CELL_BOX = "flex items-center justify-center w-8 h-8";
 /**
  * Create the column definition based on the audit entry type.
  */
-export const createColumns = (releaseId: string) => {
+export const createColumns = (id: string) => {
   const columnHelper = createColumnHelper<AuditEntryOwnedType>();
   return [
     columnHelper.accessor("objectId", {
@@ -440,7 +454,7 @@ export const createColumns = (releaseId: string) => {
             <ToolTip
               trigger={
                 <a
-                  href={`/releases/${releaseId}/audit-log/${info.getValue()}`}
+                  href={`/releases/${id}/audit-log/${info.getValue()}`}
                   className={classNames(
                     "invisible block hover:rounded-lg hover:bg-slate-200 group-hover:visible",
                     CELL_BOX
