@@ -27,10 +27,7 @@ import {
   formatFromNowTime,
   formatLocalDateTime,
 } from "../../helpers/datetime-helper";
-import {
-  ActionCategoryType,
-  AuditEntryDetailsType,
-} from "@umccr/elsa-types/schemas-audit";
+import { ActionCategoryType } from "@umccr/elsa-types/schemas-audit";
 import { Table } from "../tables";
 import { ToolTip } from "../tooltip";
 import {
@@ -42,6 +39,7 @@ import {
 import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
+import { DetailsRow } from "./details-row";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,12 +48,6 @@ declare module "@tanstack/table-core" {
     cellStyling?: string;
   }
 }
-
-/**
- * Maximum character length of details rendered in log box.
- */
-// Allow this to be set somewhere?
-export const MAXIMUM_DETAIL_LENGTH = 1000;
 
 type LogsBoxProps = {
   releaseId: string;
@@ -306,7 +298,8 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
                         className="left border-b p-4 text-sm text-gray-500"
                       >
                         <DetailsRow
-                          releaseId={releaseId}
+                          path="releases"
+                          id={releaseId}
                           objectId={row.original.objectId}
                         />
                       </td>
@@ -335,49 +328,6 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
         />
       </div>
     </BoxNoPad>
-  );
-};
-
-export type DetailsRowProps = {
-  releaseId: string;
-  objectId: string;
-};
-
-/**
- * The details row shown when clicking on a row.
- */
-const DetailsRow = ({ releaseId, objectId }: DetailsRowProps): JSX.Element => {
-  const detailsQuery = useQuery(
-    ["releases-audit-log-details", objectId],
-    async () => {
-      return await axios
-        .get<AuditEntryDetailsType | null>(
-          `/api/releases/${releaseId}/audit-log/details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
-        )
-        .then((response) => response.data);
-    },
-    { keepPreviousData: true }
-  );
-
-  return detailsQuery.isSuccess && detailsQuery.data?.details ? (
-    <div className="whitespace-pre-wrap font-mono text-sm">
-      {detailsQuery.data.details}
-      {detailsQuery.data.truncated ? (
-        <div className="whitespace-pre-wrap pl-8 pt-2 font-mono text-sm font-bold italic text-gray-400">
-          ...
-        </div>
-      ) : (
-        <></>
-      )}
-    </div>
-  ) : detailsQuery.isError ? (
-    <EagerErrorBoundary
-      message={"Something went wrong displaying audit log details."}
-      error={detailsQuery.error}
-      styling={"bg-red-100"}
-    />
-  ) : (
-    <></>
   );
 };
 

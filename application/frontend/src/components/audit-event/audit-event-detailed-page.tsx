@@ -34,7 +34,7 @@ export const AuditEventDetailedPage = (): JSX.Element => {
   const path = usePathSegmentBeforeId(id);
 
   const query = useQuery(
-    ["audit-event", objectId],
+    [`${path}-audit-event`, objectId],
     async () => {
       return await axios
         .get<AuditEventFullType | null>(
@@ -62,7 +62,7 @@ export const AuditEventDetailedPage = (): JSX.Element => {
     <LayoutBase>
       <BoxNoPad
         heading={`Audit event for ${objectId}`}
-        errorMessage={"Something went wrong audit event."}
+        errorMessage={"Something went wrong showing audit event."}
       >
         <div className="mt-2 flex flex-grow flex-row flex-wrap overflow-auto">
           {query.isSuccess && (
