@@ -30,7 +30,7 @@ function DataAccessLogsBox() {
     ["release-data-access-audit", releaseId, objectId, currentPage],
     async () => {
       const response = await axios.get<AuditDataAccessType[]>(
-        `/api/releases/${releaseId}/audit-log/data-access`,
+        `/api/releases/${releaseId}/audit-event/data-access`,
         {
           params: {
             page: currentPage,

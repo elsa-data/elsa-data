@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { AuditEntryOwnedType } from "@umccr/elsa-types";
+import { AuditEventType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
 import { BoxNoPad } from "../boxes";
@@ -81,7 +81,7 @@ export const AuditEventTable = ({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [updateData, setUpdateData] = useState(true);
 
-  const [data, setData] = useState([] as AuditEntryOwnedType[]);
+  const [data, setData] = useState([] as AuditEventType[]);
   const [error, setError] = useState<ErrorState>({
     error: null,
     isSuccess: true,
@@ -247,15 +247,15 @@ export const useAuditEventQuery = (
   orderByProperty: string,
   orderAscending: boolean,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
+  setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
 ) => {
   return useQuery(
-    [`${path}-audit-log`, currentPage, id, orderByProperty, orderAscending],
+    [`${path}-audit-event`, currentPage, id, orderByProperty, orderAscending],
     async () => {
       return await axios
-        .get<AuditEntryOwnedType[]>(
-          `/api/${path}/${id}/audit-log?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
+        .get<AuditEventType[]>(
+          `/api/${path}/${id}/audit-event?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
         )
         .then((response) => {
           handleTotalCountHeaders(response, setCurrentTotal);
@@ -286,9 +286,9 @@ export const useAllAuditEventQueries = (
   path: string,
   id: string,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<AuditEntryOwnedType[]>>,
+  setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
-): { [key: string]: UseQueryResult<AuditEntryOwnedType[]> } => {
+): { [key: string]: UseQueryResult<AuditEventType[]> } => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
     orderAscending: boolean
@@ -413,7 +413,7 @@ export const CELL_BOX = "flex items-center justify-center w-8 h-8";
  * Create the column definition based on the audit entry type.
  */
 export const createColumns = (id: string) => {
-  const columnHelper = createColumnHelper<AuditEntryOwnedType>();
+  const columnHelper = createColumnHelper<AuditEventType>();
   return [
     columnHelper.accessor("objectId", {
       header: ({ table }) => {
@@ -454,7 +454,7 @@ export const createColumns = (id: string) => {
             <ToolTip
               trigger={
                 <a
-                  href={`/releases/${id}/audit-log/${info.getValue()}`}
+                  href={`/releases/${id}/audit-event/${info.getValue()}`}
                   className={classNames(
                     "invisible block hover:rounded-lg hover:bg-slate-200 group-hover:visible",
                     CELL_BOX

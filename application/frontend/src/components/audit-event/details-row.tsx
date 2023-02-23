@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
-import { AuditEntryDetailsType } from "@umccr/elsa-types";
+import { AuditEventDetailsType } from "@umccr/elsa-types";
 import { EagerErrorBoundary } from "../errors";
 import React from "react";
 
@@ -37,11 +37,11 @@ export const DetailsRow = ({
   objectId,
 }: DetailsRowProps): JSX.Element => {
   const detailsQuery = useQuery(
-    [`${path}-audit-log-details`, objectId],
+    [`${path}-audit-event-details`, objectId],
     async () => {
       return await axios
-        .get<AuditEntryDetailsType | null>(
-          `/api/${path}/${id}/audit-log/details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
+        .get<AuditEventDetailsType | null>(
+          `/api/${path}/${id}/audit-event/details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
         )
         .then((response) => response.data);
     },

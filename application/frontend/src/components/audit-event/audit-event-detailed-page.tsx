@@ -38,7 +38,7 @@ export const AuditEventDetailedPage = (): JSX.Element => {
     async () => {
       return await axios
         .get<AuditEventFullType | null>(
-          `/api/${path}/${id}/audit-log/${objectId}`
+          `/api/${path}/${id}/audit-event/${objectId}`
         )
         .then((response) => response.data);
     },

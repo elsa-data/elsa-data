@@ -7,10 +7,9 @@ import { differenceInSeconds } from "date-fns";
 import {
   AuditDataSummaryType,
   AuditDataAccessType,
-  AuditEntryDetailsType,
-  AuditEntryFullType,
-  AuditEntryOwnedType,
-  AuditEntryType,
+  AuditEventDetailsType,
+  AuditEventFullType,
+  AuditEventType,
 } from "@umccr/elsa-types/schemas-audit";
 import {
   createPagedResult,
@@ -418,7 +417,7 @@ export class AuditLogService {
     offset: number,
     orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
     orderAscending: boolean = false
-  ): Promise<PagedResult<AuditEntryOwnedType> | null> {
+  ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
       { releaseId }
@@ -461,7 +460,7 @@ export class AuditLogService {
     offset: number,
     orderByProperty: keyof UserAuditEvent = "occurredDateTime",
     orderAscending: boolean = false
-  ): Promise<PagedResult<AuditEntryOwnedType> | null> {
+  ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
       userId: user.dbId,
     });
@@ -502,7 +501,7 @@ export class AuditLogService {
     offset: number,
     orderByProperty: keyof SystemAuditEvent = "occurredDateTime",
     orderAscending: boolean = false
-  ): Promise<PagedResult<AuditEntryType> | null> {
+  ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForSystemQuery.run(executor);
 
     const pageOfEntries = await pageableAuditLogEntriesForSystemQuery(
@@ -538,7 +537,7 @@ export class AuditLogService {
     id: string,
     start: number,
     end: number
-  ): Promise<AuditEntryDetailsType | null> {
+  ): Promise<AuditEventDetailsType | null> {
     const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
 
     if (!entry) {
@@ -556,7 +555,7 @@ export class AuditLogService {
     executor: Executor,
     user: AuthenticatedUser,
     id: string
-  ): Promise<AuditEntryFullType | null> {
+  ): Promise<AuditEventFullType | null> {
     const entry = await auditLogFullForIdQuery(id).run(executor);
 
     if (!entry) {

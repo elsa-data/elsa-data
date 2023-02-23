@@ -10,8 +10,10 @@ export const ActionCategorySchema = Type.Union([
 ]);
 export type ActionCategoryType = Static<typeof ActionCategorySchema>;
 
-const AuditEntryBaseSchema = Type.Object({
+const AuditEventBaseSchema = Type.Object({
   objectId: Type.String(),
+  whoId: Type.Optional(Type.String()),
+  whoDisplayName: Type.Optional(Type.String()),
   actionCategory: ActionCategorySchema,
   actionDescription: Type.String(),
   recordedDateTime: TypeDate,
@@ -21,39 +23,27 @@ const AuditEntryBaseSchema = Type.Object({
   outcome: Type.Integer(),
 });
 
-const AuditEntryOwnedBaseSchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
-  whoId: Type.String(),
-  whoDisplayName: Type.String(),
-});
-
-export const AuditEntrySchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
+export const AuditEventSchema = Type.Object({
+  ...AuditEventBaseSchema.properties,
   hasDetails: Type.Boolean(),
 });
-export type AuditEntryType = Static<typeof AuditEntrySchema>;
+export type AuditEventType = Static<typeof AuditEventSchema>;
 
-export const AuditEntryOwnedSchema = Type.Object({
-  ...AuditEntryOwnedBaseSchema.properties,
-  hasDetails: Type.Boolean(),
-});
-export type AuditEntryOwnedType = Static<typeof AuditEntryOwnedSchema>;
-
-export const AuditEntryDetailsSchema = Type.Object({
+export const AuditEventDetailsSchema = Type.Object({
   objectId: Type.String(),
   details: Type.Optional(Type.String()),
   truncated: Type.Optional(Type.Boolean()),
 });
-export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;
+export type AuditEventDetailsType = Static<typeof AuditEventDetailsSchema>;
 
-export const AuditEntryFullSchema = Type.Object({
-  ...AuditEntryOwnedBaseSchema.properties,
+export const AuditEventFullSchema = Type.Object({
+  ...AuditEventBaseSchema.properties,
   details: Type.Optional(Type.Any()),
 });
-export type AuditEventFullType = Static<typeof AuditEntryFullSchema>;
+export type AuditEventFullType = Static<typeof AuditEventFullSchema>;
 
 export const AuditDataAccessSchema = Type.Object({
-  ...AuditEntryOwnedBaseSchema.properties,
+  ...AuditEventBaseSchema.properties,
   occurredDateTime: Type.String(),
   fileUrl: Type.String(),
   fileSize: Type.Integer(),

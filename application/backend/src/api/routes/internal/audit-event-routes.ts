@@ -1,5 +1,4 @@
 import { FastifyInstance } from "fastify";
-import { AuditEntryOwnedType } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
@@ -9,28 +8,27 @@ import * as edgedb from "edgedb";
 import { container } from "tsyringe";
 import { AuditLogService } from "../../../business/services/audit-log-service";
 import { Static, Type } from "@sinclair/typebox";
-import {
-  AuditDataAccessType,
-  AuditEntryDetailsType,
-  AuditEntryFullType,
-} from "@umccr/elsa-types/schemas-audit";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
 import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import UserAuditEvent = audit.UserAuditEvent;
+import {
+  AuditDataAccessType,
+  AuditEventDetailsType,
+  AuditEventType,
+  AuditEventFullType,
+} from "@umccr/elsa-types";
 
 // Todo: Potentially generate TypeBox schemas from the EdgeDb interface for fastify validation.
 //       E.g https://github.com/sinclairzx81/typebox/discussions/317
-export const AuditEventForReleaseQuerySchema = Type.Object({
+export const AuditEventForQuerySchema = Type.Object({
   page: Type.Optional(Type.Number()),
   orderByProperty: Type.Optional(Type.String()),
   orderAscending: Type.Optional(Type.Boolean()),
 });
-export type AuditEventForReleaseQueryType = Static<
-  typeof AuditEventForReleaseQuerySchema
->;
+export type AuditEventForQueryType = Static<typeof AuditEventForQuerySchema>;
 
 export const AuditEventByIdQuerySchema = Type.Object({
   id: Type.String(),
@@ -46,7 +44,10 @@ export type AuditEventDetailsQueryType = Static<
   typeof AuditEventDetailsQuerySchema
 >;
 
-export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
+export const auditEventRoutes = async (
+  fastify: FastifyInstance,
+  _opts: any
+) => {
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const datasetService = container.resolve<DatasetService>(DatasetService);
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
@@ -54,13 +55,13 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { releaseId: string };
-    Reply: AuditEntryOwnedType[];
-    Querystring: AuditEventForReleaseQueryType;
+    Reply: AuditEventType[];
+    Querystring: AuditEventForQueryType;
   }>(
-    "/releases/:releaseId/audit-log",
+    "/releases/:releaseId/audit-event",
     {
       schema: {
-        querystring: AuditEventForReleaseQuerySchema,
+        querystring: AuditEventForQuerySchema,
       },
     },
     async function (request, reply) {
@@ -87,10 +88,10 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { releaseId: string };
-    Reply: AuditEntryDetailsType | null;
+    Reply: AuditEventDetailsType | null;
     Querystring: AuditEventDetailsQueryType;
   }>(
-    "/releases/:releaseId/audit-log/details",
+    "/releases/:releaseId/audit-event/details",
     {
       schema: {
         querystring: AuditEventDetailsQuerySchema,
@@ -115,9 +116,9 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { releaseId: string; objectId: string };
-    Reply: AuditEntryFullType | null;
+    Reply: AuditEventFullType | null;
   }>(
-    "/releases/:releaseId/audit-log/:objectId",
+    "/releases/:releaseId/audit-event/:objectId",
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
@@ -134,12 +135,12 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
   fastify.get<{
     Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
-    Querystring: AuditEventForReleaseQueryType;
+    Querystring: AuditEventForQueryType;
   }>(
-    "/releases/:releaseId/audit-log/data-access",
+    "/releases/:releaseId/audit-event/data-access",
     {
       schema: {
-        querystring: AuditEventForReleaseQuerySchema,
+        querystring: AuditEventForQuerySchema,
       },
     },
     async function (request, reply) {
@@ -168,7 +169,7 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
     Params: { releaseId: string };
     Reply: AuditDataAccessType[] | null;
   }>(
-    "/releases/:releaseId/audit-log/data-access/summary",
+    "/releases/:releaseId/audit-event/data-access/summary",
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
@@ -255,13 +256,13 @@ export const auditLogRoutes = async (fastify: FastifyInstance, _opts: any) => {
 
   fastify.get<{
     Params: { userId: string };
-    Reply: AuditEntryOwnedType[];
-    Querystring: AuditEventForReleaseQueryType;
+    Reply: AuditEventType[];
+    Querystring: AuditEventForQueryType;
   }>(
-    "/users/:userId/audit-log",
+    "/users/:userId/audit-event",
     {
       schema: {
-        querystring: AuditEventForReleaseQuerySchema,
+        querystring: AuditEventForQuerySchema,
       },
     },
     async function (request, reply) {

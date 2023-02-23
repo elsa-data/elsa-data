@@ -60,7 +60,7 @@ export const App: React.FC = () => {
           <Route index element={<ReleasesPage />} />
           <Route path={`:id`}>
             <Route index element={<ReleasesDetailPage />} />
-            <Route path={`audit-log`}>
+            <Route path={`audit-event`}>
               <Route path={`:objectId`} element={<AuditEventDetailedPage />} />
               <Route path={`data-access`} element={<DataAccessPage />} />
             </Route>

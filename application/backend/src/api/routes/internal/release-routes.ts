@@ -24,7 +24,7 @@ import { JobsService } from "../../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
-import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
+import { AuditEventForQuerySchema } from "./audit-event-routes";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
