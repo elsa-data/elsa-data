@@ -4,6 +4,7 @@ import fastifySecureSession from "@fastify/secure-session";
 import fastifyFormBody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyTraps from "@dnlup/fastify-traps";
 import {
   locateHtmlDirectory,
@@ -78,6 +79,10 @@ export class App {
         fastifySecureSession,
         getSecureSessionOptions(this.settings)
       );
+
+      await this.server.register(fastifyCsrfProtection, {
+        sessionPlugin: "@fastify/secure-session",
+      });
 
       // set rate limits across the entire app surface - including APIs and HTML
       // NOTE: this rate limit is also applied in the NotFound handler

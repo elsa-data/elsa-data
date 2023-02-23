@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ALLOWED_CHANGE_ADMINS,
   ALLOWED_CREATE_NEW_RELEASES,
+  CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
@@ -169,6 +170,14 @@ export const apiAuthRoutes = async (
           allowed.join(",")
         );
 
+        // CSRF Token passed as cookie
+        cookieForUI(
+          request,
+          reply,
+          CSRF_TOKEN_COOKIE_NAME,
+          await reply.generateCsrf()
+        );
+
         reply.redirect("/");
       });
     };
@@ -276,6 +285,14 @@ export const callbackRoutes = async (
       reply,
       USER_ALLOWED_COOKIE_NAME,
       Array.from(allowed.values()).join(",")
+    );
+
+    // CSRF Token passed as cookie
+    cookieForUI(
+      request,
+      reply,
+      CSRF_TOKEN_COOKIE_NAME,
+      await reply.generateCsrf()
     );
 
     reply.redirect("/");
