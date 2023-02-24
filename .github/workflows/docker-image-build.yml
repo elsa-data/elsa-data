@@ -15,7 +15,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
 
-    # needs permissions to write to the Docker repo
+    # needs permissions to write to the github docker registry
     permissions:
       packages: write
       contents: read
