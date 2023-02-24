@@ -91,10 +91,13 @@ RUN : \
   && cd frontend \
   && npm run build:prod
 
+# we want to embed into the image environment immutable tags passed in by the build environment
 ARG ELSA_DATA_VERSION
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_VERSION:?Build argument needs to be set and not null.}"]
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
 
 ARG GITHUB_SHA
+RUN ["/bin/bash", "-c", ": ${GITHUB_SHA:?Build argument needs to be set and not null.}"]
 ENV GITHUB_SHA $GITHUB_SHA
 
 EXPOSE 80

@@ -34,8 +34,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: andrewpatto
-          password: ${{ secrets.ELSA_DATA_PUBLISH_DOCKER_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
