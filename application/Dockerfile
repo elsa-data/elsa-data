@@ -92,9 +92,17 @@ RUN : \
   && npm run build:prod
 
 # we want to embed into the image environment immutable tags passed in by the build environment
-ARG DOCKER_METADATA_OUTPUT_VERSION
-RUN ["/bin/bash", "-c", ": ${DOCKER_METADATA_OUTPUT_VERSION:?Build argument needs to be set and not null.}"]
-ENV ELSA_DATA_VERSION $DOCKER_METADATA_OUTPUT_VERSION
+ARG ELSA_DATA_VERSION
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_VERSION:?Build argument needs to be set and not null.}"]
+ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
+
+ARG ELSA_DATA_BUILT
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_BUILT:?Build argument needs to be set and not null.}"]
+ENV ELSA_DATA_BUILT $ELSA_DATA_BUILT
+
+ARG ELSA_DATA_REVISION
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_REVISION:?Build argument needs to be set and not null.}"]
+ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
 ARG GITHUB_SHA
 RUN ["/bin/bash", "-c", ": ${GITHUB_SHA:?Build argument needs to be set and not null.}"]

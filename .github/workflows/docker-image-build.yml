@@ -57,7 +57,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and Push
         uses: docker/build-push-action@v4
         with:
           context: application
@@ -65,4 +65,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            DOCKER_METADATA_OUTPUT_JSON
+            ELSA_DATA_BUILT=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            ELSA_DATA_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            ELSA_DATA_REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+            GITHUB_SHA=${{ github.sha }}
