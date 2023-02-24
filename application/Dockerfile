@@ -104,10 +104,6 @@ ARG ELSA_DATA_REVISION
 RUN ["/bin/bash", "-c", ": ${ELSA_DATA_REVISION:?Build argument needs to be set and not null.}"]
 ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
-ARG GITHUB_SHA
-RUN ["/bin/bash", "-c", ": ${GITHUB_SHA:?Build argument needs to be set and not null.}"]
-ENV GITHUB_SHA $GITHUB_SHA
-
 EXPOSE 80
 
 WORKDIR /app/backend
