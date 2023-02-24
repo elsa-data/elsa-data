@@ -35,10 +35,10 @@ import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditE
 // @ts-ignore
 import { insertSystemAuditEvent } from "../../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
 import { audit } from "../../../dbschema/interfaces";
-import UserAuditEvent = audit.UserAuditEvent;
-import SystemAuditEvent = audit.SystemAuditEvent;
 import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
+import AuditEvent = audit.AuditEvent;
+import { isSuperAdmin } from "../../api/session-cookie-route-hook";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -458,7 +458,7 @@ export class AuditLogService {
     user: AuthenticatedUser,
     limit: number,
     offset: number,
-    orderByProperty: keyof UserAuditEvent = "occurredDateTime",
+    orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
@@ -466,9 +466,10 @@ export class AuditLogService {
     });
 
     const pageOfEntries = await pageableAuditLogEntriesForUserQuery(
-      user.dbId,
+      isSuperAdmin(this.settings, user) ? "all" : [user.dbId],
       limit,
       offset,
+      true,
       orderByProperty,
       orderAscending
     ).run(executor);
@@ -499,7 +500,7 @@ export class AuditLogService {
     executor: Executor,
     limit: number,
     offset: number,
-    orderByProperty: keyof SystemAuditEvent = "occurredDateTime",
+    orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForSystemQuery.run(executor);
@@ -507,6 +508,7 @@ export class AuditLogService {
     const pageOfEntries = await pageableAuditLogEntriesForSystemQuery(
       limit,
       offset,
+      true,
       orderByProperty,
       orderAscending
     ).run(executor);
@@ -518,6 +520,8 @@ export class AuditLogService {
     return createPagedResult(
       pageOfEntries.map((entry) => ({
         objectId: entry.id,
+        whoId: null,
+        whoDisplayName: null,
         actionCategory: entry.actionCategory,
         actionDescription: entry.actionDescription,
         recordedDateTime: entry.recordedDateTime,

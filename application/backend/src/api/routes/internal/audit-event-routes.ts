@@ -13,7 +13,7 @@ import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
 import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
-import UserAuditEvent = audit.UserAuditEvent;
+import AuditEvent = audit.AuditEvent;
 import {
   AuditDataAccessType,
   AuditEventDetailsType,
@@ -277,7 +277,7 @@ export const auditEventRoutes = async (
         authenticatedUser,
         pageSize,
         (page - 1) * pageSize,
-        orderByProperty as keyof UserAuditEvent,
+        orderByProperty as keyof AuditEvent,
         orderAscending
       );
 

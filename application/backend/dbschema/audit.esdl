@@ -5,8 +5,11 @@ module audit {
     scalar type ActionType extending enum<'C', 'R', 'U', 'D', 'E'>;
     
     abstract type AuditEvent {
-        # a code for the broad category of action (read, create, update etc)
+        # who initiated the action being audited
+        property whoId -> str;
+        property whoDisplayName -> str;
 
+        # a code for the broad category of action (read, create, update etc)
         required property actionCategory -> ActionType;
 
         # a string describing the action but with no details i.e. "Viewing a Release", "Creating a User"
@@ -54,14 +57,7 @@ module audit {
         property details -> json;
     }
 
-    # An audit event which can be caused by a user.
-    abstract type OwnedAuditEvent extending AuditEvent {
-        # who initiated the action being audited
-        required property whoId -> str;
-        required property whoDisplayName -> str;
-    }
-
-    type DataAccessAuditEvent extending OwnedAuditEvent {
+    type DataAccessAuditEvent extending AuditEvent {
 
         # Link back which audit owns this
         link release_ := .<dataAccessAuditLog[is release::Release];
@@ -70,13 +66,13 @@ module audit {
         required property egressBytes -> int64;
     }
 
-    type ReleaseAuditEvent extending OwnedAuditEvent {
+    type ReleaseAuditEvent extending AuditEvent {
         
         # Link back which release own this audit log
         link release_ := .<releaseAuditLog[is release::Release];
     }
 
-    type UserAuditEvent extending OwnedAuditEvent {
+    type UserAuditEvent extending AuditEvent {
         # Link back to the user which this event belongs to.
         link user_ := .<userAuditEvent[is permission::User];
     }
