@@ -1,38 +1,36 @@
 import React from "react";
+import { useEnvRelay } from "../providers/env-relay-provider";
 
 export const LayoutBaseFooter: React.FC = () => {
+  const envRelay = useEnvRelay();
+
   return (
     <>
-      <footer className="border-t border-gray-400 bg-white shadow">
-        <div className="container mx-auto flex max-w-md py-2">
-          <div className="mx-auto flex w-full flex-wrap">
-            <div className="flex w-full md:w-1/2 ">
-              <div className="px-8">
-                <h3 className="font-bold font-bold text-gray-900">About</h3>
-                {/*<p className="py-4 text-gray-600 text-sm">
-                  A data release coordinator
-                </p> */}
-              </div>
-            </div>
+      <div className="container mx-auto w-full">
+        <footer className="p-4 dark:bg-gray-800 md:flex md:items-center md:justify-between md:p-6">
+          <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
+            Elsa Data
+            <span
+              className="mr-1 ml-3 text-gray-300"
+              title={envRelay.built + " " + envRelay.revision}
+            >
+              v
+            </span>
+            {envRelay.version}
+          </span>
+          <ul className="mt-3 flex flex-wrap items-center text-sm text-gray-500 dark:text-gray-400 sm:mt-0">
+            <li>
+              <a
+                href="https://github.com/umccr/elsa-data"
+                className="hover:underline"
+              >
+                Github
+              </a>
+            </li>
+          </ul>
+        </footer>
+      </div>
 
-            <div className="flex w-full md:w-1/2">
-              <div className="px-8">
-                <h3 className="font-bold font-bold text-gray-900">Social</h3>
-                {/*<ul className="list-reset items-center text-sm pt-3">
-                  <li>
-                    <a
-                      className="inline-block text-gray-600 no-underline hover:text-gray-900 hover:underline py-1"
-                      href="https://www.ga4gh.org"
-                    >
-                      GA4GH
-                    </a>
-                  </li>
-                </ul> */}
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
       {/* FOOTER END */}
     </>
   );

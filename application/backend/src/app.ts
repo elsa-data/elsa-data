@@ -20,16 +20,12 @@ import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
+import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
 
 @injectable()
 @singleton()
 export class App {
   public server: FastifyInstance;
-
-  private readonly optional_runtime_environment: string[] = [
-    "SEMANTIC_VERSION",
-    "BUILD_VERSION",
-  ];
 
   // a absolute path to where static files are to be served from
   public staticFilesPath: string;
@@ -172,7 +168,7 @@ export class App {
           await serveCustomIndexHtml(
             reply,
             this.staticFilesPath,
-            this.buildSafeEnvironment()
+            this.buildIndexHtmlTemplateData()
           );
       }
     );
@@ -185,7 +181,7 @@ export class App {
         return await serveCustomIndexHtml(
           reply,
           this.staticFilesPath,
-          this.buildSafeEnvironment()
+          this.buildIndexHtmlTemplateData()
         );
       }
 
@@ -200,35 +196,18 @@ export class App {
   }
 
   /**
-   * Builds an environment dictionary that is whitelisted to known safe values using
-   * whatever logic we want. This dictionary becomes the context for all HTML templating
-   * - including a special data attribute that is used for injecting data into React.
+   * Builds context for all HTML templating
+   * including a special data attribute that is used for injecting data into React.
+   *
+   * We can do any type of environment mapping/injection we want here.
    *
    * This can fetch values from any source we want
    * - environment variables passed in via CloudFormation
    * - secrets
    * - parameter store
    * - request variables
-   *
-   * @private
    */
-  private buildSafeEnvironment(): { [id: string]: string } {
-    const result: { [id: string]: string } = {};
-
-    const addEnv = (key: string, required: boolean) => {
-      const val = process.env[key];
-
-      if (required && !val)
-        throw new Error(
-          `Our environment for index.html templating requires a variable named ${key}`
-        );
-
-      if (val) result[key.toLowerCase()] = val;
-    };
-
-    // for (const k of this.required_runtime_environment) addEnv(k, true);
-    for (const k of this.optional_runtime_environment) addEnv(k, false);
-
+  private buildIndexHtmlTemplateData(): IndexHtmlTemplateData {
     let dataAttributes = "";
 
     const addAttribute = (k: string, v: string) => {
@@ -245,22 +224,20 @@ export class App {
     // Maps all the *deploy* time (stack) and *view* time (from browser fetching index.html)
     // environment data into data-attributes that will be
     // passed into the React app.
-    addAttribute(
-      "data-semantic-version",
-      result.semantic_version || "undefined"
-    );
-    addAttribute("data-build-version", result.build_version || "unknown");
+    addAttribute("data-version", getMandatoryEnv("ELSA_DATA_VERSION"));
+    addAttribute("data-built", getMandatoryEnv("ELSA_DATA_BUILT"));
+    addAttribute("data-revision", getMandatoryEnv("ELSA_DATA_REVISION"));
     addAttribute(
       "data-deployed-environment",
       this.settings.devTesting ? "development" : "production"
     );
     addAttribute(
       "data-terminology-fhir-url",
-      result.terminology_fhir_url || this.settings.ontoFhirUrl || "undefined"
+      this.settings.ontoFhirUrl || "undefined"
     );
 
-    result["data_attributes"] = dataAttributes;
-
-    return result;
+    return {
+      data_attributes: dataAttributes,
+    };
   }
 }

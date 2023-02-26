@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 import { ErrorBoundary } from "../components/errors";
+import { LayoutBaseFooter } from "./layout-base-footer";
 
 type Props = {};
 
@@ -166,7 +167,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
         </div>
       </div>
 
-      {/*<LayoutBaseFooter />*/}
+      <div className="bg-white">{<LayoutBaseFooter />}</div>
     </>
   );
 };
