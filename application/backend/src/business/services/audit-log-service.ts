@@ -34,7 +34,6 @@ import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditE
 // @ts-ignore
 import { insertSystemAuditEvent } from "../../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
 import { audit } from "../../../dbschema/interfaces";
-import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
 
@@ -413,7 +412,7 @@ export class AuditLogService {
     releaseId: string,
     limit: number,
     offset: number,
-    orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
+    orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(

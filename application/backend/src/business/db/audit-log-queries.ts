@@ -61,6 +61,51 @@ export const countDataAccessAuditLogEntriesQuery = e.params(
 );
 
 /**
+ * Common properties for audit events.
+ */
+export const auditEventProperties = {
+  id: true,
+  whoId: true,
+  whoDisplayName: true,
+  actionCategory: true,
+  actionDescription: true,
+  recordedDateTime: true,
+  updatedDateTime: true,
+  occurredDateTime: true,
+  occurredDuration: true,
+  outcome: true,
+} as const;
+
+/***
+ * Common paginate logic.
+ */
+export const paginateLogic = <T extends AuditEvent>(
+  auditEvent: T,
+  limit: number,
+  offset: number,
+  orderByProperty: keyof AuditEvent = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  return {
+    order_by: [
+      {
+        expression:
+          orderByProperty === "actionCategory"
+            ? e.cast(e.str, auditEvent.actionCategory)
+            : auditEvent[orderByProperty],
+        direction: orderAscending ? e.ASC : e.DESC,
+      },
+      {
+        expression: auditEvent.occurredDateTime,
+        direction: e.DESC,
+      },
+    ],
+    limit: limit,
+    offset: offset,
+  };
+};
+
+/**
  * An EdgeDb query for the audit log details associated with an id.
  */
 export const auditLogDetailsForIdQuery = (
@@ -101,16 +146,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
-    id: true,
-    whoId: true,
-    whoDisplayName: true,
-    actionCategory: true,
-    actionDescription: true,
-    recordedDateTime: true,
-    updatedDateTime: true,
-    occurredDateTime: true,
-    occurredDuration: true,
-    outcome: true,
+    ...auditEventProperties,
     hasDetails: e.op("exists", auditEvent.details),
     filter: e.op(auditEvent.release_.id, "=", e.uuid(releaseId)),
     order_by: [
@@ -164,16 +200,7 @@ export const pageableUserAndSystemAuditEventsQuery = (
     );
 
     return e.select(e.op(userEvents, "union", systemEvents), (auditEvent) => ({
-      id: true,
-      whoId: true,
-      whoDisplayName: true,
-      actionCategory: true,
-      actionDescription: true,
-      recordedDateTime: true,
-      updatedDateTime: true,
-      occurredDateTime: true,
-      occurredDuration: true,
-      outcome: true,
+      ...auditEventProperties,
       hasDetails: e.op("exists", auditEvent.details),
       ...(paginate && {
         order_by: [
@@ -221,16 +248,7 @@ export const pageableAuditLogEntriesForUserQuery = (
   return e.select(
     e.audit.AuditEvent.is(e.audit.UserAuditEvent),
     (auditEvent) => ({
-      id: true,
-      whoId: true,
-      whoDisplayName: true,
-      actionCategory: true,
-      actionDescription: true,
-      recordedDateTime: true,
-      updatedDateTime: true,
-      occurredDateTime: true,
-      occurredDuration: true,
-      outcome: true,
+      ...auditEventProperties,
       ...(computeDetails && {
         hasDetails: e.op("exists", auditEvent.details),
       }),
@@ -312,14 +330,7 @@ export const pageableAuditLogEntriesForSystemQuery = (
   return e.select(
     e.audit.AuditEvent.is(e.audit.SystemAuditEvent),
     (auditEvent) => ({
-      id: true,
-      actionCategory: true,
-      actionDescription: true,
-      recordedDateTime: true,
-      updatedDateTime: true,
-      occurredDateTime: true,
-      occurredDuration: true,
-      outcome: true,
+      ...auditEventProperties,
       ...(computeDetails && {
         hasDetails: e.op("exists", auditEvent.details),
       }),
