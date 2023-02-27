@@ -20,18 +20,18 @@ if (rootElement != null) {
   // React code
   // the pattern we use is that when the index page is served up by the server - it uses templating to set
   // a variety of data attributes on the rootElement DOM node
-  //      data-semantic-version="1.2.3"
+  //      data-deployed-environment="production"
   // in the index.html that goes to the client
-  // in the react this then comes into the rootElement element as a dataset (via HTML5 standard behaviour)
+  // in the react this then comes into the rootElement element as a dataset (via HTML5 native behaviour)
   // e.g.
-  // rootElement.dataset.semanticVersion
+  // rootElement.dataset.deployedEnvironment
   // (NOTE: the conversion from kebab casing to camel casing is AUTOMATIC as part of HTML5!)
   const loc = rootElement.dataset.locale || "en";
-  const sv = rootElement.dataset.semanticVersion || "undefined version";
-  const bv = rootElement.dataset.buildVersion || "-1";
+  const ver = rootElement.dataset.version || "undefined version";
+  const built = rootElement.dataset.built || "unknown";
+  const rev = rootElement.dataset.revision || "undefined revision";
   const de = (rootElement.dataset.deployedEnvironment ||
     "development") as DeployedEnvironments;
-  const dl = rootElement.dataset.deployedLocation || "undefined location";
   const tfu =
     rootElement.dataset.terminologyFhirUrl || "undefined terminology FHIR URL";
 
@@ -43,10 +43,10 @@ if (rootElement != null) {
       <ErrorBoundary rethrowError={(_: any) => false}>
         {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
         <EnvRelayProvider
-          semanticVersion={sv}
-          buildVersion={bv}
+          version={ver}
+          built={built}
+          revision={rev}
           deployedEnvironment={de}
-          deployedLocation={dl}
           terminologyFhirUrl={tfu}
         >
           {/* the query provider comes from react-query and provides standardised remote query semantics */}

@@ -4,10 +4,28 @@ import { createCtx } from "./create-ctx";
 export type DeployedEnvironments = "production" | "development";
 
 export type EnvRelay = {
-  semanticVersion: string;
-  buildVersion: string;
+  /**
+   * The version of this released software. e.g. 1.0.1
+   * Though this string should only be used by the front end for
+   * display purposes - there is no guarantee that it will always
+   * be strictly a semantic version for instance.
+   */
+  version: string;
+
+  /**
+   * The ISO date time of the building of this release software,
+   * though this string should only be used by the front end for
+   * display purposes - there is no guarantee that it is an ISO
+   * parseable time.
+   */
+  built: string;
+
+  /**
+   * The precise source revision used for building this software.
+   */
+  revision: string;
+
   deployedEnvironment: DeployedEnvironments;
-  deployedLocation: string;
   terminologyFhirUrl: string;
 };
 
