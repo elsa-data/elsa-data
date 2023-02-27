@@ -26,32 +26,27 @@ export const usePathSegmentBeforeId = (id?: string): string => {
  * The audit event page shows a full audit entry event as a JSON.
  */
 export const AuditEventDetailedPage = (): JSX.Element => {
-  const { id, objectId } = useParams<{
-    id: string;
+  const { objectId } = useParams<{
     objectId: string;
   }>();
 
-  const path = usePathSegmentBeforeId(id);
-
   const query = useQuery(
-    [`${path}-audit-event`, objectId],
+    [`audit-event-details`, objectId],
     async () => {
       return await axios
-        .get<AuditEventFullType | null>(
-          `/api/${path}/${id}/audit-event/${objectId}`
-        )
+        .get<AuditEventFullType | null>(`/api/audit-event/details/${objectId}`)
         .then((response) => response.data);
     },
     { keepPreviousData: true, enabled: !!objectId }
   );
 
-  if (!id || !objectId) {
+  if (!objectId) {
     return (
       <EagerErrorBoundary
         message={
           <div>
-            Error: this component should not be rendered outside a route with a
-            <code>id</code> or <code>objectId</code> param
+            Error: this component should not be rendered outside a route with a{" "}
+            <code>objectId</code> param
           </div>
         }
       />

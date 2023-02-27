@@ -15,14 +15,6 @@ export const MAXIMUM_DETAIL_LENGTH = 1000;
  */
 export type DetailsRowProps = {
   /**
-   * The api path to use when displaying the details row.
-   */
-  path: string;
-  /**
-   * The id of the component in the path.
-   */
-  id: string;
-  /**
    * The id of the audit event.
    */
   objectId: string;
@@ -31,17 +23,13 @@ export type DetailsRowProps = {
 /**
  * The details row shown when clicking on a row in an audit event table.
  */
-export const DetailsRow = ({
-  path,
-  id,
-  objectId,
-}: DetailsRowProps): JSX.Element => {
+export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
   const detailsQuery = useQuery(
-    [`${path}-audit-event-details`, objectId],
+    [`audit-event-details`, objectId],
     async () => {
       return await axios
         .get<AuditEventDetailsType | null>(
-          `/api/${path}/${id}/audit-event/details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
+          `/api/audit-event/truncated-details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
         )
         .then((response) => response.data);
     },

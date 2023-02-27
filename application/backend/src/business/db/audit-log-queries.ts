@@ -70,7 +70,8 @@ export const auditLogDetailsForIdQuery = (
 ) => {
   const detailsStr = (auditEvent: any) =>
     e.to_str(auditEvent.details, "pretty");
-  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+
+  return e.select(e.audit.AuditEvent, (auditEvent) => ({
     id: true,
     detailsStr: detailsStr(auditEvent).slice(start, end),
     truncated: e.op(e.len(detailsStr(auditEvent)), ">=", end),
@@ -82,8 +83,8 @@ export const auditLogDetailsForIdQuery = (
  * An EdgeDb query for the full audit log event associated with an id.
  */
 export const auditLogFullForIdQuery = (id: string) => {
-  return e.select(e.audit.ReleaseAuditEvent, (_) => ({
-    ...e.audit.ReleaseAuditEvent["*"],
+  return e.select(e.audit.AuditEvent, (_) => ({
+    ...e.audit.AuditEvent["*"],
     filter_single: { id: e.uuid(id) },
   }));
 };

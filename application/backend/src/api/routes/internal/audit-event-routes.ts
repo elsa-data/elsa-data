@@ -90,11 +90,11 @@ export const auditEventRoutes = async (
   );
 
   fastify.get<{
-    Params: { releaseId: string };
+    Params: {};
     Reply: AuditEventDetailsType | null;
     Querystring: AuditEventDetailsQueryType;
   }>(
-    "/releases/:releaseId/audit-event/details",
+    "/audit-event/truncated-details",
     {
       schema: {
         querystring: AuditEventDetailsQuerySchema,
@@ -118,22 +118,19 @@ export const auditEventRoutes = async (
   );
 
   fastify.get<{
-    Params: { releaseId: string; objectId: string };
+    Params: { objectId: string };
     Reply: AuditEventFullType | null;
-  }>(
-    "/releases/:releaseId/audit-event/:objectId",
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+  }>("/audit-event/details/:objectId", async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const events = await auditLogService.getFullEntry(
-        edgeDbClient,
-        authenticatedUser,
-        request.params.objectId
-      );
+    const events = await auditLogService.getFullEntry(
+      edgeDbClient,
+      authenticatedUser,
+      request.params.objectId
+    );
 
-      sendResult(reply, events);
-    }
-  );
+    sendResult(reply, events);
+  });
 
   fastify.get<{
     Params: { releaseId: string };

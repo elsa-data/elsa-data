@@ -61,7 +61,6 @@ export const App: React.FC = () => {
           <Route path={`:id`}>
             <Route index element={<ReleasesDetailPage />} />
             <Route path={`audit-event`}>
-              <Route path={`:objectId`} element={<AuditEventDetailedPage />} />
               <Route path={`data-access`} element={<DataAccessPage />} />
             </Route>
           </Route>
@@ -69,6 +68,10 @@ export const App: React.FC = () => {
 
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
         <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
+        <Route
+          path={`/audit-event/details/:objectId`}
+          element={<AuditEventDetailedPage />}
+        />
         <Route path={`/audit-events/:id`} element={<AuditEventsPage />} />
         <Route path="*" element={<NoMatch />} />
       </Routes>

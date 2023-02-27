@@ -116,7 +116,7 @@ export const AuditEventTable = ({
 
   const table = useReactTable({
     data: data,
-    columns: createColumns(id),
+    columns: createColumns(),
     state: {
       sorting,
     },
@@ -203,11 +203,7 @@ export const AuditEventTable = ({
                         colSpan={row.getVisibleCells().length}
                         className="left border-b p-4 text-sm text-gray-500"
                       >
-                        <DetailsRow
-                          path="releases"
-                          id={id}
-                          objectId={row.original.objectId}
-                        />
+                        <DetailsRow objectId={row.original.objectId} />
                       </td>
                     </tr>
                   )}
@@ -412,7 +408,7 @@ export const CELL_BOX = "flex items-center justify-center w-8 h-8";
 /**
  * Create the column definition based on the audit entry type.
  */
-export const createColumns = (id: string) => {
+export const createColumns = () => {
   const columnHelper = createColumnHelper<AuditEventType>();
   return [
     columnHelper.accessor("objectId", {
@@ -454,7 +450,7 @@ export const createColumns = (id: string) => {
             <ToolTip
               trigger={
                 <a
-                  href={`/releases/${id}/audit-event/${info.getValue()}`}
+                  href={`/audit-event/details/${info.getValue()}`}
                   className={classNames(
                     "invisible block hover:rounded-lg hover:bg-slate-200 group-hover:visible",
                     CELL_BOX
