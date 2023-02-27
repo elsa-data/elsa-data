@@ -62,9 +62,7 @@ export class App {
       await this.server.register(fastifyTraps);
       await this.server.register(fastifyFormBody);
 
-      await this.server.register(fastifyHelmet, {
-        contentSecurityPolicy: false,
-      });
+      await this.server.register(fastifyHelmet, {});
 
       await this.server.register(fastifyStatic, {
         root: this.staticFilesPath,
