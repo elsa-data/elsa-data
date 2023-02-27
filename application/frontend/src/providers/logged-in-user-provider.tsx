@@ -9,6 +9,7 @@ import {
 } from "@umccr/elsa-constants";
 
 export type LoggedInUser = {
+  userId: string;
   displayName: string;
   displayEmail?: string;
 };
@@ -41,6 +42,7 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
 
   const val = isLoggedIn
     ? {
+        userId: isLoggedIn,
         displayName: isLoggedInName,
         displayEmail: isLoggedInEmail,
       }

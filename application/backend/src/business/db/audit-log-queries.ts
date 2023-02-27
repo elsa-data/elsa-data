@@ -149,6 +149,7 @@ export const pageableUserAndSystemAuditEventsQuery = (
       limit,
       offset,
       false,
+      false,
       orderByProperty,
       orderAscending
     );
@@ -156,12 +157,23 @@ export const pageableUserAndSystemAuditEventsQuery = (
       limit,
       offset,
       false,
+      false,
       orderByProperty,
       orderAscending
     );
 
     return e.select(e.op(userEvents, "union", systemEvents), (auditEvent) => ({
-      ...auditEvent["*"],
+      id: true,
+      whoId: true,
+      whoDisplayName: true,
+      actionCategory: true,
+      actionDescription: true,
+      recordedDateTime: true,
+      updatedDateTime: true,
+      occurredDateTime: true,
+      occurredDuration: true,
+      outcome: true,
+      hasDetails: e.op("exists", auditEvent.details),
       ...(paginate && {
         order_by: [
           {
@@ -185,6 +197,7 @@ export const pageableUserAndSystemAuditEventsQuery = (
     userIds,
     limit,
     offset,
+    true,
     paginate,
     orderByProperty,
     orderAscending
@@ -199,6 +212,7 @@ export const pageableAuditLogEntriesForUserQuery = (
   userIds: [string] | "all",
   limit: number,
   offset: number,
+  computeDetails: boolean = true,
   paginate: boolean = true,
   orderByProperty: keyof AuditEvent = "occurredDateTime",
   orderAscending: boolean = false
@@ -216,7 +230,9 @@ export const pageableAuditLogEntriesForUserQuery = (
       occurredDateTime: true,
       occurredDuration: true,
       outcome: true,
-      hasDetails: e.op("exists", auditEvent.details),
+      ...(computeDetails && {
+        hasDetails: e.op("exists", auditEvent.details),
+      }),
       ...(userIds !== "all" && {
         filter: e.contains(
           e.literal(e.array(e.uuid), userIds),
@@ -287,6 +303,7 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
 export const pageableAuditLogEntriesForSystemQuery = (
   limit: number,
   offset: number,
+  computeDetails: boolean = true,
   paginate: boolean = true,
   orderByProperty: keyof AuditEvent = "occurredDateTime",
   orderAscending: boolean = false
@@ -302,7 +319,9 @@ export const pageableAuditLogEntriesForSystemQuery = (
       occurredDateTime: true,
       occurredDuration: true,
       outcome: true,
-      hasDetails: e.op("exists", auditEvent.details),
+      ...(computeDetails && {
+        hasDetails: e.op("exists", auditEvent.details),
+      }),
       ...(paginate && {
         order_by: [
           {

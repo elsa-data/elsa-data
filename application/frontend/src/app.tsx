@@ -69,7 +69,7 @@ export const App: React.FC = () => {
 
         <Route path={`/datasets`} element={<DatasetsDashboardPage />} />
         <Route path={`/datasets/:datasetId`} element={<DatasetsDetailPage />} />
-        <Route path={`/audit-events`} element={<AuditEventsPage />} />
+        <Route path={`/audit-events/:id`} element={<AuditEventsPage />} />
         <Route path="*" element={<NoMatch />} />
       </Routes>
     );

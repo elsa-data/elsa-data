@@ -20,11 +20,10 @@ import {
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
   countAuditLogEntriesForSystemQuery,
-  countAuditLogEntriesForUserQuery,
   countDataAccessAuditLogEntriesQuery,
   pageableAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForSystemQuery,
-  pageableAuditLogEntriesForUserQuery,
+  pageableUserAndSystemAuditEventsQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -38,7 +37,6 @@ import { audit } from "../../../dbschema/interfaces";
 import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
-import { isSuperAdmin } from "../../api/session-cookie-route-hook";
 
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
@@ -453,29 +451,38 @@ export class AuditLogService {
     );
   }
 
+  /**
+   * Get User entries, optionally including system events too.
+   *
+   * @param executor
+   * @param users
+   * @param limit
+   * @param offset
+   * @param includeSystemEvents
+   * @param orderByProperty
+   * @param orderAscending
+   */
   public async getUserEntries(
     executor: Executor,
-    user: AuthenticatedUser,
+    users: AuthenticatedUser | "all" | [string],
     limit: number,
     offset: number,
+    includeSystemEvents: boolean = false,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
-    const totalEntries = await countAuditLogEntriesForUserQuery.run(executor, {
-      userId: user.dbId,
-    });
-
-    const pageOfEntries = await pageableAuditLogEntriesForUserQuery(
-      isSuperAdmin(this.settings, user) ? "all" : [user.dbId],
+    const pageOfEntries = await pageableUserAndSystemAuditEventsQuery(
+      users instanceof AuthenticatedUser ? [users.dbId] : users,
       limit,
       offset,
       true,
+      includeSystemEvents,
       orderByProperty,
       orderAscending
     ).run(executor);
 
     console.log(
-      `${AuditLogService.name}.getEntries(userId=${user.dbId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditLogService.name}.getEntries(users=${users}, limit=${limit}, offset=${offset}) -> total=${pageOfEntries.length}, pageOfEntries=...`
     );
 
     return createPagedResult(
@@ -491,8 +498,7 @@ export class AuditLogService {
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
         hasDetails: entry.hasDetails,
-      })),
-      totalEntries
+      }))
     );
   }
 
@@ -508,6 +514,7 @@ export class AuditLogService {
     const pageOfEntries = await pageableAuditLogEntriesForSystemQuery(
       limit,
       offset,
+      true,
       true,
       orderByProperty,
       orderAscending

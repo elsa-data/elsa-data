@@ -20,6 +20,8 @@ import {
   AuditEventType,
   AuditEventFullType,
 } from "@umccr/elsa-types";
+import { isSuperAdmin } from "../../session-cookie-route-hook";
+import { ElsaSettings } from "../../../config/elsa-settings";
 
 // Todo: Potentially generate TypeBox schemas from the EdgeDb interface for fastify validation.
 //       E.g https://github.com/sinclairzx81/typebox/discussions/317
@@ -48,6 +50,7 @@ export const auditEventRoutes = async (
   fastify: FastifyInstance,
   _opts: any
 ) => {
+  const settings = container.resolve<ElsaSettings>("Settings");
   const edgeDbClient = container.resolve<edgedb.Client>("Database");
   const datasetService = container.resolve<DatasetService>(DatasetService);
   const auditLogService = container.resolve<AuditLogService>(AuditLogService);
@@ -274,9 +277,10 @@ export const auditEventRoutes = async (
 
       const events = await auditLogService.getUserEntries(
         edgeDbClient,
-        authenticatedUser,
+        isSuperAdmin(settings, authenticatedUser) ? "all" : authenticatedUser,
         pageSize,
         (page - 1) * pageSize,
+        true,
         orderByProperty as keyof AuditEvent,
         orderAscending
       );
