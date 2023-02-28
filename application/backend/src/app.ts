@@ -59,7 +59,12 @@ export class App {
   public async setupServer(): Promise<FastifyInstance> {
     // register global fastify plugins
     {
+      // we want our server to quickly shutdown in response to TERM signals - enabling our
+      // other infrastructure (load balancers, ecs etc) to be totally in charge of keeping us
+      // running as a service
+      // this sets up traps to do it gracefully however
       await this.server.register(fastifyTraps);
+
       await this.server.register(fastifyFormBody);
 
       await this.server.register(fastifyHelmet, {});
