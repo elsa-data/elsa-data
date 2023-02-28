@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ALLOWED_CHANGE_ADMINS,
   ALLOWED_CREATE_NEW_RELEASES,
+  IS_SUPER_ADMIN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
@@ -298,6 +299,7 @@ export const callbackRoutes = async (
       USER_ALLOWED_COOKIE_NAME,
       Array.from(allowed.values()).join(",")
     );
+    cookieForUI(request, reply, IS_SUPER_ADMIN_COOKIE_NAME, isa.toString());
 
     reply.redirect("/");
   });

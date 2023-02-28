@@ -40,6 +40,9 @@ import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
+import { useLoggedInUser } from "../../providers/logged-in-user-provider";
+import { MenuItem } from "../menu/menu-item";
+import { Menu } from "../menu/menu";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -87,6 +90,13 @@ export const AuditEventTable = ({
     isSuccess: true,
   });
 
+  const loggedInUser = useLoggedInUser();
+
+  const [includeReleaseEvents, setIncludeReleaseEvents] = useState(true);
+  const [includeUserEvents, setIncludeUserEvents] = useState(false);
+  const [includeSystemEvents, setIncludeSystemEvents] = useState(false);
+  const [includeAllEvents, setIncludeAllEvents] = useState(false);
+
   const dataQueries = useAllAuditEventQueries(
     currentPage,
     path,
@@ -133,7 +143,63 @@ export const AuditEventTable = ({
   // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
   return (
     <BoxNoPad
-      heading="Audit Logs"
+      heading={
+        <div className="flex items-center	justify-between">
+          <div>Audit Logs</div>
+          <div className="flex content-center items-center">
+            <div>
+              <Menu heading={<>Filter audit events</>}>
+                <MenuItem>
+                  <label className="flex content-center items-center pl-2 text-gray-800">
+                    <input
+                      className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                      type="checkbox"
+                      checked={includeReleaseEvents}
+                      onChange={() => setIncludeReleaseEvents((v) => !v)}
+                    />
+                    <div className="text-xs">Release audit events</div>
+                  </label>
+                </MenuItem>
+                <MenuItem>
+                  <label className="flex content-center items-center pl-2 text-gray-800">
+                    <input
+                      className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                      type="checkbox"
+                      checked={includeUserEvents}
+                      onChange={() => setIncludeUserEvents((v) => !v)}
+                    />
+                    <div className="text-xs">User audit events</div>
+                  </label>
+                </MenuItem>
+                <MenuItem>
+                  <label className="flex content-center items-center pl-2 text-gray-800">
+                    <input
+                      className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                      type="checkbox"
+                      checked={includeSystemEvents}
+                      onChange={() => setIncludeSystemEvents((v) => !v)}
+                    />
+                    <div className="text-xs">System audit events</div>
+                  </label>
+                </MenuItem>
+                {loggedInUser?.isSuperAdmin && (
+                  <MenuItem>
+                    <label className="flex content-center items-center pl-2 text-gray-800">
+                      <input
+                        className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                        type="checkbox"
+                        checked={includeAllEvents}
+                        onChange={() => setIncludeAllEvents((v) => !v)}
+                      />
+                      <div className="text-xs">All audit events</div>
+                    </label>
+                  </MenuItem>
+                )}
+              </Menu>
+            </div>
+          </div>
+        </div>
+      }
       errorMessage={"Something went wrong fetching audit logs."}
     >
       <div className="flex flex-col">

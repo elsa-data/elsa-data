@@ -11,7 +11,6 @@ import { Static, Type } from "@sinclair/typebox";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
-import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
 import {
@@ -81,7 +80,7 @@ export const auditEventRoutes = async (
         releaseId,
         pageSize,
         (page - 1) * pageSize,
-        orderByProperty as keyof ReleaseAuditEvent,
+        orderByProperty as keyof AuditEvent,
         orderAscending
       );
 

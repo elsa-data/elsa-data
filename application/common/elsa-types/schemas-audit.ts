@@ -12,8 +12,8 @@ export type ActionCategoryType = Static<typeof ActionCategorySchema>;
 
 const AuditEventBaseSchema = Type.Object({
   objectId: Type.String(),
-  whoId: Type.Union([Type.Null(), Type.String()]),
-  whoDisplayName: Type.Union([Type.Null(), Type.String()]),
+  whoId: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+  whoDisplayName: Type.Optional(Type.Union([Type.Null(), Type.String()])),
   actionCategory: ActionCategorySchema,
   actionDescription: Type.String(),
   recordedDateTime: TypeDate,
