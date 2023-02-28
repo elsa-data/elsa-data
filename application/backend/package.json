@@ -84,6 +84,7 @@
     "google-auth-library": "^8.7.0",
     "gunzip-maybe": "^1.4.2",
     "http-link-header": "1.0.5",
+    "http-terminator": "^3.2.0",
     "humanize-plus": "1.8.2",
     "i18n": "0.15.1",
     "json5": "2.2.3",

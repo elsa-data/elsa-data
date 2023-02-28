@@ -108,6 +108,8 @@ EXPOSE 80
 
 WORKDIR /app/backend
 
+# NOTE: a feature of using node directly as the entrypoint is that container signal handling
+# correctly passes SIGTERM to the Fastify server which can then shut down gracefully
 ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
 
 # TODO: careful crafting has broken stuff.. for the moment just throwing everything together
