@@ -1,6 +1,7 @@
 import convict from "convict";
 import { parseMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
+import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
 import {
   configDefinition,
@@ -170,6 +171,11 @@ export async function getMetaConfig(
     switch (mp.providerToken.value) {
       case "aws-secret":
         providerConfig = await new ProviderAwsSecretsManager(
+          mp.argTokens
+        ).getConfig();
+        break;
+      case "gcloud-secret":
+        providerConfig = await new ProviderGcpSecretsManager(
           mp.argTokens
         ).getConfig();
         break;

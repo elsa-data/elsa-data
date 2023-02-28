@@ -58,6 +58,7 @@
     "@fastify/secure-session": "5.2.0",
     "@fastify/sensible": "5.1.1",
     "@fastify/static": "6.5.1",
+    "@google-cloud/secret-manager": "^4.2.1",
     "@google-cloud/storage": "^6.9.2",
     "@sinclair/typebox": "0.25.10",
     "@types/moo": "^0.5.5",
