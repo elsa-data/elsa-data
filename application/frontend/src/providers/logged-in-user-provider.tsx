@@ -38,10 +38,13 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
 
   axios.interceptors.request.use(
     (config: AxiosRequestConfig) => {
-      if (config.headers) {
-        config.headers["csrf-token"] = cookies[CSRF_TOKEN_COOKIE_NAME];
-      } else {
-        config["headers"] = { "csrf-token": cookies[CSRF_TOKEN_COOKIE_NAME] };
+      // we want to send CSRF token with all our internal (Elsa api) requests
+      if (config.url && config.url.startsWith("/")) {
+        if (config.headers) {
+          config.headers["csrf-token"] = cookies[CSRF_TOKEN_COOKIE_NAME];
+        } else {
+          config["headers"] = { "csrf-token": cookies[CSRF_TOKEN_COOKIE_NAME] };
+        }
       }
       return config;
     },
