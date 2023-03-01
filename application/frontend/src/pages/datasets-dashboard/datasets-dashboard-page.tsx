@@ -63,11 +63,10 @@ export const DatasetsDashboardPage: React.FC = () => {
   );
 
   return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <DatasetsBox pageSize={pageSize} />
+    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+      <DatasetsBox pageSize={pageSize} />
 
-        {/*<Box heading="Import/Update Dataset">
+      {/*<Box heading="Import/Update Dataset">
           <div className="flex">
             <Tab.Group vertical={true}>
               <Tab.List className="flex-none w-1/5 flex-col space-x-1 rounded-xl bg-blue-900/20 p-1">
@@ -160,7 +159,6 @@ export const DatasetsDashboardPage: React.FC = () => {
             </Tab.Group>
           </div>
         </Box> */}
-      </div>
-    </LayoutBase>
+    </div>
   );
 };

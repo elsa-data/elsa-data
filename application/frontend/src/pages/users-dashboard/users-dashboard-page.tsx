@@ -13,13 +13,11 @@ export const UsersDashboardPage: React.FC = () => {
   const uiAllowed = useUiAllowed();
 
   return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <YouBox />
-        <OthersBox pageSize={pageSize} />
-        {/* only the super admins can change other admins so they are the only ones to get this box */}
-        {uiAllowed.has(ALLOWED_CHANGE_ADMINS) && <Box heading="Others"></Box>}
-      </div>
-    </LayoutBase>
+    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+      <YouBox />
+      <OthersBox pageSize={pageSize} />
+      {/* only the super admins can change other admins so they are the only ones to get this box */}
+      {uiAllowed.has(ALLOWED_CHANGE_ADMINS) && <Box heading="Others"></Box>}
+    </div>
   );
 };

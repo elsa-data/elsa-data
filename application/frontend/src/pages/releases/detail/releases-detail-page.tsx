@@ -24,6 +24,7 @@ import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
 import { ReleaseTypeLocal } from "./shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
+import { BreadcrumbsDiv } from "../breadcrumbs-div";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -86,47 +87,48 @@ export const ReleasesDetailPage: React.FC = () => {
   }, [releaseQuery?.data?.runningJob]);
 
   return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
+    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+      <>
+        <BreadcrumbsDiv releaseId={releaseId} />
+
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
-          <>
-            <Box heading="Background Job">
-              <div className="mb-4 flex justify-between">
-                <span className="text-base font-medium text-blue-700">
-                  Running
-                </span>
-                <span className="text-sm font-medium text-blue-700">
-                  {releaseQuery.data.runningJob.percentDone.toString()}%
-                </span>
-              </div>
-              <div className="mb-4 h-2.5 w-full rounded-full bg-gray-200">
-                <div
-                  className="h-2.5 rounded-full bg-blue-600"
-                  style={{
-                    width:
-                      releaseQuery.data.runningJob.percentDone.toString() + "%",
-                  }}
-                ></div>
-              </div>
-              <button
-                className="btn-normal"
-                onClick={async () => {
-                  cancelMutate.mutate(null, {
-                    onSuccess: afterMutateUpdateQueryData,
-                    onError: (error: any) =>
-                      setError({ error, isSuccess: false }),
-                  });
+          <Box heading="Background Job">
+            <div className="mb-4 flex justify-between">
+              <span className="text-base font-medium text-blue-700">
+                Running
+              </span>
+              <span className="text-sm font-medium text-blue-700">
+                {releaseQuery.data.runningJob.percentDone.toString()}%
+              </span>
+            </div>
+            <div className="mb-4 h-2.5 w-full rounded-full bg-gray-200">
+              <div
+                className="h-2.5 rounded-full bg-blue-600"
+                style={{
+                  width:
+                    releaseQuery.data.runningJob.percentDone.toString() + "%",
                 }}
-                disabled={releaseQuery.data.runningJob.requestedCancellation}
-              >
-                Cancel
-                {releaseQuery.data.runningJob?.requestedCancellation && (
-                  <span> (in progress)</span>
-                )}
-              </button>
-            </Box>
-          </>
+              ></div>
+            </div>
+            <button
+              className="btn-normal"
+              onClick={async () => {
+                cancelMutate.mutate(null, {
+                  onSuccess: afterMutateUpdateQueryData,
+                  onError: (error: any) =>
+                    setError({ error, isSuccess: false }),
+                });
+              }}
+              disabled={releaseQuery.data.runningJob.requestedCancellation}
+            >
+              Cancel
+              {releaseQuery.data.runningJob?.requestedCancellation && (
+                <span> (in progress)</span>
+              )}
+            </button>
+          </Box>
         )}
+
         {releaseQuery.isSuccess && !releaseQuery.data.runningJob && (
           <>
             <InformationBox
@@ -216,7 +218,7 @@ export const ReleasesDetailPage: React.FC = () => {
             styling={"bg-red-100"}
           />
         )}
-      </div>
-    </LayoutBase>
+      </>
+    </div>
   );
 };
