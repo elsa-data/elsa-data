@@ -214,7 +214,11 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
           {!_.isEmpty(props.selected) && (
             <>
               {Object.values(props.selected).map((c, index) => (
-                <Chip c={c} removeFromSelected={props.removeFromSelected} />
+                <Chip
+                  key={index}
+                  c={c}
+                  removeFromSelected={props.removeFromSelected}
+                />
               ))}
             </>
           )}

@@ -152,8 +152,6 @@ export const CasesBox: React.FC<Props> = ({
       </Box>
     );
 
-  console.log("dataQuery.data", dataQuery.data);
-
   return (
     <BoxNoPad
       heading="Cases"

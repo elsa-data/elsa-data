@@ -67,7 +67,14 @@ export class App {
 
       await this.server.register(fastifyFormBody);
 
-      await this.server.register(fastifyHelmet, {});
+      await this.server.register(fastifyHelmet, {
+        contentSecurityPolicy: {
+          directives: {
+            // our front end needs to be able to make fetches from ontoserver
+            connectSrc: ["'self'", new URL(this.settings.ontoFhirUrl).host],
+          },
+        },
+      });
 
       await this.server.register(fastifyStatic, {
         root: this.staticFilesPath,
