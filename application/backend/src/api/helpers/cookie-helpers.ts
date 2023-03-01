@@ -37,7 +37,7 @@ export function cookieForBackend(
   v: any
 ) {
   request.session.options({
-    maxAge: 24 * 60 * 60, // 1 day (in seconds)
+    maxAge: 24 * 60 * 60, // 1 day (in seconds); Documented in  in "SECURITY.md" please update accordingly.
   });
   request.session.set(k, v);
 }
