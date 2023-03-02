@@ -18,7 +18,7 @@ RUN echo '{ \
 #
 # Database builder to create all generated files that require the install database
 #
-FROM edgedb/edgedb:2.8 AS edgedb-builder
+FROM edgedb/edgedb:2.12 AS edgedb-builder
 
 # bring in the compatible node binary
 COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
@@ -31,7 +31,7 @@ WORKDIR /build
 # bring in node_modules with our installed packages
 COPY --from=node-deps /build .
 
-# edgedb needs the dbschema folder which has the schemas/migrations
+# edgedb needs the dbschema folder which has the schemas/migrations/queries
 COPY ./backend/dbschema/ dbschema/
 
 # NOTE: the & and && here has some pretty subtle interaction - be careful working on this
@@ -55,7 +55,7 @@ RUN edgedb-server \
     --tls-security insecure \
     --file interfaces.ts \
     && node ../node_modules/.bin/generate queries \
-    --file queries \
+    --file queries.ts \
     -H localhost \
     --target ts \
     --tls-security insecure \
