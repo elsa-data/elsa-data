@@ -32,7 +32,7 @@ WORKDIR /build
 COPY --from=node-deps /build .
 
 # edgedb needs the dbschema folder which has the schemas/migrations/queries
-COPY ./backend/dbschema/ dbschema/
+COPY --chown=edgedb ./backend/dbschema/ dbschema/
 
 # NOTE: the & and && here has some pretty subtle interaction - be careful working on this
 RUN edgedb-server \
