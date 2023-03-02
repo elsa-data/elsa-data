@@ -18,7 +18,7 @@ declined, etc.
 
 ## The Open Worldwide Application Security Project (OWASP)
 
-We tried as much as possible to protect this software from any security threat. We have followed TOP10 guidelines from [OWASP Top 10 - 2021](https://owasp.org/Top10/) for us to have the security guidelines.
+We tried as much as possible to protect this software from any security threat. OWASP is a non-profit organization that helps application owner to protect from any cyber security threat. We have used their TOP10 list from [OWASP Top 10 - 2021](https://owasp.org/Top10/) for us to have the security guidelines.
 
 ### 1. Broken Access Control
 
@@ -36,6 +36,8 @@ Known issue: For time being manifest file that researchers will have access to t
 
 Most injections happen from input that is supplied by the user. In `Elsa` we have managed to have very minimum input fields that minimise the chance of having an injection attack. At the time we do not use any raw queries to EdgeDb and use [EdgeDb Client Libraries](https://www.edgedb.com/docs/clients/index) for database queries. The database write operation is usually taken from existing data that is stored from another database (e.g. REDCap) which is potentially safe from fire threat.
 
+We also have implemented `Content-Security-Policy` to protect browser from fetching or executing content that is not white-listed from the server. This will help preventing cross-site scripting (XSS) and injections happening in the client side.
+
 ### 4. Insecure Design
 
 We tried our best to maximise our design as securely as possible. We do not allow username-password authentication, many user inputs are just clicking checkboxes preventing any miscellaneous inputs, and configuration is done on application startup to prevent unauthorised config change.
@@ -44,11 +46,13 @@ One of our attempts in our design is to support HTSGET for data sharing. HTSGET 
 
 ### 5. Security Misconfiguration
 
+WIP
+
 The app ideally is deployed by the application administrator which would need to configure permission to access the storage server. The administrator would also need to deploy this app in their choice of the cloud provider. We have provided a template of IaC which helps them to deploy applications with the recommended configuration.
 
 ### 6. Vulnerable and Outdated Component
 
-The current project is still in development therefore we will be using the latest version of the framework and components that are available. In the repository, we have set up a [dependabot](https://github.com/dependabot) that will warn for any alarming version installed in our repository.
+The current project is still in development therefore, we will be using the latest version of the framework and components that are available. We will continue to monitor security frameworks and in addition the repository, we have set up a [dependabot](https://github.com/dependabot) that will warn for any alarming version installed in our repository.
 
 ### 7. Identification and Authentication Failures
 
@@ -58,7 +62,7 @@ The current login is stored in a cookie session and for time being this cookie w
 
 ### 8. Software and Data Integrity Failures
 
-WIP
+We have take into account of data integrity and design the database that stored object to support checksums value. A checksum will be included in the manifest as part of the release and researcher may verify this checksum upon downloading the files.
 
 ### 9. Security Logging and Monitoring Failures
 
