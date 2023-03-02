@@ -16,4 +16,3 @@ export const UI_PAGE_SIZE_COOKIE_NAME = "elsa-data-page-size";
 // rules on API calls based on real backend stuff
 // we send these down to the front end as already worked out 'allowed' booleans
 export const USER_ALLOWED_COOKIE_NAME = "elsa-data-logged-in-allowed";
-export const IS_SUPER_ADMIN_COOKIE_NAME = "elsa-data-is-super-admin";

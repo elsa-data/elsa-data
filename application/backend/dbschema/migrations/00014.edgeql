@@ -1,4 +1,4 @@
-CREATE MIGRATION m1pdfkemdbkdgtoh2f3rfnvhusstwnezbttmurpsufrlhtktp5gbcq
+CREATE MIGRATION m16s2ixxooqsvwvthhlctxaoasxf3nw4rhvkmmlzl3ekbrsoc6nyva
     ONTO m1l5uupghraajc57qflwe37pkra2ujtudh66mglzf537pwbx2bzgna
 {
   ALTER TYPE audit::AuditEvent {
@@ -19,5 +19,8 @@ CREATE MIGRATION m1pdfkemdbkdgtoh2f3rfnvhusstwnezbttmurpsufrlhtktp5gbcq
   };
   ALTER TYPE audit::UserAuditEvent {
       CREATE LINK user_ := (.<userAuditEvent[IS permission::User]);
+  };
+  ALTER TYPE release::Release {
+      CREATE MULTI LINK participants := (.<releaseParticipant[IS permission::User]);
   };
 };

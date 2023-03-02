@@ -3,6 +3,8 @@ import { audit } from "../../../dbschema/interfaces";
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import AuditEvent = audit.AuditEvent;
+import { RouteValidation } from "@umccr/elsa-types";
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 /**
  * An EdgeDb query to count the audit log entries not associated
@@ -168,38 +170,116 @@ export const pageableAuditLogEntriesForReleaseQuery = (
 };
 
 /**
+ * A pageable EdgeDb query for the audit log entries associated with
+ * a given release.
+ */
+export const pageableAuditEventsForUserInRelease = (
+  userIds: [string] | "all",
+  limit: number,
+  offset: number,
+  computeDetails: boolean = true,
+  paginate: boolean = true,
+  orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  return e.select(
+    e.audit.AuditEvent.is(e.audit.ReleaseAuditEvent),
+    (auditEvent) => ({
+      ...auditEventProperties,
+      ...(computeDetails && {
+        hasDetails: e.op("exists", auditEvent.details),
+      }),
+      ...(userIds !== "all" && {
+        filter: e.op(
+          e.array_unpack(e.literal(e.array(e.uuid), userIds)),
+          "in",
+          auditEvent.release_.participants.id
+        ),
+      }),
+      ...(paginate && {
+        order_by: [
+          {
+            expression:
+              orderByProperty === "actionCategory"
+                ? e.cast(e.str, auditEvent.actionCategory)
+                : auditEvent[orderByProperty],
+            direction: orderAscending ? e.ASC : e.DESC,
+          },
+          {
+            expression: auditEvent.occurredDateTime,
+            direction: e.DESC,
+          },
+        ],
+        limit: limit,
+        offset: offset,
+      }),
+    })
+  );
+};
+
+/**
  * A pageable EdgeDb query for the audit log events associated with
  * a given user and system events.
  */
-export const pageableUserAndSystemAuditEventsQuery = (
+export const pageableAuditEventsQuery = (
+  filter: Omit<AuditEventUserFilterType, "all">[],
   userIds: [string] | "all",
   limit: number,
   offset: number,
   paginate: boolean = true,
-  includeSystemEvents: boolean = false,
   orderByProperty: keyof AuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
-  if (includeSystemEvents) {
-    const userEvents = pageableAuditLogEntriesForUserQuery(
-      userIds,
-      limit,
-      offset,
-      false,
-      false,
-      orderByProperty,
-      orderAscending
-    );
-    const systemEvents = pageableAuditLogEntriesForSystemQuery(
-      limit,
-      offset,
-      false,
-      false,
-      orderByProperty,
-      orderAscending
-    );
+  const union = e.for(
+    e.array_unpack(
+      e.literal(
+        e.array(e.str),
+        filter.map((v) => v.toString())
+      )
+    ),
+    (f) => {
+      return e.op(
+        pageableAuditEventsForUserInRelease(
+          userIds,
+          limit,
+          offset,
+          false,
+          false,
+          orderByProperty,
+          orderAscending
+        ),
+        "if",
+        e.op(f, "=", "release"),
+        "else",
+        e.op(
+          pageableAuditLogEntriesForUserQuery(
+            userIds,
+            limit,
+            offset,
+            false,
+            false,
+            orderByProperty,
+            orderAscending
+          ),
+          "if",
+          e.op(f, "=", "user"),
+          "else",
+          pageableAuditLogEntriesForSystemQuery(
+            limit,
+            offset,
+            false,
+            false,
+            orderByProperty,
+            orderAscending
+          )
+        )
+      );
+    }
+  );
 
-    return e.select(e.op(userEvents, "union", systemEvents), (auditEvent) => ({
+  return {
+    count: e.count(union),
+    entries: e.select(union, (auditEvent) => ({
       ...auditEventProperties,
       hasDetails: e.op("exists", auditEvent.details),
       ...(paginate && {
@@ -219,17 +299,8 @@ export const pageableUserAndSystemAuditEventsQuery = (
         limit: limit,
         offset: offset,
       }),
-    }));
-  }
-  return pageableAuditLogEntriesForUserQuery(
-    userIds,
-    limit,
-    offset,
-    true,
-    paginate,
-    orderByProperty,
-    orderAscending
-  );
+    })),
+  };
 };
 
 /**

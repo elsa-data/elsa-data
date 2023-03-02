@@ -60,3 +60,41 @@ export const AuditDataSummarySchema = Type.Object({
   target: Type.String(),
 });
 export type AuditDataSummaryType = Static<typeof AuditDataSummarySchema>;
+
+export namespace RouteValidation {
+  export const AuditEventUserFilterSchema = Type.Union([
+    Type.Literal("release"),
+    Type.Literal("user"),
+    Type.Literal("system"),
+    Type.Literal("all"),
+  ]);
+  export type AuditEventUserFilterType = Static<
+    typeof AuditEventUserFilterSchema
+  >;
+
+  // Todo: Potentially generate TypeBox schemas from the EdgeDb interface for fastify validation.
+  //       E.g https://github.com/sinclairzx81/typebox/discussions/317
+  export const AuditEventForQuerySchema = Type.Object({
+    page: Type.Optional(Type.Number()),
+    orderByProperty: Type.Optional(Type.String()),
+    orderAscending: Type.Optional(Type.Boolean()),
+    filter: Type.Optional(Type.Array(AuditEventUserFilterSchema)),
+  });
+  export type AuditEventForQueryType = Static<typeof AuditEventForQuerySchema>;
+
+  export const AuditEventByIdQuerySchema = Type.Object({
+    id: Type.String(),
+  });
+  export type AuditEventFullQueryType = Static<
+    typeof AuditEventByIdQuerySchema
+  >;
+
+  export const AuditEventDetailsQuerySchema = Type.Object({
+    ...AuditEventByIdQuerySchema.properties,
+    start: Type.Optional(Type.Number()),
+    end: Type.Optional(Type.Number()),
+  });
+  export type AuditEventDetailsQueryType = Static<
+    typeof AuditEventDetailsQuerySchema
+  >;
+}

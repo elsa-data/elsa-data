@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ALLOWED_CHANGE_ADMINS,
   ALLOWED_CREATE_NEW_RELEASES,
-  IS_SUPER_ADMIN_COOKIE_NAME,
+  ALLOWED_VIEW_AUDIT_EVENTS,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
@@ -169,6 +169,12 @@ export const apiAuthRoutes = async (
           SESSION_USER_DB_OBJECT,
           authUser.asJson()
         );
+        cookieForBackend(
+          request,
+          reply,
+          ALLOWED_VIEW_AUDIT_EVENTS,
+          allowed.includes(ALLOWED_VIEW_AUDIT_EVENTS)
+        );
 
         // these cookies however are available to React - PURELY for UI/display purposes
         cookieForUI(
@@ -202,7 +208,10 @@ export const apiAuthRoutes = async (
     // a test user that is a PI in some releases
     addTestUserRoute("/login-bypass-2", subject2, []);
     // a test user that is a super admin equivalent
-    addTestUserRoute("/login-bypass-3", subject3, [ALLOWED_CHANGE_ADMINS]);
+    addTestUserRoute("/login-bypass-3", subject3, [
+      ALLOWED_CHANGE_ADMINS,
+      ALLOWED_VIEW_AUDIT_EVENTS,
+    ]);
   }
 };
 
@@ -284,9 +293,13 @@ export const callbackRoutes = async (
 
     if (isa) {
       allowed.add(ALLOWED_CHANGE_ADMINS);
+      allowed.add(ALLOWED_VIEW_AUDIT_EVENTS);
+
       // for the moment if we want to do demos it is easy if the super admins get all the functionality
       allowed.add(ALLOWED_CREATE_NEW_RELEASES);
     }
+
+    cookieForBackend(request, reply, ALLOWED_VIEW_AUDIT_EVENTS, isa);
 
     // some garbage temporary logic for giving extra permissions to some people
     // this would normally come via group info
@@ -299,7 +312,6 @@ export const callbackRoutes = async (
       USER_ALLOWED_COOKIE_NAME,
       Array.from(allowed.values()).join(",")
     );
-    cookieForUI(request, reply, IS_SUPER_ADMIN_COOKIE_NAME, isa.toString());
 
     reply.redirect("/");
   });

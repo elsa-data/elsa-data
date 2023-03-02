@@ -75,7 +75,7 @@
     "csv-stringify": "6.2.0",
     "date-fns": "2.29.3",
     "dotenv": "16.0.3",
-    "edgedb": "^1.0.2",
+    "edgedb": "^1.1.0",
     "esbuild": "0.15.12",
     "etag": "^1.8.1",
     "fastify": "4.10.2",
@@ -105,7 +105,7 @@
     "tsyringe": "4.7.0"
   },
   "devDependencies": {
-    "@edgedb/generate": "^0.0.7",
+    "@edgedb/generate": "^0.0.8",
     "@types/archiver": "5.3.1",
     "@types/convict": "6.1.1",
     "@types/etag": "^1.8.1",

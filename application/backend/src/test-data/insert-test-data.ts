@@ -22,6 +22,8 @@ import {
   TEST_SUBJECT_3_DISPLAY,
   TEST_SUBJECT_3_EMAIL,
 } from "./insert-test-users";
+// @ts-ignore
+import { insertSystemAuditEvent } from "../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -140,6 +142,11 @@ export async function insertTestData(settings: ElsaSettings) {
       patientsCount: e.count(ds.cases.patients),
       specimensCount: e.count(ds.cases.patients.specimens),
     });
+  });
+
+  await insertSystemAuditEvent(edgeDbClient, {
+    actionCategory: "E",
+    actionDescription: "Email Sent",
   });
 
   console.log(await eachDs.run(edgeDbClient));

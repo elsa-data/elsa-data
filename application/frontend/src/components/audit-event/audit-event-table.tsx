@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { AuditEventType } from "@umccr/elsa-types";
+import { AuditEventType, RouteValidation } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
 import { BoxNoPad } from "../boxes";
@@ -27,7 +27,7 @@ import {
   formatFromNowTime,
   formatLocalDateTime,
 } from "../../helpers/datetime-helper";
-import { ActionCategoryType } from "@umccr/elsa-types/schemas-audit";
+import { ActionCategoryType } from "@umccr/elsa-types";
 import { Table } from "../tables";
 import { ToolTip } from "../tooltip";
 import {
@@ -41,8 +41,8 @@ import { EagerErrorBoundary, ErrorState } from "../errors";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
 import { useLoggedInUser } from "../../providers/logged-in-user-provider";
-import { MenuItem } from "../menu/menu-item";
-import { Menu } from "../menu/menu";
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
+import { FilterMenu } from "./filter-menu";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -59,11 +59,11 @@ type AuditEventTableProps = {
   /**
    * The api path to use when displaying the audit entry table.
    */
-  path: string;
+  path?: string;
   /**
    * The id of the component in the path.
    */
-  id: string;
+  id?: string;
   /**
    * Maximum number of items to show in the table.
    */
@@ -92,15 +92,14 @@ export const AuditEventTable = ({
 
   const loggedInUser = useLoggedInUser();
 
-  const [includeReleaseEvents, setIncludeReleaseEvents] = useState(true);
-  const [includeUserEvents, setIncludeUserEvents] = useState(false);
-  const [includeSystemEvents, setIncludeSystemEvents] = useState(false);
-  const [includeAllEvents, setIncludeAllEvents] = useState(false);
+  const [includeEvents, setIncludeEvents] = useState<
+    AuditEventUserFilterType[]
+  >(["release"]);
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
-    path,
-    id,
+    path === undefined || id === undefined ? "" : `/${path}/${id}`,
+    includeEvents,
     setCurrentTotal,
     setData,
     setError
@@ -148,54 +147,13 @@ export const AuditEventTable = ({
           <div>Audit Logs</div>
           <div className="flex content-center items-center">
             <div>
-              <Menu heading={<>Filter audit events</>}>
-                <MenuItem>
-                  <label className="flex content-center items-center pl-2 text-gray-800">
-                    <input
-                      className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
-                      type="checkbox"
-                      checked={includeReleaseEvents}
-                      onChange={() => setIncludeReleaseEvents((v) => !v)}
-                    />
-                    <div className="text-xs">Release audit events</div>
-                  </label>
-                </MenuItem>
-                <MenuItem>
-                  <label className="flex content-center items-center pl-2 text-gray-800">
-                    <input
-                      className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
-                      type="checkbox"
-                      checked={includeUserEvents}
-                      onChange={() => setIncludeUserEvents((v) => !v)}
-                    />
-                    <div className="text-xs">User audit events</div>
-                  </label>
-                </MenuItem>
-                <MenuItem>
-                  <label className="flex content-center items-center pl-2 text-gray-800">
-                    <input
-                      className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
-                      type="checkbox"
-                      checked={includeSystemEvents}
-                      onChange={() => setIncludeSystemEvents((v) => !v)}
-                    />
-                    <div className="text-xs">System audit events</div>
-                  </label>
-                </MenuItem>
-                {loggedInUser?.isSuperAdmin && (
-                  <MenuItem>
-                    <label className="flex content-center items-center pl-2 text-gray-800">
-                      <input
-                        className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
-                        type="checkbox"
-                        checked={includeAllEvents}
-                        onChange={() => setIncludeAllEvents((v) => !v)}
-                      />
-                      <div className="text-xs">All audit events</div>
-                    </label>
-                  </MenuItem>
-                )}
-              </Menu>
+              <FilterMenu
+                includeEvents={includeEvents}
+                setIncludeEvents={setIncludeEvents}
+                setCurrentPage={setCurrentPage}
+                setCurrentTotal={setCurrentTotal}
+                setUpdateData={setUpdateData}
+              />
             </div>
           </div>
         </div>
@@ -305,19 +263,32 @@ export const AuditEventTable = ({
 export const useAuditEventQuery = (
   currentPage: number,
   path: string,
-  id: string,
   orderByProperty: string,
   orderAscending: boolean,
+  includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
 ) => {
   return useQuery(
-    [`${path}-audit-event`, currentPage, id, orderByProperty, orderAscending],
+    [
+      `${path}-audit-event`,
+      currentPage,
+      orderByProperty,
+      orderAscending,
+      includeEvents,
+    ],
     async () => {
+      let filter = includeEvents
+        .map((include) => `filter=${include}`)
+        .join("&");
+      if (filter !== "") {
+        filter = `&${filter}`;
+      }
+
       return await axios
         .get<AuditEventType[]>(
-          `/api/${path}/${id}/audit-event?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}`
+          `/api${path}/audit-event?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}${filter}`
         )
         .then((response) => {
           handleTotalCountHeaders(response, setCurrentTotal);
@@ -346,7 +317,7 @@ export const useAuditEventQuery = (
 export const useAllAuditEventQueries = (
   currentPage: number,
   path: string,
-  id: string,
+  includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
@@ -358,9 +329,9 @@ export const useAllAuditEventQueries = (
     return useAuditEventQuery(
       currentPage,
       path,
-      id,
       occurredDateTime,
       orderAscending,
+      includeEvents,
       setCurrentTotal,
       setData,
       setError

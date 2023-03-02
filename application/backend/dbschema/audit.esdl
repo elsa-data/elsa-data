@@ -3,7 +3,7 @@ module audit {
     # ActionType definition
     # Ref: https://www.hl7.org/fhir/valueset-audit-event-action.html
     scalar type ActionType extending enum<'C', 'R', 'U', 'D', 'E'>;
-    
+
     abstract type AuditEvent {
         # who initiated the action being audited
         property whoId -> str;

@@ -133,7 +133,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </li>
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    `/audit-events/${loggedInUser.userId}`,
+                    "/audit-events",
                     "Audit Events",
                     "text-rose-500",
                     "border-rose-500",

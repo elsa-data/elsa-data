@@ -125,6 +125,8 @@ module release {
         }
         property lastDateTimeDataAccessLogQuery -> datetime;
 
+        # The participants of this release as Users.
+        multi link participants := .<releaseParticipant[is permission::User];
     }
 
     scalar type ApplicationCodedStudyType extending enum<'GRU', 'HMB', 'CC', 'POA', 'DS'>;

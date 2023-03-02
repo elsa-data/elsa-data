@@ -17,7 +17,7 @@ beforeEach(async () => {
   auditLogService = testContainer.resolve(AuditLogService);
 });
 
-it("audit user instant", async () => {
+it("audit system instant", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startSystemAuditEvent(
@@ -51,7 +51,7 @@ it("audit user instant", async () => {
   console.log(JSON.stringify(events));
 });
 
-it("audit user instant with create function", async () => {
+it("audit system instant with create function", async () => {
   const aeId = await auditLogService.createSystemAuditEvent(
     edgeDbClient,
     "E",
@@ -73,7 +73,7 @@ it("audit user instant with create function", async () => {
   console.log(JSON.stringify(events));
 });
 
-it("audit user duration", async () => {
+it("audit system duration", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startSystemAuditEvent(
@@ -102,8 +102,8 @@ it("audit user duration", async () => {
     occurredDuration: "PT1M36S",
     actionCategory: "E",
     actionDescription: "Login",
-    whoId: existingUser.subjectId,
-    whoDisplayName: existingUser.displayName,
+    whoId: null,
+    whoDisplayName: null,
     hasDetails: true,
   });
 

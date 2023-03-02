@@ -10,6 +10,7 @@ import {
   AuditEventDetailsType,
   AuditEventFullType,
   AuditEventType,
+  RouteValidation,
 } from "@umccr/elsa-types/schemas-audit";
 import {
   createPagedResult,
@@ -23,7 +24,7 @@ import {
   countDataAccessAuditLogEntriesQuery,
   pageableAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForSystemQuery,
-  pageableUserAndSystemAuditEventsQuery,
+  pageableAuditEventsQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -33,11 +34,14 @@ import { touchRelease } from "../db/release-queries";
 import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
 // @ts-ignore
 import { insertSystemAuditEvent } from "../../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
+// @ts-ignore
+import { insertReleaseAuditEvent } from "../../../dbschema/queries/insertReleaseAuditEvent.edgeql.ts";
 import { audit } from "../../../dbschema/interfaces";
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
+import ActionType = audit.ActionType;
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
-export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
@@ -62,25 +66,21 @@ export class AuditLogService {
     executor: Executor,
     user: AuthenticatedUser,
     releaseId: string,
-    actionCategory: AuditEventAction,
+    actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date()
   ): Promise<string> {
-    const auditEvent = await e
-      .insert(e.audit.ReleaseAuditEvent, {
-        whoId: user.subjectId,
-        whoDisplayName: user.displayName,
-        occurredDateTime: start,
-        actionCategory: actionCategory,
-        actionDescription: actionDescription,
-        // by default, we assume failure (i.e. 500 response) - it is only when
-        // we successfully 'complete' the audit event we get a real outcome
-        outcome: 8,
-        details: e.json({
-          errorMessage: "Audit entry not completed",
-        }),
-      })
-      .run(executor);
+    const auditEvent = await insertReleaseAuditEvent(executor, {
+      whoId: user.subjectId,
+      whoDisplayName: user.displayName,
+      occurredDateTime: start,
+      actionCategory: actionCategory,
+      actionDescription: actionDescription,
+      outcome: 8,
+      details: e.json({
+        errorMessage: "Audit entry not completed",
+      }),
+    });
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
@@ -154,7 +154,7 @@ export class AuditLogService {
     whoId: string,
     whoDisplayName: string,
     userId: string,
-    actionCategory: AuditEventAction,
+    actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date()
   ): Promise<string> {
@@ -212,9 +212,9 @@ export class AuditLogService {
     userId: string,
     whoId: string,
     whoDisplayName: string,
-    actionCategory: AuditEventAction,
+    actionCategory: ActionType,
     actionDescription: string,
-    details: any = null,
+    details?: any,
     outcome: number = 0,
     occurredDateTime: Date = new Date()
   ): Promise<string> {
@@ -280,17 +280,19 @@ export class AuditLogService {
    */
   public async startSystemAuditEvent(
     executor: Executor,
-    actionCategory: AuditEventAction,
+    actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date()
   ): Promise<string> {
-    return await insertSystemAuditEvent(executor, {
-      actionCategory,
-      actionDescription,
-      occurredDateTime: start,
-      outcome: 8,
-      details: { errorMessage: "Audit entry not completed" },
-    }).id;
+    return (
+      await insertSystemAuditEvent(executor, {
+        actionCategory,
+        actionDescription,
+        occurredDateTime: start,
+        outcome: 8,
+        details: { errorMessage: "Audit entry not completed" },
+      })
+    ).id;
   }
 
   /**
@@ -304,17 +306,19 @@ export class AuditLogService {
    */
   public async createSystemAuditEvent(
     executor: Executor,
-    actionCategory: AuditEventAction,
+    actionCategory: ActionType,
     actionDescription: string,
-    details: any = null,
+    details?: any,
     outcome: number = 0
   ): Promise<string> {
-    return await insertSystemAuditEvent(executor, {
-      actionCategory,
-      actionDescription,
-      outcome,
-      details,
-    }).id;
+    return (
+      await insertSystemAuditEvent(executor, {
+        actionCategory,
+        actionDescription,
+        outcome,
+        details,
+      })
+    ).id;
   }
 
   /**
@@ -454,7 +458,8 @@ export class AuditLogService {
    * Get User entries, optionally including system events too.
    *
    * @param executor
-   * @param users
+   * @param filter
+   * @param user
    * @param limit
    * @param offset
    * @param includeSystemEvents
@@ -463,29 +468,31 @@ export class AuditLogService {
    */
   public async getUserEntries(
     executor: Executor,
-    users: AuthenticatedUser | "all" | [string],
+    filter: AuditEventUserFilterType[],
+    user: AuthenticatedUser,
     limit: number,
     offset: number,
     includeSystemEvents: boolean = false,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
-    const pageOfEntries = await pageableUserAndSystemAuditEventsQuery(
-      users instanceof AuthenticatedUser ? [users.dbId] : users,
+    const { count, entries } = pageableAuditEventsQuery(
+      filter.filter((value) => value !== "all"),
+      filter.includes("all") ? "all" : [user.dbId],
       limit,
       offset,
       true,
-      includeSystemEvents,
       orderByProperty,
       orderAscending
-    ).run(executor);
+    );
 
+    const length = await count.run(executor);
     console.log(
-      `${AuditLogService.name}.getEntries(users=${users}, limit=${limit}, offset=${offset}) -> total=${pageOfEntries.length}, pageOfEntries=...`
+      `${AuditLogService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${length}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      pageOfEntries.map((entry) => ({
+      (await entries.run(executor)).map((entry) => ({
         objectId: entry.id,
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,
@@ -497,7 +504,8 @@ export class AuditLogService {
         occurredDuration: entry.occurredDuration?.toString(),
         outcome: entry.outcome,
         hasDetails: entry.hasDetails,
-      }))
+      })),
+      length
     );
   }
 

@@ -80,7 +80,22 @@ export function sendResult<T>(
 
 /**
  * A helper function that can send arbitrary paged results back to the client
- * but inserting various headers to support paging.
+ * without checking if the result is empty and inserting headers to support paging.
+ * @param reply
+ * @param pr
+ */
+export function sendUncheckedPagedResult<T>(
+  reply: FastifyReply,
+  pr: PagedResult<T>
+) {
+  sendResult(reply, pr.data, {
+    [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
+  });
+}
+
+/**
+ * A helper function that can send arbitrary paged results back to the client
+ * with various headers to support paging.
  */
 export function sendPagedResult<T>(
   reply: FastifyReply,
@@ -88,9 +103,7 @@ export function sendPagedResult<T>(
 ) {
   if (!pr || !pr.data) sendResult(reply, null);
   else {
-    sendResult(reply, pr.data, {
-      [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
-    });
+    sendUncheckedPagedResult(reply, pr);
   }
 }
 

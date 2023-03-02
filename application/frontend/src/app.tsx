@@ -72,7 +72,7 @@ export const App: React.FC = () => {
           path={`/audit-event/details/:objectId`}
           element={<AuditEventDetailedPage />}
         />
-        <Route path={`/audit-events/:id`} element={<AuditEventsPage />} />
+        <Route path={`/audit-events`} element={<AuditEventsPage />} />
         <Route path="*" element={<NoMatch />} />
       </Routes>
     );

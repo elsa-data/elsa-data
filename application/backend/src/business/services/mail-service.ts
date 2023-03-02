@@ -54,7 +54,7 @@ export class MailService {
       this.edgeDbClient,
       "E",
       "Email sent",
-      { email: mail }
+      { from: mail.from, to: mail.to }
     );
     return await this.transporter?.sendMail(mail);
   }

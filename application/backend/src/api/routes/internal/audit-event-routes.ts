@@ -3,11 +3,11 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
   sendResult,
+  sendUncheckedPagedResult,
 } from "../../api-internal-routes";
 import * as edgedb from "edgedb";
 import { container } from "tsyringe";
 import { AuditLogService } from "../../../business/services/audit-log-service";
-import { Static, Type } from "@sinclair/typebox";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
@@ -18,32 +18,15 @@ import {
   AuditEventDetailsType,
   AuditEventType,
   AuditEventFullType,
+  RouteValidation,
 } from "@umccr/elsa-types";
-import { isSuperAdmin } from "../../session-cookie-route-hook";
 import { ElsaSettings } from "../../../config/elsa-settings";
-
-// Todo: Potentially generate TypeBox schemas from the EdgeDb interface for fastify validation.
-//       E.g https://github.com/sinclairzx81/typebox/discussions/317
-export const AuditEventForQuerySchema = Type.Object({
-  page: Type.Optional(Type.Number()),
-  orderByProperty: Type.Optional(Type.String()),
-  orderAscending: Type.Optional(Type.Boolean()),
-});
-export type AuditEventForQueryType = Static<typeof AuditEventForQuerySchema>;
-
-export const AuditEventByIdQuerySchema = Type.Object({
-  id: Type.String(),
-});
-export type AuditEventFullQueryType = Static<typeof AuditEventByIdQuerySchema>;
-
-export const AuditEventDetailsQuerySchema = Type.Object({
-  ...AuditEventByIdQuerySchema.properties,
-  start: Type.Optional(Type.Number()),
-  end: Type.Optional(Type.Number()),
-});
-export type AuditEventDetailsQueryType = Static<
-  typeof AuditEventDetailsQuerySchema
->;
+import _ from "lodash";
+import AuditEventForQuerySchema = RouteValidation.AuditEventForQuerySchema;
+import AuditEventForQueryType = RouteValidation.AuditEventForQueryType;
+import AuditEventDetailsQueryType = RouteValidation.AuditEventDetailsQueryType;
+import AuditEventDetailsQuerySchema = RouteValidation.AuditEventDetailsQuerySchema;
+import { ALLOWED_VIEW_AUDIT_EVENTS } from "@umccr/elsa-constants";
 
 export const auditEventRoutes = async (
   fastify: FastifyInstance,
@@ -254,11 +237,11 @@ export const auditEventRoutes = async (
   );
 
   fastify.get<{
-    Params: { userId: string };
+    Params: {};
     Reply: AuditEventType[];
     Querystring: AuditEventForQueryType;
   }>(
-    "/users/:userId/audit-event",
+    "/audit-event",
     {
       schema: {
         querystring: AuditEventForQuerySchema,
@@ -268,20 +251,33 @@ export const auditEventRoutes = async (
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      const { orderByProperty = "occurredDateTime", orderAscending = false } =
-        request.query;
+      const {
+        orderByProperty = "occurredDateTime",
+        orderAscending = false,
+        filter = [],
+      } = request.query;
 
-      const events = await auditLogService.getUserEntries(
-        edgeDbClient,
-        isSuperAdmin(settings, authenticatedUser) ? "all" : authenticatedUser,
-        pageSize,
-        (page - 1) * pageSize,
-        true,
-        orderByProperty as keyof AuditEvent,
-        orderAscending
-      );
+      if (
+        (filter.includes("all") || filter.includes("system")) &&
+        !request.session.get(ALLOWED_VIEW_AUDIT_EVENTS)
+      ) {
+        reply.status(404).send();
+      } else if (filter.length === 0) {
+        sendUncheckedPagedResult(reply, { data: [], total: 0 });
+      } else {
+        const events = await auditLogService.getUserEntries(
+          edgeDbClient,
+          _.uniq(filter),
+          authenticatedUser,
+          pageSize,
+          (page - 1) * pageSize,
+          true,
+          orderByProperty as keyof AuditEvent,
+          orderAscending
+        );
 
-      sendPagedResult(reply, events);
+        sendPagedResult(reply, events);
+      }
     }
   );
 };

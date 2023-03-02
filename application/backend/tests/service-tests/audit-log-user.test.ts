@@ -30,7 +30,7 @@ it("audit user instant", async () => {
     start
   );
 
-  await auditLogService.completeReleaseAuditEvent(
+  await auditLogService.completeUserAuditEvent(
     edgeDbClient,
     aeId,
     0,
@@ -43,6 +43,7 @@ it("audit user instant", async () => {
 
   const events = await auditLogService.getUserEntries(
     edgeDbClient,
+    ["user"],
     existingUser,
     1000,
     0
@@ -75,6 +76,7 @@ it("audit user instant with create function", async () => {
 
   const events = await auditLogService.getUserEntries(
     edgeDbClient,
+    ["user"],
     existingUser,
     1000,
     0
@@ -119,6 +121,7 @@ it("audit user duration", async () => {
 
   const events = await auditLogService.getUserEntries(
     edgeDbClient,
+    ["user"],
     existingUser,
     1000,
     0
@@ -136,4 +139,15 @@ it("audit user duration", async () => {
   });
 
   console.log(JSON.stringify(events));
+});
+
+it("get entries with no filter", async () => {
+  const events = await auditLogService.getUserEntries(
+    edgeDbClient,
+    [],
+    existingUser,
+    1000,
+    0
+  );
+  expect(events).toEqual({ data: [], total: 0 });
 });

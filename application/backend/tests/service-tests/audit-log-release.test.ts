@@ -165,3 +165,46 @@ it("audit data access log", async () => {
     releaseId: testReleaseId,
   });
 });
+
+it("get entries with release filter", async () => {
+  const start = new Date();
+
+  const aeId = await auditLogService.startReleaseAuditEvent(
+    edgeDbClient,
+    allowedPiUser,
+    testReleaseId,
+    "C",
+    "Made User Over Time",
+    start
+  );
+
+  await auditLogService.completeReleaseAuditEvent(
+    edgeDbClient,
+    aeId,
+    0,
+    start,
+    addSeconds(start, 96),
+    {
+      field: "A field",
+    }
+  );
+
+  const events = await auditLogService.getUserEntries(
+    edgeDbClient,
+    ["release"],
+    allowedPiUser,
+    1000,
+    0
+  );
+
+  const auditEvent = events?.data?.find((element) => element.objectId === aeId);
+  expect(auditEvent).toBeDefined();
+  expect(auditEvent).toMatchObject({
+    occurredDuration: "PT1M36S",
+    actionCategory: "C",
+    actionDescription: "Made User Over Time",
+    whoId: allowedPiUser.subjectId,
+    whoDisplayName: allowedPiUser.displayName,
+    hasDetails: true,
+  });
+});
