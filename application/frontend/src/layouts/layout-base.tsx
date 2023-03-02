@@ -1,5 +1,5 @@
 import React, { useState, PropsWithChildren } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 import { ErrorBoundary } from "../components/errors";
@@ -89,15 +89,6 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
               <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    "/",
-                    "Home",
-                    "text-orange-600",
-                    "border-orange-600",
-                    "hover:border-orange-600"
-                  )}
-                </li>
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
                     "/releases",
                     "Releases",
                     "text-purple-500",
@@ -137,7 +128,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
               <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    "/",
+                    "/login",
                     "Login",
                     "text-gray-500",
                     "border-gray-500",
@@ -162,7 +153,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       <div className="container mx-auto w-full grow pt-10 lg:pt-20">
         <div className="mt-8 mb-8 w-full leading-normal text-gray-800">
           <ErrorBoundary rethrowError={(_: any) => false}>
-            {children}
+            <Outlet />
           </ErrorBoundary>
         </div>
       </div>

@@ -70,6 +70,8 @@ export class App {
       await this.server.register(fastifyHelmet, {
         contentSecurityPolicy: {
           directives: {
+            // TODO: derive form action hosts from configuration of OIDC
+            formAction: ["'self'", "*.cilogon.org"],
             // our front end needs to be able to make fetches from ontoserver
             connectSrc: ["'self'", new URL(this.settings.ontoFhirUrl).host],
           },

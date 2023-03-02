@@ -35,18 +35,17 @@ export const ReleasesPage: React.FC = () => {
   );
 
   return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <BoxNoPad
-          heading="Releases"
-          errorMessage={"Something went wrong fetching releases."}
-        >
-          {query.isLoading && <IsLoadingDiv />}
-          {query.isSuccess && query.data && (
-            <table className="light:text-gray-400 w-full text-left text-sm text-gray-500">
-              <thead className="light:bg-gray-700 light:text-gray-400 border-b uppercase text-gray-700">
-                <tr>
-                  {/* Left in as an example of checkbox columns if we want to enable bulk ops
+    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+      <BoxNoPad
+        heading="Releases"
+        errorMessage={"Something went wrong fetching releases."}
+      >
+        {query.isLoading && <IsLoadingDiv />}
+        {query.isSuccess && query.data && (
+          <table className="light:text-gray-400 w-full text-left text-sm text-gray-500">
+            <thead className="light:bg-gray-700 light:text-gray-400 border-b uppercase text-gray-700">
+              <tr>
+                {/* Left in as an example of checkbox columns if we want to enable bulk ops
                     <th scope="col" className="p-4">
                     <div className="flex items-center">
                       <input
@@ -59,71 +58,65 @@ export const ReleasesPage: React.FC = () => {
                       </label>
                     </div>
                   </th> */}
-                  <th scope="col" className="px-6 py-6">
-                    Release Id
-                  </th>
-                  <th scope="col" className="px-6 py-6">
-                    DAC Id
-                  </th>
-                  <th scope="col" className="px-6 py-6">
-                    Title
-                  </th>
-                  <th scope="col" className="px-6 py-6">
-                    Role (in release)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {query.data.map((r, idx) => (
-                  <tr
-                    key={idx}
-                    className="light:bg-gray-800 light:border-gray-700 light:hover:bg-gray-600 border-b bg-white hover:cursor-pointer hover:bg-gray-50"
-                    onClick={() => navigate(`${r.id}`)}
+                <th scope="col" className="px-6 py-6">
+                  Release Id
+                </th>
+                <th scope="col" className="px-6 py-6">
+                  DAC Id
+                </th>
+                <th scope="col" className="px-6 py-6">
+                  Title
+                </th>
+                <th scope="col" className="px-6 py-6">
+                  Role (in release)
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {query.data.map((r, idx) => (
+                <tr
+                  key={idx}
+                  className="light:bg-gray-800 light:border-gray-700 light:hover:bg-gray-600 border-b bg-white hover:cursor-pointer hover:bg-gray-50"
+                  onClick={() => navigate(`${r.id}/detail`)}
+                >
+                  <th
+                    scope="row"
+                    className="whitespace-nowrap px-6 py-4 font-mono"
                   >
-                    <th
-                      scope="row"
-                      className="whitespace-nowrap px-6 py-4 font-mono"
-                    >
-                      {r.releaseIdentifier}
-                    </th>
-                    <th
-                      scope="row"
-                      className="whitespace-nowrap px-6 py-4 font-mono"
-                    >
-                      <a
-                        href={`/releases/${r.id}`}
-                        className="hover:text-blue-500"
-                      >
-                        <span className="text-xs">
-                          {r.applicationDacIdentifierSystem}
-                        </span>
-                        <br />
-                        {r.applicationDacIdentifierValue}
-                      </a>
-                    </th>
-                    <td className="px-6 py-4">{r.applicationDacTitle}</td>
-                    <td className="px-6 py-4">{r.roleInRelease}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {query.isError && (
-            <EagerErrorBoundary
-              message={"Something went wrong fetching releases."}
-              error={query.error}
-              styling={"bg-red-100"}
-            />
-          )}
-          <BoxPaginator
-            currentPage={currentPage}
-            setPage={setCurrentPage}
-            rowCount={currentTotal}
-            rowsPerPage={pageSize}
-            rowWord="releases"
+                    {r.releaseIdentifier}
+                  </th>
+                  <th
+                    scope="row"
+                    className="whitespace-nowrap px-6 py-4 font-mono"
+                  >
+                    <span className="text-xs">
+                      {r.applicationDacIdentifierSystem}
+                    </span>
+                    <br />
+                    {r.applicationDacIdentifierValue}
+                  </th>
+                  <td className="px-6 py-4">{r.applicationDacTitle}</td>
+                  <td className="px-6 py-4">{r.roleInRelease}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {query.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching releases."}
+            error={query.error}
+            styling={"bg-red-100"}
           />
-        </BoxNoPad>
-      </div>
-    </LayoutBase>
+        )}
+        <BoxPaginator
+          currentPage={currentPage}
+          setPage={setCurrentPage}
+          rowCount={currentTotal}
+          rowsPerPage={pageSize}
+          rowWord="releases"
+        />
+      </BoxNoPad>
+    </div>
   );
 };

@@ -1,7 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./app";
-import { BrowserRouter } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
 import {
   DeployedEnvironments,
   EnvRelayProvider,
@@ -11,6 +10,7 @@ import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
+import { createRouter } from "./index-router";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -54,9 +54,7 @@ if (rootElement != null) {
             {/* we use session cookies for auth and use this provider to make them easily available */}
             <CookiesProvider>
               <LoggedInUserProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
+                <RouterProvider router={createRouter(de === "development")} />
               </LoggedInUserProvider>
             </CookiesProvider>
           </QueryClientProvider>
