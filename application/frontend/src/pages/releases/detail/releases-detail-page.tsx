@@ -24,7 +24,7 @@ import { HtsgetForm } from "./htsget-form";
 import DataAccessSummaryBox from "./logs-box/data-access-summary";
 import { ReleaseTypeLocal } from "./shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
-import { BreadcrumbsDiv } from "../breadcrumbs-div";
+import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -89,7 +89,7 @@ export const ReleasesDetailPage: React.FC = () => {
   return (
     <div className="mt-2 flex flex-grow flex-row flex-wrap">
       <>
-        <BreadcrumbsDiv releaseId={releaseId} />
+        <ReleasesBreadcrumbsDiv releaseId={releaseId} />
 
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
           <Box heading="Background Job">

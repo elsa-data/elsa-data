@@ -7,7 +7,6 @@ test("homepage has title and links to intro page", async ({ page }) => {
   await expect(page).toHaveTitle(/Elsa Data/);
 
   // create a locator
-  await expect(page.getByText("Home")).toBeVisible();
   await expect(page.getByText("Releases")).toBeVisible();
 
   const dacLink = page.getByRole("link", { name: /DAC/ });

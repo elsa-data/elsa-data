@@ -1,7 +1,7 @@
 import React from "react";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import DataAccessLogsBox from "./data-access-logs";
-import { BreadcrumbsDiv } from "../../breadcrumbs-div";
+import { ReleasesBreadcrumbsDiv } from "../../releases-breadcrumbs-div";
 import { useParams } from "react-router-dom";
 
 function DataAccessPage() {
@@ -15,7 +15,7 @@ function DataAccessPage() {
   return (
     <div className="mt-2 flex flex-grow flex-row flex-wrap">
       <>
-        <BreadcrumbsDiv releaseId={releaseId} />
+        <ReleasesBreadcrumbsDiv releaseId={releaseId} />
         <DataAccessLogsBox />
       </>
     </div>
