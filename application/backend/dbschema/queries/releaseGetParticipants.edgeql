@@ -2,6 +2,11 @@
 # included their role in the release (can be empty), and whether they
 # have logged into Elsa Data or not
 
+# this query has no filtering or paging as the expectation is that
+# the list of users participating in any given release is self-limiting
+# to a handful of people (10+ would be abnormal) - obviously this
+# decision needs to be revisited if that expectation is wrong
+
 with
   # users are those who have logged in
   u := (

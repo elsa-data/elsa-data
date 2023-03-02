@@ -35,6 +35,7 @@ COPY --from=node-deps /build .
 COPY --chown=edgedb ./backend/dbschema/ dbschema/
 
 # NOTE: the & and && here has some pretty subtle interaction - be careful working on this
+# NOTE: the deliberate absence of .ts on the queries generated 'file' (is auto added by generate)
 RUN edgedb-server \
     -D /build/data \
     --security insecure_dev_mode \
@@ -54,7 +55,7 @@ RUN edgedb-server \
     --tls-security insecure \
     --file interfaces.ts \
     && node ../node_modules/.bin/generate queries \
-    --file queries.ts \
+    --file queries \
     -H localhost \
     --target ts \
     --tls-security insecure \
@@ -78,7 +79,11 @@ RUN cd frontend && npm ci
 RUN cd common/elsa-constants && npm ci
 RUN cd common/elsa-types && npm ci
 
-COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/
+# pick out only the EdgeDb schema files we need for our app runtime
+COPY --from=edgedb-builder /build/dbschema/migrations/ ./backend/dbschema/migrations/
+COPY --from=edgedb-builder /build/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
+COPY --from=edgedb-builder /build/dbschema/interfaces.ts ./backend/dbschema/
+COPY --from=edgedb-builder /build/dbschema/queries.ts ./backend/dbschema/
 
 RUN ls -alRt backend/dbschema
 
