@@ -58,7 +58,8 @@ RUN edgedb-server \
     --file queries.ts \
     -H localhost \
     --target ts \
-    --tls-security insecure
+    --tls-security insecure \
+    && ls -alRt
 
 
 #
@@ -79,6 +80,8 @@ RUN cd common/elsa-constants && npm ci
 RUN cd common/elsa-types && npm ci
 
 COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/
+
+RUN ls -alRt backend/dbschema
 
 # we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
 COPY --from=edgedb-builder /usr/bin/edgedb ./backend/
