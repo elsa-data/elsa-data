@@ -24,7 +24,10 @@ import {
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { allReleasesSummaryByUserQuery } from "../db/release-queries";
+import {
+  allReleasesSummaryByUserQuery,
+  touchRelease,
+} from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import etag from "etag";
 import {
@@ -37,9 +40,9 @@ import { createReleaseManifest } from "./manifests/_manifest-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
-import { touchRelease } from "../db/release-queries";
 import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
+import { releaseGetParticipants } from "../../../dbschema/queries";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -857,6 +860,24 @@ ${release.applicantEmailAddresses}
         .run(tx);
 
       await touchRelease.run(tx, { releaseId });
+    });
+  }
+
+  public async getParticipants(user: AuthenticatedUser, releaseId: string) {
+    const { userRole } = await doRoleInReleaseCheck(
+      this.usersService,
+      user,
+      releaseId
+    );
+
+    // NOTE: for 'reading' participant information we are happy for anyone involved
+    // to see the details of everyone in the release (it's hard to imagine a research
+    // collaboration where actual data collaborators are not allowed to see each others email?)
+
+    // for 'writing' participant information we will restrict who can do what
+
+    return await releaseGetParticipants(this.edgeDbClient, {
+      releaseUuid: releaseId,
     });
   }
 }

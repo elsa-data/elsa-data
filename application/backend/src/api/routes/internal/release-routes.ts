@@ -13,6 +13,7 @@ import {
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
   ReleaseSummaryType,
+  ReleaseParticipantType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
@@ -84,6 +85,32 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       );
 
       sendPagedResult(reply, cases);
+    }
+  );
+
+  fastify.get<{ Params: { rid: string }; Reply: ReleaseParticipantType[] }>(
+    "/releases/:rid/participants",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const participants = await releasesService.getParticipants(
+        authenticatedUser,
+        releaseId
+      );
+
+      return participants.map(
+        (r): ReleaseParticipantType => ({
+          id: r.id,
+          email: r.email,
+          role: r.role || "None",
+          displayName: r.displayName || r.email,
+          subjectId: r.subjectId || undefined,
+          lastLogin: r.lastLogin || undefined,
+        })
+      );
     }
   );
 
