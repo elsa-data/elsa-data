@@ -4,15 +4,14 @@ import { blankTestData } from "./test-data/blank-test-data";
 import Bree from "bree";
 import { container } from "tsyringe";
 import path from "path";
-import { ElsaSettings } from "./config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
-import { getFromEnv } from "./entrypoint-command-helper";
 import { DatasetService } from "./business/services/dataset-service";
-import { JobsService } from "./business/services/jobs/jobs-base-service";
-import { Logger } from "pino";
 import { getServices } from "./di-helpers";
 import { MailService } from "./business/services/mail-service";
 import { downloadMaxmindDb } from "./app-helpers";
+import { createServer } from "http";
+import { createHttpTerminator } from "http-terminator";
+import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -24,14 +23,14 @@ export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
  * @param scenario
  */
 export async function startWebServer(scenario: number | null): Promise<number> {
-  const { settings } = getServices(container);
+  const { settings, logger } = getServices(container);
 
   // in a real deployment - "add scenario", "db blank" etc would all be handled by 'commands'.
   // we have one dev use case though - where we nodemon the local code base and restart the server
   // each time code changes - and in that case we want the server startup itself to set up the db
   if (scenario) {
     if (process.env.NODE_ENV === "development") {
-      console.log(`Resetting the database to contain scenario ${scenario}`);
+      logger.info(`Resetting the database to contain scenario ${scenario}`);
 
       await blankTestData();
       // TODO allow different scenarios to be inserted based on the value
@@ -53,7 +52,7 @@ export async function startWebServer(scenario: number | null): Promise<number> {
       dbPath: "asset/maxmind/db",
       maxmindKey: MAXMIND_KEY,
     });
-    console.log("MaxMind DB loaded");
+    logger.info("MaxMind DB loaded");
   }
 
   // Insert datasets from config
@@ -78,7 +77,7 @@ export async function startWebServer(scenario: number | null): Promise<number> {
       await sleep(5000);
     }
   } catch (err) {
-    server.log.error(err);
+    logger.error(err);
 
     return 1;
   }
@@ -105,4 +104,123 @@ export async function startJobQueue(config: any) {
   });
 
   await bree.start();
+}
+
+/**
+ * A function that exposes a very simple web server relaying error messages
+ * out - until a successful query against the database has been made.
+ *
+ * This provides useful feedback on first startup as the service cannot
+ * proceed until the initial schema is migrated.
+ */
+export async function waitForDatabaseReady() {
+  const { settings, logger, edgeDbClient } = getServices(container);
+
+  // a simple test to exercise the base db/schema expectations
+  const dbTest = async (): Promise<string | null> => {
+    try {
+      // this is likely to fail if the actual db connection is broken
+      const fortyTwoResult = await edgeDbClient.query("select 42;");
+
+      if (
+        !fortyTwoResult ||
+        !(fortyTwoResult.length === 1) ||
+        !(fortyTwoResult[0] === 42)
+      ) {
+        return "Simple EdgeDb select of 42 did not return the correct value";
+      }
+
+      // this is likely to fail if we haven't yet performed the first migration
+      const userResult = await edgeDbClient.query(
+        "select permission::User { id };"
+      );
+
+      if (!userResult) {
+        return "Simple EdgeDb select of User failed to return a valid result";
+      }
+
+      // null means success - we can continue
+      return null;
+    } catch (e: any) {
+      logger.error(e, "Database test failure");
+
+      return e.toString();
+    }
+  };
+
+  const startDate = new Date();
+
+  const immediateTest = await dbTest();
+
+  // we can do an immediate test and if the database is all ready for us then lets return
+  // on to spinning up the 'real' webserver
+  if (!immediateTest) {
+    logger.info("Database test was successful - proceeding to web serving");
+    return;
+  }
+
+  let successQuery = false;
+
+  const server = createServer(async (request, response) => {
+    try {
+      const pageLoadTest = await dbTest();
+
+      if (pageLoadTest) {
+        response.writeHead(200);
+        response.write(`<html>
+<body>
+<p>A representative database query needs to succeed before
+ the web server starts - but is currently failing with the error message below.
+ Have you performed the initial <pre>${DB_MIGRATE_COMMAND}</pre>?
+ </p>
+ <pre>${pageLoadTest}</pre>
+ </body>
+ </html>`);
+        response.end();
+      } else {
+        successQuery = true;
+
+        response.writeHead(200);
+        response.write(
+          "<html><body>Database query success - proceeding to web serving</body></html>"
+        );
+        response.end();
+      }
+    } catch (e) {
+      response.writeHead(200);
+      response.write(`<html><body>${e}</body></html>`);
+      response.end();
+
+      logger.error(e, "Database test web server failure");
+    }
+  });
+
+  const httpTerminator = createHttpTerminator({
+    server,
+  });
+
+  await server.listen(settings.port);
+
+  let count = 0;
+  while (!successQuery) {
+    await sleep(1000);
+
+    // we also give a way of proceeding *without* the test being triggered via a web visit
+    // we don't want to do this every second though as there'd be *lots* of logs of failures..
+    if (count % 60 === 0)
+      if (!(await dbTest())) {
+        break;
+      }
+
+    count++;
+  }
+
+  const endDate = new Date();
+  const seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+
+  logger.info(
+    `Database test was successful (after ${seconds} seconds of database testing) - proceeding to web serving`
+  );
+
+  await httpTerminator.terminate();
 }

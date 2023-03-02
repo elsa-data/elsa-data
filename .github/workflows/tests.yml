@@ -38,6 +38,7 @@ jobs:
             application/common/elsa-types
             application/backend
             application/frontend
+          install-command: npm ci --install-links=false
 
       # unit tests can run first before any databases are set up
       - name: Run unit tests

@@ -12,16 +12,14 @@ type Props = {};
 
 function AccountPage({}: Props) {
   return (
-    <LayoutBase>
-      <Card>
-        <div>
-          <div className="mb-4 border-b pb-4 text-xl font-semibold">
-            Preference
-          </div>
-          <PageSizeSetting />
+    <Card>
+      <div>
+        <div className="mb-4 border-b pb-4 text-xl font-semibold">
+          Preference
         </div>
-      </Card>
-    </LayoutBase>
+        <PageSizeSetting />
+      </div>
+    </Card>
   );
 }
 

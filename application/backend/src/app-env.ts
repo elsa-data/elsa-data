@@ -1,3 +1,11 @@
+/**
+ * The following are the items that are passed through to the
+ * compiler of the index.html template.
+ */
+export type IndexHtmlTemplateData = {
+  data_attributes: string;
+};
+
 export function getMandatoryEnv(name: string): string {
   const val = process.env[name];
 

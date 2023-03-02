@@ -1,9 +1,8 @@
 import React from "react";
-import { LayoutBase } from "../layouts/layout-base";
 
 export const NotAuthorisedPage: React.FC = () => {
   return (
-    <LayoutBase>
+    <>
       <p className="prose">
         You have logged in via CILogon - but with an identity that is not
         authorised to use this particular Elsa Data instance.
@@ -21,6 +20,6 @@ export const NotAuthorisedPage: React.FC = () => {
         CILogon state by visiting{" "}
         <a href="https://cilogon.org/logout">the CILogon logout page</a>.
       </p>
-    </LayoutBase>
+    </>
   );
 };

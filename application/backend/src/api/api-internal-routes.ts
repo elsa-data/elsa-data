@@ -128,6 +128,8 @@ export const apiInternalRoutes = async (
     opts.allowTestCookieEquals != null
   );
 
+  fastify.addHook("onRequest", fastify.csrfProtection);
+
   // now register the auth hook and then register all the rest of our routes nested within
   fastify.addHook("onRequest", authInternalHook).after(() => {
     // we want to make a new opts object as there are some values (like prefix) that can appear

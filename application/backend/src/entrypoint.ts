@@ -7,6 +7,7 @@ import { getCommands, getFromEnv } from "./entrypoint-command-helper";
 import {
   startJobQueue,
   startWebServer,
+  waitForDatabaseReady,
   WEB_SERVER_COMMAND,
   WEB_SERVER_WITH_SCENARIO_COMMAND,
 } from "./entrypoint-command-start-web-server";
@@ -102,6 +103,7 @@ function printHelpText() {
         break;
 
       case WEB_SERVER_COMMAND:
+        todo.push(async () => waitForDatabaseReady());
         todo.push(async () => startJobQueue(config));
         todo.push(async () => startWebServer(null));
         break;
@@ -112,6 +114,7 @@ function printHelpText() {
             `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
           );
 
+        todo.push(async () => waitForDatabaseReady());
         todo.push(async () => startJobQueue(config));
         todo.push(async () => startWebServer(parseInt(c.args[0])));
         break;
@@ -146,6 +149,7 @@ function printHelpText() {
 
   // if no commands were specified - then our default behaviour is to pretend they asked us todo start-web-server
   if (todo.length === 0) {
+    await waitForDatabaseReady();
     await startJobQueue(config);
     await startWebServer(null);
   } else {

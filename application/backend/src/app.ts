@@ -4,6 +4,7 @@ import fastifySecureSession from "@fastify/secure-session";
 import fastifyFormBody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyTraps from "@dnlup/fastify-traps";
 import {
   locateHtmlDirectory,
@@ -19,16 +20,12 @@ import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
+import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
 
 @injectable()
 @singleton()
 export class App {
   public server: FastifyInstance;
-
-  private readonly optional_runtime_environment: string[] = [
-    "SEMANTIC_VERSION",
-    "BUILD_VERSION",
-  ];
 
   // a absolute path to where static files are to be served from
   public staticFilesPath: string;
@@ -62,11 +59,23 @@ export class App {
   public async setupServer(): Promise<FastifyInstance> {
     // register global fastify plugins
     {
+      // we want our server to quickly shutdown in response to TERM signals - enabling our
+      // other infrastructure (load balancers, ecs etc) to be totally in charge of keeping us
+      // running as a service
+      // this sets up traps to do it gracefully however
       await this.server.register(fastifyTraps);
+
       await this.server.register(fastifyFormBody);
 
       await this.server.register(fastifyHelmet, {
-        contentSecurityPolicy: false,
+        contentSecurityPolicy: {
+          directives: {
+            // TODO: derive form action hosts from configuration of OIDC
+            formAction: ["'self'", "*.cilogon.org"],
+            // our front end needs to be able to make fetches from ontoserver
+            connectSrc: ["'self'", new URL(this.settings.ontoFhirUrl).host],
+          },
+        },
       });
 
       await this.server.register(fastifyStatic, {
@@ -78,6 +87,10 @@ export class App {
         fastifySecureSession,
         getSecureSessionOptions(this.settings)
       );
+
+      await this.server.register(fastifyCsrfProtection, {
+        sessionPlugin: "@fastify/secure-session",
+      });
 
       // set rate limits across the entire app surface - including APIs and HTML
       // NOTE: this rate limit is also applied in the NotFound handler
@@ -167,7 +180,7 @@ export class App {
           await serveCustomIndexHtml(
             reply,
             this.staticFilesPath,
-            this.buildSafeEnvironment()
+            this.buildIndexHtmlTemplateData()
           );
       }
     );
@@ -180,7 +193,7 @@ export class App {
         return await serveCustomIndexHtml(
           reply,
           this.staticFilesPath,
-          this.buildSafeEnvironment()
+          this.buildIndexHtmlTemplateData()
         );
       }
 
@@ -195,35 +208,18 @@ export class App {
   }
 
   /**
-   * Builds an environment dictionary that is whitelisted to known safe values using
-   * whatever logic we want. This dictionary becomes the context for all HTML templating
-   * - including a special data attribute that is used for injecting data into React.
+   * Builds context for all HTML templating
+   * including a special data attribute that is used for injecting data into React.
+   *
+   * We can do any type of environment mapping/injection we want here.
    *
    * This can fetch values from any source we want
    * - environment variables passed in via CloudFormation
    * - secrets
    * - parameter store
    * - request variables
-   *
-   * @private
    */
-  private buildSafeEnvironment(): { [id: string]: string } {
-    const result: { [id: string]: string } = {};
-
-    const addEnv = (key: string, required: boolean) => {
-      const val = process.env[key];
-
-      if (required && !val)
-        throw new Error(
-          `Our environment for index.html templating requires a variable named ${key}`
-        );
-
-      if (val) result[key.toLowerCase()] = val;
-    };
-
-    // for (const k of this.required_runtime_environment) addEnv(k, true);
-    for (const k of this.optional_runtime_environment) addEnv(k, false);
-
+  private buildIndexHtmlTemplateData(): IndexHtmlTemplateData {
     let dataAttributes = "";
 
     const addAttribute = (k: string, v: string) => {
@@ -240,22 +236,20 @@ export class App {
     // Maps all the *deploy* time (stack) and *view* time (from browser fetching index.html)
     // environment data into data-attributes that will be
     // passed into the React app.
-    addAttribute(
-      "data-semantic-version",
-      result.semantic_version || "undefined"
-    );
-    addAttribute("data-build-version", result.build_version || "unknown");
+    addAttribute("data-version", getMandatoryEnv("ELSA_DATA_VERSION"));
+    addAttribute("data-built", getMandatoryEnv("ELSA_DATA_BUILT"));
+    addAttribute("data-revision", getMandatoryEnv("ELSA_DATA_REVISION"));
     addAttribute(
       "data-deployed-environment",
       this.settings.devTesting ? "development" : "production"
     );
     addAttribute(
       "data-terminology-fhir-url",
-      result.terminology_fhir_url || this.settings.ontoFhirUrl || "undefined"
+      this.settings.ontoFhirUrl || "undefined"
     );
 
-    result["data_attributes"] = dataAttributes;
-
-    return result;
+    return {
+      data_attributes: dataAttributes,
+    };
   }
 }

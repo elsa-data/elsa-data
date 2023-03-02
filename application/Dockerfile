@@ -91,16 +91,29 @@ RUN : \
   && cd frontend \
   && npm run build:prod
 
+# we want to embed into the image environment immutable tags passed in by the build environment
+
+# this is the 'semantic' version as set by developers i.e. 1.0.3
 ARG ELSA_DATA_VERSION
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_VERSION:?Build argument needs to be set and not null.}"]
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
 
-ARG GITHUB_SHA
-ENV GITHUB_SHA $GITHUB_SHA
+# this is the literal timestamp of building
+ARG ELSA_DATA_BUILT
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_BUILT:?Build argument needs to be set and not null.}"]
+ENV ELSA_DATA_BUILT $ELSA_DATA_BUILT
+
+# this is the github revision tag that precisely indicates the commit trigger
+ARG ELSA_DATA_REVISION
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_REVISION:?Build argument needs to be set and not null.}"]
+ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
 EXPOSE 80
 
 WORKDIR /app/backend
 
+# NOTE: a feature of using node directly as the entrypoint is that container signal handling
+# correctly passes SIGTERM to the Fastify server which can then shut down gracefully
 ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
 
 # TODO: careful crafting has broken stuff.. for the moment just throwing everything together

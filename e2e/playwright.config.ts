@@ -68,6 +68,9 @@ const config: PlaywrightTestConfig = {
     env: {
       DEBUG: "pw:webserver",
       NODE_ENV: "development",
+      ELSA_DATA_VERSION: "e2e",
+      ELSA_DATA_BUILT: "now",
+      ELSA_DATA_REVISION: "abcd",
       ELSA_DATA_META_CONFIG_SOURCES: "file('e2e')",
       ELSA_DATA_META_CONFIG_FOLDERS: resolve("config"),
     },

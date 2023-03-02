@@ -9,7 +9,6 @@ import { AuthenticatedUser } from "../business/authenticated-user";
 import { SingleUserBySubjectIdType } from "../business/db/user-queries";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
 import { SECURE_COOKIE_NAME } from "@umccr/elsa-constants";
-
 /**
  * Return a secure sessions plugin options object.
  * NOTES: the code is here just so all the auth stuff is in one spot.

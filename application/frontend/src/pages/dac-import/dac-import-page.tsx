@@ -16,7 +16,7 @@ export const DacImportPage: React.FC = () => {
   const uiAllowed = useUiAllowed();
 
   return (
-    <LayoutBase>
+    <>
       <div className="mt-2 flex flex-grow flex-row flex-wrap">
         {/* SYNCHRONISE DAC BOX */}
         {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
@@ -70,6 +70,6 @@ export const DacImportPage: React.FC = () => {
         showing={showingManualEntryDialog}
         cancelShowing={() => setShowingManualEntryDialog(false)}
       />
-    </LayoutBase>
+    </>
   );
 };
