@@ -67,7 +67,14 @@ export class App {
 
       await this.server.register(fastifyFormBody);
 
-      await this.server.register(fastifyHelmet, {});
+      await this.server.register(fastifyHelmet, {
+        contentSecurityPolicy: {
+          directives: {
+            // TODO: derive form action hosts from configuration of OIDC
+            formAction: ["'self'", "*.cilogon.org"],
+          },
+        },
+      });
 
       await this.server.register(fastifyStatic, {
         root: this.staticFilesPath,

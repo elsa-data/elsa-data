@@ -10,7 +10,7 @@ import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
-import { createAppRouter } from "./appRouter";
+import { createRouter } from "./index-router";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -54,7 +54,7 @@ if (rootElement != null) {
             {/* we use session cookies for auth and use this provider to make them easily available */}
             <CookiesProvider>
               <LoggedInUserProvider>
-                <RouterProvider router={createAppRouter()} />
+                <RouterProvider router={createRouter(de === "development")} />
               </LoggedInUserProvider>
             </CookiesProvider>
           </QueryClientProvider>

@@ -89,7 +89,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
               <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    "/p/releases",
+                    "/releases",
                     "Releases",
                     "text-purple-500",
                     "border-purple-500",
@@ -98,7 +98,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </li>
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    "/p/datasets",
+                    "/datasets",
                     "Datasets",
                     "text-green-500",
                     "border-green-500",
@@ -107,7 +107,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </li>
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    "/p/dac",
+                    "/dac",
                     "DAC",
                     "text-yellow-500",
                     "border-yellow-500",
@@ -116,7 +116,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </li>
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
-                    "/p/users",
+                    "/users",
                     "Users",
                     "text-rose-500",
                     "border-rose-500",

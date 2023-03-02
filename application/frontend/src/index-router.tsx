@@ -26,7 +26,7 @@ import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
 
-export function createAppRouter() {
+export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
     let location = useLocation();
 
@@ -51,7 +51,9 @@ export function createAppRouter() {
       />
     );
   };
-  const ProtectedRoute = ({ redirectPath = "/login" }) => {
+  const ProtectedRoute: React.FC<{ redirectPath: string }> = ({
+    redirectPath,
+  }) => {
     const user = useLoggedInUser();
     if (!user) {
       return <Navigate to={redirectPath} replace />;
@@ -66,43 +68,61 @@ export function createAppRouter() {
   }) => (
     <NavLink to={to}>
       {({ isActive }) => (
-        <Dropdown.Item className={isActive ? "text-gray-200" : "text-gray-500"}>
+        <Dropdown.Item
+          className={isActive ? "font-bold text-gray-500" : "text-gray-500"}
+        >
           {text}
         </Dropdown.Item>
       )}
     </NavLink>
   );
 
-  // there is a bit of duplication here between the breadcrumb dropdown (basically
-  // a 'sibling' navigator) - and the actual route definitions further down. Possibly there
-  // is a way to automatically compute the routes and we could do a single definition
+  const releaseChildren = [
+    {
+      text: "Detail",
+      path: "detail",
+      element: <ReleasesDetailPage />,
+      children: <></>,
+    },
+    {
+      text: "Data Access Log",
+      path: "data-access-log",
+      element: <DataAccessPage />,
+      children: <></>,
+    },
+    // TBD Audit Log Page  (
+    //         <>
+    //           <Route path={`:objectId`} element={<AuditEntryPage />} />
+    //         </>
+    //       )
+    // TBD User Management Page
+  ];
+
   const ReleaseBreadcrumbDropdown = () => (
     <>
-      <BreadcrumbDropdownItem to="../detail" text="Detail" />
-      <BreadcrumbDropdownItem to="../audit-log" text="Audit Log" />
-      <BreadcrumbDropdownItem to="../data-access-log" text="Data Access Log" />
-      <BreadcrumbDropdownItem to="../user-management" text=" User Management" />
+      {releaseChildren.map((c) => (
+        <BreadcrumbDropdownItem to={`../${c.path}`} text={c.text} />
+      ))}
     </>
   );
 
   return createBrowserRouter(
     createRoutesFromElements(
-      <Route path={`/`} element={<LayoutBase />}>
-        <Route path={`login`} element={<LoginPage />} />
-        {/* a page that we will get to disappear in production deployments */}
-        <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
-        <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
+      <Route element={<LayoutBase />}>
+        {/* the following 'public' routes need to come first so that they will match before
+            the more generic / route */}
         <Route path={`/login`} element={<LoginPage />} />
+        <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
 
-        {/* all routes under here are generally protected (must be logged in) */}
-        <Route path={`p`} element={<ProtectedRoute />}>
-          <Route path={`account`} element={<AccountPage />} />
-          <Route path={`users`} element={<UsersDashboardPage />} />
-          <Route path={`dac`} element={<DacImportPage />} />
+        {/* a login bypass route/page that only appears in dev */}
+        {addBypassLoginPage && (
+          <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
+        )}
 
-          <Route path={`datasets`} element={<DatasetsDashboardPage />}>
-            <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
-          </Route>
+        {/* a protected hierarchy of routes - user must be logged in */}
+        <Route path={`/`} element={<ProtectedRoute redirectPath="/login" />}>
+          {/* our default 'home' is the releases page */}
+          <Route index element={<Navigate to={"releases"} />} />
 
           <Route path={`releases`}>
             <Route index element={<ReleasesPage />} />
@@ -112,38 +132,31 @@ export function createAppRouter() {
                 dropdownItems: () => <ReleaseBreadcrumbDropdown />,
               }}
             >
-              <Route
-                path={`detail`}
-                element={<ReleasesDetailPage />}
-                handle={{
-                  crumbText: "Detail",
-                }}
-              />
-              <Route
-                path={`audit-log`}
-                handle={{
-                  crumbText: "Audit Log",
-                }}
-              >
-                <Route path={`:objectId`} element={<AuditEntryPage />} />
-              </Route>
-              <Route
-                path={`data-access-log`}
-                element={<DataAccessPage />}
-                handle={{
-                  crumbText: "Data Access Log",
-                }}
-              />
-              <Route
-                path={`user-management`}
-                // WIP
-                element={<DataAccessPage />}
-                handle={{
-                  crumbText: "User Management",
-                }}
-              />
+              <>
+                {releaseChildren.map((c, i) => (
+                  <Route
+                    key={i}
+                    path={c.path}
+                    element={c.element}
+                    handle={{
+                      crumbText: c.text,
+                    }}
+                  >
+                    {c.children}
+                  </Route>
+                ))}
+              </>
             </Route>
           </Route>
+
+          <Route path={`datasets`} element={<DatasetsDashboardPage />}>
+            <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
+          </Route>
+
+          <Route path={`dac`} element={<DacImportPage />} />
+
+          <Route path={`account`} element={<AccountPage />} />
+          <Route path={`users`} element={<UsersDashboardPage />} />
         </Route>
 
         <Route path="*" element={<NoMatch />} />
