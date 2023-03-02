@@ -4,12 +4,10 @@ import { useParams } from "react-router-dom";
 import {
   REACT_QUERY_RELEASE_KEYS,
   specificReleaseParticipantsQuery,
-  specificReleaseQuery,
 } from "../detail/queries";
-import { ReleaseTypeLocal } from "../detail/shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
-import { Box, BoxNoPad } from "../../../components/boxes";
+import { BoxNoPad } from "../../../components/boxes";
 import { ReleaseParticipantType } from "@umccr/elsa-types";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
 import classNames from "classnames";
@@ -44,13 +42,10 @@ export const ReleasesUserManagementPage: React.FC = () => {
 
   const columnProps = [
     {
-      columnTitle: "Email",
-    },
-    {
       columnTitle: "Name",
     },
     {
-      columnTitle: "Subject Id",
+      columnTitle: "Email",
     },
     {
       columnTitle: "Role",
@@ -73,7 +68,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                 {releaseParticipantsQuery.data &&
                   releaseParticipantsQuery.data.length === 0 && (
                     <div className={classNames(baseMessageDivClasses)}>
-                      <p>There are no visible dataset(s)</p>
+                      <p>There are no participants for this release</p>
                     </div>
                   )}
                 {releaseParticipantsQuery.data &&
@@ -108,23 +103,17 @@ export const ReleasesUserManagementPage: React.FC = () => {
                                   "text-left"
                                 )}
                               >
+                                <span title={row.subjectId || undefined}>
+                                  {row.displayName}
+                                </span>
+                              </td>
+                              <td
+                                className={classNames(
+                                  baseColumnClasses,
+                                  "text-left"
+                                )}
+                              >
                                 {row.email}
-                              </td>
-                              <td
-                                className={classNames(
-                                  baseColumnClasses,
-                                  "text-left"
-                                )}
-                              >
-                                {row.displayName}
-                              </td>
-                              <td
-                                className={classNames(
-                                  baseColumnClasses,
-                                  "text-left"
-                                )}
-                              >
-                                {row.subjectId}
                               </td>
                               <td
                                 className={classNames(
@@ -141,7 +130,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                                 )}
                               >
                                 {row.lastLogin
-                                  ? formatLocalDateTime(row.lastLogin)
+                                  ? formatLocalDateTime(row.lastLogin as string)
                                   : ""}
                               </td>
                             </tr>
@@ -156,7 +145,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
         )}
         {!error.isSuccess && (
           <EagerErrorBoundary
-            message={"Something went wrong fetching release data."}
+            message={"Something went wrong fetching release participant data."}
             error={error.error}
             styling={"bg-red-100"}
           />

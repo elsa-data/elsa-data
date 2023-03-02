@@ -55,6 +55,7 @@ RUN edgedb-server \
     --tls-security insecure \
     --file interfaces.ts \
     && node ../node_modules/.bin/generate queries \
+    --file \
     -H localhost \
     --target ts \
     --tls-security insecure
