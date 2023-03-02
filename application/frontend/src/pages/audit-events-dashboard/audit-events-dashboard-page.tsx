@@ -7,7 +7,7 @@ export const AuditEventsPage = (): JSX.Element => {
 
   return (
     <div className="mt-2 flex flex-grow flex-row flex-wrap">
-      <AuditEventTable path="users" pageSize={pageSize} />
+      <AuditEventTable path="users" filterMenu={true} pageSize={pageSize} />
     </div>
   );
 };

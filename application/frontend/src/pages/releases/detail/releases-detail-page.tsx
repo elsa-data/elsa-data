@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import { Box } from "../../../components/boxes";
-import { LayoutBase } from "../../../layouts/layout-base";
 import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
 import { PresignedUrlForm } from "./presigned-url-form";
@@ -209,6 +208,7 @@ export const ReleasesDetailPage: React.FC = () => {
             <AuditEventTable
               path="releases"
               id={releaseId}
+              filterMenu={false}
               pageSize={pageSize}
             />
             <DataAccessSummaryBox releaseId={releaseId} />
