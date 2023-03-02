@@ -40,7 +40,6 @@ import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
-import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import { FilterMenu } from "./filter-menu";
 
@@ -68,6 +67,11 @@ type AuditEventTableProps = {
    * Maximum number of items to show in the table.
    */
   pageSize: number;
+
+  /**
+   * Whether to include the filter menu
+   */
+  filterMenu: boolean;
 };
 
 /**
@@ -89,8 +93,6 @@ export const AuditEventTable = ({
     error: null,
     isSuccess: true,
   });
-
-  const loggedInUser = useLoggedInUser();
 
   const [includeEvents, setIncludeEvents] = useState<
     AuditEventUserFilterType[]

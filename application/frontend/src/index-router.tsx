@@ -128,7 +128,7 @@ export function createRouter(addBypassLoginPage: boolean) {
           <Route path={`releases`}>
             <Route index element={<ReleasesPage />} />
             <Route
-              path={`:releaseId`}
+              path={`:id`}
               handle={{
                 dropdownItems: () => <ReleaseBreadcrumbDropdown />,
               }}
@@ -169,10 +169,10 @@ export function createRouter(addBypassLoginPage: boolean) {
           </Route>
 
           <Route
-            path={`/audit-event/details/:objectId`}
+            path={`audit-event/details/:objectId`}
             element={<AuditEventDetailedPage />}
           />
-          <Route path={`/audit-events`} element={<AuditEventsPage />} />
+          <Route path={`audit-events`} element={<AuditEventsPage />} />
         </Route>
 
         <Route path="*" element={<NoMatch />} />

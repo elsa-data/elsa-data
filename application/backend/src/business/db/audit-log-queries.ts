@@ -78,35 +78,6 @@ export const auditEventProperties = {
   outcome: true,
 } as const;
 
-/***
- * Common paginate logic.
- */
-export const paginateLogic = <T extends AuditEvent>(
-  auditEvent: T,
-  limit: number,
-  offset: number,
-  orderByProperty: keyof AuditEvent = "occurredDateTime",
-  orderAscending: boolean = false
-) => {
-  return {
-    order_by: [
-      {
-        expression:
-          orderByProperty === "actionCategory"
-            ? e.cast(e.str, auditEvent.actionCategory)
-            : auditEvent[orderByProperty],
-        direction: orderAscending ? e.ASC : e.DESC,
-      },
-      {
-        expression: auditEvent.occurredDateTime,
-        direction: e.DESC,
-      },
-    ],
-    limit: limit,
-    offset: offset,
-  };
-};
-
 /**
  * An EdgeDb query for the audit log details associated with an id.
  */

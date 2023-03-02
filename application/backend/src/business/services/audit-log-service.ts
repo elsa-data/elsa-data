@@ -228,7 +228,6 @@ export class AuditLogService {
       details,
     });
 
-    //todo work out why this throws error.
     await this.updateUser(userId, auditEvent, executor);
 
     return auditEvent.id;
@@ -455,7 +454,8 @@ export class AuditLogService {
   }
 
   /**
-   * Get User entries, optionally including system events too.
+   * Get User audit entries, filtering the result to include system or release entries, or to include all
+   * users' events.
    *
    * @param executor
    * @param filter
