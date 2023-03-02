@@ -43,8 +43,7 @@ RUN edgedb-server \
     -H localhost \
     --tls-security insecure \
     --wait-until-available 2m \
-    && mkdir generated \
-    && cd generated \
+    && cd /build/dbschema \
     && node ../node_modules/.bin/generate edgeql-js \
     -H localhost \
     --target ts \
