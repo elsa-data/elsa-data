@@ -58,8 +58,7 @@ RUN edgedb-server \
     --file queries \
     -H localhost \
     --target ts \
-    --tls-security insecure \
-    && ls -alRt
+    --tls-security insecure
 
 
 #
@@ -84,8 +83,6 @@ COPY --from=edgedb-builder /build/dbschema/migrations/ ./backend/dbschema/migrat
 COPY --from=edgedb-builder /build/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
 COPY --from=edgedb-builder /build/dbschema/interfaces.ts ./backend/dbschema/
 COPY --from=edgedb-builder /build/dbschema/queries.ts ./backend/dbschema/
-
-RUN ls -alRt backend/dbschema
 
 # we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
 COPY --from=edgedb-builder /usr/bin/edgedb ./backend/
