@@ -21,6 +21,36 @@ body {
   @apply btn-ghost btn-xs btn text-error;
 }
 
+/* legacy */
+
+.btn-base {
+  @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
+}
+
+.btn-normal {
+  @apply btn-base bg-blue-500 text-white;
+}
+
+.btn-normal:hover {
+  @apply bg-blue-700;
+}
+
+.btn-danger {
+  @apply btn-base bg-red-500 text-white;
+}
+
+.btn-danger:hover {
+  @apply bg-red-700;
+}
+
+.btn-warning {
+  @apply btn-base bg-orange-500 text-white;
+}
+
+.btn-warning:hover {
+  @apply bg-orange-700;
+}
+
 .inline-list {
   display: inline;
   list-style: none;

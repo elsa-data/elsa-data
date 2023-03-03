@@ -172,12 +172,21 @@ export type ReleaseManualType = Static<typeof ReleaseManualSchema>;
  * user interface.
  */
 export const ReleaseParticipantSchema = Type.Object({
+  // the internal identifier for this user
   id: Type.String(),
+  // the email address of this user
   email: Type.String(),
-  displayName: Type.String(),
+  // the role of this user in this release
   role: Type.String(),
+  displayName: Type.String(),
   subjectId: Type.Optional(Type.String()),
+  // the last login datetime or null if this user has never logged in
   lastLogin: Type.Optional(TypeDate),
+  // is true if the person making the call has enough permissions to alter this particular record
+  // this is the start of a pattern for how per release permissions can be relayed to the UI
+  // but is still WIP
+  canBeRemoved: Type.Boolean(),
+  canBeRoleAltered: Type.Boolean(),
 });
 export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
 

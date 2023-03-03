@@ -4,7 +4,6 @@ import {
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
   ReleaseCaseType,
-  ReleaseDetailType,
   ReleaseManualSchema,
   ReleaseManualType,
   ReleaseMasterAccessRequestType,
@@ -15,6 +14,7 @@ import {
   ReleaseSummaryType,
   ReleaseParticipantType,
   ReleaseParticipantAddType,
+  ReleaseDetailType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
@@ -114,6 +114,9 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
           displayName: r.displayName || r.email,
           subjectId: r.subjectId || undefined,
           lastLogin: r.lastLogin || undefined,
+          // WIP - also need to check permissions of authenticatedUser
+          canBeRemoved: r.id !== authenticatedUser.dbId,
+          canBeRoleAltered: r.id !== authenticatedUser.dbId,
         })
       );
     }

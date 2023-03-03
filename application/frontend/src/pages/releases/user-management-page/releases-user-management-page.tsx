@@ -179,21 +179,23 @@ export const ReleasesUserManagementPage: React.FC = () => {
                                 : ""}
                             </td>
                             <td className="text-right">
-                              <button
-                                className={classNames(
-                                  "btn-table-action-danger",
-                                  {
-                                    "btn-disabled":
-                                      addUserMutate.isLoading ||
-                                      removeUserMutate.isLoading,
-                                  }
-                                )}
-                                onClick={async () => {
-                                  removeUserMutate.mutate(row.id);
-                                }}
-                              >
-                                remove
-                              </button>
+                              {row.canBeRemoved && (
+                                <button
+                                  className={classNames(
+                                    "btn-table-action-danger",
+                                    {
+                                      "btn-disabled":
+                                        addUserMutate.isLoading ||
+                                        removeUserMutate.isLoading,
+                                    }
+                                  )}
+                                  onClick={async () => {
+                                    removeUserMutate.mutate(row.id);
+                                  }}
+                                >
+                                  remove
+                                </button>
+                              )}
                             </td>
                           </tr>
                         );
