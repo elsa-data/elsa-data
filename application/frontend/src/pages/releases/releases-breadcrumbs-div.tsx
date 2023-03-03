@@ -25,9 +25,10 @@ export const ReleasesBreadcrumbsDiv: React.FC<Props> = (props) => {
     .map((match: any) => match.handle.crumbText);
 
   // find the last 'dropdownItems' component if present - as we will render that to our final dropdown
-  const finalDropdownItems = matches
+  const finalDropdownItem = matches
     .filter((match: any) => Boolean(match.handle?.dropdownItems))
-    .map((match: any) => match.handle.dropdownItems());
+    .map((match: any) => match.handle.dropdownItems())
+    .slice(-1);
 
   return (
     <nav
@@ -53,19 +54,21 @@ export const ReleasesBreadcrumbsDiv: React.FC<Props> = (props) => {
             </span>
           </div>
         </li>
-        <li>
-          <div className="flex items-center">
-            <HiChevronRight className="mr-2" />
+        {finalDropdownItem && (
+          <li>
+            <div className="flex items-center">
+              <HiChevronRight className="mr-2" />
 
-            <Dropdown
-              size="xs"
-              label={crumbsText.slice(-1)}
-              placement="bottom-end"
-            >
-              {finalDropdownItems}
-            </Dropdown>
-          </div>
-        </li>
+              <Dropdown
+                size="xs"
+                label={crumbsText.slice(-1)}
+                placement="bottom-end"
+              >
+                {finalDropdownItem}
+              </Dropdown>
+            </div>
+          </li>
+        )}
       </ol>
     </nav>
   );

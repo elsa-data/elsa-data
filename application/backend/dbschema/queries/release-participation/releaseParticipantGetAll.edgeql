@@ -34,9 +34,8 @@ select
     id,
     email,
     displayName,
-    role := assert_single(
-          [is permission::User].releaseParticipant@role ??
-          [is permission::PotentialUser].futureReleaseParticipant@role),
+    role := assert_single([is permission::User].releaseParticipant@role) ??
+            assert_single([is permission::PotentialUser].futureReleaseParticipant@role),
     subjectId := [is permission::User].subjectId,
     lastLogin := [is permission::User].lastLoginDateTime
   }

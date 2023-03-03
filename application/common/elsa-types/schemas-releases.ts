@@ -181,6 +181,18 @@ export const ReleaseParticipantSchema = Type.Object({
 });
 export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
 
+/**
+ * A schema representing the operation to add a user to a release with
+ * a specific role.
+ */
+export const ReleaseParticipantAddSchema = Type.Object({
+  email: Type.String(),
+  role: Type.String(),
+});
+export type ReleaseParticipantAddType = Static<
+  typeof ReleaseParticipantAddSchema
+>;
+
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;

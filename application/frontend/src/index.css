@@ -7,32 +7,18 @@ body {
   @apply h-full;
 }
 
-.btn-base {
-  @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
+/* Major cards as displayed down the page */
+.card-major {
+  @apply card card-compact bg-base-100 shadow-lg;
 }
 
-.btn-normal {
-  @apply btn-base bg-blue-500 text-white;
+/* A button in a table column that just navigates somewhere */
+.btn-table-action-navigate {
 }
 
-.btn-normal:hover {
-  @apply bg-blue-700;
-}
-
-.btn-danger {
-  @apply btn-base bg-red-500 text-white;
-}
-
-.btn-danger:hover {
-  @apply bg-red-700;
-}
-
-.btn-warning {
-  @apply btn-base bg-orange-500 text-white;
-}
-
-.btn-warning:hover {
-  @apply bg-orange-700;
+/* A button in a table column that does something destructive */
+.btn-table-action-danger {
+  @apply btn-ghost btn-xs btn text-error;
 }
 
 .inline-list {

@@ -106,8 +106,8 @@ export function createRouter(addBypassLoginPage: boolean) {
 
   const ReleaseBreadcrumbDropdown = () => (
     <>
-      {releaseChildren.map((c) => (
-        <BreadcrumbDropdownItem to={`../${c.path}`} text={c.text} />
+      {releaseChildren.map((c, i) => (
+        <BreadcrumbDropdownItem key={i} to={`../${c.path}`} text={c.text} />
       ))}
     </>
   );
