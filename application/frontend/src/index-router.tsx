@@ -27,6 +27,7 @@ import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
 import { ReleasesMasterPage } from "./pages/releases/detail/releases-master-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
+import { ReleasesMasterPage } from "./pages/releases/detail/releases-master-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
