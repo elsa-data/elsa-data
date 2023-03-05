@@ -25,6 +25,7 @@ import { Dropdown } from "flowbite-react";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
+import { ReleasesMasterPage } from "./pages/releases/detail/releases-master-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -128,6 +129,7 @@ export function createRouter(addBypassLoginPage: boolean) {
             <Route index element={<ReleasesPage />} />
             <Route
               path={`:releaseId`}
+              element={<ReleasesMasterPage />}
               handle={{
                 dropdownItems: () => <ReleaseBreadcrumbDropdown />,
               }}
