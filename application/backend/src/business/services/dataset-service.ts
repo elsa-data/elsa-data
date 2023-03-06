@@ -20,7 +20,6 @@ import {
   selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
-// Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
 import { AuditLogService } from "./audit-log-service";
 
 @injectable()
