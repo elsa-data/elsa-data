@@ -163,6 +163,44 @@ export const ReleaseManualSchema = Type.Object({
   datasetUris: Type.Array(Type.String()),
   applicantEmailAddresses: Type.String(),
 });
+export type ReleaseManualType = Static<typeof ReleaseManualSchema>;
+
+/**
+ * A schema representing the participation of someone in a release.
+ *
+ * This schema is primarily for use by the release user management
+ * user interface.
+ */
+export const ReleaseParticipantSchema = Type.Object({
+  // the internal identifier for this user
+  id: Type.String(),
+  // the email address of this user
+  email: Type.String(),
+  // the role of this user in this release
+  role: Type.String(),
+  displayName: Type.String(),
+  subjectId: Type.Optional(Type.String()),
+  // the last login datetime or null if this user has never logged in
+  lastLogin: Type.Optional(TypeDate),
+  // is true if the person making the call has enough permissions to alter this particular record
+  // this is the start of a pattern for how per release permissions can be relayed to the UI
+  // but is still WIP
+  canBeRemoved: Type.Boolean(),
+  canBeRoleAltered: Type.Boolean(),
+});
+export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
+
+/**
+ * A schema representing the operation to add a user to a release with
+ * a specific role.
+ */
+export const ReleaseParticipantAddSchema = Type.Object({
+  email: Type.String(),
+  role: Type.String(),
+});
+export type ReleaseParticipantAddType = Static<
+  typeof ReleaseParticipantAddSchema
+>;
 
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 
@@ -171,5 +209,3 @@ export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
 
 export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
-
-export type ReleaseManualType = Static<typeof ReleaseManualSchema>;

@@ -27,6 +27,17 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
 
+export const OUTCOME_SUCCESS = 0;
+export const OUTCOME_MINOR_FAILURE = 4;
+export const OUTCOME_SERIOUS_FAILURE = 8;
+export const OUTCOME_MAJOR_FAILURE = 12;
+
+// Code	Display	Definition
+// 0	Success	The operation completed successfully (whether with warnings or not).
+// 4	Minor failure	The action was not successful due to some kind of minor failure (often equivalent to an HTTP 400 response).
+// 8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
+// 12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
+
 export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
@@ -111,7 +122,7 @@ export class AuditLogService {
     outcome: AuditEventOutcome,
     start: Date,
     end: Date,
-    details: any
+    details?: any
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
@@ -120,7 +131,7 @@ export class AuditLogService {
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
           outcome: outcome,
-          details: e.json(details),
+          details: details ? e.json(details) : e.json({}),
           occurredDuration:
             diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)

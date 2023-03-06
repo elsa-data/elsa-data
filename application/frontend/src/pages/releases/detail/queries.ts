@@ -5,6 +5,7 @@ import { QueryFunctionContext } from "react-query";
 import {
   CodingType,
   ReleaseDetailType,
+  ReleaseParticipantType,
   ReleasePatchOperationType,
 } from "@umccr/elsa-types";
 import { createDatasetMap } from "./dataset-map";
@@ -13,7 +14,11 @@ export const REACT_QUERY_RELEASE_KEYS = {
   // methods to create react query keys of varying levels
   all: ["releases"] as const,
   details: () => [...REACT_QUERY_RELEASE_KEYS.all, "detail"] as const,
+  participants: () =>
+    [...REACT_QUERY_RELEASE_KEYS.all, "participants"] as const,
   detail: (id: string) => [...REACT_QUERY_RELEASE_KEYS.details(), id] as const,
+  participant: (id: string) =>
+    [...REACT_QUERY_RELEASE_KEYS.participants(), id] as const,
   cfn: (id: string) =>
     [...REACT_QUERY_RELEASE_KEYS.details(), id, "cfn"] as const,
 
@@ -68,6 +73,16 @@ export async function specificReleaseQuery(context: QueryFunctionContext) {
     .then((response) => response.data);
 
   return await makeReleaseTypeLocal(releaseData);
+}
+
+export async function specificReleaseParticipantsQuery(
+  context: QueryFunctionContext
+) {
+  const rid = REACT_QUERY_RELEASE_KEYS.getReleaseId(context.queryKey);
+
+  return await axios
+    .get<ReleaseParticipantType[]>(`/api/releases/${rid}/participants`)
+    .then((response) => response.data);
 }
 
 export async function specificReleaseCodingUpdate() {}

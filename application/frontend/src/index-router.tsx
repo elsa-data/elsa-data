@@ -26,6 +26,7 @@ import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
 import { ReleasesMasterPage } from "./pages/releases/detail/releases-master-page";
+import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -96,13 +97,18 @@ export function createRouter(addBypassLoginPage: boolean) {
     //           <Route path={`:objectId`} element={<AuditEntryPage />} />
     //         </>
     //       )
-    // TBD User Management Page
+    {
+      text: "User Management",
+      path: "user-management",
+      element: <ReleasesUserManagementPage />,
+      children: <></>,
+    },
   ];
 
   const ReleaseBreadcrumbDropdown = () => (
     <>
-      {releaseChildren.map((c) => (
-        <BreadcrumbDropdownItem to={`../${c.path}`} text={c.text} />
+      {releaseChildren.map((c, i) => (
+        <BreadcrumbDropdownItem key={i} to={`../${c.path}`} text={c.text} />
       ))}
     </>
   );

@@ -57,11 +57,11 @@ describe("Redcap Import for AG", () => {
   });
 
   it("Base case with existing user mention", async () => {
-    // our base scenario makes 3 users but lets confirm that
+    // our base scenario makes 4 users but lets confirm that
     const existingUserCount = await e
       .count(e.permission.User)
       .run(edgedbClient);
-    expect(existingUserCount).toBe(3);
+    expect(existingUserCount).toBe(4);
 
     const redcapImportService = container.resolve(
       RedcapImportApplicationService
@@ -98,7 +98,7 @@ describe("Redcap Import for AG", () => {
     expect(potentialCount).toBe(1);
 
     const userCount = await e.count(e.permission.User).run(edgedbClient);
-    expect(userCount).toBe(3);
+    expect(userCount).toBe(4);
   });
 });
 

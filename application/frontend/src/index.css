@@ -7,6 +7,22 @@ body {
   @apply h-full;
 }
 
+/* Major cards as displayed down the page */
+.card-major {
+  @apply card card-compact bg-base-100 shadow-lg;
+}
+
+/* A button in a table column that just navigates somewhere */
+.btn-table-action-navigate {
+}
+
+/* A button in a table column that does something destructive */
+.btn-table-action-danger {
+  @apply btn-ghost btn-xs btn text-error;
+}
+
+/* legacy */
+
 .btn-base {
   @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
 }

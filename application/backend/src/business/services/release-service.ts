@@ -24,7 +24,10 @@ import {
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { allReleasesSummaryByUserQuery } from "../db/release-queries";
+import {
+  allReleasesSummaryByUserQuery,
+  touchRelease,
+} from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import etag from "etag";
 import {
@@ -37,7 +40,6 @@ import { createReleaseManifest } from "./manifests/_manifest-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
-import { touchRelease } from "../db/release-queries";
 import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
 
