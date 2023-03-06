@@ -118,7 +118,7 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
-    const releaseIdentifier = getNextReleaseId();
+    const releaseIdentifier = getNextReleaseId(this.settings.releaseIdPrefix);
 
     const releaseRow = await e
       .insert(e.release.Release, {

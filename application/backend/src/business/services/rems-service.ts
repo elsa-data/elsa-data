@@ -186,7 +186,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
-          releaseIdentifier: getNextReleaseId(),
+          releaseIdentifier: getNextReleaseId(this.settings.releaseIdPrefix),
           releasePassword: randomUUID(),
           datasetUris: e.literal(
             e.array(e.str),

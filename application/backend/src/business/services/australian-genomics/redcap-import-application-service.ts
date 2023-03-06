@@ -272,7 +272,7 @@ ${roleTable.join("\n")}
           isAllowedReadData: false,
           isAllowedVariantData: false,
           isAllowedPhenotypeData: false,
-          releaseIdentifier: getNextReleaseId(),
+          releaseIdentifier: getNextReleaseId(this.settings.releaseIdPrefix),
           // for the moment we fix this to a known secret
           releasePassword: "abcd",
           datasetUris: e.literal(
