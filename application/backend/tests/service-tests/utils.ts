@@ -14,7 +14,7 @@ export async function findDatabaseRelease(client: Client, releaseId: string) {
       applicationCoded: {
         ...e.release.ApplicationCoded["*"],
       },
-      filter: e.op(r.id, "=", e.uuid(releaseId)),
+      filter: e.op(r.releaseIdentifier, "=", releaseId),
     }))
     .assert_single()
     .run(client);

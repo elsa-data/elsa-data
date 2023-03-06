@@ -133,7 +133,7 @@ export async function createTestUser(
 
   // a helper to update the role this users has with a release
   const insertRole = async (
-    releaseId: string,
+    releaseUuid: string,
     role: "DataOwner" | "PI" | "Member"
   ) => {
     await e
@@ -142,7 +142,7 @@ export async function createTestUser(
         set: {
           releaseParticipant: {
             "+=": e.select(e.release.Release, (r) => ({
-              filter: e.op(e.uuid(releaseId), "=", r.id),
+              filter: e.op(e.uuid(releaseUuid), "=", r.id),
               "@role": e.str(role),
             })),
           },

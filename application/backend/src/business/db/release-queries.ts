@@ -42,11 +42,11 @@ export const allReleasesSummaryByUserQuery = e.params(
  */
 export const touchRelease = e.params(
   {
-    releaseId: e.uuid,
+    releaseId: e.str,
   },
   (params) =>
     e.update(e.release.Release, (r) => ({
-      filter: e.op(r.id, "=", params.releaseId),
+      filter: e.op(r.releaseIdentifier, "=", params.releaseId),
       set: { lastUpdated: e.datetime_current() },
     }))
 );

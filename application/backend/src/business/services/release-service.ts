@@ -664,7 +664,7 @@ ${release.applicantEmailAddresses}
             countriesInvolved: true,
             diseasesOfStudy: true,
           },
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
         }))
         .assert_single()
         .run(tx);
@@ -706,7 +706,7 @@ ${release.applicantEmailAddresses}
       const releaseWithAppCoded = await e
         .select(e.release.Release, (r) => ({
           applicationCoded: true,
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
         }))
         .assert_single()
         .run(tx);
@@ -766,7 +766,7 @@ ${release.applicantEmailAddresses}
     await this.edgeDbClient.transaction(async (tx) => {
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: fieldToSet,
         }))
         .run(tx);
@@ -814,7 +814,7 @@ ${release.applicantEmailAddresses}
 
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: {
             activation: e.insert(e.release.Activation, {
               activatedById: user.subjectId,
@@ -851,7 +851,7 @@ ${release.applicantEmailAddresses}
 
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: {
             previouslyActivated: { "+=": r.activation },
             activation: null,

@@ -45,7 +45,7 @@ export class DatasetService {
     return (
       await e
         .select(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           datasetUris: true,
         }))
         .assert_single()

@@ -145,12 +145,12 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseUuid = request.params.rid;
+      const releaseId = request.params.rid;
       const participantUuid = request.params.pid;
 
       return releaseParticipantService.removeParticipant(
         authenticatedUser,
-        releaseUuid,
+        releaseId,
         participantUuid
       );
     }

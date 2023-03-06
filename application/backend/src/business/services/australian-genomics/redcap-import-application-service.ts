@@ -18,6 +18,7 @@ import {
 } from "../../db/user-queries";
 import { generate } from "randomstring";
 import _ from "lodash";
+import { getNextReleaseId } from "../../db/release-queries";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -271,12 +272,7 @@ ${roleTable.join("\n")}
           isAllowedReadData: false,
           isAllowedVariantData: false,
           isAllowedPhenotypeData: false,
-          releaseIdentifier: generate({
-            length: 10,
-            capitalization: "uppercase",
-            charset: "alphabetic",
-            readable: true,
-          }),
+          releaseIdentifier: getNextReleaseId(),
           // for the moment we fix this to a known secret
           releasePassword: "abcd",
           datasetUris: e.literal(
