@@ -44,13 +44,13 @@ describe("edgedb release queries tests", () => {
     const testUserInsert = await createTestUser();
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release2.id,
+      releaseUuid: release2.id,
       userDbId: testUserInsert.id,
       role: "PI",
     });
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release3.id,
+      releaseUuid: release3.id,
       userDbId: testUserInsert.id,
       role: "DataOwner",
     });
@@ -70,7 +70,7 @@ describe("edgedb release queries tests", () => {
     {
       const a = result!.releaseParticipant[0];
 
-      expect(a.releaseIdentifier).toBe("P4RF4AC5BR");
+      expect(a.releaseIdentifier).toBe("R003");
       expect(a.applicationDacTitle).toBe("An Invisible Study");
       expect(a["@role"]).toBe("DataOwner");
     }
@@ -78,7 +78,7 @@ describe("edgedb release queries tests", () => {
     {
       const b = result!.releaseParticipant[1];
 
-      expect(b.releaseIdentifier).toBe("RH5WOR7QXB");
+      expect(b.releaseIdentifier).toBe("R002");
       expect(b.applicationDacTitle).toBe("A Better Study of Limited Test Data");
       expect(b["@role"]).toBe("PI");
     }
@@ -102,19 +102,19 @@ describe("edgedb release queries tests", () => {
     const testUserInsert = await createTestUser();
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release2.id,
+      releaseUuid: release2.id,
       userDbId: testUserInsert.id,
       role: "PI",
     });
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release3.id,
+      releaseUuid: release3.id,
       userDbId: testUserInsert.id,
       role: "DataOwner",
     });
 
     await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release4.id,
+      releaseUuid: release4.id,
       userDbId: testUserInsert.id,
       role: "Member",
     });
@@ -129,24 +129,20 @@ describe("edgedb release queries tests", () => {
       expect(result1).not.toBeNull();
       expect(result1).toHaveProperty("releaseParticipant");
       expect(result1!.releaseParticipant.length).toBe(1);
-      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe(
-        "RH5WOR7QXB"
-      );
+      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe("R003");
     }
 
     {
       const result2 = await allReleasesSummaryByUserQuery.run(edgeDbClient, {
         userDbId: testUserInsert.id,
         limit: 1,
-        offset: 2,
+        offset: 0,
       });
 
       expect(result2).not.toBeNull();
       expect(result2).toHaveProperty("releaseParticipant");
       expect(result2!.releaseParticipant.length).toBe(1);
-      expect(result2!.releaseParticipant[0].releaseIdentifier).toBe(
-        "S9DT3Z9NMA"
-      );
+      expect(result2!.releaseParticipant[0].releaseIdentifier).toBe("R004");
     }
   });
 });

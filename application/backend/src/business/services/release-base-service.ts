@@ -54,7 +54,7 @@ export abstract class ReleaseBaseService {
   protected baseQueriesForSingleRelease(releaseId: string) {
     const releaseQuery = e
       .select(e.release.Release, (r) => ({
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
+        filter: e.op(r.releaseIdentifier, "=", (releaseId)),
       }))
       .assert_single();
 
@@ -242,7 +242,7 @@ export abstract class ReleaseBaseService {
       // add specimens to the selected set
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: {
             selectedSpecimens: { "+=": specimensFromValidDatasetsQuery },
           },
@@ -252,7 +252,7 @@ export abstract class ReleaseBaseService {
       // remove specimens from the selected set
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: {
             selectedSpecimens: { "-=": specimensFromValidDatasetsQuery },
           },
@@ -306,7 +306,7 @@ export abstract class ReleaseBaseService {
             countriesInvolved: true,
             diseasesOfStudy: true,
           },
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
         }))
         .assert_single()
         .run(tx);

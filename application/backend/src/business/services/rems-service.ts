@@ -10,6 +10,7 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { format } from "date-fns";
+import { getNextReleaseId } from "../db/release-queries";
 
 @injectable()
 @singleton()
@@ -185,7 +186,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
-          releaseIdentifier: randomUUID(),
+          releaseIdentifier: getNextReleaseId(this.settings.releaseIdPrefix),
           releasePassword: randomUUID(),
           datasetUris: e.literal(
             e.array(e.str),

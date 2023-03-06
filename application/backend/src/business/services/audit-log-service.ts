@@ -90,7 +90,7 @@ export class AuditLogService {
     // the id of the newly inserted event (instead we can only get the release id)
     await e
       .update(e.release.Release, (r) => ({
-        filter: e.op(e.uuid(releaseId), "=", r.id),
+        filter: e.op(releaseId, "=", r.releaseIdentifier),
         set: {
           releaseAuditLog: {
             "+=": e.select(e.audit.ReleaseAuditEvent, (ae) => ({
@@ -174,7 +174,7 @@ export class AuditLogService {
 
     await e
       .update(e.release.Release, (r) => ({
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
+        filter: e.op(r.releaseIdentifier, "=", releaseId),
         set: {
           dataAccessAuditLog: {
             "+=": e.insert(e.audit.DataAccessAuditEvent, {
