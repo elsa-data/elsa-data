@@ -15,7 +15,19 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
   children,
 }) => {
   return (
-    <div className="w-full py-3">
+    <div className="card-major w-full">
+      <div className="card-body">
+        <h2 className="card-title">{heading}</h2>
+        <ErrorBoundary message={errorMessage} styling={"bg-red-100"}>
+          {children}
+        </ErrorBoundary>
+      </div>
+    </div>
+  );
+};
+
+{
+  /*    <div className="w-full py-3">
       <div className="rounded-b-xl border bg-white shadow">
         <div
           className={classNames(
@@ -25,13 +37,9 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
         >
           <h5 className="font-bold uppercase text-gray-600">{heading}</h5>
         </div>
-        <ErrorBoundary message={errorMessage} styling={"bg-red-100"}>
-          <div className="p-5">{children}</div>
-        </ErrorBoundary>
       </div>
-    </div>
-  );
-};
+    </div>*/
+}
 
 export const BoxNoPad: React.FC<PropsWithChildren<BoxProps>> = ({
   heading,

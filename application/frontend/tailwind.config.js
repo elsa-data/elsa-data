@@ -8,9 +8,13 @@ module.exports = {
   theme: {
     extend: {},
   },
+  daisyui: {
+    themes: false,
+  },
   plugins: [
     require("@tailwindcss/forms"),
     require("@tailwindcss/typography"),
     require("flowbite/plugin"),
+    require("daisyui"),
   ],
 };

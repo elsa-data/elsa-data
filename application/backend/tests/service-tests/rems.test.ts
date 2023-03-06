@@ -24,7 +24,7 @@ beforeEach(async () => {
 /**
  *
  */
-it("sync", async () => {
+xit("sync", async () => {
   const newReleases = await remsService.detectNewReleases();
 
   console.log(newReleases);

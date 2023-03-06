@@ -25,7 +25,7 @@
     "//edgemigrate": "Brings the current db up to date",
     "edgemigrate": "edgedb migrate",
     "//edgetypes": "Generates Typescript classes that match the schema of the *current* project EdgeDb",
-    "edgetypes": "generate queries && generate edgeql-js  && generate interfaces",
+    "edgetypes": "generate queries --file && generate edgeql-js && generate interfaces",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
     "test:service": "jest --forceExit --detectOpenHandles --runInBand --config jest.service-tests.config.js",

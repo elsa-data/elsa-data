@@ -26,6 +26,7 @@
     "axios": "1.2.0",
     "classnames": "2.3.2",
     "country-flag-icons": "1.5.5",
+    "daisyui": "^2.51.3",
     "dayjs": "1.11.6",
     "downshift": "7.2.1",
     "duration-fns": "3.0.1",
