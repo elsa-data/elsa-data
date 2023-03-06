@@ -155,7 +155,8 @@ export function createRouter(addBypassLoginPage: boolean) {
             </Route>
           </Route>
 
-          <Route path={`datasets`} element={<DatasetsDashboardPage />}>
+          <Route path={`datasets`}>
+            <Route index element={<DatasetsDashboardPage />} />
             <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
           </Route>
 

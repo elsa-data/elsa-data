@@ -26,6 +26,7 @@ import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
 import {
   allReleasesSummaryByUserQuery,
+  getNextReleaseId,
   touchRelease,
 } from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
@@ -117,7 +118,7 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
-    const releaseIdentifier = randomUUID();
+    const releaseIdentifier = getNextReleaseId();
 
     const releaseRow = await e
       .insert(e.release.Release, {
