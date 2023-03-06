@@ -23,7 +23,7 @@ import {
   TEST_SUBJECT_3_EMAIL,
 } from "./insert-test-users";
 // @ts-ignore
-import { insertSystemAuditEvent } from "../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
+import { insertSystemAuditEvent } from "../../dbschema/queries/audit-event-queries/insertSystemAuditEvent.edgeql.ts";
 
 const edgeDbClient = edgedb.createClient();
 

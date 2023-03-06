@@ -839,16 +839,10 @@ export class S3IndexApplicationService {
     // Update last update on Dataset
     await this.datasetService.updateDatasetCurrentTimestamp(datasetId, now);
 
-    // Add user audit event for syncing database
-    await this.auditLogService.createUserAuditEvent(
+    await this.auditLogService.insertSyncDatasetAuditEvent(
       this.edgeDbClient,
-      user.dbId,
-      user.subjectId,
-      user.displayName,
-      "U",
-      "Sync database",
-      null,
-      0,
+      user,
+      datasetUri,
       now
     );
   }

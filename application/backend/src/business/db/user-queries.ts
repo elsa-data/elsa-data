@@ -92,39 +92,3 @@ export const pageableAllUserQuery = e.params(
       offset: params.offset,
     }))
 );
-
-/**
- * Add the user as a participant in a release with the given role.
- */
-export const addUserToReleaseWithRole = e.params(
-  {
-    releaseId: e.uuid,
-    userDbId: e.uuid,
-    role: e.str,
-    whoId: e.str,
-    whoDisplayName: e.str,
-  },
-  (params) =>
-    e.update(e.permission.User, (u) => ({
-      filter: e.op(params.userDbId, "=", u.id),
-      set: {
-        releaseParticipant: {
-          "+=": e.select(e.release.Release, (r) => ({
-            filter: e.op(params.releaseId, "=", r.id),
-            "@role": params.role,
-          })),
-        },
-        userAuditEvent: {
-          "+=": e.insert(e.audit.UserAuditEvent, {
-            whoId: params.whoId,
-            whoDisplayName: params.whoDisplayName,
-            occurredDateTime: new Date(),
-            actionCategory: "E",
-            actionDescription: "Add user to release",
-            outcome: 0,
-            details: e.json({ role: params.role }),
-          }),
-        },
-      },
-    }))
-);

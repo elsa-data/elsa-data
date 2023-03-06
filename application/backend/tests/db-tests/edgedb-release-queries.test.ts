@@ -5,7 +5,7 @@ import { insertRelease2 } from "../../src/test-data/insert-test-data-release2";
 import { insertRelease4 } from "../../src/test-data/insert-test-data-release4";
 import { insertRelease3 } from "../../src/test-data/insert-test-data-release3";
 import { allReleasesSummaryByUserQuery } from "../../src/business/db/release-queries";
-import { addUserToReleaseWithRole } from "../../src/business/db/user-queries";
+import { UsersService } from "../../src/business/services/users-service";
 
 describe("edgedb release queries tests", () => {
   let edgeDbClient: Client;
@@ -42,21 +42,23 @@ describe("edgedb release queries tests", () => {
   it("get all on releases returns correct roles and fields", async () => {
     const testUserInsert = await createTestUser();
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release2.id,
-      userDbId: testUserInsert.id,
-      role: "PI",
-      whoId: "id1",
-      whoDisplayName: "name1",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release2.id,
+      testUserInsert.id,
+      "PI",
+      "id1",
+      "name1"
+    );
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release3.id,
-      userDbId: testUserInsert.id,
-      role: "DataOwner",
-      whoId: "id2",
-      whoDisplayName: "name2",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release3.id,
+      testUserInsert.id,
+      "DataOwner",
+      "id2",
+      "name2"
+    );
 
     // and we don't add them into release 4 at all
 
@@ -104,29 +106,32 @@ describe("edgedb release queries tests", () => {
   it("get all on releases does basic paging", async () => {
     const testUserInsert = await createTestUser();
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release2.id,
-      userDbId: testUserInsert.id,
-      role: "PI",
-      whoId: "id1",
-      whoDisplayName: "name1",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release2.id,
+      testUserInsert.id,
+      "PI",
+      "id1",
+      "name1"
+    );
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release3.id,
-      userDbId: testUserInsert.id,
-      role: "DataOwner",
-      whoId: "id2",
-      whoDisplayName: "name2",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release3.id,
+      testUserInsert.id,
+      "DataOwner",
+      "id2",
+      "name2"
+    );
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release4.id,
-      userDbId: testUserInsert.id,
-      role: "Member",
-      whoId: "id3",
-      whoDisplayName: "name3",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release4.id,
+      testUserInsert.id,
+      "Member",
+      "id3",
+      "name3"
+    );
 
     {
       const result1 = await allReleasesSummaryByUserQuery.run(edgeDbClient, {

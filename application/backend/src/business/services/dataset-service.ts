@@ -213,13 +213,10 @@ export class DatasetService {
       const newDataset = await insertDatasetQuery.run(tx);
 
       if (user !== undefined) {
-        await this.auditLogService.createUserAuditEvent(
+        await this.auditLogService.insertAddDatasetAuditEvent(
           tx,
-          user.dbId,
-          user.subjectId,
-          user.displayName,
-          "C",
-          "Add dataset"
+          user,
+          datasetUri
         );
       }
 
@@ -264,13 +261,10 @@ export class DatasetService {
       const datasetDeleted = await deleteDataset.run(tx);
 
       if (user !== undefined) {
-        await this.auditLogService.createUserAuditEvent(
+        await this.auditLogService.insertDeleteDatasetAuditEvent(
           tx,
-          user.dbId,
-          user.subjectId,
-          user.displayName,
-          "D",
-          "Delete dataset"
+          user,
+          datasetUri
         );
       }
 

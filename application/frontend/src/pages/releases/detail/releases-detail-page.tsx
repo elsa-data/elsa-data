@@ -32,7 +32,7 @@ import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
  * to users.
  */
 export const ReleasesDetailPage: React.FC = () => {
-  const { id: releaseId } = useParams<{ id: string }>();
+  const { releaseId } = useParams<{ releaseId: string }>();
 
   if (!releaseId)
     throw new Error(

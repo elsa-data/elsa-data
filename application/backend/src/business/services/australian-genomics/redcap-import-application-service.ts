@@ -17,6 +17,7 @@ import {
 } from "../../db/user-queries";
 import { generate } from "randomstring";
 import _ from "lodash";
+import { addUserAuditEventToReleaseQuery } from "../../db/audit-log-queries";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -207,6 +208,13 @@ export class RedcapImportApplicationService {
         );
       }
 
+      const releaseIdentifier = generate({
+        length: 10,
+        capitalization: "uppercase",
+        charset: "alphabetic",
+        readable: true,
+      });
+
       const newRelease = await e
         .insert(e.release.Release, {
           created: e.datetime_current(),
@@ -270,12 +278,7 @@ ${roleTable.join("\n")}
           isAllowedReadData: false,
           isAllowedVariantData: false,
           isAllowedPhenotypeData: false,
-          releaseIdentifier: generate({
-            length: 10,
-            capitalization: "uppercase",
-            charset: "alphabetic",
-            readable: true,
-          }),
+          releaseIdentifier,
           // for the moment we fix this to a known secret
           releasePassword: "abcd",
           datasetUris: e.literal(
@@ -324,15 +327,12 @@ ${roleTable.join("\n")}
                   })),
                 },
                 userAuditEvent: {
-                  "+=": e.insert(e.audit.UserAuditEvent, {
-                    whoId: dbUser.subjectId,
-                    whoDisplayName: dbUser.displayName,
-                    occurredDateTime: new Date(),
-                    actionCategory: "E",
-                    actionDescription: "Add user to release",
-                    outcome: 0,
-                    details: e.json({ role: role }),
-                  }),
+                  "+=": addUserAuditEventToReleaseQuery(
+                    dbUser.subjectId,
+                    dbUser.displayName,
+                    role,
+                    releaseIdentifier
+                  ),
                 },
               },
             }))

@@ -141,6 +141,48 @@ export const pageableAuditLogEntriesForReleaseQuery = (
 };
 
 /**
+ * Insert an audit event when a user is added to a release.
+ */
+export const addUserAuditEventToReleaseQuery = (
+  whoId: string,
+  whoDisplayName: string,
+  role: string,
+  releaseIdentifier?: string
+) => {
+  return e.insert(e.audit.UserAuditEvent, {
+    whoId,
+    whoDisplayName,
+    occurredDateTime: new Date(),
+    actionCategory: "E",
+    actionDescription:
+      releaseIdentifier !== undefined
+        ? `Add user to release: ${releaseIdentifier}`
+        : "Add user to release",
+    outcome: 0,
+    details: e.json({ role: role }),
+  });
+};
+
+/**
+ * Insert an audit event when a user's permission is changed.
+ */
+export const addUserAuditEventPermissionChange = (
+  whoId: string,
+  whoDisplayName: string,
+  permission: string
+) => {
+  return e.insert(e.audit.UserAuditEvent, {
+    whoId,
+    whoDisplayName,
+    occurredDateTime: new Date(),
+    actionCategory: "E",
+    actionDescription: `Change user permission: ${permission}`,
+    outcome: 0,
+    details: e.json({ permission: permission }),
+  });
+};
+
+/**
  * A pageable EdgeDb query for the audit log entries associated with
  * a given release.
  */

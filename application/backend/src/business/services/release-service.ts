@@ -163,30 +163,14 @@ ${release.applicantEmailAddresses}
       })
       .run(this.edgeDbClient);
 
-    await e
-      .update(e.permission.User, (u) => ({
-        filter: e.op(e.uuid(user.dbId), "=", u.id),
-        set: {
-          releaseParticipant: {
-            "+=": e.select(e.release.Release, (r) => ({
-              filter: e.op(e.uuid(releaseRow.id), "=", r.id),
-              "@role": e.str("Member"),
-            })),
-          },
-          userAuditEvent: {
-            "+=": e.insert(e.audit.UserAuditEvent, {
-              whoId: user.subjectId,
-              whoDisplayName: user.displayName,
-              occurredDateTime: new Date(),
-              actionCategory: "E",
-              actionDescription: "Add user to release",
-              outcome: 0,
-              details: e.json({ role: "Member" }),
-            }),
-          },
-        },
-      }))
-      .run(this.edgeDbClient);
+    await UsersService.addUserToReleaseWithRole(
+      this.edgeDbClient,
+      releaseRow.id,
+      user.dbId,
+      "Member",
+      user.subjectId,
+      user.displayName
+    );
 
     return releaseRow.id;
   }

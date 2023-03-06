@@ -16,8 +16,8 @@ import { EagerErrorBoundary } from "../../../../components/errors";
 import { Button, Table } from "flowbite-react";
 
 function DataAccessLogsBox() {
-  const { id: releaseId, objectId } = useParams<{
-    id: string;
+  const { releaseId, objectId } = useParams<{
+    releaseId: string;
     objectId: string;
   }>();
 

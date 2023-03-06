@@ -1,16 +1,6 @@
-CREATE MIGRATION m16s2ixxooqsvwvthhlctxaoasxf3nw4rhvkmmlzl3ekbrsoc6nyva
+CREATE MIGRATION m1bjz5dysaiuznrcfsn6xgi7xpbffyflhmx6pql3ovlxqtvbgua3na
     ONTO m1l5uupghraajc57qflwe37pkra2ujtudh66mglzf537pwbx2bzgna
 {
-  ALTER TYPE audit::AuditEvent {
-      ALTER PROPERTY whoDisplayName {
-          RESET OPTIONALITY;
-      };
-  };
-  ALTER TYPE audit::AuditEvent {
-      ALTER PROPERTY whoId {
-          RESET OPTIONALITY;
-      };
-  };
   CREATE TYPE audit::UserAuditEvent EXTENDING audit::AuditEvent;
   ALTER TYPE permission::User {
       CREATE MULTI LINK userAuditEvent -> audit::UserAuditEvent {

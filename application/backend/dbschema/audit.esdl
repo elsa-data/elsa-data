@@ -1,13 +1,12 @@
 module audit {
-
     # ActionType definition
     # Ref: https://www.hl7.org/fhir/valueset-audit-event-action.html
     scalar type ActionType extending enum<'C', 'R', 'U', 'D', 'E'>;
 
     abstract type AuditEvent {
         # who initiated the action being audited
-        property whoId -> str;
-        property whoDisplayName -> str;
+        required property whoId -> str;
+        required property whoDisplayName -> str;
 
         # a code for the broad category of action (read, create, update etc)
         required property actionCategory -> ActionType;
@@ -58,7 +57,6 @@ module audit {
     }
 
     type DataAccessAuditEvent extending AuditEvent {
-
         # Link back which audit owns this
         link release_ := .<dataAccessAuditLog[is release::Release];
         
@@ -67,7 +65,6 @@ module audit {
     }
 
     type ReleaseAuditEvent extending AuditEvent {
-        
         # Link back which release own this audit log
         link release_ := .<releaseAuditLog[is release::Release];
     }

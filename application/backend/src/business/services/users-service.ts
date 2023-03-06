@@ -16,6 +16,10 @@ import {
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import {
+  addUserAuditEventPermissionChange,
+  addUserAuditEventToReleaseQuery,
+} from "../db/audit-log-queries";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
@@ -93,21 +97,18 @@ export class UsersService {
       | "allowedChangeReleaseDataOwner",
     value: boolean
   ): Promise<void> {
+    const permissionDescription = capitalize(lowerCase(permission));
     await e
       .update(e.permission.User, (u) => ({
         filter: e.op(e.uuid(user.dbId), "=", u.id),
         set: {
           [permission]: value,
           userAuditEvent: {
-            "+=": e.insert(e.audit.UserAuditEvent, {
-              whoId: user.subjectId,
-              whoDisplayName: user.displayName,
-              occurredDateTime: new Date(),
-              actionCategory: "E",
-              actionDescription: "Change user permission",
-              outcome: 0,
-              details: e.json({ message: capitalize(lowerCase(permission)) }),
-            }),
+            "+=": addUserAuditEventPermissionChange(
+              user.subjectId,
+              user.displayName,
+              permissionDescription
+            ),
           },
         },
       }))
@@ -230,30 +231,57 @@ export class UsersService {
     releaseId: string,
     role: ReleaseRoleStrings
   ) {
-    await e
-      .update(e.permission.User, (u) => ({
-        filter: e.op(e.uuid(user.dbId), "=", u.id),
-        set: {
-          releaseParticipant: {
-            "+=": e.select(e.release.Release, (r) => ({
-              filter: e.op(e.uuid(releaseId), "=", r.id),
-              "@role": e.str(role),
-            })),
+    await UsersService.addUserToReleaseWithRole(
+      this.edgeDbClient,
+      releaseId,
+      user.dbId,
+      role,
+      user.subjectId,
+      user.displayName
+    );
+  }
+
+  /**
+   * Add the user as a participant in a release with the given role.
+   */
+  public static async addUserToReleaseWithRole(
+    client: edgedb.Client,
+    releaseId: string,
+    userDbId: string,
+    role: string,
+    whoId: string,
+    whoDisplayName: string
+  ) {
+    await client.transaction(async (tx) => {
+      const release = await e
+        .select(e.release.Release, (r) => ({
+          releaseIdentifier: true,
+          filter_single: { id: r.id },
+        }))
+        .run(tx);
+
+      await e
+        .update(e.permission.User, (u) => ({
+          filter: e.op(e.uuid(userDbId), "=", u.id),
+          set: {
+            releaseParticipant: {
+              "+=": e.select(e.release.Release, (r) => ({
+                filter: e.op(e.uuid(releaseId), "=", r.id),
+                "@role": e.str(role),
+              })),
+            },
+            userAuditEvent: {
+              "+=": addUserAuditEventToReleaseQuery(
+                whoId,
+                whoDisplayName,
+                role,
+                release?.releaseIdentifier
+              ),
+            },
           },
-          userAuditEvent: {
-            "+=": e.insert(e.audit.UserAuditEvent, {
-              whoId: user.subjectId,
-              whoDisplayName: user.displayName,
-              occurredDateTime: new Date(),
-              actionCategory: "E",
-              actionDescription: "Add user to release",
-              outcome: 0,
-              details: e.json({ role: role }),
-            }),
-          },
-        },
-      }))
-      .run(this.edgeDbClient);
+        }))
+        .run(tx);
+    });
   }
 
   /**

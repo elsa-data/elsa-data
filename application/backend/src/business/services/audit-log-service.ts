@@ -31,11 +31,11 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
 // Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
 // @ts-ignore
-import { insertUserAuditEvent } from "../../../dbschema/queries/insertUserAuditEvent.edgeql.ts";
+import { insertUserAuditEvent } from "../../../dbschema/queries/audit-event-queries/insertUserAuditEvent.edgeql.ts";
 // @ts-ignore
-import { insertSystemAuditEvent } from "../../../dbschema/queries/insertSystemAuditEvent.edgeql.ts";
+import { insertSystemAuditEvent } from "../../../dbschema/queries/audit-event-queries/insertSystemAuditEvent.edgeql.ts";
 // @ts-ignore
-import { insertReleaseAuditEvent } from "../../../dbschema/queries/insertReleaseAuditEvent.edgeql.ts";
+import { insertReleaseAuditEvent } from "../../../dbschema/queries/audit-event-queries/insertReleaseAuditEvent.edgeql.ts";
 import { audit } from "../../../dbschema/interfaces";
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
@@ -723,5 +723,63 @@ export class AuditLogService {
     }
 
     return dataAccessSummaryResult;
+  }
+
+  /**
+   * Add a sync dataset user audit event.
+   */
+  public async insertSyncDatasetAuditEvent(
+    executor: Executor,
+    user: AuthenticatedUser,
+    dataset: string,
+    occurredDateTime: Date
+  ) {
+    return await this.createUserAuditEvent(
+      executor,
+      user.dbId,
+      user.subjectId,
+      user.displayName,
+      "U",
+      `Sync dataset: ${dataset}`,
+      null,
+      0,
+      occurredDateTime
+    );
+  }
+
+  /**
+   * Add audit event when database is added.
+   */
+  public async insertAddDatasetAuditEvent(
+    executor: Executor,
+    user: AuthenticatedUser,
+    dataset: string
+  ) {
+    return await this.createUserAuditEvent(
+      executor,
+      user.dbId,
+      user.subjectId,
+      user.displayName,
+      "C",
+      `Add dataset: ${dataset}`
+    );
+  }
+
+  /**
+   * Add audit event when dataset is deleted.
+   */
+  public async insertDeleteDatasetAuditEvent(
+    executor: Executor,
+    user: AuthenticatedUser,
+    dataset: string
+  ) {
+    return await this.createUserAuditEvent(
+      executor,
+      user.dbId,
+      user.subjectId,
+      user.displayName,
+      "D",
+      `Delete dataset: ${dataset}`
+    );
   }
 }
