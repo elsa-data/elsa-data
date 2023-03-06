@@ -56,20 +56,6 @@ export async function beforeEachCommon() {
       isAllowedReadData: true,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
-
-      // we set up the test data so that in no circumstances should SINGLETONMARIA->MARIA->HG00174 specimens ever
-      // be allowed to be selected
-      //TO BE IMPLEMENTED
-      // manualExclusions: e.select(e.dataset.DatasetCase, (dss) => ({
-      //  filter: e.op(
-      //   e.set(makeSystemlessIdentifier("SINGLETONMARIA")),
-      //    "in",
-      //    e.array_unpack(dss.externalIdentifiers)
-      //  ),
-      //  "@who": e.str("PA"),
-      //  "@recorded": e.str("June"),
-      //  "@reason": e.str("Because"),
-      //})),
       releaseIdentifier: "A",
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
@@ -99,6 +85,7 @@ export async function beforeEachCommon() {
   const testReleaseId = testReleaseInsert.id;
   let allowedDataOwnerUser: AuthenticatedUser;
   let allowedPiUser: AuthenticatedUser;
+  let allowedMemberUser: AuthenticatedUser;
   let notAllowedUser: AuthenticatedUser;
 
   // data owner has read/write access and complete visibility of everything
@@ -161,6 +148,36 @@ export async function beforeEachCommon() {
     });
   }
 
+  // member user has just basic access
+  {
+    const allowedMemberSubject = "http://subject4.com";
+    const allowedMemberDisplayName = "Test User Who Is Allowed Member Access";
+    const allowedMemberEmail = "subject4@elsa.net";
+
+    const allowedMemberUserInsert = await e
+      .insert(e.permission.User, {
+        subjectId: allowedMemberSubject,
+        displayName: allowedMemberDisplayName,
+        email: allowedMemberEmail,
+        releaseParticipant: e.select(e.release.Release, (r) => ({
+          filter: e.op(e.uuid(testReleaseId), "=", r.id),
+          "@role": e.str("Member"),
+        })),
+      })
+      .run(edgeDbClient);
+
+    allowedMemberUser = new AuthenticatedUser({
+      id: allowedMemberUserInsert.id,
+      subjectId: allowedMemberSubject,
+      displayName: allowedMemberDisplayName,
+      email: allowedMemberEmail,
+      lastLoginDateTime: new Date(),
+      allowedImportDataset: false,
+      allowedChangeReleaseDataOwner: false,
+      allowedCreateRelease: false,
+    });
+  }
+
   // not allowed user is valid but shouldn't have ANY access to the release
   {
     const notAllowedSubject = "http://subject3.com";
@@ -192,6 +209,7 @@ export async function beforeEachCommon() {
     testReleaseId,
     allowedDataOwnerUser,
     allowedPiUser,
+    allowedMemberUser,
     notAllowedUser,
   };
 }

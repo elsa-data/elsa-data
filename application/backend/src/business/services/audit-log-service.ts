@@ -22,26 +22,36 @@ import {
   countAuditLogEntriesForReleaseQuery,
   countAuditLogEntriesForSystemQuery,
   countDataAccessAuditLogEntriesQuery,
+  pageableAuditEventsQuery,
   pageableAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForSystemQuery,
-  pageableAuditEventsQuery,
   selectDataAccessAuditEventByReleaseIdQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
-// Ignore for now until typescript 5.0: https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-beta/#allowimportingtsextensions
-// @ts-ignore
-import { insertUserAuditEvent } from "../../../dbschema/queries/audit-event-queries/insertUserAuditEvent.edgeql.ts";
-// @ts-ignore
-import { insertSystemAuditEvent } from "../../../dbschema/queries/audit-event-queries/insertSystemAuditEvent.edgeql.ts";
-// @ts-ignore
-import { insertReleaseAuditEvent } from "../../../dbschema/queries/audit-event-queries/insertReleaseAuditEvent.edgeql.ts";
 import { audit } from "../../../dbschema/interfaces";
 import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
 import ActionType = audit.ActionType;
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
+import {
+  insertReleaseAuditEvent,
+  insertSystemAuditEvent,
+  insertUserAuditEvent,
+} from "../../../dbschema/queries";
 
+export const OUTCOME_SUCCESS = 0;
+export const OUTCOME_MINOR_FAILURE = 4;
+export const OUTCOME_SERIOUS_FAILURE = 8;
+export const OUTCOME_MAJOR_FAILURE = 12;
+
+// Code	Display	Definition
+// 0	Success	The operation completed successfully (whether with warnings or not).
+// 4	Minor failure	The action was not successful due to some kind of minor failure (often equivalent to an HTTP 400 response).
+// 8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
+// 12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
+
+export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
@@ -345,7 +355,7 @@ export class AuditLogService {
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
           outcome: outcome,
-          details: e.json(details),
+          details: details ? e.json(details) : e.json({}),
           occurredDuration:
             diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)

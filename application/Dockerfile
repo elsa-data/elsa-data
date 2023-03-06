@@ -18,7 +18,7 @@ RUN echo '{ \
 #
 # Database builder to create all generated files that require the install database
 #
-FROM edgedb/edgedb:2.8 AS edgedb-builder
+FROM edgedb/edgedb:2.12 AS edgedb-builder
 
 # bring in the compatible node binary
 COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
@@ -31,10 +31,11 @@ WORKDIR /build
 # bring in node_modules with our installed packages
 COPY --from=node-deps /build .
 
-# edgedb needs the dbschema folder which has the schemas/migrations
-COPY ./backend/dbschema/ dbschema/
+# edgedb needs the dbschema folder which has the schemas/migrations/queries
+COPY --chown=edgedb ./backend/dbschema/ dbschema/
 
 # NOTE: the & and && here has some pretty subtle interaction - be careful working on this
+# NOTE: the deliberate absence of .ts on the queries generated 'file' (is auto added by generate)
 RUN edgedb-server \
     -D /build/data \
     --security insecure_dev_mode \
@@ -43,8 +44,7 @@ RUN edgedb-server \
     -H localhost \
     --tls-security insecure \
     --wait-until-available 2m \
-    && mkdir generated \
-    && cd generated \
+    && cd /build/dbschema \
     && node ../node_modules/.bin/generate edgeql-js \
     -H localhost \
     --target ts \
@@ -55,6 +55,7 @@ RUN edgedb-server \
     --tls-security insecure \
     --file interfaces.ts \
     && node ../node_modules/.bin/generate queries \
+    --file queries \
     -H localhost \
     --target ts \
     --tls-security insecure
@@ -77,7 +78,11 @@ RUN cd frontend && npm ci
 RUN cd common/elsa-constants && npm ci
 RUN cd common/elsa-types && npm ci
 
-COPY --from=edgedb-builder /build/generated/ ./backend/dbschema/
+# pick out only the EdgeDb schema files we need for our app runtime
+COPY --from=edgedb-builder /build/dbschema/migrations/ ./backend/dbschema/migrations/
+COPY --from=edgedb-builder /build/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
+COPY --from=edgedb-builder /build/dbschema/interfaces.ts ./backend/dbschema/
+COPY --from=edgedb-builder /build/dbschema/queries.ts ./backend/dbschema/
 
 # we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
 COPY --from=edgedb-builder /usr/bin/edgedb ./backend/

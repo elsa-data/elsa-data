@@ -4,13 +4,15 @@ import {
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
   ReleaseCaseType,
-  ReleaseDetailType,
   ReleaseManualSchema,
   ReleaseManualType,
   ReleaseMasterAccessRequestType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
   ReleaseSummaryType,
+  ReleaseParticipantType,
+  ReleaseParticipantAddType,
+  ReleaseDetailType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
@@ -22,6 +24,7 @@ import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
+import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
   const jobsService = container.resolve(JobsService);
@@ -29,6 +32,9 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   const awsAccessPointService = container.resolve(AwsAccessPointService);
   const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
   const releasesService = container.resolve(ReleaseService);
+  const releaseParticipantService = container.resolve(
+    ReleaseParticipationService
+  );
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/releases",
@@ -80,6 +86,69 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       );
 
       sendPagedResult(reply, cases);
+    }
+  );
+
+  fastify.get<{ Params: { rid: string }; Reply: ReleaseParticipantType[] }>(
+    "/releases/:rid/participants",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseId = request.params.rid;
+
+      const participants = await releaseParticipantService.getParticipants(
+        authenticatedUser,
+        releaseId
+      );
+
+      return participants.map(
+        (r): ReleaseParticipantType => ({
+          id: r.id,
+          email: r.email,
+          role: r.role || "None",
+          displayName: r.displayName || r.email,
+          subjectId: r.subjectId || undefined,
+          lastLogin: r.lastLogin || undefined,
+          // WIP - also need to check permissions of authenticatedUser
+          canBeRemoved: r.id !== authenticatedUser.dbId,
+          canBeRoleAltered: r.id !== authenticatedUser.dbId,
+        })
+      );
+    }
+  );
+
+  fastify.post<{
+    Params: { rid: string };
+    Body: ReleaseParticipantAddType;
+    Reply: void;
+  }>("/releases/:rid/participants", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseUuid = request.params.rid;
+
+    return releaseParticipantService.addParticipant(
+      authenticatedUser,
+      releaseUuid,
+      request.body.email,
+      request.body.role
+    );
+  });
+
+  fastify.delete<{ Params: { rid: string; pid: string }; Reply: void }>(
+    "/releases/:rid/participants/:pid",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseUuid = request.params.rid;
+      const participantUuid = request.params.pid;
+
+      return releaseParticipantService.removeParticipant(
+        authenticatedUser,
+        releaseUuid,
+        participantUuid
+      );
     }
   );
 

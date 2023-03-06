@@ -107,6 +107,7 @@ export function makeTripleCodeArray(
  * @param releasesAsDataOwner
  * @param releasesAsPI
  * @param releasesAsMember
+ * @param lastLogin if present, also sets the last login to the given date
  */
 export async function createTestUser(
   subjectId: string,
@@ -114,7 +115,8 @@ export async function createTestUser(
   email: string,
   releasesAsDataOwner: string[],
   releasesAsPI: string[],
-  releasesAsMember: string[]
+  releasesAsMember: string[],
+  lastLogin?: Date
 ) {
   // create the user
   const newUser = await e
@@ -125,6 +127,7 @@ export async function createTestUser(
       allowedChangeReleaseDataOwner: false,
       allowedCreateRelease: false,
       allowedImportDataset: false,
+      lastLoginDateTime: lastLogin,
       userAuditEvent: e.insert(e.audit.UserAuditEvent, {
         whoId: subjectId,
         whoDisplayName: displayName,

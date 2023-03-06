@@ -26,6 +26,7 @@ import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
 import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
+import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -96,13 +97,18 @@ export function createRouter(addBypassLoginPage: boolean) {
     //           <Route path={`:objectId`} element={<AuditEntryPage />} />
     //         </>
     //       )
-    // TBD User Management Page
+    {
+      text: "User Management",
+      path: "user-management",
+      element: <ReleasesUserManagementPage />,
+      children: <></>,
+    },
   ];
 
   const ReleaseBreadcrumbDropdown = () => (
     <>
-      {releaseChildren.map((c) => (
-        <BreadcrumbDropdownItem to={`../${c.path}`} text={c.text} />
+      {releaseChildren.map((c, i) => (
+        <BreadcrumbDropdownItem key={i} to={`../${c.path}`} text={c.text} />
       ))}
     </>
   );
@@ -158,15 +164,6 @@ export function createRouter(addBypassLoginPage: boolean) {
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
-          <Route path={`releases`}>
-            <Route index element={<ReleasesPage />} />
-            <Route path={`:releaseId`}>
-              <Route index element={<ReleasesDetailPage />} />
-              <Route path={`audit-event`}>
-                <Route path={`data-access`} element={<DataAccessPage />} />
-              </Route>
-            </Route>
-          </Route>
 
           <Route
             path={`audit-event/details/:objectId`}
