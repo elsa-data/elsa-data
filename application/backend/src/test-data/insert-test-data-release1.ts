@@ -87,7 +87,7 @@ Ethics form XYZ.
       // B5MN76L3BN
       //
       //
-      releaseIdentifier: getNextReleaseId(),
+      releaseIdentifier: `R001`,
       activation: e.insert(e.release.Activation, {
         activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
         activatedById: TEST_SUBJECT_2,

@@ -27,7 +27,7 @@ export async function insertRelease2() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: getNextReleaseId(),
+      releaseIdentifier: "R002",
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       isAllowedReadData: true,
       isAllowedVariantData: true,

@@ -129,14 +129,14 @@ describe("edgedb release queries tests", () => {
       expect(result1).not.toBeNull();
       expect(result1).toHaveProperty("releaseParticipant");
       expect(result1!.releaseParticipant.length).toBe(1);
-      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe("R002");
+      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe("R003");
     }
 
     {
       const result2 = await allReleasesSummaryByUserQuery.run(edgeDbClient, {
         userDbId: testUserInsert.id,
         limit: 1,
-        offset: 2,
+        offset: 0,
       });
 
       expect(result2).not.toBeNull();

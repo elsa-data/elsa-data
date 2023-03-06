@@ -27,7 +27,7 @@ export const allReleasesSummaryByUserQuery = e.params(
         // as release identifier is essentially a meaningless random string
         order_by: {
           expression: rp.releaseIdentifier,
-          direction: e.ASC,
+          direction: e.DESC,
         },
         limit: params.limit,
         offset: params.offset,
