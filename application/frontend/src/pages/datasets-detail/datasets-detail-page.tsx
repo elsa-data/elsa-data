@@ -8,7 +8,6 @@ import { LayoutBase } from "../../layouts/layout-base";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
-import { Table } from "flowbite-react";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -105,13 +104,13 @@ const DATASET_COLUMN = [
 ];
 const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
   return (
-    <Table striped={true}>
-      <Table.Head>
+    <table className="table">
+      <thead>
         {DATASET_COLUMN.map((val, i) => (
-          <Table.HeadCell key={i}>{val.columnTitle}</Table.HeadCell>
+          <th key={i}>{val.columnTitle}</th>
         ))}
-      </Table.Head>
-      <Table.Body className="divide-y">
+      </thead>
+      <tbody className="divide-y">
         {cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
           const exId = getFirstExternalIdentifierValue(
             caseVal.externalIdentifiers ?? undefined
@@ -123,7 +122,7 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
               patient.externalIdentifiers ?? undefined
             );
             return (
-              <Table.Row key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
+              <tr key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
                 {DATASET_COLUMN.map(
                   (col: Record<string, string>, colIdx: number) => {
                     return (
@@ -133,18 +132,18 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
                         {col.jsonKey == "caseId" ? (
                           <>
                             {patientIdx == 0 && (
-                              <Table.Cell
+                              <td
                                 rowSpan={patients.length}
                                 className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
                               >
                                 {exId}
-                              </Table.Cell>
+                              </td>
                             )}
                           </>
                         ) : col.jsonKey == "caseConsentId" ? (
                           <>
                             {patientIdx == 0 && (
-                              <Table.Cell
+                              <td
                                 rowSpan={patients.length}
                                 className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
                               >
@@ -155,11 +154,11 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
                                 ) : (
                                   `-`
                                 )}
-                              </Table.Cell>
+                              </td>
                             )}
                           </>
                         ) : col.jsonKey == "patientId" ? (
-                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                             <>
                               {patient.sexAtBirth == "female" ? (
                                 <FontAwesomeIcon icon={faFemale} />
@@ -171,28 +170,28 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
 
                               {` - ${patientId}`}
                             </>
-                          </Table.Cell>
+                          </td>
                         ) : col.jsonKey == "patientConsentId" ? (
-                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                             {patient.consent?.id ? (
                               <ConsentSummary consentId={patient.consent.id} />
                             ) : (
                               `-`
                             )}
-                          </Table.Cell>
+                          </td>
                         ) : (
-                          <Table.Cell>{col.jsonKey}</Table.Cell>
+                          <td>{col.jsonKey}</td>
                         )}
                       </React.Fragment>
                     );
                   }
                 )}
-              </Table.Row>
+              </tr>
             );
           });
         })}
-      </Table.Body>
-    </Table>
+      </tbody>
+    </table>
   );
 };
 

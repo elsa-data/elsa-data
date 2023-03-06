@@ -42,7 +42,7 @@ export const ReleasesDashboardPage: React.FC = () => {
       >
         {query.isLoading && <IsLoadingDiv />}
         {query.isSuccess && query.data && (
-          <table className="table-compact table w-full">
+          <table className="table w-full">
             <thead>
               <tr>
                 <th scope="col">Title / Identifier</th>
@@ -54,21 +54,21 @@ export const ReleasesDashboardPage: React.FC = () => {
             <tbody>
               {query.data.map((r, idx) => (
                 <tr key={idx}>
-                  <th scope="row">
+                  <td scope="row">
                     <div>
                       <div className="font-bold">{r.applicationDacTitle}</div>
                       <div className="font-mono text-sm opacity-50">
                         {r.releaseIdentifier}
                       </div>
                     </div>
-                  </th>
-                  <th scope="row">
+                  </td>
+                  <td scope="row">
                     <span className="text-xs">
                       {r.applicationDacIdentifierSystem}
                     </span>
                     <br />
                     {r.applicationDacIdentifierValue}
-                  </th>
+                  </td>
                   <td>{r.roleInRelease}</td>
                   <td className="text-right">
                     <button

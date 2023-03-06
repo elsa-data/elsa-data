@@ -13,7 +13,6 @@ import { usePageSizer } from "../../../../hooks/page-sizer";
 import { fileSize } from "humanize-plus";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 import { EagerErrorBoundary } from "../../../../components/errors";
-import { Button, Table } from "flowbite-react";
 
 function DataAccessLogsBox() {
   const { releaseId, objectId } = useParams<{
@@ -55,14 +54,13 @@ function DataAccessLogsBox() {
   const BoxHeader = () => (
     <div className="flex items-center	justify-between">
       <div>Data Access Log Summary</div>
-      <Button
+      <button
         onClick={async () =>
           await axios.post<any>(`/api/releases/${releaseId}/access-log/sync`, {
             accessType: "aws",
           })
         }
-        className="cursor-pointer"
-        gradientMonochrome="info"
+        className="button cursor-pointer"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -81,7 +79,7 @@ function DataAccessLogsBox() {
           <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
         </svg>
         Sync (AWS)
-      </Button>
+      </button>
     </div>
   );
   const data: AuditDataAccessType[] | undefined = dataAccessQuery.data;
@@ -91,23 +89,21 @@ function DataAccessLogsBox() {
       heading={<BoxHeader />}
       errorMessage={"Something went wrong fetching data access logs."}
     >
-      <Table striped>
-        <Table.Head>
+      <table className="table">
+        <thead>
           {COLUMN_TO_SHOW.map((header, idx) => (
-            <Table.HeadCell key={`header-${idx}`}>
-              {header.value}
-            </Table.HeadCell>
+            <th key={`header-${idx}`}>{header.value}</th>
           ))}
-        </Table.Head>
-        <Table.Body>
+        </thead>
+        <tbody>
           {dataAccessQuery.isSuccess &&
             data &&
             data.map((row, rowIdx) => (
-              <Table.Row key={`body-row-${rowIdx}`}>
+              <tr key={`body-row-${rowIdx}`}>
                 {COLUMN_TO_SHOW.map((col, colIdx) => {
                   const objKey = col.key;
                   return (
-                    <Table.Cell key={`body-row-${rowIdx}-col-${colIdx}`}>
+                    <td key={`body-row-${rowIdx}-col-${colIdx}`}>
                       {objKey === "egressBytes" ? (
                         fileSize(row[objKey])
                       ) : objKey === "occurredDateTime" ? (
@@ -128,13 +124,13 @@ function DataAccessLogsBox() {
                       ) : (
                         ""
                       )}
-                    </Table.Cell>
+                    </td>
                   );
                 })}
-              </Table.Row>
+              </tr>
             ))}
-        </Table.Body>
-      </Table>
+        </tbody>
+      </table>
       {dataAccessQuery.isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching audit logs."}

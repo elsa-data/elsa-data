@@ -52,7 +52,7 @@ const Chip: React.FC<{
 };
 
 type Props = {
-  className: string;
+  className?: string;
 
   systemUri: string; // "http://purl.obolibrary.org/obo/hp.owl"
   systemVersion?: string; // "20191108"

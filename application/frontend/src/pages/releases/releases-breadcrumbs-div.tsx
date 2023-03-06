@@ -1,5 +1,4 @@
 import React from "react";
-import { Dropdown } from "flowbite-react";
 import { NavLink, useMatches } from "react-router-dom";
 import { HiChevronRight, HiOutlineReply } from "react-icons/hi";
 
@@ -7,21 +6,6 @@ export type BreadcrumbDropDownEntry = {
   to: string;
   text: string;
 };
-
-const BreadcrumbDropdownItem: React.FC<BreadcrumbDropDownEntry> = ({
-  to,
-  text,
-}) => (
-  <NavLink to={to}>
-    {({ isActive }) => (
-      <Dropdown.Item
-        className={isActive ? "font-bold text-gray-500" : "text-gray-500"}
-      >
-        {text}
-      </Dropdown.Item>
-    )}
-  </NavLink>
-);
 
 /**
  * A breadcrumb specifically for the Release sub-pages.
@@ -87,36 +71,6 @@ export const ReleasesBreadcrumbsDiv: React.FC<{ releaseId: string }> = (
                   </>
                 ))}
               </div>
-
-              {/*<div className="dropdown">
-                <label tabIndex={0} className="btn m-1 btn-xs">
-                  {crumbsText.slice(-1)}
-                </label>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu p-2 text-xs shadow bg-base-100 rounded-box w-52"
-                >
-                  {finalSiblingItems.map((f, i) => (
-                    <NavLink to={f.to}>
-                      {({ isActive }) => (
-                        <li key={i}>
-                          <a className={isActive ? "font-bold text-gray-500" : "text-gray-500"}>{f.text}</a>
-                        </li>
-                      )}
-                    </NavLink>
-                  ))}
-                </ul>
-              </div>
-
-              <Dropdown
-                size="xs"
-                label={crumbsText.slice(-1)}
-                placement="bottom-end"
-              >
-                {finalSiblingItems.map((f, i) => (
-                  <BreadcrumbDropdownItem key={i} to={f.to} text={f.text} />
-                ))}
-              </Dropdown> */}
             </div>
           </li>
         )}

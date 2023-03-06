@@ -24,6 +24,7 @@ import { ReleasesUserManagementPage } from "./pages/releases/user-management-pag
 import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
 import { DataAccessSummarySubPage } from "./pages/releases/data-access-summary-sub-page/data-access-summary-sub-page";
 import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";
+import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -145,8 +146,10 @@ export function createRouter(addBypassLoginPage: boolean) {
             </Route>
           </Route>
 
-          <Route path={`datasets`} element={<DatasetsDashboardPage />}>
-            {/*<Route path={`:datasetId`} element={<DatasetsDetailPage />} /> */}
+          <Route path={`datasets`}>
+            <Route index element={<DatasetsDashboardPage />} />
+
+            <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
           </Route>
 
           <Route path={`dac`} element={<DacImportPage />} />

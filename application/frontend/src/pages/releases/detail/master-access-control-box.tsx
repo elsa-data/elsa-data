@@ -28,7 +28,7 @@ export const MasterAccessControlBox: React.FC<Props> = ({
   );
 
   return (
-    <Box heading="Master Access Control" headerFromColour="from-orange-300">
+    <Box heading="Master Access Control">
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv
           heading={"Access"}

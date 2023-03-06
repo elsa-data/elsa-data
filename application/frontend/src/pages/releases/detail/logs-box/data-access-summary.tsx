@@ -2,14 +2,12 @@ import React from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import { Box } from "../../../../components/boxes";
-// import { Table } from "../../../../components/tables";
 import { convertCamelCaseToTitle } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { fileSize } from "humanize-plus";
-import { Badge, Table } from "flowbite-react";
 
 function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
   const dataAccessQuery = useQuery(
@@ -47,21 +45,19 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
 
   return (
     <Box heading={<BoxHeader />}>
-      <Table striped>
-        <Table.Head>
+      <table className="table">
+        <thead>
           {COLUMN_TO_SHOW.map((header) => (
-            <Table.HeadCell key={header}>
-              {convertCamelCaseToTitle(header)}
-            </Table.HeadCell>
+            <th key={header}>{convertCamelCaseToTitle(header)}</th>
           ))}
-        </Table.Head>
-        <Table.Body>
+        </thead>
+        <tbody>
           {dataAccessQuery.isSuccess &&
             data &&
             data.map((row, rowIdx) => (
-              <Table.Row key={`body-row-${rowIdx}`}>
+              <tr key={`body-row-${rowIdx}`}>
                 {COLUMN_TO_SHOW.map((column, colIdx) => (
-                  <Table.Cell key={`body-row-${rowIdx}-col-${colIdx}`}>
+                  <td key={`body-row-${rowIdx}-col-${colIdx}`}>
                     {column === "dataAccessedInBytes" ||
                     column === "fileSize" ? (
                       fileSize(row[column])
@@ -72,12 +68,12 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
                     ) : (
                       row[column]
                     )}
-                  </Table.Cell>
+                  </td>
                 ))}
-              </Table.Row>
+              </tr>
             ))}
-        </Table.Body>
-      </Table>
+        </tbody>
+      </table>
       {dataAccessQuery.isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching audit logs."}
@@ -96,10 +92,10 @@ export default DataAccessSummaryBox;
  */
 function DisplayDownloadStatus({ status }: { status: string }) {
   if (status === "multiple-download") {
-    return <Badge color="warning">{status}</Badge>;
+    return <span className="badge-warning badge">{status}</span>;
   } else if (status === "complete") {
-    return <Badge color="success">{status}</Badge>;
+    return <span className="badge-success badge">{status}</span>;
   }
 
-  return <Badge color="gray">{status}</Badge>;
+  return <span className="badge">{status}</span>;
 }
