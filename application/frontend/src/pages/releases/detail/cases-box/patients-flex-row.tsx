@@ -23,8 +23,15 @@ import { ReleaseTypeLocal } from "../shared-types";
 type Props = {
   releaseId: string;
   patients: ReleasePatientType[];
+  // whether to show checkboxes or not - though we note there are other fields
+  // which control whether the checkboxes are enabled or not - this is just whether
+  // to display thme
   showCheckboxes: boolean;
   onCheckboxClicked?: () => void;
+
+  // when the release is activated we want to display all the information/UI
+  // as per normal - but we just don't want to allow any editing
+  releaseIsActivated: boolean;
 };
 
 /**
@@ -35,6 +42,9 @@ type Props = {
  * @param releaseId
  * @param patients
  * @param showCheckboxes
+ * @param onCheckboxClicked
+ * @param releaseIsActivated
+ *
  * @constructor
  */
 export const PatientsFlexRow: React.FC<Props> = ({
@@ -42,6 +52,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
   patients,
   showCheckboxes,
   onCheckboxClicked,
+  releaseIsActivated,
 }) => {
   const queryClient = useQueryClient();
 
@@ -61,6 +72,10 @@ export const PatientsFlexRow: React.FC<Props> = ({
     ce: React.ChangeEvent<HTMLInputElement>,
     id: string
   ) => {
+    // our other UI work should mean this event never occurs, but easy
+    // to also skip it here
+    if (releaseIsActivated) return;
+
     if (onCheckboxClicked !== undefined) onCheckboxClicked();
 
     if (ce.target.checked) {
@@ -106,35 +121,40 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
     return (
       <div className={classNames(...patientClasses)}>
-        <span>
-          {patient.externalId} {patientIcon}
-          {patient.customConsent && (
-            <>
-              {" - "}
-              <ConsentPopup releaseId={releaseId} nodeId={patient.id} />
-            </>
-          )}
-        </span>
+        <div className="form-control">
+          <label className="label">
+            {patient.externalId} {patientIcon}
+            {patient.customConsent && (
+              <>
+                {" - "}
+                <ConsentPopup releaseId={releaseId} nodeId={patient.id} />
+              </>
+            )}
+          </label>
+        </div>
         <ul key={patient.id}>
           {patient.specimens.map((spec) => (
             <li key={spec.id} className="text-left lg:text-right">
-              <FontAwesomeIcon icon={faDna} />
-              {spec.customConsent && (
-                <>
-                  {" - "}
-                  <ConsentPopup releaseId={releaseId} nodeId={spec.id} />
-                </>
-              )}{" "}
               {showCheckboxes && (
-                <label>
-                  {spec.externalId}
-                  <input
-                    type="checkbox"
-                    className="ml-2"
-                    checked={spec.nodeStatus == "selected"}
-                    onChange={async (ce) => onSelectChange(ce, spec.id)}
-                  />
-                </label>
+                <div className="form-control">
+                  <label className="label cursor-pointer">
+                    <FontAwesomeIcon icon={faDna} />
+                    {spec.customConsent && (
+                      <>
+                        {" - "}
+                        <ConsentPopup releaseId={releaseId} nodeId={spec.id} />
+                      </>
+                    )}{" "}
+                    <span className="label-text">{spec.externalId}</span>
+                    <input
+                      disabled={releaseIsActivated}
+                      type="checkbox"
+                      className="checkbox checkbox-sm ml-2"
+                      checked={spec.nodeStatus == "selected"}
+                      onChange={async (ce) => onSelectChange(ce, spec.id)}
+                    />
+                  </label>
+                </div>
               )}
               {!showCheckboxes && <span>{spec.externalId}</span>}
             </li>

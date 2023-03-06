@@ -38,7 +38,7 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   );
 
   return (
-    <Box heading="Bulk">
+    <Box heading="Bulk" applyIsLockedStyle={!!releaseData.activation}>
       {/*
       The consent sources are not needed until we hook up real Dynamic systems like CTRL
       <ConsentSourcesBox releaseId={releaseId} />

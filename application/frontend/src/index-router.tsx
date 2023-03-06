@@ -3,7 +3,6 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
   Navigate,
-  NavLink,
   Outlet,
   Route,
   useLocation,
@@ -14,20 +13,17 @@ import { EagerErrorBoundary } from "./components/errors";
 import AccountPage from "./pages/account-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
-import { ReleasesPage } from "./pages/releases-dashboard/releases-dashboard-page";
-import { ReleasesDetailPage } from "./pages/releases/detail/releases-detail-page";
-import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
-import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
+import { ReleasesDashboardPage } from "./pages/releases-dashboard/releases-dashboard-page";
+import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-sub-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
-import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page";
 import { LayoutBase } from "./layouts/layout-base";
-import { Dropdown } from "flowbite-react";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
-import { ReleasesMasterPage } from "./pages/releases/detail/releases-master-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
-import { ReleasesMasterPage } from "./pages/releases/detail/releases-master-page";
+import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
+import { DataAccessSummarySubPage } from "./pages/releases/data-access-summary-sub-page/data-access-summary-sub-page";
+import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -65,32 +61,23 @@ export function createRouter(addBypassLoginPage: boolean) {
     return <Outlet />;
   };
 
-  const BreadcrumbDropdownItem: React.FC<{ to: string; text: string }> = ({
-    to,
-    text,
-  }) => (
-    <NavLink to={to}>
-      {({ isActive }) => (
-        <Dropdown.Item
-          className={isActive ? "font-bold text-gray-500" : "text-gray-500"}
-        >
-          {text}
-        </Dropdown.Item>
-      )}
-    </NavLink>
-  );
-
   const releaseChildren = [
     {
       text: "Detail",
       path: "detail",
-      element: <ReleasesDetailPage />,
+      element: <ReleasesDetailSubPage />,
       children: <></>,
     },
     {
-      text: "Data Access Log",
-      path: "data-access-log",
-      element: <DataAccessPage />,
+      text: "Bulk Selector",
+      path: "bulk-selector",
+      element: <BulkSelectorSubPage />,
+      children: <></>,
+    },
+    {
+      text: "Data Access Summary",
+      path: "data-access-summary",
+      element: <DataAccessSummarySubPage />,
       children: <></>,
     },
     // TBD Audit Log Page  (
@@ -105,14 +92,6 @@ export function createRouter(addBypassLoginPage: boolean) {
       children: <></>,
     },
   ];
-
-  const ReleaseBreadcrumbDropdown = () => (
-    <>
-      {releaseChildren.map((c, i) => (
-        <BreadcrumbDropdownItem key={i} to={`../${c.path}`} text={c.text} />
-      ))}
-    </>
-  );
 
   return createBrowserRouter(
     createRoutesFromElements(
@@ -133,12 +112,20 @@ export function createRouter(addBypassLoginPage: boolean) {
           <Route index element={<Navigate to={"releases"} />} />
 
           <Route path={`releases`}>
-            <Route index element={<ReleasesPage />} />
+            <Route index element={<ReleasesDashboardPage />} />
+
+            {/* all pages pertaining to an individual release get this master page which display
+                breadcrumbs and some job management UI */}
             <Route
               path={`:releaseId`}
               element={<ReleasesMasterPage />}
+              // we want to pass through to the master page the ability in our breadcrumbs
+              // to navigate sideways to our siblings
               handle={{
-                dropdownItems: () => <ReleaseBreadcrumbDropdown />,
+                siblingItems: releaseChildren.map((c, i) => ({
+                  to: `./${c.path}`,
+                  text: c.text,
+                })),
               }}
             >
               <>
@@ -159,7 +146,7 @@ export function createRouter(addBypassLoginPage: boolean) {
           </Route>
 
           <Route path={`datasets`} element={<DatasetsDashboardPage />}>
-            <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
+            {/*<Route path={`:datasetId`} element={<DatasetsDetailPage />} /> */}
           </Route>
 
           <Route path={`dac`} element={<DacImportPage />} />

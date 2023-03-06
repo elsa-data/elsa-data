@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
-import { Box, BoxNoPad } from "../../../../components/boxes";
+import { Box } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
@@ -16,6 +16,10 @@ import { axiosPatchOperationMutationFn } from "../queries";
 type Props = {
   releaseId: string;
 
+  // when the release is activated we want the UI to look approximately
+  // as per normal - but with no ability for anyone to edit
+  releaseIsActivated: boolean;
+
   // a map of every dataset uri we will encounter mapped to a single letter
   datasetMap: Map<string, ReactNode>;
 
@@ -24,18 +28,14 @@ type Props = {
 
   // whether the table is being viewed by someone with permissions to edit it
   isEditable: boolean;
-
-  // whether all the cases information is in fact being re-created and so we need to display
-  // a message and disable the UI temporarily
-  isInBulkProcessing: boolean;
 };
 
 export const CasesBox: React.FC<Props> = ({
   releaseId,
+  releaseIsActivated,
   datasetMap,
   pageSize,
   isEditable,
-  isInBulkProcessing,
 }) => {
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
     useState<boolean>(true);
@@ -129,7 +129,7 @@ export const CasesBox: React.FC<Props> = ({
 
         rowSpans.push(1);
       } else {
-        // if its the same as the previous - we want to increase the 'current' and put in a marker to the rowspans
+        // if it's the same as the previous - we want to increase the 'current' and put in a marker to the rowspans
         rowSpans[currentSpanRow] += 1;
         rowSpans.push(-1);
       }
@@ -141,23 +141,15 @@ export const CasesBox: React.FC<Props> = ({
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
 
-  if (isInBulkProcessing)
-    return (
-      <Box heading="Cases">
-        <p>
-          Case processing is happening in the background -
-          cases/patients/specimens will be displayed once this processing is
-          finished.
-        </p>
-      </Box>
-    );
-
   return (
-    <BoxNoPad
+    <Box
       heading="Cases"
+      applyIsLockedStyle={releaseIsActivated}
       errorMessage={"Something went wrong fetching cases."}
     >
-      <div className="flex flex-col">
+      <div
+        className={classNames("flex flex-col", { sepia: releaseIsActivated })}
+      >
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
@@ -193,18 +185,22 @@ export const CasesBox: React.FC<Props> = ({
         {dataQuery.data && dataQuery.data.length > 0 && (
           <>
             <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
-              <div className="flex flex-wrap items-center border-b py-4">
-                <label>
-                  <div className="inline-block w-12 text-center">
-                    <IndeterminateCheckbox
-                      disabled={releasePatchMutate.isLoading}
-                      indeterminate={isSelectAllIndeterminate}
-                      onChange={onSelectAllChange}
-                    />
-                  </div>
-                  Select All
-                </label>
-              </div>
+              {isEditable && (
+                <div className="flex flex-wrap items-center border-b py-4">
+                  <label>
+                    <div className="inline-block w-12 text-center">
+                      <IndeterminateCheckbox
+                        disabled={
+                          releasePatchMutate.isLoading || releaseIsActivated
+                        }
+                        indeterminate={isSelectAllIndeterminate}
+                        onChange={onSelectAllChange}
+                      />
+                    </div>
+                    Select All
+                  </label>
+                </div>
+              )}
               <table className="w-full table-fixed text-left text-sm text-gray-500">
                 <tbody>
                   {dataQuery.data.map((row, rowIndex) => {
@@ -250,6 +246,7 @@ export const CasesBox: React.FC<Props> = ({
                         >
                           <PatientsFlexRow
                             releaseId={releaseId}
+                            releaseIsActivated={releaseIsActivated}
                             patients={row.patients}
                             showCheckboxes={isEditable}
                             onCheckboxClicked={() =>
@@ -294,6 +291,6 @@ export const CasesBox: React.FC<Props> = ({
         )}
       </div>
       <div id="popup-root" />
-    </BoxNoPad>
+    </Box>
   );
 };

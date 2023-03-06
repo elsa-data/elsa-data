@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FileRecordHeaderType } from "@umccr/elsa-types";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
-import { Checkbox } from "flowbite-react";
 
 type Props = {
   releaseId: string;
@@ -106,7 +105,8 @@ export const PresignedUrlForm: React.FC<Props> = ({
               <div className="space-y-4">
                 {FILE_RECORD_HEADER.map((field: string, fieldIdx: number) => (
                   <div key={field} className="flex items-center px-3">
-                    <Checkbox
+                    <input
+                      className="checkbox"
                       id={`chx`}
                       defaultChecked={headerSelected.includes(field)}
                       value={field}

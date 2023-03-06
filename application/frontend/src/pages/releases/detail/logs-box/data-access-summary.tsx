@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { BoxNoPad } from "../../../../components/boxes";
+import { Box } from "../../../../components/boxes";
 // import { Table } from "../../../../components/tables";
 import { convertCamelCaseToTitle } from "../../../../helpers/utils";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
@@ -46,7 +46,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
   );
 
   return (
-    <BoxNoPad heading={<BoxHeader />}>
+    <Box heading={<BoxHeader />}>
       <Table striped>
         <Table.Head>
           {COLUMN_TO_SHOW.map((header) => (
@@ -85,7 +85,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
           styling={"bg-red-100"}
         />
       )}
-    </BoxNoPad>
+    </Box>
   );
 }
 

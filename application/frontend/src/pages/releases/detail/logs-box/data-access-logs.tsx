@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AuditDataAccessType } from "@umccr/elsa-types";
 import { useQuery } from "react-query";
-import { BoxNoPad } from "../../../../components/boxes";
+import { Box } from "../../../../components/boxes";
 import { ToolTip } from "../../../../components/tooltip";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { categoryToDescription } from "./logs-box";
@@ -87,7 +87,7 @@ function DataAccessLogsBox() {
   const data: AuditDataAccessType[] | undefined = dataAccessQuery.data;
   if (isNil(data) && dataAccessQuery.isSuccess) return <>No Data Found!</>;
   return (
-    <BoxNoPad
+    <Box
       heading={<BoxHeader />}
       errorMessage={"Something went wrong fetching data access logs."}
     >
@@ -149,7 +149,7 @@ function DataAccessLogsBox() {
         rowsPerPage={pageSize}
         rowWord="dataAccess"
       />
-    </BoxNoPad>
+    </Box>
   );
 }
 

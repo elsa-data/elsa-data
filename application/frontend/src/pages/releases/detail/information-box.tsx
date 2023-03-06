@@ -33,41 +33,32 @@ import { useLingui } from "@lingui/react";
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
-  const alertBoxClasses = "border-4 rounded-2xl p-4 text-center mb-2";
+  const alertBoxClasses = "border-4 rounded-2xl p-4 text-center mb-2 max-w-sm";
 
   return (
-    <Box heading="Release Information">
+    <Box heading={`${releaseData.applicationDacTitle}`}>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <span className="font-bold">{releaseData.applicationDacTitle}</span>
-          {releaseData.applicationDacDetails && (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={
-                {
-                  // Map `h1` (`# heading`) to use `h2`s.
-                  //h1: ({node, ...props}) => <h1 className="" {...props} />,
-                  // Rewrite `em`s (`*like so*`) to `i` with a red foreground color.
-                  //em: ({node, ...props}) => <i style={{color: 'red'}} {...props} />
-                }
-              }
-              className="prose"
-              children={releaseData.applicationDacDetails}
-            />
-          )}
-        </div>
-
-        <div className="flex flex-col items-end gap-2">
           {releaseData.activation && (
             <div className={classNames(alertBoxClasses, "border-green-400")}>
               <p>This release is activated for data access</p>
+              <div className="form-control">
+                <label className="label cursor-pointer">
+                  <span className="label-text">Remember me</span>
+                  <input type="checkbox" className="toggle" checked />
+                </label>
+              </div>{" "}
             </div>
           )}
           {!releaseData.activation && (
             <div className={classNames(alertBoxClasses, "border-red-400")}>
               <p>Data access is currently disabled</p>
+              <input type="checkbox" className="toggle toggle-lg" />
             </div>
           )}
+        </div>
+
+        <div className="flex flex-col items-end gap-2">
           <ul className="text-right">
             {Array.from(releaseData.datasetMap.entries()).map(
               ([uri, vis], index) => (
@@ -81,6 +72,31 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
               )
             )}
           </ul>
+        </div>
+
+        <div className="collapse-arrow rounded-box collapse col-span-2 border border-base-300 bg-base-100">
+          <input type="checkbox" />
+
+          <div className="collapse-compact collapse-title">
+            See details of application
+          </div>
+          <div className="collapse-content">
+            {releaseData.applicationDacDetails && (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={
+                  {
+                    // Map `h1` (`# heading`) to use `h2`s.
+                    //h1: ({node, ...props}) => <h1 className="" {...props} />,
+                    // Rewrite `em`s (`*like so*`) to `i` with a red foreground color.
+                    //em: ({node, ...props}) => <i style={{color: 'red'}} {...props} />
+                  }
+                }
+                className="prose"
+                children={releaseData.applicationDacDetails}
+              />
+            )}
+          </div>
         </div>
       </div>
     </Box>

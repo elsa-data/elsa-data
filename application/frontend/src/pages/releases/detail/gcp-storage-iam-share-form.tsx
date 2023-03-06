@@ -11,7 +11,6 @@ import {
 import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
 import { isUndefined } from "lodash";
-import { Checkbox, Label } from "flowbite-react";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 
 type Props = {
@@ -55,15 +54,16 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
 
   const tsvColumnCheck = (field: string) => (
     <div key={field} className="flex items-center gap-2">
-      <Checkbox
+      <input
+        className="checkbox"
         defaultChecked={true}
         name="presignHeader"
         id={`chx-${field}`}
         value={field}
       />
-      <Label className="uppercase" htmlFor={`chx-${field}`}>
+      <label className="uppercase" htmlFor={`chx-${field}`}>
         {field}
-      </Label>
+      </label>
     </div>
   );
 

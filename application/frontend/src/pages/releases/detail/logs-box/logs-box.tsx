@@ -9,7 +9,7 @@ import React, {
 import { AuditEntryType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
-import { BoxNoPad } from "../../../../components/boxes";
+import { Box } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import {
   ColumnSizingHeader,
@@ -234,7 +234,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
 
   // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
   return (
-    <BoxNoPad
+    <Box
       heading="Audit Logs"
       errorMessage={"Something went wrong fetching audit logs."}
     >
@@ -334,7 +334,7 @@ export const LogsBox = ({ releaseId, pageSize }: LogsBoxProps): JSX.Element => {
           rowWord="Log Entries"
         />
       </div>
-    </BoxNoPad>
+    </Box>
   );
 };
 

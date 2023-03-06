@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
 import classNames from "classnames";
-import { BoxNoPad } from "../../../components/boxes";
+import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 import { useCookies } from "react-cookie";
@@ -88,7 +88,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
   };
 
   return (
-    <BoxNoPad
+    <Box
       heading="Users (not you)"
       errorMessage={"Something went wrong fetching users."}
     >
@@ -111,6 +111,6 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
           />
         )}
       </div>
-    </BoxNoPad>
+    </Box>
   );
 };

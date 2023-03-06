@@ -60,66 +60,59 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   );
 
   return (
-    <Box heading="Further Restrictions">
+    <Box heading="Sharing" applyIsLockedStyle={!!releaseData.activation}>
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv
-          heading={"Allowed Data"}
+          heading={"Data"}
           extra={
             "Access can be restricted to different types of data based on the requirements of the study"
           }
         />
         <RightDiv>
-          <RhChecks label="Allow Access To">
-            {isAllowedCheck("Manifest (always allowed)", null, true)}
-            {isAllowedCheck(
-              "Read Data (e.g. BAM, CRAM, FASTQ, ORA)",
-              "/allowedRead",
-              releaseData.isAllowedReadData
-            )}
-            {isAllowedCheck(
-              "Variant Data (e.g. VCF)",
-              "/allowedVariant",
-              releaseData.isAllowedVariantData
-            )}
-            {isAllowedCheck(
-              "Phenotype Data (e.g. FHIR, Phenopackets)",
-              "/allowedPhenotype",
-              releaseData.isAllowedPhenotypeData
-            )}
-          </RhChecks>
+          <div className="flex w-full">
+            <div className="grid flex-grow">
+              <RhChecks label="By Data Type">
+                {isAllowedCheck("Manifest (always allowed)", null, true)}
+                {isAllowedCheck(
+                  "Reads (e.g. BAM, CRAM, FASTQ, ORA)",
+                  "/allowedRead",
+                  releaseData.isAllowedReadData
+                )}
+                {isAllowedCheck(
+                  "Variants (e.g. VCF)",
+                  "/allowedVariant",
+                  releaseData.isAllowedVariantData
+                )}
+                {isAllowedCheck(
+                  "Phenotypes (e.g. FHIR, Phenopackets)",
+                  "/allowedPhenotype",
+                  releaseData.isAllowedPhenotypeData
+                )}
+              </RhChecks>
+            </div>
+            <div className="divider divider-horizontal"></div>
+            <div className="grid flex-grow">
+              <RhChecks label="By Data Location">
+                {isAllowedCheck("AWS S3 (s3://...)", null, true)}
+                {isAllowedCheck("Google GCP (gs://...)", null, true)}
+                {isAllowedCheck("CloudFlare R2 (r2://...)", null, true)}
+              </RhChecks>
+            </div>
+          </div>
         </RightDiv>
-      </div>
-      {/*} <HrDiv />
-      <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv
-          heading={"Allowed File Roles"}
+          heading={"Mechanism"}
           extra={
-            "Access may be restricted to only those files playing a specific role in a patients care"
+            "The technical mechanisms by which data can be accessed can be restricted according to data transfer agreements and organisation policy"
           }
         />
         <RightDiv>
-          <RhChecks label="File roles">
-            <RhCheckItem label="Germline" />
-            <RhCheckItem label="Somatic" />
+          <RhChecks label="Access Via">
+            {isAllowedCheck("Signed URLs", null, true)}
+            {isAllowedCheck("htsget", null, false)}
           </RhChecks>
         </RightDiv>
       </div>
-      <HrDiv />
-      <div className="md:grid md:grid-cols-5 md:gap-6">
-        <LeftDiv
-          heading={"Allowed Access Mechanisms"}
-          extra={
-            "Access mechanisms may be restricted to only those included in data transfer agreements"
-          }
-        />
-        <RightDiv>
-          <RhChecks label="Access">
-            <RhCheckItem label="S3" />
-            <RhCheckItem label="htsget" />
-            <RhCheckItem label="DRS" />
-          </RhChecks>
-        </RightDiv>
-      </div> */}
     </Box>
   );
 };

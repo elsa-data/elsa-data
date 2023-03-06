@@ -1,57 +1,38 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Outlet, useOutletContext, useParams } from "react-router-dom";
-import { Box } from "../../../components/boxes";
-import { LayoutBase } from "../../../layouts/layout-base";
-import { CasesBox } from "./cases-box/cases-box";
-import { VerticalTabs } from "../../../components/vertical-tabs";
-import { PresignedUrlForm } from "./presigned-url-form";
-import { InformationBox } from "./information-box";
+import { Box } from "../../components/boxes";
 import {
   axiosPostNullMutationFn,
   REACT_QUERY_RELEASE_KEYS,
   specificReleaseQuery,
-} from "./queries";
-import { BulkBox } from "./bulk-box/bulk-box";
+} from "./detail/queries";
 import { isUndefined } from "lodash";
-import { FurtherRestrictionsBox } from "./further-restrictions-box";
-import { usePageSizer } from "../../../hooks/page-sizer";
-import { MasterAccessControlBox } from "./master-access-control-box";
-import { LogsBox } from "./logs-box/logs-box";
-import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
-import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
-import { HtsgetForm } from "./htsget-form";
-import DataAccessSummaryBox from "./logs-box/data-access-summary";
-import { ReleaseTypeLocal } from "./shared-types";
-import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
-import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
-import { SkeletonOneDiv } from "../../../components/skeleton-one";
-import { SkeletonTwoDiv } from "../../../components/skeleton-two";
-
-type ReleasesMasterContextType = { releaseData: ReleaseTypeLocal };
-
-export function useReleasesMasterData() {
-  return useOutletContext<ReleasesMasterContextType>();
-}
+import { ReleaseTypeLocal } from "./detail/shared-types";
+import { EagerErrorBoundary, ErrorState } from "../../components/errors";
+import { ReleasesBreadcrumbsDiv } from "./releases-breadcrumbs-div";
+import { SkeletonOneDiv } from "../../components/skeleton-one";
+import { SkeletonTwoDiv } from "../../components/skeleton-two";
+import { ReleasesMasterContextType } from "./releases-types";
 
 /**
  * The master page layout performing actions/viewing data for a single
- * specific release.
+ * specific release. The subcomponents of this page (such as
+ * the Details Page, the Bulk Page, the Logs Page) are passed in
+ * the release data via Outlet context.
  */
 export const ReleasesMasterPage: React.FC = () => {
   const { releaseId } = useParams<{ releaseId: string }>();
 
   if (!releaseId)
     throw new Error(
-      `The component ReleasesDetailPage cannot be rendered outside a route with a releaseId param`
+      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseId param`
     );
 
   const [error, setError] = useState<ErrorState>({
     error: null,
     isSuccess: true,
   });
-
-  const pageSize = usePageSizer();
 
   const queryClient = useQueryClient();
 
@@ -91,8 +72,15 @@ export const ReleasesMasterPage: React.FC = () => {
     };
   }, [releaseQuery?.data?.runningJob]);
 
+  const masterOutletContext: ReleasesMasterContextType = {
+    releaseId: releaseId,
+    // note: that whilst we might construct the outlet context here with data being undefined,
+    // in that case we never actually use the context..
+    releaseData: releaseQuery.data!,
+  };
+
   return (
-    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+    <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
         <ReleasesBreadcrumbsDiv releaseId={releaseId} />
 
@@ -142,8 +130,9 @@ export const ReleasesMasterPage: React.FC = () => {
         )}
 
         {releaseQuery.isSuccess && !releaseQuery.data.runningJob && (
-          <Outlet context={{ releaseData: releaseQuery.data }} />
+          <Outlet context={masterOutletContext} />
         )}
+
         {!error.isSuccess && (
           <EagerErrorBoundary
             message={"Something went wrong fetching release data."}

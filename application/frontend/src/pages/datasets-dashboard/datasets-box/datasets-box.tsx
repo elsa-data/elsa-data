@@ -3,7 +3,7 @@ import { DatasetLightType } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery } from "react-query";
 import classNames from "classnames";
-import { BoxNoPad } from "../../../components/boxes";
+import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { fileSize, oxford } from "humanize-plus";
 import { useNavigate } from "react-router-dom";
@@ -104,7 +104,7 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
   return (
-    <BoxNoPad
+    <Box
       heading="Datasets"
       errorMessage={"Something went wrong fetching datasets."}
     >
@@ -251,6 +251,6 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
         rowsPerPage={pageSize}
         rowWord="datasets"
       />
-    </BoxNoPad>
+    </Box>
   );
 };
