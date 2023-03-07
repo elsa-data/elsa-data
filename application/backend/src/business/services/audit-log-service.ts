@@ -502,7 +502,7 @@ export class AuditLogService {
     );
 
     return createPagedResult(
-      (await entries.run(executor)).map((entry) => ({
+      (await entries.run(executor)).map((entry: any) => ({
         objectId: entry.id,
         whoId: entry.whoId,
         whoDisplayName: entry.whoDisplayName,

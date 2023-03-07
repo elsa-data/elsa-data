@@ -1,8 +1,6 @@
 # Insert a system audit event.
 with module audit
 insert SystemAuditEvent {
-  whoId := "",
-  whoDisplayName := "",
   actionCategory := <optional ActionType>$actionCategory ?? ActionType.E,
   actionDescription := <optional str>$actionDescription ?? "",
   occurredDateTime := <optional datetime>$occurredDateTime ?? datetime_current(),

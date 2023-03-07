@@ -67,8 +67,6 @@ export const countDataAccessAuditLogEntriesQuery = e.params(
  */
 export const auditEventProperties = {
   id: true,
-  whoId: true,
-  whoDisplayName: true,
   actionCategory: true,
   actionDescription: true,
   recordedDateTime: true,
@@ -76,6 +74,15 @@ export const auditEventProperties = {
   occurredDateTime: true,
   occurredDuration: true,
   outcome: true,
+} as const;
+
+/**
+ * Common properties for owned audit events.
+ */
+export const ownedAuditEventProperties = {
+  ...auditEventProperties,
+  whoId: true,
+  whoDisplayName: true,
 } as const;
 
 /**
@@ -103,6 +110,8 @@ export const auditLogDetailsForIdQuery = (
 export const auditLogFullForIdQuery = (id: string) => {
   return e.select(e.audit.AuditEvent, (_) => ({
     ...e.audit.AuditEvent["*"],
+    ...e.is(e.audit.OwnedAuditEvent, { whoId: true }),
+    ...e.is(e.audit.OwnedAuditEvent, { whoDisplayName: true }),
     filter_single: { id: e.uuid(id) },
   }));
 };
@@ -119,7 +128,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
-    ...auditEventProperties,
+    ...ownedAuditEventProperties,
     hasDetails: e.op("exists", auditEvent.details),
     filter: e.op(auditEvent.release_.id, "=", e.uuid(releaseId)),
     order_by: [
@@ -195,39 +204,36 @@ export const pageableAuditEventsForUserInRelease = (
   orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
-  return e.select(
-    e.audit.AuditEvent.is(e.audit.ReleaseAuditEvent),
-    (auditEvent) => ({
-      ...auditEventProperties,
-      ...(computeDetails && {
-        hasDetails: e.op("exists", auditEvent.details),
-      }),
-      ...(userIds !== "all" && {
-        filter: e.op(
-          e.array_unpack(e.literal(e.array(e.uuid), userIds)),
-          "in",
-          auditEvent.release_.participants.id
-        ),
-      }),
-      ...(paginate && {
-        order_by: [
-          {
-            expression:
-              orderByProperty === "actionCategory"
-                ? e.cast(e.str, auditEvent.actionCategory)
-                : auditEvent[orderByProperty],
-            direction: orderAscending ? e.ASC : e.DESC,
-          },
-          {
-            expression: auditEvent.occurredDateTime,
-            direction: e.DESC,
-          },
-        ],
-        limit: limit,
-        offset: offset,
-      }),
-    })
-  );
+  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+    ...ownedAuditEventProperties,
+    ...(computeDetails && {
+      hasDetails: e.op("exists", auditEvent.details),
+    }),
+    ...(userIds !== "all" && {
+      filter: e.op(
+        e.array_unpack(e.literal(e.array(e.uuid), userIds)),
+        "in",
+        auditEvent.release_.participants.id
+      ),
+    }),
+    ...(paginate && {
+      order_by: [
+        {
+          expression:
+            orderByProperty === "actionCategory"
+              ? e.cast(e.str, auditEvent.actionCategory)
+              : auditEvent[orderByProperty],
+          direction: orderAscending ? e.ASC : e.DESC,
+        },
+        {
+          expression: auditEvent.occurredDateTime,
+          direction: e.DESC,
+        },
+      ],
+      limit: limit,
+      offset: offset,
+    }),
+  }));
 };
 
 /**
@@ -294,6 +300,8 @@ export const pageableAuditEventsQuery = (
     count: e.count(union),
     entries: e.select(union, (auditEvent) => ({
       ...auditEventProperties,
+      ...e.is(e.audit.OwnedAuditEvent, { whoId: true }),
+      ...e.is(e.audit.OwnedAuditEvent, { whoDisplayName: true }),
       hasDetails: e.op("exists", auditEvent.details),
       ...(paginate && {
         order_by: [
@@ -332,7 +340,7 @@ export const pageableAuditLogEntriesForUserQuery = (
   return e.select(
     e.audit.AuditEvent.is(e.audit.UserAuditEvent),
     (auditEvent) => ({
-      ...auditEventProperties,
+      ...ownedAuditEventProperties,
       ...(computeDetails && {
         hasDetails: e.op("exists", auditEvent.details),
       }),
@@ -411,30 +419,27 @@ export const pageableAuditLogEntriesForSystemQuery = (
   orderByProperty: keyof AuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
-  return e.select(
-    e.audit.AuditEvent.is(e.audit.SystemAuditEvent),
-    (auditEvent) => ({
-      ...auditEventProperties,
-      ...(computeDetails && {
-        hasDetails: e.op("exists", auditEvent.details),
-      }),
-      ...(paginate && {
-        order_by: [
-          {
-            expression:
-              orderByProperty === "actionCategory"
-                ? e.cast(e.str, auditEvent.actionCategory)
-                : auditEvent[orderByProperty],
-            direction: orderAscending ? e.ASC : e.DESC,
-          },
-          {
-            expression: auditEvent.occurredDateTime,
-            direction: e.DESC,
-          },
-        ],
-        limit: limit,
-        offset: offset,
-      }),
-    })
-  );
+  return e.select(e.audit.SystemAuditEvent, (auditEvent) => ({
+    ...auditEventProperties,
+    ...(computeDetails && {
+      hasDetails: e.op("exists", auditEvent.details),
+    }),
+    ...(paginate && {
+      order_by: [
+        {
+          expression:
+            orderByProperty === "actionCategory"
+              ? e.cast(e.str, auditEvent.actionCategory)
+              : auditEvent[orderByProperty],
+          direction: orderAscending ? e.ASC : e.DESC,
+        },
+        {
+          expression: auditEvent.occurredDateTime,
+          direction: e.DESC,
+        },
+      ],
+      limit: limit,
+      offset: offset,
+    }),
+  }));
 };
