@@ -11,6 +11,7 @@ import { BoxPaginator } from "../../components/box-paginator";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { usePageSizer } from "../../hooks/page-sizer";
 import classNames from "classnames";
+import { TableFooterPaginator } from "../../components/table-footer-paginator";
 
 export const ReleasesDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,41 +36,64 @@ export const ReleasesDashboardPage: React.FC = () => {
   );
 
   return (
-    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+    <>
       <Box
         heading="Releases"
         errorMessage={"Something went wrong fetching releases."}
       >
         {query.isLoading && <IsLoadingDiv />}
         {query.isSuccess && query.data && (
-          <table className="table w-full">
+          <table className="table w-full table-auto">
             <thead>
               <tr>
                 <th scope="col">Title / Identifier</th>
-                <th scope="col">Source DAC</th>
-                <th scope="col">Role (in release)</th>
+                <th scope="col" className="hidden lg:table-cell">
+                  Source DAC
+                </th>
+                <th scope="col" className="hidden lg:table-cell">
+                  Role (in release)
+                </th>
+                <th scope="col" className="hidden lg:table-cell">
+                  Status
+                </th>
                 <th scope="col"></th>
               </tr>
             </thead>
             <tbody>
               {query.data.map((r, idx) => (
                 <tr key={idx}>
-                  <td scope="row">
+                  <td>
                     <div>
                       <div className="font-bold">{r.applicationDacTitle}</div>
-                      <div className="font-mono text-sm opacity-50">
-                        {r.releaseIdentifier}
+                      <div className="flex flex-row space-x-2 text-sm opacity-50">
+                        <span className="font-mono">{r.releaseIdentifier}</span>
+                        {/* a replication of the details in other columns - but we use Tailwind
+                              classes to make them disappear on small screens */}
+                        <span className="lg:hidden">{r.roleInRelease}</span>
+                        {r.isActivated && (
+                          <span className="badge-success badge lg:hidden">
+                            activated
+                          </span>
+                        )}
                       </div>
                     </div>
                   </td>
-                  <td scope="row">
-                    <span className="text-xs">
-                      {r.applicationDacIdentifierSystem}
-                    </span>
-                    <br />
-                    {r.applicationDacIdentifierValue}
+                  <td className="hidden lg:table-cell">
+                    <div>
+                      <div className="break-all text-xs">
+                        {r.applicationDacIdentifierSystem}
+                      </div>
+                      <div className="break-all font-mono text-xs opacity-50">
+                        {r.applicationDacIdentifierValue}
+                      </div>
+                    </div>
                   </td>
-                  <td>{r.roleInRelease}</td>
+                  <td className="hidden lg:table-cell">{r.roleInRelease}</td>
+                  <td className="hidden lg:table-cell">
+                    {r.isActivated && (
+                      <div className="badge-success badge">activated</div>
+                    )}
+                  </td>
                   <td className="text-right">
                     <button
                       className={classNames("btn-table-action-navigate")}
@@ -83,6 +107,15 @@ export const ReleasesDashboardPage: React.FC = () => {
                 </tr>
               ))}
             </tbody>
+            {/* <tfoot>
+              <TableFooterPaginator
+                currentPage={currentPage}
+                setPage={setCurrentPage}
+                rowCount={currentTotal}
+                itemsPerPage={2}
+                rowWord="releases"
+              />
+            </tfoot> */}
           </table>
         )}
         {query.isError && (
@@ -92,14 +125,7 @@ export const ReleasesDashboardPage: React.FC = () => {
             styling={"bg-red-100"}
           />
         )}
-        <BoxPaginator
-          currentPage={currentPage}
-          setPage={setCurrentPage}
-          rowCount={currentTotal}
-          rowsPerPage={pageSize}
-          rowWord="releases"
-        />
       </Box>
-    </div>
+    </>
   );
 };

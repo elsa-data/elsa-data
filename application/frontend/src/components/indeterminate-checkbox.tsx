@@ -1,6 +1,15 @@
 import React, { HTMLProps } from "react";
 import classNames from "classnames";
 
+/**
+ * A checkbox that correctly handles an 'indeterminate' React property
+ * and puts the underlying DOM checkbox into that state.
+ *
+ * @param indeterminate whether to set this checkbox to visually be indeterminate
+ * @param className classnames for the checkbox
+ * @param rest an other checkbox properties
+ * @constructor
+ */
 export function IndeterminateCheckbox({
   indeterminate,
   className = "",
@@ -18,7 +27,7 @@ export function IndeterminateCheckbox({
     <input
       type="checkbox"
       ref={ref}
-      className={classNames(className, "checkbox checkbox-sm")}
+      className={classNames(className, "checkbox", "checkbox-sm")}
       {...rest}
     />
   );

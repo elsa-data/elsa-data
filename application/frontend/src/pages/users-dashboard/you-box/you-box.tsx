@@ -49,12 +49,12 @@ export const YouBox: React.FC<Props> = ({}) => {
         <p className="prose">Last login XXXX</p>
         <p className="prose">
           The UI thinks the following features are allowed for this user
-          <ul>
-            {Array.from(uiAllowed.values()).map((v) => (
-              <li key={v}>{debugAllowedDescription(v)}</li>
-            ))}
-          </ul>
         </p>
+        <ul>
+          {Array.from(uiAllowed.values()).map((v) => (
+            <li key={v}>{debugAllowedDescription(v)}</li>
+          ))}
+        </ul>
       </div>
     </Box>
   );
