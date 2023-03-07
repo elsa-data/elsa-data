@@ -24,7 +24,6 @@ import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
-import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
