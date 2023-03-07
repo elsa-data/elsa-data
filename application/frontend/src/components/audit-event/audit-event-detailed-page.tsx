@@ -4,7 +4,7 @@ import axios from "axios";
 import { AuditEventFullType } from "@umccr/elsa-types/schemas-audit";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { EagerErrorBoundary } from "../errors";
-import { BoxNoPad } from "../boxes";
+import { Box } from "../boxes";
 import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 /**
@@ -53,7 +53,7 @@ export const AuditEventDetailedPage = (): JSX.Element => {
   }
 
   return (
-    <BoxNoPad
+    <Box
       heading={`Audit event for ${objectId}`}
       errorMessage={"Something went wrong showing audit event."}
     >
@@ -69,7 +69,7 @@ export const AuditEventDetailedPage = (): JSX.Element => {
           />
         )}
       </div>
-    </BoxNoPad>
+    </Box>
   );
 };
 

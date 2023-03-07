@@ -6,7 +6,6 @@ import { PresignedUrlForm } from "./presigned-url-form";
 import { InformationBox } from "./information-box";
 import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
-import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
@@ -74,12 +73,6 @@ export const ReleasesDetailSubPage: React.FC = () => {
                 </div>*/}
         </VerticalTabs>
       </Box>
-
-      <a href="https://products.aspose.app/cells/viewer" target="_blank">
-        TSV Viewer (useful link for demo purposes)
-      </a>
-
-      <LogsBox releaseId={releaseId} pageSize={pageSize} />
     </>
   );
 };

@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import axios from "axios";
-import { AuditEntryFullType } from "@umccr/elsa-types/schemas-audit";
+import { AuditEventFullType } from "@umccr/elsa-types/schemas-audit";
 import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { EagerErrorBoundary } from "../../../../components/errors";
@@ -21,7 +21,7 @@ export const AuditEntryPage = (): JSX.Element => {
     ["audit-entry", objectId],
     async () => {
       return await axios
-        .get<AuditEntryFullType | null>(
+        .get<AuditEventFullType | null>(
           `/api/releases/${releaseId}/audit-log/${objectId}`
         )
         .then((response) => response.data);
@@ -64,7 +64,7 @@ export const AuditEntryPage = (): JSX.Element => {
 };
 
 type AuditEntryBoxProps = {
-  data?: AuditEntryFullType;
+  data?: AuditEventFullType;
 };
 
 /**

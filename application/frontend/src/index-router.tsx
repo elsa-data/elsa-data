@@ -21,7 +21,6 @@ import { LayoutBase } from "./layouts/layout-base";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
-import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
 import { DataAccessSummarySubPage } from "./pages/releases/data-access-summary-sub-page/data-access-summary-sub-page";
 import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";

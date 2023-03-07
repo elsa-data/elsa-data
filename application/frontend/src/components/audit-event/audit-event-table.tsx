@@ -9,8 +9,8 @@ import React, {
 import { AuditEventType, RouteValidation } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
-import { Box } from "../../../../components/boxes";
-import { BoxPaginator } from "../../../../components/box-paginator";
+import { Box } from "../boxes";
+import { BoxPaginator } from "../box-paginator";
 import {
   ColumnSizingHeader,
   CoreHeader,
