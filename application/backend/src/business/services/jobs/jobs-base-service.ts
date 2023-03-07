@@ -68,7 +68,7 @@ export class JobsService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.id, "=", e.uuid(releaseId))
+            e.op(j.forRelease.releaseIdentifier, "=", releaseId)
           ),
         }))
         .run(tx);
@@ -95,7 +95,7 @@ export class JobsService {
       .select(e.job.Job, (j) => ({
         __type__: { name: true },
         id: true,
-        forRelease: { id: true },
+        forRelease: { id: true, releaseIdentifier: true },
         requestedCancellation: true,
         auditEntry: true,
         started: true,
@@ -111,7 +111,7 @@ export class JobsService {
         return {
           jobId: j.id,
           jobType: typeName.substring("job::".length),
-          releaseId: j.forRelease.id,
+          releaseId: j.forRelease.releaseIdentifier,
           auditEntryId: j.auditEntry.id,
           auditEntryStarted: j.started,
           requestedCancellation: j.requestedCancellation,
@@ -351,7 +351,7 @@ export class JobsService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.id, "=", e.uuid(releaseId))
+            e.op(j.forRelease.releaseIdentifier, "=", releaseId)
           ),
         }))
         .assert_single()
@@ -680,7 +680,7 @@ export class JobsService {
         filter: e.op(
           e.op(sj.status, "!=", e.job.JobStatus.running),
           "and",
-          e.op(sj.forRelease.id, "=", e.uuid(releaseId))
+          e.op(sj.forRelease.releaseIdentifier, "=", releaseId)
         ),
       }))
       .run(this.edgeDbClient);

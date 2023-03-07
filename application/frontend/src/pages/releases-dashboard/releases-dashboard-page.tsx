@@ -77,7 +77,7 @@ export const ReleasesPage: React.FC = () => {
                 <tr
                   key={idx}
                   className="light:bg-gray-800 light:border-gray-700 light:hover:bg-gray-600 border-b bg-white hover:cursor-pointer hover:bg-gray-50"
-                  onClick={() => navigate(`${r.id}/detail`)}
+                  onClick={() => navigate(`${r.releaseIdentifier}/detail`)}
                 >
                   <th
                     scope="row"

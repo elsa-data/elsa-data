@@ -27,7 +27,7 @@ export const allReleasesSummaryByUserQuery = e.params(
         // as release identifier is essentially a meaningless random string
         order_by: {
           expression: rp.releaseIdentifier,
-          direction: e.ASC,
+          direction: e.DESC,
         },
         limit: params.limit,
         offset: params.offset,
@@ -42,11 +42,33 @@ export const allReleasesSummaryByUserQuery = e.params(
  */
 export const touchRelease = e.params(
   {
-    releaseId: e.uuid,
+    releaseId: e.str,
   },
   (params) =>
     e.update(e.release.Release, (r) => ({
-      filter: e.op(r.id, "=", params.releaseId),
+      filter: e.op(r.releaseIdentifier, "=", params.releaseId),
       set: { lastUpdated: e.datetime_current() },
     }))
 );
+
+/**
+ * Find the next release identifier based on release count.
+ * @param prefix The prefix id before the release count.
+ * @returns
+ */
+export const getNextReleaseId = (prefix: string = "R") => {
+  const minDigitLength = 3;
+
+  const nextIdString = e.to_str(e.op(e.count(e.release.Release), "+", 1));
+
+  // Formatting string to add leading 0s if len(nextId) < minDigitLength
+  const formatIdString = e.op(
+    e.str_pad_start(nextIdString, minDigitLength, "0"),
+    "if",
+    e.op(e.len(nextIdString), "<=", minDigitLength),
+    "else",
+    nextIdString
+  );
+
+  return e.op(e.str(prefix), "++", formatIdString);
+};

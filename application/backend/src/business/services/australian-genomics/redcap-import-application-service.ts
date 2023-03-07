@@ -15,9 +15,9 @@ import {
   singlePotentialUserByEmailQuery,
   singleUserByEmailQuery,
 } from "../../db/user-queries";
-import { generate } from "randomstring";
 import _ from "lodash";
 import { addUserAuditEventToReleaseQuery } from "../../db/audit-log-queries";
+import { getNextReleaseId } from "../../db/release-queries";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -208,12 +208,9 @@ export class RedcapImportApplicationService {
         );
       }
 
-      const releaseIdentifier = generate({
-        length: 10,
-        capitalization: "uppercase",
-        charset: "alphabetic",
-        readable: true,
-      });
+      const releaseIdentifier = await getNextReleaseId(
+        this.settings.releaseIdPrefix
+      ).run(t);
 
       const newRelease = await e
         .insert(e.release.Release, {

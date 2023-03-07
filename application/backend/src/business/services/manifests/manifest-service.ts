@@ -18,21 +18,13 @@ export class ManifestService {
   public async getActiveManifest(
     releaseId: string
   ): Promise<ManifestType | null> {
-    // whilst we are sorting out what exactly our release id should be - this
-    // is a simple boundary check that the format is ok according to edgedb
-    try {
-      await e.uuid(releaseId).run(this.edgeDbClient);
-    } catch (e) {
-      return null;
-    }
-
     const releaseWithManifest = await e
       .select(e.release.Release, (r) => ({
         id: true,
         activation: {
           manifest: true,
         },
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
+        filter: e.op(r.releaseIdentifier, "=", releaseId),
       }))
       .assert_single()
       .run(this.edgeDbClient);

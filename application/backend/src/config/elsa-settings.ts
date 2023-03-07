@@ -47,6 +47,9 @@ export type ElsaSettings = {
   // maxmind database for IP Geo lookup
   maxmindDbAssetPath: string;
 
+  // prefix for releaseId
+  releaseIdPrefix: string;
+
   // NOTE: https://confluence.hl7.org/display/TA/External+Terminologies+-+Information is a good reference for these
   mondoSystem: { uri: string; oid: string };
   hgncGenesSystem: { uri: string; oid: string };

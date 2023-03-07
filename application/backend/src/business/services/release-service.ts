@@ -26,6 +26,7 @@ import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
 import {
   allReleasesSummaryByUserQuery,
+  getNextReleaseId,
   touchRelease,
 } from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
@@ -117,7 +118,7 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
-    const releaseIdentifier = randomUUID();
+    const releaseIdentifier = getNextReleaseId(this.settings.releaseIdPrefix);
 
     const releaseRow = await e
       .insert(e.release.Release, {
@@ -658,7 +659,7 @@ ${release.applicantEmailAddresses}
             countriesInvolved: true,
             diseasesOfStudy: true,
           },
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
         }))
         .assert_single()
         .run(tx);
@@ -700,7 +701,7 @@ ${release.applicantEmailAddresses}
       const releaseWithAppCoded = await e
         .select(e.release.Release, (r) => ({
           applicationCoded: true,
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
         }))
         .assert_single()
         .run(tx);
@@ -760,7 +761,7 @@ ${release.applicantEmailAddresses}
     await this.edgeDbClient.transaction(async (tx) => {
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: fieldToSet,
         }))
         .run(tx);
@@ -808,7 +809,7 @@ ${release.applicantEmailAddresses}
 
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: {
             activation: e.insert(e.release.Activation, {
               activatedById: user.subjectId,
@@ -845,7 +846,7 @@ ${release.applicantEmailAddresses}
 
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           set: {
             previouslyActivated: { "+=": r.activation },
             activation: null,

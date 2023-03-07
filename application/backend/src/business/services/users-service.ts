@@ -223,17 +223,17 @@ export class UsersService {
    * aborts with an exception.
    *
    * @param user
-   * @param releaseId
+   * @param releaseUuid
    * @param role
    */
   public async registerRoleInRelease(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseUuid: string,
     role: ReleaseRoleStrings
   ) {
     await UsersService.addUserToReleaseWithRole(
       this.edgeDbClient,
-      releaseId,
+      releaseUuid,
       user.dbId,
       role,
       user.subjectId,
@@ -246,7 +246,7 @@ export class UsersService {
    */
   public static async addUserToReleaseWithRole(
     client: edgedb.Client,
-    releaseId: string,
+    releaseUuid: string,
     userDbId: string,
     role: string,
     whoId: string,
@@ -266,7 +266,7 @@ export class UsersService {
           set: {
             releaseParticipant: {
               "+=": e.select(e.release.Release, (r) => ({
-                filter: e.op(e.uuid(releaseId), "=", r.id),
+                filter: e.op(e.uuid(releaseUuid), "=", r.id),
                 "@role": e.str(role),
               })),
             },
@@ -305,7 +305,7 @@ export class UsersService {
         releaseParticipant: (rp) => ({
           id: true,
           "@role": true,
-          filter: e.op(rp.id, "=", e.uuid(releaseId)),
+          filter: e.op(rp.releaseIdentifier, "=", releaseId),
         }),
         filter: e.op(e.str(user.subjectId), "=", u.subjectId),
       }))
