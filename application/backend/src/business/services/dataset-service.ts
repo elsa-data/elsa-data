@@ -20,13 +20,15 @@ import {
   selectDatasetIdByDatasetUri,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { AuditLogService } from "./audit-log-service";
 
 @injectable()
 @singleton()
 export class DatasetService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Settings") private settings: ElsaSettings,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
@@ -45,7 +47,7 @@ export class DatasetService {
     return (
       await e
         .select(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseIdentifier, "=", releaseId),
           datasetUris: true,
         }))
         .assert_single()
@@ -57,6 +59,7 @@ export class DatasetService {
    * Return a paged result of datasets in summary form.
    *
    * @param user
+   * @param includeDeletedFile
    * @param limit
    * @param offset
    */
@@ -177,17 +180,21 @@ export class DatasetService {
 
   /**
    * Select or insert new dataset if doesn't exist in Db
+   * Optionally add a UserAuditEvent if a user parameter is supplied.
    * @returns Dataset Id
    */
-  public async selectOrInsertDataset({
-    datasetUri,
-    datasetDescription,
-    datasetName,
-  }: {
-    datasetUri: string;
-    datasetDescription: string;
-    datasetName: string;
-  }): Promise<string> {
+  public async selectOrInsertDataset(
+    {
+      datasetUri,
+      datasetDescription,
+      datasetName,
+    }: {
+      datasetUri: string;
+      datasetDescription: string;
+      datasetName: string;
+    },
+    user?: AuthenticatedUser
+  ): Promise<string> {
     // Find current Dataset
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
@@ -195,13 +202,25 @@ export class DatasetService {
     if (datasetId) return datasetId;
 
     // Else, create new dataset
-    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
-      uri: datasetUri,
-      externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
-      description: datasetDescription,
+    return await this.edgeDbClient.transaction(async (tx) => {
+      const insertDatasetQuery = e.insert(e.dataset.Dataset, {
+        uri: datasetUri,
+        externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
+        description: datasetDescription,
+      });
+
+      const newDataset = await insertDatasetQuery.run(tx);
+
+      if (user !== undefined) {
+        await this.auditLogService.insertAddDatasetAuditEvent(
+          tx,
+          user,
+          datasetUri
+        );
+      }
+
+      return newDataset.id;
     });
-    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
-    return newDataset.id;
   }
 
   /**
@@ -220,21 +239,36 @@ export class DatasetService {
 
   /**
    * Delete given dataset URI from database.
+   * Optionally add a UserAuditEvent if a user parameter is supplied.
    * @returns DatasetId
    */
-  public async deleteDataset({
-    datasetUri,
-  }: {
-    datasetUri: string;
-  }): Promise<string | undefined> {
-    const deleteDataset = e
-      .delete(e.dataset.Dataset, (d) => ({
-        filter: e.op(d.uri, "=", datasetUri),
-      }))
-      .assert_single();
+  public async deleteDataset(
+    {
+      datasetUri,
+    }: {
+      datasetUri: string;
+    },
+    user?: AuthenticatedUser
+  ): Promise<string | undefined> {
+    return await this.edgeDbClient.transaction(async (tx) => {
+      const deleteDataset = e
+        .delete(e.dataset.Dataset, (d) => ({
+          filter: e.op(d.uri, "=", datasetUri),
+        }))
+        .assert_single();
 
-    const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
-    return datasetDeleted?.id;
+      const datasetDeleted = await deleteDataset.run(tx);
+
+      if (user !== undefined) {
+        await this.auditLogService.insertDeleteDatasetAuditEvent(
+          tx,
+          user,
+          datasetUri
+        );
+      }
+
+      return datasetDeleted?.id;
+    });
   }
 
   public async configureDataset(
@@ -277,12 +311,12 @@ export class DatasetService {
     }
   }
 
-  public async updateDatasetCurrentTimestamp(datasetId: string) {
+  public async updateDatasetCurrentTimestamp(datasetId: string, date?: Date) {
     await e
       .update(e.dataset.Dataset, (d) => ({
         filter: e.op(d.id, "=", e.uuid(datasetId)).assert_single(),
         set: {
-          updatedDateTime: new Date(),
+          updatedDateTime: date ?? new Date(),
         },
       }))
       .run(this.edgeDbClient);

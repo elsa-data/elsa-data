@@ -1,12 +1,11 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insertRelease1 } from "../../src/test-data/insert-test-data-release1";
 import { insertRelease2 } from "../../src/test-data/insert-test-data-release2";
 import { insertRelease4 } from "../../src/test-data/insert-test-data-release4";
 import { insertRelease3 } from "../../src/test-data/insert-test-data-release3";
 import { allReleasesSummaryByUserQuery } from "../../src/business/db/release-queries";
-import { addUserToReleaseWithRole } from "../../src/business/db/user-queries";
+import { UsersService } from "../../src/business/services/users-service";
 
 describe("edgedb release queries tests", () => {
   let edgeDbClient: Client;
@@ -43,17 +42,23 @@ describe("edgedb release queries tests", () => {
   it("get all on releases returns correct roles and fields", async () => {
     const testUserInsert = await createTestUser();
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release2.id,
-      userDbId: testUserInsert.id,
-      role: "PI",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release2.id,
+      testUserInsert.id,
+      "PI",
+      "id1",
+      "name1"
+    );
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release3.id,
-      userDbId: testUserInsert.id,
-      role: "DataOwner",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release3.id,
+      testUserInsert.id,
+      "DataOwner",
+      "id2",
+      "name2"
+    );
 
     // and we don't add them into release 4 at all
 
@@ -70,7 +75,7 @@ describe("edgedb release queries tests", () => {
     {
       const a = result!.releaseParticipant[0];
 
-      expect(a.releaseIdentifier).toBe("P4RF4AC5BR");
+      expect(a.releaseIdentifier).toBe("R003");
       expect(a.applicationDacTitle).toBe("An Invisible Study");
       expect(a["@role"]).toBe("DataOwner");
     }
@@ -78,7 +83,7 @@ describe("edgedb release queries tests", () => {
     {
       const b = result!.releaseParticipant[1];
 
-      expect(b.releaseIdentifier).toBe("RH5WOR7QXB");
+      expect(b.releaseIdentifier).toBe("R002");
       expect(b.applicationDacTitle).toBe("A Better Study of Limited Test Data");
       expect(b["@role"]).toBe("PI");
     }
@@ -101,23 +106,32 @@ describe("edgedb release queries tests", () => {
   it("get all on releases does basic paging", async () => {
     const testUserInsert = await createTestUser();
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release2.id,
-      userDbId: testUserInsert.id,
-      role: "PI",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release2.id,
+      testUserInsert.id,
+      "PI",
+      "id1",
+      "name1"
+    );
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release3.id,
-      userDbId: testUserInsert.id,
-      role: "DataOwner",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release3.id,
+      testUserInsert.id,
+      "DataOwner",
+      "id2",
+      "name2"
+    );
 
-    await addUserToReleaseWithRole.run(edgeDbClient, {
-      releaseId: release4.id,
-      userDbId: testUserInsert.id,
-      role: "Member",
-    });
+    await UsersService.addUserToReleaseWithRole(
+      edgeDbClient,
+      release4.id,
+      testUserInsert.id,
+      "Member",
+      "id3",
+      "name3"
+    );
 
     {
       const result1 = await allReleasesSummaryByUserQuery.run(edgeDbClient, {
@@ -129,24 +143,20 @@ describe("edgedb release queries tests", () => {
       expect(result1).not.toBeNull();
       expect(result1).toHaveProperty("releaseParticipant");
       expect(result1!.releaseParticipant.length).toBe(1);
-      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe(
-        "RH5WOR7QXB"
-      );
+      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe("R003");
     }
 
     {
       const result2 = await allReleasesSummaryByUserQuery.run(edgeDbClient, {
         userDbId: testUserInsert.id,
         limit: 1,
-        offset: 2,
+        offset: 0,
       });
 
       expect(result2).not.toBeNull();
       expect(result2).toHaveProperty("releaseParticipant");
       expect(result2!.releaseParticipant.length).toBe(1);
-      expect(result2!.releaseParticipant[0].releaseIdentifier).toBe(
-        "S9DT3Z9NMA"
-      );
+      expect(result2!.releaseParticipant[0].releaseIdentifier).toBe("R004");
     }
   });
 });

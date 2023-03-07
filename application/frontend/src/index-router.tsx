@@ -15,6 +15,7 @@ import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import { ReleasesDashboardPage } from "./pages/releases-dashboard/releases-dashboard-page";
 import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-sub-page";
+import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
 import { LayoutBase } from "./layouts/layout-base";
 import { LoginDevPage } from "./pages/login-dev-page";
@@ -25,6 +26,9 @@ import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
 import { DataAccessSummarySubPage } from "./pages/releases/data-access-summary-sub-page/data-access-summary-sub-page";
 import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";
 import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page";
+import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
+import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
+import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -148,7 +152,6 @@ export function createRouter(addBypassLoginPage: boolean) {
 
           <Route path={`datasets`}>
             <Route index element={<DatasetsDashboardPage />} />
-
             <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
           </Route>
 
@@ -156,6 +159,12 @@ export function createRouter(addBypassLoginPage: boolean) {
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
+
+          <Route
+            path={`audit-event/details/:objectId`}
+            element={<AuditEventDetailedPage />}
+          />
+          <Route path={`audit-events`} element={<AuditEventsPage />} />
         </Route>
 
         <Route path="*" element={<NoMatch />} />

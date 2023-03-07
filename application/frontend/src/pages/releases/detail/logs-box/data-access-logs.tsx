@@ -4,7 +4,7 @@ import { useQuery } from "react-query";
 import { Box } from "../../../../components/boxes";
 import { ToolTip } from "../../../../components/tooltip";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
-import { categoryToDescription } from "./logs-box";
+import { categoryToDescription } from "../../../../components/audit-event/audit-event-table";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { isNil } from "lodash";
@@ -29,7 +29,7 @@ function DataAccessLogsBox() {
     ["release-data-access-audit", releaseId, objectId, currentPage],
     async () => {
       const response = await axios.get<AuditDataAccessType[]>(
-        `/api/releases/${releaseId}/audit-log/data-access`,
+        `/api/releases/${releaseId}/audit-event/data-access`,
         {
           params: {
             page: currentPage,

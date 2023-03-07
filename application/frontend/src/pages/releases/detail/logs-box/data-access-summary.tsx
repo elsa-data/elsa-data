@@ -15,7 +15,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
     async () =>
       await axios
         .get<AuditDataSummaryType[]>(
-          `/api/releases/${releaseId}/audit-log/data-access/summary`
+          `/api/releases/${releaseId}/audit-event/data-access/summary`
         )
         .then((response) => response.data)
   );
@@ -36,7 +36,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
       <div>Data Access Log Summary</div>
       <a
         className="flex	cursor-pointer rounded-md bg-transparent p-1 normal-case hover:bg-slate-200"
-        href={`/releases/${releaseId}/audit-log/data-access`}
+        href={`/releases/${releaseId}/audit-event/data-access`}
       >
         <BiLinkExternal />
       </a>

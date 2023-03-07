@@ -98,7 +98,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                     <button
                       className={classNames("btn-table-action-navigate")}
                       onClick={async () => {
-                        navigate(`${r.id}/detail`);
+                        navigate(`${r.releaseIdentifier}/detail`);
                       }}
                     >
                       view

@@ -59,6 +59,14 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     .delete(e.audit.ReleaseAuditEvent)
     .run(edgeDbClient);
 
+  const userAuditDeleted = await e
+    .delete(e.audit.UserAuditEvent)
+    .run(edgeDbClient);
+
+  const systemAuditDeleted = await e
+    .delete(e.audit.SystemAuditEvent)
+    .run(edgeDbClient);
+
   const dataAccessAuditDeleted = await e
     .delete(e.audit.DataAccessAuditEvent)
     .run(edgeDbClient);
@@ -71,6 +79,8 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
 
     console.log(`  ${releasesDeleted.length} release(s)`);
     console.log(`  ${releaseAuditDeleted.length} releaseAudit(s)`);
+    console.log(`  ${userAuditDeleted.length} userAudit(s)`);
+    console.log(`  ${systemAuditDeleted.length} systemAudit(s)`);
     console.log(`  ${dataAccessAuditDeleted.length} dataAccessAudit(s)`);
 
     console.log(

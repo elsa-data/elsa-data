@@ -92,22 +92,3 @@ export const pageableAllUserQuery = e.params(
       offset: params.offset,
     }))
 );
-
-/**
- * Add the user as a participant in a release with the given role.
- */
-export const addUserToReleaseWithRole = e.params(
-  { releaseId: e.uuid, userDbId: e.uuid, role: e.str },
-  (params) =>
-    e.update(e.permission.User, (u) => ({
-      filter: e.op(params.userDbId, "=", u.id),
-      set: {
-        releaseParticipant: {
-          "+=": e.select(e.release.Release, (r) => ({
-            filter: e.op(params.releaseId, "=", r.id),
-            "@role": params.role,
-          })),
-        },
-      },
-    }))
-);

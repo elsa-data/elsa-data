@@ -54,7 +54,7 @@ export async function getReleaseInfo(
   // the base (id only) query that will give us just the release
   const releaseQuery = e
     .select(e.release.Release, (r) => ({
-      filter: e.op(r.id, "=", e.uuid(releaseId)),
+      filter: e.op(r.releaseIdentifier, "=", releaseId),
     }))
     .assert_single();
 

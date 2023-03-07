@@ -16,6 +16,7 @@ import {
   HOMER_SPECIMEN,
 } from "../../src/test-data/insert-test-data-10f-simpsons";
 import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
+import { getNextReleaseId } from "../../src/business/db/release-queries";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -56,7 +57,7 @@ export async function beforeEachCommon() {
       isAllowedReadData: true,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
-      releaseIdentifier: "A",
+      releaseIdentifier: getNextReleaseId(),
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
       selectedSpecimens: e.set(
@@ -82,7 +83,15 @@ export async function beforeEachCommon() {
     })
     .run(edgeDbClient);
 
-  const testReleaseId = testReleaseInsert.id;
+  const rQuery = await e
+    .select(e.release.Release, (r) => ({
+      releaseIdentifier: true,
+      filter_single: e.op(e.uuid(testReleaseInsert.id), "=", r.id),
+    }))
+    .assert_single()
+    .run(edgeDbClient);
+  const testReleaseId = rQuery?.releaseIdentifier ?? "";
+
   let allowedDataOwnerUser: AuthenticatedUser;
   let allowedPiUser: AuthenticatedUser;
   let allowedMemberUser: AuthenticatedUser;
@@ -100,7 +109,7 @@ export async function beforeEachCommon() {
         displayName: allowedDisplayName,
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
-          filter: e.op(e.uuid(testReleaseId), "=", r.id),
+          filter: e.op(testReleaseId, "=", r.releaseIdentifier),
           "@role": e.str("DataOwner"),
         })),
       })
@@ -130,7 +139,7 @@ export async function beforeEachCommon() {
         displayName: allowedDisplayName,
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
-          filter: e.op(e.uuid(testReleaseId), "=", r.id),
+          filter: e.op(testReleaseId, "=", r.releaseIdentifier),
           "@role": e.str("PI"),
         })),
       })
@@ -160,7 +169,7 @@ export async function beforeEachCommon() {
         displayName: allowedMemberDisplayName,
         email: allowedMemberEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
-          filter: e.op(e.uuid(testReleaseId), "=", r.id),
+          filter: e.op(testReleaseId, "=", r.releaseIdentifier),
           "@role": e.str("Member"),
         })),
       })

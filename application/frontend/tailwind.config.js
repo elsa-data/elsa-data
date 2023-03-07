@@ -1,21 +1,11 @@
 module.exports = {
   darkMode: "class",
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-    "./public/**/*.html",
-    //"node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/**/*.html"],
   theme: {
     extend: {},
   },
   daisyui: {
     themes: false,
   },
-  plugins: [
-    require("@tailwindcss/typography"),
-    // if using daisy then we have to disable both of these
-    //require("@tailwindcss/forms"),
-    //require("flowbite/plugin"),
-    require("daisyui"),
-  ],
+  plugins: [require("@tailwindcss/typography"), require("daisyui")],
 };

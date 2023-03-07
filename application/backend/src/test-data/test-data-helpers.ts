@@ -128,12 +128,20 @@ export async function createTestUser(
       allowedCreateRelease: false,
       allowedImportDataset: false,
       lastLoginDateTime: lastLogin,
+      userAuditEvent: e.insert(e.audit.UserAuditEvent, {
+        whoId: subjectId,
+        whoDisplayName: displayName,
+        occurredDateTime: new Date(),
+        actionCategory: "E",
+        actionDescription: "Login",
+        outcome: 0,
+      }),
     })
     .run(edgeDbClient);
 
   // a helper to update the role this users has with a release
   const insertRole = async (
-    releaseId: string,
+    releaseUuid: string,
     role: "DataOwner" | "PI" | "Member"
   ) => {
     await e
@@ -142,7 +150,7 @@ export async function createTestUser(
         set: {
           releaseParticipant: {
             "+=": e.select(e.release.Release, (r) => ({
-              filter: e.op(e.uuid(releaseId), "=", r.id),
+              filter: e.op(e.uuid(releaseUuid), "=", r.id),
               "@role": e.str(role),
             })),
           },

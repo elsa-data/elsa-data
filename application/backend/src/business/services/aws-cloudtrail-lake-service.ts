@@ -72,7 +72,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       .select(e.release.Release, (r) => ({
         created: true,
         lastDateTimeDataAccessLogQuery: true,
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
+        filter: e.op(r.releaseIdentifier, "=", releaseId),
       }))
       .assert_single()
       .run(this.edgeDbClient);
@@ -356,7 +356,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     // Update last query date to release record
     await e
       .update(e.release.Release, (r) => ({
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
+        filter: e.op(r.releaseIdentifier, "=", releaseId),
         set: {
           lastDateTimeDataAccessLogQuery: e.datetime(endQueryDate),
         },

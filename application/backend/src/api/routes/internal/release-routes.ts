@@ -7,8 +7,6 @@ import {
   ReleaseManualSchema,
   ReleaseManualType,
   ReleaseMasterAccessRequestType,
-  ReleasePatchOperationSchema,
-  ReleasePatchOperationType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
   ReleaseSummaryType,
@@ -20,7 +18,6 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../../api-internal-routes";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { container } from "tsyringe";
 import { JobsService } from "../../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../../business/services/release-service";
@@ -145,12 +142,12 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseUuid = request.params.rid;
+      const releaseId = request.params.rid;
       const participantUuid = request.params.pid;
 
       return releaseParticipantService.removeParticipant(
         authenticatedUser,
-        releaseUuid,
+        releaseId,
         participantUuid
       );
     }
