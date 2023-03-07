@@ -190,6 +190,7 @@ export const CasesBox: React.FC<Props> = ({
                   <label>
                     <div className="inline-block w-12 text-center">
                       <IndeterminateCheckbox
+                        className="checkbox-accent"
                         disabled={
                           releasePatchMutate.isLoading || releaseIsActivated
                         }

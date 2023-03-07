@@ -5,19 +5,12 @@ import {
   faFemale,
   faMale,
   faQuestion,
-  faLock,
-  faUnlock,
 } from "@fortawesome/free-solid-svg-icons";
-
 import { ReleasePatientType } from "@umccr/elsa-types";
 import { useMutation, useQueryClient } from "react-query";
 import classNames from "classnames";
-import Popup from "reactjs-popup";
 import { ConsentPopup } from "./consent-popup";
-import {
-  axiosPatchOperationMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "../queries";
+import { axiosPatchOperationMutationFn } from "../queries";
 import { ReleaseTypeLocal } from "../shared-types";
 
 type Props = {
@@ -101,6 +94,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
       "border-slate-200",
       "flex",
       "flex-col",
+      "items-center",
       "lg:flex-row",
       "lg:justify-between",
     ];
@@ -149,7 +143,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
                     <input
                       disabled={releaseIsActivated}
                       type="checkbox"
-                      className="checkbox checkbox-sm ml-2"
+                      className="checkbox-accent checkbox checkbox-sm ml-2"
                       checked={spec.nodeStatus == "selected"}
                       onChange={async (ce) => onSelectChange(ce, spec.id)}
                     />

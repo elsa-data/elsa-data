@@ -14,13 +14,12 @@ export function IndeterminateCheckbox({
     }
   }, [ref, indeterminate]);
 
-  // if we are disabled we don't want the cursor pointer hover... and we want to be
-  // a bit visually distinctive
-  const cn = classNames(className, {
-    //"cursor-pointer": !rest.disabled,
-    //"opacity-50": rest.disabled,
-    "checkbox checkbox-sm": true,
-  });
-
-  return <input type="checkbox" ref={ref} className={cn} {...rest} />;
+  return (
+    <input
+      type="checkbox"
+      ref={ref}
+      className={classNames(className, "checkbox checkbox-sm")}
+      {...rest}
+    />
+  );
 }

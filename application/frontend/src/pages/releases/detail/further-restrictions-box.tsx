@@ -45,8 +45,9 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
     <RhCheckItem
       label={label}
       checked={current}
-      disabled={!path}
+      disabled={!path || !!releaseData.activation}
       className={classNames({ "opacity-50": releasePatchMutate.isLoading })}
+      inputClassName={"checkbox-accent"}
       onChange={(e) => {
         if (path) {
           releasePatchMutate.mutate({
@@ -108,7 +109,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
         />
         <RightDiv>
           <RhChecks label="Access Via">
-            {isAllowedCheck("Signed URLs", null, true)}
+            {isAllowedCheck("Presigned URLs", null, true)}
             {isAllowedCheck("htsget", null, false)}
           </RhChecks>
         </RightDiv>

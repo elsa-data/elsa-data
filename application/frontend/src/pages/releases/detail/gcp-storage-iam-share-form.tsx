@@ -37,7 +37,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
   const postAclUpdate = (url: string) => (data: { users: string[] }) => {
     setStatus("working");
     return axios
-      .post<void>(url, data)
+      .post<any>(url, data)
       .then((reply) => setStatus({ recordsUpdated: reply.data }))
       .catch((error) =>
         setStatus({ error: error?.response?.data ?? error, isSuccess: false })

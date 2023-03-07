@@ -3,7 +3,7 @@ import classNames from "classnames";
 
 type Props = {
   label: string;
-  extra?: string;
+  inputClassName?: string;
 } & React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
@@ -13,23 +13,29 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
   (props, ref) => {
     const id = useId();
 
+    // take our two props that have special meanings for us out of the
+    // general pass through props
+    const { inputClassName, label, ...otherProps } = props;
+
     return (
-      <div className={classNames(props.className, "flex", "items-start")}>
-        <div className="flex h-5 items-center">
+      <div
+        className={classNames(
+          props.className,
+          "form-control",
+          "items-start",
+          "space-x-2"
+        )}
+      >
+        <label className="label cursor-pointer">
           <input
+            type="checkbox"
             id={id}
             ref={ref}
-            {...props}
-            type="checkbox"
-            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+            {...otherProps}
+            className={classNames(inputClassName, "checkbox checkbox-sm mr-2")}
           />
-        </div>
-        <div className="ml-3 text-sm">
-          <label htmlFor={id} className="font-medium text-gray-700">
-            {props.label}
-          </label>
-          {props.extra && <p className="text-gray-500">{props.extra}</p>}
-        </div>
+          <span className="label-text">{label}</span>
+        </label>
       </div>
     );
   }
@@ -38,7 +44,7 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
 /**
  */
 export const RhChecks: React.FC<
-  PropsWithChildren<{ label: string }> &
+  PropsWithChildren<{ label: string; inputClassName?: string }> &
     React.HTMLAttributes<HTMLFieldSetElement>
 > = ({ label, children, className }) => {
   return (

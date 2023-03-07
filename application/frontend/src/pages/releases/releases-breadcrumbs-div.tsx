@@ -55,8 +55,8 @@ export const ReleasesBreadcrumbsDiv: React.FC<{ releaseId: string }> = (
 
               <div tabIndex={0} className="flex flex-wrap space-x-4">
                 {finalSiblingItems.map((f, i) => (
-                  <>
-                    <NavLink key={i} to={f.to} className="link text-sm">
+                  <React.Fragment key={i}>
+                    <NavLink to={f.to} className="link text-sm">
                       {({ isActive }) => (
                         <span className={isActive ? "font-bold" : ""}>
                           {f.text}
@@ -68,7 +68,7 @@ export const ReleasesBreadcrumbsDiv: React.FC<{ releaseId: string }> = (
                         /
                       </span>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </div>
             </div>

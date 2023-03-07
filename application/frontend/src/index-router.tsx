@@ -70,8 +70,8 @@ export function createRouter(addBypassLoginPage: boolean) {
       children: <></>,
     },
     {
-      text: "Bulk Selector",
-      path: "bulk-selector",
+      text: "Cohort Constructor",
+      path: "cohort-constructor",
       element: <BulkSelectorSubPage />,
       children: <></>,
     },

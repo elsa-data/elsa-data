@@ -4,14 +4,12 @@ import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
 import { PresignedUrlForm } from "./presigned-url-form";
 import { InformationBox } from "./information-box";
-import { BulkBox } from "./bulk-box/bulk-box";
 import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { LogsBox } from "./logs-box/logs-box";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
-import DataAccessSummaryBox from "./logs-box/data-access-summary";
 import { useReleasesMasterData } from "../releases-types";
 
 /**
@@ -42,14 +40,6 @@ export const ReleasesDetailSubPage: React.FC = () => {
         />
       )}
 
-      {/*
-            {releaseQuery.data.permissionEditSelections && (
-              <MasterAccessControlBox
-                releaseId={releaseId}
-                releaseData={releaseQuery.data}
-              />
-            )}*/}
-
       <Box
         heading="Access Data"
         applyIsDisabledStyle={!!!releaseData.activation}
@@ -57,7 +47,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         <VerticalTabs
           tabHeadings={[
             "Manifest",
-            "Presigned URL",
+            "Presigned URLs",
             "AWS S3 VPC Share",
             "GCP Storage IAM Share",
             "htsget",

@@ -47,9 +47,11 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
     <Box heading={<BoxHeader />}>
       <table className="table">
         <thead>
-          {COLUMN_TO_SHOW.map((header) => (
-            <th key={header}>{convertCamelCaseToTitle(header)}</th>
-          ))}
+          <tr>
+            {COLUMN_TO_SHOW.map((header) => (
+              <th key={header}>{convertCamelCaseToTitle(header)}</th>
+            ))}
+          </tr>
         </thead>
         <tbody>
           {dataAccessQuery.isSuccess &&

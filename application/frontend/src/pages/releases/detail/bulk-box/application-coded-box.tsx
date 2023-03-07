@@ -172,89 +172,88 @@ export const ApplicationCodedBox: React.FC<Props> = ({
         }
       />
       <RightDiv>
-        <div className="shadow sm:rounded-md">
-          <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
-            <div className="grid grid-cols-1 gap-6">
-              {releasePatchMutate.isError && (
-                <EagerErrorBoundary
-                  error={releasePatchMutate.error}
-                  styling={"bg-red-100"}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            {releasePatchMutate.isError && (
+              <EagerErrorBoundary
+                error={releasePatchMutate.error}
+                styling={"bg-red-100"}
+              />
+            )}
+            <RhChecks label={"Assertions"}>
+              <RhCheckItem
+                disabled={true}
+                checked={true}
+                label={"Applicant Has Documented Ethics Approval"}
+              />
+              <RhCheckItem
+                disabled={true}
+                label={"Applicant Has Agreed to Publish the Results"}
+              />
+              <RhCheckItem
+                disabled={true}
+                label={"Applicant Asserts the Study is Non-Commercial"}
+              />
+              <RhCheckItem
+                disabled={true}
+                label={
+                  "Applicant Asserts the Organisations Receiving Data are Not-for-Profit"
+                }
+              />
+              <RhCheckItem
+                disabled={true}
+                label={"Applicant Asserts the Data Use is for Clinical Care"}
+              />
+              <RhCheckItem
+                disabled={true}
+                label={"Applicant Agrees to Return Derived/Enriched Data"}
+              />
+              <RhCheckItem
+                disabled={true}
+                label={
+                  "Applicant Asserts the Study Involves Method Development (e.g software or algorithms)"
+                }
+              />
+            </RhChecks>
+            <div className="grid grid-cols-2 gap-4">
+              <RhRadios label={"Study Type"}>
+                {ApplicationTypeRadio("Unspecified", "UN")}
+                {ApplicationTypeRadio(
+                  "Population Origins or Ancestry Research Only",
+                  "POA"
+                )}
+                {ApplicationTypeRadio("General Research Use", "GRU")}
+                {ApplicationTypeRadio(
+                  "Health or Medical or Biomedical Research",
+                  "HMB"
+                )}
+                {ApplicationTypeRadio("Disease Specific Research", "DS")}
+              </RhRadios>
+              {applicationCoded.type && applicationCoded.type === "DS" && (
+                <MondoChooser
+                  className="self-end"
+                  label="Disease/Condition(s)"
+                  selected={applicationCoded.diseases}
+                  addToSelected={(c) =>
+                    releasePatchMutate.mutate({
+                      op: "add",
+                      path: "/applicationCoded/diseases",
+                      value: c,
+                    })
+                  }
+                  removeFromSelected={(c) =>
+                    releasePatchMutate.mutate({
+                      op: "remove",
+                      path: "/applicationCoded/diseases",
+                      value: c,
+                    })
+                  }
+                  disabled={false}
                 />
               )}
-              <RhChecks label={"Assertions"}>
-                <RhCheckItem
-                  disabled={true}
-                  checked={true}
-                  label={"Applicant Has Documented Ethics Approval"}
-                />
-                <RhCheckItem
-                  disabled={true}
-                  label={"Applicant Has Agreed to Publish the Results"}
-                />
-                <RhCheckItem
-                  disabled={true}
-                  label={"Applicant Asserts the Study is Non-Commercial"}
-                />
-                <RhCheckItem
-                  disabled={true}
-                  label={
-                    "Applicant Asserts the Organisations Receiving Data are Not-for-Profit"
-                  }
-                />
-                <RhCheckItem
-                  disabled={true}
-                  label={"Applicant Asserts the Data Use is for Clinical Care"}
-                />
-                <RhCheckItem
-                  disabled={true}
-                  label={"Applicant Agrees to Return Derived/Enriched Data"}
-                />
-                <RhCheckItem
-                  disabled={true}
-                  label={
-                    "Applicant Asserts the Study Involves Method Development (e.g software or algorithms)"
-                  }
-                />
-              </RhChecks>
-              <div className="grid grid-cols-2 gap-4">
-                <RhRadios label={"Study Type"}>
-                  {ApplicationTypeRadio("Unspecified", "UN")}
-                  {ApplicationTypeRadio(
-                    "Population Origins or Ancestry Research Only",
-                    "POA"
-                  )}
-                  {ApplicationTypeRadio("General Research Use", "GRU")}
-                  {ApplicationTypeRadio(
-                    "Health or Medical or Biomedical Research",
-                    "HMB"
-                  )}
-                  {ApplicationTypeRadio("Disease Specific Research", "DS")}
-                </RhRadios>
-                {applicationCoded.type && applicationCoded.type === "DS" && (
-                  <MondoChooser
-                    className="self-end"
-                    label="Disease/Condition(s)"
-                    selected={applicationCoded.diseases}
-                    addToSelected={(c) =>
-                      releasePatchMutate.mutate({
-                        op: "add",
-                        path: "/applicationCoded/diseases",
-                        value: c,
-                      })
-                    }
-                    removeFromSelected={(c) =>
-                      releasePatchMutate.mutate({
-                        op: "remove",
-                        path: "/applicationCoded/diseases",
-                        value: c,
-                      })
-                    }
-                    disabled={false}
-                  />
-                )}
-              </div>
+            </div>
 
-              {/* this needs to be converted to a proper ontology search/set like "diseases"
+            {/* this needs to be converted to a proper ontology search/set like "diseases"
               <RhSelect
                 label={"Country of Research"}
                 options={[
@@ -265,44 +264,43 @@ export const ApplicationCodedBox: React.FC<Props> = ({
               />
               */}
 
-              <div>
-                <RhTextArea
-                  label={"Beacon v2 Query"}
-                  className="w-full rounded-md border border-gray-300 font-mono"
-                  rows={15}
-                  defaultValue={JSON.stringify(
-                    applicationCoded.beaconQuery,
-                    null,
-                    2
-                  )}
-                  ref={textAreaRef}
-                  // value={beaconText}
-                  // onChange={(e) => setBeaconText(e.target.value)}
-                  onBlur={(e) =>
-                    releasePatchMutate.mutate({
-                      op: "replace",
-                      path: "/applicationCoded/beacon",
-                      value: JSON.parse(e.target.value),
-                    })
-                  }
-                />
-                <div className="space-x-2 text-right text-xs text-blue-500">
-                  <span className="text-black">examples: </span>
-                  {ExampleBeaconQueryLink("Males", malesQuery)}
-                  {ExampleBeaconQueryLink("Not Males", notMalesQuery)}
-                  {ExampleBeaconQueryLink(
-                    "Males with Variant 0101101111",
-                    malesWithChr1VariantQuery
-                  )}
-                  {ExampleBeaconQueryLink(
-                    "All with Variant 1111111000",
-                    allWithChr2VariantQuery
-                  )}
-                  {ExampleBeaconQueryLink(
-                    "Females with Variant 1100101111",
-                    femalesWithChr20VariantQuery
-                  )}
-                </div>
+            <div>
+              <RhTextArea
+                label={"Beacon v2 Query"}
+                className="w-full rounded-md border border-gray-300 font-mono"
+                rows={15}
+                defaultValue={JSON.stringify(
+                  applicationCoded.beaconQuery,
+                  null,
+                  2
+                )}
+                ref={textAreaRef}
+                // value={beaconText}
+                // onChange={(e) => setBeaconText(e.target.value)}
+                onBlur={(e) =>
+                  releasePatchMutate.mutate({
+                    op: "replace",
+                    path: "/applicationCoded/beacon",
+                    value: JSON.parse(e.target.value),
+                  })
+                }
+              />
+              <div className="space-x-2 text-right text-xs text-blue-500">
+                <span className="text-black">examples: </span>
+                {ExampleBeaconQueryLink("Males", malesQuery)}
+                {ExampleBeaconQueryLink("Not Males", notMalesQuery)}
+                {ExampleBeaconQueryLink(
+                  "Males with Variant 0101101111",
+                  malesWithChr1VariantQuery
+                )}
+                {ExampleBeaconQueryLink(
+                  "All with Variant 1111111000",
+                  allWithChr2VariantQuery
+                )}
+                {ExampleBeaconQueryLink(
+                  "Females with Variant 1100101111",
+                  femalesWithChr20VariantQuery
+                )}
               </div>
             </div>
           </div>
