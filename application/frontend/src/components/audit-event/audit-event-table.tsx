@@ -81,6 +81,7 @@ export const AuditEventTable = ({
   path,
   id,
   pageSize,
+  filterMenu,
 }: AuditEventTableProps): JSX.Element => {
   const [currentPage, setCurrentPage] = useState(1);
   const [currentTotal, setCurrentTotal] = useState(1);
@@ -147,17 +148,19 @@ export const AuditEventTable = ({
       heading={
         <div className="flex items-center	justify-between">
           <div>Audit Logs</div>
-          <div className="flex content-center items-center">
-            <div>
-              <FilterMenu
-                includeEvents={includeEvents}
-                setIncludeEvents={setIncludeEvents}
-                setCurrentPage={setCurrentPage}
-                setCurrentTotal={setCurrentTotal}
-                setUpdateData={setUpdateData}
-              />
+          {filterMenu && (
+            <div className="flex content-center items-center">
+              <div>
+                <FilterMenu
+                  includeEvents={includeEvents}
+                  setIncludeEvents={setIncludeEvents}
+                  setCurrentPage={setCurrentPage}
+                  setCurrentTotal={setCurrentTotal}
+                  setUpdateData={setUpdateData}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       }
       errorMessage={"Something went wrong fetching audit logs."}
