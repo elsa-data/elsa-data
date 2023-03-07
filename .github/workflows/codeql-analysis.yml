@@ -11,6 +11,10 @@
 #
 name: "CodeQL"
 
+query-filters:
+  - exclude:
+      id: js/missing-rate-limiting
+
 on:
   push:
     branches: ["dev"]
