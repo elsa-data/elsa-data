@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import { Box } from "../../../components/boxes";
-import { LayoutBase } from "../../../layouts/layout-base";
 import { CasesBox } from "./cases-box/cases-box";
 import { VerticalTabs } from "../../../components/vertical-tabs";
 import { PresignedUrlForm } from "./presigned-url-form";
@@ -16,8 +15,7 @@ import { BulkBox } from "./bulk-box/bulk-box";
 import { isUndefined } from "lodash";
 import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
-import { MasterAccessControlBox } from "./master-access-control-box";
-import { LogsBox } from "./logs-box/logs-box";
+import { AuditEventTable } from "../../../components/audit-event/audit-event-table";
 import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
@@ -207,7 +205,12 @@ export const ReleasesDetailPage: React.FC = () => {
               TSV Viewer (useful link for demo purposes)
             </a>
 
-            <LogsBox releaseId={releaseId} pageSize={pageSize} />
+            <AuditEventTable
+              path="releases"
+              id={releaseId}
+              filterMenu={false}
+              pageSize={pageSize}
+            />
             <DataAccessSummaryBox releaseId={releaseId} />
           </>
         )}

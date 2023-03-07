@@ -40,7 +40,7 @@ it("test basic operation of file list helper", async () => {
   );
 
   expect(result).not.toBeNull();
-  expect(result).toHaveLength(5);
+  expect(result).toHaveLength(6);
 
   {
     const bartBamArray = result.filter(
@@ -99,7 +99,7 @@ it("test includeReadData of false skips BAMs", async () => {
   );
 
   expect(result).not.toBeNull();
-  expect(result).toHaveLength(2);
+  expect(result).toHaveLength(3);
 
   // we shouldn't find barts BAM
   {

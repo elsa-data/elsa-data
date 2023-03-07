@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { isEmpty, isNil } from "lodash";
+import { capitalize, isEmpty, isNil, lowerCase } from "lodash";
 import {
   createPagedResult,
   PagedResult,
@@ -16,6 +16,10 @@ import {
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import {
+  addUserAuditEventPermissionChange,
+  addUserAuditEventToReleaseQuery,
+} from "../db/audit-log-queries";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
@@ -79,15 +83,50 @@ export class UsersService {
   }
 
   /**
+   * Change a permission property for the User. This also creates an audit event for this change.
+   *
+   * @param user
+   * @param permission
+   * @param value
+   */
+  public async changePermission(
+    user: AuthenticatedUser,
+    permission:
+      | "allowedCreateRelease"
+      | "allowedImportDataset"
+      | "allowedChangeReleaseDataOwner",
+    value: boolean
+  ): Promise<void> {
+    const permissionDescription = capitalize(lowerCase(permission));
+    await e
+      .update(e.permission.User, (u) => ({
+        filter: e.op(e.uuid(user.dbId), "=", u.id),
+        set: {
+          [permission]: value,
+          userAuditEvent: {
+            "+=": addUserAuditEventPermissionChange(
+              user.subjectId,
+              user.displayName,
+              permissionDescription
+            ),
+          },
+        },
+      }))
+      .run(this.edgeDbClient);
+  }
+
+  /**
    * Inserts the user - or update
    * their display name if they do. Sets the 'last login' time of their
    * record to the current time. Note that this function takes into account
    * a secondary table of 'potential' users that may already have some default
    * settings - but who have no yet logged in. This means for instance that a new
-   * user can be created already associated with a release.
+   * user can be created already associated with a release. Creates an audit event
+   * for the login.
    *
    * @param subjectId
    * @param displayName
+   * @param email
    */
   public async upsertUserForLogin(
     subjectId: string,
@@ -132,6 +171,15 @@ export class UsersService {
         releasesToAdd = e.cast(e.uuid, e.set());
       }
 
+      const userAuditEvent = e.insert(e.audit.UserAuditEvent, {
+        whoId: subjectId,
+        whoDisplayName: displayName,
+        occurredDateTime: new Date(),
+        actionCategory: "E",
+        actionDescription: "Login",
+        outcome: 0,
+      });
+
       return await e
         .insert(e.permission.User, {
           subjectId: subjectId,
@@ -141,6 +189,7 @@ export class UsersService {
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),
           })),
+          userAuditEvent: userAuditEvent,
         })
         .unlessConflict((u) => ({
           on: u.subjectId,
@@ -148,6 +197,7 @@ export class UsersService {
             set: {
               displayName: displayName,
               lastLoginDateTime: e.datetime_current(),
+              userAuditEvent: { "+=": userAuditEvent },
             },
           })),
         }))
@@ -173,7 +223,7 @@ export class UsersService {
    * aborts with an exception.
    *
    * @param user
-   * @param releaseId
+   * @param releaseUuid
    * @param role
    */
   public async registerRoleInRelease(
@@ -181,19 +231,57 @@ export class UsersService {
     releaseUuid: string,
     role: ReleaseRoleStrings
   ) {
-    await e
-      .update(e.permission.User, (u) => ({
-        filter: e.op(e.uuid(user.dbId), "=", u.id),
-        set: {
-          releaseParticipant: {
-            "+=": e.select(e.release.Release, (r) => ({
-              filter: e.op(e.uuid(releaseUuid), "=", r.id),
-              "@role": e.str(role),
-            })),
+    await UsersService.addUserToReleaseWithRole(
+      this.edgeDbClient,
+      releaseUuid,
+      user.dbId,
+      role,
+      user.subjectId,
+      user.displayName
+    );
+  }
+
+  /**
+   * Add the user as a participant in a release with the given role.
+   */
+  public static async addUserToReleaseWithRole(
+    client: edgedb.Client,
+    releaseUuid: string,
+    userDbId: string,
+    role: string,
+    whoId: string,
+    whoDisplayName: string
+  ) {
+    await client.transaction(async (tx) => {
+      const release = await e
+        .select(e.release.Release, (r) => ({
+          releaseIdentifier: true,
+          filter_single: { id: r.id },
+        }))
+        .run(tx);
+
+      await e
+        .update(e.permission.User, (u) => ({
+          filter: e.op(e.uuid(userDbId), "=", u.id),
+          set: {
+            releaseParticipant: {
+              "+=": e.select(e.release.Release, (r) => ({
+                filter: e.op(e.uuid(releaseUuid), "=", r.id),
+                "@role": e.str(role),
+              })),
+            },
+            userAuditEvent: {
+              "+=": addUserAuditEventToReleaseQuery(
+                whoId,
+                whoDisplayName,
+                role,
+                release?.releaseIdentifier
+              ),
+            },
           },
-        },
-      }))
-      .run(this.edgeDbClient);
+        }))
+        .run(tx);
+    });
   }
 
   /**

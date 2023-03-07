@@ -77,5 +77,9 @@ module permission {
             on target delete allow;
         }
 
+        multi link userAuditEvent -> audit::UserAuditEvent {
+            # audit events should not be able to be deleted (singly)
+            on target delete restrict;
+        }
     }
 }

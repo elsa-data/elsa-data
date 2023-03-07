@@ -123,6 +123,15 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-rose-500"
                   )}
                 </li>
+                <li className="my-2 mr-6 md:my-0">
+                  {navLink(
+                    "/audit-events",
+                    "Audit Events",
+                    "text-rose-500",
+                    "border-rose-500",
+                    "hover:border-rose-500"
+                  )}
+                </li>
               </ul>
             ) : (
               <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">

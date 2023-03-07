@@ -128,6 +128,14 @@ export async function createTestUser(
       allowedCreateRelease: false,
       allowedImportDataset: false,
       lastLoginDateTime: lastLogin,
+      userAuditEvent: e.insert(e.audit.UserAuditEvent, {
+        whoId: subjectId,
+        whoDisplayName: displayName,
+        occurredDateTime: new Date(),
+        actionCategory: "E",
+        actionDescription: "Login",
+        outcome: 0,
+      }),
     })
     .run(edgeDbClient);
 

@@ -14,10 +14,9 @@ import { format } from "date-fns";
 import {
   singlePotentialUserByEmailQuery,
   singleUserByEmailQuery,
-  singleUserBySubjectIdQuery,
 } from "../../db/user-queries";
-import { generate } from "randomstring";
 import _ from "lodash";
+import { addUserAuditEventToReleaseQuery } from "../../db/audit-log-queries";
 import { getNextReleaseId } from "../../db/release-queries";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
@@ -209,6 +208,10 @@ export class RedcapImportApplicationService {
         );
       }
 
+      const releaseIdentifier = await getNextReleaseId(
+        this.settings.releaseIdPrefix
+      ).run(t);
+
       const newRelease = await e
         .insert(e.release.Release, {
           created: e.datetime_current(),
@@ -272,7 +275,7 @@ ${roleTable.join("\n")}
           isAllowedReadData: false,
           isAllowedVariantData: false,
           isAllowedPhenotypeData: false,
-          releaseIdentifier: getNextReleaseId(this.settings.releaseIdPrefix),
+          releaseIdentifier,
           // for the moment we fix this to a known secret
           releasePassword: "abcd",
           datasetUris: e.literal(
@@ -319,6 +322,14 @@ ${roleTable.join("\n")}
                     filter: e.op(e.uuid(newRelease.id), "=", r.id),
                     "@role": e.str(role),
                   })),
+                },
+                userAuditEvent: {
+                  "+=": addUserAuditEventToReleaseQuery(
+                    dbUser.subjectId,
+                    dbUser.displayName,
+                    role,
+                    releaseIdentifier
+                  ),
                 },
               },
             }))

@@ -1,5 +1,4 @@
 import React from "react";
-import { LayoutBase } from "../../../../layouts/layout-base";
 import DataAccessLogsBox from "./data-access-logs";
 import { ReleasesBreadcrumbsDiv } from "../../releases-breadcrumbs-div";
 import { useParams } from "react-router-dom";

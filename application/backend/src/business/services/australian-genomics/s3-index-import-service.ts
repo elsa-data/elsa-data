@@ -39,6 +39,8 @@ import {
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { AuditLogService } from "../audit-log-service";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -65,7 +67,8 @@ export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,
     @inject("Database") private edgeDbClient: edgedb.Client,
-    private datasetService: DatasetService
+    private datasetService: DatasetService,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   /**
@@ -674,9 +677,12 @@ export class S3IndexApplicationService {
   }
 
   /**
+   * Sync database.
+   *
    * @param datasetUri s3 URI prefix to sync the files
+   * @param user
    */
-  async syncDbFromDatasetUri(datasetUri: string) {
+  async syncDbFromDatasetUri(datasetUri: string, user: AuthenticatedUser) {
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
     )?.id;
@@ -829,7 +835,15 @@ export class S3IndexApplicationService {
       await this.linkPedigreeRelationship(patientIdAndDataCaseIdLinkingArray);
     }
 
+    const now = new Date();
     // Update last update on Dataset
-    await this.datasetService.updateDatasetCurrentTimestamp(datasetId);
+    await this.datasetService.updateDatasetCurrentTimestamp(datasetId, now);
+
+    await this.auditLogService.insertSyncDatasetAuditEvent(
+      this.edgeDbClient,
+      user,
+      datasetUri,
+      now
+    );
   }
 }

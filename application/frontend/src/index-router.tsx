@@ -16,7 +16,6 @@ import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import { ReleasesPage } from "./pages/releases-dashboard/releases-dashboard-page";
 import { ReleasesDetailPage } from "./pages/releases/detail/releases-detail-page";
-import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
 import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
 import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page";
@@ -25,6 +24,8 @@ import { Dropdown } from "flowbite-react";
 import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
+import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
+import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
@@ -164,6 +165,12 @@ export function createRouter(addBypassLoginPage: boolean) {
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
+
+          <Route
+            path={`audit-event/details/:objectId`}
+            element={<AuditEventDetailedPage />}
+          />
+          <Route path={`audit-events`} element={<AuditEventsPage />} />
         </Route>
 
         <Route path="*" element={<NoMatch />} />

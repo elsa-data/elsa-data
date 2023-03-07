@@ -7,8 +7,6 @@ import {
   ReleaseManualSchema,
   ReleaseManualType,
   ReleaseMasterAccessRequestType,
-  ReleasePatchOperationSchema,
-  ReleasePatchOperationType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
   ReleaseSummaryType,
@@ -20,14 +18,12 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../../api-internal-routes";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { container } from "tsyringe";
 import { JobsService } from "../../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
-import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {

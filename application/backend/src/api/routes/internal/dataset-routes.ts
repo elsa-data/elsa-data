@@ -105,11 +105,11 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const body = request.body;
       const datasetUri = body.datasetURI;
-      const elsaSettings: ElsaSettings = (request as any).settings;
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       // TODO: Support more import method accordingly
       // TODO: Some error when datasetUri not found
-      agService.syncDbFromDatasetUri(datasetUri);
+      void agService.syncDbFromDatasetUri(datasetUri, authenticatedUser);
       reply.send(
         "OK! \nTo prevent API timeout, returning the OK while importing might still run in the background. "
       );
