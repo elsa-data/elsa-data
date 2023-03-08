@@ -162,7 +162,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       <div className="container mx-auto w-full grow pt-10 lg:pt-20">
         <div className="mt-8 mb-8 w-full leading-normal text-gray-800">
           <ErrorBoundary rethrowError={(_: any) => false}>
-            <Outlet />
+            <div className="flex flex-col space-y-4">
+              <Outlet />
+            </div>
           </ErrorBoundary>
         </div>
       </div>

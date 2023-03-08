@@ -9,11 +9,17 @@ import { getNextReleaseId } from "../business/db/release-queries";
 
 const edgeDbClient = edgedb.createClient();
 
+export const RELEASE2_RELEASE_IDENTIFIER = "R002";
+export const RELEASE2_APPLICATION_DAC_TITLE =
+  "Genomic Sequencing of Myxococcus Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogochensis";
+export const RELEASE2_APPLICATION_DAC_DETAILS =
+  "Some other details from the DAC";
+
 export async function insertRelease2() {
   return await e
     .insert(e.release.Release, {
-      applicationDacTitle: "A Better Study of Limited Test Data",
-      applicationDacDetails: "Some other details from the DAC",
+      applicationDacTitle: RELEASE2_APPLICATION_DAC_TITLE,
+      applicationDacDetails: RELEASE2_APPLICATION_DAC_DETAILS,
       applicationDacIdentifier: makeSystemlessIdentifier("XYZ"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "HMB",
@@ -27,7 +33,7 @@ export async function insertRelease2() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: "R002",
+      releaseIdentifier: RELEASE2_RELEASE_IDENTIFIER,
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       isAllowedReadData: true,
       isAllowedVariantData: true,

@@ -184,7 +184,7 @@ export async function insertBlankDataset(id: string, uri: string) {
     .insert(e.dataset.Dataset, {
       uri: uri,
       externalIdentifiers: makeSystemlessIdentifierArray(id),
-      description: `Madeup blank dataset ${id}`,
+      description: `${id} Madeup blank dataset`,
       cases: e.set(),
     })
     .run(edgeDbClient);

@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { ReleaseManualType } from "@umccr/elsa-types";
 import { Controller, useForm } from "react-hook-form";
-import { REACT_QUERY_RELEASE_KEYS } from "../../releases/detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../../../components/errors";

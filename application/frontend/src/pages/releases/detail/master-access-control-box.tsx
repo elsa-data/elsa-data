@@ -1,9 +1,9 @@
 import React from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
-import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "./queries";
+import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 
 type Props = {
   releaseId: string;
@@ -28,7 +28,7 @@ export const MasterAccessControlBox: React.FC<Props> = ({
   );
 
   return (
-    <Box heading="Master Access Control" headerFromColour="from-orange-300">
+    <Box heading="Master Access Control">
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv
           heading={"Access"}

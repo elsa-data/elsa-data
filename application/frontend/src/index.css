@@ -4,7 +4,7 @@
 
 html,
 body {
-  @apply h-full;
+  @apply min-h-full;
 }
 
 /* Major cards as displayed down the page */
@@ -14,6 +14,7 @@ body {
 
 /* A button in a table column that just navigates somewhere */
 .btn-table-action-navigate {
+  @apply btn-link btn-xs btn;
 }
 
 /* A button in a table column that does something destructive */

@@ -3,27 +3,19 @@ import {
   UI_PAGE_SIZE_DEFAULT,
   USER_ALLOWED_COOKIE_NAME,
 } from "@umccr/elsa-constants";
-import { Card, Label, Radio } from "flowbite-react";
 import React from "react";
 import { useCookies } from "react-cookie";
-import { LayoutBase } from "../layouts/layout-base";
 
 type Props = {};
 
-function AccountPage({}: Props) {
+export const AccountPage = ({}: Props) => {
   return (
-    <Card>
-      <div>
-        <div className="mb-4 border-b pb-4 text-xl font-semibold">
-          Preference
-        </div>
-        <PageSizeSetting />
-      </div>
-    </Card>
+    <div className="card">
+      <div className="mb-4 border-b pb-4 text-xl font-semibold">Preference</div>
+      <PageSizeSetting />
+    </div>
   );
-}
-
-export default AccountPage;
+};
 
 /**
  * Helper Component
@@ -54,15 +46,15 @@ const PageSizeSetting = () => {
 
         {PAGE_SIZE_OPTIONS.map((n) => (
           <div key={`${n}`} className="flex items-center gap-2">
-            <Radio
+            <input
               id={`page-size-${n}`}
               name="Page Size"
               value={n}
               onChange={() => mutatePageSizeCookie(n)}
               checked={n == pageSize}
-              className="focus:ring-0"
+              className="radio focus:ring-0"
             />
-            <Label htmlFor={`page-size-${n}`}>{`${n}`} items</Label>
+            <label htmlFor={`page-size-${n}`}>{`${n}`} items</label>
           </div>
         ))}
       </fieldset>

@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
-import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
-import { ReleaseTypeLocal } from "../shared-types";
+import {
+  axiosPostArgMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "../../queries";
+import { ReleaseTypeLocal } from "../../shared-types";
 import { RhInput } from "../../../../components/rh/rh-input";
 import { EagerErrorBoundary } from "../../../../components/errors";
 

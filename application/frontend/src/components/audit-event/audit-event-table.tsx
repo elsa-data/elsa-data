@@ -9,7 +9,7 @@ import React, {
 import { AuditEventType, RouteValidation } from "@umccr/elsa-types";
 import axios from "axios";
 import { useQuery, UseQueryResult } from "react-query";
-import { BoxNoPad } from "../boxes";
+import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
 import {
   ColumnSizingHeader,
@@ -144,7 +144,7 @@ export const AuditEventTable = ({
 
   // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
   return (
-    <BoxNoPad
+    <Box
       heading={
         <div className="flex items-center	justify-between">
           <div>Audit Logs</div>
@@ -258,7 +258,7 @@ export const AuditEventTable = ({
           rowWord="Log Entries"
         />
       </div>
-    </BoxNoPad>
+    </Box>
   );
 };
 

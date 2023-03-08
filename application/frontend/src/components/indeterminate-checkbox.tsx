@@ -1,6 +1,15 @@
 import React, { HTMLProps } from "react";
 import classNames from "classnames";
 
+/**
+ * A checkbox that correctly handles an 'indeterminate' React property
+ * and puts the underlying DOM checkbox into that state.
+ *
+ * @param indeterminate whether to set this checkbox to visually be indeterminate
+ * @param className classnames for the checkbox
+ * @param rest an other checkbox properties
+ * @constructor
+ */
 export function IndeterminateCheckbox({
   indeterminate,
   className = "",
@@ -14,12 +23,12 @@ export function IndeterminateCheckbox({
     }
   }, [ref, indeterminate]);
 
-  // if we are disabled we don't want the cursor pointer hover... and we want to be
-  // a bit visually distinctive
-  const cn = classNames(className, {
-    "cursor-pointer": !rest.disabled,
-    "opacity-50": rest.disabled,
-  });
-
-  return <input type="checkbox" ref={ref} className={cn} {...rest} />;
+  return (
+    <input
+      type="checkbox"
+      ref={ref}
+      className={classNames(className, "checkbox", "checkbox-sm")}
+      {...rest}
+    />
+  );
 }

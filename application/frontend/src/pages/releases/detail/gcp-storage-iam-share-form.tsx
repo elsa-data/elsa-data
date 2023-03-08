@@ -2,16 +2,9 @@ import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import {
-  axiosPostArgMutationFn,
-  axiosPostNullMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseQuery,
-} from "./queries";
 import axios from "axios";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import { isUndefined } from "lodash";
-import { Checkbox, Label } from "flowbite-react";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 
 type Props = {
@@ -38,7 +31,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
   const postAclUpdate = (url: string) => (data: { users: string[] }) => {
     setStatus("working");
     return axios
-      .post<void>(url, data)
+      .post<any>(url, data)
       .then((reply) => setStatus({ recordsUpdated: reply.data }))
       .catch((error) =>
         setStatus({ error: error?.response?.data ?? error, isSuccess: false })
@@ -55,15 +48,16 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
 
   const tsvColumnCheck = (field: string) => (
     <div key={field} className="flex items-center gap-2">
-      <Checkbox
+      <input
+        className="checkbox"
         defaultChecked={true}
         name="presignHeader"
         id={`chx-${field}`}
         value={field}
       />
-      <Label className="uppercase" htmlFor={`chx-${field}`}>
+      <label className="uppercase" htmlFor={`chx-${field}`}>
         {field}
-      </Label>
+      </label>
     </div>
   );
 

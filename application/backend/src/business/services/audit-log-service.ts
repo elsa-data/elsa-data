@@ -128,7 +128,7 @@ export class AuditLogService {
     outcome: AuditEventOutcome,
     start: Date,
     end: Date,
-    details: any = {}
+    details?: any
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
@@ -137,7 +137,7 @@ export class AuditLogService {
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
         set: {
           outcome: outcome,
-          details: e.json(details),
+          details: details ? e.json(details) : e.json({}),
           occurredDuration:
             diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)

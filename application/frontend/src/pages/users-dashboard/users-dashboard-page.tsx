@@ -1,5 +1,4 @@
 import React from "react";
-import { LayoutBase } from "../../layouts/layout-base";
 import { ALLOWED_CHANGE_ADMINS } from "@umccr/elsa-constants";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { Box } from "../../components/boxes";
@@ -13,7 +12,7 @@ export const UsersDashboardPage: React.FC = () => {
   const uiAllowed = useUiAllowed();
 
   return (
-    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+    <div className="flex flex-col space-y-4">
       <YouBox />
       <OthersBox pageSize={pageSize} />
       {/* only the super admins can change other admins so they are the only ones to get this box */}

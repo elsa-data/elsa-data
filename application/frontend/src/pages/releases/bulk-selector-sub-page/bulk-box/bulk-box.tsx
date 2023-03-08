@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../../components/boxes";
-import { ReleaseTypeLocal } from "../shared-types";
+import { ReleaseTypeLocal } from "../../shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";
 import {
   HrDiv,
   LeftDiv,
   RightDiv,
 } from "../../../../components/rh/rh-structural";
-import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
+import {
+  axiosPostNullMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "../../queries";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 
@@ -38,7 +41,10 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
   );
 
   return (
-    <Box heading="Bulk">
+    <Box
+      heading="Cohort Constructor"
+      applyIsLockedStyle={!!releaseData.activation}
+    >
       {/*
       The consent sources are not needed until we hook up real Dynamic systems like CTRL
       <ConsentSourcesBox releaseId={releaseId} />
@@ -60,32 +66,30 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
           }
         />
         <RightDiv>
-          <div className="shadow sm:rounded-md">
-            <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
-              <div className="grid grid-cols-3 gap-6">
-                <div className="col-span-3 flex flex-col gap-6">
-                  <div className="flex flex-row space-x-1">
-                    <button
-                      className="btn-normal"
-                      onClick={async () => {
-                        applyAllMutate.mutate(null, {
-                          onSuccess: afterMutateUpdateQueryData,
-                          onError: (error: any) =>
-                            setError({ error, isSuccess: false }),
-                        });
-                      }}
-                      disabled={!isUndefined(releaseData.runningJob)}
-                    >
-                      Apply All
-                    </button>
-                  </div>
-                  {!error.isSuccess && (
-                    <EagerErrorBoundary
-                      error={error.error}
-                      styling={"bg-red-400"}
-                    />
-                  )}
+          <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
+            <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-3 flex flex-col gap-6">
+                <div className="flex flex-row space-x-1">
+                  <button
+                    className="btn-normal"
+                    onClick={async () => {
+                      applyAllMutate.mutate(null, {
+                        onSuccess: afterMutateUpdateQueryData,
+                        onError: (error: any) =>
+                          setError({ error, isSuccess: false }),
+                      });
+                    }}
+                    disabled={!isUndefined(releaseData.runningJob)}
+                  >
+                    Apply All
+                  </button>
                 </div>
+                {!error.isSuccess && (
+                  <EagerErrorBoundary
+                    error={error.error}
+                    styling={"bg-red-400"}
+                  />
+                )}
               </div>
             </div>
           </div>

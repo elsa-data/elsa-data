@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Box } from "../../components/boxes";
-import { LayoutBase } from "../../layouts/layout-base";
 import { VerticalTabs } from "../../components/vertical-tabs";
 import { ReleasesAddReleaseDialog } from "./rems-dac/releases-dashboard-add-release-dialog";
 import { ReleasesManualEntryDialog } from "./manual/releases-dashboard-manual-entry-dialog";
@@ -17,7 +16,7 @@ export const DacImportPage: React.FC = () => {
 
   return (
     <>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
+      <div className="flex flex-row flex-wrap">
         {/* SYNCHRONISE DAC BOX */}
         {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
           <Box

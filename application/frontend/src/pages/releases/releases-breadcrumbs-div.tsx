@@ -1,14 +1,14 @@
 import React from "react";
-import { Dropdown } from "flowbite-react";
 import { NavLink, useMatches } from "react-router-dom";
-import { HiChevronRight } from "react-icons/hi";
+import { HiChevronRight, HiOutlineReply } from "react-icons/hi";
 
-type Props = {
-  releaseId: string;
+export type BreadcrumbDropDownEntry = {
+  to: string;
+  text: string;
 };
 
 /**
- * A breadcrumb specifically for the Release sub pages.
+ * A breadcrumb specifically for the Release sub-pages.
  *
  * NOTE: this is possibly generaliseable for all pages - but until we need a second
  * breadcrumb (datasets?) I have left this specific for Releases.
@@ -16,7 +16,9 @@ type Props = {
  * @param props
  * @constructor
  */
-export const ReleasesBreadcrumbsDiv: React.FC<Props> = (props) => {
+export const ReleasesBreadcrumbsDiv: React.FC<{ releaseId: string }> = (
+  props
+) => {
   const matches = useMatches();
 
   // find all the crumb text from our current matched route
@@ -24,11 +26,13 @@ export const ReleasesBreadcrumbsDiv: React.FC<Props> = (props) => {
     .filter((match: any) => Boolean(match.handle?.crumbText))
     .map((match: any) => match.handle.crumbText);
 
-  // find the last 'dropdownItems' component if present - as we will render that to our final dropdown
-  const finalDropdownItem = matches
-    .filter((match: any) => Boolean(match.handle?.dropdownItems))
-    .map((match: any) => match.handle.dropdownItems())
-    .slice(-1);
+  // find the last 'siblingItems' which has details of our siblings
+  const siblingList = matches
+    .filter((match: any) => Boolean(match.handle?.siblingItems))
+    .map((match: any) => match.handle.siblingItems);
+
+  const finalSiblingItems: BreadcrumbDropDownEntry[] =
+    siblingList.length > 0 ? siblingList.slice(-1)[0] : [];
 
   return (
     <nav
@@ -36,36 +40,37 @@ export const ReleasesBreadcrumbsDiv: React.FC<Props> = (props) => {
       aria-label="Breadcrumb"
     >
       <ol className="mb-3 inline-flex items-center space-x-1 sm:mb-0 md:space-x-3">
-        <li>
-          <div className="flex items-center">
-            <NavLink
-              to="../.."
-              className="ml-1 text-sm font-medium text-blue-600 hover:underline dark:text-blue-500"
-            >
-              Releases
-            </NavLink>
-          </div>
-        </li>
         <li aria-current="page">
           <div className="flex items-center">
-            <HiChevronRight />
+            <HiOutlineReply className="rotate-180" />
             <span className="ml-2 text-sm font-medium text-gray-500">
-              {props.releaseId}
+              {props.releaseId.substring(0, 8).toUpperCase()}
             </span>
           </div>
         </li>
-        {finalDropdownItem && (
+        {finalSiblingItems && (
           <li>
             <div className="flex items-center">
               <HiChevronRight className="mr-2" />
 
-              <Dropdown
-                size="xs"
-                label={crumbsText.slice(-1)}
-                placement="bottom-end"
-              >
-                {finalDropdownItem}
-              </Dropdown>
+              <div tabIndex={0} className="flex flex-wrap space-x-4">
+                {finalSiblingItems.map((f, i) => (
+                  <React.Fragment key={i}>
+                    <NavLink to={f.to} className="link text-sm">
+                      {({ isActive }) => (
+                        <span className={isActive ? "font-bold" : ""}>
+                          {f.text}
+                        </span>
+                      )}
+                    </NavLink>
+                    {i != finalSiblingItems.length - 1 && (
+                      <span key={i + "span"} className="text-sm">
+                        /
+                      </span>
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
           </li>
         )}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import ReactMarkdown from "react-markdown";
 import classNames from "classnames";
 import remarkGfm from "remark-gfm";
@@ -33,54 +33,77 @@ import { useLingui } from "@lingui/react";
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
-  const alertBoxClasses = "border-4 rounded-2xl p-4 text-center mb-2";
+  // a right aligned list of all our datasets and their visualisation colour/box
+  const DatasetList = () => (
+    <ul className="text-right">
+      {Array.from(releaseData.datasetMap.entries()).map(([uri, vis], index) => (
+        <li key={index} className="flex flex-row justify-end align-middle">
+          <span className="mr-6 font-mono">{uri}</span>
+          <span className="h-6 w-6">{vis}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
+  const ActivateDeactivateButtonRow = () => (
+    <div className="flex flex-row space-x-4">
+      <button
+        className="btn-success btn-lg btn"
+        disabled={!!releaseData.activation}
+      >
+        Activate Release
+      </button>
+      <button
+        className="btn-warning btn-lg btn"
+        disabled={!releaseData.activation}
+      >
+        Deactivate Release
+      </button>
+    </div>
+  );
 
   return (
-    <Box heading="Release Information">
+    <Box heading={releaseData.applicationDacTitle}>
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <span className="font-bold">{releaseData.applicationDacTitle}</span>
-          {releaseData.applicationDacDetails && (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={
-                {
-                  // Map `h1` (`# heading`) to use `h2`s.
-                  //h1: ({node, ...props}) => <h1 className="" {...props} />,
-                  // Rewrite `em`s (`*like so*`) to `i` with a red foreground color.
-                  //em: ({node, ...props}) => <i style={{color: 'red'}} {...props} />
-                }
-              }
-              className="prose"
-              children={releaseData.applicationDacDetails}
-            />
-          )}
+        {!!releaseData.activation && (
+          <div className="alert alert-success col-span-2 shadow-lg">
+            <div>
+              <span>Data sharing is activated for this release</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col space-y-2">
+          <ActivateDeactivateButtonRow />
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          {releaseData.activation && (
-            <div className={classNames(alertBoxClasses, "border-green-400")}>
-              <p>This release is activated for data access</p>
-            </div>
-          )}
-          {!releaseData.activation && (
-            <div className={classNames(alertBoxClasses, "border-red-400")}>
-              <p>Data access is currently disabled</p>
-            </div>
-          )}
-          <ul className="text-right">
-            {Array.from(releaseData.datasetMap.entries()).map(
-              ([uri, vis], index) => (
-                <li
-                  key={index}
-                  className="flex flex-row justify-end align-middle"
-                >
-                  <span className="mr-6 font-mono">{uri}</span>
-                  <span className="h-6 w-6">{vis}</span>
-                </li>
-              )
+        <div className="flex flex-col space-y-2">
+          <DatasetList />
+        </div>
+
+        <div className="collapse-arrow rounded-box collapse col-span-2 border border-base-300 bg-base-100">
+          <input type="checkbox" />
+
+          <div className="collapse-compact collapse-title">
+            See details of application
+          </div>
+          <div className="collapse-content">
+            {releaseData.applicationDacDetails && (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={
+                  {
+                    // Map `h1` (`# heading`) to use `h2`s.
+                    //h1: ({node, ...props}) => <h1 className="" {...props} />,
+                    // Rewrite `em`s (`*like so*`) to `i` with a red foreground color.
+                    //em: ({node, ...props}) => <i style={{color: 'red'}} {...props} />
+                  }
+                }
+                className="prose"
+                children={releaseData.applicationDacDetails}
+              />
             )}
-          </ul>
+          </div>
         </div>
       </div>
     </Box>
