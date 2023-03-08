@@ -49,7 +49,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
         offset
       );
 
-      reply.send(allForUser);
+      sendPagedResult(reply, allForUser);
     }
   );
 
@@ -102,6 +102,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
         releaseKey
       );
 
+      // note that participants in *not* paged because there is a natural limit to participants in a release
       return participants.map(
         (r): ReleaseParticipantType => ({
           id: r.id,

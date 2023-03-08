@@ -24,11 +24,7 @@ import {
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
-import {
-  allReleasesSummaryByUserQuery,
-  getNextReleaseKey,
-  touchRelease,
-} from "../db/release-queries";
+import { getNextReleaseId, touchRelease } from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import etag from "etag";
 import {
@@ -43,6 +39,7 @@ import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
+import { releaseGetAllByUser } from "../../../dbschema/queries";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -57,7 +54,7 @@ export class ReleaseService extends ReleaseBaseService {
   /**
    * Return summary information about all the releases that are of interest to the user.
    * For the moment, "interest" is defined as being a participant in the release with
-   * a defined role.
+   * any role.
    *
    * @param user
    * @param limit
@@ -67,26 +64,30 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     limit: number,
     offset: number
-  ): Promise<ReleaseSummaryType[]> {
-    const allReleasesByUser = await allReleasesSummaryByUserQuery.run(
-      this.edgeDbClient,
-      { userDbId: user.dbId, limit: limit, offset: offset }
-    );
+  ): Promise<PagedResult<ReleaseSummaryType>> {
+    const allReleasesByUser = await releaseGetAllByUser(this.edgeDbClient, {
+      userDbId: user.dbId,
+      limit: limit,
+      offset: offset,
+    });
 
     // this shouldn't happen (user doesn't exist?) but if it does return no releases
-    if (allReleasesByUser == null) return [];
+    if (allReleasesByUser == null) return { data: [], total: 0 };
 
-    return allReleasesByUser.releaseParticipant.map((a) => ({
-      id: a.id,
-      datasetUris: a.datasetUris,
-      releaseKey: a.releaseKey,
-      applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
-      applicationDacIdentifierValue: a.applicationDacIdentifier.value,
-      applicationDacTitle: a.applicationDacTitle,
-      isRunningJobPercentDone: undefined,
-      isActivated: a.activation != null,
-      roleInRelease: a["@role"]!,
-    }));
+    return {
+      total: allReleasesByUser.total,
+      data: allReleasesByUser.data.map((a) => ({
+        releaseKey: a.releaseKey,
+        lastUpdatedDateTime: a.lastUpdated,
+        datasetUris: a.datasetUris,
+        applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
+        applicationDacIdentifierValue: a.applicationDacIdentifier.value,
+        applicationDacTitle: a.applicationDacTitle,
+        isRunningJobPercentDone: undefined,
+        isActivated: a.activation != null,
+        roleInRelease: a.role!,
+      })),
+    };
   }
 
   /**
@@ -769,7 +770,7 @@ ${release.applicantEmailAddresses}
         }))
         .run(tx);
 
-      await touchRelease.run(tx, { releaseKey });
+      await touchRelease.run(tx, { releaseKey: releaseKey });
     });
 
     return await this.getBase(releaseKey, userRole);
@@ -824,7 +825,7 @@ ${release.applicantEmailAddresses}
         }))
         .run(tx);
 
-      await touchRelease.run(tx, { releaseKey });
+      await touchRelease.run(tx, { releaseKey: releaseKey });
     });
   }
 
@@ -857,7 +858,7 @@ ${release.applicantEmailAddresses}
         }))
         .run(tx);
 
-      await touchRelease.run(tx, { releaseKey });
+      await touchRelease.run(tx, { releaseKey: releaseKey });
     });
   }
 }

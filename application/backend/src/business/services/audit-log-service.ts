@@ -107,7 +107,7 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseKey });
+    await touchRelease.run(executor, { releaseKey: releaseKey });
 
     return auditEvent.id;
   }
@@ -416,7 +416,7 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseKey });
+    await touchRelease.run(executor, { releaseKey: releaseKey });
   }
 
   public async getReleaseEntries(

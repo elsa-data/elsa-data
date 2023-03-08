@@ -363,6 +363,6 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       }))
       .run(this.edgeDbClient);
 
-    await touchRelease.run(this.edgeDbClient, { releaseKey });
+    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
   }
 }
