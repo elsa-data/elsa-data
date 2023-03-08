@@ -10,12 +10,13 @@ import { CodingSchema } from "./schemas-coding";
 import { StringUnion, TypeDate } from "./typebox-helpers";
 
 export const ReleaseSummarySchema = Type.Object({
-  // the edge db id of this release
-  id: Type.String(),
-
   // the primary public identifier for this release
   releaseIdentifier: Type.String(),
 
+  // the date time of last change to anything in this release
+  lastUpdatedDateTime: TypeDate,
+
+  // details of the DAC this release was created from
   applicationDacIdentifierSystem: Type.String(),
   applicationDacIdentifierValue: Type.String(),
   applicationDacTitle: Type.String(),
