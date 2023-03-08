@@ -233,7 +233,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
             });
 
           // altering the participation of a release counts as a touch
-          await touchRelease.run(tx, { releaseId: releaseId });
+          await touchRelease.run(tx, { releaseIdentifier: releaseId });
 
           // return true if we actually removed someone, false otherwise
           return userRemoved || potentialUserRemoved;

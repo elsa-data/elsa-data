@@ -107,7 +107,7 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseId });
+    await touchRelease.run(executor, { releaseIdentifier: releaseId });
 
     return auditEvent.id;
   }
@@ -416,7 +416,7 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseId });
+    await touchRelease.run(executor, { releaseIdentifier: releaseId });
   }
 
   public async getReleaseEntries(

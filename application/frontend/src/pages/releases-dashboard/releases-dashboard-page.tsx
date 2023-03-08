@@ -11,7 +11,7 @@ import { BoxPaginator } from "../../components/box-paginator";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { usePageSizer } from "../../hooks/page-sizer";
 import classNames from "classnames";
-import { TableFooterPaginator } from "../../components/table-footer-paginator";
+import { formatLocalDateTime } from "../../helpers/datetime-helper";
 
 export const ReleasesDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,86 +42,107 @@ export const ReleasesDashboardPage: React.FC = () => {
         errorMessage={"Something went wrong fetching releases."}
       >
         {query.isLoading && <IsLoadingDiv />}
-        {query.isSuccess && query.data && (
-          <table className="table w-full table-auto">
-            <thead>
-              <tr>
-                <th scope="col">Title / Identifier</th>
-                <th scope="col" className="hidden lg:table-cell">
-                  Source DAC
-                </th>
-                <th scope="col" className="hidden lg:table-cell">
-                  Role (in release)
-                </th>
-                <th scope="col" className="hidden lg:table-cell">
-                  Status
-                </th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {query.data.map((r, idx) => (
-                <tr key={idx}>
-                  {/* titles can be arbitrary length so we need to enable word wrapping */}
-                  <td className="whitespace-normal break-words">
-                    <div>
-                      <div className="font-bold">{r.applicationDacTitle}</div>
-                      <div className="flex flex-row space-x-2 text-sm">
-                        <span className="font-mono opacity-50">
-                          {r.releaseIdentifier}
-                        </span>
-                        {/* a replication of the details in other columns - but we use Tailwind
-                              classes to make them disappear on small screens */}
-                        <span className="opacity-50 lg:hidden">
-                          as {r.roleInRelease}
-                        </span>
-                        {r.isActivated && (
-                          <span className="badge-success badge lg:hidden">
-                            activated
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="hidden lg:table-cell">
-                    <div>
-                      <div className="break-all text-xs">
-                        {r.applicationDacIdentifierSystem}
-                      </div>
-                      <div className="break-all font-mono text-xs opacity-50">
-                        {r.applicationDacIdentifierValue}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="hidden lg:table-cell">{r.roleInRelease}</td>
-                  <td className="hidden lg:table-cell">
-                    {r.isActivated && (
-                      <span className="badge-success badge">activated</span>
-                    )}
-                  </td>
-                  <td className="text-right">
-                    <button
-                      className={classNames("btn-table-action-navigate")}
-                      onClick={async () => {
-                        navigate(`${r.releaseIdentifier}/detail`);
-                      }}
-                    >
-                      view
-                    </button>
-                  </td>
+        {query.isSuccess && query.data && query.data.length === 0 && (
+          <>
+            <p className="prose">
+              This page normally shows any releases that you are involved in.
+              Currently the system thinks you are not involved in any releases -
+              if this is wrong, please contact the project manager or CI/PI of
+              your project and ask them to check that you are listed as a
+              participant of a release.
+            </p>
+            <p className="prose">
+              Until this is corrected there is very little functionality enabled
+              for you.
+            </p>
+          </>
+        )}
+        {query.isSuccess && query.data && query.data.length > 0 && (
+          <>
+            <table className="table table-auto">
+              <thead>
+                <tr>
+                  <th scope="col">Title / Identifier</th>
+                  <th scope="col" className="hidden xl:table-cell">
+                    Source DAC
+                  </th>
+                  <th scope="col" className="hidden xl:table-cell">
+                    Role (in release)
+                  </th>
+                  <th scope="col" className="hidden xl:table-cell">
+                    Last Modified / Status
+                  </th>
+                  <th scope="col">{/* action links */}</th>
                 </tr>
-              ))}
-            </tbody>
-            {/* <tfoot>
-              <TableFooterPaginator
-                currentPage={currentPage}
-                setPage={setCurrentPage}
-                rowCount={currentTotal}
-                itemsPerPage={2}
-                rowWord="releases"
-              />
-            </tfoot> */}
-          </table>
+              </thead>
+              <tbody>
+                {query.data.map((r, idx) => (
+                  <tr key={idx}>
+                    {/* titles can be arbitrary length so we need to enable word wrapping */}
+                    <td className="whitespace-normal break-words">
+                      <div>
+                        <div className="font-bold">{r.applicationDacTitle}</div>
+                        <div className="flex flex-row space-x-2 text-sm">
+                          <span className="font-mono opacity-50">
+                            {r.releaseIdentifier}
+                          </span>
+                          {/* a replication of the details in other columns - but we use Tailwind
+                              classes to make them disappear on small screens */}
+                          <span className="opacity-50 xl:hidden">
+                            as {r.roleInRelease}
+                          </span>
+                          {r.isActivated && (
+                            <span className="badge-success badge xl:hidden">
+                              activated
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="hidden xl:table-cell">
+                      <div>
+                        <div className="break-all text-xs">
+                          {r.applicationDacIdentifierSystem}
+                        </div>
+                        <div className="break-all font-mono text-xs opacity-50">
+                          {r.applicationDacIdentifierValue}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="hidden xl:table-cell">{r.roleInRelease}</td>
+                    <td className="hidden xl:table-cell">
+                      <div>
+                        {formatLocalDateTime(r.lastUpdatedDateTime as string)}
+                      </div>
+
+                      {r.isActivated && (
+                        <div>
+                          <span className="badge-success badge">activated</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-right">
+                      <button
+                        className={classNames("btn-table-action-navigate")}
+                        onClick={async () => {
+                          navigate(`${r.releaseIdentifier}/detail`);
+                        }}
+                      >
+                        view
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <BoxPaginator
+              currentPage={currentPage}
+              setPage={setCurrentPage}
+              rowCount={currentTotal}
+              rowsPerPage={pageSize}
+              rowWord="releases"
+            />
+          </>
         )}
         {query.isError && (
           <EagerErrorBoundary

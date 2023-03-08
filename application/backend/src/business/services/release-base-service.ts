@@ -260,7 +260,7 @@ export abstract class ReleaseBaseService {
         .run(this.edgeDbClient);
     }
 
-    await touchRelease.run(this.edgeDbClient, { releaseId });
+    await touchRelease.run(this.edgeDbClient, { releaseIdentifier: releaseId });
 
     return await this.getBase(releaseId, userRole);
   }
