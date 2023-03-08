@@ -55,7 +55,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
       </button>
       <button
         className="btn-warning btn-lg btn"
-        disabled={!!!releaseData.activation}
+        disabled={!releaseData.activation}
       >
         Deactivate Release
       </button>
