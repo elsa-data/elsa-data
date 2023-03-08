@@ -1,4 +1,5 @@
-#
+# get light details of all the releases that the given user is involved with
+# this query supports paging
 
 with
   # r is the set of all releases that involve $userDbId as a participant
