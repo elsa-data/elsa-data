@@ -24,7 +24,7 @@ import {
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { getNextReleaseId, touchRelease } from "../db/release-queries";
+import { getNextReleaseKey, touchRelease } from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import etag from "etag";
 import {
