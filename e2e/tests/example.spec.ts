@@ -3,12 +3,13 @@ import { test, expect } from "@playwright/test";
 test("homepage has title and links to intro page", async ({ page }) => {
   await page.goto("./");
 
-  // Expect a title "to contain" a substring.
+  // expect the title
   await expect(page).toHaveTitle(/Elsa Data/);
 
-  // create a locator
-  await expect(page.getByText("Releases")).toBeVisible();
+  // because we are not logged in we get some text about showing releases
+  await expect(page.getByText("shows any releases")).toBeVisible();
 
+  // navigate to a different page
   const dacLink = page.getByRole("link", { name: /DAC/ });
 
   await dacLink.click();
