@@ -1,7 +1,11 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insertRelease2 } from "../../src/test-data/insert-test-data-release2";
+import {
+  insertRelease2,
+  RELEASE2_APPLICATION_DAC_TITLE,
+  RELEASE2_RELEASE_IDENTIFIER,
+} from "../../src/test-data/insert-test-data-release2";
 import { insertRelease4 } from "../../src/test-data/insert-test-data-release4";
 import { insertRelease3 } from "../../src/test-data/insert-test-data-release3";
 import { allReleasesSummaryByUserQuery } from "../../src/business/db/release-queries";
@@ -83,8 +87,8 @@ describe("edgedb release queries tests", () => {
     {
       const b = result!.releaseParticipant[1];
 
-      expect(b.releaseIdentifier).toBe("R002");
-      expect(b.applicationDacTitle).toBe("A Better Study of Limited Test Data");
+      expect(b.releaseIdentifier).toBe(RELEASE2_RELEASE_IDENTIFIER);
+      expect(b.applicationDacTitle).toBe(RELEASE2_APPLICATION_DAC_TITLE);
       expect(b["@role"]).toBe("PI");
     }
   });
