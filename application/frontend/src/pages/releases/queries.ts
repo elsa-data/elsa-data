@@ -1,15 +1,19 @@
 import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
-import { doBatchLookup } from "../../../helpers/ontology-helper";
 import { QueryFunctionContext } from "react-query";
 import {
-  CodingType,
   ReleaseDetailType,
   ReleaseParticipantType,
   ReleasePatchOperationType,
 } from "@umccr/elsa-types";
 import { createDatasetMap } from "./dataset-map";
 
+/**
+ * These constants are a pattern that makes sure our react-query 'cache key' is
+ * kept consistent no matter where it is performed.
+ * Example usage is
+ * REACT_QUERY_RELEASE_KEYS.all (cache key for the list of releases)
+ */
 export const REACT_QUERY_RELEASE_KEYS = {
   // methods to create react query keys of varying levels
   all: ["releases"] as const,

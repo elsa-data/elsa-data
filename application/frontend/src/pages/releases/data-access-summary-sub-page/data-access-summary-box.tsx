@@ -1,15 +1,15 @@
 import React from "react";
 import axios from "axios";
 import { useQuery } from "react-query";
-import { Box } from "../../../../components/boxes";
-import { convertCamelCaseToTitle } from "../../../../helpers/utils";
-import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
+import { Box } from "../../../components/boxes";
+import { convertCamelCaseToTitle } from "../../../helpers/utils";
+import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { AuditDataSummaryType } from "@umccr/elsa-types";
 import { BiLinkExternal } from "react-icons/bi";
-import { EagerErrorBoundary } from "../../../../components/errors";
+import { EagerErrorBoundary } from "../../../components/errors";
 import { fileSize } from "humanize-plus";
 
-function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
+export const DataAccessSummaryBox = ({ releaseId }: { releaseId: string }) => {
   const dataAccessQuery = useQuery(
     ["release-data-access-audit", releaseId],
     async () =>
@@ -33,7 +33,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
 
   const BoxHeader = () => (
     <div className="flex justify-between">
-      <div>Data Access Log Summary</div>
+      <div>Data Access Summary</div>
       <a
         className="flex	cursor-pointer rounded-md bg-transparent p-1 normal-case hover:bg-slate-200"
         href={`/releases/${releaseId}/audit-event/data-access`}
@@ -85,9 +85,7 @@ function DataAccessSummaryBox({ releaseId }: { releaseId: string }) {
       )}
     </Box>
   );
-}
-
-export default DataAccessSummaryBox;
+};
 
 /**
  * Helper Component

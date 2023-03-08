@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../../components/boxes";
-import { ReleaseTypeLocal } from "../shared-types";
+import { ReleaseTypeLocal } from "../../shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";
 import {
   HrDiv,
   LeftDiv,
   RightDiv,
 } from "../../../../components/rh/rh-structural";
-import { axiosPostNullMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
+import {
+  axiosPostNullMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "../../queries";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 

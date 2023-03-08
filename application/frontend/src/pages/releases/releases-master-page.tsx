@@ -6,9 +6,9 @@ import {
   axiosPostNullMutationFn,
   REACT_QUERY_RELEASE_KEYS,
   specificReleaseQuery,
-} from "./detail/queries";
+} from "./queries";
 import { isUndefined } from "lodash";
-import { ReleaseTypeLocal } from "./detail/shared-types";
+import { ReleaseTypeLocal } from "./shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../components/errors";
 import { ReleasesBreadcrumbsDiv } from "./releases-breadcrumbs-div";
 import { SkeletonOneDiv } from "../../components/skeleton-one";
@@ -22,6 +22,8 @@ import { ReleasesMasterContextType } from "./releases-types";
  * the release data via Outlet context.
  */
 export const ReleasesMasterPage: React.FC = () => {
+  const REFRESH_JOB_STATUS_MS = 5000;
+
   const { releaseId } = useParams<{ releaseId: string }>();
 
   if (!releaseId)
@@ -54,6 +56,7 @@ export const ReleasesMasterPage: React.FC = () => {
   const cancelMutate = useMutation(
     axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
   );
+
   const isJobRunning: boolean = !isUndefined(releaseQuery?.data?.runningJob);
 
   // *only* when running a job in the background - we want to set up a polling loop of the backend
@@ -66,7 +69,7 @@ export const ReleasesMasterPage: React.FC = () => {
         // as the jobs may affect the entire UI (audit logs, cases etc)
         queryClient.invalidateQueries().then(() => {});
       }
-    }, 5000);
+    }, REFRESH_JOB_STATUS_MS);
     return () => {
       clearInterval(interval);
     };
@@ -74,8 +77,8 @@ export const ReleasesMasterPage: React.FC = () => {
 
   const masterOutletContext: ReleasesMasterContextType = {
     releaseId: releaseId,
-    // note: that whilst we might construct the outlet context here with data being undefined,
-    // in that case we never actually use the context..
+    // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
+    // in that case we never actually use this masterOutletContext..
     releaseData: releaseQuery.data!,
   };
 

@@ -4,7 +4,7 @@ import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { useForm } from "react-hook-form";
 import { isNil } from "lodash";
-import { REACT_QUERY_RELEASE_KEYS } from "../../releases/detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../../../components/errors";

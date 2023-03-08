@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import {
   REACT_QUERY_RELEASE_KEYS,
   specificReleaseParticipantsQuery,
-} from "../detail/queries";
+} from "../queries";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 import { Box } from "../../../components/boxes";
 import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";

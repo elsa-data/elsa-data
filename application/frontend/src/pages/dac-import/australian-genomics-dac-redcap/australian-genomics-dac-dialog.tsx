@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { isNil, isNumber } from "lodash";
-import { REACT_QUERY_RELEASE_KEYS } from "../../releases/detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";

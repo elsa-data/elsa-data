@@ -11,7 +11,7 @@ import { isEmpty, trim } from "lodash";
 import { ConsentPopup } from "./consent-popup";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
-import { axiosPatchOperationMutationFn } from "../queries";
+import { axiosPatchOperationMutationFn } from "../../queries";
 
 type Props = {
   releaseId: string;

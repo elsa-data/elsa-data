@@ -1,4 +1,4 @@
-import { ReleaseTypeLocal } from "./detail/shared-types";
+import { ReleaseTypeLocal } from "./shared-types";
 import { useOutletContext } from "react-router-dom";
 
 /**

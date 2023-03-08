@@ -5,20 +5,17 @@ import {
 } from "@umccr/elsa-constants";
 import React from "react";
 import { useCookies } from "react-cookie";
-import { LayoutBase } from "../layouts/layout-base";
 
 type Props = {};
 
-function AccountPage({}: Props) {
+export const AccountPage = ({}: Props) => {
   return (
     <div className="card">
       <div className="mb-4 border-b pb-4 text-xl font-semibold">Preference</div>
       <PageSizeSetting />
     </div>
   );
-}
-
-export default AccountPage;
+};
 
 /**
  * Helper Component

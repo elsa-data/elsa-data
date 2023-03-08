@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import { AuditDataAccessType } from "@umccr/elsa-types";
 import { useQuery } from "react-query";
-import { Box } from "../../../../components/boxes";
-import { ToolTip } from "../../../../components/tooltip";
-import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
-import { categoryToDescription } from "../../../../components/audit-event/audit-event-table";
+import { Box } from "../../../components/boxes";
+import { ToolTip } from "../../../components/tooltip";
+import { formatLocalDateTime } from "../../../helpers/datetime-helper";
+import { categoryToDescription } from "../../../components/audit-event/audit-event-table";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { isNil } from "lodash";
-import { BoxPaginator } from "../../../../components/box-paginator";
-import { usePageSizer } from "../../../../hooks/page-sizer";
+import { BoxPaginator } from "../../../components/box-paginator";
+import { usePageSizer } from "../../../hooks/page-sizer";
 import { fileSize } from "humanize-plus";
-import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
-import { EagerErrorBoundary } from "../../../../components/errors";
+import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
+import { EagerErrorBoundary } from "../../../components/errors";
 
-function DataAccessLogsBox() {
+export const DataAccessSummaryEntryBox = () => {
   const { releaseId, objectId } = useParams<{
     releaseId: string;
     objectId: string;
@@ -53,7 +53,7 @@ function DataAccessLogsBox() {
   ];
   const BoxHeader = () => (
     <div className="flex items-center	justify-between">
-      <div>Data Access Log Summary</div>
+      <div>Data Access Summary</div>
       <button
         onClick={async () =>
           await axios.post<any>(`/api/releases/${releaseId}/access-log/sync`, {
@@ -147,6 +147,4 @@ function DataAccessLogsBox() {
       />
     </Box>
   );
-}
-
-export default DataAccessLogsBox;
+};

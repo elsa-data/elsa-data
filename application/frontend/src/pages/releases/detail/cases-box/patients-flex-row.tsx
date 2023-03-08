@@ -10,8 +10,8 @@ import { ReleasePatientType } from "@umccr/elsa-types";
 import { useMutation, useQueryClient } from "react-query";
 import classNames from "classnames";
 import { ConsentPopup } from "./consent-popup";
-import { axiosPatchOperationMutationFn } from "../queries";
-import { ReleaseTypeLocal } from "../shared-types";
+import { axiosPatchOperationMutationFn } from "../../queries";
+import { ReleaseTypeLocal } from "../../shared-types";
 
 type Props = {
   releaseId: string;

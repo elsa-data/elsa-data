@@ -8,8 +8,8 @@ import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import {
   axiosPatchOperationMutationFn,
   REACT_QUERY_RELEASE_KEYS,
-} from "../queries";
-import { ReleaseTypeLocal } from "../shared-types";
+} from "../../queries";
+import { ReleaseTypeLocal } from "../../shared-types";
 import { RhTextArea } from "../../../../components/rh/rh-text-area";
 import { RhCheckItem, RhChecks } from "../../../../components/rh/rh-checks";
 import { EagerErrorBoundary } from "../../../../components/errors";

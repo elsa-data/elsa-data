@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 
 type Props = {
   releaseId: string;

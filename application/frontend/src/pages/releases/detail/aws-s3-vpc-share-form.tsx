@@ -7,9 +7,9 @@ import {
   axiosPostNullMutationFn,
   REACT_QUERY_RELEASE_KEYS,
   specificReleaseQuery,
-} from "./queries";
+} from "../queries";
 import axios from "axios";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import { isUndefined } from "lodash";
 
 type Props = {

@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { AuditEventFullType } from "@umccr/elsa-types/schemas-audit";
-import { LayoutBase } from "../../../../layouts/layout-base";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { Box } from "../../../../components/boxes";
@@ -43,23 +42,21 @@ export const AuditEntryPage = (): JSX.Element => {
   }
 
   return (
-    <LayoutBase>
-      <Box
-        heading={`Audit event for ${objectId}`}
-        errorMessage={"Something went wrong audit event."}
-      >
-        <div className="mt-2 flex flex-grow flex-row flex-wrap overflow-auto">
-          {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
-          {query.isError && (
-            <EagerErrorBoundary
-              message={"Something went wrong fetching audit logs."}
-              error={query.error}
-              styling={"bg-red-100"}
-            />
-          )}
-        </div>
-      </Box>
-    </LayoutBase>
+    <Box
+      heading={`Audit event for ${objectId}`}
+      errorMessage={"Something went wrong audit event."}
+    >
+      <div className="mt-2 flex flex-grow flex-row flex-wrap overflow-auto">
+        {query.isSuccess && <AuditEntryBox data={query.data ?? undefined} />}
+        {query.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong fetching audit logs."}
+            error={query.error}
+            styling={"bg-red-100"}
+          />
+        )}
+      </div>
+    </Box>
   );
 };
 

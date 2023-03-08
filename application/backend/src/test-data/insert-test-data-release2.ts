@@ -12,7 +12,8 @@ const edgeDbClient = edgedb.createClient();
 export async function insertRelease2() {
   return await e
     .insert(e.release.Release, {
-      applicationDacTitle: "A Better Study of Limited Test Data",
+      applicationDacTitle:
+        "Genomic Sequencing of Myxococcus Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogochensis",
       applicationDacDetails: "Some other details from the DAC",
       applicationDacIdentifier: makeSystemlessIdentifier("XYZ"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {

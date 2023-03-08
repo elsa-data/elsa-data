@@ -10,12 +10,11 @@ import {
 import "./index.css";
 import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { EagerErrorBoundary } from "./components/errors";
-import AccountPage from "./pages/account-page";
+import { AccountPage } from "./pages/account-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
 import { DacImportPage } from "./pages/dac-import/dac-import-page";
 import { ReleasesDashboardPage } from "./pages/releases-dashboard/releases-dashboard-page";
 import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-sub-page";
-import DataAccessPage from "./pages/releases/detail/logs-box/data-access-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
 import { LayoutBase } from "./layouts/layout-base";
 import { LoginDevPage } from "./pages/login-dev-page";
@@ -28,6 +27,8 @@ import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page
 import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
+import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
+import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -79,21 +80,26 @@ export function createRouter(addBypassLoginPage: boolean) {
       children: <></>,
     },
     {
+      text: "User Management",
+      path: "user-management",
+      element: <ReleasesUserManagementPage />,
+      children: <></>,
+    },
+    {
       text: "Data Access Summary",
       path: "data-access-summary",
       element: <DataAccessSummarySubPage />,
       children: <></>,
     },
-    // TBD Audit Log Page  (
-    //         <>
-    //           <Route path={`:objectId`} element={<AuditEntryPage />} />
-    //         </>
-    //       )
     {
-      text: "User Management",
-      path: "user-management",
-      element: <ReleasesUserManagementPage />,
-      children: <></>,
+      text: "Audit Log",
+      path: "audit-log",
+      element: <AuditLogSubPage />,
+      children: (
+        <>
+          <Route path={`:objectId`} element={<AuditEntryPage />} />
+        </>
+      ),
     },
   ];
 

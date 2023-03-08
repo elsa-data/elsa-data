@@ -2,14 +2,8 @@ import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import {
-  axiosPostArgMutationFn,
-  axiosPostNullMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseQuery,
-} from "./queries";
 import axios from "axios";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 

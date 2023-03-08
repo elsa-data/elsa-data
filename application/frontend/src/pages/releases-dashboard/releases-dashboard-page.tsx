@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import { Box } from "../../components/boxes";
 import { ReleaseSummaryType } from "@umccr/elsa-types";
-import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../releases/queries";
 import { EagerErrorBoundary } from "../../components/errors";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { useNavigate } from "react-router-dom";
@@ -62,14 +62,19 @@ export const ReleasesDashboardPage: React.FC = () => {
             <tbody>
               {query.data.map((r, idx) => (
                 <tr key={idx}>
-                  <td>
+                  {/* titles can be arbitrary length so we need to enable word wrapping */}
+                  <td className="whitespace-normal break-words">
                     <div>
                       <div className="font-bold">{r.applicationDacTitle}</div>
-                      <div className="flex flex-row space-x-2 text-sm opacity-50">
-                        <span className="font-mono">{r.releaseIdentifier}</span>
+                      <div className="flex flex-row space-x-2 text-sm">
+                        <span className="font-mono opacity-50">
+                          {r.releaseIdentifier}
+                        </span>
                         {/* a replication of the details in other columns - but we use Tailwind
                               classes to make them disappear on small screens */}
-                        <span className="lg:hidden">{r.roleInRelease}</span>
+                        <span className="opacity-50 lg:hidden">
+                          as {r.roleInRelease}
+                        </span>
                         {r.isActivated && (
                           <span className="badge-success badge lg:hidden">
                             activated
@@ -91,7 +96,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                   <td className="hidden lg:table-cell">{r.roleInRelease}</td>
                   <td className="hidden lg:table-cell">
                     {r.isActivated && (
-                      <div className="badge-success badge">activated</div>
+                      <span className="badge-success badge">activated</span>
                     )}
                   </td>
                   <td className="text-right">

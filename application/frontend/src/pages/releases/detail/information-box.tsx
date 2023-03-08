@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import ReactMarkdown from "react-markdown";
 import classNames from "classnames";
 import remarkGfm from "remark-gfm";

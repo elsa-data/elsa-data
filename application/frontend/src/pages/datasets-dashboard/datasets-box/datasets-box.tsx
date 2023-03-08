@@ -47,27 +47,18 @@ const warningIcon = (
 const columnProps = [
   {
     columnTitle: "",
-    className: ["w-5"],
   },
   {
-    columnTitle: "Dataset URI",
-  },
-  {
-    columnTitle: "Dataset Description",
-    titleStyle: { minWidth: "200px" },
+    columnTitle: "Description / URI",
   },
   {
     columnTitle: "Last Modified",
-    titleStyle: { minWidth: "200px" },
   },
   {
-    columnTitle: "Artifact Count",
+    columnTitle: "Artifacts",
   },
   {
-    columnTitle: "Artifact Types",
-  },
-  {
-    columnTitle: "Total Size",
+    columnTitle: "",
   },
 ];
 
@@ -149,86 +140,59 @@ export const DatasetsBox: React.FC<Props> = ({ pageSize }) => {
           </div>
         )}
         {dataQuery.data && dataQuery.data.length > 0 && (
-          <table className="w-full table-auto text-left text-sm text-gray-500">
-            <tbody>
-              {/* Column Title */}
+          <table className="table w-full table-auto">
+            <thead>
               <tr>
                 {columnProps.map((props, idx) => (
-                  <td
-                    key={idx}
-                    className={classNames(
-                      baseColumnClasses,
-                      "font-semibold",
-                      "border-b",
-                      props.className
-                    )}
-                    style={props.titleStyle}
-                  >
-                    {props.columnTitle}
-                  </td>
+                  <th key={idx}>{props.columnTitle}</th>
                 ))}
               </tr>
-
+            </thead>
+            <tbody>
               {dataQuery.data.map((row, rowIndex) => {
                 return (
-                  <tr
-                    key={row.id}
-                    className="cursor-pointer border-b hover:bg-gray-50"
-                    onClick={() => navigate(`${row.id}`)}
-                  >
+                  <tr key={row.id}>
                     <td className={classNames(baseColumnClasses, "text-left")}>
                       {!row.isInConfig && warningIcon}
                     </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "w-100",
-                        "font-mono",
-                        "text-left",
-                        "whitespace-nowrap",
-                        "h-full"
-                      )}
-                    >
-                      <div className={`inline-block w-full truncate`}>
-                        {row.uri}
+                    <td className="whitespace-normal break-words">
+                      <div className="font-bold"> {row.description}</div>
+                      <div className="flex flex-row space-x-2 text-sm">
+                        <p className="font-mono opacity-50">{row.uri}</p>
                       </div>
                     </td>
-                    <td className={classNames(baseColumnClasses, "text-left")}>
-                      {row.description}
-                    </td>
+
                     <td className={classNames(baseColumnClasses, "text-left")}>
                       {row.updatedDateTime
                         ? formatLocalDateTime(row.updatedDateTime as string)
                         : ""}
                     </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "text-left",
-                        "w-60"
+                    <td>
+                      {row.summaryArtifactCount > 0 && (
+                        <div>
+                          <div>
+                            {row.summaryArtifactCount}{" "}
+                            {oxford(row.summaryArtifactIncludes.split(" "))}
+                            {" (s)"}
+                          </div>
+                          <div>
+                            totalling{" "}
+                            <span className="font-bold">
+                              {fileSize(row.summaryArtifactSizeBytes)}
+                            </span>
+                          </div>
+                        </div>
                       )}
-                    >
-                      {row.summaryArtifactCount}
                     </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "text-left",
-                        "w-60",
-                        "pr-4"
-                      )}
-                    >
-                      {oxford(row.summaryArtifactIncludes.split(" "))}
-                    </td>
-                    <td
-                      className={classNames(
-                        baseColumnClasses,
-                        "text-left",
-                        "w-60",
-                        "pr-4"
-                      )}
-                    >
-                      {fileSize(row.summaryArtifactSizeBytes)}
+                    <td className="text-right">
+                      <button
+                        className={classNames("btn-table-action-navigate")}
+                        onClick={async () => {
+                          navigate(row.id);
+                        }}
+                      >
+                        view
+                      </button>
                     </td>
                   </tr>
                 );

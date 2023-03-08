@@ -2,13 +2,13 @@ import React from "react";
 import classNames from "classnames";
 import { useMutation, useQueryClient } from "react-query";
 import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import {
   axiosPatchOperationMutationFn,
   REACT_QUERY_RELEASE_KEYS,
-} from "./queries";
+} from "../queries";
 
 type Props = {
   releaseId: string;
