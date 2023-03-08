@@ -13,42 +13,42 @@ import { ReleaseTypeLocal } from "../shared-types";
 import { isUndefined } from "lodash";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
 };
 
 /**
  * A form that enables creation of CloudFormation for VPC sharing.
  *
- * @param releaseId
+ * @param releaseKey
  * @constructor
  */
-export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
+export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
   const queryClient = useQueryClient();
 
   const afterMutateForceRefresh = (result: ReleaseTypeLocal) => {
     return queryClient.invalidateQueries(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId)
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey)
     );
   };
 
   const installCloudFormationMutate = useMutation(
     axiosPostArgMutationFn<{ accounts: string[]; vpcId?: string }>(
-      `/api/releases/${releaseId}/cfn`
+      `/api/releases/${releaseKey}/cfn`
     )
   );
 
   // TODO this doesn't actually delete yet as there is no delete operation
   const deleteCloudFormationMutate = useMutation(
     axiosPostArgMutationFn<{ accounts: string[]; vpcId?: string }>(
-      `/api/releases/${releaseId}/THISISNOTWORKINGYET`
+      `/api/releases/${releaseKey}/THISISNOTWORKINGYET`
     )
   );
 
   const cfnQuery = useQuery({
-    queryKey: REACT_QUERY_RELEASE_KEYS.cfn(releaseId),
+    queryKey: REACT_QUERY_RELEASE_KEYS.cfn(releaseKey),
     queryFn: async () => {
       const cfnData = await axios
-        .get<any>(`/api/releases/${releaseId}/cfn`)
+        .get<any>(`/api/releases/${releaseKey}/cfn`)
         .then((response) => response.data);
 
       return cfnData;
@@ -152,7 +152,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseId }) => {
             form POSTS will be converted natively into a browser file save dialog
              when the POST returned a Content-Disposition header */}
         <form
-          action={`/api/releases/${releaseId}/cfn/manifest`}
+          action={`/api/releases/${releaseKey}/cfn/manifest`}
           method="POST"
           className="flex flex-col gap-4 p-6"
         >

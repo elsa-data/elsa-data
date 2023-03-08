@@ -9,17 +9,17 @@ import { ReleaseTypeLocal } from "../../shared-types";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
 };
 
 /**
  * The virtual cohort box allows the specification of queries / sample ids that can be used for
  * building a virtual cohort (assuming consent has been matched).
  *
- * @param releaseId
+ * @param releaseKey
  * @constructor
  */
-export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
+export const VirtualCohortBox: React.FC<Props> = ({ releaseKey }) => {
   const queryClient = useQueryClient();
 
   const [lastMutateError, setLastMutateError] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
   // we set this as the success function to take advantage of that
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
       result
     );
     setLastMutateError(null);
@@ -41,7 +41,7 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseId }) => {
 
   const ctrlUrlMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseId}/NEEDTODOTHIS`
+      `/api/releases/${releaseKey}/NEEDTODOTHIS`
     )
   );
 

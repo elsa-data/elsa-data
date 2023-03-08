@@ -7,7 +7,7 @@ import { ReleaseService } from "../../src/business/services/release-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
@@ -21,12 +21,12 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
 it("basic add/remove of diseases from coded application", async () => {
   {
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
     expect(r.applicationCoded.diseasesOfStudy.length).toBe(1);
     expect(r.applicationCoded.diseasesOfStudy).toContainEqual({
       system: "mondo",
@@ -36,12 +36,12 @@ it("basic add/remove of diseases from coded application", async () => {
   {
     await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "AA",
       "BB"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.diseasesOfStudy.length).toBe(2);
     expect(r.applicationCoded.diseasesOfStudy).toContainEqual({
@@ -57,19 +57,19 @@ it("basic add/remove of diseases from coded application", async () => {
   {
     await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "AA",
       "CC"
     );
 
     await releaseService.removeDiseaseFromApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "mondo",
       "ABCD"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.diseasesOfStudy.length).toBe(2);
     expect(r.applicationCoded.diseasesOfStudy).toContainEqual({
@@ -85,7 +85,7 @@ it("basic add/remove of diseases from coded application", async () => {
 
 it("basic add/remove of countries from coded application", async () => {
   {
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
     expect(r.applicationCoded.countriesInvolved.length).toBe(1);
     expect(r.applicationCoded.countriesInvolved).toContainEqual({
       system: "iso",
@@ -95,12 +95,12 @@ it("basic add/remove of countries from coded application", async () => {
   {
     await releaseService.addCountryToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "AA",
       "BB"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.countriesInvolved.length).toBe(2);
     expect(r.applicationCoded.countriesInvolved).toContainEqual({
@@ -116,19 +116,19 @@ it("basic add/remove of countries from coded application", async () => {
   {
     await releaseService.addCountryToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "AA",
       "CC"
     );
 
     await releaseService.removeCountryFromApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "iso",
       "AU"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.countriesInvolved.length).toBe(2);
     expect(r.applicationCoded.countriesInvolved).toContainEqual({
@@ -146,12 +146,12 @@ it("set like behaviour of disease/country in coded application", async () => {
   {
     await releaseService.addCountryToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "iso",
       "AU"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.countriesInvolved.length).toBe(1);
     expect(r.applicationCoded.countriesInvolved).toContainEqual({
@@ -163,12 +163,12 @@ it("set like behaviour of disease/country in coded application", async () => {
   {
     await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "mondo",
       "ABCD"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.diseasesOfStudy.length).toBe(1);
     expect(r.applicationCoded.diseasesOfStudy).toContainEqual({
@@ -181,12 +181,12 @@ it("set like behaviour of disease/country in coded application", async () => {
   {
     await releaseService.addDiseaseToApplicationCoded(
       allowedPiUser,
-      testReleaseId,
+      testReleaseKey,
       "mondoNOT",
       "ABCD"
     );
 
-    const r = await findDatabaseRelease(edgeDbClient, testReleaseId);
+    const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
 
     expect(r.applicationCoded.diseasesOfStudy.length).toBe(2);
 

@@ -20,7 +20,7 @@ import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
  * A page allowing the display/editing of users participating in a release.
  */
 export const ReleasesUserManagementPage: React.FC = () => {
-  const { releaseId, releaseData } = useReleasesMasterData();
+  const { releaseKey, releaseData } = useReleasesMasterData();
 
   const [error, setError] = useState<ErrorState>({
     error: null,
@@ -28,7 +28,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   });
 
   const releaseParticipantsQuery = useQuery<ReleaseParticipantType[]>({
-    queryKey: REACT_QUERY_RELEASE_KEYS.participant(releaseId),
+    queryKey: REACT_QUERY_RELEASE_KEYS.participant(releaseKey),
     queryFn: specificReleaseParticipantsQuery,
     onError: (error: any) => setError({ error, isSuccess: false }),
     onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
@@ -38,13 +38,13 @@ export const ReleasesUserManagementPage: React.FC = () => {
 
   const afterMutateForceRefresh = () => {
     return queryClient.invalidateQueries(
-      REACT_QUERY_RELEASE_KEYS.participant(releaseId)
+      REACT_QUERY_RELEASE_KEYS.participant(releaseKey)
     );
   };
 
   const addUserMutate = useMutation(
     (c: { newUserEmail: string; newUserRole: "PI" | "Member" }) =>
-      axios.post<void>(`/api/releases/${releaseId}/participants`, {
+      axios.post<void>(`/api/releases/${releaseKey}/participants`, {
         email: c.newUserEmail,
         role: c.newUserRole,
       }),
@@ -54,7 +54,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const removeUserMutate = useMutation(
     (participantId: string) =>
       axios.delete<void>(
-        `/api/releases/${releaseId}/participants/${participantId}`
+        `/api/releases/${releaseKey}/participants/${participantId}`
       ),
     { onSuccess: afterMutateForceRefresh }
   );

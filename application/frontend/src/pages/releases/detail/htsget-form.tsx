@@ -4,7 +4,7 @@ import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
 import { ReleaseTypeLocal } from "../shared-types";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
@@ -12,17 +12,20 @@ type Props = {
  * A form that displays details of accessing the data via htsget, assuming
  * that has been enabled.
  *
- * @param releaseId
+ * @param releaseKey
  * @param releaseData
  * @constructor
  */
-export const HtsgetForm: React.FC<Props> = ({ releaseId, releaseData }) => {
+export const HtsgetForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
   return (
     <>
       {/* we use a POST form action here (rather than a onSubmit handler) because
             form POSTS can be converted natively into a browser file save dialog
              i.e. if the POST returned a Content-Disposition header */}
-      <form action={`/api/releases/${releaseId}/htsget-manifest`} method="POST">
+      <form
+        action={`/api/releases/${releaseKey}/htsget-manifest`}
+        method="POST"
+      >
         <div className="flex flex-col gap-6">
           <article className="prose">
             <p>

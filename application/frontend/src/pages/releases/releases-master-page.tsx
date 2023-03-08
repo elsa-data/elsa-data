@@ -24,11 +24,11 @@ import { ReleasesMasterContextType } from "./releases-types";
 export const ReleasesMasterPage: React.FC = () => {
   const REFRESH_JOB_STATUS_MS = 5000;
 
-  const { releaseId } = useParams<{ releaseId: string }>();
+  const { releaseKey } = useParams<{ releaseKey: string }>();
 
-  if (!releaseId)
+  if (!releaseKey)
     throw new Error(
-      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseId param`
+      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`
     );
 
   const [error, setError] = useState<ErrorState>({
@@ -39,7 +39,7 @@ export const ReleasesMasterPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const releaseQuery = useQuery<ReleaseTypeLocal>({
-    queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+    queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
     queryFn: specificReleaseQuery,
     onError: (error: any) => setError({ error, isSuccess: false }),
     onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
@@ -47,14 +47,14 @@ export const ReleasesMasterPage: React.FC = () => {
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
       result
     );
     setError({ error: null, isSuccess: true });
   };
 
   const cancelMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
+    axiosPostNullMutationFn(`/api/releases/${releaseKey}/jobs/cancel`)
   );
 
   const isJobRunning: boolean = !isUndefined(releaseQuery?.data?.runningJob);
@@ -76,7 +76,7 @@ export const ReleasesMasterPage: React.FC = () => {
   }, [releaseQuery?.data?.runningJob]);
 
   const masterOutletContext: ReleasesMasterContextType = {
-    releaseId: releaseId,
+    releaseKey: releaseKey,
     // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
     // in that case we never actually use this masterOutletContext..
     releaseData: releaseQuery.data!,
@@ -85,7 +85,7 @@ export const ReleasesMasterPage: React.FC = () => {
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
-        <ReleasesBreadcrumbsDiv releaseId={releaseId} />
+        <ReleasesBreadcrumbsDiv releaseKey={releaseKey} />
 
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
           <Box heading="Background Job">

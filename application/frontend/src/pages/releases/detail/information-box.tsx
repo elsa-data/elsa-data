@@ -6,7 +6,7 @@ import classNames from "classnames";
 import remarkGfm from "remark-gfm";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
@@ -29,10 +29,13 @@ import { useLingui } from "@lingui/react";
  * Displays summary/important information about a release.
  *
  * @param releaseData
- * @param releaseId
+ * @param releaseKey
  * @constructor
  */
-export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
+export const InformationBox: React.FC<Props> = ({
+  releaseData,
+  releaseKey,
+}) => {
   // a right aligned list of all our datasets and their visualisation colour/box
   const DatasetList = () => (
     <ul className="text-right">

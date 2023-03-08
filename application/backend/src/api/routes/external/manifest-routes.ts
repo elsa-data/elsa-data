@@ -14,15 +14,15 @@ export const manifestRoutes = async (
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
   // TODO need clarity on what release id is used here - the EdgeDb one or the release identifier?
-  fastify.get<{ Params: { releaseId: string }; Reply: ManifestType }>(
-    "/manifest/:releaseId",
+  fastify.get<{ Params: { releaseKey: string }; Reply: ManifestType }>(
+    "/manifest/:releaseKey",
     {},
     async function (request, reply) {
-      const releaseId = request.params.releaseId;
+      const releaseKey = request.params.releaseKey;
 
-      console.log(releaseId);
+      console.log(releaseKey);
 
-      const manifest = await manifestService.getActiveManifest(releaseId);
+      const manifest = await manifestService.getActiveManifest(releaseKey);
 
       // whether it be lack of permissions, or bad release id, or non active release - we return 404 Not Found
       // if we have nothing correct to send

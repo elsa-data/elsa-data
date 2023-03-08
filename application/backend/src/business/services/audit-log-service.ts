@@ -25,7 +25,7 @@ import {
   pageableAuditEventsQuery,
   pageableAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForSystemQuery,
-  selectDataAccessAuditEventByReleaseIdQuery,
+  selectDataAccessAuditEventByReleaseKeyQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
@@ -67,7 +67,7 @@ export class AuditLogService {
    *
    * @param executor the EdgeDb execution context (either client or transaction)
    * @param user
-   * @param releaseId
+   * @param releaseKey
    * @param actionCategory
    * @param actionDescription
    * @param start
@@ -75,7 +75,7 @@ export class AuditLogService {
   public async startReleaseAuditEvent(
     executor: Executor,
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date()
@@ -96,7 +96,7 @@ export class AuditLogService {
     // the id of the newly inserted event (instead we can only get the release id)
     await e
       .update(e.release.Release, (r) => ({
-        filter: e.op(releaseId, "=", r.releaseIdentifier),
+        filter: e.op(releaseKey, "=", r.releaseKey),
         set: {
           releaseAuditLog: {
             "+=": e.select(e.audit.ReleaseAuditEvent, (ae) => ({
@@ -107,7 +107,7 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseId });
+    await touchRelease.run(executor, { releaseKey });
 
     return auditEvent.id;
   }
@@ -371,7 +371,7 @@ export class AuditLogService {
    */
   public async updateDataAccessAuditEvent({
     executor,
-    releaseId,
+    releaseKey,
     whoId,
     whoDisplayName,
     fileUrl,
@@ -380,7 +380,7 @@ export class AuditLogService {
     date,
   }: {
     executor: Executor;
-    releaseId: string;
+    releaseKey: string;
     whoId: string;
     whoDisplayName: string;
     fileUrl: string;
@@ -398,7 +398,7 @@ export class AuditLogService {
 
     await e
       .update(e.release.Release, (r) => ({
-        filter: e.op(r.releaseIdentifier, "=", releaseId),
+        filter: e.op(r.releaseKey, "=", releaseKey),
         set: {
           dataAccessAuditLog: {
             "+=": e.insert(e.audit.DataAccessAuditEvent, {
@@ -416,13 +416,13 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseId });
+    await touchRelease.run(executor, { releaseKey });
   }
 
   public async getReleaseEntries(
     executor: Executor,
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     limit: number,
     offset: number,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
@@ -430,11 +430,11 @@ export class AuditLogService {
   ): Promise<PagedResult<AuditEventType> | null> {
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
-      { releaseId }
+      { releaseKey }
     );
 
     const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
-      releaseId,
+      releaseKey,
       limit,
       offset,
       orderByProperty,
@@ -442,7 +442,7 @@ export class AuditLogService {
     ).run(executor);
 
     console.log(
-      `${AuditLogService.name}.getEntries(releaseId=${releaseId}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditLogService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(
@@ -605,10 +605,10 @@ export class AuditLogService {
     }
   }
 
-  public async getDataAccessAuditByReleaseId(
+  public async getDataAccessAuditByReleaseKey(
     executor: Executor,
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     limit: number,
     offset: number,
     orderByProperty:
@@ -619,16 +619,17 @@ export class AuditLogService {
   ): Promise<PagedResult<AuditDataAccessType> | null> {
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
       executor,
-      { releaseId }
+      { releaseKey }
     );
 
-    const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
-      releaseId,
-      limit,
-      offset,
-      orderByProperty,
-      orderAscending
-    ).run(executor);
+    const dataAccessLogArray =
+      await selectDataAccessAuditEventByReleaseKeyQuery(
+        releaseKey,
+        limit,
+        offset,
+        orderByProperty,
+        orderAscending
+      ).run(executor);
 
     return createPagedResult(
       dataAccessLogArray.map((entry) => ({
@@ -660,25 +661,26 @@ export class AuditLogService {
     return 0;
   }
 
-  public async getSummaryDataAccessAuditByReleaseId(
+  public async getSummaryDataAccessAuditByReleaseKey(
     executor: Executor,
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<AuditDataSummaryType[] | null> {
     // TODO: Make this paginate
 
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
       executor,
-      { releaseId }
+      { releaseKey }
     );
 
-    const dataAccessLogArray = await selectDataAccessAuditEventByReleaseIdQuery(
-      releaseId,
-      totalEntries,
-      0,
-      "occurredDateTime",
-      false
-    ).run(executor);
+    const dataAccessLogArray =
+      await selectDataAccessAuditEventByReleaseKeyQuery(
+        releaseKey,
+        totalEntries,
+        0,
+        "occurredDateTime",
+        false
+      ).run(executor);
 
     if (!dataAccessLogArray) return null;
 

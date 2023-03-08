@@ -16,7 +16,7 @@ export type BreadcrumbDropDownEntry = {
  * @param props
  * @constructor
  */
-export const ReleasesBreadcrumbsDiv: React.FC<{ releaseId: string }> = (
+export const ReleasesBreadcrumbsDiv: React.FC<{ releaseKey: string }> = (
   props
 ) => {
   const matches = useMatches();
@@ -44,7 +44,7 @@ export const ReleasesBreadcrumbsDiv: React.FC<{ releaseId: string }> = (
           <div className="flex items-center">
             <HiOutlineReply className="rotate-180" />
             <span className="ml-2 text-sm font-medium text-gray-500">
-              {props.releaseId.substring(0, 8).toUpperCase()}
+              {props.releaseKey.substring(0, 8).toUpperCase()}
             </span>
           </div>
         </li>

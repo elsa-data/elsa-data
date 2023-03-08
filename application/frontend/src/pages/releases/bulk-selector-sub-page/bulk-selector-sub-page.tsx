@@ -3,11 +3,11 @@ import { useReleasesMasterData } from "../releases-types";
 import { BulkBox } from "./bulk-box/bulk-box";
 
 export const BulkSelectorSubPage = () => {
-  const { releaseId, releaseData } = useReleasesMasterData();
+  const { releaseKey, releaseData } = useReleasesMasterData();
 
   return (
     <>
-      <BulkBox releaseId={releaseId} releaseData={releaseData} />
+      <BulkBox releaseKey={releaseKey} releaseData={releaseData} />
     </>
   );
 };

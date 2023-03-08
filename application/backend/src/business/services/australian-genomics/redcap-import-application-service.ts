@@ -17,7 +17,7 @@ import {
 } from "../../db/user-queries";
 import _ from "lodash";
 import { addUserAuditEventToReleaseQuery } from "../../db/audit-log-queries";
-import { getNextReleaseId } from "../../db/release-queries";
+import { getNextReleaseKey } from "../../db/release-queries";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -55,7 +55,7 @@ export class RedcapImportApplicationService {
   ): Promise<AustraliaGenomicsDacRedcap[]> {
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers FOR OUR UNIQUE AG SYSTEM
-    const currentReleaseIdentifiers = new Set<string>(
+    const currentReleaseKeys = new Set<string>(
       await e
         .select(e.release.Release, (r) => ({
           applicationDacIdentifier: true,
@@ -67,7 +67,7 @@ export class RedcapImportApplicationService {
     const results: AustraliaGenomicsDacRedcap[] = [];
 
     for (const possibleApplication of csvAsJson || []) {
-      if (!currentReleaseIdentifiers.has(possibleApplication.daf_num)) {
+      if (!currentReleaseKeys.has(possibleApplication.daf_num)) {
         results.push(possibleApplication);
       }
     }
@@ -208,8 +208,8 @@ export class RedcapImportApplicationService {
         );
       }
 
-      const releaseIdentifier = await getNextReleaseId(
-        this.settings.releaseIdPrefix
+      const releaseKey = await getNextReleaseKey(
+        this.settings.releaseKeyPrefix
       ).run(t);
 
       const newRelease = await e
@@ -275,7 +275,7 @@ ${roleTable.join("\n")}
           isAllowedReadData: false,
           isAllowedVariantData: false,
           isAllowedPhenotypeData: false,
-          releaseIdentifier,
+          releaseKey,
           // for the moment we fix this to a known secret
           releasePassword: "abcd",
           datasetUris: e.literal(
@@ -328,7 +328,7 @@ ${roleTable.join("\n")}
                     dbUser.subjectId,
                     dbUser.displayName,
                     role,
-                    releaseIdentifier
+                    releaseKey
                   ),
                 },
               },

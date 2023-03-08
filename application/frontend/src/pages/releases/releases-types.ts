@@ -6,7 +6,7 @@ import { useOutletContext } from "react-router-dom";
  * page down into any sub-pages.
  */
 export type ReleasesMasterContextType = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 

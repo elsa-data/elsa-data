@@ -4,7 +4,7 @@ import { registerTypes } from "./setup";
 import { RemsService } from "../../src/business/services/rems-service";
 
 let remsService: RemsService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
@@ -17,7 +17,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
 

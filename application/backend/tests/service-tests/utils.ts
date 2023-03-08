@@ -7,20 +7,20 @@ import {
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
 
-export async function findDatabaseRelease(client: Client, releaseId: string) {
+export async function findDatabaseRelease(client: Client, releaseKey: string) {
   const res = await e
     .select(e.release.Release, (r) => ({
       ...e.release.Release["*"],
       applicationCoded: {
         ...e.release.ApplicationCoded["*"],
       },
-      filter: e.op(r.releaseIdentifier, "=", releaseId),
+      filter: e.op(r.releaseKey, "=", releaseKey),
     }))
     .assert_single()
     .run(client);
 
   if (res) return res;
-  else throw new Error(`Release id ${releaseId} does not exist in database`);
+  else throw new Error(`Release id ${releaseKey} does not exist in database`);
 }
 
 /**

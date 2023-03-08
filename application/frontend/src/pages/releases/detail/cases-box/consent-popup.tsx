@@ -6,7 +6,7 @@ import Popup from "reactjs-popup";
 import ConsentSummary from "./consent-summary";
 
 type Props = {
-  releaseId?: string;
+  releaseKey?: string;
   nodeId?: string;
   consentId?: string;
 };
@@ -15,7 +15,7 @@ type Props = {
  * The consent popup is a delayed effect popup that can show details of consent
  * for any node.
  *
- * @param releaseId
+ * @param releaseKey
  * @param nodeId
  * @constructor
  */

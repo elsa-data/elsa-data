@@ -14,7 +14,7 @@ export const ReleaseSummarySchema = Type.Object({
   id: Type.String(),
 
   // the primary public identifier for this release
-  releaseIdentifier: Type.String(),
+  releaseKey: Type.String(),
 
   applicationDacIdentifierSystem: Type.String(),
   applicationDacIdentifierValue: Type.String(),

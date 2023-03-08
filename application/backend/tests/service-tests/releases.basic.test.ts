@@ -7,7 +7,7 @@ import { Client } from "edgedb";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
 
@@ -29,7 +29,7 @@ beforeEach(async () => {
  *
  */
 it("allowed users can get release data", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseId);
+  const result = await releaseService.get(allowedPiUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -40,12 +40,12 @@ it("allowed users can get release data", async () => {
  */
 it("not allowed users cannot get release data", async () => {
   await expect(async () => {
-    const result = await releaseService.get(notAllowedUser, testReleaseId);
+    const result = await releaseService.get(notAllowedUser, testReleaseKey);
   }).rejects.toThrow(Error);
 });
 
 it("basic release data is present for PI", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseId);
+  const result = await releaseService.get(allowedPiUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -60,7 +60,7 @@ it("basic release data is present for PI", async () => {
 });
 
 it("basic release data is present for data owner", async () => {
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
+  const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);

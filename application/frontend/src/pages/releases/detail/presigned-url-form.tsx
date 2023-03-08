@@ -3,7 +3,7 @@ import { FileRecordHeaderType } from "@umccr/elsa-types";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: any;
 };
 
@@ -24,12 +24,12 @@ const FILE_RECORD_HEADER: FileRecordHeaderType[] = [
  * A form that is used to ask for presigned URLS from an object store like AWS
  * S3 or GCP CS.
  *
- * @param releaseId the id of the release
+ * @param releaseKey the id of the release
  * @param releaseData the backend release information
  * @constructor
  */
 export const PresignedUrlForm: React.FC<Props> = ({
-  releaseId,
+  releaseKey,
   releaseData,
 }) => {
   const displayPassword = releaseData.downloadPassword ?? "(ask PI)";
@@ -58,7 +58,7 @@ export const PresignedUrlForm: React.FC<Props> = ({
             form POSTS can be converted natively into a browser file save dialog
              i.e. if the POST returned a Content-Disposition header */}
       <form
-        action={`/api/releases/${releaseId}/presigned`}
+        action={`/api/releases/${releaseKey}/presigned`}
         method="POST"
         className="p-6"
       >

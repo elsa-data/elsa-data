@@ -11,8 +11,8 @@ import { arduinoLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
  * The audit event page shows a full audit entry event as a JSON.
  */
 export const AuditEntryPage = (): JSX.Element => {
-  const { releaseId, objectId } = useParams<{
-    releaseId: string;
+  const { releaseKey, objectId } = useParams<{
+    releaseKey: string;
     objectId: string;
   }>();
 
@@ -21,20 +21,20 @@ export const AuditEntryPage = (): JSX.Element => {
     async () => {
       return await axios
         .get<AuditEventFullType | null>(
-          `/api/releases/${releaseId}/audit-log/${objectId}`
+          `/api/releases/${releaseKey}/audit-log/${objectId}`
         )
         .then((response) => response.data);
     },
     { keepPreviousData: true, enabled: !!objectId }
   );
 
-  if (!releaseId || !objectId) {
+  if (!releaseKey || !objectId) {
     return (
       <EagerErrorBoundary
         message={
           <div>
             Error: this component should not be rendered outside a route with a
-            <code>releaseId</code> or <code>objectId</code> param
+            <code>releaseKey</code> or <code>objectId</code> param
           </div>
         }
       />

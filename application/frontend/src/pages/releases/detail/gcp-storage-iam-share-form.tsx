@@ -8,7 +8,7 @@ import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
 };
 
 type SuccessState = {
@@ -18,10 +18,10 @@ type SuccessState = {
 /**
  * A form that adds IAM permissions to objects in a GCP Storage bucket
  *
- * @param releaseId
+ * @param releaseKey
  * @constructor
  */
-export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
+export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
   const queryClient = useQueryClient();
 
   const [status, setStatus] = useState<
@@ -39,11 +39,11 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
   };
 
   const addAclUsersMutate = useMutation(
-    postAclUpdate(`/api/releases/${releaseId}/gcp-storage/acls/add`)
+    postAclUpdate(`/api/releases/${releaseKey}/gcp-storage/acls/add`)
   );
 
   const removeAclUsersMutate = useMutation(
-    postAclUpdate(`/api/releases/${releaseId}/gcp-storage/acls/remove`)
+    postAclUpdate(`/api/releases/${releaseKey}/gcp-storage/acls/remove`)
   );
 
   const tsvColumnCheck = (field: string) => (
@@ -140,7 +140,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseId }) => {
             form POSTS will be converted natively into a browser file save dialog
              when the POST returned a Content-Disposition header */}
         <form
-          action={`/api/releases/${releaseId}/gcp-storage/manifest`}
+          action={`/api/releases/${releaseKey}/gcp-storage/manifest`}
           method="POST"
           className="flex flex-col gap-4 p-6"
         >

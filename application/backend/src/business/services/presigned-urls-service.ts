@@ -14,7 +14,7 @@ import { getAllFileRecords } from "./_release-file-list-helper";
 export interface IPresignedUrlProvider {
   isEnabled: boolean;
   protocol: string;
-  presign(releaseId: string, bucket: string, key: string): Promise<string>;
+  presign(releaseKey: string, bucket: string, key: string): Promise<string>;
 }
 
 @injectable()
@@ -35,13 +35,13 @@ export class PresignedUrlsService {
   }
 
   private async presign(
-    releaseId: string,
+    releaseKey: string,
     protocol: string,
     bucket: string,
     key: string
   ): Promise<string> {
     for (const p of this.presignedUrlsServices)
-      if (protocol === p.protocol) return p.presign(releaseId, bucket, key);
+      if (protocol === p.protocol) return p.presign(releaseKey, bucket, key);
 
     throw new Error(`Unhandled protocol ${protocol}`);
   }
@@ -51,19 +51,19 @@ export class PresignedUrlsService {
    * that is the zip of a manifest TSV that holds presigned URLs for the files.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    * @param presignHeader the CSV headers to include in the output
    */
   public async getPresigned(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     presignHeader: string[]
   ): Promise<any> {
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,
       user,
-      releaseId,
+      releaseKey,
       "E",
       "Created Presigned Zip",
       now
@@ -73,7 +73,7 @@ export class PresignedUrlsService {
       this.edgeDbClient,
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     // fill in the actual signed urls
@@ -81,7 +81,7 @@ export class PresignedUrlsService {
       try {
         af.objectStoreSigned = af.objectStoreUrl
           ? await this.presign(
-              releaseId,
+              releaseKey,
               af.objectStoreProtocol,
               af.objectStoreBucket,
               af.objectStoreKey
@@ -123,13 +123,13 @@ export class PresignedUrlsService {
     const readableStream = Readable.from(allFiles);
     const buf = await streamConsumers.text(readableStream.pipe(stringifier));
 
-    const password = await this.releaseService.getPassword(user, releaseId);
+    const password = await this.releaseService.getPassword(user, releaseKey);
     const counter = await this.releaseService.getIncrementingCounter(
       user,
-      releaseId
+      releaseKey
     );
 
-    const filename = `release-${releaseId.replaceAll("-", "")}-${counter}.zip`;
+    const filename = `release-${releaseKey.replaceAll("-", "")}-${counter}.zip`;
 
     // create archive and specify method of encryption and password
     let archive = archiver.create("zip-encrypted", {
@@ -164,7 +164,7 @@ export class PresignedUrlsService {
     for (const file of allFiles.slice(0, -1)) {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseId: releaseId,
+        releaseKey: releaseKey,
         whoId: ipAddress,
         whoDisplayName: ipLocation,
         fileUrl: file.objectStoreUrl,
@@ -177,7 +177,7 @@ export class PresignedUrlsService {
     // Insert first record twice to show multiple-download in UI
     await this.auditLogService.updateDataAccessAuditEvent({
       executor: this.edgeDbClient,
-      releaseId: releaseId,
+      releaseKey: releaseKey,
       whoId: ipAddress,
       whoDisplayName: ipLocation,
       fileUrl: allFiles[0].objectStoreUrl,
@@ -191,7 +191,7 @@ export class PresignedUrlsService {
     if (lastFile) {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseId: releaseId,
+        releaseKey: releaseKey,
         whoId: ipAddress,
         whoDisplayName: ipLocation,
         fileUrl: lastFile.objectStoreUrl,

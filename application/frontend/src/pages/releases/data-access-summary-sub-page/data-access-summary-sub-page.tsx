@@ -3,11 +3,11 @@ import { DataAccessSummaryBox } from "./data-access-summary-box";
 import { useReleasesMasterData } from "../releases-types";
 
 export const DataAccessSummarySubPage = () => {
-  const { releaseId, releaseData } = useReleasesMasterData();
+  const { releaseKey, releaseData } = useReleasesMasterData();
 
   return (
     <>
-      <DataAccessSummaryBox releaseId={releaseId} />
+      <DataAccessSummaryBox releaseKey={releaseKey} />
     </>
   );
 };

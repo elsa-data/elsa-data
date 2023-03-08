@@ -79,7 +79,7 @@ describe("edgedb release queries tests", () => {
     {
       const a = result!.releaseParticipant[0];
 
-      expect(a.releaseIdentifier).toBe("R003");
+      expect(a.releaseKey).toBe("R003");
       expect(a.applicationDacTitle).toBe("An Invisible Study");
       expect(a["@role"]).toBe("DataOwner");
     }
@@ -87,7 +87,7 @@ describe("edgedb release queries tests", () => {
     {
       const b = result!.releaseParticipant[1];
 
-      expect(b.releaseIdentifier).toBe(RELEASE2_RELEASE_IDENTIFIER);
+      expect(b.releaseKey).toBe(RELEASE2_RELEASE_IDENTIFIER);
       expect(b.applicationDacTitle).toBe(RELEASE2_APPLICATION_DAC_TITLE);
       expect(b["@role"]).toBe("PI");
     }
@@ -147,7 +147,7 @@ describe("edgedb release queries tests", () => {
       expect(result1).not.toBeNull();
       expect(result1).toHaveProperty("releaseParticipant");
       expect(result1!.releaseParticipant.length).toBe(1);
-      expect(result1!.releaseParticipant[0].releaseIdentifier).toBe("R003");
+      expect(result1!.releaseParticipant[0].releaseKey).toBe("R003");
     }
 
     {
@@ -160,7 +160,7 @@ describe("edgedb release queries tests", () => {
       expect(result2).not.toBeNull();
       expect(result2).toHaveProperty("releaseParticipant");
       expect(result2!.releaseParticipant.length).toBe(1);
-      expect(result2!.releaseParticipant[0].releaseIdentifier).toBe("R004");
+      expect(result2!.releaseParticipant[0].releaseKey).toBe("R004");
     }
   });
 });

@@ -37,12 +37,12 @@ export const dacRoutes = async (
   }>("/dac/rems/new/:nid", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const newReleaseId = await remsService.startNewRelease(
+    const newReleaseKey = await remsService.startNewRelease(
       authenticatedUser,
       parseInt(request.params.nid)
     );
 
-    reply.send(newReleaseId);
+    reply.send(newReleaseKey);
   });
 
   fastify.post<{
@@ -62,11 +62,11 @@ export const dacRoutes = async (
   }>("/dac/redcap/new", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const newReleaseId = await redcapAgService.startNewRelease(
+    const newReleaseKey = await redcapAgService.startNewRelease(
       authenticatedUser,
       request.body
     );
 
-    reply.send(newReleaseId);
+    reply.send(newReleaseKey);
   });
 };

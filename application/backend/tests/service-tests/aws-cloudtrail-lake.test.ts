@@ -12,7 +12,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 
 let edgeDbClient: Client;
 let cloudTrailClient: CloudTrailClient;
-let testReleaseId: string;
+let testReleaseKey: string;
 let testContainer: DependencyContainer;
 let elsaSetting: ElsaSettings;
 let allowedDataOwnerUser: AuthenticatedUser;
@@ -26,7 +26,7 @@ describe("Test CloudTrailLake Service", () => {
   });
 
   beforeEach(async () => {
-    ({ allowedDataOwnerUser, testReleaseId } = await beforeEachCommon());
+    ({ allowedDataOwnerUser, testReleaseKey } = await beforeEachCommon());
   });
 
   it("Test recordCloudTrailLake", async () => {
@@ -48,14 +48,14 @@ describe("Test CloudTrailLake Service", () => {
 
     await awsCloudTrailLakeService.recordCloudTrailLake({
       lakeResponse: mockData,
-      releaseId: testReleaseId,
+      releaseKey: testReleaseKey,
       description: "Object accessed",
     });
 
     const daArr = await e
       .select(e.audit.DataAccessAuditEvent, (da) => ({
         ...da["*"],
-        filter: e.op(da.release_.id, "=", e.uuid(testReleaseId)),
+        filter: e.op(da.release_.id, "=", e.uuid(testReleaseKey)),
       }))
       .run(edgeDbClient);
 
@@ -65,7 +65,7 @@ describe("Test CloudTrailLake Service", () => {
     expect(singleLog.egressBytes).toEqual(101);
   });
 
-  it("Test getEventDataStoreIdFromReleaseId", async () => {
+  it("Test getEventDataStoreIdFromReleaseKey", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
       AwsCloudTrailLakeService
     );
@@ -102,14 +102,14 @@ describe("Test CloudTrailLake Service", () => {
       .mockImplementation(async () => mockData);
     await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
       user: allowedDataOwnerUser,
-      releaseId: testReleaseId,
+      releaseKey: testReleaseKey,
       eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
     });
 
     const daArr = await e
       .select(e.audit.DataAccessAuditEvent, (da) => ({
         ...da["*"],
-        filter: e.op(da.release_.id, "=", e.uuid(testReleaseId)),
+        filter: e.op(da.release_.id, "=", e.uuid(testReleaseKey)),
       }))
       .run(edgeDbClient);
     expect(daArr.length).toEqual(1);

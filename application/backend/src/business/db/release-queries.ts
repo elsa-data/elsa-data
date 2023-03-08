@@ -10,7 +10,7 @@ export const allReleasesSummaryByUserQuery = e.params(
       releaseParticipant: (rp) => ({
         id: true,
         datasetUris: true,
-        releaseIdentifier: true,
+        releaseKey: true,
         applicationDacTitle: true,
         applicationDacIdentifier: true,
         "@role": true,
@@ -26,7 +26,7 @@ export const allReleasesSummaryByUserQuery = e.params(
         // we could possibly think of reverse ordering by some time/last updated - might be more meaningful
         // as release identifier is essentially a meaningless random string
         order_by: {
-          expression: rp.releaseIdentifier,
+          expression: rp.releaseKey,
           direction: e.DESC,
         },
         limit: params.limit,
@@ -37,16 +37,16 @@ export const allReleasesSummaryByUserQuery = e.params(
 );
 
 /**
- * Set the `lastUpdated` field of a release (specified by a `releaseId`) to the
+ * Set the `lastUpdated` field of a release (specified by a `releaseKey`) to the
  * current time.
  */
 export const touchRelease = e.params(
   {
-    releaseId: e.str,
+    releaseKey: e.str,
   },
   (params) =>
     e.update(e.release.Release, (r) => ({
-      filter: e.op(r.releaseIdentifier, "=", params.releaseId),
+      filter: e.op(r.releaseKey, "=", params.releaseKey),
       set: { lastUpdated: e.datetime_current() },
     }))
 );
@@ -56,7 +56,7 @@ export const touchRelease = e.params(
  * @param prefix The prefix id before the release count.
  * @returns
  */
-export const getNextReleaseId = (prefix: string = "R") => {
+export const getNextReleaseKey = (prefix: string = "R") => {
   const minDigitLength = 3;
 
   const nextIdString = e.to_str(e.op(e.count(e.release.Release), "+", 1));

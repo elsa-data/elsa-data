@@ -75,11 +75,11 @@ bootstrapDependencyInjection();
 
           if (j.requestedCancellation) {
             logger.info(
-              `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseId}`
+              `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`
             );
           } else {
             logger.info(
-              `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseId}`
+              `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`
             );
           }
 

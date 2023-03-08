@@ -20,11 +20,11 @@ import {
 import { AwsAccessPointService } from "../aws-access-point-service";
 
 class NotAuthorisedToControlJob extends Base7807Error {
-  constructor(userRole: string, releaseId: string) {
+  constructor(userRole: string, releaseKey: string) {
     super(
       "Not authorised to control jobs for this release",
       403,
-      `User is only a ${userRole} in the release ${releaseId}`
+      `User is only a ${userRole} in the release ${releaseKey}`
     );
   }
 }
@@ -47,12 +47,12 @@ export class JobsService {
    * The internal mechanism for subclasses to generically start a long
    * running job.
    *
-   * @param releaseId
+   * @param releaseKey
    * @param finalJobStartStep
    * @protected
    */
   protected async startGenericJob(
-    releaseId: string,
+    releaseKey: string,
     finalJobStartStep: (tx: Transaction) => Promise<void>
   ) {
     await this.edgeDbClient.transaction(async (tx) => {
@@ -68,7 +68,7 @@ export class JobsService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.releaseIdentifier, "=", releaseId)
+            e.op(j.forRelease.releaseKey, "=", releaseKey)
           ),
         }))
         .run(tx);
@@ -95,7 +95,7 @@ export class JobsService {
       .select(e.job.Job, (j) => ({
         __type__: { name: true },
         id: true,
-        forRelease: { id: true, releaseIdentifier: true },
+        forRelease: { id: true, releaseKey: true },
         requestedCancellation: true,
         auditEntry: true,
         started: true,
@@ -111,7 +111,7 @@ export class JobsService {
         return {
           jobId: j.id,
           jobType: typeName.substring("job::".length),
-          releaseId: j.forRelease.releaseIdentifier,
+          releaseKey: j.forRelease.releaseKey,
           auditEntryId: j.auditEntry.id,
           auditEntryStarted: j.started,
           requestedCancellation: j.requestedCancellation,
@@ -125,40 +125,43 @@ export class JobsService {
 
   /**
    * @param user the user attempting the install
-   * @param releaseId the release to install in the context of
+   * @param releaseKey the release to install in the context of
    * @param s3HttpsUrl a https://s3.. URL that represents the cloud formation template to install
    */
   public async startCloudFormationInstallJob(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     s3HttpsUrl: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     if (userRole != "DataOwner")
-      throw new NotAuthorisedToControlJob(userRole, releaseId);
+      throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
-    const { releaseQuery } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseKey
+    );
 
-    await this.startGenericJob(releaseId, async (tx) => {
+    await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
         tx,
         user,
-        releaseId,
+        releaseKey,
         "E",
         "Install S3 Access Point",
         new Date()
       );
 
       const releaseStackName =
-        AwsAccessPointService.getReleaseStackName(releaseId);
+        AwsAccessPointService.getReleaseStackName(releaseKey);
 
       const newReleaseStack = await this.cfnClient.send(
         new CreateStackCommand({
@@ -199,7 +202,7 @@ export class JobsService {
     });
 
     // return the status of the release - which now has a runningJob
-    return await this.releasesService.getBase(releaseId, userRole);
+    return await this.releasesService.getBase(releaseKey, userRole);
   }
 
   /**
@@ -269,34 +272,34 @@ export class JobsService {
    * a 'runningJob' field.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    */
   public async startSelectJob(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     if (userRole != "DataOwner")
-      throw new NotAuthorisedToControlJob(userRole, releaseId);
+      throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseKey
     );
 
-    await this.startGenericJob(releaseId, async (tx) => {
+    await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
         tx,
         user,
-        releaseId,
+        releaseKey,
         "E",
         "Ran Dynamic Consent",
         new Date()
@@ -323,25 +326,25 @@ export class JobsService {
     });
 
     // return the status of the release - which now has a runningJob
-    return await this.releasesService.getBase(releaseId, userRole);
+    return await this.releasesService.getBase(releaseKey, userRole);
   }
 
   public async cancelInProgressSelectJob(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     if (userRole != "DataOwner")
-      throw new NotAuthorisedToControlJob(userRole, releaseId);
+      throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseKey
     );
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -351,7 +354,7 @@ export class JobsService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.releaseIdentifier, "=", releaseId)
+            e.op(j.forRelease.releaseKey, "=", releaseKey)
           ),
         }))
         .assert_single()
@@ -371,7 +374,7 @@ export class JobsService {
 
     // return the status of the release - which will not really have changed (because cancellations
     // take a while to happen)
-    return await this.releasesService.getBase(releaseId, userRole);
+    return await this.releasesService.getBase(releaseKey, userRole);
   }
 
   /**
@@ -672,15 +675,15 @@ export class JobsService {
   /**
    * Return all the non-running jobs that have been associated with this release.
    *
-   * @param releaseId
+   * @param releaseKey
    */
-  public async getPreviousJobs(releaseId: string) {
+  public async getPreviousJobs(releaseKey: string) {
     return await e
       .select(e.job.Job, (sj) => ({
         filter: e.op(
           e.op(sj.status, "!=", e.job.JobStatus.running),
           "and",
-          e.op(sj.forRelease.releaseIdentifier, "=", releaseId)
+          e.op(sj.forRelease.releaseKey, "=", releaseKey)
         ),
       }))
       .run(this.edgeDbClient);

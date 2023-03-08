@@ -59,9 +59,9 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
-      const release = await releasesService.get(authenticatedUser, releaseId);
+      const release = await releasesService.get(authenticatedUser, releaseKey);
 
       if (release) reply.send(release);
       else reply.status(400).send();
@@ -75,11 +75,11 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser, pageSize, page, q } =
         authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       const cases = await releasesService.getCases(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         pageSize,
         (page - 1) * pageSize,
         q
@@ -95,11 +95,11 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       const participants = await releaseParticipantService.getParticipants(
         authenticatedUser,
-        releaseId
+        releaseKey
       );
 
       return participants.map(
@@ -141,12 +141,12 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       const participantUuid = request.params.pid;
 
       return releaseParticipantService.removeParticipant(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         participantUuid
       );
     }
@@ -158,12 +158,12 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   }>("/releases/:rid/consent/:nid", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseId = request.params.rid;
+    const releaseKey = request.params.rid;
     const nodeId = request.params.nid;
 
     const r = await releasesService.getNodeConsent(
       authenticatedUser,
-      releaseId,
+      releaseKey,
       nodeId
     );
 
@@ -178,10 +178,10 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       reply.send(
-        await jobsService.startSelectJob(authenticatedUser, releaseId)
+        await jobsService.startSelectJob(authenticatedUser, releaseKey)
       );
     }
   );
@@ -192,12 +192,12 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       reply.send(
         await jobsService.cancelInProgressSelectJob(
           authenticatedUser,
-          releaseId
+          releaseKey
         )
       );
     }
@@ -221,7 +221,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       if (request.body.length > 1)
         // the JSON patch standard says that all operations if more than 1 need to succeed/fail
@@ -239,7 +239,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setSelected(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value
                   )
                 );
@@ -248,7 +248,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.addDiseaseToApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -258,7 +258,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.addCountryToApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -276,7 +276,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setUnselected(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value
                   )
                 );
@@ -285,7 +285,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.removeDiseaseFromApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -295,7 +295,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.removeCountryFromApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -313,7 +313,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setTypeOfApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value as any
                   )
                 );
@@ -322,7 +322,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setBeaconQuery(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value
                   )
                 );
@@ -331,7 +331,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setIsAllowed(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     "read",
                     op.value
                   )
@@ -341,7 +341,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setIsAllowed(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     "variant",
                     op.value
                   )
@@ -351,7 +351,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 reply.send(
                   await releasesService.setIsAllowed(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     "phenotype",
                     op.value
                   )
@@ -388,11 +388,11 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   }>("/releases/:rid/access", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseId = request.params.rid;
+    const releaseKey = request.params.rid;
 
     await releasesService.setMasterAccess(
       authenticatedUser,
-      releaseId,
+      releaseKey,
       undefined, //isString(request.body.start) ? Date.parse(request.body.start) : request.body.start,
       undefined // request.body.end
     );
@@ -403,7 +403,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   }>("/releases/:rid/cfn", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseId = request.params.rid;
+    const releaseKey = request.params.rid;
 
     if (!awsAccessPointService.isEnabled)
       throw new Error(
@@ -412,7 +412,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     const res = await awsAccessPointService.getInstalledAccessPointResources(
       authenticatedUser,
-      releaseId
+      releaseKey
     );
 
     reply.send(res);
@@ -424,7 +424,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   }>("/releases/:rid/cfn", {}, async function (request) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseId = request.params.rid;
+    const releaseKey = request.params.rid;
 
     if (!awsAccessPointService.isEnabled)
       throw new Error(
@@ -434,14 +434,14 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     const s3HttpsUrl =
       await awsAccessPointService.createAccessPointCloudFormationTemplate(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         request.body.accounts,
         request.body.vpcId
       );
 
     await jobsService.startCloudFormationInstallJob(
       authenticatedUser,
-      releaseId,
+      releaseKey,
       s3HttpsUrl
     );
   });
@@ -463,7 +463,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       if (!presignedUrlsService.isEnabled)
         throw new Error(
           "The presigned URLs service was not started so URL presigning will " +
@@ -472,7 +472,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
       const presignResult = await presignedUrlsService.getPresigned(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         request.body.presignHeader
       );
 
@@ -498,7 +498,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       if (!awsAccessPointService.isEnabled)
         throw new Error(
           "The AWS service was not started so AWS S3 Access Points will not work"
@@ -506,7 +506,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
       const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         request.body.presignHeader
       );
 
@@ -550,13 +550,13 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
           "The GCP storage sharing service was not started so object sharing will not work"
         );
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       const users = request.body.users;
 
       reply.send(
         await gcpStorageSharingService.addUsers(
           authenticatedUser,
-          releaseId,
+          releaseKey,
           users
         )
       );
@@ -578,13 +578,13 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
           "The GCP storage sharing service was not started so object sharing will not work"
         );
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       const users = request.body.users;
 
       reply.send(
         await gcpStorageSharingService.deleteUsers(
           authenticatedUser,
-          releaseId,
+          releaseKey,
           users
         )
       );
@@ -605,11 +605,11 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
           "The GCP storage sharing service was not started so object sharing will not work"
         );
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       const manifest = await gcpStorageSharingService.manifest(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         request.body.presignHeader
       );
 

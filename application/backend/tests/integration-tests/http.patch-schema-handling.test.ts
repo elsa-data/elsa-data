@@ -18,7 +18,7 @@ import {
 import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
 import { TEST_SUBJECT_1 } from "../../src/test-data/insert-test-users";
-import { getNextReleaseId } from "../../src/business/db/release-queries";
+import { getNextReleaseKey } from "../../src/business/db/release-queries";
 
 describe("http patch schema handling tests", () => {
   let server: FastifyInstance;
@@ -74,7 +74,7 @@ describe("http patch schema handling tests", () => {
         isAllowedReadData: true,
         isAllowedVariantData: true,
         isAllowedPhenotypeData: true,
-        releaseIdentifier: getNextReleaseId(),
+        releaseKey: getNextReleaseKey(),
         releasePassword: "A", // pragma: allowlist secret
         // we pre-select a bunch of specimens across 10g and 10f
         selectedSpecimens: e.set(

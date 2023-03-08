@@ -143,8 +143,8 @@ export const configDefinition = {
     format: "*",
     default: "asset/maxmind/db/",
   },
-  releaseIdPrefix: {
-    doc: "The prefix appended on the releaseId before the count number.",
+  releaseKeyPrefix: {
+    doc: "The prefix appended on the releaseKey before the count number.",
     format: "*",
     default: "R",
   },

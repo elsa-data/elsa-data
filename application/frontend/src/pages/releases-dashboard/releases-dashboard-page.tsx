@@ -68,7 +68,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                       <div className="font-bold">{r.applicationDacTitle}</div>
                       <div className="flex flex-row space-x-2 text-sm">
                         <span className="font-mono opacity-50">
-                          {r.releaseIdentifier}
+                          {r.releaseKey}
                         </span>
                         {/* a replication of the details in other columns - but we use Tailwind
                               classes to make them disappear on small screens */}
@@ -103,7 +103,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                     <button
                       className={classNames("btn-table-action-navigate")}
                       onClick={async () => {
-                        navigate(`${r.releaseIdentifier}/detail`);
+                        navigate(`${r.releaseKey}/detail`);
                       }}
                     >
                       view

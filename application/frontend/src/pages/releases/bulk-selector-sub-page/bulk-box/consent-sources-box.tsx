@@ -11,17 +11,17 @@ import { RhInput } from "../../../../components/rh/rh-input";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
 };
 
 /**
  * The consent source box provides a place for setting sources of consent information
  * and any default consent rules.
  *
- * @param releaseId
+ * @param releaseKey
  * @constructor
  */
-export const ConsentSourcesBox: React.FC<Props> = ({ releaseId }) => {
+export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
   const queryClient = useQueryClient();
 
   const [lastMutateError, setLastMutateError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseId }) => {
   // we set this as the success function to take advantage of that
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
       result
     );
     setLastMutateError(null);
@@ -44,13 +44,13 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseId }) => {
 
   const consentPreferenceMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseId}/NEEDTODOTHIS`
+      `/api/releases/${releaseKey}/NEEDTODOTHIS`
     )
   );
 
   const ctrlUrlMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseId}/NEEDTODOTHIS`
+      `/api/releases/${releaseKey}/NEEDTODOTHIS`
     )
   );
 

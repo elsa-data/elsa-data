@@ -5,7 +5,7 @@ import { createReleaseManifest } from "../../src/business/services/manifests/_ma
 import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/insert-test-data-10f-helpers";
 
 let edgeDbClient: Client;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 beforeAll(async () => {
   const testContainer = await registerTypes();
@@ -14,13 +14,13 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseId } = await beforeEachCommon());
+  ({ testReleaseKey } = await beforeEachCommon());
 });
 
 it("test basic operation of manifest helper", async () => {
   const manifest = await createReleaseManifest(
     edgeDbClient,
-    testReleaseId,
+    testReleaseKey,
     true,
     true
   );
@@ -62,7 +62,7 @@ it("test basic operation of manifest helper", async () => {
 it("test multiple blank identifiers converts to an array", async () => {
   const manifest = await createReleaseManifest(
     edgeDbClient,
-    testReleaseId,
+    testReleaseKey,
     true,
     true
   );
@@ -91,7 +91,7 @@ it("test multiple blank identifiers converts to an array", async () => {
 it("test read data needs to be specified to be included", async () => {
   const manifest = await createReleaseManifest(
     edgeDbClient,
-    testReleaseId,
+    testReleaseKey,
     false,
     true
   );
@@ -102,7 +102,7 @@ it("test read data needs to be specified to be included", async () => {
 it("test variants data needs to be specified to be included", async () => {
   const manifest = await createReleaseManifest(
     edgeDbClient,
-    testReleaseId,
+    testReleaseKey,
     true,
     false
   );

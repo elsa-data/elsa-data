@@ -5,7 +5,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENG_URI } from "./insert-test-data-10g";
-import { getNextReleaseId } from "../business/db/release-queries";
+import { getNextReleaseKey } from "../business/db/release-queries";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -51,7 +51,7 @@ export async function insertRelease4() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: `R004`,
+      releaseKey: `R004`,
       releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       isAllowedReadData: true,
