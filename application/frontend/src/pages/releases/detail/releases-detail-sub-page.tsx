@@ -41,7 +41,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
 
       <Box
         heading="Access Data"
-        applyIsDisabledStyle={!!!releaseData.activation}
+        applyIsDisabledStyle={!releaseData.activation}
       >
         <VerticalTabs
           tabHeadings={[
