@@ -32,7 +32,6 @@ type Props = {
 export const TableFooterPaginator: React.FC<Props> = (props) => {
   // for our pagination buttons and text we need to do some page calculations
   const maxPage = Math.ceil(props.rowCount / props.itemsPerPage);
-  console.log(`Max page = ${maxPage}`);
   /*const from = Math.min(
     (props.currentPage - 1) * props.rowsPerPage + 1,
     props.rowCount
