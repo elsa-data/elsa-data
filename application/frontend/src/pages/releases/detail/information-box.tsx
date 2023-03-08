@@ -63,7 +63,7 @@ export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
   );
 
   return (
-    <Box heading={`${releaseData.applicationDacTitle}`}>
+    <Box heading={releaseData.applicationDacTitle}>
       <div className="grid grid-cols-2 gap-4">
         {!!releaseData.activation && (
           <div className="alert alert-success col-span-2 shadow-lg">
