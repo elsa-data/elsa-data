@@ -39,11 +39,11 @@ export const auditEventRoutes = async (
   const awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
 
   fastify.get<{
-    Params: { releaseId: string };
+    Params: { releaseKey: string };
     Reply: AuditEventType[];
     Querystring: AuditEventForQueryType;
   }>(
-    "/releases/:releaseId/audit-event",
+    "/releases/:releaseKey/audit-event",
     {
       schema: {
         querystring: AuditEventForQuerySchema,
@@ -53,14 +53,14 @@ export const auditEventRoutes = async (
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.releaseId;
+      const releaseKey = request.params.releaseKey;
       const { orderByProperty = "occurredDateTime", orderAscending = false } =
         request.query;
 
       const events = await auditLogService.getReleaseEntries(
         edgeDbClient,
         authenticatedUser,
-        releaseId,
+        releaseKey,
         pageSize,
         (page - 1) * pageSize,
         orderByProperty as keyof AuditEvent,
@@ -115,11 +115,11 @@ export const auditEventRoutes = async (
   });
 
   fastify.get<{
-    Params: { releaseId: string };
+    Params: { releaseKey: string };
     Reply: AuditDataAccessType[] | null;
     Querystring: AuditEventForQueryType;
   }>(
-    "/releases/:releaseId/audit-event/data-access",
+    "/releases/:releaseKey/audit-event/data-access",
     {
       schema: {
         querystring: AuditEventForQuerySchema,
@@ -129,14 +129,14 @@ export const auditEventRoutes = async (
       const { authenticatedUser, pageSize, page } =
         authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.releaseId;
+      const releaseKey = request.params.releaseKey;
       const { orderByProperty = "occurredDateTime", orderAscending = false } =
         request.query;
 
-      const events = await auditLogService.getDataAccessAuditByReleaseId(
+      const events = await auditLogService.getDataAccessAuditByReleaseKey(
         edgeDbClient,
         authenticatedUser,
-        releaseId,
+        releaseKey,
         pageSize,
         (page - 1) * pageSize,
         orderByProperty as keyof DataAccessAuditEvent | "fileUrl" | "fileSize",
@@ -148,18 +148,19 @@ export const auditEventRoutes = async (
   );
 
   fastify.get<{
-    Params: { releaseId: string };
+    Params: { releaseKey: string };
     Reply: AuditDataAccessType[] | null;
   }>(
-    "/releases/:releaseId/audit-event/data-access/summary",
+    "/releases/:releaseKey/audit-event/data-access/summary",
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const events = await auditLogService.getSummaryDataAccessAuditByReleaseId(
-        edgeDbClient,
-        authenticatedUser,
-        request.params.releaseId
-      );
+      const events =
+        await auditLogService.getSummaryDataAccessAuditByReleaseKey(
+          edgeDbClient,
+          authenticatedUser,
+          request.params.releaseKey
+        );
 
       sendResult(reply, events);
     }
@@ -193,7 +194,7 @@ export const auditEventRoutes = async (
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       const accessType = request.body.accessType;
 
       let replyMessage = "";
@@ -202,7 +203,7 @@ export const auditEventRoutes = async (
         case "aws":
           // Get datasets URI
           const datasetUriArr =
-            await datasetService.getDatasetUrisFromReleaseId(releaseId);
+            await datasetService.getDatasetUrisFromReleaseKey(releaseKey);
           if (!datasetUriArr) {
             replyMessage = "No dataset found!";
             break;
@@ -225,7 +226,7 @@ export const auditEventRoutes = async (
 
           await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
             user: authenticatedUser,
-            releaseId,
+            releaseKey,
             eventDataStoreIds,
           });
           replyMessage +=

@@ -20,12 +20,12 @@ export const countAuditLogEntriesForSystemQuery = e.count(
  */
 export const countAuditLogEntriesForReleaseQuery = e.params(
   {
-    releaseId: e.str,
+    releaseKey: e.str,
   },
   (params) =>
     e.count(
       e.select(e.audit.ReleaseAuditEvent, (ae) => ({
-        filter: e.op(ae.release_.releaseIdentifier, "=", params.releaseId),
+        filter: e.op(ae.release_.releaseKey, "=", params.releaseKey),
       }))
     )
 );
@@ -52,12 +52,12 @@ export const countAuditLogEntriesForUserQuery = e.params(
  */
 export const countDataAccessAuditLogEntriesQuery = e.params(
   {
-    releaseId: e.str,
+    releaseKey: e.str,
   },
   (params) =>
     e.count(
       e.select(e.audit.DataAccessAuditEvent, (da) => ({
-        filter: e.op(da.release_.releaseIdentifier, "=", params.releaseId),
+        filter: e.op(da.release_.releaseKey, "=", params.releaseKey),
       }))
     )
 );
@@ -121,7 +121,7 @@ export const auditLogFullForIdQuery = (id: string) => {
  * a given release.
  */
 export const pageableAuditLogEntriesForReleaseQuery = (
-  releaseId: string,
+  releaseKey: string,
   limit: number,
   offset: number,
   orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
@@ -130,7 +130,7 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
     ...ownedAuditEventProperties,
     hasDetails: e.op("exists", auditEvent.details),
-    filter: e.op(auditEvent.release_.releaseIdentifier, "=", releaseId),
+    filter: e.op(auditEvent.release_.releaseKey, "=", releaseKey),
     order_by: [
       {
         expression:
@@ -156,7 +156,7 @@ export const addUserAuditEventToReleaseQuery = (
   whoId: string,
   whoDisplayName: string,
   role: string,
-  releaseIdentifier?: string
+  releaseKey?: string
 ) => {
   return e.insert(e.audit.UserAuditEvent, {
     whoId,
@@ -164,8 +164,8 @@ export const addUserAuditEventToReleaseQuery = (
     occurredDateTime: new Date(),
     actionCategory: "E",
     actionDescription:
-      releaseIdentifier !== undefined
-        ? `Add user to release: ${releaseIdentifier}`
+      releaseKey !== undefined
+        ? `Add user to release: ${releaseKey}`
         : "Add user to release",
     outcome: 0,
     details: e.json({ role: role }),
@@ -371,8 +371,8 @@ export const pageableAuditLogEntriesForUserQuery = (
   );
 };
 
-export const selectDataAccessAuditEventByReleaseIdQuery = (
-  releaseId: string,
+export const selectDataAccessAuditEventByReleaseKeyQuery = (
+  releaseKey: string,
   limit: number,
   offset: number,
   orderByProperty:
@@ -385,7 +385,7 @@ export const selectDataAccessAuditEventByReleaseIdQuery = (
     ...e.audit.DataAccessAuditEvent["*"],
     fileSize: da.details.size,
     fileUrl: da.details.url,
-    filter: e.op(da.release_.releaseIdentifier, "=", releaseId),
+    filter: e.op(da.release_.releaseKey, "=", releaseKey),
     order_by: [
       {
         expression:

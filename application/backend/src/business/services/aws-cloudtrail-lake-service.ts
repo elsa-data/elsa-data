@@ -66,20 +66,20 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return eventDataStoreIdArr;
   }
   async findCloudTrailStartTimestamp(
-    releaseId: string
+    releaseKey: string
   ): Promise<string | null> {
     const releaseDates = await e
       .select(e.release.Release, (r) => ({
         created: true,
         lastDateTimeDataAccessLogQuery: true,
-        filter: e.op(r.releaseIdentifier, "=", releaseId),
+        filter: e.op(r.releaseKey, "=", releaseKey),
       }))
       .assert_single()
       .run(this.edgeDbClient);
 
     if (!releaseDates) {
       this.logger.warn(
-        `Could not found matching releaseId ('${releaseId}') record.`
+        `Could not found matching releaseKey ('${releaseKey}') record.`
       );
       return null;
     }
@@ -145,12 +145,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
   async recordCloudTrailLake({
     lakeResponse,
-    releaseId,
+    releaseKey,
     description,
   }: {
     lakeResponse: CloudTrailLakeResponseType[];
     description: string;
-    releaseId: string;
+    releaseKey: string;
   }) {
     for (const trailEvent of lakeResponse) {
       const s3Url = `s3://${trailEvent.bucketName}/${trailEvent.key}`;
@@ -171,7 +171,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
-        releaseId: releaseId,
+        releaseKey: releaseKey,
         whoId: trailEvent.sourceIPAddress,
         whoDisplayName: loc,
         fileUrl: s3Url,
@@ -185,12 +185,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   async queryAndRecord({
     sqlQueryStatement,
     eventDataStoreId,
-    releaseId,
+    releaseKey,
     recordDescription,
   }: {
     sqlQueryStatement: string;
     eventDataStoreId: string;
-    releaseId: string;
+    releaseKey: string;
     recordDescription: string;
   }) {
     const queryId = await this.startCommandQueryCloudTrailLake(
@@ -203,7 +203,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
     await this.recordCloudTrailLake({
       lakeResponse: s3CloudTrailLogs,
-      releaseId: releaseId,
+      releaseKey: releaseKey,
       description: recordDescription,
     });
   }
@@ -212,11 +212,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
    * SQL Queries builder
    * Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
    */
-  createSQLQueryByReleaseIdReqParams(
-    props: CloudTrailInputQueryType & { releaseId: string }
+  createSQLQueryByReleaseKeyReqParams(
+    props: CloudTrailInputQueryType & { releaseKey: string }
   ): string {
     const requestedField =
-      "element_at(requestParameters, 'x-releaseId') as releaseId, " +
+      "element_at(requestParameters, 'x-releaseKey') as releaseKey, " +
       "eventTime, " +
       "sourceIPAddress, " +
       "element_at(requestParameters, 'bucketName') as bucketName, " +
@@ -225,7 +225,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
 
     let sqlStatement =
       `SELECT ${requestedField} FROM ${props.eventDataStoreId} ` +
-      `WHERE (element_at(requestParameters, 'x-releaseId') = '${props.releaseId}') `;
+      `WHERE (element_at(requestParameters, 'x-releaseKey') = '${props.releaseKey}') `;
 
     // Additional filter
     if (props.startTimestamp)
@@ -271,11 +271,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   // Main Fetching job
   async fetchCloudTrailLakeLog({
     user,
-    releaseId,
+    releaseKey,
     eventDataStoreIds,
   }: {
     user: AuthenticatedUser;
-    releaseId: string;
+    releaseKey: string;
     eventDataStoreIds: string[];
   }) {
     // CloudTrailLake record is partition by timestamp. To save querying cost (by minimizing record scanned),
@@ -285,7 +285,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     // Also note that from cloudtrail-lake docs, it may take 15 minutes or more before logs appear in CloudTrail lake
     // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html
 
-    const startQueryDate = await this.findCloudTrailStartTimestamp(releaseId);
+    const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
     const endQueryDate = new Date().toISOString();
 
     // Try initiate maxmind reader if available
@@ -302,10 +302,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     for (const edsi of eventDataStoreIds) {
       for (const method of Object.keys(CloudTrailQueryType)) {
         if (method == CloudTrailQueryType.PresignUrl) {
-          const sqlQueryStatement = this.createSQLQueryByReleaseIdReqParams({
+          const sqlQueryStatement = this.createSQLQueryByReleaseKeyReqParams({
             startTimestamp: startQueryDate ?? undefined,
             endTimestamp: endQueryDate,
-            releaseId: releaseId,
+            releaseKey: releaseKey,
             eventDataStoreId: edsi,
           });
 
@@ -315,13 +315,13 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
             sqlQueryStatement: sqlQueryStatement,
             eventDataStoreId: edsi,
             recordDescription: "Accessed via presigned url.",
-            releaseId: releaseId,
+            releaseKey: releaseKey,
           });
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
           const bucketNameMap = (
             await this.awsAccessPointService.getInstalledAccessPointResources(
               user,
-              releaseId
+              releaseKey
             )
           )?.bucketNameMap;
 
@@ -341,7 +341,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
               sqlQueryStatement: sqlQueryStatement,
               eventDataStoreId: edsi,
               recordDescription: "Accessed via S3 access point.",
-              releaseId: releaseId,
+              releaseKey: releaseKey,
             });
           }
         } else {
@@ -356,13 +356,13 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     // Update last query date to release record
     await e
       .update(e.release.Release, (r) => ({
-        filter: e.op(r.releaseIdentifier, "=", releaseId),
+        filter: e.op(r.releaseKey, "=", releaseKey),
         set: {
           lastDateTimeDataAccessLogQuery: e.datetime(endQueryDate),
         },
       }))
       .run(this.edgeDbClient);
 
-    await touchRelease.run(this.edgeDbClient, { releaseIdentifier: releaseId });
+    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
   }
 }

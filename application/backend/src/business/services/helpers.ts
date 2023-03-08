@@ -21,14 +21,14 @@ export function collapseExternalIds(externals: any): string {
  *
  * @param usersService
  * @param user
- * @param releaseId
+ * @param releaseKey
  */
 export async function doRoleInReleaseCheck(
   usersService: UsersService,
   user: AuthenticatedUser,
-  releaseId: string
+  releaseKey: string
 ) {
-  const userRole = await usersService.roleInRelease(user, releaseId);
+  const userRole = await usersService.roleInRelease(user, releaseKey);
 
   if (!userRole)
     throw new Error(
@@ -45,16 +45,16 @@ export async function doRoleInReleaseCheck(
  * that is useful and friendly for the caller (i.e. ids -> JS Set())
  *
  * @param edgeDbClient an edgedb client
- * @param releaseId the release to load
+ * @param releaseKey the release to load
  */
 export async function getReleaseInfo(
   edgeDbClient: Executor,
-  releaseId: string
+  releaseKey: string
 ) {
   // the base (id only) query that will give us just the release
   const releaseQuery = e
     .select(e.release.Release, (r) => ({
-      filter: e.op(r.releaseIdentifier, "=", releaseId),
+      filter: e.op(r.releaseKey, "=", releaseKey),
     }))
     .assert_single();
 
@@ -85,7 +85,7 @@ export async function getReleaseInfo(
 
   const releaseInfo = await releaseInfoQuery.run(edgeDbClient);
 
-  if (!releaseInfo) throw new ReleaseDisappearedError(releaseId);
+  if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
   const datasetUriToIdMap = new Map(
     releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)])

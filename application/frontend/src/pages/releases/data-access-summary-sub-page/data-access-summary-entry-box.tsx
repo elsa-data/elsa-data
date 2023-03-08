@@ -15,8 +15,8 @@ import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
 
 export const DataAccessSummaryEntryBox = () => {
-  const { releaseId, objectId } = useParams<{
-    releaseId: string;
+  const { releaseKey, objectId } = useParams<{
+    releaseKey: string;
     objectId: string;
   }>();
 
@@ -26,10 +26,10 @@ export const DataAccessSummaryEntryBox = () => {
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const dataAccessQuery = useQuery(
-    ["release-data-access-audit", releaseId, objectId, currentPage],
+    ["release-data-access-audit", releaseKey, objectId, currentPage],
     async () => {
       const response = await axios.get<AuditDataAccessType[]>(
-        `/api/releases/${releaseId}/audit-event/data-access`,
+        `/api/releases/${releaseKey}/audit-event/data-access`,
         {
           params: {
             page: currentPage,
@@ -56,7 +56,7 @@ export const DataAccessSummaryEntryBox = () => {
       <div>Data Access Summary</div>
       <button
         onClick={async () =>
-          await axios.post<any>(`/api/releases/${releaseId}/access-log/sync`, {
+          await axios.post<any>(`/api/releases/${releaseKey}/access-log/sync`, {
             accessType: "aws",
           })
         }

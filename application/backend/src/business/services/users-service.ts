@@ -255,7 +255,7 @@ export class UsersService {
     await client.transaction(async (tx) => {
       const release = await e
         .select(e.release.Release, (r) => ({
-          releaseIdentifier: true,
+          releaseKey: true,
           filter_single: { id: r.id },
         }))
         .run(tx);
@@ -275,7 +275,7 @@ export class UsersService {
                 whoId,
                 whoDisplayName,
                 role,
-                release?.releaseIdentifier
+                release?.releaseKey
               ),
             },
           },
@@ -286,16 +286,16 @@ export class UsersService {
 
   /**
    * Return the role a user has in a particular release, or null if they are not involved
-   * in the release. As a by-product, checks that the releaseId is a valid release identifier.
+   * in the release. As a by-product, checks that the releaseKey is a valid key.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    */
   public async roleInRelease(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<ReleaseRoleStrings | null> {
-    // TODO: check that releaseId is a valid UUID structure
+    // TODO: check that releaseKey is a valid UUID structure
     // given this is a boundary check function for our routes - we need to protect against being
     // sent release ids that are invalid entirely (as edgedb sends a wierd uuid() error msg)
 
@@ -305,7 +305,7 @@ export class UsersService {
         releaseParticipant: (rp) => ({
           id: true,
           "@role": true,
-          filter: e.op(rp.releaseIdentifier, "=", releaseId),
+          filter: e.op(rp.releaseKey, "=", releaseKey),
         }),
         filter: e.op(e.str(user.subjectId), "=", u.subjectId),
       }))

@@ -97,5 +97,5 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     allowTestUsers: true,
   },
   maxmindDbAssetPath: "asset/maxmind/db/",
-  releaseIdPrefix: "R",
+  releaseKeyPrefix: "R",
 });

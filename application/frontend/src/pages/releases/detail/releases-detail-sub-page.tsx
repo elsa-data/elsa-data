@@ -16,16 +16,16 @@ import { useReleasesMasterData } from "../releases-types";
  * specific release.
  */
 export const ReleasesDetailSubPage: React.FC = () => {
-  const { releaseId, releaseData } = useReleasesMasterData();
+  const { releaseKey, releaseData } = useReleasesMasterData();
 
   const pageSize = usePageSizer();
 
   return (
     <>
-      <InformationBox releaseId={releaseId} releaseData={releaseData} />
+      <InformationBox releaseKey={releaseKey} releaseData={releaseData} />
 
       <CasesBox
-        releaseId={releaseId}
+        releaseKey={releaseKey}
         datasetMap={releaseData.datasetMap}
         isEditable={releaseData.permissionEditSelections || false}
         pageSize={pageSize}
@@ -34,15 +34,12 @@ export const ReleasesDetailSubPage: React.FC = () => {
 
       {releaseData.permissionEditSelections && (
         <FurtherRestrictionsBox
-          releaseId={releaseId}
+          releaseKey={releaseKey}
           releaseData={releaseData}
         />
       )}
 
-      <Box
-        heading="Access Data"
-        applyIsDisabledStyle={!releaseData.activation}
-      >
+      <Box heading="Access Data" applyIsDisabledStyle={!releaseData.activation}>
         <VerticalTabs
           tabHeadings={[
             "Manifest",
@@ -63,10 +60,10 @@ export const ReleasesDetailSubPage: React.FC = () => {
               information than the Cases grid i.e. it is a TSV of the cases grid
             </p>
           </div>
-          <PresignedUrlForm releaseId={releaseId} releaseData={releaseData} />
-          <AwsS3VpcShareForm releaseId={releaseId} />
-          <GcpStorageIamShareForm releaseId={releaseId} />
-          <HtsgetForm releaseId={releaseId} releaseData={releaseData} />
+          <PresignedUrlForm releaseKey={releaseKey} releaseData={releaseData} />
+          <AwsS3VpcShareForm releaseKey={releaseKey} />
+          <GcpStorageIamShareForm releaseKey={releaseKey} />
+          <HtsgetForm releaseKey={releaseKey} releaseData={releaseData} />
           {/*<div className="prose">
                   <p>Not implemented</p>
                   <p>Will enable a GCP sharing as per AWS S3</p>

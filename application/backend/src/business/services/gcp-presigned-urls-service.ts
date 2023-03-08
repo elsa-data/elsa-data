@@ -29,7 +29,7 @@ export class GcpPresignedUrlsService
   }
 
   async presign(
-    releaseId: string,
+    releaseKey: string,
     bucket: string,
     key: string
   ): Promise<string> {

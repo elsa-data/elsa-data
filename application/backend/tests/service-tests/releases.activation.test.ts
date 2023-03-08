@@ -14,7 +14,7 @@ import { ManifestService } from "../../src/business/services/manifests/manifest-
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
 let manifestService: ManifestService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
@@ -29,14 +29,14 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
 
 it("releases can be activated", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
 
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
+  const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -47,9 +47,9 @@ it("releases can be activated", async () => {
 });
 
 it("active releases have a manifest", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
 
-  const result = await manifestService.getActiveManifest(testReleaseId);
+  const result = await manifestService.getActiveManifest(testReleaseKey);
 
   assert(result != null);
 
@@ -62,19 +62,19 @@ it("active releases have a manifest", async () => {
 });
 
 it("releases that are active can't be activated again", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
 
   await expect(
-    releaseService.activateRelease(allowedDataOwnerUser, testReleaseId)
+    releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey)
   ).rejects.toThrow(ReleaseActivationStateError);
 });
 
 it("releases can be deactivated", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
 
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseKey);
 
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
+  const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -83,17 +83,17 @@ it("releases can be deactivated", async () => {
 
 it("deactivation only works when activated", async () => {
   await expect(
-    releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId)
+    releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseKey)
   ).rejects.toThrow(ReleaseDeactivationStateError);
 });
 
 it("deactivation creates a history of activations", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
+  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseKey);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
+  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseKey);
+  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseKey);
+  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseKey);
 
   // for the moment we can only check the history direct in the db
   const r = await e

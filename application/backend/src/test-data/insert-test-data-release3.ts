@@ -1,6 +1,6 @@
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { getNextReleaseId } from "../business/db/release-queries";
+import { getNextReleaseKey } from "../business/db/release-queries";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
@@ -46,7 +46,7 @@ export async function insertRelease3() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: "R003",
+      releaseKey: "R003",
       selectedSpecimens: e.set(),
       isAllowedReadData: true,
       isAllowedVariantData: true,

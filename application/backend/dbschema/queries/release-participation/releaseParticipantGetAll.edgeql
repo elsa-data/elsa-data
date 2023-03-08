@@ -16,8 +16,8 @@ with
       email,
       displayName,
       lastLoginDateTime,
-      releaseParticipant: { @role } filter .releaseIdentifier = <str>$releaseId
-    } filter .releaseParticipant.releaseIdentifier =  <str>$releaseId),
+      releaseParticipant: { @role } filter .releaseKey = <str>$releaseKey
+    } filter .releaseParticipant.releaseKey =  <str>$releaseKey),
 
   # potential users have been mentioned for a release but have not yet logged in
   pu := (
@@ -25,8 +25,8 @@ with
       id,
       email,
       displayName,
-      futureReleaseParticipant: { @role } filter .releaseIdentifier = <str>$releaseId
-    } filter .futureReleaseParticipant.releaseIdentifier =  <str>$releaseId)
+      futureReleaseParticipant: { @role } filter .releaseKey = <str>$releaseKey
+    } filter .futureReleaseParticipant.releaseKey =  <str>$releaseKey)
 
 select
   # merge the users and potential users into a single set

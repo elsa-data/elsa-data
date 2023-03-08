@@ -54,7 +54,7 @@ export function correctAccessPointTemplateOutputs(stack: Stack): {
  *
  * @param templateBucket
  * @param templateRegion
- * @param releaseId an identifier for the release (will normally be edgedb id) - but is only used a string
+ * @param releaseKey a friendly named identifier for the release
  * @param files
  * @param shareToAccountIds
  * @param shareToVpcId
@@ -64,7 +64,7 @@ export function correctAccessPointTemplateOutputs(stack: Stack): {
 export function createAccessPointTemplateFromReleaseFileEntries(
   templateBucket: string,
   templateRegion: string,
-  releaseId: string,
+  releaseKey: string,
   files: ReleaseFileListEntry[],
   shareToAccountIds: string[],
   shareToVpcId?: string
@@ -156,12 +156,12 @@ export function createAccessPointTemplateFromReleaseFileEntries(
    */
   const addNewStack = (bucketName: string) => {
     subStackCount++;
-    subStackAccessPointName = `${releaseId}-${subStackCount}`;
+    subStackAccessPointName = `${releaseKey}-${subStackCount}`;
     subStackStackName = bucketNameAsResource(bucketName);
 
     subStackCurrent = {
       AWSTemplateFormatVersion: "2010-09-09",
-      Description: `S3 AccessPoint template for allowing access in bucket ${bucketName} to files released in release ${releaseId}`,
+      Description: `S3 AccessPoint template for allowing access in bucket ${bucketName} to files released in release ${releaseKey}`,
       Resources: {
         S3AccessPoint: {
           Type: "AWS::S3::AccessPoint",

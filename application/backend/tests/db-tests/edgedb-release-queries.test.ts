@@ -78,7 +78,7 @@ describe("edgedb release queries tests", () => {
     {
       const a = result!.data[0];
 
-      expect(a.releaseIdentifier).toBe("R003");
+      expect(a.releaseKey).toBe("R003");
       expect(a.applicationDacTitle).toBe("An Invisible Study");
       expect(a.role).toBe("DataOwner");
     }
@@ -86,7 +86,7 @@ describe("edgedb release queries tests", () => {
     {
       const b = result!.data[1];
 
-      expect(b.releaseIdentifier).toBe(RELEASE2_RELEASE_IDENTIFIER);
+      expect(b.releaseKey).toBe(RELEASE2_RELEASE_IDENTIFIER);
       expect(b.applicationDacTitle).toBe(RELEASE2_APPLICATION_DAC_TITLE);
       expect(b.role).toBe("PI");
     }
@@ -145,7 +145,7 @@ describe("edgedb release queries tests", () => {
 
       expect(result1).not.toBeNull();
       expect(result1!.data.length).toBe(1);
-      expect(result1!.data[0].releaseIdentifier).toBe("R003");
+      expect(result1!.data[0].releaseKey).toBe("R003");
       expect(result1!.total).toBe(3);
     }
 
@@ -158,7 +158,7 @@ describe("edgedb release queries tests", () => {
 
       expect(result2).not.toBeNull();
       expect(result2!.data.length).toBe(1);
-      expect(result2!.data[0].releaseIdentifier).toBe("R004");
+      expect(result2!.data[0].releaseKey).toBe("R004");
       expect(result2!.total).toBe(3);
     }
   });
