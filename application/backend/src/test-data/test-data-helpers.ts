@@ -159,16 +159,16 @@ export async function createTestUser(
       .run(edgeDbClient);
   };
 
-  for (const dataOwnerReleaseId of releasesAsDataOwner) {
-    await insertRole(dataOwnerReleaseId, "DataOwner");
+  for (const dataOwnerReleaseKey of releasesAsDataOwner) {
+    await insertRole(dataOwnerReleaseKey, "DataOwner");
   }
 
-  for (const piReleaseId of releasesAsPI) {
-    await insertRole(piReleaseId, "PI");
+  for (const piReleaseKey of releasesAsPI) {
+    await insertRole(piReleaseKey, "PI");
   }
 
-  for (const memberReleaseId of releasesAsMember) {
-    await insertRole(memberReleaseId, "Member");
+  for (const memberReleaseKey of releasesAsMember) {
+    await insertRole(memberReleaseKey, "Member");
   }
 }
 

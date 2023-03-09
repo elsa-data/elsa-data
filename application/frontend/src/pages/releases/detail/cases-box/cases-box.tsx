@@ -14,7 +14,7 @@ import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 import { axiosPatchOperationMutationFn } from "../../queries";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
 
   // when the release is activated we want the UI to look approximately
   // as per normal - but with no ability for anyone to edit
@@ -31,7 +31,7 @@ type Props = {
 };
 
 export const CasesBox: React.FC<Props> = ({
-  releaseId,
+  releaseKey,
   releaseIsActivated,
   datasetMap,
   pageSize,
@@ -62,7 +62,7 @@ export const CasesBox: React.FC<Props> = ({
   };
 
   const dataQuery = useQuery(
-    ["releases-cases", currentPage, searchText, releaseId],
+    ["releases-cases", currentPage, searchText, releaseKey],
     async () => {
       const urlParams = new URLSearchParams();
       const useableSearchText = makeUseableSearchText(searchText);
@@ -70,7 +70,7 @@ export const CasesBox: React.FC<Props> = ({
         urlParams.append("q", useableSearchText);
       }
       urlParams.append("page", currentPage.toString());
-      const u = `/api/releases/${releaseId}/cases?${urlParams.toString()}`;
+      const u = `/api/releases/${releaseKey}/cases?${urlParams.toString()}`;
       return await axios.get<ReleaseCaseType[]>(u).then((response) => {
         handleTotalCountHeaders(response, setCurrentTotal);
 
@@ -86,7 +86,7 @@ export const CasesBox: React.FC<Props> = ({
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
       // we want to trigger the refresh of the entire release page
       // TODO can we optimise this to just invalidate the cases?
@@ -232,7 +232,7 @@ export const CasesBox: React.FC<Props> = ({
                             <>
                               {" - "}
                               <ConsentPopup
-                                releaseId={releaseId}
+                                releaseKey={releaseKey}
                                 nodeId={row.id}
                               />
                             </>
@@ -246,7 +246,7 @@ export const CasesBox: React.FC<Props> = ({
                           )}
                         >
                           <PatientsFlexRow
-                            releaseId={releaseId}
+                            releaseKey={releaseKey}
                             releaseIsActivated={releaseIsActivated}
                             patients={row.patients}
                             showCheckboxes={isEditable}

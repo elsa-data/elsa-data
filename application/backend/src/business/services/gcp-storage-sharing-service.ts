@@ -64,18 +64,18 @@ export class GcpStorageSharingService extends GcpBaseService {
    * @param operation whether to add or delete the release's metadata
    * @param bucket the bucket which the object belongs to
    * @param key the object's key
-   * @param releaseId the release the object belongs to
+   * @param releaseKey the release the object belongs to
    */
   modifyObjectMetadataFn(
     operation: "add" | "delete",
     bucket: string,
     key: string,
-    releaseId: string
+    releaseKey: string
   ): () => Promise<void> {
     // TODO(DoxasticFox): Delete me when we start using the release service
     // to figure out which objects belong to an active release
     const go = async () => {
-      const metadataKey = `elsa-data-release-id-${releaseId}`;
+      const metadataKey = `elsa-data-release-id-${releaseKey}`;
 
       var updatedMetadata: Metadata = {};
 
@@ -107,7 +107,7 @@ export class GcpStorageSharingService extends GcpBaseService {
     operation: "add" | "delete",
     bucket: string,
     key: string,
-    releaseId: string,
+    releaseKey: string,
     principal: string
   ): () => Promise<void> {
     const go = async () => {
@@ -129,7 +129,7 @@ export class GcpStorageSharingService extends GcpBaseService {
     operation: "add" | "delete",
     bucket: string,
     key: string,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): (() => Promise<void>)[] {
     return [
@@ -138,18 +138,18 @@ export class GcpStorageSharingService extends GcpBaseService {
           operation,
           bucket,
           key,
-          releaseId,
+          releaseKey,
           principal
         )
       ),
-      this.modifyObjectMetadataFn(operation, bucket, key, releaseId),
+      this.modifyObjectMetadataFn(operation, bucket, key, releaseKey),
     ];
   }
 
   modifyObjectsPrincipalsFns(
     operation: "add" | "delete",
     allFiles: ReleaseFileListEntry[],
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): (() => Promise<void>)[] {
     return allFiles.flatMap((f) =>
@@ -157,7 +157,7 @@ export class GcpStorageSharingService extends GcpBaseService {
         operation,
         f.objectStoreBucket,
         f.objectStoreKey,
-        releaseId,
+        releaseKey,
         principals
       )
     );
@@ -170,7 +170,7 @@ export class GcpStorageSharingService extends GcpBaseService {
    *
    * @param operation whether to add or delete IAM ACLs
    * @param user
-   * @param releaseId The release containing the objects whose ACLs will be modified
+   * @param releaseKey The release containing the objects whose ACLs will be modified
    * @param principals The IAM principals to be added or delete from the objects' ACLs
    *
    * @returns The number of objects modified
@@ -178,14 +178,14 @@ export class GcpStorageSharingService extends GcpBaseService {
   async modifyUsers(
     operation: "add" | "delete",
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): Promise<number> {
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,
       user,
-      releaseId,
+      releaseKey,
       "E",
       "Modified GCP object ACLs for release",
       now
@@ -195,13 +195,13 @@ export class GcpStorageSharingService extends GcpBaseService {
       this.edgeDbClient,
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const shareFns = this.modifyObjectsPrincipalsFns(
       operation,
       allFiles,
-      releaseId,
+      releaseKey,
       principals
     );
 
@@ -238,23 +238,23 @@ export class GcpStorageSharingService extends GcpBaseService {
 
   async addUsers(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): Promise<number> {
-    return await this.modifyUsers("add", user, releaseId, principals);
+    return await this.modifyUsers("add", user, releaseKey, principals);
   }
 
   async deleteUsers(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): Promise<number> {
-    return await this.modifyUsers("delete", user, releaseId, principals);
+    return await this.modifyUsers("delete", user, releaseKey, principals);
   }
 
   async manifest(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     tsvColumns: string[]
   ): Promise<{ filename: string; content: string }> {
     // TODO(DoxasticFox): Implement me. A manifest getter is already implemented

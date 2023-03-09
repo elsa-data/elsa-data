@@ -51,10 +51,10 @@ export abstract class ReleaseBaseService {
     }
   }
 
-  protected baseQueriesForSingleRelease(releaseId: string) {
+  protected baseQueriesForSingleRelease(releaseKey: string) {
     const releaseQuery = e
       .select(e.release.Release, (r) => ({
-        filter: e.op(r.releaseIdentifier, "=", (releaseId)),
+        filter: e.op(r.releaseKey, "=", (releaseKey)),
       }))
       .assert_single();
 
@@ -103,18 +103,18 @@ export abstract class ReleaseBaseService {
    * this release. This is public because some other services may want to return the
    * current release state from API operations.
    *
-   * @param releaseId
+   * @param releaseKey
    * @param userRole
    */
   public async getBase(
-    releaseId: string,
+    releaseKey: string,
     userRole: string
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
       releaseAllDatasetCasesQuery,
       releaseSelectedCasesQuery,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    } = await getReleaseInfo(this.edgeDbClient, releaseKey);
 
     if (!releaseInfo)
       throw new Error(
@@ -181,7 +181,7 @@ export abstract class ReleaseBaseService {
    * A mega function that handles altering the sharing status of a dataset node associated with our 'release'.
    *
    * @param user the user attempting the changes
-   * @param releaseId the release id of the release to alter
+   * @param releaseKey the release id of the release to alter
    * @param specimenIds the edgedb ids of specimens from datasets of our release, or an empty list if the status should be applied to all specimens in the release
    * @param statusToSet the status to set i.e. selected = true means shared, selected = false means not shared
    *
@@ -193,13 +193,13 @@ export abstract class ReleaseBaseService {
   protected async setSelectedStatus(
     user: AuthenticatedUser,
     statusToSet: boolean,
-    releaseId: string,
+    releaseKey: string,
     specimenIds: string[] = []
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     // note this db set we get is likely to be small (bounded by the number of datasets in a release)
@@ -207,7 +207,7 @@ export abstract class ReleaseBaseService {
     // (which we wouldn't get away with if say there were 1 million datasets!)
     const { releaseAllDatasetIdDbSet } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseKey
     );
 
     // we make a query that returns specimens of only where the input specimen ids belong
@@ -242,7 +242,7 @@ export abstract class ReleaseBaseService {
       // add specimens to the selected set
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
           set: {
             selectedSpecimens: { "+=": specimensFromValidDatasetsQuery },
           },
@@ -252,7 +252,7 @@ export abstract class ReleaseBaseService {
       // remove specimens from the selected set
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
           set: {
             selectedSpecimens: { "-=": specimensFromValidDatasetsQuery },
           },
@@ -260,9 +260,9 @@ export abstract class ReleaseBaseService {
         .run(this.edgeDbClient);
     }
 
-    await touchRelease.run(this.edgeDbClient, { releaseIdentifier: releaseId });
+    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   /**
@@ -274,7 +274,7 @@ export abstract class ReleaseBaseService {
    * edgedb)
    *
    * @param userRole the role the user has in this release (must be something!)
-   * @param releaseId the release id of the release to alter (must exist)
+   * @param releaseKey the release id of the release to alter (must exist)
    * @param field the field name to alter e.g. 'institutes', 'diseases'...
    * @param system the system URI of the entry to add/delete
    * @param code the code value of the entry to add/delete
@@ -284,7 +284,7 @@ export abstract class ReleaseBaseService {
    */
   protected async alterApplicationCodedArrayEntry(
     userRole: string,
-    releaseId: string,
+    releaseKey: string,
     field: CodeArrayFields,
     system: string,
     code: string,
@@ -292,7 +292,7 @@ export abstract class ReleaseBaseService {
   ): Promise<boolean> {
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseKey
     );
 
     // we need to get/set the Coded Application all within a transaction context
@@ -306,14 +306,14 @@ export abstract class ReleaseBaseService {
             countriesInvolved: true,
             diseasesOfStudy: true,
           },
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
         }))
         .assert_single()
         .run(tx);
 
       if (!releaseWithAppCoded)
         throw new Error(
-          `Release ${releaseId} that existed just before this code has now disappeared!`
+          `Release ${releaseKey} that existed just before this code has now disappeared!`
         );
 
       let newArray: { system: string; code: string }[];

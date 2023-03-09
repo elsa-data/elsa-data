@@ -10,7 +10,7 @@ import _ from "lodash";
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
 let releaseParticipationService: ReleaseParticipationService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 let allowedDataOwnerUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
@@ -29,7 +29,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   ({
-    testReleaseId,
+    testReleaseKey,
     allowedDataOwnerUser,
     allowedPiUser,
     allowedMemberUser,
@@ -40,7 +40,7 @@ beforeEach(async () => {
 it("all the participants in a release are correctly returned", async () => {
   const result = await releaseParticipationService.getParticipants(
     allowedDataOwnerUser,
-    testReleaseId
+    testReleaseKey
   );
 
   expect(result).not.toBeNull();
@@ -74,14 +74,14 @@ it("all the participants in a release are correctly returned", async () => {
 it("adding a user who doesn't yet exist makes a potential user who is returned with no last login", async () => {
   await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     "test@example.com",
     "PI"
   );
 
   const result = await releaseParticipationService.getParticipants(
     allowedDataOwnerUser,
-    testReleaseId
+    testReleaseKey
   );
 
   expect(result).not.toBeNull();
@@ -100,7 +100,7 @@ it("real users and potential users can both have their roles altered", async () 
   // add a potential user with Member role
   await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     "test@example.com",
     "Member"
   );
@@ -108,7 +108,7 @@ it("real users and potential users can both have their roles altered", async () 
   {
     const startingResult = await releaseParticipationService.getParticipants(
       allowedDataOwnerUser,
-      testReleaseId
+      testReleaseKey
     );
 
     expect(startingResult.filter((r) => r.role === "DataOwner")).toHaveLength(
@@ -122,7 +122,7 @@ it("real users and potential users can both have their roles altered", async () 
   // upgrade our real user member to PI
   await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     "subject4@elsa.net",
     "PI"
   );
@@ -130,7 +130,7 @@ it("real users and potential users can both have their roles altered", async () 
   // upgrade our potential user to a PI as well
   await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     "test@example.com",
     "PI"
   );
@@ -138,7 +138,7 @@ it("real users and potential users can both have their roles altered", async () 
   {
     const result = await releaseParticipationService.getParticipants(
       allowedDataOwnerUser,
-      testReleaseId
+      testReleaseKey
     );
 
     expect(result).not.toBeNull();
@@ -155,26 +155,26 @@ it("real users and potential users can be removed", async () => {
   // add a potential user with Member role
   const newMemberDbId = await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     "test@example.com",
     "Member"
   );
 
   await releaseParticipationService.removeParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     allowedMemberUser.dbId
   );
   await releaseParticipationService.removeParticipant(
     allowedDataOwnerUser,
-    testReleaseId,
+    testReleaseKey,
     newMemberDbId
   );
 
   {
     const result = await releaseParticipationService.getParticipants(
       allowedDataOwnerUser,
-      testReleaseId
+      testReleaseKey
     );
 
     expect(result).not.toBeNull();

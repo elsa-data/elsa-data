@@ -9,7 +9,7 @@ import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { doLookup } from "../../../../helpers/ontology-helper";
 
 type Props = {
-  releaseId?: string;
+  releaseKey?: string;
   nodeId?: string;
   consentId?: string;
 };
@@ -74,7 +74,7 @@ const resolveDiseaseCode = async function (
   return mondoDescription ? `${mondoCode} (${mondoDescription})` : mondoCode;
 };
 
-function ConsentSummary({ consentId, releaseId, nodeId }: Props) {
+function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
   const [error, setError] = useState<ErrorState>({
     error: null,
     isSuccess: true,
@@ -89,7 +89,7 @@ function ConsentSummary({ consentId, releaseId, nodeId }: Props) {
   if (consentId) {
     u = `/api/datasets/consent/${consentId}`;
   } else {
-    u = `/api/releases/${releaseId}/consent/${nodeId}`;
+    u = `/api/releases/${releaseKey}/consent/${nodeId}`;
   }
 
   useEffect(() => {
@@ -136,7 +136,7 @@ function ConsentSummary({ consentId, releaseId, nodeId }: Props) {
     };
 
     fetchConsent();
-  }, [consentId, releaseId, nodeId]);
+  }, [consentId, releaseKey, nodeId]);
 
   return (
     <div className="space-y-4">

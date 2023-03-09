@@ -189,23 +189,23 @@ export async function createReleaseFileList(
  * database - it does not attempt to 'sign urls' etc.
  *
  * @param user
- * @param releaseId
+ * @param releaseKey
  */
 export async function getAllFileRecords(
   edgeDbClient: edgedb.Client,
   usersService: UsersService,
   user: AuthenticatedUser,
-  releaseId: string
+  releaseKey: string
 ): Promise<ReleaseFileListEntry[]> {
   const { userRole } = await doRoleInReleaseCheck(
     usersService,
     user,
-    releaseId
+    releaseKey
   );
 
   const { releaseSelectedSpecimensQuery, releaseInfo } = await getReleaseInfo(
     edgeDbClient,
-    releaseId
+    releaseKey
   );
 
   return await edgeDbClient.transaction(async (tx) => {

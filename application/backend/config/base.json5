@@ -2,5 +2,5 @@
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
   maxmindDbAssetPath: "asset/maxmind/db/",
-  releaseIdPrefix: "R",
+  releaseKeyPrefix: "R",
 }

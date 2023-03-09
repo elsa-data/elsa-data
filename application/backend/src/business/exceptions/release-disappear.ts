@@ -8,11 +8,11 @@ import { Base7807Error } from "@umccr/elsa-types/error-types";
  * don't really actually delete Releases, I think this will never happen outside dev.
  */
 export class ReleaseDisappearedError extends Base7807Error {
-  constructor(releaseId: string) {
+  constructor(releaseKey: string) {
     super(
       "A release that passed a previous existence check seems to have disappeared from the database",
       500,
-      `The release with id '${releaseId}' was previously present but now is missing`
+      `The release with id '${releaseKey}' was previously present but now is missing`
     );
   }
 }

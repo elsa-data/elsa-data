@@ -11,7 +11,7 @@ import {
 import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
 
 let edgeDbClient: Client;
-let testReleaseId: string;
+let testReleaseKey: string;
 
 beforeAll(async () => {
   const testContainer = await registerTypes();
@@ -20,7 +20,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseId } = await beforeEachCommon());
+  ({ testReleaseKey } = await beforeEachCommon());
 });
 
 it("test basic operation of file list helper", async () => {

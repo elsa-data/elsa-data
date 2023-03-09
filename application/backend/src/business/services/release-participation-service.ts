@@ -41,11 +41,11 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     super(edgeDbClient, usersService);
   }
 
-  public async getParticipants(user: AuthenticatedUser, releaseId: string) {
+  public async getParticipants(user: AuthenticatedUser, releaseKey: string) {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     // NOTE: for 'reading' participant information (i.e. this call) we are happy for anyone involved
@@ -53,7 +53,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     // collaboration where actual data collaborators are not allowed to see each others email?)
 
     return await releaseParticipantGetAll(this.edgeDbClient, {
-      releaseId: releaseId,
+      releaseKey: releaseKey,
     });
   }
 
@@ -65,27 +65,27 @@ export class ReleaseParticipationService extends ReleaseBaseService {
    * needs to be created until they log in.
    *
    * @param user the user performing the operation
-   * @param releaseId the release to change the participation of
+   * @param releaseKey the release to change the participation of
    * @param newUserEmail the email address of the user to add
    * @param newUserRole the role the user should have in the release
    */
   public async addParticipant(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     newUserEmail: string,
     newUserRole: string
   ) {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,
       user,
-      releaseId,
+      releaseKey,
       "E",
       "Add Participant",
       now
@@ -94,7 +94,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     try {
       // right to add participants must be limited to DataOwners and PIs
       if (userRole !== "DataOwner" && userRole !== "PI") {
-        throw new ReleaseParticipationPermissionError(releaseId);
+        throw new ReleaseParticipationPermissionError(releaseKey);
       }
 
       const userOrPotentialUserUuid = await this.edgeDbClient.transaction(
@@ -112,7 +112,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
           if (dbUser) {
             await releaseParticipantAddUser(tx, {
               userUuid: dbUser.id,
-              releaseId: releaseId,
+              releaseKey: releaseKey,
               role: newUserRole,
             });
             return dbUser.id;
@@ -129,7 +129,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
           if (potentialDbUser) {
             await releaseParticipantAddPotentialUser(tx, {
               potentialUserUuid: potentialDbUser.id,
-              releaseId: releaseId,
+              releaseKey: releaseKey,
               role: newUserRole,
             });
             return potentialDbUser.id;
@@ -141,7 +141,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
               displayName: newUserEmail,
               email: newUserEmail,
               futureReleaseParticipant: e.select(e.release.Release, (r) => ({
-                filter: e.op(releaseId, "=", r.releaseIdentifier),
+                filter: e.op(releaseKey, "=", r.releaseKey),
                 "@role": e.str(newUserRole),
               })),
             })
@@ -185,20 +185,20 @@ export class ReleaseParticipationService extends ReleaseBaseService {
 
   public async removeParticipant(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     participantUuid: string
   ) {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,
       user,
-      releaseId,
+      releaseKey,
       "E",
       "Remove Participant",
       now
@@ -207,7 +207,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     try {
       // deleting participants must be limited to DataOwners and PIs
       if (userRole !== "DataOwner" && userRole !== "PI") {
-        throw new ReleaseParticipationPermissionError(releaseId);
+        throw new ReleaseParticipationPermissionError(releaseKey);
       }
 
       const actuallyRemoved = await this.edgeDbClient.transaction(
@@ -224,16 +224,16 @@ export class ReleaseParticipationService extends ReleaseBaseService {
 
           const userRemoved = await releaseParticipantRemoveUser(tx, {
             userUuid: participantUuid,
-            releaseId: releaseId,
+            releaseKey: releaseKey,
           });
           const potentialUserRemoved =
             await releaseParticipantRemovePotentialUser(tx, {
               potentialUserUuid: participantUuid,
-              releaseId: releaseId,
+              releaseKey: releaseKey,
             });
 
           // altering the participation of a release counts as a touch
-          await touchRelease.run(tx, { releaseIdentifier: releaseId });
+          await touchRelease.run(tx, { releaseKey: releaseKey });
 
           // return true if we actually removed someone, false otherwise
           return userRemoved || potentialUserRemoved;

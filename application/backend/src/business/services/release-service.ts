@@ -24,7 +24,7 @@ import {
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { getNextReleaseId, touchRelease } from "../db/release-queries";
+import { getNextReleaseKey, touchRelease } from "../db/release-queries";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import etag from "etag";
 import {
@@ -77,7 +77,7 @@ export class ReleaseService extends ReleaseBaseService {
     return {
       total: allReleasesByUser.total,
       data: allReleasesByUser.data.map((a) => ({
-        releaseIdentifier: a.releaseIdentifier,
+        releaseKey: a.releaseKey,
         lastUpdatedDateTime: a.lastUpdated,
         datasetUris: a.datasetUris,
         applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
@@ -94,19 +94,19 @@ export class ReleaseService extends ReleaseBaseService {
    * Get a single release.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    */
   public async get(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<ReleaseDetailType | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
-    return this.getBase(releaseId, userRole);
+    return this.getBase(releaseKey, userRole);
   }
 
   /**
@@ -119,14 +119,14 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
-    const releaseIdentifier = getNextReleaseId(this.settings.releaseIdPrefix);
+    const releaseKey = getNextReleaseKey(this.settings.releaseKeyPrefix);
 
     const releaseRow = await e
       .insert(e.release.Release, {
         applicationDacTitle: release.releaseTitle,
         applicationDacIdentifier: e.tuple({
           system: this.settings.host,
-          value: releaseIdentifier,
+          value: releaseKey,
         }),
         applicationDacDetails: `
 #### Source
@@ -155,7 +155,7 @@ ${release.applicantEmailAddresses}
           studyIsNotCommercial: false,
           beaconQuery: {},
         }),
-        releaseIdentifier: releaseIdentifier,
+        releaseKey: releaseKey,
         releasePassword: randomUUID(),
         datasetUris: release.datasetUris,
         datasetCaseUrisOrderPreference: [],
@@ -185,19 +185,19 @@ ${release.applicantEmailAddresses}
    * protection to artifacts/manifest downloaded from Elsa.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    */
   public async getPassword(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<string | null> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
-    const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseKey);
 
     return releaseInfo.releasePassword;
   }
@@ -206,19 +206,22 @@ ${release.applicantEmailAddresses}
    * Gets a value from the auto incrementing counter.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    */
   public async getIncrementingCounter(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<number> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
-    const { releaseQuery } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    const { releaseQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseKey
+    );
 
     // TODO: this doesn't actually autoincrement .. I can't work out the typescript syntax though
     // (I'm not sure its implemented in edgedb yet AP 10 Aug)
@@ -242,14 +245,14 @@ ${release.applicantEmailAddresses}
    * have some level of visibility into)
    *
    * @param user the user asking for the cases
-   * @param releaseId the release id containing the cases
+   * @param releaseKey the release id containing the cases
    * @param limit maximum number of cases to return (paging)
    * @param offset the offset into the cases (paging)
    * @param identifierSearchText if present, a string that must be present in any identifier within the case
    */
   public async getCases(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     limit: number,
     offset: number,
     identifierSearchText?: string
@@ -257,7 +260,7 @@ ${release.applicantEmailAddresses}
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const {
@@ -265,7 +268,7 @@ ${release.applicantEmailAddresses}
       releaseSelectedSpecimensQuery,
       releaseSelectedCasesQuery,
       datasetUriToIdMap,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    } = await getReleaseInfo(this.edgeDbClient, releaseKey);
 
     const datasetIdSet =
       datasetUriToIdMap.size > 0
@@ -456,23 +459,23 @@ ${release.applicantEmailAddresses}
    * case/individual/biosample.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    * @param nodeId
    */
   public async getNodeConsent(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     nodeId: string
   ): Promise<DuoLimitationCodedType[]> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const { datasetIdToUriMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseKey
     );
 
     const nodeFromValidDatasetsQuery = e
@@ -522,132 +525,132 @@ ${release.applicantEmailAddresses}
 
   public async setMasterAccess(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     start?: Date,
     end?: Date
   ): Promise<void> {}
 
   public async setSelected(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     specimenIds: string[] = []
   ): Promise<any | null> {
-    return await this.setSelectedStatus(user, true, releaseId, specimenIds);
+    return await this.setSelectedStatus(user, true, releaseKey, specimenIds);
   }
 
   public async setUnselected(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     specimenIds: string[] = []
   ): Promise<any | null> {
-    return await this.setSelectedStatus(user, false, releaseId, specimenIds);
+    return await this.setSelectedStatus(user, false, releaseKey, specimenIds);
   }
 
   public async addDiseaseToApplicationCoded(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     await this.alterApplicationCodedArrayEntry(
       userRole,
-      releaseId,
+      releaseKey,
       "diseases",
       system,
       code,
       false
     );
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   public async removeDiseaseFromApplicationCoded(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     await this.alterApplicationCodedArrayEntry(
       userRole,
-      releaseId,
+      releaseKey,
       "diseases",
       system,
       code,
       true
     );
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   public async addCountryToApplicationCoded(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     await this.alterApplicationCodedArrayEntry(
       userRole,
-      releaseId,
+      releaseKey,
       "countries",
       system,
       code,
       false
     );
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   public async removeCountryFromApplicationCoded(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     await this.alterApplicationCodedArrayEntry(
       userRole,
-      releaseId,
+      releaseKey,
       "countries",
       system,
       code,
       true
     );
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   public async setTypeOfApplicationCoded(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     type: "HMB" | "DS" | "CC" | "GRU" | "POA"
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -660,12 +663,12 @@ ${release.applicantEmailAddresses}
             countriesInvolved: true,
             diseasesOfStudy: true,
           },
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
         }))
         .assert_single()
         .run(tx);
 
-      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseId);
+      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseKey);
 
       await e
         .update(e.release.ApplicationCoded, (ac) => ({
@@ -681,18 +684,18 @@ ${release.applicantEmailAddresses}
         .run(tx);
     });
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   public async setBeaconQuery(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     query: any
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     // TODO JSON schema the query once the becaon v2 spec is stable
@@ -702,12 +705,12 @@ ${release.applicantEmailAddresses}
       const releaseWithAppCoded = await e
         .select(e.release.Release, (r) => ({
           applicationCoded: true,
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
         }))
         .assert_single()
         .run(tx);
 
-      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseId);
+      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseKey);
 
       await e
         .update(e.release.ApplicationCoded, (ac) => ({
@@ -723,27 +726,27 @@ ${release.applicantEmailAddresses}
         .run(tx);
     });
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   /**
    * Change the 'is allowed' status of one of the is allowed fields in the release.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    * @param type
    * @param value
    */
   public async setIsAllowed(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     type: "read" | "variant" | "phenotype",
     value: boolean
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const fieldToSet =
@@ -762,15 +765,15 @@ ${release.applicantEmailAddresses}
     await this.edgeDbClient.transaction(async (tx) => {
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
           set: fieldToSet,
         }))
         .run(tx);
 
-      await touchRelease.run(tx, { releaseIdentifier: releaseId });
+      await touchRelease.run(tx, { releaseKey: releaseKey });
     });
 
-    return await this.getBase(releaseId, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   /**
@@ -778,14 +781,14 @@ ${release.applicantEmailAddresses}
    * on all necessary flags that enable actual data sharing.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    * @protected
    */
-  public async activateRelease(user: AuthenticatedUser, releaseId: string) {
+  public async activateRelease(user: AuthenticatedUser, releaseKey: string) {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     if (userRole !== "DataOwner") {
@@ -794,23 +797,23 @@ ${release.applicantEmailAddresses}
     }
 
     await this.edgeDbClient.transaction(async (tx) => {
-      const { releaseInfo } = await getReleaseInfo(tx, releaseId);
+      const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
-      if (!releaseInfo) throw new ReleaseDisappearedError(releaseId);
+      if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
       if (releaseInfo.activation)
-        throw new ReleaseActivationStateError(releaseId);
+        throw new ReleaseActivationStateError(releaseKey);
 
       const manifest = await createReleaseManifest(
         tx,
-        releaseId,
+        releaseKey,
         releaseInfo.isAllowedReadData,
         releaseInfo.isAllowedVariantData
       );
 
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
           set: {
             activation: e.insert(e.release.Activation, {
               activatedById: user.subjectId,
@@ -822,32 +825,32 @@ ${release.applicantEmailAddresses}
         }))
         .run(tx);
 
-      await touchRelease.run(tx, { releaseIdentifier: releaseId });
+      await touchRelease.run(tx, { releaseKey: releaseKey });
     });
   }
 
-  public async deactivateRelease(user: AuthenticatedUser, releaseId: string) {
+  public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
     const { userRole } = await doRoleInReleaseCheck(
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     if (userRole !== "DataOwner") {
-      throw new ReleaseActivationPermissionError(releaseId);
+      throw new ReleaseActivationPermissionError(releaseKey);
     }
 
     await this.edgeDbClient.transaction(async (tx) => {
-      const { releaseInfo } = await getReleaseInfo(tx, releaseId);
+      const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
       if (!releaseInfo) throw new Error("release has disappeared");
 
       if (!releaseInfo.activation)
-        throw new ReleaseDeactivationStateError(releaseId);
+        throw new ReleaseDeactivationStateError(releaseKey);
 
       await e
         .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseIdentifier, "=", releaseId),
+          filter: e.op(r.releaseKey, "=", releaseKey),
           set: {
             previouslyActivated: { "+=": r.activation },
             activation: null,
@@ -855,7 +858,7 @@ ${release.applicantEmailAddresses}
         }))
         .run(tx);
 
-      await touchRelease.run(tx, { releaseIdentifier: releaseId });
+      await touchRelease.run(tx, { releaseKey: releaseKey });
     });
   }
 }

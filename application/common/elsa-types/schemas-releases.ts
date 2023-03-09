@@ -11,7 +11,7 @@ import { StringUnion, TypeDate } from "./typebox-helpers";
 
 export const ReleaseSummarySchema = Type.Object({
   // the primary public identifier for this release
-  releaseIdentifier: Type.String(),
+  releaseKey: Type.String(),
 
   // the date time of last change to anything in this release
   lastUpdatedDateTime: TypeDate,

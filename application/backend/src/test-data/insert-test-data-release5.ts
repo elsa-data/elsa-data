@@ -5,7 +5,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { GS_URI } from "./insert-test-data-gs";
-import { getNextReleaseId } from "../business/db/release-queries";
+import { getNextReleaseKey } from "../business/db/release-queries";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -51,7 +51,7 @@ export async function insertRelease5() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: `R005`,
+      releaseKey: `R005`,
       releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       isAllowedReadData: true,

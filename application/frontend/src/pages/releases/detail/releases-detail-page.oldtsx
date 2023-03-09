@@ -32,11 +32,11 @@ import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
  * to users.
  */
 export const ReleasesDetailPage: React.FC = () => {
-  const { releaseId } = useParams<{ releaseId: string }>();
+  const { releaseKey } = useParams<{ releaseKey: string }>();
 
-  if (!releaseId)
+  if (!releaseKey)
     throw new Error(
-      `The component ReleasesDetailPage cannot be rendered outside a route with a releaseId param`
+      `The component ReleasesDetailPage cannot be rendered outside a route with a releaseKey param`
     );
 
   const [error, setError] = useState<ErrorState>({
@@ -49,7 +49,7 @@ export const ReleasesDetailPage: React.FC = () => {
   const queryClient = useQueryClient();
 
   const releaseQuery = useQuery<ReleaseTypeLocal>({
-    queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+    queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
     queryFn: specificReleaseQuery,
     onError: (error: any) => setError({ error, isSuccess: false }),
     onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
@@ -57,14 +57,14 @@ export const ReleasesDetailPage: React.FC = () => {
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
       result
     );
     setError({ error: null, isSuccess: true });
   };
 
   const cancelMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/cancel`)
+    axiosPostNullMutationFn(`/api/releases/${releaseKey}/jobs/cancel`)
   );
   const isJobRunning: boolean = !isUndefined(releaseQuery?.data?.runningJob);
 
@@ -87,7 +87,7 @@ export const ReleasesDetailPage: React.FC = () => {
   return (
     <div className="mt-2 flex flex-grow flex-row flex-wrap">
       <>
-        <ReleasesBreadcrumbsDiv releaseId={releaseId} />
+        <ReleasesBreadcrumbsDiv releaseKey={releaseKey} />
 
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (
           <Box heading="Background Job">
@@ -130,16 +130,16 @@ export const ReleasesDetailPage: React.FC = () => {
         {releaseQuery.isSuccess && !releaseQuery.data.runningJob && (
           <>
             <InformationBox
-              releaseId={releaseId}
+              releaseKey={releaseKey}
               releaseData={releaseQuery.data}
             />
 
             {releaseQuery.data.permissionEditApplicationCoded && (
-              <BulkBox releaseId={releaseId} releaseData={releaseQuery.data} />
+              <BulkBox releaseKey={releaseKey} releaseData={releaseQuery.data} />
             )}
 
             <CasesBox
-              releaseId={releaseId}
+              releaseKey={releaseKey}
               datasetMap={releaseQuery.data.datasetMap}
               isEditable={releaseQuery.data.permissionEditSelections || false}
               pageSize={pageSize}
@@ -148,7 +148,7 @@ export const ReleasesDetailPage: React.FC = () => {
 
             {releaseQuery.data.permissionEditSelections && (
               <FurtherRestrictionsBox
-                releaseId={releaseId}
+                releaseKey={releaseKey}
                 releaseData={releaseQuery.data}
               />
             )}
@@ -156,7 +156,7 @@ export const ReleasesDetailPage: React.FC = () => {
             {/*
             {releaseQuery.data.permissionEditSelections && (
               <MasterAccessControlBox
-                releaseId={releaseId}
+                releaseKey={releaseKey}
                 releaseData={releaseQuery.data}
               />
             )}*/}
@@ -185,13 +185,13 @@ export const ReleasesDetailPage: React.FC = () => {
                   </p>
                 </div>
                 <PresignedUrlForm
-                  releaseId={releaseId}
+                  releaseKey={releaseKey}
                   releaseData={releaseQuery.data}
                 />
-                <AwsS3VpcShareForm releaseId={releaseId} />
-                <GcpStorageIamShareForm releaseId={releaseId} />
+                <AwsS3VpcShareForm releaseKey={releaseKey} />
+                <GcpStorageIamShareForm releaseKey={releaseKey} />
                 <HtsgetForm
-                  releaseId={releaseId}
+                  releaseKey={releaseKey}
                   releaseData={releaseQuery.data}
                 />
                 {/*<div className="prose">
@@ -207,11 +207,11 @@ export const ReleasesDetailPage: React.FC = () => {
 
             <AuditEventTable
               path="releases"
-              id={releaseId}
+              id={releaseKey}
               filterMenu={false}
               pageSize={pageSize}
             />
-            <DataAccessSummaryBox releaseId={releaseId} />
+            <DataAccessSummaryBox releaseKey={releaseKey} />
           </>
         )}
         {!error.isSuccess && (

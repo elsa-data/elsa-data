@@ -10,7 +10,7 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { format } from "date-fns";
-import { getNextReleaseId } from "../db/release-queries";
+import { getNextReleaseKey } from "../db/release-queries";
 
 @injectable()
 @singleton()
@@ -35,7 +35,7 @@ export class RemsService {
 
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers
-    const currentReleaseIdentifiers = new Set<string>(
+    const currentReleaseKeys = new Set<string>(
       await e
         .select(e.release.Release, (r) => ({
           applicationDacIdentifier: true,
@@ -48,7 +48,7 @@ export class RemsService {
         .applicationDacIdentifier.value.run(this.edgeDbClient)
     );
 
-    console.log(currentReleaseIdentifiers);
+    console.log(currentReleaseKeys);
 
     const newReleases: RemsApprovedApplicationType[] = [];
 
@@ -63,7 +63,7 @@ export class RemsService {
         if (!isFinite(remsId)) continue;
 
         // if we've already turned this REMS application into a release - then skip
-        if (currentReleaseIdentifiers.has(remsId.toString())) continue;
+        if (currentReleaseKeys.has(remsId.toString())) continue;
 
         newReleases.push({
           // consider what date we want to actually put here...
@@ -186,7 +186,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
-          releaseIdentifier: getNextReleaseId(this.settings.releaseIdPrefix),
+          releaseKey: getNextReleaseKey(this.settings.releaseKeyPrefix),
           releasePassword: randomUUID(),
           datasetUris: e.literal(
             e.array(e.str),

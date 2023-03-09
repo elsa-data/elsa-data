@@ -15,7 +15,7 @@ import { RhCheckItem, RhChecks } from "../../../../components/rh/rh-checks";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   applicationCoded: ReleaseApplicationCodedType;
 };
 
@@ -99,12 +99,12 @@ const femalesWithChr20VariantQuery = {
  * have found in the application - in preparation of running an algorithm over
  * the datasets.
  *
- * @param releaseId
+ * @param releaseKey
  * @param applicationCoded
  * @constructor
  */
 export const ApplicationCodedBox: React.FC<Props> = ({
-  releaseId,
+  releaseKey,
   applicationCoded,
 }) => {
   const queryClient = useQueryClient();
@@ -112,13 +112,13 @@ export const ApplicationCodedBox: React.FC<Props> = ({
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
       // whenever we do a mutation of application coded data - our API returns the complete updated
       // state of the *whole* release - and we can use that data to replace the stored react-query state
       onSuccess: (result: ReleaseTypeLocal) => {
         queryClient.setQueryData(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+          REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
           result
         );
       },

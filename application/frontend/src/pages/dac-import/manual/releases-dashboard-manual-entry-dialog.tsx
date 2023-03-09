@@ -52,11 +52,11 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
         .post<string>("/api/release", getValues())
         .then((response) => response.data),
     {
-      onSuccess: (newReleaseId) => {
+      onSuccess: (newReleaseKey) => {
         // invalidate the keys so that going to the dashboard will be refreshed
         queryClient.invalidateQueries(REACT_QUERY_RELEASE_KEYS.all).then(() => {
           // bounce us to the details page for the release we just made
-          navigate(`/releases/${newReleaseId}`);
+          navigate(`/releases/${newReleaseKey}`);
         });
 
         // now close the dialog

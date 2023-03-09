@@ -6,25 +6,25 @@ import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
 import { axiosPostArgMutationFn, REACT_QUERY_RELEASE_KEYS } from "../queries";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
 export const MasterAccessControlBox: React.FC<Props> = ({
-  releaseId,
+  releaseKey,
   releaseData,
 }) => {
   const queryClient = useQueryClient();
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
       result
     );
   };
 
   const applyAllMutate = useMutation(
-    axiosPostArgMutationFn(`/api/releases/${releaseId}/masterAccess`)
+    axiosPostArgMutationFn(`/api/releases/${releaseKey}/masterAccess`)
   );
 
   return (

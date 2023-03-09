@@ -5,7 +5,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
-import { getNextReleaseId } from "../business/db/release-queries";
+import { getNextReleaseKey } from "../business/db/release-queries";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -33,7 +33,7 @@ export async function insertRelease2() {
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseIdentifier: RELEASE2_RELEASE_IDENTIFIER,
+      releaseKey: RELEASE2_RELEASE_IDENTIFIER,
       releasePassword: "bbew75CZ", // pragma: allowlist secret
       isAllowedReadData: true,
       isAllowedVariantData: true,

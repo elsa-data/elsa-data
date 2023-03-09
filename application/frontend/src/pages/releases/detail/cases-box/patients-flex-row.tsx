@@ -14,7 +14,7 @@ import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   patients: ReleasePatientType[];
   // whether to show checkboxes or not - though we note there are other fields
   // which control whether the checkboxes are enabled or not - this is just whether
@@ -32,7 +32,7 @@ type Props = {
  * a case, including listing their sample ids. It also draws icons to give extra
  * data about the patient/samples in a compact form.
  *
- * @param releaseId
+ * @param releaseKey
  * @param patients
  * @param showCheckboxes
  * @param onCheckboxClicked
@@ -41,7 +41,7 @@ type Props = {
  * @constructor
  */
 export const PatientsFlexRow: React.FC<Props> = ({
-  releaseId,
+  releaseKey,
   patients,
   showCheckboxes,
   onCheckboxClicked,
@@ -52,7 +52,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
       // we want to trigger the refresh of the entire release page
       // TODO can we optimise this to just invalidate the cases?
@@ -121,7 +121,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
             {patient.customConsent && (
               <>
                 {" - "}
-                <ConsentPopup releaseId={releaseId} nodeId={patient.id} />
+                <ConsentPopup releaseKey={releaseKey} nodeId={patient.id} />
               </>
             )}
           </label>
@@ -136,7 +136,10 @@ export const PatientsFlexRow: React.FC<Props> = ({
                     {spec.customConsent && (
                       <>
                         {" - "}
-                        <ConsentPopup releaseId={releaseId} nodeId={spec.id} />
+                        <ConsentPopup
+                          releaseKey={releaseKey}
+                          nodeId={spec.id}
+                        />
                       </>
                     )}{" "}
                     <span className="label-text">{spec.externalId}</span>

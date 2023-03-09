@@ -20,19 +20,19 @@ import type {
  * available and on which identifiers.
  *
  * @param executor the client or transaction to execute this query in
- * @param releaseId the release whose selected entries should go into the manifest
+ * @param releaseKey the release whose selected entries should go into the manifest
  * @param includeReadData whether to include BAM access to htsget
  * @param includeVariantData whether to include VCF access to htsget
  */
 export async function createReleaseManifest(
   executor: Executor,
-  releaseId: string,
+  releaseKey: string,
   includeReadData: boolean,
   includeVariantData: boolean
 ): Promise<ManifestType> {
   const { releaseSelectedSpecimensQuery } = await getReleaseInfo(
     executor,
-    releaseId
+    releaseKey
   );
 
   // get the tree of cases/patients/specimens - that we want to put into the manifest
@@ -141,7 +141,7 @@ export async function createReleaseManifest(
   };
 
   return {
-    id: releaseId,
+    id: releaseKey,
     reads: includeReadData ? readDictionary : {},
     variants: includeVariantData ? variantDictionary : {},
     // TODO implement a restrictions mechanism both here and in the htsget server

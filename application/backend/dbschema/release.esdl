@@ -18,7 +18,7 @@ module release {
 
         # the public "friendly" identifier for this release
         #
-        required property releaseIdentifier -> str {
+        required property releaseKey -> str {
             constraint exclusive;
         }
 

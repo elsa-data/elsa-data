@@ -1,16 +1,16 @@
 import e from "../../../dbschema/edgeql-js";
 
 /**
- * Set the `lastUpdated` field of a release (specified by a `releaseId`) to the
+ * Set the `lastUpdated` field of a release (specified by a `releaseKey`) to the
  * current time.
  */
 export const touchRelease = e.params(
   {
-    releaseIdentifier: e.str,
+    releaseKey: e.str,
   },
   (params) =>
     e.update(e.release.Release, (r) => ({
-      filter: e.op(r.releaseIdentifier, "=", params.releaseIdentifier),
+      filter: e.op(r.releaseKey, "=", params.releaseKey),
       set: { lastUpdated: e.datetime_current() },
     }))
 );
@@ -20,7 +20,7 @@ export const touchRelease = e.params(
  * @param prefix The prefix id before the release count.
  * @returns
  */
-export const getNextReleaseId = (prefix: string = "R") => {
+export const getNextReleaseKey = (prefix: string = "R") => {
   const minDigitLength = 3;
 
   const nextIdString = e.to_str(e.op(e.count(e.release.Release), "+", 1));

@@ -13,10 +13,10 @@ export class ManifestService {
    * NOTE: this has no User on this call because we haven't yet worked out what
    * the caller for this is (another service??).
    *
-   * @param releaseId
+   * @param releaseKey
    */
   public async getActiveManifest(
-    releaseId: string
+    releaseKey: string
   ): Promise<ManifestType | null> {
     const releaseWithManifest = await e
       .select(e.release.Release, (r) => ({
@@ -24,7 +24,7 @@ export class ManifestService {
         activation: {
           manifest: true,
         },
-        filter: e.op(r.releaseIdentifier, "=", releaseId),
+        filter: e.op(r.releaseKey, "=", releaseKey),
       }))
       .assert_single()
       .run(this.edgeDbClient);

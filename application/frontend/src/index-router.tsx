@@ -127,7 +127,7 @@ export function createRouter(addBypassLoginPage: boolean) {
             {/* all pages pertaining to an individual release get this master page which display
                 breadcrumbs and some job management UI */}
             <Route
-              path={`:releaseId`}
+              path={`:releaseKey`}
               element={<ReleasesMasterPage />}
               // we want to pass through to the master page the ability in our breadcrumbs
               // to navigate sideways to our siblings

@@ -17,7 +17,7 @@ select {
   total := count(r),
   data := (select r
            {
-              releaseIdentifier,
+              releaseKey,
               lastUpdated,
               datasetUris,
               applicationDacTitle,

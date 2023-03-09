@@ -42,8 +42,8 @@ export class AwsAccessPointService extends AwsBaseService {
     super();
   }
 
-  public static getReleaseStackName(releaseId: string): string {
-    return `elsa-data-release-${releaseId}`;
+  public static getReleaseStackName(releaseKey: string): string {
+    return `elsa-data-release-${releaseKey}`;
   }
 
   /**
@@ -53,18 +53,18 @@ export class AwsAccessPointService extends AwsBaseService {
    * minimum resources to detect this and immediately returns null for no stack).
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    */
   public async getInstalledAccessPointResources(
     user: AuthenticatedUser,
-    releaseId: string
+    releaseKey: string
   ): Promise<{
     stackName: string;
     stackId: string;
     bucketNameMap: { [x: string]: string };
   } | null> {
     const releaseStackName =
-      AwsAccessPointService.getReleaseStackName(releaseId);
+      AwsAccessPointService.getReleaseStackName(releaseKey);
 
     let releaseStack: DescribeStacksCommandOutput;
 
@@ -99,13 +99,13 @@ export class AwsAccessPointService extends AwsBaseService {
    * for the access point.
    *
    * @param user
-   * @param releaseId
+   * @param releaseKey
    * @param tsvColumns an array of column names that will be used to construct the TSV columns (matching order)
    * @returns a proposed filename and the content of a TSV
    */
   public async getAccessPointFileList(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     tsvColumns: string[]
   ) {
     // find all the files encompassed by this release as a flat array of S3 URLs
@@ -114,12 +114,12 @@ export class AwsAccessPointService extends AwsBaseService {
       this.edgeDbClient,
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     const stackResources = await this.getInstalledAccessPointResources(
       user,
-      releaseId
+      releaseKey
     );
 
     if (!stackResources)
@@ -154,10 +154,10 @@ export class AwsAccessPointService extends AwsBaseService {
 
     const counter = await this.releaseService.getIncrementingCounter(
       user,
-      releaseId
+      releaseKey
     );
 
-    const filename = `release-${releaseId.replaceAll("-", "")}-${counter}.tsv`;
+    const filename = `release-${releaseKey.replaceAll("-", "")}-${counter}.tsv`;
 
     return {
       filename: filename,
@@ -174,13 +174,13 @@ export class AwsAccessPointService extends AwsBaseService {
    * is done separately in the jobs service.
    *
    * @param user the user asking for the cloud formation template (may alter which data is released)
-   * @param releaseId the release id
+   * @param releaseKey the release id
    * @param accountIds an array of account ids that the files will be shared to
    * @param vpcId if specified, a specific VPC id that the files will further be restricted to
    */
   public async createAccessPointCloudFormationTemplate(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     accountIds: string[],
     vpcId?: string
   ): Promise<string> {
@@ -192,7 +192,7 @@ export class AwsAccessPointService extends AwsBaseService {
       this.edgeDbClient,
       this.usersService,
       user,
-      releaseId
+      releaseKey
     );
 
     // make a (nested) CloudFormation templates that will expose only these
@@ -201,7 +201,7 @@ export class AwsAccessPointService extends AwsBaseService {
       createAccessPointTemplateFromReleaseFileEntries(
         this.settings.awsTempBucket,
         REGION,
-        releaseId,
+        releaseKey,
         filesArray,
         accountIds,
         vpcId

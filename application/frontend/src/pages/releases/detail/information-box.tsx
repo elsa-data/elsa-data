@@ -7,7 +7,7 @@ import { trpc } from "../../../helpers/trpc";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
-  releaseIdentifier: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
@@ -16,12 +16,12 @@ type Props = {
  * and gives the ability to activate and deactivate them.
  *
  * @param releaseData
- * @param releaseIdentifier
+ * @param releaseKey
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({
   releaseData,
-  releaseIdentifier,
+  releaseKey,
 }) => {
   // a right aligned list of all our datasets and their visualisation colour/box
   const DatasetList = () => (

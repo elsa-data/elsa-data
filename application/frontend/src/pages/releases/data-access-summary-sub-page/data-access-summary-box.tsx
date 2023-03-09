@@ -9,13 +9,17 @@ import { BiLinkExternal } from "react-icons/bi";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { fileSize } from "humanize-plus";
 
-export const DataAccessSummaryBox = ({ releaseId }: { releaseId: string }) => {
+export const DataAccessSummaryBox = ({
+  releaseKey,
+}: {
+  releaseKey: string;
+}) => {
   const dataAccessQuery = useQuery(
-    ["release-data-access-audit", releaseId],
+    ["release-data-access-audit", releaseKey],
     async () =>
       await axios
         .get<AuditDataSummaryType[]>(
-          `/api/releases/${releaseId}/audit-event/data-access/summary`
+          `/api/releases/${releaseKey}/audit-event/data-access/summary`
         )
         .then((response) => response.data)
   );
@@ -36,7 +40,7 @@ export const DataAccessSummaryBox = ({ releaseId }: { releaseId: string }) => {
       <div>Data Access Summary</div>
       <a
         className="flex	cursor-pointer rounded-md bg-transparent p-1 normal-case hover:bg-slate-200"
-        href={`/releases/${releaseId}/audit-event/data-access`}
+        href={`/releases/${releaseKey}/audit-event/data-access`}
       >
         <BiLinkExternal />
       </a>

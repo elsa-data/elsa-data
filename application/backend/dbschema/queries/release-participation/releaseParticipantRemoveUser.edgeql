@@ -5,6 +5,6 @@ update permission::User
 filter .id = <uuid>$userUuid
 set {
  releaseParticipant -= (
-    select release::Release filter .releaseIdentifier = <str>$releaseId
+    select release::Release filter .releaseKey = <str>$releaseKey
     )
 };

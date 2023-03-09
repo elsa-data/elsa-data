@@ -16,11 +16,11 @@ import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
-export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
+export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const queryClient = useQueryClient();
 
   const [error, setError] = useState<ErrorState>({
@@ -30,14 +30,14 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
 
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseId),
+      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
       result
     );
     setError({ error: null, isSuccess: true });
   };
 
   const applyAllMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseId}/jobs/select`)
+    axiosPostNullMutationFn(`/api/releases/${releaseKey}/jobs/select`)
   );
 
   return (
@@ -47,16 +47,16 @@ export const BulkBox: React.FC<Props> = ({ releaseId, releaseData }) => {
     >
       {/*
       The consent sources are not needed until we hook up real Dynamic systems like CTRL
-      <ConsentSourcesBox releaseId={releaseId} />
+      <ConsentSourcesBox releaseKey={releaseKey} />
       <HrDiv /> */}
       <ApplicationCodedBox
-        releaseId={releaseId}
+        releaseKey={releaseKey}
         applicationCoded={releaseData.applicationCoded}
       />
       {/*
       The virtual cohorting has been mixed in with the application coding for a bit - revisit
       <HrDiv />
-      <VirtualCohortBox releaseId={releaseId} /> */}
+      <VirtualCohortBox releaseKey={releaseKey} /> */}
       <HrDiv />
       <div className="md:grid md:grid-cols-5 md:gap-6">
         <LeftDiv
