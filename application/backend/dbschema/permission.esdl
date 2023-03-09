@@ -18,7 +18,7 @@ module permission {
 
         multi link futureReleaseParticipant -> release::Release {
             property role -> str {
-               constraint one_of('DataOwner', 'Member', 'PI');
+               constraint one_of('Administrator', 'Manager', 'Member');
             }
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release
@@ -68,7 +68,7 @@ module permission {
 
         multi link releaseParticipant -> release::Release {
             property role -> str {
-               constraint one_of('DataOwner', 'Member', 'PI');
+               constraint one_of('Administrator', 'Manager', 'Member');
             }
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release
