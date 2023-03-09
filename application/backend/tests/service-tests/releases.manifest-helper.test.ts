@@ -22,7 +22,10 @@ it("test basic operation of manifest helper", async () => {
     edgeDbClient,
     testReleaseKey,
     true,
-    true
+    true,
+    true,
+    false,
+    false
   );
 
   expect(manifest.id).toBeDefined();
@@ -64,7 +67,10 @@ it("test multiple blank identifiers converts to an array", async () => {
     edgeDbClient,
     testReleaseKey,
     true,
-    true
+    true,
+    true,
+    false,
+    false
   );
 
   // make sure we actually catch the assertion code
@@ -93,7 +99,10 @@ it("test read data needs to be specified to be included", async () => {
     edgeDbClient,
     testReleaseKey,
     false,
-    true
+    true,
+    true,
+    false,
+    false
   );
 
   expect(manifest.reads).toStrictEqual({});
@@ -104,6 +113,9 @@ it("test variants data needs to be specified to be included", async () => {
     edgeDbClient,
     testReleaseKey,
     true,
+    false,
+    true,
+    false,
     false
   );
 
