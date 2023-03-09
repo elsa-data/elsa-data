@@ -46,12 +46,14 @@ import {
   OUTCOME_SUCCESS,
 } from "./audit-log-service";
 import { auditFailure, auditReleaseUpdateStart } from "../../audit-helpers";
+import { Logger } from "pino";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
+    @inject("Logger") private logger: Logger,
     private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
@@ -863,8 +865,14 @@ ${release.applicantEmailAddresses}
         tx,
         releaseKey,
         releaseInfo.isAllowedReadData,
-        releaseInfo.isAllowedVariantData
+        releaseInfo.isAllowedVariantData,
+        releaseInfo.isAllowedS3Data,
+        releaseInfo.isAllowedGSData,
+        releaseInfo.isAllowedR2Data
       );
+
+      // once this is working well we can probably drop this to debug
+      this.logger.info(manifest, "created release manifest");
 
       await e
         .update(e.release.Release, (r) => ({

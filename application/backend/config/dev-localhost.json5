@@ -14,7 +14,7 @@
     transportTargets: [
       {
         target: "pino-pretty",
-        options: { destination: 1 },
+        options: { destination: 1, minimumLevel: "debug" },
       },
     ],
   },

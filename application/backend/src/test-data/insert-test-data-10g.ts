@@ -34,6 +34,52 @@ export async function insert10G() {
     patientConsentJsons?: DuoLimitationCodedType[],
     specimenConsentJsons?: DuoLimitationCodedType[]
   ) => {
+    const s3Artifacts = await createArtifacts(
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+        vcfSize,
+        vcfEtag,
+        vcfMd5
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+        0
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
+        bamSize,
+        bamEtag,
+        bamMd5
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
+        0
+      ),
+      [],
+      []
+    );
+    const gsArtifacts = await createArtifacts(
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+        vcfSize,
+        undefined,
+        vcfMd5
+      ),
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+        0
+      ),
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.bam`,
+        bamSize,
+        undefined,
+        bamMd5
+      ),
+      createFile(`gs://10gbucket/${specimenId}/${specimenId}.bam.bai`, 0),
+      [],
+      []
+    );
+
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
       patients: e.insert(e.dataset.DatasetPatient, {
@@ -65,30 +111,7 @@ export async function insert10G() {
                   ),
                 })
               : undefined,
-          artifacts: await createArtifacts(
-            createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
-              vcfSize,
-              vcfEtag,
-              vcfMd5
-            ),
-            createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-              0
-            ),
-            createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
-              bamSize,
-              bamEtag,
-              bamMd5
-            ),
-            createFile(
-              `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
-              0
-            ),
-            [],
-            []
-          ),
+          artifacts: e.op(s3Artifacts, "union", gsArtifacts),
         }),
       }),
     });
