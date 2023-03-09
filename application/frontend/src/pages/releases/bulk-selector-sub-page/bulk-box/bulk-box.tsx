@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";

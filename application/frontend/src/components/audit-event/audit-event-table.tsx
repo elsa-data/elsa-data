@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { AuditEventType, RouteValidation } from "@umccr/elsa-types";
 import axios from "axios";
-import { useQuery, UseQueryResult } from "react-query";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
 import {

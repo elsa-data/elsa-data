@@ -5,12 +5,14 @@ import {
   DeployedEnvironments,
   EnvRelayProvider,
 } from "./providers/env-relay-provider";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
 import { createRouter } from "./index-router";
+import { httpBatchLink } from "@trpc/client";
+import { trpc } from "./helpers/trpc";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -37,6 +39,19 @@ if (rootElement != null) {
 
   const queryClient = new QueryClient({});
 
+  const trpcClient = trpc.createClient({
+    links: [
+      httpBatchLink({
+        url: "/api/trpc",
+        // headers() {
+        //  return {
+        //    authorization: getAuthCookie(),
+        //  };
+        // },
+      }),
+    ],
+  });
+
   root.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
@@ -49,15 +64,17 @@ if (rootElement != null) {
           deployedEnvironment={de}
           terminologyFhirUrl={tfu}
         >
-          {/* the query provider comes from react-query and provides standardised remote query semantics */}
-          <QueryClientProvider client={queryClient}>
-            {/* we use session cookies for auth and use this provider to make them easily available */}
-            <CookiesProvider>
-              <LoggedInUserProvider>
-                <RouterProvider router={createRouter(de === "development")} />
-              </LoggedInUserProvider>
-            </CookiesProvider>
-          </QueryClientProvider>
+          <trpc.Provider client={trpcClient} queryClient={queryClient}>
+            {/* the query provider comes from react-query and provides standardised remote query semantics */}
+            <QueryClientProvider client={queryClient}>
+              {/* we use session cookies for auth and use this provider to make them easily available */}
+              <CookiesProvider>
+                <LoggedInUserProvider>
+                  <RouterProvider router={createRouter(de === "development")} />
+                </LoggedInUserProvider>
+              </CookiesProvider>
+            </QueryClientProvider>
+          </trpc.Provider>
         </EnvRelayProvider>
       </ErrorBoundary>
     </React.StrictMode>
