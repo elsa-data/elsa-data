@@ -358,6 +358,36 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                   )
                 );
                 return;
+              case "/allowedS3":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "s3",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedGS":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "gs",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedR2":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "r2",
+                    op.value
+                  )
+                );
+                return;
               default:
                 throw new Error(
                   `Unknown "replace" operation path ${(op as any).path}`

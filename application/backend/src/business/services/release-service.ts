@@ -40,12 +40,19 @@ import { format } from "date-fns";
 import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
 import { releaseGetAllByUser } from "../../../dbschema/queries";
+import {
+  AuditLogService,
+  OUTCOME_SERIOUS_FAILURE,
+  OUTCOME_SUCCESS,
+} from "./audit-log-service";
+import { auditFailure, auditReleaseUpdateStart } from "../../audit-helpers";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
+    private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);
@@ -732,15 +739,19 @@ ${release.applicantEmailAddresses}
   /**
    * Change the 'is allowed' status of one of the is allowed fields in the release.
    *
-   * @param user
-   * @param releaseKey
-   * @param type
-   * @param value
+   * @param user the user performing the action
+   * @param releaseKey the key of the release
+   * @param type the type of isAllowed field to be changed
+   * @param value the boolean value to set
+   *
+   * Note: this is an arbitrary grouping of a set of otherwise identical service
+   * level operations into a single function. This could have been split in
+   * multiple functions.
    */
   public async setIsAllowed(
     user: AuthenticatedUser,
     releaseKey: string,
-    type: "read" | "variant" | "phenotype",
+    type: "read" | "variant" | "phenotype" | "s3" | "gs" | "r2",
     value: boolean
   ): Promise<ReleaseDetailType> {
     const { userRole } = await doRoleInReleaseCheck(
@@ -749,31 +760,75 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    const fieldToSet =
-      type === "read"
-        ? {
-            isAllowedReadData: value,
+    // TODO check whether the release is allowed to be altered
+
+    const fieldToSet = {
+      read: {
+        isAllowedReadData: value,
+      },
+      variant: {
+        isAllowedVariantData: value,
+      },
+      phenotype: {
+        isAllowedPhenotypeData: value,
+      },
+      s3: {
+        isAllowedS3Data: value,
+      },
+      gs: {
+        isAllowedGSData: value,
+      },
+      r2: { isAllowedR2Data: value },
+    }[type];
+
+    if (!fieldToSet)
+      throw new Error(`setIsAllowed passed in unknown type ${type}`);
+
+    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+      this.auditLogService,
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      `Updated ${Object.keys(fieldToSet)[0]}`
+    );
+
+    try {
+      await this.edgeDbClient.transaction(async (tx) => {
+        await e
+          .update(e.release.Release, (r) => ({
+            filter_single: e.op(r.releaseKey, "=", releaseKey),
+            set: fieldToSet,
+          }))
+          .run(tx);
+
+        await touchRelease.run(tx, { releaseKey: releaseKey });
+
+        await this.auditLogService.completeReleaseAuditEvent(
+          tx,
+          auditEventId,
+          OUTCOME_SUCCESS,
+          auditEventStart,
+          new Date(),
+          {
+            field: type,
+            toValue: value,
           }
-        : type === "variant"
-        ? {
-            isAllowedVariantData: value,
-          }
-        : {
-            isAllowedPhenotypeData: value,
-          };
+        );
+      });
 
-    await this.edgeDbClient.transaction(async (tx) => {
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: fieldToSet,
-        }))
-        .run(tx);
+      // TODO should this be part of the transaction?
+      return await this.getBase(releaseKey, userRole);
+    } catch (e) {
+      await auditFailure(
+        this.auditLogService,
+        this.edgeDbClient,
+        auditEventId,
+        auditEventStart,
+        e
+      );
 
-      await touchRelease.run(tx, { releaseKey: releaseKey });
-    });
-
-    return await this.getBase(releaseKey, userRole);
+      throw e;
+    }
   }
 
   /**

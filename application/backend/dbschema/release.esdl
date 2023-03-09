@@ -17,6 +17,7 @@ module release {
         };
 
         # the public "friendly" identifier for this release
+        # we explicitly don't want to use the native EdgeDb "id" field for Releases
         #
         required property releaseKey -> str {
             constraint exclusive;
@@ -80,9 +81,15 @@ module release {
 
         # which file types are allowed to be accessed for the selectedSpecimens
         #
-        required property isAllowedReadData -> bool;
-        required property isAllowedVariantData -> bool;
-        required property isAllowedPhenotypeData -> bool;
+        required property isAllowedReadData -> bool { default := false };
+        required property isAllowedVariantData -> bool { default := false };
+        required property isAllowedPhenotypeData -> bool { default := false };
+
+        # which file locations are allowed to be access for the selectedSpecimens
+        #
+        required property isAllowedS3Data -> bool { default := false };
+        required property isAllowedGSData -> bool { default := false };
+        required property isAllowedR2Data -> bool { default := false };
 
         # if present indicates that a running job is active in the context of this release
         #
@@ -125,7 +132,8 @@ module release {
         }
         property lastDateTimeDataAccessLogQuery -> datetime;
 
-        # The participants of this release as Users.
+        # the participants of this release as Users
+        #
         multi link participants := .<releaseParticipant[is permission::User];
     }
 
@@ -179,7 +187,7 @@ module release {
         required property manifest -> json;
 
         # a fixed etag representing this activation of the release - as a combination of the manifest content
-        # and time of activation - this can be used to help clients perform extremely aggressive cacheing
+        # and time of activation - this can be used to help clients perform extremely aggressive caching
         # of the manifest information
         #
         required property manifestEtag -> str;
