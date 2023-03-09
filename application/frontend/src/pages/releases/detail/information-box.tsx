@@ -15,8 +15,8 @@ type Props = {
  * Displays summary/important information about a release
  * and gives the ability to activate and deactivate them.
  *
- * @param releaseData
- * @param releaseKey
+ * @param releaseKey the unique key referring to this release
+ * @param releaseData the information about this release
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({
@@ -52,7 +52,7 @@ export const InformationBox: React.FC<Props> = ({
         disabled={releaseIsActivated || mutationInProgress}
         onClick={() =>
           activateMutation.mutate(
-            { releaseIdentifier: releaseIdentifier },
+            { releaseKey },
             { onSuccess: async () => await queryClient.invalidateQueries() }
           )
         }
@@ -64,7 +64,7 @@ export const InformationBox: React.FC<Props> = ({
         disabled={!releaseIsActivated || mutationInProgress}
         onClick={() =>
           deactivateMutation.mutate(
-            { releaseIdentifier: releaseIdentifier },
+            { releaseKey },
             { onSuccess: async () => await queryClient.invalidateQueries() }
           )
         }

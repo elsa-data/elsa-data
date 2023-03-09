@@ -4,25 +4,19 @@ export const releaseActivationRouter = router({
   activate: internalProcedure
     .input(
       z.object({
-        releaseIdentifier: z.string(),
+        releaseKey: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      await ctx.releaseService.activateRelease(
-        ctx.user,
-        input.releaseIdentifier
-      );
+      await ctx.releaseService.activateRelease(ctx.user, input.releaseKey);
     }),
   deactivate: internalProcedure
     .input(
       z.object({
-        releaseIdentifier: z.string(),
+        releaseKey: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      await ctx.releaseService.deactivateRelease(
-        ctx.user,
-        input.releaseIdentifier
-      );
+      await ctx.releaseService.deactivateRelease(ctx.user, input.releaseKey);
     }),
 });
