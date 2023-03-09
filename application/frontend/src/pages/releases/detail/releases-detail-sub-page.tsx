@@ -22,7 +22,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
 
   return (
     <>
-      <InformationBox releaseId={releaseId} releaseData={releaseData} />
+      <InformationBox releaseIdentifier={releaseId} releaseData={releaseData} />
 
       <CasesBox
         releaseId={releaseId}
@@ -39,10 +39,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         />
       )}
 
-      <Box
-        heading="Access Data"
-        applyIsDisabledStyle={!releaseData.activation}
-      >
+      <Box heading="Access Data" applyIsDisabledStyle={!releaseData.activation}>
         <VerticalTabs
           tabHeadings={[
             "Manifest",

@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReleaseApplicationCodedType } from "@umccr/elsa-types";
 import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { ReleaseManualType } from "@umccr/elsa-types";
 import { Controller, useForm } from "react-hook-form";

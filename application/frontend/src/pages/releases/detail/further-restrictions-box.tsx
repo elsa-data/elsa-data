@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";

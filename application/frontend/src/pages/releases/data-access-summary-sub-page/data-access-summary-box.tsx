@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { convertCamelCaseToTitle } from "../../../helpers/utils";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
