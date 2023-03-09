@@ -1,5 +1,9 @@
-import { router, publicProcedure, internalProcedure } from "../trpc-bootstrap";
+import { router, internalProcedure } from "../trpc-bootstrap";
 import { z } from "zod";
+
+/**
+ * RPC for release activation
+ */
 export const releaseActivationRouter = router({
   activate: internalProcedure
     .input(
