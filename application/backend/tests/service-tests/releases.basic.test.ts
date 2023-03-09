@@ -44,7 +44,7 @@ it("not allowed users cannot get release data", async () => {
   }).rejects.toThrow(Error);
 });
 
-it("basic release data is present for PI", async () => {
+it("basic release data is present for Manager", async () => {
   const result = await releaseService.get(allowedPiUser, testReleaseKey);
 
   expect(result).not.toBeNull();
@@ -55,11 +55,11 @@ it("basic release data is present for PI", async () => {
   expect(result.applicationDacDetails).toBe(
     "So this is all that we have brought over not coded"
   );
-  // as the PI we will only see cases already selected
+  // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(6);
 });
 
-it("basic release data is present for data owner", async () => {
+it("basic release data is present for release administrator", async () => {
   const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
@@ -70,6 +70,6 @@ it("basic release data is present for data owner", async () => {
   expect(result.applicationDacDetails).toBe(
     "So this is all that we have brought over not coded"
   );
-  // as the PI we will only see cases already selected
+  // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(14);
 });

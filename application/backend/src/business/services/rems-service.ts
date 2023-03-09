@@ -211,7 +211,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
       await this.usersService.registerRoleInRelease(
         user,
         newRelease.id,
-        "DataOwner"
+        "Administrator"
       );
 
       return newRelease.id;

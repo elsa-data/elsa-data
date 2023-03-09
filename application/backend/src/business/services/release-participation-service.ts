@@ -93,7 +93,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
 
     try {
       // right to add participants must be limited to DataOwners and PIs
-      if (userRole !== "DataOwner" && userRole !== "PI") {
+      if (userRole !== "Administrator" && userRole !== "Manager") {
         throw new ReleaseParticipationPermissionError(releaseKey);
       }
 
@@ -206,7 +206,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
 
     try {
       // deleting participants must be limited to DataOwners and PIs
-      if (userRole !== "DataOwner" && userRole !== "PI") {
+      if (userRole !== "Administrator" && userRole !== "Manager") {
         throw new ReleaseParticipationPermissionError(releaseKey);
       }
 

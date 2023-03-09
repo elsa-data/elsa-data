@@ -30,7 +30,7 @@ interface ApplicationUser {
   // the institution which is collected but we probably don't use
   institution?: string;
   // the role we want to assign this person in the release
-  role: "PI" | "Member";
+  role: "Manager" | "Member";
 }
 
 @injectable()
@@ -134,14 +134,14 @@ export class RedcapImportApplicationService {
 
       let pi: ApplicationUser;
 
-      // the PI details are literally a duplicate of the applicant OR
+      // the Manager details are literally a duplicate of the applicant OR
       // we grab them from elsewhere in the CSV
       if (newApplication.daf_applicant_pi_yn === "1") {
         pi = {
           email: newApplication.daf_applicant_email,
           displayName: newApplication.daf_applicant_name,
           institution: newApplication.daf_applicant_institution,
-          role: "PI",
+          role: "Manager",
         };
         checkValidApplicationUser(pi, "applicant");
       } else {
@@ -152,7 +152,7 @@ export class RedcapImportApplicationService {
             newApplication.daf_pi_institution_same === "1"
               ? newApplication.daf_applicant_institution
               : newApplication.daf_pi_institution,
-          role: "PI",
+          role: "Manager",
         };
         checkValidApplicationUser(pi, "pi");
       }
@@ -378,7 +378,7 @@ ${roleTable.join("\n")}
     await this.usersService.registerRoleInRelease(
       user,
       newRelease.id,
-      "DataOwner"
+      "Administrator"
     );
 
     return newRelease.id;

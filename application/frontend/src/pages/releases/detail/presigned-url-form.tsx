@@ -32,7 +32,7 @@ export const PresignedUrlForm: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
-  const displayPassword = releaseData.downloadPassword ?? "(ask PI)";
+  const displayPassword = releaseData.downloadPassword ?? "(ask Manager)";
 
   const [isHeaderSelectionOpen, setIsHeaderSelectionOpen] =
     useState<boolean>(false);
@@ -71,7 +71,7 @@ export const PresignedUrlForm: React.FC<Props> = ({
               file.
             </p>
             <p>
-              The password for the zip file is controlled by the PI of this
+              The password for the zip file is controlled by the Manager of this
               release. Given the presigned URLs can be used by anyone -
               possession of the zip file <i>and</i> password is equivalent to
               possession of the data itself.

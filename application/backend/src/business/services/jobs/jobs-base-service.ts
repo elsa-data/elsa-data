@@ -139,7 +139,7 @@ export class JobsService {
       releaseKey
     );
 
-    if (userRole != "DataOwner")
+    if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
     const { releaseQuery } = await getReleaseInfo(
@@ -284,7 +284,7 @@ export class JobsService {
       releaseKey
     );
 
-    if (userRole != "DataOwner")
+    if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
@@ -339,7 +339,7 @@ export class JobsService {
       releaseKey
     );
 
-    if (userRole != "DataOwner")
+    if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(

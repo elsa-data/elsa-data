@@ -22,7 +22,7 @@ import {
 } from "../db/audit-log-queries";
 
 // possibly can somehow get this from the schemas files?
-export type ReleaseRoleStrings = "DataOwner" | "PI" | "Member";
+export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
 
 @injectable()
 export class UsersService {

@@ -52,7 +52,7 @@ beforeEach(async () => {
 /**
  *
  */
-it("get all case level information from a release as a data owner", async () => {
+it("get all case level information from a release as a administrator", async () => {
   const pagedResult = await releaseService.getCases(
     allowedDataOwnerUser,
     testReleaseKey,
@@ -92,7 +92,7 @@ it("get all case level information from a release as a data owner", async () => 
 /**
  *
  */
-it("get limited case level information from a release as a PI", async () => {
+it("get limited case level information from a release as a Manager", async () => {
   const pagedResult = await releaseService.getCases(
     allowedPiUser,
     testReleaseKey,
@@ -104,10 +104,10 @@ it("get limited case level information from a release as a PI", async () => {
   assert(pagedResult != null);
   assert(pagedResult.data != null);
 
-  // as a PI we will only see cases that have _something_ selected in them
+  // as a Manager we will only see cases that have _something_ selected in them
   expect(pagedResult.data.length).toBe(6);
 
-  // because the PI has no concept of 'unselected' item - every node present is selected
+  // because the Manager has no concept of 'unselected' item - every node present is selected
   expect(findCase(pagedResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
     "selected"
   );

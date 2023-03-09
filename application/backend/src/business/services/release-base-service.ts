@@ -123,7 +123,7 @@ export abstract class ReleaseBaseService {
 
     // the visible cases depend on what roles you have
     const visibleCasesCount =
-      userRole === "DataOwner"
+      userRole === "Administrator"
         ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
         : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
 
@@ -166,14 +166,14 @@ export abstract class ReleaseBaseService {
       isAllowedReadData: releaseInfo.isAllowedReadData,
       isAllowedVariantData: releaseInfo.isAllowedVariantData,
       isAllowedPhenotypeData: releaseInfo.isAllowedPhenotypeData,
-      // password only gets sent down to the PI
+      // password only gets sent down to the Manager
       downloadPassword:
-        userRole === "PI" ? releaseInfo.releasePassword : undefined,
+        userRole === "Manager" ? releaseInfo.releasePassword : undefined,
       // data owners can code/edit the release information
-      permissionEditSelections: userRole === "DataOwner",
-      permissionEditApplicationCoded: userRole === "DataOwner",
+      permissionEditSelections: userRole === "Administrator",
+      permissionEditApplicationCoded: userRole === "Administrator",
       // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
-      permissionAccessData: userRole !== "DataOwner",
+      permissionAccessData: userRole !== "Administrator",
     };
   }
 

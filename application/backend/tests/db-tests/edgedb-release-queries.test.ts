@@ -50,7 +50,7 @@ describe("edgedb release queries tests", () => {
       edgeDbClient,
       release2.id,
       testUserInsert.id,
-      "PI",
+      "Manager",
       "id1",
       "name1"
     );
@@ -59,7 +59,7 @@ describe("edgedb release queries tests", () => {
       edgeDbClient,
       release3.id,
       testUserInsert.id,
-      "DataOwner",
+      "Administrator",
       "id2",
       "name2"
     );
@@ -80,7 +80,7 @@ describe("edgedb release queries tests", () => {
 
       expect(a.releaseKey).toBe("R003");
       expect(a.applicationDacTitle).toBe("An Invisible Study");
-      expect(a.role).toBe("DataOwner");
+      expect(a.role).toBe("Administrator");
     }
 
     {
@@ -88,7 +88,7 @@ describe("edgedb release queries tests", () => {
 
       expect(b.releaseKey).toBe(RELEASE2_RELEASE_IDENTIFIER);
       expect(b.applicationDacTitle).toBe(RELEASE2_APPLICATION_DAC_TITLE);
-      expect(b.role).toBe("PI");
+      expect(b.role).toBe("Manager");
     }
   });
 
@@ -113,7 +113,7 @@ describe("edgedb release queries tests", () => {
       edgeDbClient,
       release2.id,
       testUserInsert.id,
-      "PI",
+      "Manager",
       "id1",
       "name1"
     );
@@ -122,7 +122,7 @@ describe("edgedb release queries tests", () => {
       edgeDbClient,
       release3.id,
       testUserInsert.id,
-      "DataOwner",
+      "Administrator",
       "id2",
       "name2"
     );

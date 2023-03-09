@@ -302,7 +302,7 @@ ${release.applicantEmailAddresses}
             e.op(dsc.dataset.id, "in", datasetIdSet),
             "and",
             e.op(
-              e.bool(userRole === "DataOwner"),
+              e.bool(userRole === "Administrator"),
               "or",
               e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
             )
@@ -314,7 +314,7 @@ ${release.applicantEmailAddresses}
           e.op(dsc.dataset.id, "in", datasetIdSet),
           "and",
           e.op(
-            e.bool(userRole === "DataOwner"),
+            e.bool(userRole === "Administrator"),
             "or",
             e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
           )
@@ -336,7 +336,7 @@ ${release.applicantEmailAddresses}
         ...e.dataset.DatasetPatient["*"],
         consent: true,
         filter: e.op(
-          e.bool(userRole === "DataOwner"),
+          e.bool(userRole === "Administrator"),
           "or",
           e.op(p.specimens, "in", releaseSelectedSpecimensQuery)
         ),
@@ -345,7 +345,7 @@ ${release.applicantEmailAddresses}
           consent: true,
           isSelected: e.op(s, "in", releaseSelectedSpecimensQuery),
           filter: e.op(
-            e.bool(userRole === "DataOwner"),
+            e.bool(userRole === "Administrator"),
             "or",
             e.op(s, "in", releaseSelectedSpecimensQuery)
           ),
@@ -791,9 +791,9 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    if (userRole !== "DataOwner") {
+    if (userRole !== "Administrator") {
       // TODO: replace with real error class
-      throw new Error("must be a data owner");
+      throw new Error("must be a release administrator");
     }
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -836,7 +836,7 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    if (userRole !== "DataOwner") {
+    if (userRole !== "Administrator") {
       throw new ReleaseActivationPermissionError(releaseKey);
     }
 

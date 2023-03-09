@@ -43,7 +43,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   };
 
   const addUserMutate = useMutation(
-    (c: { newUserEmail: string; newUserRole: "PI" | "Member" }) =>
+    (c: { newUserEmail: string; newUserRole: "Manager" | "Member" }) =>
       axios.post<void>(`/api/releases/${releaseKey}/participants`, {
         email: c.newUserEmail,
         role: c.newUserRole,
@@ -97,7 +97,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
           </div>
           <div className="form-control">
             <label className="label cursor-pointer">
-              <span className="label-text">PI</span>
+              <span className="label-text">Manager</span>
               <input
                 type="radio"
                 name="roleRadio"
@@ -117,7 +117,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
               onClick={async () => {
                 addUserMutate.mutate({
                   newUserEmail: newUserEmail,
-                  newUserRole: newUserRoleIsPi ? "PI" : "Member",
+                  newUserRole: newUserRoleIsPi ? "Manager" : "Member",
                 });
               }}
             >

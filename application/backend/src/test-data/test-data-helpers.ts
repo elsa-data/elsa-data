@@ -142,7 +142,7 @@ export async function createTestUser(
   // a helper to update the role this users has with a release
   const insertRole = async (
     releaseUuid: string,
-    role: "DataOwner" | "PI" | "Member"
+    role: "Administrator" | "Manager" | "Member"
   ) => {
     await e
       .update(e.permission.User, (user) => ({
@@ -160,11 +160,11 @@ export async function createTestUser(
   };
 
   for (const dataOwnerReleaseKey of releasesAsDataOwner) {
-    await insertRole(dataOwnerReleaseKey, "DataOwner");
+    await insertRole(dataOwnerReleaseKey, "Administrator");
   }
 
   for (const piReleaseKey of releasesAsPI) {
-    await insertRole(piReleaseKey, "PI");
+    await insertRole(piReleaseKey, "Manager");
   }
 
   for (const memberReleaseKey of releasesAsMember) {

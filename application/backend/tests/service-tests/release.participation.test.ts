@@ -54,7 +54,7 @@ it("all the participants in a release are correctly returned", async () => {
   );
 
   expect(comparableResults).toContainEqual({
-    role: "DataOwner",
+    role: "Administrator",
     email: "admin@elsa.net",
     subjectId: "https://i-am-admin.org",
     displayName: "Test User Who Is Allowed Data Owner Access",
@@ -76,7 +76,7 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
     allowedDataOwnerUser,
     testReleaseKey,
     "test@example.com",
-    "PI"
+    "Manager"
   );
 
   const result = await releaseParticipationService.getParticipants(
@@ -93,7 +93,7 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
   const noLastLoginArray = result.filter((x) => x.lastLogin === null);
 
   expect(noLastLoginArray).toHaveLength(1);
-  expect(noLastLoginArray[0].role).toBe("PI");
+  expect(noLastLoginArray[0].role).toBe("Manager");
 });
 
 it("real users and potential users can both have their roles altered", async () => {
@@ -111,28 +111,28 @@ it("real users and potential users can both have their roles altered", async () 
       testReleaseKey
     );
 
-    expect(startingResult.filter((r) => r.role === "DataOwner")).toHaveLength(
-      1
-    );
-    expect(startingResult.filter((r) => r.role === "PI")).toHaveLength(1);
+    expect(
+      startingResult.filter((r) => r.role === "Administrator")
+    ).toHaveLength(1);
+    expect(startingResult.filter((r) => r.role === "Manager")).toHaveLength(1);
     // we should have two Members
     expect(startingResult.filter((r) => r.role === "Member")).toHaveLength(2);
   }
 
-  // upgrade our real user member to PI
+  // upgrade our real user member to Manager
   await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
     testReleaseKey,
     "subject4@elsa.net",
-    "PI"
+    "Manager"
   );
 
-  // upgrade our potential user to a PI as well
+  // upgrade our potential user to a Manager as well
   await releaseParticipationService.addParticipant(
     allowedDataOwnerUser,
     testReleaseKey,
     "test@example.com",
-    "PI"
+    "Manager"
   );
 
   {
@@ -144,9 +144,9 @@ it("real users and potential users can both have their roles altered", async () 
     expect(result).not.toBeNull();
     assert(result != null);
 
-    expect(result.filter((r) => r.role === "DataOwner")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(1);
     // the two Members have been upgraded
-    expect(result.filter((r) => r.role === "PI")).toHaveLength(3);
+    expect(result.filter((r) => r.role === "Manager")).toHaveLength(3);
     expect(result.filter((r) => r.role === "Member")).toHaveLength(0);
   }
 });
@@ -180,9 +180,9 @@ it("real users and potential users can be removed", async () => {
     expect(result).not.toBeNull();
     assert(result != null);
 
-    expect(result.filter((r) => r.role === "DataOwner")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(1);
     // the two Members have been upgraded
-    expect(result.filter((r) => r.role === "PI")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Manager")).toHaveLength(1);
     expect(result.filter((r) => r.role === "Member")).toHaveLength(0);
   }
 });

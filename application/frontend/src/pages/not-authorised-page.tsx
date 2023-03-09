@@ -9,7 +9,7 @@ export const NotAuthorisedPage: React.FC = () => {
       </p>
       <p className="prose">
         If you are a researcher who has been instructed to log in to this Elsa
-        Data for a data release - please speak to your PI.
+        Data for a data release - please speak to your Manager.
       </p>
       <p className="prose">
         If you are an administrator of data sets that are stored in this Elsa

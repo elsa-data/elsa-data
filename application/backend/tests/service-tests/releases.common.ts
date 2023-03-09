@@ -97,10 +97,10 @@ export async function beforeEachCommon() {
   let allowedMemberUser: AuthenticatedUser;
   let notAllowedUser: AuthenticatedUser;
 
-  // data owner has read/write access and complete visibility of everything
+  // data administrator has read/write access and complete visibility of everything
   {
     const allowedDataOwnerSubject = "https://i-am-admin.org";
-    const allowedDisplayName = "Test User Who Is Allowed Data Owner Access";
+    const allowedDisplayName = "Test User Who Is Allowed Administrator Access";
     const allowedEmail = "admin@elsa.net";
 
     const allowedDataOwnerUserInsert = await e
@@ -110,7 +110,7 @@ export async function beforeEachCommon() {
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
-          "@role": e.str("DataOwner"),
+          "@role": e.str("Administrator"),
         })),
       })
       .run(edgeDbClient);
@@ -127,10 +127,10 @@ export async function beforeEachCommon() {
     });
   }
 
-  // PI user has limits to read/write and only visibility of released data items
+  // Manager user has limits to read/write and only visibility of released data items
   {
     const allowedPiSubject = "http://subject1.com";
-    const allowedDisplayName = "Test User Who Is Allowed PI Access";
+    const allowedDisplayName = "Test User Who Is Allowed Manager Access";
     const allowedEmail = "subject1@elsa.net";
 
     const allowedPiUserInsert = await e
@@ -140,7 +140,7 @@ export async function beforeEachCommon() {
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
-          "@role": e.str("PI"),
+          "@role": e.str("Manager"),
         })),
       })
       .run(edgeDbClient);
