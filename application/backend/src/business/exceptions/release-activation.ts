@@ -10,10 +10,10 @@ export class ReleaseActivationPermissionError extends Base7807Error {
   }
 }
 
-export class ReleaseActivationNoEditingAllowedError extends Base7807Error {
+export class ReleaseNoEditingWhilstActivatedError extends Base7807Error {
   constructor(releaseKey: string) {
     super(
-      "An attempt was made to edit a release whilst it is activated",
+      "An attempt was made to edit fields in a release whilst it is activated",
       400,
       `The release with id '${releaseKey}' is activated and hence cannot be edited`
     );

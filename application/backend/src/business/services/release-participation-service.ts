@@ -42,8 +42,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
   }
 
   public async getParticipants(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -75,8 +74,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     newUserEmail: string,
     newUserRole: string
   ) {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -188,8 +186,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     releaseKey: string,
     participantUuid: string
   ) {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
