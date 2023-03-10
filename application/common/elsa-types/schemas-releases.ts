@@ -77,9 +77,16 @@ export const ReleaseDetailSchema = Type.Object({
   applicationCoded: ReleaseApplicationCodedSchema,
 
   // which categories of data are allowed to be shared
+
+  // by type
   isAllowedReadData: Type.Boolean(),
   isAllowedVariantData: Type.Boolean(),
   isAllowedPhenotypeData: Type.Boolean(),
+
+  // by location
+  isAllowedS3Data: Type.Boolean(),
+  isAllowedGSData: Type.Boolean(),
+  isAllowedR2Data: Type.Boolean(),
 
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),

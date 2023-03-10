@@ -1,8 +1,8 @@
-import React, { PropsWithChildren, useId } from "react";
+import React, { PropsWithChildren, ReactNode, useId } from "react";
 import classNames from "classnames";
 
 type Props = {
-  label: string;
+  label: ReactNode;
   inputClassName?: string;
 } & React.DetailedHTMLProps<
   React.InputHTMLAttributes<HTMLInputElement>,

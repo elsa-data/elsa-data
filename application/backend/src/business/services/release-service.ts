@@ -11,7 +11,7 @@ import {
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import { isObjectLike, isSafeInteger } from "lodash";
+import _, { isObjectLike, isSafeInteger } from "lodash";
 import {
   createPagedResult,
   PagedResult,
@@ -31,6 +31,7 @@ import {
   ReleaseActivationPermissionError,
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
+  ReleaseNoEditingWhilstActivatedError,
 } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { createReleaseManifest } from "./manifests/_manifest-helper";
@@ -40,12 +41,21 @@ import { format } from "date-fns";
 import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
 import { releaseGetAllByUser } from "../../../dbschema/queries";
+import {
+  AuditLogService,
+  OUTCOME_SERIOUS_FAILURE,
+  OUTCOME_SUCCESS,
+} from "./audit-log-service";
+import { auditFailure, auditReleaseUpdateStart } from "../../audit-helpers";
+import { Logger } from "pino";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
+    @inject("Logger") private logger: Logger,
+    private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);
@@ -100,8 +110,7 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<ReleaseDetailType | null> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -191,8 +200,7 @@ ${release.applicantEmailAddresses}
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<string | null> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -212,8 +220,7 @@ ${release.applicantEmailAddresses}
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<number> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -257,8 +264,7 @@ ${release.applicantEmailAddresses}
     offset: number,
     identifierSearchText?: string
   ): Promise<PagedResult<ReleaseCaseType> | null> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -467,8 +473,7 @@ ${release.applicantEmailAddresses}
     releaseKey: string,
     nodeId: string
   ): Promise<DuoLimitationCodedType[]> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -523,13 +528,6 @@ ${release.applicantEmailAddresses}
     );
   }
 
-  public async setMasterAccess(
-    user: AuthenticatedUser,
-    releaseKey: string,
-    start?: Date,
-    end?: Date
-  ): Promise<void> {}
-
   public async setSelected(
     user: AuthenticatedUser,
     releaseKey: string,
@@ -552,8 +550,7 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -576,8 +573,7 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -600,8 +596,7 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -624,8 +619,7 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -647,8 +641,7 @@ ${release.applicantEmailAddresses}
     releaseKey: string,
     type: "HMB" | "DS" | "CC" | "GRU" | "POA"
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -692,8 +685,7 @@ ${release.applicantEmailAddresses}
     releaseKey: string,
     query: any
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -732,48 +724,107 @@ ${release.applicantEmailAddresses}
   /**
    * Change the 'is allowed' status of one of the is allowed fields in the release.
    *
-   * @param user
-   * @param releaseKey
-   * @param type
-   * @param value
+   * @param user the user performing the action
+   * @param releaseKey the key of the release
+   * @param type the type of isAllowed field to be changed
+   * @param value the boolean value to set
+   *
+   * Note: this is an arbitrary grouping of a set of otherwise identical service
+   * level operations into a single function. This could have been split in
+   * multiple functions.
    */
   public async setIsAllowed(
     user: AuthenticatedUser,
     releaseKey: string,
-    type: "read" | "variant" | "phenotype",
+    type:
+      | "isAllowedReadData"
+      | "isAllowedVariantData"
+      | "isAllowedPhenotypeData"
+      | "isAllowedS3Data"
+      | "isAllowedGSData"
+      | "isAllowedR2Data",
     value: boolean
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+      this.auditLogService,
+      this.edgeDbClient,
       user,
-      releaseKey
+      releaseKey,
+      `Updated IsAllowed boolean field`
     );
 
-    const fieldToSet =
-      type === "read"
-        ? {
-            isAllowedReadData: value,
+    try {
+      if (isActivated)
+        throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+
+      if (!_.isBoolean(value))
+        throw new Error(
+          `setIsAllowed was passed a non-boolean value '${value}'`
+        );
+
+      // map the booleans fields to the clause needed in edgedb
+      // (acts as a protection from passing arbitrary strings into edgedb)
+      const fieldToSet = {
+        isAllowedReadData: {
+          isAllowedReadData: value,
+        },
+        isAllowedVariantData: {
+          isAllowedVariantData: value,
+        },
+        isAllowedPhenotypeData: {
+          isAllowedPhenotypeData: value,
+        },
+        isAllowedS3Data: {
+          isAllowedS3Data: value,
+        },
+        isAllowedGSData: {
+          isAllowedGSData: value,
+        },
+        isAllowedR2Data: { isAllowedR2Data: value },
+      }[type];
+
+      if (!fieldToSet)
+        throw new Error(
+          `setIsAllowed passed in unknown field type to set '${type}'`
+        );
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        await e
+          .update(e.release.Release, (r) => ({
+            filter_single: e.op(r.releaseKey, "=", releaseKey),
+            set: fieldToSet,
+          }))
+          .run(tx);
+
+        await this.auditLogService.completeReleaseAuditEvent(
+          tx,
+          auditEventId,
+          OUTCOME_SUCCESS,
+          auditEventStart,
+          new Date(),
+          {
+            field: type,
+            newValue: value,
           }
-        : type === "variant"
-        ? {
-            isAllowedVariantData: value,
-          }
-        : {
-            isAllowedPhenotypeData: value,
-          };
+        );
+      });
 
-    await this.edgeDbClient.transaction(async (tx) => {
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: fieldToSet,
-        }))
-        .run(tx);
+      // TODO should this be part of the transaction?
+      return await this.getBase(releaseKey, userRole);
+    } catch (e) {
+      await auditFailure(
+        this.auditLogService,
+        this.edgeDbClient,
+        auditEventId,
+        auditEventStart,
+        e
+      );
 
-      await touchRelease.run(tx, { releaseKey: releaseKey });
-    });
-
-    return await this.getBase(releaseKey, userRole);
+      throw e;
+    }
   }
 
   /**
@@ -785,8 +836,7 @@ ${release.applicantEmailAddresses}
    * @protected
    */
   public async activateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );
@@ -808,8 +858,14 @@ ${release.applicantEmailAddresses}
         tx,
         releaseKey,
         releaseInfo.isAllowedReadData,
-        releaseInfo.isAllowedVariantData
+        releaseInfo.isAllowedVariantData,
+        releaseInfo.isAllowedS3Data,
+        releaseInfo.isAllowedGSData,
+        releaseInfo.isAllowedR2Data
       );
+
+      // once this is working well we can probably drop this to debug
+      this.logger.info(manifest, "created release manifest");
 
       await e
         .update(e.release.Release, (r) => ({
@@ -830,8 +886,7 @@ ${release.applicantEmailAddresses}
   }
 
   public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );

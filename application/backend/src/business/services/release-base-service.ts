@@ -2,9 +2,10 @@ import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
-import { UsersService } from "./users-service";
+import { getReleaseInfo } from "./helpers";
+import { ReleaseRoleStrings, UsersService } from "./users-service";
 import { touchRelease } from "../db/release-queries";
+import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -23,77 +24,47 @@ export abstract class ReleaseBaseService {
     protected readonly usersService: UsersService
   ) {}
 
-  /* TODO move helpers.ts getReleaseInfo to here
-      protected baseQueriesForReleases(userId: string) {
-    const releasesForUserQuery = e.select(e.release.Release, (r) => ({
-      ...e.release.Release["*"],
-      runningJob: {
-        percentDone: true,
-      },
-      // the master computation of whether we are currently enabled for access
-      accessEnabled: e.op(
-          e.op(e.datetime_current(), ">=", r.releaseStarted),
-          "and",
-          e.op(e.datetime_current(), "<=", r.releaseEnded)
-      ),
-      userRoles: e.select(
-        r["<releaseParticipant[is permission::User]"],
-        (u) => ({
-          id: true,
-          filter: e.op(u.id, "=", e.uuid(userId)),
-          // "@role": true
-        })
-      ),
-    }));
+  /**
+   * Return the minimum information we need from the database to establish the
+   * base boundary level conditions for proceeding into any release service
+   * functionality.
+   *
+   * That is, this checks that the releaseKey (maybe passed direct from API)
+   * is valid, that the given user has a role in the release, and returns some
+   * other useful information that may play a part in permissions/boundary
+   * checks.
+   *
+   * @param user the user wanting to perform an operation on a release
+   * @param releaseKey the key for the release
+   * @protected
+   */
+  protected async getBoundaryInfoWithThrowOnFailure(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ) {
+    const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
+      userDbId: user.dbId,
+      releaseKey: releaseKey,
+    });
+
+    if (!boundaryInfo)
+      throw new Error(
+        "Unauthenticated attempt to access release, or release does not exist"
+      );
+
+    const role = boundaryInfo?.role?.["@role"];
+
+    if (!role)
+      throw new Error(
+        "Unauthenticated attempt to access release, or release does not exist"
+      );
 
     return {
-      releasesForUserQuery
-    }
-  }
-
-  protected baseQueriesForSingleRelease(releaseKey: string) {
-    const releaseQuery = e
-      .select(e.release.Release, (r) => ({
-        filter: e.op(r.releaseKey, "=", (releaseKey)),
-      }))
-      .assert_single();
-
-    // the set of selected specimens from the release
-    const releaseSelectedSpecimensQuery = e.select(
-      releaseQuery.selectedSpecimens
-    );
-
-    const releaseInfoQuery = e.select(releaseQuery, (r) => ({
-      ...e.release.Release["*"],
-      applicationCoded: {
-        ...e.release.ApplicationCoded["*"],
-      },
-      runningJob: {
-        ...e.job.Job["*"],
-      },
-      // the master computation of whether we are currently enabled for access
-      accessEnabled: e.op(
-        e.op(e.datetime_current(), ">=", r.releaseStarted),
-        "and",
-        e.op(e.datetime_current(), "<=", r.releaseEnded)
-      ),
-      // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
-      //manualExclusions: true,
-      // we are loosely linked (by uri) to datasets which this release draws data from
-      // TODO: revisit the loose linking
-      datasetIds: e.select(e.dataset.Dataset, (ds) => ({
-        id: true,
-        uri: true,
-        filter: e.op(ds.uri, "in", e.array_unpack(r.datasetUris)),
-      })),
-    }));
-
-    return {
-      releaseQuery,
-      releaseSelectedSpecimensQuery,
-      releaseInfoQuery,
+      userRole: role as ReleaseRoleStrings,
+      isActivated: !!boundaryInfo.activation,
+      isRunningJob: !!boundaryInfo.runningJob,
     };
-  } */
+  }
 
   /**
    * Get a single release assuming the user definitely has the role
@@ -166,6 +137,9 @@ export abstract class ReleaseBaseService {
       isAllowedReadData: releaseInfo.isAllowedReadData,
       isAllowedVariantData: releaseInfo.isAllowedVariantData,
       isAllowedPhenotypeData: releaseInfo.isAllowedPhenotypeData,
+      isAllowedS3Data: releaseInfo.isAllowedS3Data,
+      isAllowedGSData: releaseInfo.isAllowedGSData,
+      isAllowedR2Data: releaseInfo.isAllowedR2Data,
       // password only gets sent down to the PI
       downloadPassword:
         userRole === "PI" ? releaseInfo.releasePassword : undefined,
@@ -196,8 +170,7 @@ export abstract class ReleaseBaseService {
     releaseKey: string,
     specimenIds: string[] = []
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
     );

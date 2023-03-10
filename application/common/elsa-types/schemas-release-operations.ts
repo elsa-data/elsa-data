@@ -60,6 +60,21 @@ export const ReleasePatchOperationSchema = Type.Union([
     path: Type.Literal("/allowedPhenotype"),
     value: Type.Boolean(),
   }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/allowedS3"),
+    value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/allowedGS"),
+    value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/allowedR2"),
+    value: Type.Boolean(),
+  }),
 ]);
 
 export const ReleasePatchOperationsSchema = Type.Array(

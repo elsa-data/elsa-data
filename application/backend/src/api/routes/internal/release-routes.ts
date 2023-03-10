@@ -333,7 +333,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                   await releasesService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
-                    "read",
+                    "isAllowedReadData",
                     op.value
                   )
                 );
@@ -343,7 +343,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                   await releasesService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
-                    "variant",
+                    "isAllowedVariantData",
                     op.value
                   )
                 );
@@ -353,7 +353,37 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                   await releasesService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
-                    "phenotype",
+                    "isAllowedPhenotypeData",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedS3":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedS3Data",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedGS":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedGSData",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedR2":
+                reply.send(
+                  await releasesService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedR2Data",
                     op.value
                   )
                 );
@@ -382,22 +412,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   //     },
   //   });
   // }
-
-  fastify.post<{
-    Body: ReleaseMasterAccessRequestType;
-    Params: { rid: string };
-  }>("/releases/:rid/access", {}, async function (request) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
-
-    await releasesService.setMasterAccess(
-      authenticatedUser,
-      releaseKey,
-      undefined, //isString(request.body.start) ? Date.parse(request.body.start) : request.body.start,
-      undefined // request.body.end
-    );
-  });
 
   fastify.get<{
     Params: { rid: string };

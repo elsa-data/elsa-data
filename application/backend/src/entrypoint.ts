@@ -68,6 +68,12 @@ function printHelpText() {
 
   const logger = pino(settings.logger);
 
+  logger.trace("Logger trace test");
+  logger.debug("Logger debug test");
+  logger.info("Logger info test");
+  logger.error("Logger error test");
+  logger.fatal("Logger fatal test");
+
   logger.info(
     redactedConfig,
     `Configuration (redacted) was sourced from "${sources}"`

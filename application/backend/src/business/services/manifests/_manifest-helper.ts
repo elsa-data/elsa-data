@@ -23,12 +23,18 @@ import type {
  * @param releaseKey the release whose selected entries should go into the manifest
  * @param includeReadData whether to include BAM access to htsget
  * @param includeVariantData whether to include VCF access to htsget
+ * @param includeS3Access
+ * @param includeGSAccess
+ * @param includeR2Access
  */
 export async function createReleaseManifest(
   executor: Executor,
   releaseKey: string,
   includeReadData: boolean,
-  includeVariantData: boolean
+  includeVariantData: boolean,
+  includeS3Access: boolean,
+  includeGSAccess: boolean,
+  includeR2Access: boolean
 ): Promise<ManifestType> {
   const { releaseSelectedSpecimensQuery } = await getReleaseInfo(
     executor,
@@ -76,6 +82,7 @@ export async function createReleaseManifest(
   );
 
   // a query to retrieve all the files associated with this release
+  // this can contain results from multiple data locations (S3, GS etc)
   const filesResults = await artifactFilesForSpecimensQuery.run(executor, {
     specimenIds: releaseSelectedSpecimens.map((s) => s.id),
   });
@@ -100,20 +107,53 @@ export async function createReleaseManifest(
     // exposed via htsget per request)
     const htsgetId: string = uuidToHtsgetId(filesResult.id);
 
+    // at the moment - with only three practical file locations - we do this splitting/logic
+    // will need to rethink approach I think if we add others
+    let s3Variant: ManifestVariantsFileType | undefined;
+    let gsVariant: ManifestVariantsFileType | undefined;
+    let r2Variant: ManifestVariantsFileType | undefined;
+    let s3Read: ManifestReadsFileType | undefined;
+    let gsRead: ManifestReadsFileType | undefined;
+    let r2Read: ManifestReadsFileType | undefined;
+
+    const S3_PREFIX = "s3://";
+    const GS_PREFIX = "gs://";
+    const R2_PREFIX = "r2://";
+
     for (const art of filesResult.artifacts) {
       if ("vcfFile" in art) {
         const url = art["vcfFile"]?.url;
-        if (url) {
-          variantDictionary[htsgetId] = { url: url, variantSampleId: "" };
+        if (_.isString(url)) {
+          if (url.startsWith(S3_PREFIX))
+            s3Variant = { url: url, variantSampleId: "" };
+          if (url.startsWith(GS_PREFIX))
+            gsVariant = { url: url, variantSampleId: "" };
+          if (url.startsWith(R2_PREFIX))
+            r2Variant = { url: url, variantSampleId: "" };
         }
       }
       if ("bamFile" in art) {
         const url = art["bamFile"]?.url;
         if (url) {
-          readDictionary[htsgetId] = { url: url };
+          if (url.startsWith(S3_PREFIX)) s3Read = { url: url };
+          if (url.startsWith(GS_PREFIX)) gsRead = { url: url };
+          if (url.startsWith(R2_PREFIX)) r2Read = { url: url };
         }
       }
     }
+
+    // note the logic here prefers AWS over GS over R2 - where more than 1
+    // are present as artifacts AND more than 1 are selected for inclusion
+    // TODO think how we might handle this better
+    if (includeS3Access && s3Variant) variantDictionary[htsgetId] = s3Variant;
+    else if (includeGSAccess && gsVariant)
+      variantDictionary[htsgetId] = gsVariant;
+    else if (includeR2Access && r2Variant)
+      variantDictionary[htsgetId] = r2Variant;
+
+    if (includeS3Access && s3Read) readDictionary[htsgetId] = s3Read;
+    else if (includeGSAccess && gsRead) readDictionary[htsgetId] = gsRead;
+    else if (includeR2Access && r2Read) readDictionary[htsgetId] = r2Read;
   }
 
   const externalIdsToMap = (
@@ -152,12 +192,19 @@ export async function createReleaseManifest(
         patients: c.patients.map((p) => {
           return {
             ids: externalIdsToMap(p.externalIdentifiers),
-            specimens: p.specimens.map((s) => {
-              return {
+            specimens: p.specimens
+              // if we had no appropriate files for a particular specimen - then there is no point
+              // in including it here as there is nothing to point htsget to
+              // TODO is this the correct decision? - maybe the researcher wants to know no file avail?
+              .filter((s) => {
+                const hid = uuidToHtsgetId(s.id);
+
+                return hid in readDictionary || hid in variantDictionary;
+              })
+              .map((s) => ({
                 htsgetId: uuidToHtsgetId(s.id),
                 ids: externalIdsToMap(s.externalIdentifiers),
-              };
-            }),
+              })),
           };
         }),
       };
