@@ -118,8 +118,6 @@ export async function createLoggedInServerWithRelease() {
     .assert_single()
     .run(edgeDbClient);
 
-  console.log(newUserId);
-
   const loginResponse = await server.inject({
     method: "POST",
     url: `/auth/login-bypass-1`,
@@ -129,7 +127,6 @@ export async function createLoggedInServerWithRelease() {
       (a: any) => a.name === authCookieName
     )[0] as any
   ).value;
-  console.log(authCookieValue);
   csrfCookieValue = (
     loginResponse.cookies.filter(
       (a: any) => a.name === csrfCookieName
