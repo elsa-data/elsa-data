@@ -33,6 +33,7 @@ import {
 } from "../test-data/insert-test-users";
 import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { Client } from "edgedb";
+import { Logger } from "pino";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
   return new settings.oidcIssuer.Client({
@@ -61,6 +62,7 @@ export const apiAuthRoutes = async (
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
   const dbClient = opts.container.resolve<Client>("Database");
+  const logger = opts.container.resolve<Logger>("Logger");
   const userService = opts.container.resolve(UsersService);
   const auditLogService = opts.container.resolve(AuditLogService);
 
@@ -158,6 +160,10 @@ export const apiAuthRoutes = async (
       allowed: string[]
     ) => {
       fastify.post(path, async (request, reply) => {
+        logger.warn(
+          `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`
+        );
+
         cookieForBackend(
           request,
           reply,
@@ -170,9 +176,6 @@ export const apiAuthRoutes = async (
           SESSION_USER_DB_OBJECT,
           authUser.asJson()
         );
-
-        console.log("In test login bypass");
-        console.log(authUser.asJson());
 
         cookieForBackend(
           request,

@@ -71,17 +71,17 @@ jobs:
         run: npm run test:db
         working-directory: application/backend
 
-      # integration tests run only in the backend and concentrate on auth/http/trpc mechanics
-      - name: Run integration tests
-        run: npm run test:integration
-        working-directory: application/backend
-
       # build our React frontend
       - run: npm run build:dev
         working-directory: application/frontend
         env:
           # whilst ever we allow React warnings in dev we need to do this to switch off CI over strictness
           CI: false
+
+      # integration tests run only in the backend and concentrate on auth/http/trpc mechanics (but need frontend files for something to serve as HTML)
+      - name: Run integration tests
+        run: npm run test:integration
+        working-directory: application/backend
 
       # setup a cache explicitly for Playwright dependencies (browser dependencies at the OS level)
       # https://justin.poehnelt.com/posts/caching-playwright-in-github-actions/
