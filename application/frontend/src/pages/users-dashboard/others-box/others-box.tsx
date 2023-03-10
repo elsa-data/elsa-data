@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import classNames from "classnames";
 import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";

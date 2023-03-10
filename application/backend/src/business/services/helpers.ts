@@ -22,6 +22,7 @@ export function collapseExternalIds(externals: any): string {
  * @param usersService
  * @param user
  * @param releaseKey
+ * @deprecated use the base boundary method in Release preferably
  */
 export async function doRoleInReleaseCheck(
   usersService: UsersService,

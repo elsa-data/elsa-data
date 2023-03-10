@@ -1,32 +1,34 @@
-CREATE MIGRATION m14wubfk7mlhg7lsh7lw2bqvbnifnkqc2ftsvhamgc65plwnirjgaq
+CREATE MIGRATION m1ybtzphw6gvt3f4ykoa2egpxb7qycqs7wcpmatc2l7xctomnadjba
     ONTO m1w772xacqordjlwm3bj6yozqfveh2wzxu4aqfys2d6ed6tf54ouqq
 {
-  ALTER TYPE permission::PotentialUser {
-      ALTER LINK futureReleaseParticipant {
-          ALTER PROPERTY role {
-              CREATE CONSTRAINT std::one_of('Administrator', 'Manager', 'Member');
-          };
+  ALTER TYPE release::Release {
+      CREATE REQUIRED PROPERTY isAllowedGSData -> std::bool {
+          SET default := false;
       };
   };
-  ALTER TYPE permission::PotentialUser {
-      ALTER LINK futureReleaseParticipant {
-          ALTER PROPERTY role {
-              DROP CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
-          };
+  ALTER TYPE release::Release {
+      ALTER PROPERTY isAllowedPhenotypeData {
+          SET default := false;
       };
   };
-  ALTER TYPE permission::User {
-      ALTER LINK releaseParticipant {
-          ALTER PROPERTY role {
-              CREATE CONSTRAINT std::one_of('Administrator', 'Manager', 'Member');
-          };
+  ALTER TYPE release::Release {
+      CREATE REQUIRED PROPERTY isAllowedR2Data -> std::bool {
+          SET default := false;
       };
   };
-  ALTER TYPE permission::User {
-      ALTER LINK releaseParticipant {
-          ALTER PROPERTY role {
-              DROP CONSTRAINT std::one_of('DataOwner', 'Member', 'PI');
-          };
+  ALTER TYPE release::Release {
+      ALTER PROPERTY isAllowedReadData {
+          SET default := false;
+      };
+  };
+  ALTER TYPE release::Release {
+      CREATE REQUIRED PROPERTY isAllowedS3Data -> std::bool {
+          SET default := false;
+      };
+  };
+  ALTER TYPE release::Release {
+      ALTER PROPERTY isAllowedVariantData {
+          SET default := false;
       };
   };
 };

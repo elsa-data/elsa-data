@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { AuditEventFullType } from "@umccr/elsa-types/schemas-audit";
 import SyntaxHighlighter from "react-syntax-highlighter";

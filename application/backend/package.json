@@ -61,6 +61,7 @@
     "@google-cloud/secret-manager": "^4.2.1",
     "@google-cloud/storage": "^6.9.2",
     "@sinclair/typebox": "0.25.10",
+    "@trpc/server": "^10.14.1",
     "@types/moo": "^0.5.5",
     "@types/nodemailer": "^6.4.6",
     "@types/randomstring": "^1.1.8",
@@ -106,7 +107,8 @@
     "reflect-metadata": "0.1.13",
     "tar-stream": "3.0.0",
     "temp": "0.9.4",
-    "tsyringe": "4.7.0"
+    "tsyringe": "4.7.0",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@edgedb/generate": "0.0.8",

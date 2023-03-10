@@ -12,7 +12,7 @@ export class ReleaseDisappearedError extends Base7807Error {
     super(
       "A release that passed a previous existence check seems to have disappeared from the database",
       500,
-      `The release with id '${releaseKey}' was previously present but now is missing`
+      `The release with key '${releaseKey}' was previously present but now is missing`
     );
   }
 }

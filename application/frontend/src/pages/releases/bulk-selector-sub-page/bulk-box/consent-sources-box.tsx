@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import {

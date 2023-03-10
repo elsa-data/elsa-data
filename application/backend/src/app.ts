@@ -7,6 +7,10 @@ import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyTraps from "@dnlup/fastify-traps";
 import {
+  CreateFastifyContextOptions,
+  fastifyTRPCPlugin,
+} from "@trpc/server/adapters/fastify";
+import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
   strictServeRealFileIfPresent,
@@ -21,6 +25,11 @@ import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
+import { Context, createContext } from "./api/routes/trpc-context";
+import { appRouter } from "./app-router";
+import { ReleaseService } from "./business/services/release-service";
+import { UsersService } from "./business/services/users-service";
+import { Client } from "edgedb";
 
 @injectable()
 @singleton()
@@ -42,7 +51,7 @@ export class App {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
 
-    this.server = Fastify({ logger: logger });
+    this.server = Fastify({ logger: logger, maxParamLength: 5000 });
 
     // inject a copy of the Elsa settings into every request
     this.server.decorateRequest("settings", null);
@@ -71,7 +80,7 @@ export class App {
         contentSecurityPolicy: {
           directives: {
             // TODO: derive form action hosts from configuration of OIDC
-            formAction: ["'self'", "*.cilogon.org"],
+            formAction: ["'self'", "*.cilogon.org", "cilogon.org"],
             // our front end needs to be able to make fetches from ontoserver
             connectSrc: ["'self'", new URL(this.settings.ontoFhirUrl).host],
           },
@@ -102,6 +111,11 @@ export class App {
 
     this.server.ready(() => {
       this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
+    });
+
+    await this.server.register(fastifyTRPCPlugin, {
+      prefix: "/api/trpc",
+      trpcOptions: { router: appRouter, createContext },
     });
 
     this.server.register(apiExternalRoutes, {
@@ -144,6 +158,7 @@ export class App {
       { preHandler: this.server.rateLimit() },
       async (request, reply) => {
         // any misses that fall through in the API area should actually return 404
+        // we don't want to serve up index.html for mistaken API calls
         if (request.url.toLowerCase().startsWith("/api/")) {
           reply
             .code(404)
@@ -176,12 +191,12 @@ export class App {
 
         // the user hit refresh at (for example) https://ourwebsite.com/docs/a32gf24 - for react routes like
         // this we actually want to send the index content (at which point react routing takes over)
-        else
-          await serveCustomIndexHtml(
-            reply,
-            this.staticFilesPath,
-            this.buildIndexHtmlTemplateData()
-          );
+
+        await serveCustomIndexHtml(
+          reply,
+          this.staticFilesPath,
+          this.buildIndexHtmlTemplateData()
+        );
       }
     );
 

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
@@ -38,8 +38,15 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   );
 
   const isAllowedCheck = (
-    label: string,
-    path: "/allowedRead" | "/allowedVariant" | "/allowedPhenotype" | null,
+    label: ReactNode,
+    path:
+      | "/allowedRead"
+      | "/allowedVariant"
+      | "/allowedPhenotype"
+      | "/allowedS3"
+      | "/allowedGS"
+      | "/allowedR2"
+      | null,
     current: boolean
   ) => (
     <RhCheckItem
@@ -85,18 +92,36 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
                   releaseData.isAllowedVariantData
                 )}
                 {isAllowedCheck(
-                  "Phenotypes (e.g. FHIR, Phenopackets)",
-                  "/allowedPhenotype",
-                  releaseData.isAllowedPhenotypeData
+                  "Phenotypes (e.g. FHIR, Phenopackets) (currently disabled)",
+                  null,
+                  false
                 )}
               </RhChecks>
             </div>
             <div className="divider divider-horizontal"></div>
             <div className="grid flex-grow">
               <RhChecks label="By Data Location">
-                {isAllowedCheck("AWS S3 (s3://...)", null, true)}
-                {isAllowedCheck("Google GCP (gs://...)", null, true)}
-                {isAllowedCheck("CloudFlare R2 (r2://...)", null, true)}
+                {isAllowedCheck(
+                  <>
+                    AWS S3 (<span className="font-mono">s3://...</span>)
+                  </>,
+                  "/allowedS3",
+                  releaseData.isAllowedS3Data
+                )}
+                {isAllowedCheck(
+                  <>
+                    Google GCP (<span className="font-mono">gs://...</span>)
+                  </>,
+                  "/allowedGS",
+                  releaseData.isAllowedGSData
+                )}
+                {isAllowedCheck(
+                  <>
+                    CloudFlare R2 (<span className="font-mono">r2://...</span>)
+                  </>,
+                  "/allowedR2",
+                  releaseData.isAllowedR2Data
+                )}
               </RhChecks>
             </div>
           </div>
@@ -109,8 +134,8 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
         />
         <RightDiv>
           <RhChecks label="Access Via">
-            {isAllowedCheck("Presigned URLs", null, true)}
-            {isAllowedCheck("htsget", null, false)}
+            {isAllowedCheck("Presigned URLs (always enabled)", null, true)}
+            {isAllowedCheck("htsget (currently disabled)", null, false)}
           </RhChecks>
         </RightDiv>
       </div>

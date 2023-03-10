@@ -7,7 +7,7 @@ import {
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
 import { ReleasePatientType } from "@umccr/elsa-types";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { ConsentPopup } from "./consent-popup";
 import { axiosPatchOperationMutationFn } from "../../queries";

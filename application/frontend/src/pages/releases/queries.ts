@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
-import { QueryFunctionContext } from "react-query";
+import { QueryFunctionContext } from "@tanstack/react-query";
 import {
   ReleaseDetailType,
   ReleaseParticipantType,
