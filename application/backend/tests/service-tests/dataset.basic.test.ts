@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import { beforeEachCommon } from "./dataset.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { DatasetService } from "../../src/business/services/dataset-service";
 import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { insert10C, TENC_URI } from "../../src/test-data/insert-test-data-10c";

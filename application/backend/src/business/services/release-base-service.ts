@@ -54,6 +54,8 @@ export abstract class ReleaseBaseService {
 
     const role = boundaryInfo?.role?.["@role"];
 
+    console.log(boundaryInfo);
+
     if (!role)
       throw new Error(
         "Unauthenticated attempt to access release, or release does not exist"

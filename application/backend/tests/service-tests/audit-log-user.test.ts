@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { AuditLogService } from "../../src/business/services/audit-log-service";
 import * as edgedb from "edgedb";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { beforeEachCommon } from "./user.common";
 import { addSeconds } from "date-fns";
 

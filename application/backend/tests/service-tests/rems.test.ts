@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { RemsService } from "../../src/business/services/rems-service";
 
 let remsService: RemsService;

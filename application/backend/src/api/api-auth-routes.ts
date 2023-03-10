@@ -170,6 +170,10 @@ export const apiAuthRoutes = async (
           SESSION_USER_DB_OBJECT,
           authUser.asJson()
         );
+
+        console.log("In test login bypass");
+        console.log(authUser.asJson());
+
         cookieForBackend(
           request,
           reply,
@@ -309,11 +313,6 @@ export const callbackRoutes = async (
     }
 
     cookieForBackend(request, reply, ALLOWED_VIEW_AUDIT_EVENTS, isa);
-
-    // some garbage temporary logic for giving extra permissions to some people
-    // this would normally come via group info
-    if (email.endsWith("unimelb.edu.au"))
-      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
 
     cookieForUI(
       request,
