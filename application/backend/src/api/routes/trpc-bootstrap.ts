@@ -1,36 +1,27 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { Context } from "./trpc-context";
-import { SingleUserBySubjectIdType } from "../../business/db/user-queries";
-import {
-  SESSION_TOKEN_PRIMARY,
-  SESSION_USER_DB_OBJECT,
-} from "../session-cookie-constants";
-import { AuthenticatedUser } from "../../business/authenticated-user";
-import { UsersService } from "../../business/services/users-service";
+import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-helpers";
 
 const t = initTRPC.context<Context>().create();
 
 export const router = t.router;
 export const middleware = t.middleware;
 
-const isCookieSessionAuthed = t.middleware(({ next, ctx }) => {
-  const userService = ctx.container.resolve(UsersService);
+/**
+ * Middleware the requires there be a secure session cookie for the logged in user.
+ */
+const isSessionCookieAuthed = t.middleware(({ next, ctx }) => {
+  const authedUser = getAuthenticatedUserFromSecureSession(ctx.req);
 
-  let sessionDbObject: SingleUserBySubjectIdType = ctx.req.session.get(
-    SESSION_USER_DB_OBJECT
-  );
-
-  if (!sessionDbObject) {
+  if (!authedUser) {
     ctx.req.log.error(
-      "isCookieSessionAuthed: no session cookie data present so failing authentication"
+      "isSessionCookieAuthed: no session cookie data was present so failing authentication"
     );
 
     throw new TRPCError({
       code: "UNAUTHORIZED",
     });
   }
-
-  const authedUser = new AuthenticatedUser(sessionDbObject);
 
   ctx.req.log.trace(authedUser, `isCookieSessionAuthed: user details`);
 
@@ -44,4 +35,4 @@ const isCookieSessionAuthed = t.middleware(({ next, ctx }) => {
 
 export const publicProcedure = t.procedure;
 
-export const internalProcedure = t.procedure.use(isCookieSessionAuthed);
+export const internalProcedure = t.procedure.use(isSessionCookieAuthed);

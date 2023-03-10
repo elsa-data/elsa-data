@@ -12,7 +12,7 @@ import {
 import {
   SESSION_TOKEN_PRIMARY,
   SESSION_USER_DB_OBJECT,
-} from "./session-cookie-constants";
+} from "./auth/session-cookie-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";

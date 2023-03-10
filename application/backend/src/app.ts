@@ -23,13 +23,13 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
-import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
 import { Context, createContext } from "./api/routes/trpc-context";
 import { appRouter } from "./app-router";
 import { ReleaseService } from "./business/services/release-service";
 import { UsersService } from "./business/services/users-service";
 import { Client } from "edgedb";
+import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 
 @injectable()
 @singleton()
