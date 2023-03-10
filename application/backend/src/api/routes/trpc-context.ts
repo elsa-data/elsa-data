@@ -4,6 +4,7 @@ import { container } from "tsyringe";
 import { UsersService } from "../../business/services/users-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { getServices } from "../../di-helpers";
+import { ReleaseActivationService } from "../../business/services/release-activation-service";
 
 export const createContext = async (opts: CreateFastifyContextOptions) => {
   const { edgeDbClient, settings, logger } = getServices(container);
@@ -14,6 +15,7 @@ export const createContext = async (opts: CreateFastifyContextOptions) => {
     logger,
     userService: container.resolve(UsersService),
     releaseService: container.resolve(ReleaseService),
+    releaseActivationService: container.resolve(ReleaseActivationService),
 
     req: opts.req,
     res: opts.res,
