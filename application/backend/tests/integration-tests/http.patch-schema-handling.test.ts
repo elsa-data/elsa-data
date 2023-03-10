@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
 import { createLoggedInServerWithRelease } from "./integration.common";
-import { sleep } from "edgedb/dist/utils";
 
 describe("http patch schema handling tests", () => {
   let server: FastifyInstance;
