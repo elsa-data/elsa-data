@@ -51,24 +51,22 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    const { auditEventId, auditEventStart } = await auditReleaseExecuteStart(
-      this.auditLogService,
-      this.edgeDbClient,
+    return this.auditLogService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      `Activated release`
-    );
-
-    try {
-      if (userRole !== "DataOwner") {
-        throw new ReleaseActivationPermissionError(releaseKey);
-      }
-
-      await this.edgeDbClient.transaction(async (tx) => {
+      "Activated release",
+      async () => {
+        if (userRole !== "DataOwner") {
+          throw new ReleaseActivationPermissionError(releaseKey);
+        }
+      },
+      async (tx, a) => {
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
+        // importantly for this service we need to delay checking
+        // the activation status until we get inside the transaction
         if (releaseInfo.activation)
           throw new ReleaseActivationStateError(releaseKey);
 
@@ -107,30 +105,15 @@ export class ReleaseActivationService extends ReleaseBaseService {
           }))
           .run(tx);
 
-        await auditSuccess(
-          this.auditLogService,
-          tx,
-          auditEventId,
-          auditEventStart,
-          {
-            manifestEtag: et,
-            manifestReads: readsConstructed,
-            manifestVariants: variantsConstructed,
-            manifestCases: casesConstructed,
-          }
-        );
-      });
-    } catch (e) {
-      await auditFailure(
-        this.auditLogService,
-        this.edgeDbClient,
-        auditEventId,
-        auditEventStart,
-        e
-      );
-
-      throw e;
-    }
+        return {
+          manifestEtag: et,
+          manifestReads: readsConstructed,
+          manifestVariants: variantsConstructed,
+          manifestCases: casesConstructed,
+        };
+      },
+      async (a) => {}
+    );
   }
 
   /**
@@ -146,24 +129,22 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    const { auditEventId, auditEventStart } = await auditReleaseExecuteStart(
-      this.auditLogService,
-      this.edgeDbClient,
+    return this.auditLogService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      `Deactivated release`
-    );
-
-    try {
-      if (userRole !== "DataOwner") {
-        throw new ReleaseActivationPermissionError(releaseKey);
-      }
-
-      await this.edgeDbClient.transaction(async (tx) => {
+      "Deactivated release",
+      async () => {
+        if (userRole !== "DataOwner") {
+          throw new ReleaseActivationPermissionError(releaseKey);
+        }
+      },
+      async (tx, a) => {
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
-        if (!releaseInfo) throw new Error("release has disappeared");
+        if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
+        // importantly for this service we need to delay checking
+        // the activation status until we get inside the transaction
         if (!releaseInfo.activation)
           throw new ReleaseDeactivationStateError(releaseKey);
 
@@ -176,24 +157,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
             },
           }))
           .run(tx);
-
-        await auditSuccess(
-          this.auditLogService,
-          tx,
-          auditEventId,
-          auditEventStart
-        );
-      });
-    } catch (e) {
-      await auditFailure(
-        this.auditLogService,
-        this.edgeDbClient,
-        auditEventId,
-        auditEventStart,
-        e
-      );
-
-      throw e;
-    }
+      },
+      async (a) => {}
+    );
   }
 }

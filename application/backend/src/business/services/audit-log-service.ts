@@ -39,6 +39,8 @@ import {
   insertSystemAuditEvent,
   insertUserAuditEvent,
 } from "../../../dbschema/queries";
+import { Transaction } from "edgedb/dist/transaction";
+import { transactionalAuditPattern } from "../../audit-helpers";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -59,7 +61,8 @@ export class AuditLogService {
   private readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
-    @inject("Settings") private settings: ElsaSettings // NOTE: we don't define an edgeDbClient here as the audit log functionality // is designed to work either standalone or in a transaction context
+    @inject("Settings") private settings: ElsaSettings,
+    @inject("Database") private edgeDbClient: edgedb.Client
   ) {}
 
   /**
@@ -792,6 +795,38 @@ export class AuditLogService {
       user.displayName,
       "D",
       `Delete dataset: ${dataset}`
+    );
+  }
+
+  /**
+   * Perform our standard audit pattern for an update to a release
+   * including transactions and try/catch.
+   *
+   * @param user
+   * @param releaseKey
+   * @param actionDescription
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
+  public async transactionalUpdateInReleaseAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    return transactionalAuditPattern(
+      this,
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      "U",
+      actionDescription,
+      initFunc,
+      transFunc,
+      finishFunc
     );
   }
 }
