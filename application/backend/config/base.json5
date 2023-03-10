@@ -3,4 +3,7 @@
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
   maxmindDbAssetPath: "asset/maxmind/db/",
   releaseKeyPrefix: "R",
+  oidc: {
+    issuerUrl: "https://test.cilogon.org",
+  },
 }
