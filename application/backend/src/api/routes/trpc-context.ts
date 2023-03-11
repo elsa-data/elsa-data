@@ -4,6 +4,9 @@ import { container } from "tsyringe";
 import { UsersService } from "../../business/services/users-service";
 import { ReleaseService } from "../../business/services/release-service";
 import { getServices } from "../../di-helpers";
+import { JobsService } from "../../business/services/jobs/jobs-base-service";
+import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
+import { ReleaseParticipationService } from "../../business/services/release-participation-service";
 
 /**
  * Create the base context for our TRPC calls, provided useful base
@@ -23,6 +26,9 @@ export const createContext = async (opts: CreateFastifyContextOptions) => {
     logger,
     userService: container.resolve(UsersService),
     releaseService: container.resolve(ReleaseService),
+    releaseParticipantService: container.resolve(ReleaseParticipationService),
+    jobService: container.resolve(JobsService),
+    awsAccessPointService: container.resolve(AwsAccessPointService),
 
     req: opts.req,
     res: opts.res,

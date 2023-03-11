@@ -1,16 +1,8 @@
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  axiosPostArgMutationFn,
-  axiosPostNullMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseQuery,
-} from "../queries";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { REACT_QUERY_RELEASE_KEYS } from "../queries";
 import axios from "axios";
-import { ReleaseTypeLocal } from "../shared-types";
-import { isUndefined } from "lodash";
+import { trpc } from "../../../helpers/trpc";
 
 type Props = {
   releaseKey: string;
@@ -25,25 +17,22 @@ type Props = {
 export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
   const queryClient = useQueryClient();
 
-  const afterMutateForceRefresh = (result: ReleaseTypeLocal) => {
-    return queryClient.invalidateQueries(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseKey)
-    );
-  };
+  const installCloudFormationMutate =
+    trpc.releaseJob.startAccessPointInstall.useMutation({
+      onSettled: async () =>
+        queryClient.invalidateQueries(
+          REACT_QUERY_RELEASE_KEYS.detail(releaseKey)
+        ),
+    });
+  const deleteCloudFormationMutate =
+    trpc.releaseJob.startAccessPointUninstall.useMutation({
+      onSettled: async () =>
+        queryClient.invalidateQueries(
+          REACT_QUERY_RELEASE_KEYS.detail(releaseKey)
+        ),
+    });
 
-  const installCloudFormationMutate = useMutation(
-    axiosPostArgMutationFn<{ accounts: string[]; vpcId?: string }>(
-      `/api/releases/${releaseKey}/cfn`
-    )
-  );
-
-  // TODO this doesn't actually delete yet as there is no delete operation
-  const deleteCloudFormationMutate = useMutation(
-    axiosPostArgMutationFn<{ accounts: string[]; vpcId?: string }>(
-      `/api/releases/${releaseKey}/THISISNOTWORKINGYET`
-    )
-  );
-
+  // TODO: convert this over to TRPC
   const cfnQuery = useQuery({
     queryKey: REACT_QUERY_RELEASE_KEYS.cfn(releaseKey),
     queryFn: async () => {
@@ -109,17 +98,14 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
                 <button
                   type="button"
                   className="btn-normal"
-                  onClick={async () => {
-                    installCloudFormationMutate.mutate(
-                      {
-                        accounts: [accountId],
-                        vpcId: vpcId,
-                      },
-                      {
-                        onSuccess: afterMutateForceRefresh,
-                      }
-                    );
+                  onClick={() => {
+                    installCloudFormationMutate.mutate({
+                      releaseKey: releaseKey,
+                      accounts: [accountId],
+                      vpcId: vpcId,
+                    });
                   }}
+                  disabled={installCloudFormationMutate.isLoading}
                 >
                   Enable Access Point
                 </button>
@@ -132,14 +118,9 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
                   className="btn-normal"
                   disabled={true}
                   onClick={async () => {
-                    deleteCloudFormationMutate.mutate(
-                      {
-                        accounts: [accountId],
-                      },
-                      {
-                        onSuccess: afterMutateForceRefresh,
-                      }
-                    );
+                    deleteCloudFormationMutate.mutate({
+                      releaseKey: releaseKey,
+                    });
                   }}
                 >
                   Disable Access Point (not working)
