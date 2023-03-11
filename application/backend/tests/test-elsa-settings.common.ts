@@ -69,7 +69,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   oidcIssuer: ciLogonIssuer,
   sessionSalt: "0123456789012345", // pragma: allowlist secret
   sessionSecret: "XYZ Is the Text That is A certain length", // pragma: allowlist secret
-  ontoFhirUrl: "",
+  ontoFhirUrl: "https://onto.example.com/fhir",
   mondoSystem: {
     uri: "",
     oid: "",

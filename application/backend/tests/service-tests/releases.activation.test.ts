@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { ReleaseService } from "../../src/business/services/release-service";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
 import e from "../../dbschema/edgeql-js";

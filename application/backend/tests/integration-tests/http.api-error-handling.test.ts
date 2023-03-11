@@ -1,7 +1,7 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { Base7807Response } from "@umccr/elsa-types/error-types";
-import { registerTypes } from "../service-tests/setup";
+import { registerTypes } from "../test-dependency-injection.common";
 
 describe("http API error handling tests", () => {
   let server: FastifyInstance;

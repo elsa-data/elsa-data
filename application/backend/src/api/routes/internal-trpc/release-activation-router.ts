@@ -1,16 +1,13 @@
 import { router, internalProcedure } from "../trpc-bootstrap";
 import { z } from "zod";
+import { inputReleaseKeySingleParameter } from "./input-schemas-common";
 
 /**
  * RPC for release activation
  */
 export const releaseActivationRouter = router({
   activate: internalProcedure
-    .input(
-      z.object({
-        releaseKey: z.string(),
-      })
-    )
+    .input(inputReleaseKeySingleParameter)
     .mutation(async ({ input, ctx }) => {
       await ctx.releaseActivationService.activateRelease(
         ctx.user,
@@ -18,11 +15,7 @@ export const releaseActivationRouter = router({
       );
     }),
   deactivate: internalProcedure
-    .input(
-      z.object({
-        releaseKey: z.string(),
-      })
-    )
+    .input(inputReleaseKeySingleParameter)
     .mutation(async ({ input, ctx }) => {
       await ctx.releaseActivationService.deactivateRelease(
         ctx.user,

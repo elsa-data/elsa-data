@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./user.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { UsersService } from "../../src/business/services/users-service";
 
 let existingUser: AuthenticatedUser;

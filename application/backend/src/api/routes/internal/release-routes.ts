@@ -1,18 +1,17 @@
 import { FastifyInstance } from "fastify";
 import {
   DuoLimitationCodedType,
-  ReleasePresignRequestSchema,
-  ReleasePresignRequestType,
   ReleaseCaseType,
+  ReleaseDetailType,
   ReleaseManualSchema,
   ReleaseManualType,
-  ReleaseMasterAccessRequestType,
+  ReleaseParticipantAddType,
+  ReleaseParticipantType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
+  ReleasePresignRequestSchema,
+  ReleasePresignRequestType,
   ReleaseSummaryType,
-  ReleaseParticipantType,
-  ReleaseParticipantAddType,
-  ReleaseDetailType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
@@ -27,7 +26,6 @@ import { PresignedUrlsService } from "../../../business/services/presigned-urls-
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
-  const jobsService = container.resolve(JobsService);
   const presignedUrlsService = container.resolve(PresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
   const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
@@ -172,37 +170,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     reply.send(r);
   });
-
-  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid/jobs/select",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      reply.send(
-        await jobsService.startSelectJob(authenticatedUser, releaseKey)
-      );
-    }
-  );
-
-  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid/jobs/cancel",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      reply.send(
-        await jobsService.cancelInProgressSelectJob(
-          authenticatedUser,
-          releaseKey
-        )
-      );
-    }
-  );
 
   /**
    * The main route for altering fields in a release. Normally the UI component for the
@@ -432,38 +399,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     reply.send(res);
   });
-
-  fastify.post<{
-    Body: { accounts: string[]; vpcId?: string };
-    Params: { rid: string };
-  }>("/releases/:rid/cfn", {}, async function (request) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
-
-    if (!awsAccessPointService.isEnabled)
-      throw new Error(
-        "The AWS service was not started so AWS VPC sharing will not work"
-      );
-
-    const s3HttpsUrl =
-      await awsAccessPointService.createAccessPointCloudFormationTemplate(
-        authenticatedUser,
-        releaseKey,
-        request.body.accounts,
-        request.body.vpcId
-      );
-
-    await jobsService.startCloudFormationInstallJob(
-      authenticatedUser,
-      releaseKey,
-      s3HttpsUrl
-    );
-  });
-
-  // const PresignedT = Type.Object({
-  //   header: Type.Array(Type.Union([Type.Literal("A"), Type.Literal("B")])),
-  // });
 
   fastify.post<{
     Body: ReleasePresignRequestType;
