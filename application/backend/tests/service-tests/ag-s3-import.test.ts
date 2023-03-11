@@ -48,7 +48,7 @@ import {
   makeSystemlessIdentifierArray,
   makeEmptyIdentifierArray,
 } from "../../src/business/db/helper";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { DatasetService } from "../../src/business/services/dataset-service";
 import { storage } from "../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";

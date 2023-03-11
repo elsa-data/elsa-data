@@ -1,5 +1,5 @@
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { createReleaseManifest } from "../../src/business/services/manifests/_manifest-helper";
 import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/insert-test-data-10f-helpers";

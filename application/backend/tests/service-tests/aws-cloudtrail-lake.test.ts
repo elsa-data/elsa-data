@@ -1,7 +1,7 @@
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws-cloudtrail-lake-service";
 import e from "../../dbschema/edgeql-js";
 import { DependencyContainer } from "tsyringe";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { beforeEachCommon } from "./releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";

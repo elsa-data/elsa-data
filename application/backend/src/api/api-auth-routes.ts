@@ -12,7 +12,7 @@ import {
 import {
   SESSION_TOKEN_PRIMARY,
   SESSION_USER_DB_OBJECT,
-} from "./session-cookie-constants";
+} from "./auth/session-cookie-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";
@@ -33,6 +33,7 @@ import {
 } from "../test-data/insert-test-users";
 import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { Client } from "edgedb";
+import { Logger } from "pino";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
   return new settings.oidcIssuer.Client({
@@ -61,6 +62,7 @@ export const apiAuthRoutes = async (
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
   const dbClient = opts.container.resolve<Client>("Database");
+  const logger = opts.container.resolve<Logger>("Logger");
   const userService = opts.container.resolve(UsersService);
   const auditLogService = opts.container.resolve(AuditLogService);
 
@@ -158,6 +160,10 @@ export const apiAuthRoutes = async (
       allowed: string[]
     ) => {
       fastify.post(path, async (request, reply) => {
+        logger.warn(
+          `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`
+        );
+
         cookieForBackend(
           request,
           reply,
@@ -170,6 +176,7 @@ export const apiAuthRoutes = async (
           SESSION_USER_DB_OBJECT,
           authUser.asJson()
         );
+
         cookieForBackend(
           request,
           reply,
@@ -309,11 +316,6 @@ export const callbackRoutes = async (
     }
 
     cookieForBackend(request, reply, ALLOWED_VIEW_AUDIT_EVENTS, isa);
-
-    // some garbage temporary logic for giving extra permissions to some people
-    // this would normally come via group info
-    if (email.endsWith("unimelb.edu.au"))
-      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
 
     cookieForUI(
       request,

@@ -1,6 +1,6 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
-import { registerTypes } from "../service-tests/setup";
+import { registerTypes } from "../test-dependency-injection.common";
 
 describe("http integration tests", () => {
   let server: FastifyInstance;
