@@ -46,7 +46,11 @@ import {
   OUTCOME_SERIOUS_FAILURE,
   OUTCOME_SUCCESS,
 } from "./audit-log-service";
-import { auditFailure, auditReleaseUpdateStart } from "../../audit-helpers";
+import {
+  auditFailure,
+  auditReleaseUpdateStart,
+  auditSuccess,
+} from "../../audit-helpers";
 import { Logger } from "pino";
 
 @injectable()
@@ -799,12 +803,11 @@ ${release.applicantEmailAddresses}
           }))
           .run(tx);
 
-        await this.auditLogService.completeReleaseAuditEvent(
+        await auditSuccess(
+          this.auditLogService,
           tx,
           auditEventId,
-          OUTCOME_SUCCESS,
           auditEventStart,
-          new Date(),
           {
             field: type,
             newValue: value,
@@ -825,95 +828,5 @@ ${release.applicantEmailAddresses}
 
       throw e;
     }
-  }
-
-  /**
-   * For the current state of a release, 'activate' it which means to switch
-   * on all necessary flags that enable actual data sharing.
-   *
-   * @param user
-   * @param releaseKey
-   * @protected
-   */
-  public async activateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    if (userRole !== "DataOwner") {
-      // TODO: replace with real error class
-      throw new Error("must be a data owner");
-    }
-
-    await this.edgeDbClient.transaction(async (tx) => {
-      const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
-
-      if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
-
-      if (releaseInfo.activation)
-        throw new ReleaseActivationStateError(releaseKey);
-
-      const manifest = await createReleaseManifest(
-        tx,
-        releaseKey,
-        releaseInfo.isAllowedReadData,
-        releaseInfo.isAllowedVariantData,
-        releaseInfo.isAllowedS3Data,
-        releaseInfo.isAllowedGSData,
-        releaseInfo.isAllowedR2Data
-      );
-
-      // once this is working well we can probably drop this to debug
-      this.logger.info(manifest, "created release manifest");
-
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: {
-            activation: e.insert(e.release.Activation, {
-              activatedById: user.subjectId,
-              activatedByDisplayName: user.displayName,
-              manifest: e.json(manifest),
-              manifestEtag: etag(JSON.stringify(manifest)),
-            }),
-          },
-        }))
-        .run(tx);
-
-      await touchRelease.run(tx, { releaseKey: releaseKey });
-    });
-  }
-
-  public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    if (userRole !== "DataOwner") {
-      throw new ReleaseActivationPermissionError(releaseKey);
-    }
-
-    await this.edgeDbClient.transaction(async (tx) => {
-      const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
-
-      if (!releaseInfo) throw new Error("release has disappeared");
-
-      if (!releaseInfo.activation)
-        throw new ReleaseDeactivationStateError(releaseKey);
-
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: {
-            previouslyActivated: { "+=": r.activation },
-            activation: null,
-          },
-        }))
-        .run(tx);
-
-      await touchRelease.run(tx, { releaseKey: releaseKey });
-    });
   }
 }
