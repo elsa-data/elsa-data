@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import { Client, Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
@@ -40,7 +40,6 @@ import {
   insertUserAuditEvent,
 } from "../../../dbschema/queries";
 import { Transaction } from "edgedb/dist/transaction";
-import { transactionalAuditPattern } from "../../audit-helpers";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -53,7 +52,7 @@ export const OUTCOME_MAJOR_FAILURE = 12;
 // 8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
 // 12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
 
-export type AuditEventAction = "C" | "R" | "U" | "D" | "E";
+export type AuditEventAction = audit.ActionType;
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
@@ -817,9 +816,7 @@ export class AuditLogService {
     transFunc: (tx: Transaction, a: T) => Promise<U>,
     finishFunc: (a: U) => Promise<V>
   ) {
-    return transactionalAuditPattern(
-      this,
-      this.edgeDbClient,
+    return this.transactionalAuditPattern(
       user,
       releaseKey,
       "U",
@@ -828,5 +825,76 @@ export class AuditLogService {
       transFunc,
       finishFunc
     );
+  }
+
+  /**
+   * The transaction audit pattern for releases executes the three
+   * given functions in a chain, but interspersed with audit
+   * start/success/failure functionality.
+   *
+   * @param user the user performing the action
+   * @param releaseKey the release key the action is occurring in the context of
+   * @param actionCategory the category of audit action
+   * @param actionDescription the static action description
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
+  async transactionalAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionCategory: audit.ActionType,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    const auditEventStart = new Date();
+    const auditEventId = await this.startReleaseAuditEvent(
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      actionCategory,
+      actionDescription,
+      auditEventStart
+    );
+
+    try {
+      const initBlockResult = await initFunc();
+
+      const transResult = await this.edgeDbClient.transaction(async (tx) => {
+        const transBlockResult = await transFunc(tx, initBlockResult);
+
+        await this.completeReleaseAuditEvent(
+          tx,
+          auditEventId,
+          OUTCOME_SUCCESS,
+          auditEventStart,
+          new Date(),
+          // need to consider whether we always audit details the whole transaction
+          // function return value - or if we need to split this  [auditDetail, transactionResult]
+          transBlockResult
+        );
+
+        return transBlockResult;
+      });
+
+      return await finishFunc(transResult);
+    } catch (error) {
+      // TODO possibly better breakdown of the details of the error
+      const errorString =
+        error instanceof Error ? error.message : String(error);
+
+      await this.completeReleaseAuditEvent(
+        this.edgeDbClient,
+        auditEventId,
+        OUTCOME_SERIOUS_FAILURE,
+        auditEventStart,
+        new Date(),
+        { error: errorString }
+      );
+
+      throw error;
+    }
   }
 }
