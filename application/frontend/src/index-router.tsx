@@ -28,7 +28,6 @@ import { AuditEventDetailedPage } from "./components/audit-event/audit-event-det
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
-import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -95,11 +94,7 @@ export function createRouter(addBypassLoginPage: boolean) {
       text: "Audit Log",
       path: "audit-log",
       element: <AuditLogSubPage />,
-      children: (
-        <>
-          <Route path={`:objectId`} element={<AuditEntryPage />} />
-        </>
-      ),
+      children: <></>,
     },
   ];
 
