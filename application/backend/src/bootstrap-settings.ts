@@ -65,6 +65,11 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       },
     ];
 
+  const logLevel = config.get("logger.level");
+
+  if (logLevel)
+    loggerTransportTargets.forEach(l => l.level ??= logLevel);
+
   return {
     deployedUrl: deployedUrl,
     host: config.get("host"),
@@ -89,7 +94,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     remsUrl: "https://hgpp-rems.dev.umccr.org",
     logger: {
       name: "elsa-data",
-      level: config.get("logger.level"),
+      level: logLevel,
       transport: {
         targets: loggerTransportTargets,
       },
