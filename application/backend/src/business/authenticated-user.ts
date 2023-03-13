@@ -59,6 +59,9 @@ export class AuthenticatedUser {
   public get isAllowedViewUserManagement(): boolean {
     return this.dbUser!.isAllowedViewUserManagement;
   }
+  public get isAllowedViewAllReleases(): boolean {
+    return this.dbUser!.isAllowedViewAllReleases;
+  }
 
   /**
    * Write permission

@@ -49,6 +49,7 @@ export async function beforeEachCommon() {
     isAllowedSyncDataAccessEvents: true,
     isAllowedViewDatasetContent: true,
     isAllowedViewUserManagement: true,
+    isAllowedViewAllReleases: true,
     lastLoginDateTime: new Date(),
   });
 

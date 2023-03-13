@@ -128,6 +128,7 @@ export async function beforeEachCommon() {
       isAllowedSyncDataAccessEvents: false,
       isAllowedViewDatasetContent: false,
       isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
@@ -162,6 +163,7 @@ export async function beforeEachCommon() {
       isAllowedSyncDataAccessEvents: false,
       isAllowedViewDatasetContent: false,
       isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
@@ -196,6 +198,7 @@ export async function beforeEachCommon() {
       isAllowedSyncDataAccessEvents: false,
       isAllowedViewDatasetContent: false,
       isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
@@ -226,6 +229,7 @@ export async function beforeEachCommon() {
       isAllowedSyncDataAccessEvents: false,
       isAllowedViewDatasetContent: false,
       isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 

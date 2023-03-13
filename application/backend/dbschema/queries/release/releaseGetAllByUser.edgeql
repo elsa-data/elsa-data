@@ -2,6 +2,10 @@
 # this query supports paging
 
 with
+
+  # This is for admin grant view, should be 'false' otherwise
+  isAllowAllView :=  (<bool>$isAllowedAllView),  
+
   # r is the set of all releases that involve $userDbId as a participant
   r := (
           select release::Release {
@@ -9,7 +13,7 @@ with
                          filter .id = <uuid>$userDbId),
           }
           # if no userRole then $userDbId is not participating
-          filter exists(.userRole)
+          filter isAllowAllView or exists(.userRole)
           order by .lastUpdated desc
        )
 

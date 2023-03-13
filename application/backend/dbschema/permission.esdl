@@ -84,6 +84,9 @@ module permission {
             default := false;
         }
 
+        required property isAllowedViewAllReleases -> bool {
+            default := false;
+        }
 
         # whether this user is a participant in a release
 
