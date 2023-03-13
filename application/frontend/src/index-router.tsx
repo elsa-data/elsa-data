@@ -96,6 +96,11 @@ export function createRouter(addBypassLoginPage: boolean) {
       element: <AuditLogSubPage />,
       children: <></>,
     },
+    {
+      path: "audit-log/:objectId",
+      element: <AuditEventDetailedPage />,
+      children: <></>,
+    },
   ];
 
   return createBrowserRouter(
@@ -127,10 +132,12 @@ export function createRouter(addBypassLoginPage: boolean) {
               // we want to pass through to the master page the ability in our breadcrumbs
               // to navigate sideways to our siblings
               handle={{
-                siblingItems: releaseChildren.map((c, i) => ({
-                  to: `./${c.path}`,
-                  text: c.text,
-                })),
+                siblingItems: releaseChildren
+                  .map((c, i) => ({
+                    to: `./${c.path}`,
+                    text: c.text,
+                  }))
+                  .filter(({ text }) => text !== undefined),
               }}
             >
               <>
@@ -161,7 +168,7 @@ export function createRouter(addBypassLoginPage: boolean) {
           <Route path={`users`} element={<UsersDashboardPage />} />
 
           <Route
-            path={`audit-event/details/:objectId`}
+            path={`audit-events/:objectId`}
             element={<AuditEventDetailedPage />}
           />
           <Route path={`audit-events`} element={<AuditEventsPage />} />
