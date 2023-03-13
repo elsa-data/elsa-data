@@ -10,6 +10,12 @@ const edgeDbClient = edgedb.createClient();
 
 export const TENC_URI = "urn:fdc:umccr.org:2022:dataset/10c";
 
+export const TN_1_CASE = "AG6583";
+
+export const TN_1_PATIENT = "UR87643";
+export const TN_1_SPECIMEN_NORMAL = "N123115";
+export const TN_1_SPECIMEN_TUMOUR = "T908765";
+
 /**
  * The 10C dataset is cancer patients
  */
@@ -77,11 +83,11 @@ export async function insert10C() {
       description: "UMCCR 10C",
       cases: e.set(
         await makeTumourNormal(
-          "AG6583",
-          "UR87643",
+          TN_1_CASE,
+          TN_1_PATIENT,
           "male",
-          "N123115",
-          "T908765"
+          TN_1_SPECIMEN_NORMAL,
+          TN_1_SPECIMEN_TUMOUR
         ),
         await makeTumourNormal(
           "AG1023",

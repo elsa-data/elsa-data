@@ -9,3 +9,13 @@ export class ReleaseSelectionPermissionError extends Base7807Error {
     );
   }
 }
+
+export class ReleaseSelectionDatasetMismatchError extends Base7807Error {
+  constructor(releaseKey: string, specimenIds: string[]) {
+    super(
+      "The specimens that were requested for selection are not specimens that are from a dataset included in this release",
+      400,
+      `The release with id '${releaseKey}' does not contain the specimens with ids '${specimenIds}' in its datasets`
+    );
+  }
+}

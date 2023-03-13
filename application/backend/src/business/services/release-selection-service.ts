@@ -25,8 +25,12 @@ import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
 import { AuditLogService } from "./audit-log-service";
 import { Logger } from "pino";
-import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
+import {
+  ReleaseSelectionDatasetMismatchError,
+  ReleaseSelectionPermissionError,
+} from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
+import { releaseGetSpecimenToDataSetCrossLinks } from "../../../dbschema/queries";
 
 /**
  * The release selection service handles CRUD operations on the list of items
@@ -334,7 +338,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     releaseKey: string,
     specimenIds: string[] = []
   ): Promise<ReleaseDetailType> {
-    // NOTE: we do our boundary checks in the setSelectedStatus method
+    // NOTE: we do our boundary/permission checks in the setSelectedStatus method
     return await this.setSelectedStatus(user, true, releaseKey, specimenIds);
   }
 
@@ -343,7 +347,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     releaseKey: string,
     specimenIds: string[] = []
   ): Promise<ReleaseDetailType> {
-    // NOTE: we do our boundary checks in the setSelectedStatus method
+    // NOTE: we do our boundary/permission checks in the setSelectedStatus method
     return await this.setSelectedStatus(user, false, releaseKey, specimenIds);
   }
 
@@ -369,87 +373,115 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
-    if (userRole != "DataOwner")
-      throw new ReleaseSelectionPermissionError(releaseKey);
+    let actionDescription;
 
-    if (isActivated) throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+    if (specimenIds && specimenIds.length > 0) {
+      actionDescription = statusToSet
+        ? "Set Selected Specimens"
+        : "Unset Selected Specimens";
+    } else {
+      actionDescription = statusToSet
+        ? "Select All Specimens"
+        : "Unselect All Specimens";
+    }
 
     return await this.auditLogService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      specimenIds
-        ? statusToSet
-          ? "Select All Specimens"
-          : "Unselect All Specimens"
-        : statusToSet
-        ? "Set Selected Specimens"
-        : "Unset Selected Specimens",
+      actionDescription,
       async () => {
-        // note this db set we get is likely to be small (bounded by the number of datasets in a release)
-        // so we can get away with some use of a edgedb literal 'X in { "A", "B", "C" }'
-        // (which we wouldn't get away with if say there were 1 million datasets!)
-        const { releaseAllDatasetIdDbSet } = await getReleaseInfo(
-          this.edgeDbClient,
-          releaseKey
-        );
+        if (userRole != "DataOwner")
+          throw new ReleaseSelectionPermissionError(releaseKey);
 
-        return releaseAllDatasetIdDbSet;
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
       },
       async (tx, a) => {
-        // we make a query that returns specimens of only where the input specimen ids belong
+        // we make a query that returns specimens and whether the specimen ids belong
         // to the datasets in our release
         // we need to do this to prevent our list of valid shared specimens from being
-        // infected with edgedb nodes from different datasets
+        // infected with edgedb nodes from datasets that are not actually in our release
+        const specimenDatasetLinks =
+          await releaseGetSpecimenToDataSetCrossLinks(tx, {
+            releaseKey: releaseKey,
+            specimenIds:
+              specimenIds && specimenIds.length > 0 ? specimenIds : undefined,
+          });
 
-        const specimensFromValidDatasetsQuery = e.select(
-          e.dataset.DatasetSpecimen,
-          (s) => ({
-            id: true,
-            filter: e.op(
-              e.op(s.dataset.id, "in", a),
-              "and",
-              specimenIds.length === 0
-                ? e.bool(true)
-                : e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a))))
-            ),
-          })
+        // interestingly - if passed in a UUID that is *not even an EdgeDb object* - the
+        // UUID doesn't appear in the cross-links result at all
+        // and given that we take these Ids direct from the APIs - we can't trust that
+        // people won't attempt something like this
+        // so we are going to do some work to establish exactly what ended up where
+        const validSpecimenIds =
+          specimenDatasetLinks && specimenDatasetLinks.valid
+            ? specimenDatasetLinks.valid.map((scl) => scl.id)
+            : [];
+        const crossLinkedSpecimenIds =
+          specimenDatasetLinks && specimenDatasetLinks.crossLinked
+            ? specimenDatasetLinks.crossLinked.map((scl) => scl.id)
+            : [];
+        const invalidSpecimenIds: string[] = [];
+
+        const recognisedSpecimenIds = new Set(
+          validSpecimenIds.concat(crossLinkedSpecimenIds)
         );
 
-        const actualSpecimens = await specimensFromValidDatasetsQuery.run(tx);
+        // look for anything passed into us that ended up nowhere in the edgedb query result
+        for (const sid of specimenIds) {
+          if (!recognisedSpecimenIds.has(sid)) {
+            invalidSpecimenIds.push(sid);
+          }
+        }
 
+        // we abort early here - if anything is wrong we change nothing at all
         if (
-          specimenIds.length > 0 &&
-          actualSpecimens.length != specimenIds.length
+          !specimenDatasetLinks ||
+          crossLinkedSpecimenIds.length > 0 ||
+          invalidSpecimenIds.length > 0
         )
-          throw Error(
-            "Mismatch between the specimens that we passed in and those that are allowed specimens in this release"
+          throw new ReleaseSelectionDatasetMismatchError(
+            releaseKey,
+            crossLinkedSpecimenIds.concat(invalidSpecimenIds)
           );
 
         if (statusToSet) {
           // add specimens to the selected set
           await e
-            .update(e.release.Release, (r) => ({
-              filter: e.op(r.releaseKey, "=", releaseKey),
-              set: {
-                selectedSpecimens: { "+=": specimensFromValidDatasetsQuery },
-              },
-            }))
-            .run(tx);
+            .params({ ids: e.array(e.uuid) }, ({ ids }) =>
+              e.update(e.release.Release, (r) => ({
+                filter: e.op(r.releaseKey, "=", releaseKey),
+                set: {
+                  selectedSpecimens: {
+                    "+=": e.select(e.dataset.DatasetSpecimen, (ds) => ({
+                      filter: e.op(ds.id, "in", e.array_unpack(ids)),
+                    })),
+                  },
+                },
+              }))
+            )
+            .run(tx, { ids: validSpecimenIds });
         } else {
           // remove specimens from the selected set
           await e
-            .update(e.release.Release, (r) => ({
-              filter: e.op(r.releaseKey, "=", releaseKey),
-              set: {
-                selectedSpecimens: { "-=": specimensFromValidDatasetsQuery },
-              },
-            }))
-            .run(tx);
+            .params({ ids: e.array(e.uuid) }, ({ ids }) =>
+              e.update(e.release.Release, (r) => ({
+                filter: e.op(r.releaseKey, "=", releaseKey),
+                set: {
+                  selectedSpecimens: {
+                    "-=": e.select(e.dataset.DatasetSpecimen, (ds) => ({
+                      filter: e.op(ds.id, "in", e.array_unpack(ids)),
+                    })),
+                  },
+                },
+              }))
+            )
+            .run(tx, { ids: validSpecimenIds });
         }
 
         return {
-          affectedSpecimens: specimenIds,
-          statusToSet: statusToSet,
+          affectedSpecimens:
+            specimenIds && specimenIds.length > 0 ? validSpecimenIds : ["*"],
         };
       },
       async (a) => {

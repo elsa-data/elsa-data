@@ -26,6 +26,8 @@ import {
   JUDY_SPECIMEN,
 } from "../../src/test-data/insert-test-data-10f-jetsons";
 import { ReleaseSelectionService } from "../../src/business/services/release-selection-service";
+import { ReleaseSelectionDatasetMismatchError } from "../../src/business/exceptions/release-selection";
+import { TN_1_SPECIMEN_TUMOUR } from "../../src/test-data/insert-test-data-10c";
 
 let edgeDbClient: Client;
 let releaseSelectionService: ReleaseSelectionService;
@@ -322,22 +324,22 @@ it("(un-)selects all when setSelectedStatus is passed an empty list", async () =
 it("pass in specimen ids that are not valid", async () => {
   await expect(async () => {
     await releaseSelectionService.setSelected(
-      allowedPiUser,
+      allowedDataOwnerUser,
       testReleaseKey,
-      // whilst this looks vaguely like a edgedb id it will never match
+      // whilst this looks vaguely like an edgedb id it will never match
       ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     );
-  }).rejects.toThrow(Error);
+  }).rejects.toThrow(ReleaseSelectionDatasetMismatchError);
 
-  // TODO: a slightly more difficult one where we pass in a valid specimen id - but the
+  // a slightly more difficult one where we pass in a valid specimen id - but the
   // specimen id belongs to a dataset not in our release
-  //await expect(async () => {
-  //  await releasesService.setSelected(
-  //      allowedPiUser,
-  //      testReleaseKey,
-  //       []
-  //  );
-  // }).rejects.toThrow(Error);
+  await expect(async () => {
+    await releaseSelectionService.setSelected(
+      allowedDataOwnerUser,
+      testReleaseKey,
+      await findDatabaseSpecimenIds(edgeDbClient, [TN_1_SPECIMEN_TUMOUR])
+    );
+  }).rejects.toThrow(ReleaseSelectionDatasetMismatchError);
 });
 
 /*it("test paging", async () => {
