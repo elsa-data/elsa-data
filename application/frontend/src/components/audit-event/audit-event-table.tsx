@@ -150,16 +150,14 @@ export const AuditEventTable = ({
         <div className="flex items-center	justify-between">
           <div>Audit Logs</div>
           {filterMenu && (
-            <div className="flex content-center items-center">
-              <div>
-                <FilterMenu
-                  includeEvents={includeEvents}
-                  setIncludeEvents={setIncludeEvents}
-                  setCurrentPage={setCurrentPage}
-                  setCurrentTotal={setCurrentTotal}
-                  setUpdateData={setUpdateData}
-                />
-              </div>
+            <div className="ml-2 flex content-center items-center">
+              <FilterMenu
+                includeEvents={includeEvents}
+                setIncludeEvents={setIncludeEvents}
+                setCurrentPage={setCurrentPage}
+                setCurrentTotal={setCurrentTotal}
+                setUpdateData={setUpdateData}
+              />
             </div>
           )}
         </div>

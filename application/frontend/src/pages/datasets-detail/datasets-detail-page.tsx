@@ -35,7 +35,7 @@ export const DatasetsDetailPage: React.FC = () => {
   });
 
   return (
-    <div className="mt-2 flex flex-grow flex-row flex-wrap">
+    <div className="mt-2 space-y-4 flex flex-grow flex-row flex-wrap">
       <>
         {datasetData && (
           <>
@@ -70,7 +70,7 @@ export const DatasetsDetailPage: React.FC = () => {
                       })
                     }
                     type="button"
-                    className="inline-block	cursor-pointer rounded bg-slate-200 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
+                    className="inline-block	cursor-pointer rounded bg-slate-200 ml-2 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
                   >
                     SYNC
                   </button>
