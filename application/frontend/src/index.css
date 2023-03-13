@@ -74,8 +74,8 @@ input[type="search"], input[type="text"], textarea {
 }
 
 /*
- * Without this, tailwind would add `z-index: 11` to any element having the
- * class `table`.
+ * Without this, tailwind would add `z-index: 11` to any element matching this
+ * selector.
  */
 .table th:first-child {
   z-index: 0 !important;
