@@ -28,7 +28,6 @@ import { AuditEventDetailedPage } from "./components/audit-event/audit-event-det
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
-import { AuditEntryPage } from "./pages/releases/detail/logs-box/audit-entry-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -95,11 +94,12 @@ export function createRouter(addBypassLoginPage: boolean) {
       text: "Audit Log",
       path: "audit-log",
       element: <AuditLogSubPage />,
-      children: (
-        <>
-          <Route path={`:objectId`} element={<AuditEntryPage />} />
-        </>
-      ),
+      children: <></>,
+    },
+    {
+      path: "audit-log/:objectId",
+      element: <AuditEventDetailedPage />,
+      children: <></>,
     },
   ];
 
@@ -132,10 +132,12 @@ export function createRouter(addBypassLoginPage: boolean) {
               // we want to pass through to the master page the ability in our breadcrumbs
               // to navigate sideways to our siblings
               handle={{
-                siblingItems: releaseChildren.map((c, i) => ({
-                  to: `./${c.path}`,
-                  text: c.text,
-                })),
+                siblingItems: releaseChildren
+                  .map((c, i) => ({
+                    to: `./${c.path}`,
+                    text: c.text,
+                  }))
+                  .filter(({ text }) => text !== undefined),
               }}
             >
               <>
@@ -166,7 +168,7 @@ export function createRouter(addBypassLoginPage: boolean) {
           <Route path={`users`} element={<UsersDashboardPage />} />
 
           <Route
-            path={`audit-event/details/:objectId`}
+            path={`audit-events/:objectId`}
             element={<AuditEventDetailedPage />}
           />
           <Route path={`audit-events`} element={<AuditEventsPage />} />
