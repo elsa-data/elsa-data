@@ -54,7 +54,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
     return this.auditLogService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      "Activated release",
+      "Activated Release",
       async () => {
         if (userRole !== "DataOwner") {
           throw new ReleaseActivationPermissionError(releaseKey);

@@ -46,6 +46,11 @@ export async function findDatabaseSpecimenIds(
     }))
     .run(client);
 
+  if (toChange.length != valueIds.length)
+    throw new Error(
+      "In our test setup we requested database specimen ids that weren't actually in the database"
+    );
+
   return toChange.map((a) => a.id);
 }
 

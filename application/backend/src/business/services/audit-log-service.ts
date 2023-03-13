@@ -798,6 +798,36 @@ export class AuditLogService {
   }
 
   /**
+   * Perform our standard audit pattern for a create to a release
+   * including transactions and try/catch.
+   *
+   * @param user
+   * @param releaseKey
+   * @param actionDescription
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
+  public async transactionalCreateInReleaseAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    return this.transactionalAuditPattern(
+      user,
+      releaseKey,
+      "C",
+      actionDescription,
+      initFunc,
+      transFunc,
+      finishFunc
+    );
+  }
+
+  /**
    * Perform our standard audit pattern for an update to a release
    * including transactions and try/catch.
    *
@@ -828,6 +858,66 @@ export class AuditLogService {
   }
 
   /**
+   * Perform our standard audit pattern for a delete to a release
+   * including transactions and try/catch.
+   *
+   * @param user
+   * @param releaseKey
+   * @param actionDescription
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
+  public async transactionalDeleteInReleaseAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    return this.transactionalAuditPattern(
+      user,
+      releaseKey,
+      "D",
+      actionDescription,
+      initFunc,
+      transFunc,
+      finishFunc
+    );
+  }
+
+  /**
+   * Perform our standard audit pattern for a execute to a release
+   * including transactions and try/catch.
+   *
+   * @param user
+   * @param releaseKey
+   * @param actionDescription
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
+  public async transactionalExecuteInReleaseAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    return this.transactionalAuditPattern(
+      user,
+      releaseKey,
+      "E",
+      actionDescription,
+      initFunc,
+      transFunc,
+      finishFunc
+    );
+  }
+
+  /**
    * The transaction audit pattern for releases executes the three
    * given functions in a chain, but interspersed with audit
    * start/success/failure functionality.
@@ -840,7 +930,7 @@ export class AuditLogService {
    * @param transFunc
    * @param finishFunc
    */
-  async transactionalAuditPattern<T, U, V>(
+  protected async transactionalAuditPattern<T, U, V>(
     user: AuthenticatedUser,
     releaseKey: string,
     actionCategory: audit.ActionType,
