@@ -147,7 +147,7 @@ export const AuditEventTable = ({
   return (
     <Box
       heading={
-        <div className="flex items-center	justify-between">
+        <div className="flex grow items-center	justify-between">
           <div>Audit Logs</div>
           {filterMenu && (
             <div className="ml-2 flex content-center items-center">
