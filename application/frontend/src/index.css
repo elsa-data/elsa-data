@@ -68,3 +68,15 @@ body {
 .comma-list > li:last-child::after {
   content: "";
 }
+
+input[type="search"], input[type="text"], textarea {
+  @apply p-3 my-2
+}
+
+/*
+ * Without this, tailwind would add `z-index: 11` to any element having the
+ * class `table`.
+ */
+.table th:first-child {
+  z-index: 0 !important;
+}
