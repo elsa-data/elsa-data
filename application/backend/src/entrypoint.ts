@@ -71,6 +71,7 @@ function printHelpText() {
   logger.trace("Logger trace test");
   logger.debug("Logger debug test");
   logger.info("Logger info test");
+  logger.warn("Logger warn test");
   logger.error("Logger error test");
   logger.fatal("Logger fatal test");
 
