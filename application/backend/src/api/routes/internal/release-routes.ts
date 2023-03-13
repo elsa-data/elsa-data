@@ -24,15 +24,17 @@ import { AwsAccessPointService } from "../../../business/services/aws-access-poi
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
+import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
   const presignedUrlsService = container.resolve(PresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
   const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
-  const releasesService = container.resolve(ReleaseService);
+  const releaseService = container.resolve(ReleaseService);
   const releaseParticipantService = container.resolve(
     ReleaseParticipationService
   );
+  const releaseSelectionService = container.resolve(ReleaseSelectionService);
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/releases",
@@ -41,7 +43,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser, pageSize, offset } =
         authenticatedRouteOnEntryHelper(request);
 
-      const allForUser = await releasesService.getAll(
+      const allForUser = await releaseService.getAll(
         authenticatedUser,
         pageSize,
         offset
@@ -59,7 +61,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
       const releaseKey = request.params.rid;
 
-      const release = await releasesService.get(authenticatedUser, releaseKey);
+      const release = await releaseService.get(authenticatedUser, releaseKey);
 
       if (release) reply.send(release);
       else reply.status(400).send();
@@ -75,7 +77,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
       const releaseKey = request.params.rid;
 
-      const cases = await releasesService.getCases(
+      const cases = await releaseSelectionService.getCases(
         authenticatedUser,
         releaseKey,
         pageSize,
@@ -160,7 +162,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     const releaseKey = request.params.rid;
     const nodeId = request.params.nid;
 
-    const r = await releasesService.getNodeConsent(
+    const r = await releaseSelectionService.getNodeConsent(
       authenticatedUser,
       releaseKey,
       nodeId
@@ -205,7 +207,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/specimens":
                 reply.send(
-                  await releasesService.setSelected(
+                  await releaseSelectionService.setSelected(
                     authenticatedUser,
                     releaseKey,
                     op.value
@@ -214,7 +216,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/diseases":
                 reply.send(
-                  await releasesService.addDiseaseToApplicationCoded(
+                  await releaseService.addDiseaseToApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -224,7 +226,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/countries":
                 reply.send(
-                  await releasesService.addCountryToApplicationCoded(
+                  await releaseService.addCountryToApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -242,7 +244,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/specimens":
                 reply.send(
-                  await releasesService.setUnselected(
+                  await releaseSelectionService.setUnselected(
                     authenticatedUser,
                     releaseKey,
                     op.value
@@ -251,7 +253,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/diseases":
                 reply.send(
-                  await releasesService.removeDiseaseFromApplicationCoded(
+                  await releaseService.removeDiseaseFromApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -261,7 +263,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/countries":
                 reply.send(
-                  await releasesService.removeCountryFromApplicationCoded(
+                  await releaseService.removeCountryFromApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -279,7 +281,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/applicationCoded/type":
                 reply.send(
-                  await releasesService.setTypeOfApplicationCoded(
+                  await releaseService.setTypeOfApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value as any
@@ -288,7 +290,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/beacon":
                 reply.send(
-                  await releasesService.setBeaconQuery(
+                  await releaseService.setBeaconQuery(
                     authenticatedUser,
                     releaseKey,
                     op.value
@@ -297,7 +299,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedRead":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedReadData",
@@ -307,7 +309,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedVariant":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedVariantData",
@@ -317,7 +319,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedPhenotype":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedPhenotypeData",
@@ -327,7 +329,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedS3":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedS3Data",
@@ -337,7 +339,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedGS":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedGSData",
@@ -347,7 +349,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedR2":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedR2Data",
@@ -481,7 +483,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      reply.send(await releasesService.new(authenticatedUser, request.body));
+      reply.send(await releaseService.new(authenticatedUser, request.body));
     }
   );
 
