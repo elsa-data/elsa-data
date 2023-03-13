@@ -26,6 +26,7 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
   const datasetsService = container.resolve(DatasetService);
   const agService = container.resolve(S3IndexApplicationService);
   const settings = container.resolve<ElsaSettings>("Settings");
+
   /**
    * Pageable fetching of top-level dataset information (summary level info)
    */
@@ -52,8 +53,6 @@ export const datasetRoutes = async (fastify: FastifyInstance) => {
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const elsaSettings: ElsaSettings = (request as any).settings;
 
       const datasetId = request.params.did;
 

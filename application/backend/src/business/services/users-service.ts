@@ -1,4 +1,5 @@
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
@@ -20,6 +21,7 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
+import { NotAuthorisedViewUserManagement } from "../exceptions/user";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
@@ -30,6 +32,17 @@ export class UsersService {
     @inject("Database") private edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings
   ) {}
+
+  private async checkIsAllowedViewUserManagement(
+    executor: Executor,
+    user: AuthenticatedUser
+  ): Promise<void> {
+    // Check if user has the permission to view all audit events
+    const isPermissionAllow = user.isAllowedViewUserManagement;
+    if (isPermissionAllow) return;
+
+    throw new NotAuthorisedViewUserManagement();
+  }
 
   /**
    * Get all the users.
@@ -43,6 +56,8 @@ export class UsersService {
     limit: number,
     offset: number
   ): Promise<PagedResult<UserSummaryType>> {
+    await this.checkIsAllowedViewUserManagement(this.edgeDbClient, user);
+
     const totalEntries = await countAllUserQuery.run(this.edgeDbClient);
 
     const pageOfEntries = await pageableAllUserQuery.run(this.edgeDbClient, {
@@ -56,9 +71,10 @@ export class UsersService {
         subjectIdentifier: a.subjectId,
         displayName: a.displayName,
         lastLogin: a.lastLoginDateTime,
-        allowedImportDataset: a.allowedImportDataset,
-        allowedCreateRelease: a.allowedCreateRelease,
-        allowedChangeReleaseDataOwner: a.allowedChangeReleaseDataOwner,
+        isAllowedImportDataset: a.isAllowedImportDataset,
+        isAllowedCreateRelease: a.isAllowedCreateRelease,
+        isAllowedChangeReleaseDataOwner: a.isAllowedChangeReleaseDataOwner,
+        isAllowedViewAllAuditEvents: a.isAllowedViewAllAuditEvents,
       })),
       totalEntries
     );
@@ -92,9 +108,9 @@ export class UsersService {
   public async changePermission(
     user: AuthenticatedUser,
     permission:
-      | "allowedCreateRelease"
-      | "allowedImportDataset"
-      | "allowedChangeReleaseDataOwner",
+      | "isAllowedCreateRelease"
+      | "isAllowedImportDataset"
+      | "isAllowedChangeReleaseDataOwner",
     value: boolean
   ): Promise<void> {
     const permissionDescription = capitalize(lowerCase(permission));

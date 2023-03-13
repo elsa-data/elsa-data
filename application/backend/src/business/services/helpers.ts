@@ -27,9 +27,11 @@ export function collapseExternalIds(externals: any): string {
 export async function doRoleInReleaseCheck(
   usersService: UsersService,
   user: AuthenticatedUser,
-  releaseKey: string
+  releaseKey?: string
 ) {
-  const userRole = await usersService.roleInRelease(user, releaseKey);
+  const userRole = releaseKey
+    ? await usersService.roleInRelease(user, releaseKey)
+    : null;
 
   if (!userRole)
     throw new Error(

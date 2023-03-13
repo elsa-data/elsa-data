@@ -13,9 +13,9 @@ export class AuthenticatedUser {
       isNil(this.dbUser.displayName) ||
       isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
-      isNil(this.dbUser.allowedCreateRelease) ||
-      isNil(this.dbUser.allowedChangeReleaseDataOwner) ||
-      isNil(this.dbUser.allowedImportDataset)
+      isNil(this.dbUser.isAllowedCreateRelease) ||
+      isNil(this.dbUser.isAllowedChangeReleaseDataOwner) ||
+      isNil(this.dbUser.isAllowedImportDataset)
     )
       throw new UnexpectedStateInternalServerError(
         "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
@@ -47,16 +47,33 @@ export class AuthenticatedUser {
     return this.dbUser!.email;
   }
 
-  public get allowedCreateRelease(): boolean {
-    return this.dbUser!.allowedCreateRelease;
+  /**
+   * Read permission
+   */
+  public get isAllowedViewAllAuditEvents(): boolean {
+    return this.dbUser!.isAllowedViewAllAuditEvents;
+  }
+  public get isAllowedViewDatasetContent(): boolean {
+    return this.dbUser!.isAllowedViewDatasetContent;
+  }
+  public get isAllowedViewUserManagement(): boolean {
+    return this.dbUser!.isAllowedViewUserManagement;
   }
 
-  public get allowedChangeReleaseDataOwner(): boolean {
-    return this.dbUser!.allowedChangeReleaseDataOwner;
+  /**
+   * Write permission
+   */
+  public get isAllowedCreateRelease(): boolean {
+    return this.dbUser!.isAllowedCreateRelease;
   }
-
-  public get allowedImportDataset(): boolean {
-    return this.dbUser!.allowedImportDataset;
+  public get isAllowedChangeReleaseDataOwner(): boolean {
+    return this.dbUser!.isAllowedChangeReleaseDataOwner;
+  }
+  public get isAllowedImportDataset(): boolean {
+    return this.dbUser!.isAllowedImportDataset;
+  }
+  public get isAllowedSyncDataAccessEvents(): boolean {
+    return this.dbUser!.isAllowedSyncDataAccessEvents;
   }
 
   /**

@@ -116,18 +116,26 @@ export async function createTestUser(
   releasesAsDataOwner: string[],
   releasesAsPI: string[],
   releasesAsMember: string[],
-  lastLogin?: Date
+  isSuperAdmin: boolean = false
 ) {
+  const isAllowedPermission = isSuperAdmin;
+
   // create the user
   const newUser = await e
     .insert(e.permission.User, {
       subjectId: subjectId,
       displayName: displayName,
       email: email,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
-      allowedImportDataset: false,
-      lastLoginDateTime: lastLogin,
+
+      isAllowedViewAllAuditEvents: isAllowedPermission,
+      isAllowedViewDatasetContent: isAllowedPermission,
+      isAllowedViewUserManagement: isAllowedPermission,
+
+      isAllowedChangeReleaseDataOwner: isAllowedPermission,
+      isAllowedCreateRelease: isAllowedPermission,
+      isAllowedImportDataset: isAllowedPermission,
+      isAllowedSyncDataAccessEvents: isAllowedPermission,
+
       userAuditEvent: e.insert(e.audit.UserAuditEvent, {
         whoId: subjectId,
         whoDisplayName: displayName,

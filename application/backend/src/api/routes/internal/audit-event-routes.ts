@@ -198,6 +198,7 @@ export const auditEventRoutes = async (
       const accessType = request.body.accessType;
 
       let replyMessage = "";
+      // TODO: AccessControl Check (to be done as it DataAccess move out from audit)
 
       switch (accessType) {
         case "aws":
@@ -258,12 +259,7 @@ export const auditEventRoutes = async (
         filter = [],
       } = request.query;
 
-      if (
-        (filter.includes("all") || filter.includes("system")) &&
-        !request.session.get(ALLOWED_VIEW_AUDIT_EVENTS)
-      ) {
-        reply.status(404).send();
-      } else if (filter.length === 0) {
+      if (filter.length === 0) {
         sendUncheckedPagedResult(reply, { data: [], total: 0 });
       } else {
         const events = await auditLogService.getUserEntries(

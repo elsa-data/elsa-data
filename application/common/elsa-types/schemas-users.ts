@@ -18,9 +18,10 @@ export const UserSummarySchema = Type.Object({
 
   lastLogin: TypeDate,
 
-  allowedCreateRelease: Type.Boolean(),
-  allowedImportDataset: Type.Boolean(),
-  allowedChangeReleaseDataOwner: Type.Boolean(),
+  isAllowedCreateRelease: Type.Boolean(),
+  isAllowedImportDataset: Type.Boolean(),
+  isAllowedChangeReleaseDataOwner: Type.Boolean(),
+  isAllowedViewAllAuditEvents: Type.Boolean(),
 });
 
 export type UserSummaryType = Static<typeof UserSummarySchema>;

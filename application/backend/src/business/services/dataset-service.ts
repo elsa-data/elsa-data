@@ -1,4 +1,5 @@
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
   DatasetDeepType,
@@ -21,6 +22,7 @@ import {
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
+import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
 
 @injectable()
 @singleton()
@@ -31,7 +33,32 @@ export class DatasetService {
     private readonly auditLogService: AuditLogService
   ) {}
 
-  getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
+  /**
+   *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param user
+   * @param releaseKey
+   * @returns
+   */
+  private checkIsAllowedViewDataset(
+    user: AuthenticatedUser,
+    datasetUri?: string
+  ): void {
+    // Check if user has the permission to view all audit events
+    const isPermissionAllow = user.isAllowedViewDatasetContent;
+    if (isPermissionAllow) return;
+
+    throw new NotAuthorisedViewDataset();
+  }
+
+  /**
+   * Get Storage URI Prefix from dataset URI
+   * @param datasetUri
+   * @returns
+   */
+  public getStorageUriPrefixFromFromDatasetUri(
+    datasetUri: string
+  ): string | null {
     for (const d of this.settings.datasets) {
       if (d.uri === datasetUri) {
         return d.storageUriPrefix;
@@ -41,7 +68,12 @@ export class DatasetService {
     return null;
   }
 
-  async getDatasetUrisFromReleaseKey(
+  /**
+   *
+   * @param releaseKey
+   * @returns
+   */
+  public async getDatasetUrisFromReleaseKey(
     releaseKey: string
   ): Promise<string[] | undefined> {
     return (
@@ -69,6 +101,8 @@ export class DatasetService {
     limit?: number,
     offset?: number
   ): Promise<PagedResult<DatasetLightType>> {
+    this.checkIsAllowedViewDataset(user);
+
     if (
       (limit !== undefined && limit <= 0) ||
       (offset !== undefined && offset < 0)
@@ -114,6 +148,8 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetId: string
   ): Promise<DatasetDeepType | null> {
+    this.checkIsAllowedViewDataset(user);
+
     const sd = await singleDatasetSummaryQuery.run(this.edgeDbClient, {
       includeDeletedFile: false,
       datasetId: datasetId,
@@ -326,7 +362,8 @@ export class DatasetService {
     user: AuthenticatedUser,
     consentId: string
   ): Promise<DuoLimitationCodedType[]> {
-    // Should be some mechanism to check if user is authorize to see the consent
+    // With this, all consent in Db is accessible if user had access to view all datasets.
+    this.checkIsAllowedViewDataset(user);
 
     const consentQuery = e
       .select(e.consent.Consent, (c) => ({

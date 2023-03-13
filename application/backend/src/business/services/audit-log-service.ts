@@ -35,10 +35,13 @@ import AuditEvent = audit.AuditEvent;
 import ActionType = audit.ActionType;
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import {
+  getReleaseKeyFromReleaseAuditEvent,
   insertReleaseAuditEvent,
   insertSystemAuditEvent,
   insertUserAuditEvent,
+  releaseGetBoundaryInfo,
 } from "../../../dbschema/queries";
+import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -61,6 +64,36 @@ export class AuditLogService {
   constructor(
     @inject("Settings") private settings: ElsaSettings // NOTE: we don't define an edgeDbClient here as the audit log functionality // is designed to work either standalone or in a transaction context
   ) {}
+
+  /**
+   *
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param user
+   * @param releaseKey
+   * @returns
+   */
+  private async checkIsAllowedViewAuditEvents(
+    executor: Executor,
+    user: AuthenticatedUser,
+    releaseKey?: string
+  ): Promise<void> {
+    // Check if user has the permission to view all audit events
+    const isPermissionAllow = user.isAllowedViewAllAuditEvents;
+    if (isPermissionAllow) return;
+
+    // Check if user is part of release therefore have access
+    if (releaseKey) {
+      const userReleaseRole = (
+        await releaseGetBoundaryInfo(executor, {
+          userDbId: user.dbId,
+          releaseKey: releaseKey,
+        })
+      )?.role?.["@role"];
+      if (userReleaseRole) return;
+    }
+
+    throw new NotAuthorisedViewAudits(releaseKey);
+  }
 
   /**
    * Start the entry for an audit event that occurs in a release context.
@@ -428,6 +461,8 @@ export class AuditLogService {
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
+    await this.checkIsAllowedViewAuditEvents(executor, user, releaseKey);
+
     const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
       executor,
       { releaseKey }
@@ -486,6 +521,11 @@ export class AuditLogService {
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditEventType> | null> {
+    // These query filters require special permission.
+    if (filter.includes("all") || filter.includes("system")) {
+      await this.checkIsAllowedViewAuditEvents(executor, user);
+    }
+
     const { count, entries } = pageableAuditEventsQuery(
       filter.filter((value) => value !== "all"),
       filter.includes("all") ? "all" : [user.dbId],
@@ -566,8 +606,16 @@ export class AuditLogService {
     start: number,
     end: number
   ): Promise<AuditEventDetailsType | null> {
-    const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
+    // Find if "releaseKey" exist associated with this Id.
+    const rKey = (
+      await getReleaseKeyFromReleaseAuditEvent(executor, {
+        releaseAuditEventId: id,
+      })
+    )?.releaseKey;
 
+    await this.checkIsAllowedViewAuditEvents(executor, user, rKey);
+
+    const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
     if (!entry) {
       return null;
     } else {
@@ -584,6 +632,8 @@ export class AuditLogService {
     user: AuthenticatedUser,
     id: string
   ): Promise<AuditEventFullType | null> {
+    await this.checkIsAllowedViewAuditEvents(executor, user);
+
     const entry = await auditLogFullForIdQuery(id).run(executor);
 
     if (!entry) {
@@ -617,6 +667,8 @@ export class AuditLogService {
       | "fileSize" = "occurredDateTime",
     orderAscending: boolean = false
   ): Promise<PagedResult<AuditDataAccessType> | null> {
+    await this.checkIsAllowedViewAuditEvents(executor, user, releaseKey);
+
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
       executor,
       { releaseKey }
@@ -666,8 +718,9 @@ export class AuditLogService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<AuditDataSummaryType[] | null> {
-    // TODO: Make this paginate
+    await this.checkIsAllowedViewAuditEvents(executor, user, releaseKey);
 
+    // TODO: Make this paginate
     const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
       executor,
       { releaseKey }

@@ -51,18 +51,39 @@ module permission {
             default := datetime_current();
         }
 
-        # these are the set of administrator level permissions that can be given
+        # These are the set of administrator level permissions that can be given
         # to a user
 
-        required property allowedCreateRelease -> bool {
+        # Write Access
+        required property isAllowedSyncDataAccessEvents -> bool {
             default := false;
-        };
-        required property allowedImportDataset -> bool {
+        }
+
+        required property isAllowedImportDataset -> bool {
            default := false;
         };
-        required property allowedChangeReleaseDataOwner -> bool {
+
+        required property isAllowedCreateRelease -> bool {
             default := false;
         };
+
+        required property isAllowedChangeReleaseDataOwner -> bool {
+            default := false;
+        };
+        
+        # Read Access
+        required property isAllowedViewAllAuditEvents -> bool {
+            default := false;
+        }
+
+        required property isAllowedViewDatasetContent -> bool {
+            default := false;
+        }
+
+        required property isAllowedViewUserManagement -> bool {
+            default := false;
+        }
+
 
         # whether this user is a participant in a release
 

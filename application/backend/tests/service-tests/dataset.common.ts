@@ -42,9 +42,13 @@ export async function beforeEachCommon() {
     subjectId: allowedPiSubject,
     displayName: "Allowed Manager",
     email: allowedPiEmail,
-    allowedChangeReleaseDataOwner: true,
-    allowedCreateRelease: true,
-    allowedImportDataset: true,
+    isAllowedImportDataset: true,
+    isAllowedChangeReleaseDataOwner: true,
+    isAllowedCreateRelease: true,
+    isAllowedViewAllAuditEvents: true,
+    isAllowedSyncDataAccessEvents: true,
+    isAllowedViewDatasetContent: true,
+    isAllowedViewUserManagement: true,
     lastLoginDateTime: new Date(),
   });
 

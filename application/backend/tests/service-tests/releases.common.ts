@@ -121,9 +121,13 @@ export async function beforeEachCommon() {
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedImportDataset: false,
+      isAllowedChangeReleaseDataOwner: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
     });
   }
 
@@ -151,9 +155,13 @@ export async function beforeEachCommon() {
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedImportDataset: false,
+      isAllowedChangeReleaseDataOwner: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
     });
   }
 
@@ -181,9 +189,13 @@ export async function beforeEachCommon() {
       displayName: allowedMemberDisplayName,
       email: allowedMemberEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedImportDataset: false,
+      isAllowedChangeReleaseDataOwner: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
     });
   }
 
@@ -207,9 +219,13 @@ export async function beforeEachCommon() {
       displayName: notAllowedDisplayName,
       email: notAllowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedImportDataset: false,
+      isAllowedChangeReleaseDataOwner: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
     });
   }
 
