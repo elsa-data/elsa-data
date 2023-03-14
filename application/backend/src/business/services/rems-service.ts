@@ -11,6 +11,7 @@ import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../db/release-queries";
+import { ReleaseService } from "./release-service";
 
 @injectable()
 @singleton()
@@ -18,10 +19,15 @@ export class RemsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private releaseService: ReleaseService
   ) {}
 
-  public async detectNewReleases(): Promise<RemsApprovedApplicationType[]> {
+  public async detectNewReleases(
+    user: AuthenticatedUser
+  ): Promise<RemsApprovedApplicationType[]> {
+    this.releaseService.checkIsAllowedViewReleases(user);
+
     const appData = await axios.get(
       `${this.settings.remsUrl}/api/applications`,
       {
@@ -86,6 +92,9 @@ export class RemsService {
   ): Promise<string> {
     // TODO: this uses a config REMS setting when the UI implies we ask the user for the REMS to use
     // need to decide if this is user configurable or only admin configurable
+
+    this.releaseService.checkIsAllowedCreateReleases(user);
+
     const appData = await axios.get(
       `${this.settings.remsUrl}/api/applications/${remsId}`,
       {

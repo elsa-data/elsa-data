@@ -10,7 +10,7 @@ import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { getAllFileRecords } from "./_release-file-list-helper";
-import { ReleaseAccessError } from "../exceptions/release-authorisation";
+import { ReleaseViewAccessError } from "../exceptions/release-authorisation";
 
 export interface IPresignedUrlProvider {
   isEnabled: boolean;
@@ -67,7 +67,7 @@ export class PresignedUrlsService {
       );
 
     if (!(userRole === "Manager" || userRole === "Member")) {
-      throw new ReleaseAccessError(releaseKey);
+      throw new ReleaseViewAccessError(releaseKey);
     }
 
     const now = new Date();

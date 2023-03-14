@@ -21,7 +21,7 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { Logger } from "pino";
 import { getAllFileRecords } from "./_release-file-list-helper";
-import { ReleaseAccessError } from "../exceptions/release-authorisation";
+import { ReleaseViewAccessError } from "../exceptions/release-authorisation";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
@@ -201,7 +201,7 @@ export class AwsAccessPointService extends AwsBaseService {
       );
 
     if (userRole === "Administrator") {
-      throw new ReleaseAccessError(releaseKey);
+      throw new ReleaseViewAccessError(releaseKey);
     }
 
     // find all the files encompassed by this release as a flat array of S3 URLs

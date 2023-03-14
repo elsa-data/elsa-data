@@ -6,6 +6,10 @@ import { getReleaseInfo } from "./helpers";
 import { ReleaseRoleStrings, UsersService } from "./users-service";
 import { touchRelease } from "../db/release-queries";
 import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
+import {
+  ReleaseCreateNewError,
+  ReleaseViewAccessError,
+} from "../exceptions/release-authorisation";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -28,10 +32,21 @@ export abstract class ReleaseBaseService {
    * This is to check if user has a special create release permission granted by an admin.
    * @param user
    */
-  protected checkIsAllowedCreateReleases(user: AuthenticatedUser): void {
+  public checkIsAllowedViewReleases(user: AuthenticatedUser): void {
+    const isAllow = user.isAllowedViewAllReleases;
+    if (!isAllow) {
+      throw new ReleaseViewAccessError();
+    }
+  }
+
+  /**
+   * This is to check if user has a special create release permission granted by an admin.
+   * @param user
+   */
+  public checkIsAllowedCreateReleases(user: AuthenticatedUser): void {
     const isAllow = user.isAllowedCreateRelease;
     if (!isAllow) {
-      throw new Error("Unauthenticated attempt to create release!");
+      throw new ReleaseCreateNewError();
     }
   }
 

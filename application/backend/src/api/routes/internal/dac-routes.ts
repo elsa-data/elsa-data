@@ -26,7 +26,7 @@ export const dacRoutes = async (
   }>("/dac/rems/new", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const n = await remsService.detectNewReleases();
+    const n = await remsService.detectNewReleases(authenticatedUser);
 
     reply.send(n);
   });
