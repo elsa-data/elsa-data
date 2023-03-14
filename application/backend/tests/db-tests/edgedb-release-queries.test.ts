@@ -68,7 +68,6 @@ describe("edgedb release queries tests", () => {
 
     const result = await releaseGetAllByUser(edgeDbClient, {
       userDbId: testUserInsert.id,
-      isAllowedAllView: false,
       limit: 100,
       offset: 0,
     });
@@ -98,7 +97,6 @@ describe("edgedb release queries tests", () => {
 
     const result = await releaseGetAllByUser(edgeDbClient, {
       userDbId: testUserInsert.id,
-      isAllowedAllView: false,
       limit: 100,
       offset: 0,
     });
@@ -141,7 +139,6 @@ describe("edgedb release queries tests", () => {
     {
       const result1 = await releaseGetAllByUser(edgeDbClient, {
         userDbId: testUserInsert.id,
-        isAllowedAllView: false,
         limit: 1,
         offset: 1,
       });
@@ -155,7 +152,6 @@ describe("edgedb release queries tests", () => {
     {
       const result2 = await releaseGetAllByUser(edgeDbClient, {
         userDbId: testUserInsert.id,
-        isAllowedAllView: false,
         limit: 1,
         offset: 0,
       });

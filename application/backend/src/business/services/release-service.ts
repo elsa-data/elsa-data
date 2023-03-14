@@ -77,7 +77,6 @@ export class ReleaseService extends ReleaseBaseService {
   ): Promise<PagedResult<ReleaseSummaryType>> {
     const allReleasesByUser = await releaseGetAllByUser(this.edgeDbClient, {
       userDbId: user.dbId,
-      isAllowedAllView: user.isAllowedViewAllReleases,
       limit: limit,
       offset: offset,
     });

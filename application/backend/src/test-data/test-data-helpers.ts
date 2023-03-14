@@ -135,6 +135,7 @@ export async function createTestUser(
       isAllowedCreateRelease: isAllowedPermission,
       isAllowedImportDataset: isAllowedPermission,
       isAllowedSyncDataAccessEvents: isAllowedPermission,
+      isAllowedViewAllReleases: isAllowedPermission,
 
       userAuditEvent: e.insert(e.audit.UserAuditEvent, {
         whoId: subjectId,

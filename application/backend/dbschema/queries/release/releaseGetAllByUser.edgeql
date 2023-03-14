@@ -3,8 +3,13 @@
 
 with
 
-  # This is for admin grant view, should be 'false' otherwise
-  isAllowAllView :=  (<bool>$isAllowedAllView),  
+  # isAllowAllView is for admin who has access to view all releases
+  isAllowAllView := (
+                      select permission::User {
+                        isAllowedViewAllReleases
+                      }
+                      filter .id = <uuid>$userDbId
+                    ).isAllowedViewAllReleases,  
 
   # r is the set of all releases that involve $userDbId as a participant
   r := (
