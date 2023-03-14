@@ -125,15 +125,12 @@ describe("Test CloudTrailLake Service", () => {
       AwsCloudTrailLakeService
     );
 
-    try {
-      await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+    await expect(async () => {
+      const result = await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
         user: allowedMemberUser,
         releaseKey: testReleaseKey,
         eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
       });
-    } catch (error: any) {
-      expect(error.message).toMatch(/Unauthorised/);
-      expect(error.status).toEqual(403);
-    }
+    }).rejects.toThrow(NotAuthorisedSyncDataAccessEvents);
   });
 });

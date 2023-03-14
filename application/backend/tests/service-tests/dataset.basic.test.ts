@@ -11,6 +11,7 @@ import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
 let edgeDbClient: Client;
 let datasetService: DatasetService;
 let adminUser: AuthenticatedUser;
+let notAllowedUser: AuthenticatedUser;
 let tenfDatasetId: string;
 let tengDatasetId2: string;
 
@@ -22,7 +23,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ tenfDatasetId, tengDatasetId2, adminUser } = await beforeEachCommon());
+  ({ tenfDatasetId, tengDatasetId2, adminUser, notAllowedUser } =
+    await beforeEachCommon());
 });
 
 it("basic summary get all works", async () => {
@@ -78,4 +80,15 @@ it("basic summary get all is sorted by dataset URI", async () => {
     expect(result.data[1].uri).toBe(TENF_URI);
     expect(result.data[2].uri).toBe(TENG_URI);
   }
+});
+
+it("not allowed users cannot get dataset data", async () => {
+  await expect(async () => {
+    const result = await datasetService.getSummary(
+      notAllowedUser,
+      true,
+      1000,
+      0
+    );
+  }).rejects.toThrow(Error);
 });

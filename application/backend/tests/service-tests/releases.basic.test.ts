@@ -9,7 +9,7 @@ let edgeDbClient: Client;
 let releaseService: ReleaseService;
 let testReleaseKey: string;
 
-let superAdminUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, superAdminUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, allowedAdministratorUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
 
@@ -60,7 +60,10 @@ it("basic release data is present for Manager", async () => {
 });
 
 it("basic release data is present for release administrator", async () => {
-  const result = await releaseService.get(superAdminUser, testReleaseKey);
+  const result = await releaseService.get(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
 
   expect(result).not.toBeNull();
   assert(result != null);

@@ -52,10 +52,26 @@ export async function beforeEachCommon() {
     lastLoginDateTime: new Date(),
   });
 
+  const notAllowedUser = new AuthenticatedUser({
+    id: allowedPiUserInsert.id,
+    subjectId: "http://subject-not-allowed.com",
+    displayName: "not-allowed Member",
+    email: "not-allow@emai.com",
+    isAllowedImportDataset: false,
+    isAllowedCreateRelease: false,
+    isAllowedViewAllAuditEvents: false,
+    isAllowedSyncDataAccessEvents: false,
+    isAllowedViewDatasetContent: false,
+    isAllowedViewUserManagement: false,
+    isAllowedViewAllReleases: false,
+    lastLoginDateTime: new Date(),
+  });
+
   return {
     edgeDbClient,
     tenfDatasetId: tenf.id,
     tengDatasetId2: teng.id,
     adminUser,
+    notAllowedUser,
   };
 }
