@@ -95,7 +95,7 @@ it("get all case level information from a release as a data owner", async () => 
 /**
  *
  */
-it("get limited case level information from a release as a PI", async () => {
+it("get limited case level information from a release as a Manager", async () => {
   const pagedResult = await releaseSelectionService.getCases(
     allowedPiUser,
     testReleaseKey,

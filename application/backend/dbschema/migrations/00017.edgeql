@@ -1,4 +1,4 @@
-CREATE MIGRATION m1fdmb7aesr3wsko2bzjt74vd735exx3asniauaiye7tl6a6mak2wa
+CREATE MIGRATION m1rrffydkcwbgzt4dju5owohkb7o756rphnk5hsy6jjspk6v4q6nea
     ONTO m1ybtzphw6gvt3f4ykoa2egpxb7qycqs7wcpmatc2l7xctomnadjba
 {
   ALTER TYPE permission::PotentialUser {
@@ -31,24 +31,24 @@ CREATE MIGRATION m1fdmb7aesr3wsko2bzjt74vd735exx3asniauaiye7tl6a6mak2wa
   };
   ALTER TYPE permission::User {
       ALTER PROPERTY allowedChangeReleaseDataOwner {
-          RENAME TO isAllowedChangeReleaseDataOwner;
-      };
-  };
-  ALTER TYPE permission::User {
-      ALTER PROPERTY allowedCreateRelease {
           RENAME TO isAllowedCreateRelease;
       };
   };
   ALTER TYPE permission::User {
-      ALTER PROPERTY allowedImportDataset {
+      ALTER PROPERTY allowedCreateRelease {
           RENAME TO isAllowedImportDataset;
       };
   };
   ALTER TYPE permission::User {
-      CREATE REQUIRED PROPERTY isAllowedSyncDataAccessEvents -> std::bool {
+      ALTER PROPERTY allowedImportDataset {
+          RENAME TO isAllowedSyncDataAccessEvents;
+      };
+  };
+  ALTER TYPE permission::User {
+      CREATE REQUIRED PROPERTY isAllowedViewAllAuditEvents -> std::bool {
           SET default := false;
       };
-      CREATE REQUIRED PROPERTY isAllowedViewAllAuditEvents -> std::bool {
+      CREATE REQUIRED PROPERTY isAllowedViewAllReleases -> std::bool {
           SET default := false;
       };
       CREATE REQUIRED PROPERTY isAllowedViewDatasetContent -> std::bool {

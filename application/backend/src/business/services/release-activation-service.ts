@@ -56,7 +56,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey,
       "Activated Release",
       async () => {
-        if (userRole !== "DataOwner") {
+        if (userRole !== "Administrator") {
           throw new ReleaseActivationPermissionError(releaseKey);
         }
       },
@@ -134,7 +134,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey,
       "Deactivated release",
       async () => {
-        if (userRole !== "DataOwner") {
+        if (userRole !== "Administrator") {
           throw new ReleaseActivationPermissionError(releaseKey);
         }
       },

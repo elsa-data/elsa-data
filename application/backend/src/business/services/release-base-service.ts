@@ -160,7 +160,7 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
-      // password only gets sent down to the PI
+      // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
       // data owners can code/edit the release information

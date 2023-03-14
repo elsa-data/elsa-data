@@ -104,7 +104,7 @@ export function makeTripleCodeArray(
  * @param subjectId
  * @param displayName
  * @param email
- * @param releasesAsDataOwner
+ * @param releasesAsAdministrator
  * @param releasesAsPI
  * @param releasesAsMember
  * @param lastLogin if present, also sets the last login to the given date
@@ -113,7 +113,7 @@ export async function createTestUser(
   subjectId: string,
   displayName: string,
   email: string,
-  releasesAsDataOwner: string[],
+  releasesAsAdministrator: string[],
   releasesAsPI: string[],
   releasesAsMember: string[],
   isReleaseAdmin: boolean = false,
@@ -168,7 +168,7 @@ export async function createTestUser(
       .run(edgeDbClient);
   };
 
-  for (const dataOwnerReleaseKey of releasesAsDataOwner) {
+  for (const dataOwnerReleaseKey of releasesAsAdministrator) {
     await insertRole(dataOwnerReleaseKey, "Administrator");
   }
 

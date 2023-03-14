@@ -141,13 +141,13 @@ export async function beforeEachCommon() {
 
   // data administrator has read/write access and complete visibility of everything
   {
-    const allowedDataOwnerSubject = "https://i-am-admin.org";
+    const allowedAdministratorSubject = "https://i-am-admin.org";
     const allowedDisplayName = "Test User Who Is Allowed Administrator Access";
     const allowedEmail = "admin@elsa.net";
 
     const allowedAdministratorUserInsert = await e
       .insert(e.permission.User, {
-        subjectId: allowedDataOwnerSubject,
+        subjectId: allowedAdministratorSubject,
         displayName: allowedDisplayName,
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
@@ -159,7 +159,7 @@ export async function beforeEachCommon() {
 
     allowedAdministratorUser = new AuthenticatedUser({
       id: allowedAdministratorUserInsert.id,
-      subjectId: allowedDataOwnerSubject,
+      subjectId: allowedAdministratorSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),

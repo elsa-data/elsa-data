@@ -168,7 +168,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       releaseKey,
       "Remove Participant",
       async () => {
-        // deleting participants must be limited to DataOwners and PIs
+        // deleting participants must be limited to Administrator and Managers
         if (userRole !== "Administrator" && userRole !== "Manager") {
           throw new ReleaseParticipationPermissionError(releaseKey);
         }

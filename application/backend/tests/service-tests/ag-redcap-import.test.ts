@@ -35,7 +35,7 @@ describe("Redcap Import for AG", () => {
       daf_type_research___hmb: "1",
       // this maps to our 10g dataset
       daf_flagships_rd___nmd: "1",
-      // an application from entirely unknown users - Albus as applicant/PI
+      // an application from entirely unknown users - Albus as applicant/Manager
       daf_applicant_name: "Albus Dumbledore",
       daf_applicant_email: "albus@example.com",
       daf_applicant_institution: "Hogwarts",
@@ -77,7 +77,7 @@ describe("Redcap Import for AG", () => {
       daf_applicant_email: "albus@example.com",
       daf_applicant_institution: "Hogwarts",
       daf_applicant_pi_yn: "0",
-      // but we have an explicit PI - that we know!
+      // but we have an explicit Manager - that we know!
       daf_pi_name: "Test User Who Isn't Allowed Any Access",
       daf_pi_email: "subject1@elsa.net", // refer to release.common.ts file
       daf_pi_institution: "Made Up",

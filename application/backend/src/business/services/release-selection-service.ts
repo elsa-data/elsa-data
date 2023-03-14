@@ -113,7 +113,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
             e.op(dsc.dataset.id, "in", datasetIdSet),
             "and",
             e.op(
-              e.bool(userRole === "DataOwner"),
+              e.bool(userRole === "Administrator"),
               "or",
               e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
             )
@@ -125,7 +125,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
           e.op(dsc.dataset.id, "in", datasetIdSet),
           "and",
           e.op(
-            e.bool(userRole === "DataOwner"),
+            e.bool(userRole === "Administrator"),
             "or",
             e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
           )
@@ -147,7 +147,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         ...e.dataset.DatasetPatient["*"],
         consent: true,
         filter: e.op(
-          e.bool(userRole === "DataOwner"),
+          e.bool(userRole === "Administrator"),
           "or",
           e.op(p.specimens, "in", releaseSelectedSpecimensQuery)
         ),
@@ -156,7 +156,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
           consent: true,
           isSelected: e.op(s, "in", releaseSelectedSpecimensQuery),
           filter: e.op(
-            e.bool(userRole === "DataOwner"),
+            e.bool(userRole === "Administrator"),
             "or",
             e.op(s, "in", releaseSelectedSpecimensQuery)
           ),
@@ -390,7 +390,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       releaseKey,
       actionDescription,
       async () => {
-        if (userRole != "DataOwner")
+        if (userRole != "Administrator")
           throw new ReleaseSelectionPermissionError(releaseKey);
 
         if (isActivated)
