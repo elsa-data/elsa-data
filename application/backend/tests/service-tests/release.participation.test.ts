@@ -13,7 +13,7 @@ let releaseParticipationService: ReleaseParticipationService;
 let testReleaseKey: string;
 
 let superAdminUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
@@ -31,7 +31,7 @@ beforeEach(async () => {
   ({
     testReleaseKey,
     superAdminUser,
-    allowedPiUser,
+    allowedManagerUser,
     allowedMemberUser,
     notAllowedUser,
   } = await beforeEachCommon());

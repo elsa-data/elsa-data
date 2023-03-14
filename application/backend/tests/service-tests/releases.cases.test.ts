@@ -34,7 +34,7 @@ let releaseSelectionService: ReleaseSelectionService;
 let testReleaseKey: string;
 
 let superAdminUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 const DEFAULT_LIMIT = 10000;
@@ -48,7 +48,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, superAdminUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
     await beforeEachCommon());
 });
 
@@ -97,7 +97,7 @@ it("get all case level information from a release as a administrator", async () 
  */
 it("get limited case level information from a release as a Manager", async () => {
   const pagedResult = await releaseSelectionService.getCases(
-    allowedPiUser,
+    allowedManagerUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET

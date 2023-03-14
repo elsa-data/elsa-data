@@ -19,7 +19,7 @@ let manifestService: ManifestService;
 let testReleaseKey: string;
 
 let superAdminUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 beforeAll(async () => {
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, superAdminUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
     await beforeEachCommon());
 });
 

@@ -29,7 +29,7 @@ export async function beforeEachCommon() {
   const allowedPiSubject = "http://subject1.com";
   const allowedPiEmail = "admin-user@elsa.net";
 
-  const allowedPiUserInsert = await e
+  const allowedManagerUserInsert = await e
     .insert(e.permission.User, {
       subjectId: allowedPiSubject,
       displayName: "Test User Who Is An Admin",
@@ -38,7 +38,7 @@ export async function beforeEachCommon() {
     .run(edgeDbClient);
 
   const adminUser = new AuthenticatedUser({
-    id: allowedPiUserInsert.id,
+    id: allowedManagerUserInsert.id,
     subjectId: allowedPiSubject,
     displayName: "Allowed Manager",
     email: allowedPiEmail,
@@ -53,7 +53,7 @@ export async function beforeEachCommon() {
   });
 
   const notAllowedUser = new AuthenticatedUser({
-    id: allowedPiUserInsert.id,
+    id: allowedManagerUserInsert.id,
     subjectId: "http://subject-not-allowed.com",
     displayName: "not-allowed Member",
     email: "not-allow@emai.com",

@@ -19,7 +19,7 @@ export async function beforeEachCommon() {
   const allowedPiDisplayName = "Test User Who Is An Admin";
   const allowedPiEmail = "subject1@elsa.net";
 
-  const allowedPiUserInsert = await e
+  const allowedManagerUserInsert = await e
     .insert(e.permission.User, {
       subjectId: allowedPiSubject,
       displayName: allowedPiDisplayName,
@@ -28,7 +28,7 @@ export async function beforeEachCommon() {
     .run(edgeDbClient);
 
   const existingUser = new AuthenticatedUser({
-    id: allowedPiUserInsert.id,
+    id: allowedManagerUserInsert.id,
     subjectId: allowedPiSubject,
     displayName: allowedPiDisplayName,
     email: allowedPiEmail,

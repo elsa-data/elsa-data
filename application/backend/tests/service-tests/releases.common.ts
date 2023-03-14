@@ -97,7 +97,7 @@ export async function beforeEachCommon() {
   const testReleaseKey = rQuery?.releaseKey ?? "";
 
   let allowedAdministratorUser: AuthenticatedUser;
-  let allowedPiUser: AuthenticatedUser;
+  let allowedManagerUser: AuthenticatedUser;
   let allowedMemberUser: AuthenticatedUser;
   let notAllowedUser: AuthenticatedUser;
   let superAdminUser: AuthenticatedUser;
@@ -179,7 +179,7 @@ export async function beforeEachCommon() {
     const allowedDisplayName = "Test User Who Is Allowed Manager Access";
     const allowedEmail = "subject1@elsa.net";
 
-    const allowedPiUserInsert = await e
+    const allowedManagerUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedPiSubject,
         displayName: allowedDisplayName,
@@ -191,8 +191,8 @@ export async function beforeEachCommon() {
       })
       .run(edgeDbClient);
 
-    allowedPiUser = new AuthenticatedUser({
-      id: allowedPiUserInsert.id,
+    allowedManagerUser = new AuthenticatedUser({
+      id: allowedManagerUserInsert.id,
       subjectId: allowedPiSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
@@ -276,7 +276,7 @@ export async function beforeEachCommon() {
     testReleaseKey,
     superAdminUser,
     allowedAdministratorUser,
-    allowedPiUser,
+    allowedManagerUser,
     allowedMemberUser,
     notAllowedUser,
   };

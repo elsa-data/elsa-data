@@ -10,7 +10,7 @@ let releaseService: ReleaseService;
 let testReleaseKey: string;
 
 let allowedAdministratorUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 beforeAll(async () => {
@@ -21,15 +21,19 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedAdministratorUser, allowedPiUser, notAllowedUser } =
-    await beforeEachCommon());
+  ({
+    testReleaseKey,
+    allowedAdministratorUser,
+    allowedManagerUser,
+    notAllowedUser,
+  } = await beforeEachCommon());
 });
 
 /**
  *
  */
 it("allowed users can get release data", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseKey);
+  const result = await releaseService.get(allowedManagerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -45,7 +49,7 @@ it("not allowed users cannot get release data", async () => {
 });
 
 it("basic release data is present for Manager", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseKey);
+  const result = await releaseService.get(allowedManagerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
