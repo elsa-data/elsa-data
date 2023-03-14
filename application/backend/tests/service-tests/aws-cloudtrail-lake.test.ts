@@ -9,6 +9,7 @@ import { ElsaSettings } from "../../src/config/elsa-settings";
 import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { NotAuthorisedSyncDataAccessEvents } from "../../src/business/exceptions/audit-authorisation";
 
 let edgeDbClient: Client;
 let cloudTrailClient: CloudTrailClient;
@@ -16,6 +17,7 @@ let testReleaseKey: string;
 let testContainer: DependencyContainer;
 let elsaSetting: ElsaSettings;
 let superAdminUser: AuthenticatedUser;
+let allowedMemberUser: AuthenticatedUser;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
@@ -26,7 +28,8 @@ describe("Test CloudTrailLake Service", () => {
   });
 
   beforeEach(async () => {
-    ({ superAdminUser, testReleaseKey } = await beforeEachCommon());
+    ({ superAdminUser, testReleaseKey, allowedMemberUser } =
+      await beforeEachCommon());
   });
 
   it("Test recordCloudTrailLake", async () => {
@@ -55,7 +58,7 @@ describe("Test CloudTrailLake Service", () => {
     const daArr = await e
       .select(e.audit.DataAccessAuditEvent, (da) => ({
         ...da["*"],
-        filter: e.op(da.release_.id, "=", e.uuid(testReleaseKey)),
+        filter: e.op(da.release_.releaseKey, "=", testReleaseKey),
       }))
       .run(edgeDbClient);
 
@@ -109,11 +112,28 @@ describe("Test CloudTrailLake Service", () => {
     const daArr = await e
       .select(e.audit.DataAccessAuditEvent, (da) => ({
         ...da["*"],
-        filter: e.op(da.release_.id, "=", e.uuid(testReleaseKey)),
+        filter: e.op(da.release_.releaseKey, "=", testReleaseKey),
       }))
       .run(edgeDbClient);
     expect(daArr.length).toEqual(1);
     const singleLog = daArr[0];
     expect(singleLog.egressBytes).toEqual(101);
+  });
+
+  it("Test unauthorised attempt ", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+
+    try {
+      await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+        user: allowedMemberUser,
+        releaseKey: testReleaseKey,
+        eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+      });
+    } catch (error: any) {
+      expect(error.message).toMatch(/Unauthorised/);
+      expect(error.status).toEqual(403);
+    }
   });
 });
