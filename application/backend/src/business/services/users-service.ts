@@ -77,7 +77,6 @@ export class UsersService {
         lastLogin: a.lastLoginDateTime,
         isAllowedImportDataset: a.isAllowedImportDataset,
         isAllowedCreateRelease: a.isAllowedCreateRelease,
-        isAllowedChangeReleaseDataOwner: a.isAllowedChangeReleaseDataOwner,
         isAllowedViewAllAuditEvents: a.isAllowedViewAllAuditEvents,
       })),
       totalEntries
@@ -104,17 +103,14 @@ export class UsersService {
 
   /**
    * Change a permission property for the User. This also creates an audit event for this change.
-   *
+   * TODO: Add more change permission
    * @param user
    * @param permission
    * @param value
    */
   public async changePermission(
     user: AuthenticatedUser,
-    permission:
-      | "isAllowedCreateRelease"
-      | "isAllowedImportDataset"
-      | "isAllowedChangeReleaseDataOwner",
+    permission: "isAllowedCreateRelease" | "isAllowedImportDataset",
     value: boolean
   ): Promise<void> {
     const permissionDescription = capitalize(lowerCase(permission));

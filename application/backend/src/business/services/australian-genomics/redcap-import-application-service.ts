@@ -18,6 +18,7 @@ import {
 import _ from "lodash";
 import { addUserAuditEventToReleaseQuery } from "../../db/audit-log-queries";
 import { getNextReleaseKey } from "../../db/release-queries";
+import { ReleaseService } from "../release-service";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -39,7 +40,8 @@ export class RedcapImportApplicationService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private releaseService: ReleaseService
   ) {}
 
   /**
@@ -51,8 +53,11 @@ export class RedcapImportApplicationService {
    * @param csvAsJson an array of converted CSV records straight out of a Redcap export
    */
   public async detectNewReleases(
+    user: AuthenticatedUser,
     csvAsJson: AustraliaGenomicsDacRedcap[]
   ): Promise<AustraliaGenomicsDacRedcap[]> {
+    this.releaseService.checkIsAllowedViewReleases(user);
+
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers FOR OUR UNIQUE AG SYSTEM
     const currentReleaseKeys = new Set<string>(
@@ -87,6 +92,7 @@ export class RedcapImportApplicationService {
     user: AuthenticatedUser,
     newApplication: AustraliaGenomicsDacRedcap
   ): Promise<string> {
+    this.releaseService.checkIsAllowedCreateReleases(user);
     // TODO: some error checking here of the incoming application data
 
     // check that a ApplicationUser data structure we have parsed in from external CSV

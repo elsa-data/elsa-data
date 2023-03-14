@@ -8,7 +8,7 @@ import { addSeconds } from "date-fns";
 
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 let auditLogService: AuditLogService;
@@ -19,7 +19,7 @@ beforeEach(async () => {
 
   ({
     testReleaseKey,
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     allowedPiUser,
     notAllowedUser,
     edgeDbClient,

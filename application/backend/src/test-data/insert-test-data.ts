@@ -96,7 +96,9 @@ export async function insertTestData(settings: ElsaSettings) {
     TEST_SUBJECT_1_EMAIL,
     [r1.id, r4.id, r5.id],
     [r2.id],
-    []
+    [],
+    true,
+    false
   );
   await createTestUser(
     TEST_SUBJECT_2,
@@ -104,7 +106,9 @@ export async function insertTestData(settings: ElsaSettings) {
     TEST_SUBJECT_2_EMAIL,
     [],
     [r1.id],
-    []
+    [],
+    false,
+    false
   );
   await createTestUser(
     TEST_SUBJECT_3,
@@ -113,6 +117,7 @@ export async function insertTestData(settings: ElsaSettings) {
     [],
     [],
     [],
+    true,
     true
   );
 

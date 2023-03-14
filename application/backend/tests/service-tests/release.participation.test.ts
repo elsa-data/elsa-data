@@ -12,7 +12,7 @@ let releaseService: ReleaseService;
 let releaseParticipationService: ReleaseParticipationService;
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
@@ -30,7 +30,7 @@ beforeAll(async () => {
 beforeEach(async () => {
   ({
     testReleaseKey,
-    allowedDataOwnerUser,
+    superAdminUser,
     allowedPiUser,
     allowedMemberUser,
     notAllowedUser,
@@ -39,7 +39,7 @@ beforeEach(async () => {
 
 it("all the participants in a release are correctly returned", async () => {
   const result = await releaseParticipationService.getParticipants(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
@@ -73,14 +73,14 @@ it("all the participants in a release are correctly returned", async () => {
 
 it("adding a user who doesn't yet exist makes a potential user who is returned with no last login", async () => {
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
     "Manager"
   );
 
   const result = await releaseParticipationService.getParticipants(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
@@ -99,7 +99,7 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
 it("real users and potential users can both have their roles altered", async () => {
   // add a potential user with Member role
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
     "Member"
@@ -107,7 +107,7 @@ it("real users and potential users can both have their roles altered", async () 
 
   {
     const startingResult = await releaseParticipationService.getParticipants(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey
     );
 
@@ -121,7 +121,7 @@ it("real users and potential users can both have their roles altered", async () 
 
   // upgrade our real user member to Manager
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "subject4@elsa.net",
     "Manager"
@@ -129,7 +129,7 @@ it("real users and potential users can both have their roles altered", async () 
 
   // upgrade our potential user to a Manager as well
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
     "Manager"
@@ -137,7 +137,7 @@ it("real users and potential users can both have their roles altered", async () 
 
   {
     const result = await releaseParticipationService.getParticipants(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey
     );
 
@@ -154,26 +154,26 @@ it("real users and potential users can both have their roles altered", async () 
 it("real users and potential users can be removed", async () => {
   // add a potential user with Member role
   const newMemberDbId = await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
     "Member"
   );
 
   await releaseParticipationService.removeParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     allowedMemberUser.dbId
   );
   await releaseParticipationService.removeParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     newMemberDbId
   );
 
   {
     const result = await releaseParticipationService.getParticipants(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey
     );
 

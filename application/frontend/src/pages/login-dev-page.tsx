@@ -14,17 +14,17 @@ export const LoginDevPage: React.FC = () => {
       </p>
       <form action="/auth/login-bypass-1" method="POST" id="loginBypass1Form">
         <button className="btn-warning" type="submit">
-          Log in (test user 1 - data owner)
+          Log in (test user 1 - Administrator)
         </button>
       </form>
       <form action="/auth/login-bypass-2" method="POST" id="loginBypass2Form">
         <button className="btn-warning" type="submit">
-          Log in (test user 2 - researcher)
+          Log in (test user 2 - Manager)
         </button>
       </form>
       <form action="/auth/login-bypass-3" method="POST" id="loginBypass3Form">
         <button className="btn-danger" type="submit">
-          Log in (test user 3 - super admin)
+          Log in (test user 3 - SuperAdmin)
         </button>
       </form>
     </div>

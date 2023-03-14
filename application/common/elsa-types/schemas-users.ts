@@ -20,7 +20,6 @@ export const UserSummarySchema = Type.Object({
 
   isAllowedCreateRelease: Type.Boolean(),
   isAllowedImportDataset: Type.Boolean(),
-  isAllowedChangeReleaseDataOwner: Type.Boolean(),
   isAllowedViewAllAuditEvents: Type.Boolean(),
 });
 

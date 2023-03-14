@@ -43,7 +43,6 @@ export async function beforeEachCommon() {
     displayName: "Allowed Manager",
     email: allowedPiEmail,
     isAllowedImportDataset: true,
-    isAllowedChangeReleaseDataOwner: true,
     isAllowedCreateRelease: true,
     isAllowedViewAllAuditEvents: true,
     isAllowedSyncDataAccessEvents: true,

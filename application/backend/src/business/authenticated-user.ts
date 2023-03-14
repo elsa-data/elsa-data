@@ -13,9 +13,13 @@ export class AuthenticatedUser {
       isNil(this.dbUser.displayName) ||
       isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
+      isNil(this.dbUser.isAllowedSyncDataAccessEvents) ||
+      isNil(this.dbUser.isAllowedImportDataset) ||
       isNil(this.dbUser.isAllowedCreateRelease) ||
-      isNil(this.dbUser.isAllowedChangeReleaseDataOwner) ||
-      isNil(this.dbUser.isAllowedImportDataset)
+      isNil(this.dbUser.isAllowedViewAllAuditEvents) ||
+      isNil(this.dbUser.isAllowedViewDatasetContent) ||
+      isNil(this.dbUser.isAllowedViewUserManagement) ||
+      isNil(this.dbUser.isAllowedViewAllReleases)
     )
       throw new UnexpectedStateInternalServerError(
         "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
@@ -68,9 +72,6 @@ export class AuthenticatedUser {
    */
   public get isAllowedCreateRelease(): boolean {
     return this.dbUser!.isAllowedCreateRelease;
-  }
-  public get isAllowedChangeReleaseDataOwner(): boolean {
-    return this.dbUser!.isAllowedChangeReleaseDataOwner;
   }
   public get isAllowedImportDataset(): boolean {
     return this.dbUser!.isAllowedImportDataset;

@@ -92,10 +92,48 @@ export async function beforeEachCommon() {
     .run(edgeDbClient);
   const testReleaseKey = rQuery?.releaseKey ?? "";
 
-  let allowedDataOwnerUser: AuthenticatedUser;
+  let allowedAdministratorUser: AuthenticatedUser;
   let allowedPiUser: AuthenticatedUser;
   let allowedMemberUser: AuthenticatedUser;
   let notAllowedUser: AuthenticatedUser;
+  let superAdminUser: AuthenticatedUser;
+
+  // Super Admin Access
+  {
+    const superAdminSubject = "http://superAdminUser.com";
+    const superAdminDisplayName = "Test User Who Is a SuperAdmin Access";
+    const superAdminEmail = "subject0@elsa.net";
+
+    const superAdminUserInsert = await e
+      .insert(e.permission.User, {
+        subjectId: superAdminSubject,
+        displayName: superAdminDisplayName,
+        email: superAdminEmail,
+        isAllowedImportDataset: true,
+        isAllowedCreateRelease: true,
+        isAllowedViewAllAuditEvents: true,
+        isAllowedSyncDataAccessEvents: true,
+        isAllowedViewDatasetContent: true,
+        isAllowedViewUserManagement: true,
+        isAllowedViewAllReleases: true,
+      })
+      .run(edgeDbClient);
+
+    superAdminUser = new AuthenticatedUser({
+      id: superAdminUserInsert.id,
+      subjectId: superAdminSubject,
+      displayName: superAdminDisplayName,
+      email: superAdminEmail,
+      lastLoginDateTime: new Date(),
+      isAllowedImportDataset: true,
+      isAllowedCreateRelease: true,
+      isAllowedViewAllAuditEvents: true,
+      isAllowedSyncDataAccessEvents: true,
+      isAllowedViewDatasetContent: true,
+      isAllowedViewUserManagement: true,
+      isAllowedViewAllReleases: true,
+    });
+  }
 
   // data administrator has read/write access and complete visibility of everything
   {
@@ -103,7 +141,7 @@ export async function beforeEachCommon() {
     const allowedDisplayName = "Test User Who Is Allowed Administrator Access";
     const allowedEmail = "admin@elsa.net";
 
-    const allowedDataOwnerUserInsert = await e
+    const allowedAdministratorUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedDataOwnerSubject,
         displayName: allowedDisplayName,
@@ -115,15 +153,14 @@ export async function beforeEachCommon() {
       })
       .run(edgeDbClient);
 
-    allowedDataOwnerUser = new AuthenticatedUser({
-      id: allowedDataOwnerUserInsert.id,
+    allowedAdministratorUser = new AuthenticatedUser({
+      id: allowedAdministratorUserInsert.id,
       subjectId: allowedDataOwnerSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),
       isAllowedImportDataset: false,
-      isAllowedChangeReleaseDataOwner: false,
-      isAllowedCreateRelease: false,
+      isAllowedCreateRelease: true,
       isAllowedViewAllAuditEvents: false,
       isAllowedSyncDataAccessEvents: false,
       isAllowedViewDatasetContent: false,
@@ -157,7 +194,6 @@ export async function beforeEachCommon() {
       email: allowedEmail,
       lastLoginDateTime: new Date(),
       isAllowedImportDataset: false,
-      isAllowedChangeReleaseDataOwner: false,
       isAllowedCreateRelease: false,
       isAllowedViewAllAuditEvents: false,
       isAllowedSyncDataAccessEvents: false,
@@ -192,7 +228,6 @@ export async function beforeEachCommon() {
       email: allowedMemberEmail,
       lastLoginDateTime: new Date(),
       isAllowedImportDataset: false,
-      isAllowedChangeReleaseDataOwner: false,
       isAllowedCreateRelease: false,
       isAllowedViewAllAuditEvents: false,
       isAllowedSyncDataAccessEvents: false,
@@ -223,7 +258,6 @@ export async function beforeEachCommon() {
       email: notAllowedEmail,
       lastLoginDateTime: new Date(),
       isAllowedImportDataset: false,
-      isAllowedChangeReleaseDataOwner: false,
       isAllowedCreateRelease: false,
       isAllowedViewAllAuditEvents: false,
       isAllowedSyncDataAccessEvents: false,
@@ -236,7 +270,8 @@ export async function beforeEachCommon() {
   return {
     edgeDbClient,
     testReleaseKey,
-    allowedDataOwnerUser,
+    superAdminUser,
+    allowedAdministratorUser,
     allowedPiUser,
     allowedMemberUser,
     notAllowedUser,

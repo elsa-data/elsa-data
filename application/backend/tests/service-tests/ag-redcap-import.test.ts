@@ -11,7 +11,7 @@ import { UsersService } from "../../src/business/services/users-service";
 const edgedbClient = edgedb.createClient();
 
 describe("Redcap Import for AG", () => {
-  let allowedDataOwnerUser: AuthenticatedUser;
+  let allowedAdministratorUser: AuthenticatedUser;
   let testContainer: DependencyContainer;
 
   beforeAll(async () => {
@@ -21,7 +21,7 @@ describe("Redcap Import for AG", () => {
   beforeEach(async () => {
     testContainer.clearInstances();
 
-    ({ allowedDataOwnerUser } = await beforeEachCommon());
+    ({ allowedAdministratorUser } = await beforeEachCommon());
   });
 
   it("Base case with two new users", async () => {
@@ -35,7 +35,7 @@ describe("Redcap Import for AG", () => {
       daf_type_research___hmb: "1",
       // this maps to our 10g dataset
       daf_flagships_rd___nmd: "1",
-      // an application from entirely unknown users - Albus as applicant/Manager
+      // an application from entirely unknown users - Albus as applicant/PI
       daf_applicant_name: "Albus Dumbledore",
       daf_applicant_email: "albus@example.com",
       daf_applicant_institution: "Hogwarts",
@@ -48,7 +48,7 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(allowedDataOwnerUser, app);
+    await redcapImportService.startNewRelease(allowedAdministratorUser, app);
 
     const potentialCount = await e
       .count(e.permission.PotentialUser)
@@ -77,7 +77,7 @@ describe("Redcap Import for AG", () => {
       daf_applicant_email: "albus@example.com",
       daf_applicant_institution: "Hogwarts",
       daf_applicant_pi_yn: "0",
-      // but we have an explicit Manager - that we know!
+      // but we have an explicit PI - that we know!
       daf_pi_name: "Test User Who Isn't Allowed Any Access",
       daf_pi_email: "subject1@elsa.net", // refer to release.common.ts file
       daf_pi_institution: "Made Up",
@@ -90,7 +90,7 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(allowedDataOwnerUser, app);
+    await redcapImportService.startNewRelease(allowedAdministratorUser, app);
 
     const potentialCount = await e
       .count(e.permission.PotentialUser)

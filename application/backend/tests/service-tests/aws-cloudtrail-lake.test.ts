@@ -15,7 +15,7 @@ let cloudTrailClient: CloudTrailClient;
 let testReleaseKey: string;
 let testContainer: DependencyContainer;
 let elsaSetting: ElsaSettings;
-let allowedDataOwnerUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
@@ -26,7 +26,7 @@ describe("Test CloudTrailLake Service", () => {
   });
 
   beforeEach(async () => {
-    ({ allowedDataOwnerUser, testReleaseKey } = await beforeEachCommon());
+    ({ superAdminUser, testReleaseKey } = await beforeEachCommon());
   });
 
   it("Test recordCloudTrailLake", async () => {
@@ -101,7 +101,7 @@ describe("Test CloudTrailLake Service", () => {
       .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
       .mockImplementation(async () => mockData);
     await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-      user: allowedDataOwnerUser,
+      user: superAdminUser,
       releaseKey: testReleaseKey,
       eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
     });

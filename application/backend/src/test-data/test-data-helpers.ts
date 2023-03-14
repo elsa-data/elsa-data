@@ -116,6 +116,7 @@ export async function createTestUser(
   releasesAsDataOwner: string[],
   releasesAsPI: string[],
   releasesAsMember: string[],
+  isReleaseAdmin: boolean = false,
   isSuperAdmin: boolean = false
 ) {
   const isAllowedPermission = isSuperAdmin;
@@ -131,8 +132,7 @@ export async function createTestUser(
       isAllowedViewDatasetContent: isAllowedPermission,
       isAllowedViewUserManagement: isAllowedPermission,
 
-      isAllowedChangeReleaseDataOwner: isAllowedPermission,
-      isAllowedCreateRelease: isAllowedPermission,
+      isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,
       isAllowedImportDataset: isAllowedPermission,
       isAllowedSyncDataAccessEvents: isAllowedPermission,
       isAllowedViewAllReleases: isAllowedPermission,

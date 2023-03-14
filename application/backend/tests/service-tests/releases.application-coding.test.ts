@@ -9,7 +9,7 @@ let edgeDbClient: Client;
 let releaseService: ReleaseService;
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
 let allowedPiUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, superAdminUser, allowedPiUser, notAllowedUser } =
     await beforeEachCommon());
 });
 it("basic add/remove of diseases from coded application", async () => {

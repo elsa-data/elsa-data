@@ -66,10 +66,6 @@ module permission {
         required property isAllowedCreateRelease -> bool {
             default := false;
         };
-
-        required property isAllowedChangeReleaseDataOwner -> bool {
-            default := false;
-        };
         
         # Read Access
         required property isAllowedViewAllAuditEvents -> bool {
