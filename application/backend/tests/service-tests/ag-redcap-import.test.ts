@@ -4,7 +4,7 @@ import { container, DependencyContainer } from "tsyringe";
 import { RedcapImportApplicationService } from "../../src/business/services/australian-genomics/redcap-import-application-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { UsersService } from "../../src/business/services/users-service";
 

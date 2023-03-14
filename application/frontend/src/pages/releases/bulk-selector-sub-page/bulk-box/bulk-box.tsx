@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";
@@ -8,12 +8,10 @@ import {
   LeftDiv,
   RightDiv,
 } from "../../../../components/rh/rh-structural";
-import {
-  axiosPostNullMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "../../queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../../queries";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
+import { trpc } from "../../../../helpers/trpc";
 
 type Props = {
   releaseKey: string;
@@ -36,15 +34,17 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
     setError({ error: null, isSuccess: true });
   };
 
-  const applyAllMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseKey}/jobs/select`)
-  );
+  const applyAllMutate = trpc.releaseJob.startCohortConstruction.useMutation({
+    onSettled: async () => await queryClient.invalidateQueries(),
+    onError: (error: any) => setError({ error, isSuccess: false }),
+    onSuccess: () => setError({ error: null, isSuccess: true }),
+  });
+
+  const isActivated = !!releaseData.activation;
+  const isJobRunning = !isUndefined(releaseData.runningJob);
 
   return (
-    <Box
-      heading="Cohort Constructor"
-      applyIsLockedStyle={!!releaseData.activation}
-    >
+    <Box heading="Cohort Constructor" applyIsLockedStyle={isActivated}>
       {/*
       The consent sources are not needed until we hook up real Dynamic systems like CTRL
       <ConsentSourcesBox releaseKey={releaseKey} />
@@ -72,14 +72,12 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
                 <div className="flex flex-row space-x-1">
                   <button
                     className="btn-normal"
-                    onClick={async () => {
-                      applyAllMutate.mutate(null, {
-                        onSuccess: afterMutateUpdateQueryData,
-                        onError: (error: any) =>
-                          setError({ error, isSuccess: false }),
-                      });
-                    }}
-                    disabled={!isUndefined(releaseData.runningJob)}
+                    onClick={() =>
+                      applyAllMutate.mutate({ releaseKey: releaseKey })
+                    }
+                    disabled={
+                      isJobRunning || isActivated || applyAllMutate.isLoading
+                    }
                   >
                     Apply All
                   </button>

@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { ReleaseService } from "../../src/business/services/release-service";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
 import e from "../../dbschema/edgeql-js";
@@ -10,9 +10,11 @@ import {
   ReleaseDeactivationStateError,
 } from "../../src/business/exceptions/release-activation";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
+import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
+let releaseActivationService: ReleaseActivationService;
 let manifestService: ManifestService;
 let testReleaseKey: string;
 
@@ -25,6 +27,7 @@ beforeAll(async () => {
 
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
+  releaseActivationService = testContainer.resolve(ReleaseActivationService);
   manifestService = testContainer.resolve(ManifestService);
 });
 
@@ -34,7 +37,10 @@ beforeEach(async () => {
 });
 
 it("releases can be activated", async () => {
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   const result = await releaseService.get(superAdminUser, testReleaseKey);
 
@@ -47,7 +53,10 @@ it("releases can be activated", async () => {
 });
 
 it("active releases have a manifest", async () => {
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   const result = await manifestService.getActiveManifest(testReleaseKey);
 
@@ -62,17 +71,26 @@ it("active releases have a manifest", async () => {
 });
 
 it("releases that are active can't be activated again", async () => {
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   await expect(
-    releaseService.activateRelease(superAdminUser, testReleaseKey)
+    releaseActivationService.activateRelease(superAdminUser, testReleaseKey)
   ).rejects.toThrow(ReleaseActivationStateError);
 });
 
 it("releases can be deactivated", async () => {
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
-  await releaseService.deactivateRelease(superAdminUser, testReleaseKey);
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   const result = await releaseService.get(superAdminUser, testReleaseKey);
 
@@ -83,17 +101,35 @@ it("releases can be deactivated", async () => {
 
 it("deactivation only works when activated", async () => {
   await expect(
-    releaseService.deactivateRelease(superAdminUser, testReleaseKey)
+    releaseActivationService.deactivateRelease(superAdminUser, testReleaseKey)
   ).rejects.toThrow(ReleaseDeactivationStateError);
 });
 
 it("deactivation creates a history of activations", async () => {
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
-  await releaseService.deactivateRelease(superAdminUser, testReleaseKey);
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
-  await releaseService.deactivateRelease(superAdminUser, testReleaseKey);
-  await releaseService.activateRelease(superAdminUser, testReleaseKey);
-  await releaseService.deactivateRelease(superAdminUser, testReleaseKey);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   // for the moment we can only check the history direct in the db
   const r = await e

@@ -6,10 +6,7 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyTraps from "@dnlup/fastify-traps";
-import {
-  CreateFastifyContextOptions,
-  fastifyTRPCPlugin,
-} from "@trpc/server/adapters/fastify";
+import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
@@ -23,13 +20,10 @@ import { ElsaSettings } from "./config/elsa-settings";
 import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
-import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
-import { Context, createContext } from "./api/routes/trpc-context";
+import { createContext } from "./api/routes/trpc-context";
 import { appRouter } from "./app-router";
-import { ReleaseService } from "./business/services/release-service";
-import { UsersService } from "./business/services/users-service";
-import { Client } from "edgedb";
+import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 
 @injectable()
 @singleton()
@@ -72,7 +66,9 @@ export class App {
       // other infrastructure (load balancers, ecs etc) to be totally in charge of keeping us
       // running as a service
       // this sets up traps to do it gracefully however
-      await this.server.register(fastifyTraps);
+      // we have added strict: false because integration tests we run multiple servers one after each other
+      // and were getting left over SIGINT registrations
+      await this.server.register(fastifyTraps, { strict: false });
 
       await this.server.register(fastifyFormBody);
 

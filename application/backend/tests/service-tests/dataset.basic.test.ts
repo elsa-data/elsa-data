@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import { beforeEachCommon } from "./dataset.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { DatasetService } from "../../src/business/services/dataset-service";
 import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { insert10C, TENC_URI } from "../../src/test-data/insert-test-data-10c";
@@ -48,9 +48,9 @@ it("basic summary get all has correct summary values for family dataset", async 
   expect(family.id).toBe(tengDatasetId2);
   expect(family.uri).toBe(TENG_URI);
   expect(family.description).toBe("UMCCR 10G");
-  expect(family.summaryArtifactCount).toBe(20);
+  expect(family.summaryArtifactCount).toBe(40);
   expect(family.summaryArtifactIncludes).toBe("BAM VCF");
-  expect(family.summaryArtifactSizeBytes).toBe(546398018478);
+  expect(family.summaryArtifactSizeBytes).toBe(1092796036956);
   expect(family.summaryCaseCount).toBe(10);
   expect(family.summaryPatientCount).toBe(10);
   expect(family.summarySpecimenCount).toBe(10);

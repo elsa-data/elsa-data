@@ -14,6 +14,7 @@ import { ReleasesBreadcrumbsDiv } from "./releases-breadcrumbs-div";
 import { SkeletonOneDiv } from "../../components/skeleton-one";
 import { SkeletonTwoDiv } from "../../components/skeleton-two";
 import { ReleasesMasterContextType } from "./releases-types";
+import { trpc } from "../../helpers/trpc";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -45,17 +46,11 @@ export const ReleasesMasterPage: React.FC = () => {
     onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
   });
 
-  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
-    queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-      result
-    );
-    setError({ error: null, isSuccess: true });
-  };
-
-  const cancelMutate = useMutation(
-    axiosPostNullMutationFn(`/api/releases/${releaseKey}/jobs/cancel`)
-  );
+  const cancelMutate = trpc.releaseJob.cancel.useMutation({
+    onSettled: () => queryClient.invalidateQueries(),
+    onSuccess: () => setError({ error: null, isSuccess: true }),
+    onError: (error: any) => setError({ error, isSuccess: false }),
+  });
 
   const isJobRunning: boolean = !isUndefined(releaseQuery?.data?.runningJob);
 
@@ -108,14 +103,15 @@ export const ReleasesMasterPage: React.FC = () => {
             </div>
             <button
               className="btn-normal"
-              onClick={async () => {
-                cancelMutate.mutate(null, {
-                  onSuccess: afterMutateUpdateQueryData,
-                  onError: (error: any) =>
-                    setError({ error, isSuccess: false }),
-                });
-              }}
-              disabled={releaseQuery.data.runningJob.requestedCancellation}
+              onClick={() =>
+                cancelMutate.mutate({
+                  releaseKey: releaseKey,
+                })
+              }
+              disabled={
+                cancelMutate.isLoading ||
+                releaseQuery.data.runningJob.requestedCancellation
+              }
             >
               Cancel
               {releaseQuery.data.runningJob?.requestedCancellation && (

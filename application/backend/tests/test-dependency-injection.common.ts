@@ -3,9 +3,12 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import * as edgedb from "edgedb";
-import { ElsaSettings } from "../../src/config/elsa-settings";
-import { createTestElsaSettings } from "../test-elsa-settings.common";
+import { ElsaSettings } from "../src/config/elsa-settings";
+import { createTestElsaSettings } from "./test-elsa-settings.common";
 import { Logger, pino } from "pino";
+import { IPresignedUrlProvider } from "../src/business/services/presigned-urls-service";
+import { AwsPresignedUrlsService } from "../src/business/services/aws-presigned-urls-service";
+import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-urls-service";
 
 export async function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
@@ -13,7 +16,7 @@ export async function registerTypes() {
 
   const testContainer = container; //.createChildContainer();
 
-  // we want an independant setup each call to this in testing (unlike in real code)
+  // we want an independent setup each call to this in testing (unlike in real code)
   testContainer.reset();
 
   testContainer.register<edgedb.Client>("Database", {
@@ -38,6 +41,14 @@ export async function registerTypes() {
 
   testContainer.register<Logger>("Logger", {
     useValue: pino(createTestElsaSettings().logger),
+  });
+
+  testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: AwsPresignedUrlsService,
+  });
+
+  testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: GcpPresignedUrlsService,
   });
 
   return testContainer;

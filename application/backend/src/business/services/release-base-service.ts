@@ -4,7 +4,6 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { getReleaseInfo } from "./helpers";
 import { ReleaseRoleStrings, UsersService } from "./users-service";
-import { touchRelease } from "../db/release-queries";
 import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
 import {
   ReleaseCreateNewError,
@@ -170,93 +169,6 @@ export abstract class ReleaseBaseService {
       // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
       permissionAccessData: userRole !== "Administrator",
     };
-  }
-
-  /**
-   * A mega function that handles altering the sharing status of a dataset node associated with our 'release'.
-   *
-   * @param user the user attempting the changes
-   * @param releaseKey the release id of the release to alter
-   * @param specimenIds the edgedb ids of specimens from datasets of our release, or an empty list if the status should be applied to all specimens in the release
-   * @param statusToSet the status to set i.e. selected = true means shared, selected = false means not shared
-   *
-   * TODO: make this work with any node - not just specimen nodes (i.e. setStatus of patient)
-   *
-   * This function is responsible for ensuring the passed in identifiers are valid - so it makes sure
-   * that all specimen ids are from datasets that are in this release.
-   */
-  protected async setSelectedStatus(
-    user: AuthenticatedUser,
-    statusToSet: boolean,
-    releaseKey: string,
-    specimenIds: string[] = []
-  ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    // note this db set we get is likely to be small (bounded by the number of datasets in a release)
-    // so we can get away with some use of a edgedb literal 'X in { "A", "B", "C" }'
-    // (which we wouldn't get away with if say there were 1 million datasets!)
-    const { releaseAllDatasetIdDbSet } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey
-    );
-
-    // we make a query that returns specimens of only where the input specimen ids belong
-    // to the datasets in our release
-    // we need to do this to prevent our list of valid shared specimens from being
-    // infected with edgedb nodes from different datasets
-
-    const specimensFromValidDatasetsQuery = e.select(
-      e.dataset.DatasetSpecimen,
-      (s) => ({
-        id: true,
-        filter: e.op(
-          e.op(s.dataset.id, "in", releaseAllDatasetIdDbSet),
-          "and",
-          specimenIds.length === 0
-            ? e.bool(true)
-            : e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a))))
-        ),
-      })
-    );
-
-    const actualSpecimens = await specimensFromValidDatasetsQuery.run(
-      this.edgeDbClient
-    );
-
-    if (specimenIds.length > 0 && actualSpecimens.length != specimenIds.length)
-      throw Error(
-        "Mismatch between the specimens that we passed in and those that are allowed specimens in this release"
-      );
-
-    if (statusToSet) {
-      // add specimens to the selected set
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: {
-            selectedSpecimens: { "+=": specimensFromValidDatasetsQuery },
-          },
-        }))
-        .run(this.edgeDbClient);
-    } else {
-      // remove specimens from the selected set
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: {
-            selectedSpecimens: { "-=": specimensFromValidDatasetsQuery },
-          },
-        }))
-        .run(this.edgeDbClient);
-    }
-
-    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
-
-    return await this.getBase(releaseKey, userRole);
   }
 
   /**

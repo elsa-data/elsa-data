@@ -1,52 +1,30 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
-  DuoLimitationCodedType,
-  ReleaseCaseType,
   ReleaseDetailType,
   ReleaseManualType,
-  ReleaseNodeStatusType,
-  ReleasePatientType,
-  ReleaseSpecimenType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import _, { isObjectLike, isSafeInteger } from "lodash";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import {
-  collapseExternalIds,
-  doRoleInReleaseCheck,
-  getReleaseInfo,
-} from "./helpers";
+import _ from "lodash";
+import { PagedResult } from "../../api/helpers/pagination-helpers";
+import { getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { getNextReleaseKey, touchRelease } from "../db/release-queries";
-import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
-import etag from "etag";
-import {
-  ReleaseActivationPermissionError,
-  ReleaseActivationStateError,
-  ReleaseDeactivationStateError,
-  ReleaseNoEditingWhilstActivatedError,
-} from "../exceptions/release-activation";
+import { getNextReleaseKey } from "../db/release-queries";
+import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
-import { createReleaseManifest } from "./manifests/_manifest-helper";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
-import { dataset } from "../../../dbschema/interfaces";
-import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
 import { releaseGetAllByUser } from "../../../dbschema/queries";
+import { AuditLogService } from "./audit-log-service";
 import {
-  AuditLogService,
-  OUTCOME_SERIOUS_FAILURE,
-  OUTCOME_SUCCESS,
-} from "./audit-log-service";
-import { auditFailure, auditReleaseUpdateStart } from "../../audit-helpers";
+  auditFailure,
+  auditReleaseUpdateStart,
+  auditSuccess,
+} from "../../audit-helpers";
 import { Logger } from "pino";
 
 @injectable()
@@ -244,306 +222,6 @@ ${release.applicantEmailAddresses}
     if (!next) throw new Error("Couldn't find");
 
     return next.counter;
-  }
-
-  /**
-   * Get all the cases for a release including checkbox status down to specimen level.
-   *
-   * Depending on the role of the user this will return different sets of cases.
-   * (the admins will get all the cases, but researchers/pi will only see cases that they
-   * have some level of visibility into)
-   *
-   * @param user the user asking for the cases
-   * @param releaseKey the release id containing the cases
-   * @param limit maximum number of cases to return (paging)
-   * @param offset the offset into the cases (paging)
-   * @param identifierSearchText if present, a string that must be present in any identifier within the case
-   */
-  public async getCases(
-    user: AuthenticatedUser,
-    releaseKey: string,
-    limit: number,
-    offset: number,
-    identifierSearchText?: string
-  ): Promise<PagedResult<ReleaseCaseType> | null> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    const {
-      releaseAllDatasetCasesQuery,
-      releaseSelectedSpecimensQuery,
-      releaseSelectedCasesQuery,
-      datasetUriToIdMap,
-    } = await getReleaseInfo(this.edgeDbClient, releaseKey);
-
-    const datasetIdSet =
-      datasetUriToIdMap.size > 0
-        ? e.set(...datasetUriToIdMap.values())
-        : e.cast(e.uuid, e.set());
-
-    // we actually have to switch off the type inference (any and any) - because this ends
-    // up so complex is breaks the typescript type inference depth calculations
-    // (revisit on new version of tsc)
-    const makeFilter = (dsc: $scopify<$DatasetCase>): any => {
-      if (identifierSearchText) {
-        // note that we are looking into *all* the identifiers for the case
-        // BUT we are only filtering at the case level. i.e. when searching
-        // by identifiers we are looking to identify at a case level - for a case
-        // the includes the identifier *anywhere* (case/patient/specimen)
-        return e.op(
-          e.contains(
-            identifierSearchText!.toUpperCase(),
-            e.set(
-              e.str_upper(e.array_unpack(dsc.externalIdentifiers).value),
-              e.str_upper(
-                e.array_unpack(dsc.patients.externalIdentifiers).value
-              ),
-              e.str_upper(
-                e.array_unpack(dsc.patients.specimens.externalIdentifiers).value
-              )
-            )
-          ),
-          "and",
-          e.op(
-            e.op(dsc.dataset.id, "in", datasetIdSet),
-            "and",
-            e.op(
-              e.bool(userRole === "Administrator"),
-              "or",
-              e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-            )
-          )
-        );
-      } else {
-        // with no identifier text to search for we can return a simpler filter
-        return e.op(
-          e.op(dsc.dataset.id, "in", datasetIdSet),
-          "and",
-          e.op(
-            e.bool(userRole === "Administrator"),
-            "or",
-            e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-          )
-        );
-      }
-    };
-
-    // TODO: when the 1.0.0 EdgeDb javascript client is released we will refactor this into using
-    // e.shape()
-    // at the moment we have literally just duplicated the query for count() v select()
-
-    const caseSearchQuery = e.select(e.dataset.DatasetCase, (dsc) => ({
-      ...e.dataset.DatasetCase["*"],
-      consent: true,
-      dataset: {
-        ...e.dataset.Dataset["*"],
-      },
-      patients: (p) => ({
-        ...e.dataset.DatasetPatient["*"],
-        consent: true,
-        filter: e.op(
-          e.bool(userRole === "Administrator"),
-          "or",
-          e.op(p.specimens, "in", releaseSelectedSpecimensQuery)
-        ),
-        specimens: (s) => ({
-          ...e.dataset.DatasetSpecimen["*"],
-          consent: true,
-          isSelected: e.op(s, "in", releaseSelectedSpecimensQuery),
-          filter: e.op(
-            e.bool(userRole === "Administrator"),
-            "or",
-            e.op(s, "in", releaseSelectedSpecimensQuery)
-          ),
-        }),
-      }),
-      // our cases should only be those from the datasets of this release and those appropriate for the user
-      filter: makeFilter(dsc),
-      // paging
-      limit: isSafeInteger(limit) ? e.int64(limit!) : undefined,
-      offset: isSafeInteger(offset) ? e.int64(offset!) : undefined,
-      order_by: [
-        {
-          expression: dsc.dataset.uri,
-          direction: e.ASC,
-        },
-        {
-          expression: dsc.id,
-          direction: e.ASC,
-        },
-      ],
-    }));
-
-    const pageCases = await caseSearchQuery.run(this.edgeDbClient);
-
-    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
-
-    if (!pageCases) return null;
-
-    const caseCountQuery = e.count(
-      e.select(e.dataset.DatasetCase, (dsc) => ({
-        filter: makeFilter(dsc),
-      }))
-    );
-
-    const countCases = await caseCountQuery.run(this.edgeDbClient);
-
-    // given an array of children node-like structures, compute what our node status is
-    // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
-    const calcNodeStatus = (
-      nodes: { nodeStatus: ReleaseNodeStatusType }[]
-    ): ReleaseNodeStatusType => {
-      const isAllSelected = nodes.every((s) => s.nodeStatus === "selected");
-      const isNoneSelected = nodes.every((s) => s.nodeStatus === "unselected");
-      return (
-        isAllSelected
-          ? "selected"
-          : isNoneSelected
-          ? "unselected"
-          : "indeterminate"
-      ) as ReleaseNodeStatusType;
-    };
-
-    const createSpecimenMap = (
-      spec: dataset.DatasetSpecimen
-    ): ReleaseSpecimenType => {
-      return {
-        id: spec.id,
-        externalId: collapseExternalIds(spec.externalIdentifiers),
-        nodeStatus: ((spec as any).isSelected
-          ? "selected"
-          : "unselected") as ReleaseNodeStatusType,
-        customConsent: isObjectLike(spec.consent),
-      };
-    };
-
-    const createPatientMap = (
-      pat: dataset.DatasetPatient
-    ): ReleasePatientType => {
-      const specimensMapped = Array.from<ReleaseSpecimenType>(
-        pat.specimens.map(createSpecimenMap)
-      );
-
-      return {
-        id: pat.id,
-        sexAtBirth: pat?.sexAtBirth || undefined,
-        externalId: collapseExternalIds(pat.externalIdentifiers),
-        externalIdSystem: "",
-        nodeStatus: calcNodeStatus(specimensMapped),
-        customConsent: isObjectLike(pat.consent),
-        specimens: specimensMapped,
-      };
-    };
-
-    const createCaseMap = (cas: dataset.DatasetCase): ReleaseCaseType => {
-      const patientsMapped = Array.from<ReleasePatientType>(
-        cas.patients.map(createPatientMap)
-      );
-
-      return {
-        id: cas.id,
-        externalId: collapseExternalIds(cas.externalIdentifiers),
-        externalIdSystem: "",
-        fromDatasetId: cas.dataset?.id!,
-        fromDatasetUri: cas.dataset?.uri!,
-        nodeStatus: calcNodeStatus(patientsMapped),
-        customConsent: isObjectLike(cas.consent),
-        patients: patientsMapped,
-      };
-    };
-
-    return createPagedResult(
-      pageCases.map((pc) =>
-        createCaseMap(pc as unknown as dataset.DatasetCase)
-      ),
-      countCases
-    );
-  }
-
-  /**
-   * Return the set of consent statements present in the database for any given
-   * case/individual/biosample.
-   *
-   * @param user
-   * @param releaseKey
-   * @param nodeId
-   */
-  public async getNodeConsent(
-    user: AuthenticatedUser,
-    releaseKey: string,
-    nodeId: string
-  ): Promise<DuoLimitationCodedType[]> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    const { datasetIdToUriMap } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey
-    );
-
-    const nodeFromValidDatasetsQuery = e
-      .select(e.dataset.DatasetShareable, (s) => ({
-        id: true,
-        datasetCase: s.is(e.dataset.DatasetCase).dataset,
-        datasetPatient: s.is(e.dataset.DatasetPatient).dataset,
-        datasetSpecimen: s.is(e.dataset.DatasetSpecimen).dataset,
-        consent: {
-          statements: {
-            ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
-          },
-        },
-        filter: e.op(s.id, "=", e.uuid(nodeId)),
-      }))
-      .assert_single();
-
-    const actualNode = await nodeFromValidDatasetsQuery.run(this.edgeDbClient);
-
-    // so we have picked the node and its consent from the db - but at this point we have
-    // not established the node consent is allowed to be viewed.. so we do some non-db
-    // logic here to work that out
-
-    // if the nodeId isn't even in the db then we get no result and can safely return
-    // empty consent TODO: consider error exception here
-    if (!actualNode) return [];
-
-    // it is not necessary that every node in a dataset actually has consent records - in
-    // which case we can just return nothing TODO: do we want to distinguish null from []?
-    if (!actualNode.consent) return [];
-
-    // it is possible that someone has send us a nodeId that isn't in this releases datasets..
-    // we shouldn't leak info
-    if (actualNode.datasetCase)
-      if (!datasetIdToUriMap.has(actualNode.datasetCase.id)) return [];
-
-    if (actualNode.datasetPatient)
-      if (!datasetIdToUriMap.has(actualNode.datasetPatient.id)) return [];
-
-    if (actualNode.datasetSpecimen)
-      if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
-
-    return actualNode.consent.statements.map(
-      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
-    );
-  }
-
-  public async setSelected(
-    user: AuthenticatedUser,
-    releaseKey: string,
-    specimenIds: string[] = []
-  ): Promise<any | null> {
-    return await this.setSelectedStatus(user, true, releaseKey, specimenIds);
-  }
-
-  public async setUnselected(
-    user: AuthenticatedUser,
-    releaseKey: string,
-    specimenIds: string[] = []
-  ): Promise<any | null> {
-    return await this.setSelectedStatus(user, false, releaseKey, specimenIds);
   }
 
   public async addDiseaseToApplicationCoded(
@@ -801,12 +479,11 @@ ${release.applicantEmailAddresses}
           }))
           .run(tx);
 
-        await this.auditLogService.completeReleaseAuditEvent(
+        await auditSuccess(
+          this.auditLogService,
           tx,
           auditEventId,
-          OUTCOME_SUCCESS,
           auditEventStart,
-          new Date(),
           {
             field: type,
             newValue: value,
@@ -827,95 +504,5 @@ ${release.applicantEmailAddresses}
 
       throw e;
     }
-  }
-
-  /**
-   * For the current state of a release, 'activate' it which means to switch
-   * on all necessary flags that enable actual data sharing.
-   *
-   * @param user
-   * @param releaseKey
-   * @protected
-   */
-  public async activateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    if (userRole !== "Administrator") {
-      // TODO: replace with real error class
-      throw new Error("must be a release administrator");
-    }
-
-    await this.edgeDbClient.transaction(async (tx) => {
-      const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
-
-      if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
-
-      if (releaseInfo.activation)
-        throw new ReleaseActivationStateError(releaseKey);
-
-      const manifest = await createReleaseManifest(
-        tx,
-        releaseKey,
-        releaseInfo.isAllowedReadData,
-        releaseInfo.isAllowedVariantData,
-        releaseInfo.isAllowedS3Data,
-        releaseInfo.isAllowedGSData,
-        releaseInfo.isAllowedR2Data
-      );
-
-      // once this is working well we can probably drop this to debug
-      this.logger.info(manifest, "created release manifest");
-
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: {
-            activation: e.insert(e.release.Activation, {
-              activatedById: user.subjectId,
-              activatedByDisplayName: user.displayName,
-              manifest: e.json(manifest),
-              manifestEtag: etag(JSON.stringify(manifest)),
-            }),
-          },
-        }))
-        .run(tx);
-
-      await touchRelease.run(tx, { releaseKey: releaseKey });
-    });
-  }
-
-  public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
-
-    if (userRole !== "Administrator") {
-      throw new ReleaseActivationPermissionError(releaseKey);
-    }
-
-    await this.edgeDbClient.transaction(async (tx) => {
-      const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
-
-      if (!releaseInfo) throw new Error("release has disappeared");
-
-      if (!releaseInfo.activation)
-        throw new ReleaseDeactivationStateError(releaseKey);
-
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.releaseKey, "=", releaseKey),
-          set: {
-            previouslyActivated: { "+=": r.activation },
-            activation: null,
-          },
-        }))
-        .run(tx);
-
-      await touchRelease.run(tx, { releaseKey: releaseKey });
-    });
   }
 }

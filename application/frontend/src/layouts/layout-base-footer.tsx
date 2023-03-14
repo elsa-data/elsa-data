@@ -24,7 +24,7 @@ export const LayoutBaseFooter: React.FC = () => {
                 href="https://github.com/umccr/elsa-data"
                 className="hover:underline"
               >
-                Github
+                GitHub
               </a>
             </li>
           </ul>

@@ -42,6 +42,7 @@ import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import { FilterMenu } from "./filter-menu";
+import { Link } from "react-router-dom";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -146,19 +147,17 @@ export const AuditEventTable = ({
   return (
     <Box
       heading={
-        <div className="flex items-center	justify-between">
+        <div className="flex grow items-center	justify-between">
           <div>Audit Logs</div>
           {filterMenu && (
-            <div className="flex content-center items-center">
-              <div>
-                <FilterMenu
-                  includeEvents={includeEvents}
-                  setIncludeEvents={setIncludeEvents}
-                  setCurrentPage={setCurrentPage}
-                  setCurrentTotal={setCurrentTotal}
-                  setUpdateData={setUpdateData}
-                />
-              </div>
+            <div className="ml-2 flex content-center items-center">
+              <FilterMenu
+                includeEvents={includeEvents}
+                setIncludeEvents={setIncludeEvents}
+                setCurrentPage={setCurrentPage}
+                setCurrentTotal={setCurrentTotal}
+                setUpdateData={setUpdateData}
+              />
             </div>
           )}
         </div>
@@ -491,15 +490,15 @@ export const createColumns = () => {
             />
             <ToolTip
               trigger={
-                <a
-                  href={`/audit-event/details/${info.getValue()}`}
+                <Link
+                  to={`${info.getValue()}`}
                   className={classNames(
                     "invisible block hover:rounded-lg hover:bg-slate-200 group-hover:visible",
                     CELL_BOX
                   )}
                 >
                   <BiLinkExternal />
-                </a>
+                </Link>
               }
               description={"View Entry"}
             />

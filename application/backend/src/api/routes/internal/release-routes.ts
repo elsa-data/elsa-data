@@ -1,18 +1,17 @@
 import { FastifyInstance } from "fastify";
 import {
   DuoLimitationCodedType,
-  ReleasePresignRequestSchema,
-  ReleasePresignRequestType,
   ReleaseCaseType,
+  ReleaseDetailType,
   ReleaseManualSchema,
   ReleaseManualType,
-  ReleaseMasterAccessRequestType,
+  ReleaseParticipantAddType,
+  ReleaseParticipantType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
+  ReleasePresignRequestSchema,
+  ReleasePresignRequestType,
   ReleaseSummaryType,
-  ReleaseParticipantType,
-  ReleaseParticipantAddType,
-  ReleaseDetailType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
@@ -25,16 +24,17 @@ import { AwsAccessPointService } from "../../../business/services/aws-access-poi
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
+import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
 
 export const releaseRoutes = async (fastify: FastifyInstance) => {
-  const jobsService = container.resolve(JobsService);
   const presignedUrlsService = container.resolve(PresignedUrlsService);
   const awsAccessPointService = container.resolve(AwsAccessPointService);
   const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
-  const releasesService = container.resolve(ReleaseService);
+  const releaseService = container.resolve(ReleaseService);
   const releaseParticipantService = container.resolve(
     ReleaseParticipationService
   );
+  const releaseSelectionService = container.resolve(ReleaseSelectionService);
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/releases",
@@ -43,7 +43,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser, pageSize, offset } =
         authenticatedRouteOnEntryHelper(request);
 
-      const allForUser = await releasesService.getAll(
+      const allForUser = await releaseService.getAll(
         authenticatedUser,
         pageSize,
         offset
@@ -61,7 +61,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
       const releaseKey = request.params.rid;
 
-      const release = await releasesService.get(authenticatedUser, releaseKey);
+      const release = await releaseService.get(authenticatedUser, releaseKey);
 
       if (release) reply.send(release);
       else reply.status(400).send();
@@ -77,7 +77,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
       const releaseKey = request.params.rid;
 
-      const cases = await releasesService.getCases(
+      const cases = await releaseSelectionService.getCases(
         authenticatedUser,
         releaseKey,
         pageSize,
@@ -162,7 +162,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     const releaseKey = request.params.rid;
     const nodeId = request.params.nid;
 
-    const r = await releasesService.getNodeConsent(
+    const r = await releaseSelectionService.getNodeConsent(
       authenticatedUser,
       releaseKey,
       nodeId
@@ -172,37 +172,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     reply.send(r);
   });
-
-  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid/jobs/select",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      reply.send(
-        await jobsService.startSelectJob(authenticatedUser, releaseKey)
-      );
-    }
-  );
-
-  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid/jobs/cancel",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      reply.send(
-        await jobsService.cancelInProgressSelectJob(
-          authenticatedUser,
-          releaseKey
-        )
-      );
-    }
-  );
 
   /**
    * The main route for altering fields in a release. Normally the UI component for the
@@ -238,7 +207,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/specimens":
                 reply.send(
-                  await releasesService.setSelected(
+                  await releaseSelectionService.setSelected(
                     authenticatedUser,
                     releaseKey,
                     op.value
@@ -247,7 +216,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/diseases":
                 reply.send(
-                  await releasesService.addDiseaseToApplicationCoded(
+                  await releaseService.addDiseaseToApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -257,7 +226,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/countries":
                 reply.send(
-                  await releasesService.addCountryToApplicationCoded(
+                  await releaseService.addCountryToApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -275,7 +244,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/specimens":
                 reply.send(
-                  await releasesService.setUnselected(
+                  await releaseSelectionService.setUnselected(
                     authenticatedUser,
                     releaseKey,
                     op.value
@@ -284,7 +253,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/diseases":
                 reply.send(
-                  await releasesService.removeDiseaseFromApplicationCoded(
+                  await releaseService.removeDiseaseFromApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -294,7 +263,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/countries":
                 reply.send(
-                  await releasesService.removeCountryFromApplicationCoded(
+                  await releaseService.removeCountryFromApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
@@ -312,7 +281,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/applicationCoded/type":
                 reply.send(
-                  await releasesService.setTypeOfApplicationCoded(
+                  await releaseService.setTypeOfApplicationCoded(
                     authenticatedUser,
                     releaseKey,
                     op.value as any
@@ -321,7 +290,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/beacon":
                 reply.send(
-                  await releasesService.setBeaconQuery(
+                  await releaseService.setBeaconQuery(
                     authenticatedUser,
                     releaseKey,
                     op.value
@@ -330,7 +299,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedRead":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedReadData",
@@ -340,7 +309,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedVariant":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedVariantData",
@@ -350,7 +319,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedPhenotype":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedPhenotypeData",
@@ -360,7 +329,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedS3":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedS3Data",
@@ -370,7 +339,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedGS":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedGSData",
@@ -380,7 +349,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/allowedR2":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
                     releaseKey,
                     "isAllowedR2Data",
@@ -432,38 +401,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     reply.send(res);
   });
-
-  fastify.post<{
-    Body: { accounts: string[]; vpcId?: string };
-    Params: { rid: string };
-  }>("/releases/:rid/cfn", {}, async function (request) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
-
-    if (!awsAccessPointService.isEnabled)
-      throw new Error(
-        "The AWS service was not started so AWS VPC sharing will not work"
-      );
-
-    const s3HttpsUrl =
-      await awsAccessPointService.createAccessPointCloudFormationTemplate(
-        authenticatedUser,
-        releaseKey,
-        request.body.accounts,
-        request.body.vpcId
-      );
-
-    await jobsService.startCloudFormationInstallJob(
-      authenticatedUser,
-      releaseKey,
-      s3HttpsUrl
-    );
-  });
-
-  // const PresignedT = Type.Object({
-  //   header: Type.Array(Type.Union([Type.Literal("A"), Type.Literal("B")])),
-  // });
 
   fastify.post<{
     Body: ReleasePresignRequestType;
@@ -546,7 +483,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      reply.send(await releasesService.new(authenticatedUser, request.body));
+      reply.send(await releaseService.new(authenticatedUser, request.body));
     }
   );
 

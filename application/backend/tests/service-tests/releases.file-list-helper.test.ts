@@ -1,5 +1,5 @@
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
 import { createReleaseFileList } from "../../src/business/services/_release-file-list-helper";
