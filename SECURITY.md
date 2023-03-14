@@ -28,13 +28,13 @@ Known issue: For time being, every logged-in user has the same level of authoris
 
 ### 2. Cryptographic Failures
 
-We are using HTTPS protocol to protect data traffic which allows encryption between networks. This will prevent attackers from tapping into the network and listening to the data transmitted. We do not store sensitive data as part of Elsa's database and mainly store the index of particular genomic datasets. This index will contain subjectId but it does not identify a specific person.
+We are using HTTPS protocol to protect data traffic which allows encryption between networks. This will prevent attackers from tapping into the network and listening to the data transmitted. We do not store sensitive data as part of Elsa's database and mainly store the index for the particular genomic datasets. This index will contain subjectId but it does not identify a specific person.
 
 Known issue: For time being manifest file that researchers will have access to the manifest (as part of the release) is governed by the password set by the data custodian. Currently, we store passwords as it is in plain text stored in edgedDb.
 
 ### 3. Injection
 
-Most injections happen from input that is supplied by the user. In `Elsa` we have managed to have very minimum input fields that minimise the chance of having an injection attack. At the time we do not use any raw queries to EdgeDb and use [EdgeDb Client Libraries](https://www.edgedb.com/docs/clients/index) for database queries. The database write operation is usually taken from existing data that is stored from another database (e.g. REDCap) which is potentially safe from fire threat.
+Most injections happen from input that is supplied by the user. In `Elsa` we have managed to have very minimum input fields that minimise the chance of having an injection attack. At the time we do not use any raw queries to EdgeDb and use [EdgeDb Client Libraries](https://www.edgedb.com/docs/clients/index) for database queries.
 
 We also have implemented `Content-Security-Policy` to protect browser from fetching or executing content that is not white-listed from the server. This will help preventing cross-site scripting (XSS) and injections happening in the client side.
 
@@ -42,7 +42,7 @@ We also have implemented `Content-Security-Policy` to protect browser from fetch
 
 We tried our best to maximise our design as securely as possible. We do not allow username-password authentication, many user inputs are just clicking checkboxes preventing any miscellaneous inputs, and configuration is done on application startup to prevent unauthorised config change.
 
-One of our attempts in our design is to support HTSGET for data sharing. HTSGET would allow the data custodian to limit a particular alignment that is accessible by the researcher instead of giving access to the entire file. For more information on HTSGET visit http://samtools.github.io/hts-specs/htsget.html
+One of our attempts in our design is to support HTSGET for data sharing. HTSGET would allow the data custodian to limit a particular alignment that is accessible by the researcher instead of giving access to the entire genomic file. For more information on HTSGET visit http://samtools.github.io/hts-specs/htsget.html
 
 ### 5. Security Misconfiguration
 
@@ -56,7 +56,7 @@ The current project is still in development therefore, we will be using the late
 
 ### 7. Identification and Authentication Failures
 
-The application does not have a username-password approach for user identification which removed many security threats on this. We rely on [CILogon](https://www.cilogon.org/home) as an integrated identity that supports over 4000 identity providers. We aimed that researcher is part of an institution therefore it is expected for their institution IDP and is part of CILogon. To add an institution to be part of CILogon, please head up to the [Add Identity Provider page from CILogon](https://www.cilogon.org/service/addidp).
+The application does not have a username-password approach for user identification which removed many security threats on this. We rely on [CILogon](https://www.cilogon.org/home) as an integrated identity that supports over 4000 identity providers. We will assume that researcher is part of an institution therefore it is expected for their institution IDP and is part of CILogon. To add an institution to be part of CILogon, please head up to the [Add Identity Provider page from CILogon](https://www.cilogon.org/service/addidp).
 
 The current login is stored in a cookie session and for time being this cookie will expire within a day after the login attempt.
 
@@ -66,7 +66,7 @@ We have take into account of data integrity and design the database that stored 
 
 ### 9. Security Logging and Monitoring Failures
 
-We have included as much logging as we could for activities in this app. These logs are stored in the EdgeDb database with no TTL implemented, which allows for traceback at any point in time for any breaches.
+We have included as much logging as we could for activities in this app. These logs are stored in the EdgeDb database with no TTL implemented, which allows for trace back at any point in time for any breaches.
 
 In another attempt to improve logging, we also implement data egress logs as the main of the app is giving data access. If the software administrator configured this feature, the data being accessed could be tracked by which researcher. For example, a researcher generates pre-signed URLs for a given dataset. When these URLs are being accessed, information from the storage server could be fetched and bring it to the application database. For data custodian, monitoring and logging of these are shown and highlighted if for example data was downloaded with IP from another country, or downloaded more than once which increase egress cost.
 
