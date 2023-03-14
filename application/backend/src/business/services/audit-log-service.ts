@@ -88,7 +88,7 @@ export class AuditLogService {
           userDbId: user.dbId,
           releaseKey: releaseKey,
         })
-      )?.role?.["@role"];
+      )?.role;
       if (userReleaseRole) return;
     }
 

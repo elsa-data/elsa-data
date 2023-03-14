@@ -133,11 +133,11 @@ export class JobsService {
     releaseKey: string,
     s3HttpsUrl: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
-      user,
-      releaseKey
-    );
+    const { userRole } =
+      await this.releasesService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
 
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
@@ -278,11 +278,11 @@ export class JobsService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
-      user,
-      releaseKey
-    );
+    const { userRole } =
+      await this.releasesService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
 
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
@@ -333,11 +333,11 @@ export class JobsService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
-      user,
-      releaseKey
-    );
+    const { userRole } =
+      await this.releasesService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
 
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);

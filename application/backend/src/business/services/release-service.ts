@@ -110,17 +110,12 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<ReleaseDetailType | null> {
-    try {
-      let { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-        user,
-        releaseKey
-      );
-      return this.getBase(releaseKey, userRole);
-    } catch (error) {
-      // Attempt to retrieve as an admin viewer
-      this.checkIsAllowedViewAllReleases(user);
-      return this.getBase(releaseKey, "Viewer");
-    }
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
+
+    return this.getBase(releaseKey, userRole);
   }
 
   /**

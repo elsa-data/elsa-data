@@ -10,6 +10,7 @@ import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { getAllFileRecords } from "./_release-file-list-helper";
+import { ReleaseAccessError } from "../exceptions/release-authorisation";
 
 export interface IPresignedUrlProvider {
   isEnabled: boolean;
@@ -59,6 +60,16 @@ export class PresignedUrlsService {
     releaseKey: string,
     presignHeader: string[]
   ): Promise<any> {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (!(userRole === "Manager" || userRole === "Member")) {
+      throw new ReleaseAccessError(releaseKey);
+    }
+
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,

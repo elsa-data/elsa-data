@@ -25,19 +25,6 @@ export abstract class ReleaseBaseService {
   ) {}
 
   /**
-   * This is to check if user has a special view permission granted by fellow admin.
-   * @param user
-   */
-  protected checkIsAllowedViewAllReleases(user: AuthenticatedUser): void {
-    const isAllow = user.isAllowedViewAllReleases;
-    if (!isAllow) {
-      throw new Error(
-        "Unauthenticated attempt to access release, or release does not exist"
-      );
-    }
-  }
-
-  /**
    * This is to check if user has a special create release permission granted by an admin.
    * @param user
    */
@@ -62,7 +49,7 @@ export abstract class ReleaseBaseService {
    * @param releaseKey the key for the release
    * @protected
    */
-  protected async getBoundaryInfoWithThrowOnFailure(
+  public async getBoundaryInfoWithThrowOnFailure(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
@@ -71,12 +58,7 @@ export abstract class ReleaseBaseService {
       releaseKey: releaseKey,
     });
 
-    if (!boundaryInfo)
-      throw new Error(
-        "Unauthenticated attempt to access release, or release does not exist"
-      );
-
-    const role = boundaryInfo?.role?.["@role"];
+    const role = boundaryInfo?.role;
 
     if (!role)
       throw new Error(

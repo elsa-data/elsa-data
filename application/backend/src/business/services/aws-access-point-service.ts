@@ -21,6 +21,7 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { Logger } from "pino";
 import { getAllFileRecords } from "./_release-file-list-helper";
+import { ReleaseAccessError } from "../exceptions/release-authorisation";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
@@ -63,6 +64,12 @@ export class AwsAccessPointService extends AwsBaseService {
     stackId: string;
     bucketNameMap: { [x: string]: string };
   } | null> {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
     const releaseStackName =
       AwsAccessPointService.getReleaseStackName(releaseKey);
 
@@ -186,6 +193,16 @@ export class AwsAccessPointService extends AwsBaseService {
   ): Promise<string> {
     // the AWS guard is switched on as this needs to write out to S3
     this.enabledGuard();
+
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (userRole === "Administrator") {
+      throw new ReleaseAccessError(releaseKey);
+    }
 
     // find all the files encompassed by this release as a flat array of S3 URLs
     const filesArray = await getAllFileRecords(

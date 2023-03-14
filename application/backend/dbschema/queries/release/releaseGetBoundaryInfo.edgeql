@@ -5,10 +5,35 @@
 # is valid (given it may have come from an untrusted source - the fact that
 # anything is returned validates the releaseKey)
 
-select release::Release {
+
+with 
+
+  # isAllowedViewAllReleases is for admin who has access to view all releases
+  isAllowedViewAllReleases := (
+                                select permission::User {
+                                  isAllowedViewAllReleases
+                                }
+                                filter .id = <uuid>$userDbId
+                              ).isAllowedViewAllReleases, 
+
+  r := (
+        select release::Release {
+          userRole := (
+                        select .<releaseParticipant[is permission::User] {@role}
+                        filter .id = <uuid>$userDbId
+                      ),
+        }
+        # if no userRole then $userDbId is not participating
+        filter .releaseKey = <str>$releaseKey
+       )
+
+select r {
     runningJob,
     activation,
-    role := (select .<releaseParticipant[is permission::User] {@role}
-             filter .id = <uuid>$userDbId)
+    role := (select assert_single(.userRole@role)) ?? (   "Viewer"
+                                                        if
+                                                          isAllowedViewAllReleases 
+                                                        else
+                                                          <str>{}
+                                                      )
 }
-filter .releaseKey = <str>$releaseKey

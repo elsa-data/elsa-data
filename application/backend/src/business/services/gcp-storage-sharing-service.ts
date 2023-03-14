@@ -11,6 +11,7 @@ import {
 } from "./_release-file-list-helper";
 import pLimit, { Limit } from "p-limit";
 import { Metadata } from "@google-cloud/storage/build/src/nodejs-common";
+import { ReleaseService } from "./release-service";
 
 @injectable()
 @singleton()
@@ -22,6 +23,7 @@ export class GcpStorageSharingService extends GcpBaseService {
   constructor(
     @inject("Database") protected edgeDbClient: edgedb.Client,
     private usersService: UsersService,
+    private releaseService: ReleaseService,
     private auditLogService: AuditLogService
   ) {
     super();
@@ -181,6 +183,16 @@ export class GcpStorageSharingService extends GcpBaseService {
     releaseKey: string,
     principals: string[]
   ): Promise<number> {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (userRole != "Administrator") {
+      throw new Error("");
+    }
+
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       this.edgeDbClient,
