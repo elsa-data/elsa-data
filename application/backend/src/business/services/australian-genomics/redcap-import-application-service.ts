@@ -138,20 +138,20 @@ export class RedcapImportApplicationService {
         }
       }
 
-      let pi: ApplicationUser;
+      let manager: ApplicationUser;
 
       // the Manager details are literally a duplicate of the applicant OR
       // we grab them from elsewhere in the CSV
       if (newApplication.daf_applicant_pi_yn === "1") {
-        pi = {
+        manager = {
           email: newApplication.daf_applicant_email,
           displayName: newApplication.daf_applicant_name,
           institution: newApplication.daf_applicant_institution,
           role: "Manager",
         };
-        checkValidApplicationUser(pi, "applicant");
+        checkValidApplicationUser(manager, "applicant");
       } else {
-        pi = {
+        manager = {
           email: newApplication.daf_pi_email,
           displayName: newApplication.daf_pi_name,
           institution:
@@ -160,7 +160,7 @@ export class RedcapImportApplicationService {
               : newApplication.daf_pi_institution,
           role: "Manager",
         };
-        checkValidApplicationUser(pi, "pi");
+        checkValidApplicationUser(manager, "manager");
       }
 
       const otherResearchers: ApplicationUser[] = [];
@@ -206,7 +206,7 @@ export class RedcapImportApplicationService {
       ];
 
       roleTable.push(
-        `| ${pi.displayName} | ${pi.email} | ${pi.institution} | ${pi.role} |`
+        `| ${manager.displayName} | ${manager.email} | ${manager.institution} | ${manager.role} |`
       );
       for (const o of otherResearchers) {
         roleTable.push(
@@ -371,7 +371,7 @@ ${roleTable.join("\n")}
         }
       };
 
-      await insertPotentialOrReal(pi, pi.role);
+      await insertPotentialOrReal(manager, manager.role);
 
       for (const r of otherResearchers) {
         await insertPotentialOrReal(r, r.role);

@@ -116,7 +116,7 @@ export class DatasetService {
       throw new BadLimitOffset(limit, offset);
 
     // TODO: if we introduce any security model into dataset (i.e. at the moment
-    // all data owners can see all datasets) - we need to add some filtering to these
+    // all administrators can see all datasets) - we need to add some filtering to these
     // queries
     const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
     const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {

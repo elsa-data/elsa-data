@@ -35,7 +35,7 @@ import { releaseGetSpecimenToDataSetCrossLinks } from "../../../dbschema/queries
 /**
  * The release selection service handles CRUD operations on the list of items
  * that are 'selected' for a given release. That is, the cases/patients
- * and specimens that a data owner has authorised to be released.
+ * and specimens that a administrator has authorised to be released.
  */
 @injectable()
 export class ReleaseSelectionService extends ReleaseBaseService {
@@ -53,7 +53,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
    * Get all the cases for a release including selected status down to specimen level.
    *
    * Depending on the role of the user this will return different sets of cases.
-   * (the admins will get all the cases, but researchers/pi will only see cases that they
+   * (the admins will get all the cases, but researchers/manager will only see cases that they
    * have some level of visibility into)
    *
    * @param user the user asking for the cases

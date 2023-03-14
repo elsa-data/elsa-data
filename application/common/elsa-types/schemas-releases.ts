@@ -70,7 +70,7 @@ export const ReleaseDetailSchema = Type.Object({
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
 
-  // the number of cases visible to whoever makes this call - for data owners this will always
+  // the number of cases visible to whoever makes this call - for administrators this will always
   // be *all* cases, for others it will only be those available to them
   visibleCasesCount: Type.Integer(),
 

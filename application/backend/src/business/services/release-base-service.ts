@@ -163,10 +163,10 @@ export abstract class ReleaseBaseService {
       // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
-      // data owners can code/edit the release information
+      // administrators can code/edit the release information
       permissionEditSelections: userRole === "Administrator",
       permissionEditApplicationCoded: userRole === "Administrator",
-      // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
+      // administrators cannot however access the raw data (if they want access to their data - they need to go other ways)
       permissionAccessData: userRole !== "Administrator",
     };
   }

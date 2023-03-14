@@ -55,7 +55,7 @@ beforeEach(async () => {
 /**
  *
  */
-it("get all case level information from a release as a data owner", async () => {
+it("get all case level information from a release as a administrator", async () => {
   const pagedResult = await releaseSelectionService.getCases(
     superAdminUser,
     testReleaseKey,
@@ -67,7 +67,7 @@ it("get all case level information from a release as a data owner", async () => 
   assert(pagedResult != null);
   assert(pagedResult.data != null);
 
-  // as the data owner we will see everything
+  // as the administrator we will see everything
   // 10 cases from 10g and 2 cases from 10f
   expect(pagedResult.data.length).toBe(14);
 
