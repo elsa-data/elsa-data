@@ -105,7 +105,7 @@ export function makeTripleCodeArray(
  * @param displayName
  * @param email
  * @param releasesAsAdministrator
- * @param releasesAsPI
+ * @param releasesAsManager
  * @param releasesAsMember
  * @param lastLogin if present, also sets the last login to the given date
  */
@@ -114,7 +114,7 @@ export async function createTestUser(
   displayName: string,
   email: string,
   releasesAsAdministrator: string[],
-  releasesAsPI: string[],
+  releasesAsManager: string[],
   releasesAsMember: string[],
   isReleaseAdmin: boolean = false,
   isSuperAdmin: boolean = false
@@ -172,7 +172,7 @@ export async function createTestUser(
     await insertRole(dataOwnerReleaseKey, "Administrator");
   }
 
-  for (const piReleaseKey of releasesAsPI) {
+  for (const piReleaseKey of releasesAsManager) {
     await insertRole(piReleaseKey, "Manager");
   }
 
