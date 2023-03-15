@@ -22,6 +22,7 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { Logger } from "pino";
 import { getAllFileRecords } from "./_release-file-list-helper";
 import { ReleaseViewError } from "../exceptions/release-authorisation";
+import assert from "assert";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
@@ -194,6 +195,8 @@ export class AwsAccessPointService extends AwsBaseService {
     // the AWS guard is switched on as this needs to write out to S3
     this.enabledGuard();
 
+    assert(this.settings.aws);
+
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
@@ -216,7 +219,7 @@ export class AwsAccessPointService extends AwsBaseService {
     // files via an access point
     const accessPointTemplates =
       createAccessPointTemplateFromReleaseFileEntries(
-        this.settings.awsTempBucket,
+        this.settings.aws.tempBucket,
         REGION,
         releaseKey,
         filesArray,

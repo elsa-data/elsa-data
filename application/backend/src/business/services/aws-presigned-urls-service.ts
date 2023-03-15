@@ -8,6 +8,7 @@ import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { IPresignedUrlProvider } from "./presigned-urls-service";
+import assert from "assert";
 
 @injectable()
 @singleton()
@@ -29,16 +30,18 @@ export class AwsPresignedUrlsService
     const s3Client = new S3Client({});
     const awsRegion = await s3Client.config.region();
 
+    assert(this.settings.aws);
+
     // we use the S3 client credentials as a backup - but we actually will prefer to use the static credentials given to
     // us via settings (this is what allows us to extend the share out to 7 days - otherwise we are bound by the lifespan
     // of the running AWS credentials which will normally be hours not days)
     const awsCredentials =
-      this.settings.awsSigningAccessKeyId &&
-      this.settings.awsSigningSecretAccessKey
+      this.settings.aws.signingAccessKeyId &&
+      this.settings.aws.signingSecretAccessKey
         ? {
             sessionToken: undefined,
-            accessKeyId: this.settings.awsSigningAccessKeyId,
-            secretAccessKey: this.settings.awsSigningSecretAccessKey,
+            accessKeyId: this.settings.aws.signingAccessKeyId,
+            secretAccessKey: this.settings.aws.signingSecretAccessKey,
           }
         : s3Client.config.credentials;
 

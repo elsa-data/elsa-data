@@ -67,8 +67,15 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
 
   const logLevel = config.get("logger.level");
 
-  if (logLevel)
-    loggerTransportTargets.forEach(l => l.level ??= logLevel);
+  if (logLevel) loggerTransportTargets.forEach((l) => (l.level ??= logLevel));
+
+  const hasAws =
+    config.has("aws.signingAccessKeyId") &&
+    config.has("aws.signingSecretAccessKey") &&
+    config.has("aws.tempBucket");
+  const hasCloudflare =
+    config.has("cloudflare.signingAccessKeyId") &&
+    config.has("cloudflare.signingAccessKeyId");
 
   return {
     deployedUrl: deployedUrl,
@@ -84,9 +91,19 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
     oidcIssuer: issuer,
-    awsSigningAccessKeyId: config.get("aws.signingAccessKeyId")!,
-    awsSigningSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
-    awsTempBucket: config.get("aws.tempBucket")!,
+    aws: hasAws
+      ? {
+          signingAccessKeyId: config.get("aws.signingAccessKeyId")!,
+          signingSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
+          tempBucket: config.get("aws.tempBucket")!,
+        }
+      : undefined,
+    cloudflare: hasCloudflare
+      ? {
+          signingAccessKeyId: config.get("cloudflare.signingAccessKeyId"),
+          signingSecretAccessKey: config.get("cloudflare.signingAccessKeyId"),
+        }
+      : undefined,
     sessionSecret: config.get("session.secret")!,
     sessionSalt: config.get("session.salt")!,
     remsBotKey: config.get("rems.botKey")!,
