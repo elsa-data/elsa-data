@@ -19,7 +19,7 @@ type Props = {
   pageSize: number;
 };
 
-export const OthersBox: React.FC<Props> = ({ pageSize }) => {
+export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -88,7 +88,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
 
   return (
     <Box
-      heading="Users (not you)"
+      heading="Other Users"
       errorMessage={"Something went wrong fetching users."}
     >
       <div className="flex flex-col">
