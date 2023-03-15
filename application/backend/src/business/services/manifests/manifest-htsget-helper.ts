@@ -1,8 +1,8 @@
 import _ from "lodash";
 import type {
-  ManifestReadsFileType,
-  ManifestType,
-  ManifestVariantsFileType,
+  ManifestHtsgetReadsFileType,
+  ManifestHtsgetType,
+  ManifestHtsgetVariantsFileType,
 } from "./manifest-htsget-types";
 import { ManifestMasterType } from "./manifest-master-types";
 
@@ -20,7 +20,7 @@ import { ManifestMasterType } from "./manifest-master-types";
  */
 export async function transformMasterManifestToHtsgetManifest(
   masterManifest: ManifestMasterType
-): Promise<ManifestType> {
+): Promise<ManifestHtsgetType> {
   // a little tidy up of the uuids so they look not quite as uuids
   const uuidToHtsgetId = (uuid: string): string => {
     return uuid.replaceAll("-", "").toUpperCase();
@@ -31,8 +31,9 @@ export async function transformMasterManifestToHtsgetManifest(
   // (we have no guarantee that externalIdentifiers used for specimens are actually unique across any release hence
   //  us needing to use something else)
   // TODO could we test the externalIdentifiers for uniqueness as a first step - and if yes - use them as preference?
-  const readDictionary: { [hid: string]: ManifestReadsFileType } = {};
-  const variantDictionary: { [hid: string]: ManifestVariantsFileType } = {};
+  const readDictionary: { [hid: string]: ManifestHtsgetReadsFileType } = {};
+  const variantDictionary: { [hid: string]: ManifestHtsgetVariantsFileType } =
+    {};
 
   for (const filesResult of masterManifest.specimenList) {
     // NOTE: we prefer the specimen id over the artifact id here - because of the VCF with multiple samples problem
@@ -43,12 +44,12 @@ export async function transformMasterManifestToHtsgetManifest(
 
     // at the moment - with only three practical file locations - we do this splitting/logic
     // will need to rethink approach I think if we add others
-    let s3Variant: ManifestVariantsFileType | undefined;
-    let gsVariant: ManifestVariantsFileType | undefined;
-    let r2Variant: ManifestVariantsFileType | undefined;
-    let s3Read: ManifestReadsFileType | undefined;
-    let gsRead: ManifestReadsFileType | undefined;
-    let r2Read: ManifestReadsFileType | undefined;
+    let s3Variant: ManifestHtsgetVariantsFileType | undefined;
+    let gsVariant: ManifestHtsgetVariantsFileType | undefined;
+    let r2Variant: ManifestHtsgetVariantsFileType | undefined;
+    let s3Read: ManifestHtsgetReadsFileType | undefined;
+    let gsRead: ManifestHtsgetReadsFileType | undefined;
+    let r2Read: ManifestHtsgetReadsFileType | undefined;
 
     const S3_PREFIX = "s3://";
     const GS_PREFIX = "gs://";

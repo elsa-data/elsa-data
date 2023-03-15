@@ -6,6 +6,7 @@ import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/que
 import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
 import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
+import { ManifestHtsgetType } from "./manifest-htsget-types";
 
 @injectable()
 export class ManifestService {
@@ -35,6 +36,7 @@ export class ManifestService {
 
     if (!releaseWithManifest) return null;
 
+    // TODO fix exceptions here
     if (!releaseWithManifest.activation) return null;
 
     return releaseWithManifest.activation.manifest as ManifestMasterType;
@@ -63,10 +65,13 @@ export class ManifestService {
     return transformDbManifestToMasterManifest(manifest);
   }
 
-  public async getActiveHtsgetManifest(releaseKey: string) {
+  public async getActiveHtsgetManifest(
+    releaseKey: string
+  ): Promise<ManifestHtsgetType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
 
-    if (!masterManifest) throw new Error("not activated");
+    // TODO fix exceptions here
+    if (!masterManifest) return null;
 
     return transformMasterManifestToHtsgetManifest(masterManifest);
   }
