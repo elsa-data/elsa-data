@@ -67,6 +67,8 @@ export abstract class ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ) {
+    const isAllowed = user.isAllowedViewAllReleases;
+
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,
       releaseKey: releaseKey,
@@ -74,10 +76,8 @@ export abstract class ReleaseBaseService {
 
     const role = boundaryInfo?.role;
 
-    if (!role)
-      throw new Error(
-        "Unauthenticated attempt to access release, or release does not exist"
-      );
+    if (!boundaryInfo || (!role && !isAllowed))
+      throw new ReleaseViewAccessError(releaseKey);
 
     return {
       userRole: role as ReleaseRoleStrings,

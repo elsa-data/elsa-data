@@ -24,11 +24,7 @@ import {
 import { NotAuthorisedViewUserManagement } from "../exceptions/user";
 
 // possibly can somehow get this from the schemas files?
-export type ReleaseRoleStrings =
-  | "Administrator"
-  | "Manager"
-  | "Member"
-  | "Viewer";
+export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
 
 @injectable()
 export class UsersService {

@@ -8,14 +8,6 @@
 
 with 
 
-  # isAllowedViewAllReleases is for admin who has access to view all releases
-  isAllowedViewAllReleases := (
-                                select permission::User {
-                                  isAllowedViewAllReleases
-                                }
-                                filter .id = <uuid>$userDbId
-                              ).isAllowedViewAllReleases, 
-
   r := (
         select release::Release {
           userRole := (
@@ -30,10 +22,5 @@ with
 select r {
     runningJob,
     activation,
-    role := (select assert_single(.userRole@role)) ?? (   "Viewer"
-                                                        if
-                                                          isAllowedViewAllReleases 
-                                                        else
-                                                          <str>{}
-                                                      )
+    role := (select assert_single(.userRole@role))
 }

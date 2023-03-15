@@ -31,7 +31,7 @@ select {
               datasetUris,
               applicationDacTitle,
               applicationDacIdentifier,
-              role := (select assert_single(.userRole@role)) ?? "Viewer",
+              role := (select assert_single(.userRole@role)),
               runningJob: {
                 # we are avoiding fetching the message/details etc (which could be large) in this summary
                 id,
