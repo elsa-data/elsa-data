@@ -39,7 +39,7 @@ module release {
         #
         required property applicationDacDetails -> str;
 
-        # once a release is started - it is possible for the data owner to encode some
+        # once a release is started - it is possible for the release administrator to encode some
         # details of the application to help with automation
         #
         required link applicationCoded -> ApplicationCoded {

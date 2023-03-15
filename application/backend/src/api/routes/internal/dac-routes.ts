@@ -26,7 +26,7 @@ export const dacRoutes = async (
   }>("/dac/rems/new", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const n = await remsService.detectNewReleases();
+    const n = await remsService.detectNewReleases(authenticatedUser);
 
     reply.send(n);
   });
@@ -51,7 +51,10 @@ export const dacRoutes = async (
   }>("/dac/redcap/possible", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const n = await redcapAgService.detectNewReleases(request.body);
+    const n = await redcapAgService.detectNewReleases(
+      authenticatedUser,
+      request.body
+    );
 
     reply.send(n);
   });

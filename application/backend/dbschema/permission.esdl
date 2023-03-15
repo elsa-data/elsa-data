@@ -18,7 +18,7 @@ module permission {
 
         multi link futureReleaseParticipant -> release::Release {
             property role -> str {
-               constraint one_of('DataOwner', 'Member', 'PI');
+               constraint one_of('Administrator', 'Manager', 'Member');
             }
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release
@@ -51,24 +51,44 @@ module permission {
             default := datetime_current();
         }
 
-        # these are the set of administrator level permissions that can be given
+        # These are the set of administrator level permissions that can be given
         # to a user
 
-        required property allowedCreateRelease -> bool {
+        # Write Access
+        required property isAllowedSyncDataAccessEvents -> bool {
             default := false;
-        };
-        required property allowedImportDataset -> bool {
+        }
+
+        required property isAllowedRefreshDatasetIndex -> bool {
            default := false;
         };
-        required property allowedChangeReleaseDataOwner -> bool {
+
+        required property isAllowedCreateRelease -> bool {
             default := false;
         };
+        
+        # Read Access
+        required property isAllowedViewAllAuditEvents -> bool {
+            default := false;
+        }
+
+        required property isAllowedViewDatasetContent -> bool {
+            default := false;
+        }
+
+        required property isAllowedViewUserManagement -> bool {
+            default := false;
+        }
+
+        required property isAllowedViewAllReleases -> bool {
+            default := false;
+        }
 
         # whether this user is a participant in a release
 
         multi link releaseParticipant -> release::Release {
             property role -> str {
-               constraint one_of('DataOwner', 'Member', 'PI');
+               constraint one_of('Administrator', 'Manager', 'Member');
             }
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release

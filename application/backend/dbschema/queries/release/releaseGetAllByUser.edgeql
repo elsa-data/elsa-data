@@ -2,16 +2,25 @@
 # this query supports paging
 
 with
+
+  # isAllowedViewAllReleases is for admin who has access to view all releases
+  isAllowedViewAllReleases := (
+                                select permission::User {
+                                  isAllowedViewAllReleases
+                                }
+                                filter .id = <uuid>$userDbId
+                              ).isAllowedViewAllReleases,  
+
   # r is the set of all releases that involve $userDbId as a participant
   r := (
           select release::Release {
             userRole := (select .<releaseParticipant[is permission::User] {@role}
-                         filter .id = <uuid>$userDbId),
+                          filter .id = <uuid>$userDbId),
           }
           # if no userRole then $userDbId is not participating
-          filter exists(.userRole)
+          filter isAllowedViewAllReleases or exists(.userRole)
           order by .lastUpdated desc
-       )
+        )
 
 select {
   total := count(r),

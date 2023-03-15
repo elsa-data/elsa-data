@@ -12,8 +12,8 @@ let releaseService: ReleaseService;
 let releaseParticipationService: ReleaseParticipationService;
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
@@ -30,8 +30,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   ({
     testReleaseKey,
-    allowedDataOwnerUser,
-    allowedPiUser,
+    superAdminUser,
+    allowedManagerUser,
     allowedMemberUser,
     notAllowedUser,
   } = await beforeEachCommon());
@@ -39,7 +39,7 @@ beforeEach(async () => {
 
 it("all the participants in a release are correctly returned", async () => {
   const result = await releaseParticipationService.getParticipants(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
@@ -54,7 +54,7 @@ it("all the participants in a release are correctly returned", async () => {
   );
 
   expect(comparableResults).toContainEqual({
-    role: "DataOwner",
+    role: "Administrator",
     email: "admin@elsa.net",
     subjectId: "https://i-am-admin.org",
     displayName: "Test User Who Is Allowed Data Owner Access",
@@ -73,14 +73,14 @@ it("all the participants in a release are correctly returned", async () => {
 
 it("adding a user who doesn't yet exist makes a potential user who is returned with no last login", async () => {
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
-    "PI"
+    "Manager"
   );
 
   const result = await releaseParticipationService.getParticipants(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
@@ -93,13 +93,13 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
   const noLastLoginArray = result.filter((x) => x.lastLogin === null);
 
   expect(noLastLoginArray).toHaveLength(1);
-  expect(noLastLoginArray[0].role).toBe("PI");
+  expect(noLastLoginArray[0].role).toBe("Manager");
 });
 
 it("real users and potential users can both have their roles altered", async () => {
   // add a potential user with Member role
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
     "Member"
@@ -107,46 +107,46 @@ it("real users and potential users can both have their roles altered", async () 
 
   {
     const startingResult = await releaseParticipationService.getParticipants(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey
     );
 
-    expect(startingResult.filter((r) => r.role === "DataOwner")).toHaveLength(
-      1
-    );
-    expect(startingResult.filter((r) => r.role === "PI")).toHaveLength(1);
+    expect(
+      startingResult.filter((r) => r.role === "Administrator")
+    ).toHaveLength(1);
+    expect(startingResult.filter((r) => r.role === "Manager")).toHaveLength(1);
     // we should have two Members
     expect(startingResult.filter((r) => r.role === "Member")).toHaveLength(2);
   }
 
-  // upgrade our real user member to PI
+  // upgrade our real user member to Manager
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "subject4@elsa.net",
-    "PI"
+    "Manager"
   );
 
-  // upgrade our potential user to a PI as well
+  // upgrade our potential user to a Manager as well
   await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
-    "PI"
+    "Manager"
   );
 
   {
     const result = await releaseParticipationService.getParticipants(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey
     );
 
     expect(result).not.toBeNull();
     assert(result != null);
 
-    expect(result.filter((r) => r.role === "DataOwner")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(1);
     // the two Members have been upgraded
-    expect(result.filter((r) => r.role === "PI")).toHaveLength(3);
+    expect(result.filter((r) => r.role === "Manager")).toHaveLength(3);
     expect(result.filter((r) => r.role === "Member")).toHaveLength(0);
   }
 });
@@ -154,35 +154,35 @@ it("real users and potential users can both have their roles altered", async () 
 it("real users and potential users can be removed", async () => {
   // add a potential user with Member role
   const newMemberDbId = await releaseParticipationService.addParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     "test@example.com",
     "Member"
   );
 
   await releaseParticipationService.removeParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     allowedMemberUser.dbId
   );
   await releaseParticipationService.removeParticipant(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     newMemberDbId
   );
 
   {
     const result = await releaseParticipationService.getParticipants(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey
     );
 
     expect(result).not.toBeNull();
     assert(result != null);
 
-    expect(result.filter((r) => r.role === "DataOwner")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(1);
     // the two Members have been upgraded
-    expect(result.filter((r) => r.role === "PI")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Manager")).toHaveLength(1);
     expect(result.filter((r) => r.role === "Member")).toHaveLength(0);
   }
 });

@@ -96,68 +96,114 @@ export async function beforeEachCommon() {
     .run(edgeDbClient);
   const testReleaseKey = rQuery?.releaseKey ?? "";
 
-  let allowedDataOwnerUser: AuthenticatedUser;
-  let allowedPiUser: AuthenticatedUser;
+  let allowedAdministratorUser: AuthenticatedUser;
+  let allowedManagerUser: AuthenticatedUser;
   let allowedMemberUser: AuthenticatedUser;
   let notAllowedUser: AuthenticatedUser;
+  let superAdminUser: AuthenticatedUser;
 
-  // data owner has read/write access and complete visibility of everything
+  // Super Admin Access
   {
-    const allowedDataOwnerSubject = "https://i-am-admin.org";
-    const allowedDisplayName = "Test User Who Is Allowed Data Owner Access";
+    const superAdminSubject = "http://superAdminUser.com";
+    const superAdminDisplayName = "Test User Who Is a SuperAdmin Access";
+    const superAdminEmail = "subject0@elsa.net";
+
+    const superAdminUserInsert = await e
+      .insert(e.permission.User, {
+        subjectId: superAdminSubject,
+        displayName: superAdminDisplayName,
+        email: superAdminEmail,
+        isAllowedRefreshDatasetIndex: true,
+        isAllowedCreateRelease: true,
+        isAllowedViewAllAuditEvents: true,
+        isAllowedSyncDataAccessEvents: true,
+        isAllowedViewDatasetContent: true,
+        isAllowedViewUserManagement: true,
+        isAllowedViewAllReleases: true,
+      })
+      .run(edgeDbClient);
+
+    superAdminUser = new AuthenticatedUser({
+      id: superAdminUserInsert.id,
+      subjectId: superAdminSubject,
+      displayName: superAdminDisplayName,
+      email: superAdminEmail,
+      lastLoginDateTime: new Date(),
+      isAllowedRefreshDatasetIndex: true,
+      isAllowedCreateRelease: true,
+      isAllowedViewAllAuditEvents: true,
+      isAllowedSyncDataAccessEvents: true,
+      isAllowedViewDatasetContent: true,
+      isAllowedViewUserManagement: true,
+      isAllowedViewAllReleases: true,
+    });
+  }
+
+  // data administrator has read/write access and complete visibility of everything
+  {
+    const allowedAdministratorSubject = "https://i-am-admin.org";
+    const allowedDisplayName = "Test User Who Is Allowed Administrator Access";
     const allowedEmail = "admin@elsa.net";
 
-    const allowedDataOwnerUserInsert = await e
+    const allowedAdministratorUserInsert = await e
       .insert(e.permission.User, {
-        subjectId: allowedDataOwnerSubject,
+        subjectId: allowedAdministratorSubject,
         displayName: allowedDisplayName,
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
-          "@role": e.str("DataOwner"),
+          "@role": e.str("Administrator"),
         })),
       })
       .run(edgeDbClient);
 
-    allowedDataOwnerUser = new AuthenticatedUser({
-      id: allowedDataOwnerUserInsert.id,
-      subjectId: allowedDataOwnerSubject,
+    allowedAdministratorUser = new AuthenticatedUser({
+      id: allowedAdministratorUserInsert.id,
+      subjectId: allowedAdministratorSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: true,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
-  // PI user has limits to read/write and only visibility of released data items
+  // Manager user has limits to read/write and only visibility of released data items
   {
     const allowedPiSubject = "http://subject1.com";
-    const allowedDisplayName = "Test User Who Is Allowed PI Access";
+    const allowedDisplayName = "Test User Who Is Allowed Manager Access";
     const allowedEmail = "subject1@elsa.net";
 
-    const allowedPiUserInsert = await e
+    const allowedManagerUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedPiSubject,
         displayName: allowedDisplayName,
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
-          "@role": e.str("PI"),
+          "@role": e.str("Manager"),
         })),
       })
       .run(edgeDbClient);
 
-    allowedPiUser = new AuthenticatedUser({
-      id: allowedPiUserInsert.id,
+    allowedManagerUser = new AuthenticatedUser({
+      id: allowedManagerUserInsert.id,
       subjectId: allowedPiSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
@@ -185,9 +231,13 @@ export async function beforeEachCommon() {
       displayName: allowedMemberDisplayName,
       email: allowedMemberEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
@@ -211,17 +261,22 @@ export async function beforeEachCommon() {
       displayName: notAllowedDisplayName,
       email: notAllowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedViewAllAuditEvents: false,
+      isAllowedSyncDataAccessEvents: false,
+      isAllowedViewDatasetContent: false,
+      isAllowedViewUserManagement: false,
+      isAllowedViewAllReleases: false,
     });
   }
 
   return {
     edgeDbClient,
     testReleaseKey,
-    allowedDataOwnerUser,
-    allowedPiUser,
+    superAdminUser,
+    allowedAdministratorUser,
+    allowedManagerUser,
     allowedMemberUser,
     notAllowedUser,
   };

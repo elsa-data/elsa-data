@@ -1,5 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
@@ -41,6 +42,7 @@ import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditLogService } from "../audit-log-service";
+import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -70,6 +72,24 @@ export class S3IndexApplicationService {
     private datasetService: DatasetService,
     private readonly auditLogService: AuditLogService
   ) {}
+
+  /**
+   * Auth check
+   * @param executor the EdgeDb execution context (either client or transaction)
+   * @param user
+   * @param releaseKey
+   * @returns
+   */
+  private checkIsImportDatasetAllowed(
+    user: AuthenticatedUser,
+    datasetUri?: string
+  ): void {
+    // Check if user has the permission to view all audit events
+    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
+    if (isPermissionAllow) return;
+
+    throw new NotAuthorisedRefreshDatasetIndex();
+  }
 
   /**
    * @param s3UrlPrefix Prefix to search
@@ -683,6 +703,8 @@ export class S3IndexApplicationService {
    * @param user
    */
   async syncDbFromDatasetUri(datasetUri: string, user: AuthenticatedUser) {
+    this.checkIsImportDatasetAllowed(user, datasetUri);
+
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
     )?.id;
@@ -696,7 +718,7 @@ export class S3IndexApplicationService {
     }
 
     const s3UrlPrefix =
-      this.datasetService.getUriPrefixFromFromDatasetUri(datasetUri);
+      this.datasetService.getStorageUriPrefixFromFromDatasetUri(datasetUri);
     if (!s3UrlPrefix) {
       console.warn("No Storage Dataset URI found.");
       return;

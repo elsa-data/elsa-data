@@ -100,7 +100,7 @@ export async function createLoggedInServerWithRelease() {
       email: TEST_SUBJECT_1_EMAIL,
       releaseParticipant: e.select(e.release.Release, (r) => ({
         filter: e.op(r.releaseKey, "=", testReleaseKey),
-        "@role": e.str("DataOwner"),
+        "@role": e.str("Administrator"),
       })),
     })
     .unlessConflict((u) => ({
@@ -110,7 +110,7 @@ export async function createLoggedInServerWithRelease() {
           lastLoginDateTime: e.datetime_current(),
           releaseParticipant: e.select(e.release.Release, (r) => ({
             filter: e.op(r.releaseKey, "=", testReleaseKey),
-            "@role": e.str("DataOwner"),
+            "@role": e.str("Administrator"),
           })),
         },
       })),

@@ -106,6 +106,8 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
+    this.checkIsAllowedCreateReleases(user);
+
     const releaseKey = getNextReleaseKey(this.settings.releaseKeyPrefix);
 
     const releaseRow = await e

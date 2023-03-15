@@ -22,9 +22,9 @@ export const HomePage: React.FC = () => {
         <p className="prose">
           If you believe that you are a researcher that is involved in a data
           release controlled by this instance of Elsa Data - then first check
-          with the PI or other researchers who should be able to see the list of
-          users associated with any data release. Otherwise, you should raise an
-          issue with the overall system administrator.
+          with the Manager or other researchers who should be able to see the
+          list of users associated with any data release. Otherwise, you should
+          raise an issue with the overall system administrator.
         </p>
         <p className="prose">
           If you are neither of the above then welcome to Elsa Data but there is

@@ -5,6 +5,10 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { getReleaseInfo } from "./helpers";
 import { ReleaseRoleStrings, UsersService } from "./users-service";
 import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
+import {
+  ReleaseCreateError,
+  ReleaseViewError,
+} from "../exceptions/release-authorisation";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -24,6 +28,28 @@ export abstract class ReleaseBaseService {
   ) {}
 
   /**
+   * This is to check if user has a special create release permission granted by an admin.
+   * @param user
+   */
+  public checkIsAllowedViewReleases(user: AuthenticatedUser): void {
+    const isAllow = user.isAllowedViewAllReleases;
+    if (!isAllow) {
+      throw new ReleaseViewError();
+    }
+  }
+
+  /**
+   * This is to check if user has a special create release permission granted by an admin.
+   * @param user
+   */
+  public checkIsAllowedCreateReleases(user: AuthenticatedUser): void {
+    const isAllow = user.isAllowedCreateRelease;
+    if (!isAllow) {
+      throw new ReleaseCreateError();
+    }
+  }
+
+  /**
    * Return the minimum information we need from the database to establish the
    * base boundary level conditions for proceeding into any release service
    * functionality.
@@ -37,26 +63,21 @@ export abstract class ReleaseBaseService {
    * @param releaseKey the key for the release
    * @protected
    */
-  protected async getBoundaryInfoWithThrowOnFailure(
+  public async getBoundaryInfoWithThrowOnFailure(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
+    const isAllowed = user.isAllowedViewAllReleases;
+
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,
       releaseKey: releaseKey,
     });
 
-    if (!boundaryInfo)
-      throw new Error(
-        "Unauthenticated attempt to access release, or release does not exist"
-      );
+    const role = boundaryInfo?.role;
 
-    const role = boundaryInfo?.role?.["@role"];
-
-    if (!role)
-      throw new Error(
-        "Unauthenticated attempt to access release, or release does not exist"
-      );
+    if (!boundaryInfo || (!role && !isAllowed))
+      throw new ReleaseViewError(releaseKey);
 
     return {
       userRole: role as ReleaseRoleStrings,
@@ -93,7 +114,7 @@ export abstract class ReleaseBaseService {
 
     // the visible cases depend on what roles you have
     const visibleCasesCount =
-      userRole === "DataOwner"
+      userRole === "Administrator"
         ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
         : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
 
@@ -139,14 +160,14 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
-      // password only gets sent down to the PI
+      // password only gets sent down to the Manager
       downloadPassword:
-        userRole === "PI" ? releaseInfo.releasePassword : undefined,
-      // data owners can code/edit the release information
-      permissionEditSelections: userRole === "DataOwner",
-      permissionEditApplicationCoded: userRole === "DataOwner",
-      // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
-      permissionAccessData: userRole !== "DataOwner",
+        userRole === "Manager" ? releaseInfo.releasePassword : undefined,
+      // administrators can code/edit the release information
+      permissionEditSelections: userRole === "Administrator",
+      permissionEditApplicationCoded: userRole === "Administrator",
+      // administrators cannot however access the raw data (if they want access to their data - they need to go other ways)
+      permissionAccessData: userRole !== "Administrator",
     };
   }
 

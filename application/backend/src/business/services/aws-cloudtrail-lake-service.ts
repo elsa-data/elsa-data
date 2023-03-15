@@ -1,5 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
@@ -7,7 +8,6 @@ import {
   StartQueryCommand,
   GetQueryResultsCommand,
 } from "@aws-sdk/client-cloudtrail";
-import { UsersService } from "./users-service";
 import { AwsBaseService } from "./aws-base-service";
 import { AuditLogService } from "./audit-log-service";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -15,6 +15,7 @@ import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
 import { touchRelease } from "../db/release-queries";
+import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -49,8 +50,14 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   ) {
     super();
   }
+  private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
-  maxmindLookup: Reader<CityResponse> | undefined = undefined;
+  private checkIsAllowedSyncDataAccessEvents(user: AuthenticatedUser): void {
+    const isPermissionAllow = user.isAllowedSyncDataAccessEvents;
+    if (isPermissionAllow) return;
+
+    throw new NotAuthorisedSyncDataAccessEvents();
+  }
 
   async getEventDataStoreIdFromDatasetUris(
     datasetUris: string[]
@@ -99,6 +106,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   /**
    * CloudTrailLake Helper function
    */
+
+  /**
+   * CloudTrailLake SDK Input builder
+   * @param sqlStatement
+   * @returns
+   */
   async startCommandQueryCloudTrailLake(sqlStatement: string): Promise<string> {
     // Sending request to query
     const command = new StartQueryCommand({ QueryStatement: sqlStatement });
@@ -111,6 +124,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
   }
 
+  /**
+   * CloudTrailLake SDK query builder
+   * @param params
+   * @returns
+   */
   async getResultQueryCloudTrailLakeQuery(params: {
     queryId: string;
     eventDataStoreId: string;
@@ -143,6 +161,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return queryResult;
   }
 
+  /**
+   * Record responses from CloudTrailLake to edgeDb
+   * @param
+   */
   async recordCloudTrailLake({
     lakeResponse,
     releaseKey,
@@ -182,7 +204,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
   }
 
-  async queryAndRecord({
+  /**
+   * Query and Record from CloudTrailLake API.
+   * @param param
+   */
+  private async queryAndRecord({
     sqlQueryStatement,
     eventDataStoreId,
     releaseKey,
@@ -209,10 +235,13 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
 
   /**
-   * SQL Queries builder
+   * Creare SQL CloudTrailLake statement for PresignedUrl
    * Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
+   *
+   * @param props
+   * @returns
    */
-  createSQLQueryByReleaseKeyReqParams(
+  private createSQLQueryByReleaseKeyReqParams(
     props: CloudTrailInputQueryType & { releaseKey: string }
   ): string {
     const requestedField =
@@ -238,7 +267,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return sqlStatement;
   }
 
-  createSQLQueryByAccessPointAlias(
+  /**
+   * Create SQL CloudTrailLake statement for Access Point (AP)
+   * @param props
+   * @returns
+   */
+  private createSQLQueryByAccessPointAlias(
     props: CloudTrailInputQueryType & {
       apAlias: string;
     }
@@ -268,8 +302,21 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     return sqlStatement;
   }
 
-  // Main Fetching job
-  async fetchCloudTrailLakeLog({
+  /**
+   * This function should sync data access events from CloudTrailLake.
+   *
+   * Notes:
+   *
+   *  - Query CloudTrailLake by timestamp to save querying cost (by minimizing record scanned).
+   *    Ref: https://www.linkedin.com/pulse/querying-aws-cloudtrail-athena-vs-lake-steve-kinsman?trk=pulse-article_more-articles_related-content-card
+   *  - CloudTrailLake may take 15 minutes or more before it starts to appear.
+   *    Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html
+   *
+   * @param user
+   * @param releaseKey
+   * @param eventDataStoreIds
+   */
+  public async fetchCloudTrailLakeLog({
     user,
     releaseKey,
     eventDataStoreIds,
@@ -278,12 +325,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     releaseKey: string;
     eventDataStoreIds: string[];
   }) {
-    // CloudTrailLake record is partition by timestamp. To save querying cost (by minimizing record scanned),
-    // we would specify the timestamp interval for each query.
-    // Ref: https://www.linkedin.com/pulse/querying-aws-cloudtrail-athena-vs-lake-steve-kinsman?trk=pulse-article_more-articles_related-content-card
-
-    // Also note that from cloudtrail-lake docs, it may take 15 minutes or more before logs appear in CloudTrail lake
-    // Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-lake.html
+    this.checkIsAllowedSyncDataAccessEvents(user);
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
     const endQueryDate = new Date().toISOString();

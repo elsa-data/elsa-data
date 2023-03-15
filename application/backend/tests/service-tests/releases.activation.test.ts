@@ -18,8 +18,8 @@ let releaseActivationService: ReleaseActivationService;
 let manifestService: ManifestService;
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 beforeAll(async () => {
@@ -32,17 +32,17 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
     await beforeEachCommon());
 });
 
 it("releases can be activated", async () => {
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
+  const result = await releaseService.get(superAdminUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -54,7 +54,7 @@ it("releases can be activated", async () => {
 
 it("active releases have a manifest", async () => {
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
@@ -72,30 +72,27 @@ it("active releases have a manifest", async () => {
 
 it("releases that are active can't be activated again", async () => {
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
   await expect(
-    releaseActivationService.activateRelease(
-      allowedDataOwnerUser,
-      testReleaseKey
-    )
+    releaseActivationService.activateRelease(superAdminUser, testReleaseKey)
   ).rejects.toThrow(ReleaseActivationStateError);
 });
 
 it("releases can be deactivated", async () => {
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
   await releaseActivationService.deactivateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
+  const result = await releaseService.get(superAdminUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -104,36 +101,33 @@ it("releases can be deactivated", async () => {
 
 it("deactivation only works when activated", async () => {
   await expect(
-    releaseActivationService.deactivateRelease(
-      allowedDataOwnerUser,
-      testReleaseKey
-    )
+    releaseActivationService.deactivateRelease(superAdminUser, testReleaseKey)
   ).rejects.toThrow(ReleaseDeactivationStateError);
 });
 
 it("deactivation creates a history of activations", async () => {
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
   await releaseActivationService.deactivateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
   await releaseActivationService.deactivateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
   await releaseActivationService.activateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
   await releaseActivationService.deactivateRelease(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey
   );
 

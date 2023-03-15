@@ -18,6 +18,7 @@ import {
 import _ from "lodash";
 import { addUserAuditEventToReleaseQuery } from "../../db/audit-log-queries";
 import { getNextReleaseKey } from "../../db/release-queries";
+import { ReleaseService } from "../release-service";
 
 // we should make this a sensible stable system for the application ids out of Australian Genomics
 const AG_REDCAP_URL = "https://redcap.mcri.edu.au";
@@ -30,7 +31,7 @@ interface ApplicationUser {
   // the institution which is collected but we probably don't use
   institution?: string;
   // the role we want to assign this person in the release
-  role: "PI" | "Member";
+  role: "Manager" | "Member";
 }
 
 @injectable()
@@ -39,7 +40,8 @@ export class RedcapImportApplicationService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private releaseService: ReleaseService
   ) {}
 
   /**
@@ -51,8 +53,11 @@ export class RedcapImportApplicationService {
    * @param csvAsJson an array of converted CSV records straight out of a Redcap export
    */
   public async detectNewReleases(
+    user: AuthenticatedUser,
     csvAsJson: AustraliaGenomicsDacRedcap[]
   ): Promise<AustraliaGenomicsDacRedcap[]> {
+    this.releaseService.checkIsAllowedViewReleases(user);
+
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers FOR OUR UNIQUE AG SYSTEM
     const currentReleaseKeys = new Set<string>(
@@ -87,6 +92,7 @@ export class RedcapImportApplicationService {
     user: AuthenticatedUser,
     newApplication: AustraliaGenomicsDacRedcap
   ): Promise<string> {
+    this.releaseService.checkIsAllowedCreateReleases(user);
     // TODO: some error checking here of the incoming application data
 
     // check that a ApplicationUser data structure we have parsed in from external CSV
@@ -132,29 +138,29 @@ export class RedcapImportApplicationService {
         }
       }
 
-      let pi: ApplicationUser;
+      let manager: ApplicationUser;
 
-      // the PI details are literally a duplicate of the applicant OR
+      // the Manager details are literally a duplicate of the applicant OR
       // we grab them from elsewhere in the CSV
       if (newApplication.daf_applicant_pi_yn === "1") {
-        pi = {
+        manager = {
           email: newApplication.daf_applicant_email,
           displayName: newApplication.daf_applicant_name,
           institution: newApplication.daf_applicant_institution,
-          role: "PI",
+          role: "Manager",
         };
-        checkValidApplicationUser(pi, "applicant");
+        checkValidApplicationUser(manager, "applicant");
       } else {
-        pi = {
+        manager = {
           email: newApplication.daf_pi_email,
           displayName: newApplication.daf_pi_name,
           institution:
             newApplication.daf_pi_institution_same === "1"
               ? newApplication.daf_applicant_institution
               : newApplication.daf_pi_institution,
-          role: "PI",
+          role: "Manager",
         };
-        checkValidApplicationUser(pi, "pi");
+        checkValidApplicationUser(manager, "manager");
       }
 
       const otherResearchers: ApplicationUser[] = [];
@@ -200,7 +206,7 @@ export class RedcapImportApplicationService {
       ];
 
       roleTable.push(
-        `| ${pi.displayName} | ${pi.email} | ${pi.institution} | ${pi.role} |`
+        `| ${manager.displayName} | ${manager.email} | ${manager.institution} | ${manager.role} |`
       );
       for (const o of otherResearchers) {
         roleTable.push(
@@ -365,7 +371,7 @@ ${roleTable.join("\n")}
         }
       };
 
-      await insertPotentialOrReal(pi, pi.role);
+      await insertPotentialOrReal(manager, manager.role);
 
       for (const r of otherResearchers) {
         await insertPotentialOrReal(r, r.role);
@@ -378,7 +384,7 @@ ${roleTable.join("\n")}
     await this.usersService.registerRoleInRelease(
       user,
       newRelease.id,
-      "DataOwner"
+      "Administrator"
     );
 
     return newRelease.id;

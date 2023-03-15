@@ -33,8 +33,8 @@ let edgeDbClient: Client;
 let releaseSelectionService: ReleaseSelectionService;
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 const DEFAULT_LIMIT = 10000;
@@ -48,16 +48,16 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
+  ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
     await beforeEachCommon());
 });
 
 /**
  *
  */
-it("get all case level information from a release as a data owner", async () => {
+it("get all case level information from a release as a administrator", async () => {
   const pagedResult = await releaseSelectionService.getCases(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET
@@ -67,7 +67,7 @@ it("get all case level information from a release as a data owner", async () => 
   assert(pagedResult != null);
   assert(pagedResult.data != null);
 
-  // as the data owner we will see everything
+  // as the administrator we will see everything
   // 10 cases from 10g and 2 cases from 10f
   expect(pagedResult.data.length).toBe(14);
 
@@ -95,9 +95,9 @@ it("get all case level information from a release as a data owner", async () => 
 /**
  *
  */
-it("get limited case level information from a release as a PI", async () => {
+it("get limited case level information from a release as a Manager", async () => {
   const pagedResult = await releaseSelectionService.getCases(
-    allowedPiUser,
+    allowedManagerUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET
@@ -107,10 +107,10 @@ it("get limited case level information from a release as a PI", async () => {
   assert(pagedResult != null);
   assert(pagedResult.data != null);
 
-  // as a PI we will only see cases that have _something_ selected in them
+  // as a Manager we will only see cases that have _something_ selected in them
   expect(pagedResult.data.length).toBe(6);
 
-  // because the PI has no concept of 'unselected' item - every node present is selected
+  // because the Manager has no concept of 'unselected' item - every node present is selected
   expect(findCase(pagedResult.data, SIMPSONS_CASE)?.nodeStatus).toBe(
     "selected"
   );
@@ -139,7 +139,7 @@ it("get limited case level information from a release as a PI", async () => {
  */
 it("get patient/specimen level data fields", async () => {
   const pagedResult = await releaseSelectionService.getCases(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET
@@ -165,7 +165,7 @@ it("get patient/specimen level data fields", async () => {
 it("node status changes as leaves are selected and unselected", async () => {
   {
     const initialResult = await releaseSelectionService.getCases(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       DEFAULT_LIMIT,
       DEFAULT_OFFSET
@@ -201,7 +201,7 @@ it("node status changes as leaves are selected and unselected", async () => {
   }
 
   await releaseSelectionService.setSelected(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     await findDatabaseSpecimenIds(edgeDbClient, [
       "HG00097",
@@ -212,7 +212,7 @@ it("node status changes as leaves are selected and unselected", async () => {
 
   {
     const afterSetResult = await releaseSelectionService.getCases(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       DEFAULT_LIMIT,
       DEFAULT_OFFSET
@@ -250,14 +250,14 @@ it("node status changes as leaves are selected and unselected", async () => {
   }
 
   await releaseSelectionService.setUnselected(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     await findDatabaseSpecimenIds(edgeDbClient, [BART_SPECIMEN, HOMER_SPECIMEN])
   );
 
   {
     const afterUnsetResult = await releaseSelectionService.getCases(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       DEFAULT_LIMIT,
       DEFAULT_OFFSET
@@ -286,7 +286,7 @@ it("node status changes as leaves are selected and unselected", async () => {
 it("(un-)selects all when setSelectedStatus is passed an empty list", async () => {
   const allSpecimens_ = async (): Promise<ReleaseSpecimenType[]> => {
     const result = await releaseSelectionService.getCases(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       DEFAULT_LIMIT,
       DEFAULT_OFFSET
@@ -302,17 +302,13 @@ it("(un-)selects all when setSelectedStatus is passed an empty list", async () =
     return specimens;
   };
 
-  await releaseSelectionService.setSelected(
-    allowedDataOwnerUser,
-    testReleaseKey,
-    []
-  );
+  await releaseSelectionService.setSelected(superAdminUser, testReleaseKey, []);
   expect(
     (await allSpecimens_()).every((s) => s.nodeStatus === "selected")
   ).toBe(true);
 
   await releaseSelectionService.setUnselected(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     []
   );
@@ -324,7 +320,7 @@ it("(un-)selects all when setSelectedStatus is passed an empty list", async () =
 it("pass in specimen ids that are not valid", async () => {
   await expect(async () => {
     await releaseSelectionService.setSelected(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       // whilst this looks vaguely like an edgedb id it will never match
       ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
@@ -335,7 +331,7 @@ it("pass in specimen ids that are not valid", async () => {
   // specimen id belongs to a dataset not in our release
   await expect(async () => {
     await releaseSelectionService.setSelected(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       await findDatabaseSpecimenIds(edgeDbClient, [TN_1_SPECIMEN_TUMOUR])
     );
@@ -354,7 +350,7 @@ it("pass in specimen ids that are not valid", async () => {
     page += 1;
 
     result = await releaseSelectionService.getCases(
-      allowedDataOwnerUser,
+      superAdminUser,
       testReleaseKey,
       limit,
       (page - 1) * limit
@@ -375,7 +371,7 @@ it("pass in specimen ids that are not valid", async () => {
 
 it("test identifier searching with case level match", async () => {
   const result = await releaseSelectionService.getCases(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
@@ -394,7 +390,7 @@ it("test identifier searching with case level match", async () => {
 
 it("test identifier searching with patient level match", async () => {
   const result = await releaseSelectionService.getCases(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
@@ -411,7 +407,7 @@ it("test identifier searching with patient level match", async () => {
 
 it("test identifier searching with specimen level match", async () => {
   const result = await releaseSelectionService.getCases(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
@@ -428,7 +424,7 @@ it("test identifier searching with specimen level match", async () => {
 
 it("test identifier searching with specimen level partial match (not supported)", async () => {
   const result = await releaseSelectionService.getCases(
-    allowedDataOwnerUser,
+    superAdminUser,
     testReleaseKey,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,

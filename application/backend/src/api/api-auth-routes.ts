@@ -221,10 +221,11 @@ export const apiAuthRoutes = async (
     addTestUserRoute("/login-bypass-1", subject1, [
       ALLOWED_CREATE_NEW_RELEASES,
     ]);
-    // a test user that is a PI in some releases
+    // a test user that is a Manager in some releases
     addTestUserRoute("/login-bypass-2", subject2, []);
     // a test user that is a super admin equivalent
     addTestUserRoute("/login-bypass-3", subject3, [
+      ALLOWED_CREATE_NEW_RELEASES,
       ALLOWED_CHANGE_ADMINS,
       ALLOWED_VIEW_AUDIT_EVENTS,
     ]);

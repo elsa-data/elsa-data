@@ -29,7 +29,7 @@ export async function beforeEachCommon() {
   const allowedPiSubject = "http://subject1.com";
   const allowedPiEmail = "admin-user@elsa.net";
 
-  const allowedPiUserInsert = await e
+  const allowedManagerUserInsert = await e
     .insert(e.permission.User, {
       subjectId: allowedPiSubject,
       displayName: "Test User Who Is An Admin",
@@ -38,13 +38,32 @@ export async function beforeEachCommon() {
     .run(edgeDbClient);
 
   const adminUser = new AuthenticatedUser({
-    id: allowedPiUserInsert.id,
+    id: allowedManagerUserInsert.id,
     subjectId: allowedPiSubject,
-    displayName: "Allowed PI",
+    displayName: "Allowed Manager",
     email: allowedPiEmail,
-    allowedChangeReleaseDataOwner: true,
-    allowedCreateRelease: true,
-    allowedImportDataset: true,
+    isAllowedRefreshDatasetIndex: true,
+    isAllowedCreateRelease: true,
+    isAllowedViewAllAuditEvents: true,
+    isAllowedSyncDataAccessEvents: true,
+    isAllowedViewDatasetContent: true,
+    isAllowedViewUserManagement: true,
+    isAllowedViewAllReleases: true,
+    lastLoginDateTime: new Date(),
+  });
+
+  const notAllowedUser = new AuthenticatedUser({
+    id: allowedManagerUserInsert.id,
+    subjectId: "http://subject-not-allowed.com",
+    displayName: "not-allowed Member",
+    email: "not-allow@emai.com",
+    isAllowedRefreshDatasetIndex: false,
+    isAllowedCreateRelease: false,
+    isAllowedViewAllAuditEvents: false,
+    isAllowedSyncDataAccessEvents: false,
+    isAllowedViewDatasetContent: false,
+    isAllowedViewUserManagement: false,
+    isAllowedViewAllReleases: false,
     lastLoginDateTime: new Date(),
   });
 
@@ -53,5 +72,6 @@ export async function beforeEachCommon() {
     tenfDatasetId: tenf.id,
     tengDatasetId2: teng.id,
     adminUser,
+    notAllowedUser,
   };
 }

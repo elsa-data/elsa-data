@@ -104,8 +104,8 @@ export function makeTripleCodeArray(
  * @param subjectId
  * @param displayName
  * @param email
- * @param releasesAsDataOwner
- * @param releasesAsPI
+ * @param releasesAsAdministrator
+ * @param releasesAsManager
  * @param releasesAsMember
  * @param lastLogin if present, also sets the last login to the given date
  */
@@ -113,21 +113,30 @@ export async function createTestUser(
   subjectId: string,
   displayName: string,
   email: string,
-  releasesAsDataOwner: string[],
-  releasesAsPI: string[],
+  releasesAsAdministrator: string[],
+  releasesAsManager: string[],
   releasesAsMember: string[],
-  lastLogin?: Date
+  isReleaseAdmin: boolean = false,
+  isSuperAdmin: boolean = false
 ) {
+  const isAllowedPermission = isSuperAdmin;
+
   // create the user
   const newUser = await e
     .insert(e.permission.User, {
       subjectId: subjectId,
       displayName: displayName,
       email: email,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
-      allowedImportDataset: false,
-      lastLoginDateTime: lastLogin,
+
+      isAllowedViewAllAuditEvents: isAllowedPermission,
+      isAllowedViewDatasetContent: isAllowedPermission,
+      isAllowedViewUserManagement: isAllowedPermission,
+
+      isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,
+      isAllowedRefreshDatasetIndex: isAllowedPermission,
+      isAllowedSyncDataAccessEvents: isAllowedPermission,
+      isAllowedViewAllReleases: isAllowedPermission,
+
       userAuditEvent: e.insert(e.audit.UserAuditEvent, {
         whoId: subjectId,
         whoDisplayName: displayName,
@@ -142,7 +151,7 @@ export async function createTestUser(
   // a helper to update the role this users has with a release
   const insertRole = async (
     releaseUuid: string,
-    role: "DataOwner" | "PI" | "Member"
+    role: "Administrator" | "Manager" | "Member"
   ) => {
     await e
       .update(e.permission.User, (user) => ({
@@ -159,12 +168,12 @@ export async function createTestUser(
       .run(edgeDbClient);
   };
 
-  for (const dataOwnerReleaseKey of releasesAsDataOwner) {
-    await insertRole(dataOwnerReleaseKey, "DataOwner");
+  for (const dataOwnerReleaseKey of releasesAsAdministrator) {
+    await insertRole(dataOwnerReleaseKey, "Administrator");
   }
 
-  for (const piReleaseKey of releasesAsPI) {
-    await insertRole(piReleaseKey, "PI");
+  for (const piReleaseKey of releasesAsManager) {
+    await insertRole(piReleaseKey, "Manager");
   }
 
   for (const memberReleaseKey of releasesAsMember) {

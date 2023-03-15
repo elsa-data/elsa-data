@@ -69,8 +69,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
             {row.displayName}
           </td>
           <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-            {row.allowedChangeReleaseDataOwner} {row.allowedCreateRelease}{" "}
-            {row.allowedImportDataset}
+            {row.isAllowedCreateRelease} {row.isAllowedRefreshDatasetIndex}
           </td>
           <td
             className={classNames(

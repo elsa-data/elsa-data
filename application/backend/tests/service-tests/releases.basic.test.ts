@@ -9,8 +9,8 @@ let edgeDbClient: Client;
 let releaseService: ReleaseService;
 let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
 beforeAll(async () => {
@@ -21,15 +21,19 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
-    await beforeEachCommon());
+  ({
+    testReleaseKey,
+    allowedAdministratorUser,
+    allowedManagerUser,
+    notAllowedUser,
+  } = await beforeEachCommon());
 });
 
 /**
  *
  */
 it("allowed users can get release data", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseKey);
+  const result = await releaseService.get(allowedManagerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -44,8 +48,8 @@ it("not allowed users cannot get release data", async () => {
   }).rejects.toThrow(Error);
 });
 
-it("basic release data is present for PI", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseKey);
+it("basic release data is present for Manager", async () => {
+  const result = await releaseService.get(allowedManagerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -55,12 +59,15 @@ it("basic release data is present for PI", async () => {
   expect(result.applicationDacDetails).toBe(
     "So this is all that we have brought over not coded"
   );
-  // as the PI we will only see cases already selected
+  // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(6);
 });
 
-it("basic release data is present for data owner", async () => {
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseKey);
+it("basic release data is present for release administrator", async () => {
+  const result = await releaseService.get(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -70,6 +77,6 @@ it("basic release data is present for data owner", async () => {
   expect(result.applicationDacDetails).toBe(
     "So this is all that we have brought over not coded"
   );
-  // as the PI we will only see cases already selected
+  // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(14);
 });
