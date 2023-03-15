@@ -6,8 +6,8 @@ test("homepage has title and links to intro page", async ({ page }) => {
   // expect the title
   await expect(page).toHaveTitle(/Elsa Data/);
 
-  // because we are not logged in we get some text about showing releases
-  await expect(page.getByText("shows any releases")).toBeVisible();
+  // because we are not logged in we get some text to show Releases
+  await expect(page.getByRole("heading", { name: "Releases" })).toBeVisible();
 
   // navigate to a different page
   const dacLink = page.getByRole("link", { name: /DAC/ });
