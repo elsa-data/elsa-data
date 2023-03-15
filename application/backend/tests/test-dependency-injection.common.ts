@@ -9,6 +9,7 @@ import { Logger, pino } from "pino";
 import { IPresignedUrlProvider } from "../src/business/services/presigned-urls-service";
 import { AwsPresignedUrlsService } from "../src/business/services/aws-presigned-urls-service";
 import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-urls-service";
+import { CloudflarePresignedUrlsService } from "../src/business/services/cloudflare-presigned-urls-service";
 
 export async function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
@@ -49,6 +50,10 @@ export async function registerTypes() {
 
   testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
     useClass: GcpPresignedUrlsService,
+  });
+
+  testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: CloudflarePresignedUrlsService,
   });
 
   return testContainer;
