@@ -13,7 +13,6 @@ import {
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
 } from "../exceptions/release-activation";
-import { createReleaseManifest } from "./manifests/_manifest-helper";
 import etag from "etag";
 import { Logger } from "pino";
 import { ManifestService } from "./manifests/manifest-service";
@@ -70,12 +69,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
 
         const m = await this.manifestService.createMasterManifest(
           tx,
-          releaseKey,
-          releaseInfo.isAllowedReadData,
-          releaseInfo.isAllowedVariantData,
-          releaseInfo.isAllowedS3Data,
-          releaseInfo.isAllowedGSData,
-          releaseInfo.isAllowedR2Data
+          releaseKey
         );
 
         // once this is working well we can probably drop this to debug

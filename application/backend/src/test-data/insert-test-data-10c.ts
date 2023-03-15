@@ -22,15 +22,7 @@ export const TN_1_SPECIMEN_TUMOUR = "T908765";
 export async function insert10C() {
   const makeArtifacts = async (specimenId: string) => {
     return await createArtifacts(
-      createFile(
-        `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
-        56456456,
-        "NOTREAL"
-      ),
-      createFile(
-        `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-        56546
-      ),
+      [],
       createFile(
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.bam`,
         123534530,
@@ -41,7 +33,15 @@ export async function insert10C() {
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.bam.bai`,
         3424
       ),
-      [],
+      createFile(
+        `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+        56456456,
+        "NOTREAL"
+      ),
+      createFile(
+        `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+        56546
+      ),
       []
     );
   };

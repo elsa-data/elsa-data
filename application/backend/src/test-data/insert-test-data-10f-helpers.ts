@@ -68,11 +68,11 @@ export async function makeTrio(
           externalIdentifiers: makeDictionaryIdentifierArray(probandSpecimenId),
           consent: consentsAsInsertOrUndefined(probandSpecimenConsents),
           artifacts: await createArtifacts(
-            probandVcf[0],
-            probandVcf[1],
+            [],
             probandBam[0],
             probandBam[1],
-            [],
+            probandVcf[0],
+            probandVcf[1],
             artifactSampleIds
           ),
         }),
@@ -85,11 +85,11 @@ export async function makeTrio(
           externalIdentifiers: makeDictionaryIdentifierArray(fatherSpecimenId),
           consent: consentsAsInsertOrUndefined(fatherSpecimenConsents),
           artifacts: await createArtifacts(
-            fatherVcf[0],
-            fatherVcf[1],
+            [],
             fatherBam[0],
             fatherBam[1],
-            [],
+            fatherVcf[0],
+            fatherVcf[1],
             artifactSampleIds
           ),
         }),
@@ -102,11 +102,11 @@ export async function makeTrio(
           externalIdentifiers: makeDictionaryIdentifierArray(motherSpecimenId),
           consent: consentsAsInsertOrUndefined(motherSpecimenConsents),
           artifacts: await createArtifacts(
-            motherVcf[0],
-            motherVcf[1],
+            [],
             motherBam[0],
             motherBam[1],
-            [],
+            motherVcf[0],
+            motherVcf[1],
             artifactSampleIds
           ),
         }),

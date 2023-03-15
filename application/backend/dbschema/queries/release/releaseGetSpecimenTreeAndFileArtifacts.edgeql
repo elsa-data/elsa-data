@@ -9,17 +9,36 @@
 # so is more comprehensive rather than high performance
 
 with
+  # some basic fields from the db for the given release
+  release := (select release::Release {
+    isAllowedReadData,
+    isAllowedVariantData,
+    isAllowedS3Data,
+    isAllowedGSData,
+    isAllowedR2Data
+  }
+  filter .releaseKey = <str>$releaseKey),
+
   # we are only interested in those specimens selected for the given release
-  selected := (select release::Release
-               filter .releaseKey = <str>$releaseKey).selectedSpecimens
+  selected := release.selectedSpecimens
 
 select {
+  # a useful snapshot of the point in time database state of some fields that go into
+  # our manifest construction
+
+  releaseDbId := release.id,
+  releaseKey := <str>$releaseKey,
+  releaseIsAllowedReadData := release.isAllowedReadData,
+  releaseIsAllowedVariantData:= release.isAllowedVariantData,
+  releaseIsAllowedS3Data:= release.isAllowedS3Data,
+  releaseIsAllowedGSData:= release.isAllowedGSData,
+  releaseIsAllowedR2Data := release.isAllowedR2Data,
+
   # the tree is an output representation with all the dataset level
   # fields (sexAtBirth etc) and retaining the hierarchical nature of the data
 
   # the tree is filtered such that cases/patients nodes are only returned
   # where there are leaves (i.e. specimens) present
-
   caseTree := (select dataset::DatasetCase {
               externalIdentifiers,
               dataset: {

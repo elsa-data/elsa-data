@@ -1,7 +1,7 @@
 import { createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import _ from "lodash";
-import { storage } from "../../dbschema/interfaces";
+import { lab, storage } from "../../dbschema/interfaces";
 
 const edgeDbClient = createClient();
 
@@ -302,19 +302,19 @@ export interface File {
  * Insert artifacts where each has their own pseudo run and analyses
  * and then return a e.set of all of the things inserted.
  *
- * @param vcf
- * @param vcfIndex
+ * @param fastqs
  * @param bam
  * @param bamIndex
- * @param fastqs
- * @param vcfSampleIds
+ * @param vcf
+ * @param vcfIndex
+ * @param vcfSampleIds?
  */
 export async function createArtifacts(
-  vcf: File,
-  vcfIndex: File,
-  bam: File,
-  bamIndex: File,
   fastqs: File[][],
+  bam?: File,
+  bamIndex?: File,
+  vcf?: File,
+  vcfIndex?: File,
   vcfSampleIds?: string[]
 ) {
   const fastqPair = fastqs.map((fq) =>
@@ -343,48 +343,59 @@ export async function createArtifacts(
     filter: e.op(e.uuid(r1.id), "=", ab["<artifactsProduced[is lab::Run]"].id),
   }));
 
+  const a: any = [];
+
+  if (vcf && vcfIndex) {
+    a.push(
+      e.insert(e.lab.ArtifactVcf, {
+        sampleIds: vcfSampleIds,
+        vcfFile: e
+          .insert(e.storage.File, {
+            url: vcf.url,
+            size: vcf.size,
+            checksums: vcf.checksums,
+          })
+          .unlessConflict((file) => ({
+            on: file.url,
+            else: file,
+          })),
+        tbiFile: e
+          .insert(e.storage.File, {
+            url: vcfIndex.url,
+            size: vcfIndex.size,
+            checksums: vcfIndex.checksums,
+          })
+          .unlessConflict((file) => ({
+            on: file.url,
+            else: file,
+          })),
+      })
+    );
+  }
+
+  if (bam && bamIndex) {
+    a.push(
+      e.insert(e.lab.ArtifactBam, {
+        bamFile: e.insert(e.storage.File, {
+          url: bam.url,
+          size: bam.size,
+          checksums: bam.checksums,
+        }),
+        baiFile: e.insert(e.storage.File, {
+          url: bamIndex.url,
+          size: bamIndex.size,
+          checksums: bamIndex.checksums,
+        }),
+      })
+    );
+  }
+
   // we insert all the bams as owned by a pseudo-analysis
   const a1 = await e
     .insert(e.lab.Analyses, {
       pipeline: "A pipeline",
       input: r1select,
-      output: e.set(
-        e.insert(e.lab.ArtifactVcf, {
-          sampleIds: vcfSampleIds,
-          vcfFile: e
-            .insert(e.storage.File, {
-              url: vcf.url,
-              size: vcf.size,
-              checksums: vcf.checksums,
-            })
-            .unlessConflict((file) => ({
-              on: file.url,
-              else: file,
-            })),
-          tbiFile: e
-            .insert(e.storage.File, {
-              url: vcfIndex.url,
-              size: vcfIndex.size,
-              checksums: vcfIndex.checksums,
-            })
-            .unlessConflict((file) => ({
-              on: file.url,
-              else: file,
-            })),
-        }),
-        e.insert(e.lab.ArtifactBam, {
-          bamFile: e.insert(e.storage.File, {
-            url: bam.url,
-            size: bam.size,
-            checksums: bam.checksums,
-          }),
-          baiFile: e.insert(e.storage.File, {
-            url: bamIndex.url,
-            size: bamIndex.size,
-            checksums: bamIndex.checksums,
-          }),
-        })
-      ),
+      output: e.set(...a),
     })
     .run(edgeDbClient);
 

@@ -66,16 +66,7 @@ export async function insertGs() {
                 })
               : undefined,
           artifacts: await createArtifacts(
-            createFile(
-              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
-              vcfSize,
-              vcfEtag,
-              vcfMd5
-            ),
-            createFile(
-              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-              0
-            ),
+            [],
             createFile(
               `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
               bamSize,
@@ -86,7 +77,16 @@ export async function insertGs() {
               `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
               0
             ),
-            [],
+            createFile(
+              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+              vcfSize,
+              vcfEtag,
+              vcfMd5
+            ),
+            createFile(
+              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+              0
+            ),
             []
           ),
         }),
