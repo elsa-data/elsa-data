@@ -19,7 +19,7 @@ export const UserSummarySchema = Type.Object({
   lastLogin: TypeDate,
 
   isAllowedCreateRelease: Type.Boolean(),
-  isAllowedImportDataset: Type.Boolean(),
+  isAllowedRefreshDatasetIndex: Type.Boolean(),
   isAllowedViewAllAuditEvents: Type.Boolean(),
 });
 

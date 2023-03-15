@@ -3,8 +3,8 @@ import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { RemsService } from "../../src/business/services/rems-service";
 import {
-  ReleaseCreateNewError,
-  ReleaseViewAccessError,
+  ReleaseCreateError,
+  ReleaseViewError,
 } from "../../src/business/exceptions/release-authorisation";
 
 let remsService: RemsService;
@@ -44,11 +44,11 @@ xit("sync", async () => {
 it("Test non-allowed user to detect new release.", async () => {
   await expect(async () => {
     const newReleases = await remsService.detectNewReleases(notAllowedUser);
-  }).rejects.toThrow(ReleaseViewAccessError);
+  }).rejects.toThrow(ReleaseViewError);
 });
 
 it("Test non-allowed user to create new release.", async () => {
   await expect(async () => {
     const newReleases = await remsService.startNewRelease(notAllowedUser, 1);
-  }).rejects.toThrow(ReleaseCreateNewError);
+  }).rejects.toThrow(ReleaseCreateError);
 });

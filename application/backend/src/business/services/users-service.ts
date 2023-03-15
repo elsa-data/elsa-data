@@ -71,7 +71,7 @@ export class UsersService {
         subjectIdentifier: a.subjectId,
         displayName: a.displayName,
         lastLogin: a.lastLoginDateTime,
-        isAllowedImportDataset: a.isAllowedImportDataset,
+        isAllowedRefreshDatasetIndex: a.isAllowedRefreshDatasetIndex,
         isAllowedCreateRelease: a.isAllowedCreateRelease,
         isAllowedViewAllAuditEvents: a.isAllowedViewAllAuditEvents,
       })),
@@ -106,7 +106,7 @@ export class UsersService {
    */
   public async changePermission(
     user: AuthenticatedUser,
-    permission: "isAllowedCreateRelease" | "isAllowedImportDataset",
+    permission: "isAllowedCreateRelease" | "isAllowedRefreshDatasetIndex",
     value: boolean
   ): Promise<void> {
     const permissionDescription = capitalize(lowerCase(permission));

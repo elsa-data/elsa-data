@@ -46,11 +46,15 @@ export class DatasetService {
   ): void {
     // Allowed to view dataset if allowed to createRelease, importDataset, viewReleases
     const isCreateReleaseAllow = user.isAllowedCreateRelease;
-    const isAllowedImportDataset = user.isAllowedImportDataset;
+    const isAllowedRefreshDatasetIndex = user.isAllowedRefreshDatasetIndex;
     const isViewReleaseAllow = user.isAllowedViewDatasetContent;
 
     console.log("user", user);
-    if (isCreateReleaseAllow || isAllowedImportDataset || isViewReleaseAllow) {
+    if (
+      isCreateReleaseAllow ||
+      isAllowedRefreshDatasetIndex ||
+      isViewReleaseAllow
+    ) {
       return;
     }
 

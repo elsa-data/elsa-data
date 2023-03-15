@@ -11,3 +11,15 @@ export class NotAuthorisedViewDataset extends Base7807Error {
     );
   }
 }
+
+export class NotAuthorisedRefreshDatasetIndex extends Base7807Error {
+  constructor(datasetUri?: string) {
+    super(
+      "Unauthorised attempt to refresh dataset index, or dataset does not exist",
+      403,
+      `User is not authorise to refresh dataset index${
+        datasetUri ? ` for the datasetUri of '${datasetUri}'` : ""
+      }.`
+    );
+  }
+}

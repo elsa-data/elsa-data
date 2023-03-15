@@ -14,7 +14,7 @@ export class AuthenticatedUser {
       isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
       isNil(this.dbUser.isAllowedSyncDataAccessEvents) ||
-      isNil(this.dbUser.isAllowedImportDataset) ||
+      isNil(this.dbUser.isAllowedRefreshDatasetIndex) ||
       isNil(this.dbUser.isAllowedCreateRelease) ||
       isNil(this.dbUser.isAllowedViewAllAuditEvents) ||
       isNil(this.dbUser.isAllowedViewDatasetContent) ||
@@ -73,8 +73,8 @@ export class AuthenticatedUser {
   public get isAllowedCreateRelease(): boolean {
     return this.dbUser!.isAllowedCreateRelease;
   }
-  public get isAllowedImportDataset(): boolean {
-    return this.dbUser!.isAllowedImportDataset;
+  public get isAllowedRefreshDatasetIndex(): boolean {
+    return this.dbUser!.isAllowedRefreshDatasetIndex;
   }
   public get isAllowedSyncDataAccessEvents(): boolean {
     return this.dbUser!.isAllowedSyncDataAccessEvents;

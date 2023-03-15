@@ -133,7 +133,7 @@ export async function createTestUser(
       isAllowedViewUserManagement: isAllowedPermission,
 
       isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,
-      isAllowedImportDataset: isAllowedPermission,
+      isAllowedRefreshDatasetIndex: isAllowedPermission,
       isAllowedSyncDataAccessEvents: isAllowedPermission,
       isAllowedViewAllReleases: isAllowedPermission,
 

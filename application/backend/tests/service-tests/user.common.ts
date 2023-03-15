@@ -32,7 +32,7 @@ export async function beforeEachCommon() {
     subjectId: allowedPiSubject,
     displayName: allowedPiDisplayName,
     email: allowedPiEmail,
-    isAllowedImportDataset: true,
+    isAllowedRefreshDatasetIndex: true,
     isAllowedCreateRelease: true,
     isAllowedViewAllAuditEvents: true,
     isAllowedSyncDataAccessEvents: true,

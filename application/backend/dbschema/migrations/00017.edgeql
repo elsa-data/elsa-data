@@ -1,4 +1,4 @@
-CREATE MIGRATION m1rrffydkcwbgzt4dju5owohkb7o756rphnk5hsy6jjspk6v4q6nea
+CREATE MIGRATION m1sdljd6avv3kjavniekruzju4g5y3u52j3afxt75r4lvhy3ykwxnq
     ONTO m1ybtzphw6gvt3f4ykoa2egpxb7qycqs7wcpmatc2l7xctomnadjba
 {
   ALTER TYPE permission::PotentialUser {
@@ -36,7 +36,7 @@ CREATE MIGRATION m1rrffydkcwbgzt4dju5owohkb7o756rphnk5hsy6jjspk6v4q6nea
   };
   ALTER TYPE permission::User {
       ALTER PROPERTY allowedCreateRelease {
-          RENAME TO isAllowedImportDataset;
+          RENAME TO isAllowedRefreshDatasetIndex;
       };
   };
   ALTER TYPE permission::User {

@@ -59,7 +59,7 @@ module permission {
             default := false;
         }
 
-        required property isAllowedImportDataset -> bool {
+        required property isAllowedRefreshDatasetIndex -> bool {
            default := false;
         };
 

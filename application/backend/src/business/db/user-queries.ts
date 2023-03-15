@@ -73,7 +73,7 @@ export const pageableAllUserQuery = e.params(
         // we want those with any admin like permissions to appear first
         {
           expression: e.op(
-            u.isAllowedImportDataset,
+            u.isAllowedRefreshDatasetIndex,
             "or",
             u.isAllowedCreateRelease
           ),

@@ -42,7 +42,7 @@ import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditLogService } from "../audit-log-service";
-import { NotAuthorisedImportAGDatasets } from "../../exceptions/ag";
+import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -85,10 +85,10 @@ export class S3IndexApplicationService {
     datasetUri?: string
   ): void {
     // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedImportDataset;
+    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
     if (isPermissionAllow) return;
 
-    throw new NotAuthorisedImportAGDatasets();
+    throw new NotAuthorisedRefreshDatasetIndex();
   }
 
   /**

@@ -6,8 +6,8 @@ import { getReleaseInfo } from "./helpers";
 import { ReleaseRoleStrings, UsersService } from "./users-service";
 import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
 import {
-  ReleaseCreateNewError,
-  ReleaseViewAccessError,
+  ReleaseCreateError,
+  ReleaseViewError,
 } from "../exceptions/release-authorisation";
 
 // an internal string set that tells the service which generic field to alter
@@ -34,7 +34,7 @@ export abstract class ReleaseBaseService {
   public checkIsAllowedViewReleases(user: AuthenticatedUser): void {
     const isAllow = user.isAllowedViewAllReleases;
     if (!isAllow) {
-      throw new ReleaseViewAccessError();
+      throw new ReleaseViewError();
     }
   }
 
@@ -45,7 +45,7 @@ export abstract class ReleaseBaseService {
   public checkIsAllowedCreateReleases(user: AuthenticatedUser): void {
     const isAllow = user.isAllowedCreateRelease;
     if (!isAllow) {
-      throw new ReleaseCreateNewError();
+      throw new ReleaseCreateError();
     }
   }
 
@@ -77,7 +77,7 @@ export abstract class ReleaseBaseService {
     const role = boundaryInfo?.role;
 
     if (!boundaryInfo || (!role && !isAllowed))
-      throw new ReleaseViewAccessError(releaseKey);
+      throw new ReleaseViewError(releaseKey);
 
     return {
       userRole: role as ReleaseRoleStrings,
