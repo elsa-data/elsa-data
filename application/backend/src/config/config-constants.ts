@@ -95,6 +95,22 @@ export const configDefinition = {
       env: `${env_prefix}AWS_TEMP_BUCKET`,
     },
   },
+  cloudflare: {
+    signingAccessKeyId: {
+      doc: "A CloudFlare R2 access key id for a user with read permission of files that can be shared via signed URLs",
+      format: "*",
+      sensitive: false,
+      default: undefined,
+      env: `${env_prefix}AWS_SIGNING_ACCESS_KEY_ID`,
+    },
+    signingSecretAccessKey: {
+      doc: "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs",
+      format: "*",
+      sensitive: true,
+      default: undefined,
+      env: `${env_prefix}AWS_SIGNING_SECRET_ACCESS_KEY`,
+    },
+  },
   // the rate limiting options are basically a pass through to the Fastify rate limit plugin
   // for the moment we have picked only a subset of the full configuration items
   rateLimit: {

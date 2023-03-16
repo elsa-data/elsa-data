@@ -35,9 +35,18 @@ export type ElsaSettings = {
 
   logger: LoggerOptions;
 
-  awsSigningAccessKeyId: string;
-  awsSigningSecretAccessKey: string;
-  awsTempBucket: string;
+  // optional signing details to allow sharing of objects in AWS
+  aws?: {
+    signingAccessKeyId: string;
+    signingSecretAccessKey: string;
+    tempBucket: string;
+  };
+
+  // optional signing details to allow sharing of objects in CloudFlare R2
+  cloudflare?: {
+    signingAccessKeyId: string;
+    signingSecretAccessKey: string;
+  };
 
   // Read the README.md for GCP-related configuration
 
