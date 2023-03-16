@@ -76,7 +76,7 @@ export class App {
         contentSecurityPolicy: {
           directives: {
             // TODO: derive form action hosts from configuration of OIDC
-            formAction: ["'self'", "*.cilogon.org", "cilogon.org"],
+            formAction: ["'self'", "https:", "*.cilogon.org", "cilogon.org"],
             // our front end needs to be able to make fetches from ontoserver
             connectSrc: ["'self'", new URL(this.settings.ontoFhirUrl).host],
           },
