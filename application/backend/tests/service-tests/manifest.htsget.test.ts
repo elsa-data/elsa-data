@@ -9,7 +9,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 
 let edgeDbClient: Client;
 let testReleaseKey: string;
-let allowedDataOwnerUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
 let manifestService: ManifestService;
 let releaseService: ReleaseService;
 
@@ -22,35 +22,35 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedDataOwnerUser } = await beforeEachCommon());
+  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon());
 
   // assert a release state so that everything is included for the moment
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedS3Data",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
     true
@@ -135,7 +135,7 @@ it("test multiple blank identifiers converts to an array", async () => {
 it("test read data needs to be specified to be included", async () => {
   // say that we don't want reads
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
     false
@@ -156,7 +156,7 @@ it("test read data needs to be specified to be included", async () => {
 it("test variants data needs to be specified to be included", async () => {
   // say that we don't want variants
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
     false

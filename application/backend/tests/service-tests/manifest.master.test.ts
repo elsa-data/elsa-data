@@ -7,7 +7,7 @@ import { ReleaseService } from "../../src/business/services/release-service";
 
 let edgeDbClient: Client;
 let testReleaseKey: string;
-let allowedDataOwnerUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
 let manifestService: ManifestService;
 let releaseService: ReleaseService;
 
@@ -20,36 +20,36 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedDataOwnerUser } = await beforeEachCommon());
+  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon());
 
   // assert a release state so that everything is included for the moment
   // (these are probably already set to true in the release setup but this makes sure it is true)
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedS3Data",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
     true
   );
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
     true
@@ -81,7 +81,7 @@ it("test basic operation of manifest helper", async () => {
 
 it("test no reads in the master manifest", async () => {
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
     false
@@ -105,7 +105,7 @@ it("test no reads in the master manifest", async () => {
 
 it("test no variants in the master manifest", async () => {
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
     false
@@ -129,7 +129,7 @@ it("test no variants in the master manifest", async () => {
 
 it("test no S3 in the master manifest", async () => {
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedS3Data",
     false
@@ -153,7 +153,7 @@ it("test no S3 in the master manifest", async () => {
 
 it("test no GS in the master manifest", async () => {
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
     false
@@ -177,7 +177,7 @@ it("test no GS in the master manifest", async () => {
 
 it("test no R2 in the master manifest", async () => {
   await releaseService.setIsAllowed(
-    allowedDataOwnerUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
     false
