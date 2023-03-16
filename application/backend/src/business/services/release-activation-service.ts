@@ -13,14 +13,9 @@ import {
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
 } from "../exceptions/release-activation";
-import { createReleaseManifest } from "./manifests/_manifest-helper";
 import etag from "etag";
 import { Logger } from "pino";
-import {
-  auditFailure,
-  auditReleaseExecuteStart,
-  auditSuccess,
-} from "../../audit-helpers";
+import { ManifestService } from "./manifests/manifest-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -32,6 +27,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject("Settings") private settings: ElsaSettings,
     @inject("Logger") private logger: Logger,
     private auditLogService: AuditLogService,
+    private manifestService: ManifestService,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);
@@ -39,7 +35,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
 
   /**
    * For the current state of a release, 'activate' it which means to switch
-   * on all necessary flags that enable actual data sharing.
+   * on all necessary flags that enable actual data sharing, create and save
+   * a point-in-time snapshot of what is being shared (the master manifest).
    *
    * @param user
    * @param releaseKey
@@ -70,26 +67,24 @@ export class ReleaseActivationService extends ReleaseBaseService {
         if (releaseInfo.activation)
           throw new ReleaseActivationStateError(releaseKey);
 
-        const manifest = await createReleaseManifest(
+        const m = await this.manifestService.createMasterManifest(
           tx,
-          releaseKey,
-          releaseInfo.isAllowedReadData,
-          releaseInfo.isAllowedVariantData,
-          releaseInfo.isAllowedS3Data,
-          releaseInfo.isAllowedGSData,
-          releaseInfo.isAllowedR2Data
+          releaseKey
         );
 
         // once this is working well we can probably drop this to debug
-        this.logger.info(manifest, "created release manifest");
+        this.logger.info(m, "created release master manifest");
 
         // collect some basic info that _might_ be useful in an audit log
-        const readsConstructed = Object.keys(manifest.reads ?? {}).length;
-        const variantsConstructed = Object.keys(manifest.variants ?? {}).length;
-        const casesConstructed = (manifest.cases ?? []).length;
+        const specimensConstructed = (m.specimenList ?? []).length;
+        const artifactsConstructed = (m.specimenList ?? []).reduce(
+          (partialSum, a) => partialSum + (a.artifacts ?? []).length,
+          0
+        );
+        const casesConstructed = (m.caseTree ?? []).length;
 
         // the etag is going to be useful for HTTP caching/fetches
-        const et = etag(JSON.stringify(manifest));
+        const et = etag(JSON.stringify(m));
 
         await e
           .update(e.release.Release, (r) => ({
@@ -98,7 +93,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
               activation: e.insert(e.release.Activation, {
                 activatedById: user.subjectId,
                 activatedByDisplayName: user.displayName,
-                manifest: e.json(manifest),
+                manifest: e.json(m),
                 manifestEtag: et,
               }),
             },
@@ -107,8 +102,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
 
         return {
           manifestEtag: et,
-          manifestReads: readsConstructed,
-          manifestVariants: variantsConstructed,
+          manifestSpecimens: specimensConstructed,
+          manifestArtifacts: artifactsConstructed,
           manifestCases: casesConstructed,
         };
       },

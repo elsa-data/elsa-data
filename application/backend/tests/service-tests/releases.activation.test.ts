@@ -63,11 +63,12 @@ it("active releases have a manifest", async () => {
   assert(result != null);
 
   expect(result).toBeDefined();
-  expect(result).toHaveProperty("id");
-  expect(result).toHaveProperty("cases");
-  expect(result.cases).toHaveLength(6);
-  expect(result).toHaveProperty("reads");
-  expect(result).toHaveProperty("variants");
+
+  // note: we aren't doing much testing here of the _content_ of the manifest - as that should be tested
+  // as part of the manifest service.. what we want to test is that some basic content is saved and returned
+  expect(result).toHaveProperty("caseTree");
+  expect(result.caseTree).toHaveLength(6);
+  expect(result).toHaveProperty("specimenList");
 });
 
 it("releases that are active can't be activated again", async () => {

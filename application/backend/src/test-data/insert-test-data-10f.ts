@@ -32,11 +32,11 @@ export async function insert10F() {
     sex: "male" | "female" | "other"
   ) => {
     const arts = await createArtifacts(
-      blankFile(),
-      blankFile(),
-      blankFile(),
-      blankFile(),
       [],
+      blankFile(),
+      blankFile(),
+      blankFile(),
+      blankFile(),
       []
     );
     await e

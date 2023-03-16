@@ -1,13 +1,10 @@
-import e from "../../../../dbschema/edgeql-js";
-import { getReleaseInfo } from "../helpers";
-import { Executor } from "edgedb";
-import { artifactFilesForSpecimensQuery } from "../../db/artifact-queries";
 import _ from "lodash";
 import type {
-  ManifestReadsFileType,
-  ManifestType,
-  ManifestVariantsFileType,
-} from "./manifest-types";
+  ManifestHtsgetReadsFileType,
+  ManifestHtsgetType,
+  ManifestHtsgetVariantsFileType,
+} from "./manifest-htsget-types";
+import { ManifestMasterType } from "./manifest-master-types";
 
 /**
  * Create a structured/tree manifest for the data included in a release.
@@ -19,74 +16,11 @@ import type {
  * by htsget endpoints and the user - giving them details of which files are
  * available and on which identifiers.
  *
- * @param executor the client or transaction to execute this query in
- * @param releaseKey the release whose selected entries should go into the manifest
- * @param includeReadData whether to include BAM access to htsget
- * @param includeVariantData whether to include VCF access to htsget
- * @param includeS3Access
- * @param includeGSAccess
- * @param includeR2Access
+ *
  */
-export async function createReleaseManifest(
-  executor: Executor,
-  releaseKey: string,
-  includeReadData: boolean,
-  includeVariantData: boolean,
-  includeS3Access: boolean,
-  includeGSAccess: boolean,
-  includeR2Access: boolean
-): Promise<ManifestType> {
-  const { releaseSelectedSpecimensQuery } = await getReleaseInfo(
-    executor,
-    releaseKey
-  );
-
-  // get the tree of cases/patients/specimens - that we want to put into the manifest
-  // (currently just shows the tree of data and key linkages - but could contain *actual*
-  // data I guess (age etc)
-  const tree = await e
-    .select(e.dataset.DatasetCase, (c) => ({
-      ...e.dataset.DatasetCase["*"],
-      dataset: {
-        id: true,
-        uri: true,
-      },
-      patients: (p) => ({
-        ...e.dataset.DatasetPatient["*"],
-        // this filter is needed otherwise we end up with 'empty' patients
-        filter: e.op(p.specimens, "in", releaseSelectedSpecimensQuery),
-        specimens: (s) => ({
-          ...e.dataset.DatasetSpecimen["*"],
-          // this filter actually makes sure only the allowed specimens are released
-          filter: e.op(s, "in", releaseSelectedSpecimensQuery),
-        }),
-      }),
-      // this filter is needed otherwise we end up with 'empty' cases
-      filter: e.op(c.patients.specimens, "in", releaseSelectedSpecimensQuery),
-      // order is kind of irrelevant but we aim for it to at least be stable
-      order_by: [
-        {
-          expression: c.dataset.uri,
-          direction: e.ASC,
-        },
-        {
-          expression: c.id,
-          direction: e.ASC,
-        },
-      ],
-    }))
-    .run(executor);
-
-  const releaseSelectedSpecimens = await releaseSelectedSpecimensQuery.run(
-    executor
-  );
-
-  // a query to retrieve all the files associated with this release
-  // this can contain results from multiple data locations (S3, GS etc)
-  const filesResults = await artifactFilesForSpecimensQuery.run(executor, {
-    specimenIds: releaseSelectedSpecimens.map((s) => s.id),
-  });
-
+export async function transformMasterManifestToHtsgetManifest(
+  masterManifest: ManifestMasterType
+): Promise<ManifestHtsgetType> {
   // a little tidy up of the uuids so they look not quite as uuids
   const uuidToHtsgetId = (uuid: string): string => {
     return uuid.replaceAll("-", "").toUpperCase();
@@ -97,10 +31,11 @@ export async function createReleaseManifest(
   // (we have no guarantee that externalIdentifiers used for specimens are actually unique across any release hence
   //  us needing to use something else)
   // TODO could we test the externalIdentifiers for uniqueness as a first step - and if yes - use them as preference?
-  const readDictionary: { [hid: string]: ManifestReadsFileType } = {};
-  const variantDictionary: { [hid: string]: ManifestVariantsFileType } = {};
+  const readDictionary: { [hid: string]: ManifestHtsgetReadsFileType } = {};
+  const variantDictionary: { [hid: string]: ManifestHtsgetVariantsFileType } =
+    {};
 
-  for (const filesResult of filesResults) {
+  for (const filesResult of masterManifest.specimenList) {
     // NOTE: we prefer the specimen id over the artifact id here - because of the VCF with multiple samples problem
     // it is entirely possible we might have 3 specimens say (a trio) all pointing to a single VCF artifact
     // when we expose via htsget - we are talking about access at the specimen level (i.e. one sample in the VCF is
@@ -109,12 +44,12 @@ export async function createReleaseManifest(
 
     // at the moment - with only three practical file locations - we do this splitting/logic
     // will need to rethink approach I think if we add others
-    let s3Variant: ManifestVariantsFileType | undefined;
-    let gsVariant: ManifestVariantsFileType | undefined;
-    let r2Variant: ManifestVariantsFileType | undefined;
-    let s3Read: ManifestReadsFileType | undefined;
-    let gsRead: ManifestReadsFileType | undefined;
-    let r2Read: ManifestReadsFileType | undefined;
+    let s3Variant: ManifestHtsgetVariantsFileType | undefined;
+    let gsVariant: ManifestHtsgetVariantsFileType | undefined;
+    let r2Variant: ManifestHtsgetVariantsFileType | undefined;
+    let s3Read: ManifestHtsgetReadsFileType | undefined;
+    let gsRead: ManifestHtsgetReadsFileType | undefined;
+    let r2Read: ManifestHtsgetReadsFileType | undefined;
 
     const S3_PREFIX = "s3://";
     const GS_PREFIX = "gs://";
@@ -145,15 +80,13 @@ export async function createReleaseManifest(
     // note the logic here prefers AWS over GS over R2 - where more than 1
     // are present as artifacts AND more than 1 are selected for inclusion
     // TODO think how we might handle this better
-    if (includeS3Access && s3Variant) variantDictionary[htsgetId] = s3Variant;
-    else if (includeGSAccess && gsVariant)
-      variantDictionary[htsgetId] = gsVariant;
-    else if (includeR2Access && r2Variant)
-      variantDictionary[htsgetId] = r2Variant;
+    if (s3Variant) variantDictionary[htsgetId] = s3Variant;
+    else if (gsVariant) variantDictionary[htsgetId] = gsVariant;
+    else if (r2Variant) variantDictionary[htsgetId] = r2Variant;
 
-    if (includeS3Access && s3Read) readDictionary[htsgetId] = s3Read;
-    else if (includeGSAccess && gsRead) readDictionary[htsgetId] = gsRead;
-    else if (includeR2Access && r2Read) readDictionary[htsgetId] = r2Read;
+    if (s3Read) readDictionary[htsgetId] = s3Read;
+    else if (gsRead) readDictionary[htsgetId] = gsRead;
+    else if (r2Read) readDictionary[htsgetId] = r2Read;
   }
 
   const externalIdsToMap = (
@@ -181,12 +114,12 @@ export async function createReleaseManifest(
   };
 
   return {
-    id: releaseKey,
-    reads: includeReadData ? readDictionary : {},
-    variants: includeVariantData ? variantDictionary : {},
+    id: masterManifest.releaseKey,
+    reads: readDictionary,
+    variants: variantDictionary,
     // TODO implement a restrictions mechanism both here and in the htsget server
     restrictions: {},
-    cases: tree.map((c) => {
+    cases: masterManifest.caseTree.map((c) => {
       return {
         ids: externalIdsToMap(c.externalIdentifiers),
         patients: c.patients.map((p) => {

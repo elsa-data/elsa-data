@@ -74,8 +74,10 @@ export const ManifestSchema = Type.Object({
   cases: Type.Array(ManifestCaseSchema),
 });
 
-export type ManifestType = Static<typeof ManifestSchema>;
-export type ManifestReadsFileType = Static<typeof ManifestReadsFileSchema>;
-export type ManifestVariantsFileType = Static<
+export type ManifestHtsgetType = Static<typeof ManifestSchema>;
+export type ManifestHtsgetReadsFileType = Static<
+  typeof ManifestReadsFileSchema
+>;
+export type ManifestHtsgetVariantsFileType = Static<
   typeof ManifestVariantsFileSchema
 >;

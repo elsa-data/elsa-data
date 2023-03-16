@@ -35,16 +35,7 @@ export async function insert10G() {
     specimenConsentJsons?: DuoLimitationCodedType[]
   ) => {
     const s3Artifacts = await createArtifacts(
-      createFile(
-        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
-        vcfSize,
-        vcfEtag,
-        vcfMd5
-      ),
-      createFile(
-        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-        0
-      ),
+      [],
       createFile(
         `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
         bamSize,
@@ -55,10 +46,27 @@ export async function insert10G() {
         `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
         0
       ),
-      [],
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+        vcfSize,
+        vcfEtag,
+        vcfMd5
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+        0
+      ),
       []
     );
     const gsArtifacts = await createArtifacts(
+      [],
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.bam`,
+        bamSize,
+        undefined,
+        bamMd5
+      ),
+      createFile(`gs://10gbucket/${specimenId}/${specimenId}.bam.bai`, 0),
       createFile(
         `gs://10gbucket/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
         vcfSize,
@@ -69,14 +77,22 @@ export async function insert10G() {
         `gs://10gbucket/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
         0
       ),
-      createFile(
-        `gs://10gbucket/${specimenId}/${specimenId}.bam`,
-        bamSize,
-        undefined,
-        bamMd5
-      ),
-      createFile(`gs://10gbucket/${specimenId}/${specimenId}.bam.bai`, 0),
+      []
+    );
+    const r2Artifacts = await createArtifacts(
       [],
+      undefined,
+      undefined,
+      createFile(
+        `r2://75cd1b191bb75176cc5418ad2878db39/umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`, // pragma: allowlist secret
+        vcfSize,
+        undefined,
+        vcfMd5
+      ),
+      createFile(
+        `r2://75cd1b191bb75176cc5418ad2878db39/umccr-10g-data-dev//${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`, // pragma: allowlist secret
+        0
+      ),
       []
     );
 
@@ -111,7 +127,11 @@ export async function insert10G() {
                   ),
                 })
               : undefined,
-          artifacts: e.op(s3Artifacts, "union", gsArtifacts),
+          artifacts: e.op(
+            e.op(s3Artifacts, "union", gsArtifacts),
+            "union",
+            r2Artifacts
+          ),
         }),
       }),
     });

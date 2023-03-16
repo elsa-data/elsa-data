@@ -190,11 +190,11 @@ export async function insertCARDIAC() {
               e.insert(e.dataset.DatasetSpecimen, {
                 externalIdentifiers: makeEmptyIdentifierArray(),
                 artifacts: await createArtifacts(
-                  DATASET_1.vcf_file,
-                  DATASET_1.tbi_file,
+                  DATASET_1.fastq_pair,
                   DATASET_1.bam_file,
                   DATASET_1.bai_file,
-                  DATASET_1.fastq_pair,
+                  DATASET_1.vcf_file,
+                  DATASET_1.tbi_file,
                   [DATASET_1.study_id]
                 ),
               })
@@ -211,11 +211,11 @@ export async function insertCARDIAC() {
               e.insert(e.dataset.DatasetSpecimen, {
                 externalIdentifiers: makeEmptyIdentifierArray(),
                 artifacts: await createArtifacts(
-                  DATASET_2.vcf_file,
-                  DATASET_2.tbi_file,
+                  DATASET_2.fastq_pair,
                   DATASET_2.bam_file,
                   DATASET_2.bai_file,
-                  DATASET_2.fastq_pair,
+                  DATASET_2.vcf_file,
+                  DATASET_2.tbi_file,
                   [DATASET_2.study_id]
                 ),
               })
@@ -232,11 +232,11 @@ export async function insertCARDIAC() {
               e.insert(e.dataset.DatasetSpecimen, {
                 externalIdentifiers: makeEmptyIdentifierArray(),
                 artifacts: await createArtifacts(
-                  DATASET_3.vcf_file,
-                  DATASET_3.tbi_file,
+                  DATASET_3.fastq_pair,
                   DATASET_3.bam_file,
                   DATASET_3.bai_file,
-                  DATASET_3.fastq_pair,
+                  DATASET_3.vcf_file,
+                  DATASET_3.tbi_file,
                   [DATASET_3.study_id]
                 ),
               })

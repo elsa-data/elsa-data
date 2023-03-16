@@ -61,7 +61,10 @@ export async function beforeEachCommon() {
       isAllowedReadData: true,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
-      releaseKey: getNextReleaseKey(),
+      isAllowedS3Data: true,
+      isAllowedGSData: true,
+      isAllowedR2Data: true,
+      releaseKey: "TESTRELEASE0001",
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
       selectedSpecimens: e.set(
