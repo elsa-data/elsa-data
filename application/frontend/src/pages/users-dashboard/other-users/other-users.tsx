@@ -13,6 +13,9 @@ import {
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
+import { PermissionDialog } from "./permission-dialog";
 
 type Props = {
   // the (max) number of users shown on any single page
@@ -58,6 +61,32 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           <td
             className={classNames(
               baseColumnClasses,
+              "w-12",
+              "text-right",
+              "pr-4"
+            )}
+          >
+            <PermissionDialog user={row} />
+          </td>
+
+          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
+            {row.displayName}
+          </td>
+
+          <td
+            className={classNames(
+              baseColumnClasses,
+              "text-left",
+              "pl-4",
+              "w-auto"
+            )}
+          >
+            {row.email}
+          </td>
+
+          <td
+            className={classNames(
+              baseColumnClasses,
               "text-left",
               "pl-4",
               "w-auto"
@@ -65,12 +94,7 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           >
             {row.subjectIdentifier}
           </td>
-          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-            {row.displayName}
-          </td>
-          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-            {row.isAllowedCreateRelease} {row.isAllowedRefreshDatasetIndex}
-          </td>
+
           <td
             className={classNames(
               baseColumnClasses,

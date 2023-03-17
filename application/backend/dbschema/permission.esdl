@@ -54,11 +54,12 @@ module permission {
         # These are the set of administrator level permissions that can be given
         # to a user
 
-        # Write Access
-        required property isAllowedSyncDataAccessEvents -> bool {
+        # Admin Access
+        required property isAllowedChangeUserPermission -> bool {
             default := false;
         }
 
+        # Write Access
         required property isAllowedRefreshDatasetIndex -> bool {
            default := false;
         };
@@ -68,19 +69,7 @@ module permission {
         };
         
         # Read Access
-        required property isAllowedViewAllAuditEvents -> bool {
-            default := false;
-        }
-
-        required property isAllowedViewDatasetContent -> bool {
-            default := false;
-        }
-
-        required property isAllowedViewUserManagement -> bool {
-            default := false;
-        }
-
-        required property isAllowedViewAllReleases -> bool {
+        required property isAllowedElsaAdminView -> bool {
             default := false;
         }
 

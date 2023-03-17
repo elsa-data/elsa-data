@@ -1,5 +1,5 @@
 import React from "react";
-import { ALLOWED_CHANGE_ADMINS } from "@umccr/elsa-constants";
+import { ALLOWED_VIEW_ELSA_ADMIN_VIEW } from "@umccr/elsa-constants";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { Box } from "../../components/boxes";
 import { OtherUsers } from "./other-users/other-users";
@@ -14,9 +14,9 @@ export const UsersDashboardPage: React.FC = () => {
   return (
     <div className="flex flex-col space-y-4">
       <PersonalDetailsBox />
-      <OtherUsers pageSize={pageSize} />
-      {/* only the super admins can change other admins so they are the only ones to get this box */}
-      {uiAllowed.has(ALLOWED_CHANGE_ADMINS) && <Box heading="Others"></Box>}
+      {uiAllowed.has(ALLOWED_VIEW_ELSA_ADMIN_VIEW) && (
+        <OtherUsers pageSize={pageSize} />
+      )}
     </div>
   );
 };

@@ -52,8 +52,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
   private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
-  private checkIsAllowedSyncDataAccessEvents(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedSyncDataAccessEvents;
+  private checkisAllowedChangeUserPermissions(user: AuthenticatedUser): void {
+    const isPermissionAllow = user.isAllowedChangeUserPermission;
     if (isPermissionAllow) return;
 
     throw new NotAuthorisedSyncDataAccessEvents();
@@ -325,7 +325,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     releaseKey: string;
     eventDataStoreIds: string[];
   }) {
-    this.checkIsAllowedSyncDataAccessEvents(user);
+    this.checkisAllowedChangeUserPermissions(user);
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
     const endQueryDate = new Date().toISOString();

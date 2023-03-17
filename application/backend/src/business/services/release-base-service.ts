@@ -32,7 +32,7 @@ export abstract class ReleaseBaseService {
    * @param user
    */
   public checkIsAllowedViewReleases(user: AuthenticatedUser): void {
-    const isAllow = user.isAllowedViewAllReleases;
+    const isAllow = user.isAllowedElsaAdminView;
     if (!isAllow) {
       throw new ReleaseViewError();
     }
@@ -67,7 +67,7 @@ export abstract class ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    const isAllowed = user.isAllowedViewAllReleases;
+    const isAllowed = user.isAllowedElsaAdminView;
 
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,

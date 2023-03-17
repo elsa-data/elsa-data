@@ -5,7 +5,7 @@ import { MenuItem } from "../menu/menu-item";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import { ToolTip } from "../tooltip";
 import { useUiAllowed } from "../../hooks/ui-allowed";
-import { ALLOWED_VIEW_AUDIT_EVENTS } from "@umccr/elsa-constants";
+import { ALLOWED_VIEW_ELSA_ADMIN_VIEW } from "@umccr/elsa-constants";
 
 export type FilterMenuProps = {
   includeEvents: RouteValidation.AuditEventUserFilterType[];
@@ -75,7 +75,7 @@ export const FilterMenu = ({
           description="Show non-release events"
         />
       </MenuItem>
-      {allowed.has(ALLOWED_VIEW_AUDIT_EVENTS) && (
+      {allowed.has(ALLOWED_VIEW_ELSA_ADMIN_VIEW) && (
         <MenuItem>
           <ToolTip
             trigger={
@@ -94,7 +94,7 @@ export const FilterMenu = ({
           />
         </MenuItem>
       )}
-      {allowed.has(ALLOWED_VIEW_AUDIT_EVENTS) && (
+      {allowed.has(ALLOWED_VIEW_ELSA_ADMIN_VIEW) && (
         <MenuItem>
           <ToolTip
             trigger={

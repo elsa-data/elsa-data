@@ -3,13 +3,13 @@
 
 with
 
-  # isAllowedViewAllReleases is for admin who has access to view all releases
-  isAllowedViewAllReleases := (
-                                select permission::User {
-                                  isAllowedViewAllReleases
-                                }
-                                filter .id = <uuid>$userDbId
-                              ).isAllowedViewAllReleases,  
+  # isAllowedElsaAdminView is for admin who has access to view all releases
+  isAllowedElsaAdminView := (
+                          select permission::User {
+                            isAllowedElsaAdminView
+                          }
+                          filter .id = <uuid>$userDbId
+                        ).isAllowedElsaAdminView,  
 
   # r is the set of all releases that involve $userDbId as a participant
   r := (
@@ -18,7 +18,7 @@ with
                           filter .id = <uuid>$userDbId),
           }
           # if no userRole then $userDbId is not participating
-          filter isAllowedViewAllReleases or exists(.userRole)
+          filter isAllowedElsaAdminView or exists(.userRole)
           order by .lastUpdated desc
         )
 

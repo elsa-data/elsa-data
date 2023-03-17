@@ -31,6 +31,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
         <NavLink
           to={to}
           className={({ isActive }) => (isActive ? whenActive : whenInactive)}
+          onClick={() => setIsMenuBarOpen(false)}
         >
           <span className="pb-1 text-sm md:pb-0">{label}</span>
         </NavLink>

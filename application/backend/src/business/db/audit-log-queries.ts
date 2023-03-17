@@ -178,16 +178,16 @@ export const addUserAuditEventToReleaseQuery = (
 export const addUserAuditEventPermissionChange = (
   whoId: string,
   whoDisplayName: string,
-  permission: string
+  permission: Record<string, boolean>
 ) => {
   return e.insert(e.audit.UserAuditEvent, {
     whoId,
     whoDisplayName,
     occurredDateTime: new Date(),
     actionCategory: "E",
-    actionDescription: `Change user permission: ${permission}`,
+    actionDescription: `Change user permission`,
     outcome: 0,
-    details: e.json({ permission: permission }),
+    details: e.json(permission),
   });
 };
 

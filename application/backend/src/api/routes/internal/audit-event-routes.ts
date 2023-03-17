@@ -26,7 +26,7 @@ import AuditEventForQuerySchema = RouteValidation.AuditEventForQuerySchema;
 import AuditEventForQueryType = RouteValidation.AuditEventForQueryType;
 import AuditEventDetailsQueryType = RouteValidation.AuditEventDetailsQueryType;
 import AuditEventDetailsQuerySchema = RouteValidation.AuditEventDetailsQuerySchema;
-import { ALLOWED_VIEW_AUDIT_EVENTS } from "@umccr/elsa-constants";
+import { ALLOWED_VIEW_ELSA_ADMIN_VIEW } from "@umccr/elsa-constants";
 
 export const auditEventRoutes = async (
   fastify: FastifyInstance,
