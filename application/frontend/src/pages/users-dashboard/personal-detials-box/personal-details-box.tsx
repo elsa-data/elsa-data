@@ -3,8 +3,8 @@ import { Box } from "../../../components/boxes";
 import { useCookies } from "react-cookie";
 import {
   ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASES,
-  ALLOWED_VIEW_ELSA_ADMIN_VIEW,
+  ALLOWED_CREATE_NEW_RELEASE,
+  ALLOWED_ELSA_ADMIN_VIEW,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
@@ -22,9 +22,9 @@ export function debugAllowedDescription(allowed: string) {
   switch (allowed) {
     case ALLOWED_CHANGE_USER_PERMISSION:
       return "Change admins";
-    case ALLOWED_CREATE_NEW_RELEASES:
+    case ALLOWED_CREATE_NEW_RELEASE:
       return "Create new releases";
-    case ALLOWED_VIEW_ELSA_ADMIN_VIEW:
+    case ALLOWED_ELSA_ADMIN_VIEW:
       return "Allowed view all audits";
     default:
       return `Unknown 'allowed' with code ${allowed}`;

@@ -4,7 +4,7 @@ import { VerticalTabs } from "../../components/vertical-tabs";
 import { ReleasesAddReleaseDialog } from "./rems-dac/releases-dashboard-add-release-dialog";
 import { ReleasesManualEntryDialog } from "./manual/releases-dashboard-manual-entry-dialog";
 import { useUiAllowed } from "../../hooks/ui-allowed";
-import { ALLOWED_CREATE_NEW_RELEASES } from "@umccr/elsa-constants";
+import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";
 import { AustralianGenomicsDacRedcapUploadDiv } from "./australian-genomics-dac-redcap/australian-genomics-dac-redcap-upload-div";
 
 export const DacImportPage: React.FC = () => {
@@ -18,7 +18,7 @@ export const DacImportPage: React.FC = () => {
     <>
       <div className="flex flex-row flex-wrap">
         {/* SYNCHRONISE DAC BOX */}
-        {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASES) && (
+        {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
           <Box
             heading="Import from DAC"
             errorMessage={"Something went wrong importing from DAC."}

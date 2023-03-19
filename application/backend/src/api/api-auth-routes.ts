@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASES,
-  ALLOWED_VIEW_ELSA_ADMIN_VIEW,
+  ALLOWED_CREATE_NEW_RELEASE,
+  ALLOWED_DATASET_UPDATE,
+  ALLOWED_ELSA_ADMIN_VIEW,
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
@@ -180,8 +181,8 @@ export const apiAuthRoutes = async (
         cookieForBackend(
           request,
           reply,
-          ALLOWED_VIEW_ELSA_ADMIN_VIEW,
-          allowed.includes(ALLOWED_VIEW_ELSA_ADMIN_VIEW)
+          ALLOWED_ELSA_ADMIN_VIEW,
+          allowed.includes(ALLOWED_ELSA_ADMIN_VIEW)
         );
 
         // these cookies however are available to React - PURELY for UI/display purposes
@@ -219,16 +220,16 @@ export const apiAuthRoutes = async (
 
     // a test user that is in charge of a few datasets
     addTestUserRoute("/login-bypass-1", subject1, [
-      ALLOWED_CREATE_NEW_RELEASES,
-      ALLOWED_VIEW_ELSA_ADMIN_VIEW,
+      ALLOWED_CREATE_NEW_RELEASE,
+      ALLOWED_ELSA_ADMIN_VIEW,
     ]);
     // a test user that is a Manager in some releases
     addTestUserRoute("/login-bypass-2", subject2, []);
     // a test user that is a super admin equivalent
     addTestUserRoute("/login-bypass-3", subject3, [
-      ALLOWED_CREATE_NEW_RELEASES,
+      ALLOWED_CREATE_NEW_RELEASE,
       ALLOWED_CHANGE_USER_PERMISSION,
-      ALLOWED_VIEW_ELSA_ADMIN_VIEW,
+      ALLOWED_ELSA_ADMIN_VIEW,
     ]);
   }
 };
@@ -314,22 +315,18 @@ export const callbackRoutes = async (
       authUser.isAllowedElsaAdminView ||
       isa
     ) {
-      allowed.add(ALLOWED_VIEW_ELSA_ADMIN_VIEW);
+      allowed.add(ALLOWED_ELSA_ADMIN_VIEW);
     }
 
     if (authUser.isAllowedChangeUserPermission || isa) {
       allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
     }
 
-    if (isa) {
-      allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
-      allowed.add(ALLOWED_VIEW_ELSA_ADMIN_VIEW);
-
-      // for the moment if we want to do demos it is easy if the super admins get all the functionality
-      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
+    if (authUser.isAllowedRefreshDatasetIndex || isa) {
+      allowed.add(ALLOWED_DATASET_UPDATE);
     }
 
-    cookieForBackend(request, reply, ALLOWED_VIEW_ELSA_ADMIN_VIEW, isa);
+    cookieForBackend(request, reply, ALLOWED_ELSA_ADMIN_VIEW, isa);
 
     cookieForUI(
       request,
