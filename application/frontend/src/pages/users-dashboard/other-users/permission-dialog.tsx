@@ -104,10 +104,7 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
     if (isDialogOpen) setInput(convertUserPropToPermissionState(user));
   }, [isDialogOpen, isEditingMode, user]);
 
-  // UNKNOWN
-  const [lastMutateError, setLastMutateError] = useState<string | undefined>(
-    undefined
-  );
+  // ERROR states
   const [error, setError] = useState<ErrorState>({
     error: null,
     isSuccess: true,
@@ -117,12 +114,12 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
   const changeUserPermissionMutate = trpc.user.changeUserPermission.useMutation(
     {
       onSettled: async () => {
+        setIsEditingMode(false);
         await queryClient.invalidateQueries();
       },
       onError: (error: any) => setError({ error, isSuccess: false }),
       onSuccess: () => {
         setIsSuccess(true);
-        setIsEditingMode(false);
         setError({ error: null, isSuccess: true });
       },
     }
@@ -228,6 +225,16 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
                     </div>
                   )}
 
+                  {!error.isSuccess && (
+                    <EagerErrorBoundary
+                      message={
+                        "Something went wrong mutating user's permissions."
+                      }
+                      error={error.error}
+                      styling={"bg-red-100"}
+                    />
+                  )}
+
                   {permissionOptionProperties.map((o, index) => {
                     const disabledClassName =
                       (o.disabled || isInputDisable) && "!text-gray-500";
@@ -267,7 +274,6 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
               </div>
             </>
           }
-          errorMessage={lastMutateError}
           initialFocus={cancelButtonRef}
         />
       </ErrorBoundary>
