@@ -4,6 +4,7 @@ import { useCookies } from "react-cookie";
 import {
   ALLOWED_CHANGE_USER_PERMISSION,
   ALLOWED_CREATE_NEW_RELEASE,
+  ALLOWED_DATASET_UPDATE,
   ALLOWED_ELSA_ADMIN_VIEW,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
@@ -21,11 +22,13 @@ type Props = {};
 export function debugAllowedDescription(allowed: string) {
   switch (allowed) {
     case ALLOWED_CHANGE_USER_PERMISSION:
-      return "Change admins";
+      return "Allowed to change other user's permission.";
     case ALLOWED_CREATE_NEW_RELEASE:
-      return "Create new releases";
+      return "Allowed to create and become a release administrator.";
     case ALLOWED_ELSA_ADMIN_VIEW:
-      return "Allowed view all audits";
+      return "Allowed to view as an Elsa-Data administrator.";
+    case ALLOWED_DATASET_UPDATE:
+      return "Allowed to update/refresh dataset index.";
     default:
       return `Unknown 'allowed' with code ${allowed}`;
   }
@@ -44,7 +47,7 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
 
   return (
     <Box heading="Basic Info">
-      <div className="flex w-full flex-col lg:flex-row">
+      <div className="flex w-full flex-col sm:flex-row">
         <div className="card rounded-box grid flex-grow">
           <h3 className="font-medium">Name</h3>
           <p>{cookies[USER_NAME_COOKIE_NAME]}</p>
@@ -57,9 +60,9 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
           <h3 className="font-medium">Subject Identifier</h3>
           <p>{cookies[USER_SUBJECT_COOKIE_NAME]}</p>
         </div>
-        <div className="divider divider-vertical lg:divider-horizontal" />
+        <div className="divider divider-vertical sm:divider-horizontal" />
         <div className="card rounded-box grid flex-grow">
-          <h3 className="font-medium">Permission Granted for this account</h3>
+          <h3 className="font-medium">Permission Granted for your account</h3>
           <ul className="list-inside list-disc">
             {Array.from(uiAllowed.values()).map((v) => (
               <li className="mt-2" key={v}>

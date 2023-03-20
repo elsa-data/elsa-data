@@ -230,6 +230,7 @@ export const apiAuthRoutes = async (
       ALLOWED_CREATE_NEW_RELEASE,
       ALLOWED_CHANGE_USER_PERMISSION,
       ALLOWED_ELSA_ADMIN_VIEW,
+      ALLOWED_DATASET_UPDATE,
     ]);
   }
 };

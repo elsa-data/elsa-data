@@ -1,26 +1,18 @@
-import React, { useRef, useState } from "react";
-import axios from "axios";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import classNames from "classnames";
-import { Box } from "../../../components/boxes";
-import { BoxPaginator } from "../../../components/box-paginator";
+import React, { useEffect, useRef, useState } from "react";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import { useCookies } from "react-cookie";
-import {
-  USER_NAME_COOKIE_NAME,
-  USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-constants";
+import { ALLOWED_CHANGE_USER_PERMISSION } from "@umccr/elsa-constants";
 import {
   EagerErrorBoundary,
   ErrorBoundary,
   ErrorState,
 } from "../../../components/errors";
-import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { trpc } from "../../../helpers/trpc";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faUserGear } from "@fortawesome/free-solid-svg-icons";
+import { useUiAllowed } from "../../../hooks/ui-allowed";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Column for User Information
 type userKey = "id" | "email" | "displayName" | "subjectIdentifier";
@@ -47,70 +39,72 @@ type permissionType =
   | "isAllowedElsaAdminView";
 const permissionOptionProperties: {
   key: permissionType;
-  labelHTML: JSX.Element;
   disabled?: boolean;
+  title: string;
+  description?: string;
 }[] = [
   {
-    labelHTML: (
-      <div className="text-sm">
-        <div className="font-medium">
-          Allow user to change other user's permission.
-        </div>
-        <div className="text-xs text-gray-500">
-          It can only be changed by an app administrator.
-        </div>
-      </div>
-    ),
-    key: "isAllowedChangeUserPermission",
-    disabled: true,
-  },
-  {
-    labelHTML: (
-      <div className="text-sm">
-        <div className="font-medium">Allow user to refresh dataset index</div>
-      </div>
-    ),
-    key: "isAllowedRefreshDatasetIndex",
-  },
-  {
-    labelHTML: (
-      <div className="text-sm">
-        <div className="font-medium">
-          Allow user to create and become a release administrator.
-        </div>
-      </div>
-    ),
+    title: "Allow user to create and become a release administrator.",
     key: "isAllowedCreateRelease",
   },
   {
-    labelHTML: (
-      <div className="text-sm">
-        <div className="font-medium">
-          Allow user to view as an Elsa-Data administrator.
-        </div>
-        <div className="text-xs text-gray-500">
-          Will be able to view all Datasets, Releases, and Audit Events.
-        </div>
-      </div>
-    ),
+    title: "Allow user to update/refresh dataset index.",
+    key: "isAllowedRefreshDatasetIndex",
+  },
+  {
+    title: "Allow user to view as an Elsa-Data administrator.",
+    description:
+      "Will be able to view all Datasets, Releases, and Audit Events.",
     key: "isAllowedElsaAdminView",
   },
+  {
+    title: "Allow user to change other user's permissions.",
+    description: "It can only be changed by an app administrator.",
+    key: "isAllowedChangeUserPermission",
+    disabled: true,
+  },
 ];
+
+// A function converting user props to checkbox format useState
+const convertUserPropToPermissionState = (u: UserSummaryType) => ({
+  isAllowedChangeUserPermission: u.isAllowedChangeUserPermission,
+  isAllowedRefreshDatasetIndex: u.isAllowedRefreshDatasetIndex,
+  isAllowedCreateRelease: u.isAllowedCreateRelease,
+  isAllowedElsaAdminView: u.isAllowedElsaAdminView,
+});
 
 type Props = {
   user: UserSummaryType;
 };
 export const PermissionDialog: React.FC<Props> = ({ user }) => {
   const queryClient = useQueryClient();
+
+  // Check if user allowed to do some editing
+  const uiAllowed = useUiAllowed();
+  const isEditingAllowed = uiAllowed.has(ALLOWED_CHANGE_USER_PERMISSION);
+
+  // Some boolean values for component to show or not
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isEditingMode, setIsEditingMode] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const isInputDisable = !isEditingAllowed || !isEditingMode;
+
+  // A function when dialog is closed
   const cancelButtonRef = useRef(null);
+  const cancelButton = () => {
+    setIsDialogOpen(false);
+    setIsSuccess(false);
+    setIsEditingMode(false);
+  };
 
-  const [permission, setPermission] = useState({
-    isAllowedChangeUserPermission: user.isAllowedChangeUserPermission,
-    isAllowedRefreshDatasetIndex: user.isAllowedRefreshDatasetIndex,
-    isAllowedCreateRelease: user.isAllowedCreateRelease,
-    isAllowedElsaAdminView: user.isAllowedElsaAdminView,
-  });
+  // Input state for checkbox and updated when needed.
+  // e.g. Dialog open, editing mode button clicked, or user value changed will refresh the input state
+  const [input, setInput] = useState(convertUserPropToPermissionState(user));
+  useEffect(() => {
+    if (isDialogOpen) setInput(convertUserPropToPermissionState(user));
+  }, [isDialogOpen, isEditingMode, user]);
 
+  // UNKNOWN
   const [lastMutateError, setLastMutateError] = useState<string | undefined>(
     undefined
   );
@@ -119,23 +113,25 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
     isSuccess: true,
   });
 
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const cancelButton = () => setIsDialogOpen(false);
-
-  const [cookies] = useCookies<any>([
-    USER_SUBJECT_COOKIE_NAME,
-    USER_NAME_COOKIE_NAME,
-  ]);
-
+  // Editing/Mutation Purposes
   const changeUserPermissionMutate = trpc.user.changeUserPermission.useMutation(
     {
-      onSettled: async () => await queryClient.invalidateQueries(),
+      onSettled: async () => {
+        await queryClient.invalidateQueries();
+      },
       onError: (error: any) => setError({ error, isSuccess: false }),
-      onSuccess: () => setError({ error: null, isSuccess: true }),
+      onSuccess: () => {
+        setIsSuccess(true);
+        setIsEditingMode(false);
+        setError({ error: null, isSuccess: true });
+      },
     }
   );
-  const onSave = () =>
-    changeUserPermissionMutate.mutate({ userEmail: user.email, ...permission });
+  const onSave = () => {
+    setIsSuccess(false);
+    setIsEditingMode(false);
+    changeUserPermissionMutate.mutate({ userEmail: user.email, ...input });
+  };
   const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
 
   return (
@@ -144,7 +140,7 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
         className="btn-outline btn-xs btn-circle btn"
         onClick={() => setIsDialogOpen((p) => !p)}
       >
-        <FontAwesomeIcon icon={faPenToSquare} />
+        <FontAwesomeIcon icon={faUserGear} />
       </button>
       <ErrorBoundary styling={"bg-red-100"}>
         <SelectDialogBase
@@ -153,28 +149,32 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
           title="User Configuration"
           buttons={
             <>
-              <button
-                type="button"
-                disabled={
-                  isLoadingMutatePermission ||
-                  user.isAllowedChangeUserPermission
-                }
-                className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={onSave}
-              >
-                {isLoadingMutatePermission && (
-                  <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-                )}
-                Save
-              </button>
-              <button
-                type="button"
-                className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={cancelButton}
-                ref={cancelButtonRef}
-              >
-                Cancel
-              </button>
+              {!isInputDisable && (
+                <>
+                  <button
+                    type="button"
+                    disabled={
+                      isLoadingMutatePermission ||
+                      user.isAllowedChangeUserPermission
+                    }
+                    className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
+                    onClick={onSave}
+                  >
+                    {isLoadingMutatePermission && (
+                      <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                    )}
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    onClick={cancelButton}
+                    ref={cancelButtonRef}
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
             </>
           }
           content={
@@ -207,9 +207,30 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
                 </div>
 
                 <div className="card rounded-box flex-grow ">
-                  <h3 className="mt-8 font-semibold">User Permission</h3>
+                  <div className="mt-8 mb-2 flex">
+                    <h3 className="font-semibold">User Permission</h3>
+                    <button
+                      className="btn-outline btn-xs btn-circle btn ml-2"
+                      onClick={() => setIsEditingMode((p) => !p)}
+                    >
+                      <FontAwesomeIcon icon={faPenToSquare} />
+                    </button>
+                  </div>
+
+                  {!isEditingAllowed && (
+                    <div className="w-full bg-amber-100 py-2 text-center text-xs">
+                      You are only allowed to view this input.
+                    </div>
+                  )}
+                  {isSuccess && (
+                    <div className="w-full bg-green-200 py-2 text-center text-xs">
+                      Configuration saved successfully.
+                    </div>
+                  )}
+
                   {permissionOptionProperties.map((o, index) => {
-                    const disabledClassName = o.disabled && "!text-gray-500";
+                    const disabledClassName =
+                      (o.disabled || isInputDisable) && "!text-gray-500";
 
                     return (
                       <label
@@ -217,21 +238,28 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
                         className={`my-2 flex content-center items-center pl-2 text-gray-800 ${disabledClassName}`}
                       >
                         <input
-                          disabled={o.disabled}
+                          disabled={o.disabled || isInputDisable}
                           className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
                           type="checkbox"
                           value={o.key}
-                          checked={permission[o.key] == true}
+                          checked={input[o.key] == true}
                           onChange={() => {
                             const newChange: Record<string, boolean> = {};
-                            newChange[o.key] = !permission[o.key];
-                            setPermission((p) => ({
+                            newChange[o.key] = !input[o.key];
+                            setInput((p) => ({
                               ...p,
                               ...newChange,
                             }));
                           }}
                         />
-                        {o.labelHTML}
+                        <div className="text-sm">
+                          <div className="font-medium">{o.title}</div>
+                          {o.description && (
+                            <div className="text-xs text-gray-500">
+                              {o.description}
+                            </div>
+                          )}
+                        </div>
                       </label>
                     );
                   })}
