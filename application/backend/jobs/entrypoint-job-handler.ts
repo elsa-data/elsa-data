@@ -10,6 +10,8 @@ import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
 import { getDirectConfig } from "../src/config/config-schema";
 import pino, { Logger } from "pino";
+import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
+import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
 
 // global settings for DI
 bootstrapDependencyInjection();
@@ -51,6 +53,12 @@ bootstrapDependencyInjection();
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
       const jobsService = container.resolve(JobsService);
+      const jobCloudFormationCreateService = container.resolve(
+        JobCloudFormationCreateService
+      );
+      const jobCloudFormationDeleteService = container.resolve(
+        JobCloudFormationDeleteService
+      );
 
       const jobs = await jobsService.getInProgressJobs();
 
@@ -106,11 +114,11 @@ bootstrapDependencyInjection();
 
             case "CloudFormationInstallJob":
               jobPromises.push(
-                jobsService
+                jobCloudFormationCreateService
                   .doCloudFormationInstallJob(j.jobId)
                   .then((result) => {
                     if (result === 0)
-                      return jobsService.endCloudFormationInstallJob(
+                      return jobCloudFormationCreateService.endCloudFormationInstallJob(
                         j.jobId,
                         true,
                         false
@@ -120,6 +128,17 @@ bootstrapDependencyInjection();
               break;
 
             case "CloudFormationDeleteJob":
+              jobPromises.push(
+                jobCloudFormationDeleteService
+                  .doCloudFormationDeleteJob(j.jobId)
+                  .then((result) => {
+                    if (result === 0)
+                      return jobCloudFormationDeleteService.endCloudFormationDeleteJob(
+                        j.jobId,
+                        true
+                      );
+                  })
+              );
               break;
 
             default:

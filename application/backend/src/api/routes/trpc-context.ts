@@ -8,6 +8,8 @@ import { ReleaseActivationService } from "../../business/services/release-activa
 import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import { ReleaseParticipationService } from "../../business/services/release-participation-service";
+import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
+import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 
 /**
  * Create the base context for our TRPC calls, provided useful base
@@ -30,6 +32,12 @@ export const createContext = async (opts: CreateFastifyContextOptions) => {
     releaseActivationService: container.resolve(ReleaseActivationService),
     releaseParticipantService: container.resolve(ReleaseParticipationService),
     jobService: container.resolve(JobsService),
+    jobCloudFormationCreateService: container.resolve(
+      JobCloudFormationCreateService
+    ),
+    jobCloudFormationDeleteService: container.resolve(
+      JobCloudFormationDeleteService
+    ),
     awsAccessPointService: container.resolve(AwsAccessPointService),
 
     req: opts.req,
