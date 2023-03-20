@@ -216,12 +216,12 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
 
                   {!isEditingAllowed && (
                     <div className="w-full bg-amber-100 py-2 text-center text-xs">
-                      You are only allowed to view this input.
+                      You are only allowed to view this permissions.
                     </div>
                   )}
                   {isSuccess && (
                     <div className="w-full bg-green-200 py-2 text-center text-xs">
-                      Configuration saved successfully.
+                      Permissions changed saved successfully.
                     </div>
                   )}
 
