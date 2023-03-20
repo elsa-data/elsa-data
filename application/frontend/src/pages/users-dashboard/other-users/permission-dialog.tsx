@@ -206,12 +206,15 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
                 <div className="card rounded-box flex-grow ">
                   <div className="mt-8 mb-2 flex">
                     <h3 className="font-semibold">User Permission</h3>
-                    <button
-                      className="btn-outline btn-xs btn-circle btn ml-2"
-                      onClick={() => setIsEditingMode((p) => !p)}
-                    >
-                      <FontAwesomeIcon icon={faPenToSquare} />
-                    </button>
+
+                    {isEditingAllowed && (
+                      <button
+                        className="btn-outline btn-xs btn-circle btn ml-2"
+                        onClick={() => setIsEditingMode((p) => !p)}
+                      >
+                        <FontAwesomeIcon icon={faPenToSquare} />
+                      </button>
+                    )}
                   </div>
 
                   {!isEditingAllowed && (

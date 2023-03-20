@@ -157,10 +157,17 @@ export const apiAuthRoutes = async (
     // NOTE: this has to replicate all the real auth login steps (set the same cookies etc)
     const addTestUserRoute = (
       path: string,
-      authUser: AuthenticatedUser,
-      allowed: string[]
+      subjectId: string,
+      name: string,
+      email: string
     ) => {
       fastify.post(path, async (request, reply) => {
+        const authUser = await userService.upsertUserForLogin(
+          subjectId,
+          name,
+          email
+        );
+
         logger.warn(
           `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`
         );
@@ -178,13 +185,6 @@ export const apiAuthRoutes = async (
           authUser.asJson()
         );
 
-        cookieForBackend(
-          request,
-          reply,
-          ALLOWED_ELSA_ADMIN_VIEW,
-          allowed.includes(ALLOWED_ELSA_ADMIN_VIEW)
-        );
-
         // these cookies however are available to React - PURELY for UI/display purposes
         cookieForUI(
           request,
@@ -199,11 +199,33 @@ export const apiAuthRoutes = async (
           authUser.displayName
         );
         cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, "user@email.com");
+
+        const allowed = new Set<string>();
+
+        if (authUser.isAllowedCreateRelease) {
+          allowed.add(ALLOWED_CREATE_NEW_RELEASE);
+        }
+
+        if (authUser.isAllowedRefreshDatasetIndex) {
+          allowed.add(ALLOWED_DATASET_UPDATE);
+        }
+
+        if (
+          authUser.isAllowedChangeUserPermission ||
+          authUser.isAllowedElsaAdminView
+        ) {
+          allowed.add(ALLOWED_ELSA_ADMIN_VIEW);
+        }
+
+        if (authUser.isAllowedChangeUserPermission) {
+          allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
+        }
+
         cookieForUI(
           request,
           reply,
           USER_ALLOWED_COOKIE_NAME,
-          allowed.join(",")
+          Array.from(allowed.values()).join(",")
         );
 
         // CSRF Token passed as cookie
@@ -219,19 +241,26 @@ export const apiAuthRoutes = async (
     };
 
     // a test user that is in charge of a few datasets
-    addTestUserRoute("/login-bypass-1", subject1, [
-      ALLOWED_CREATE_NEW_RELEASE,
-      ALLOWED_ELSA_ADMIN_VIEW,
-    ]);
+    addTestUserRoute(
+      "/login-bypass-1",
+      TEST_SUBJECT_1,
+      TEST_SUBJECT_1_DISPLAY,
+      TEST_SUBJECT_1_EMAIL
+    );
     // a test user that is a Manager in some releases
-    addTestUserRoute("/login-bypass-2", subject2, []);
+    addTestUserRoute(
+      "/login-bypass-2",
+      TEST_SUBJECT_2,
+      TEST_SUBJECT_2_DISPLAY,
+      TEST_SUBJECT_2_EMAIL
+    );
     // a test user that is a super admin equivalent
-    addTestUserRoute("/login-bypass-3", subject3, [
-      ALLOWED_CREATE_NEW_RELEASE,
-      ALLOWED_CHANGE_USER_PERMISSION,
-      ALLOWED_ELSA_ADMIN_VIEW,
-      ALLOWED_DATASET_UPDATE,
-    ]);
+    addTestUserRoute(
+      "/login-bypass-3",
+      TEST_SUBJECT_3,
+      TEST_SUBJECT_3_DISPLAY,
+      TEST_SUBJECT_3_EMAIL
+    );
   }
 };
 
@@ -311,6 +340,14 @@ export const callbackRoutes = async (
     // that is - they are a deployment instance level setting
     const isa = isSuperAdmin(settings, authUser);
 
+    if (authUser.isAllowedCreateRelease || isa) {
+      allowed.add(ALLOWED_CREATE_NEW_RELEASE);
+    }
+
+    if (authUser.isAllowedRefreshDatasetIndex || isa) {
+      allowed.add(ALLOWED_DATASET_UPDATE);
+    }
+
     if (
       authUser.isAllowedChangeUserPermission ||
       authUser.isAllowedElsaAdminView ||
@@ -321,10 +358,6 @@ export const callbackRoutes = async (
 
     if (authUser.isAllowedChangeUserPermission || isa) {
       allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
-    }
-
-    if (authUser.isAllowedRefreshDatasetIndex || isa) {
-      allowed.add(ALLOWED_DATASET_UPDATE);
     }
 
     cookieForBackend(request, reply, ALLOWED_ELSA_ADMIN_VIEW, isa);
