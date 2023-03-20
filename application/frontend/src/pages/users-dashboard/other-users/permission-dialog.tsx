@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
+import {
+  UserPermissionType,
+  UserSummaryType,
+} from "@umccr/elsa-types/schemas-users";
 import { ALLOWED_CHANGE_USER_PERMISSION } from "@umccr/elsa-constants";
 import {
   EagerErrorBoundary,
@@ -31,14 +34,8 @@ const userInfoProperties: { label: string; key: userKey }[] = [
   },
 ];
 
-// Column for User Permissions
-type permissionType =
-  | "isAllowedChangeUserPermission"
-  | "isAllowedRefreshDatasetIndex"
-  | "isAllowedCreateRelease"
-  | "isAllowedElsaAdminView";
 const permissionOptionProperties: {
-  key: permissionType;
+  key: UserPermissionType;
   disabled?: boolean;
   title: string;
   description?: string;

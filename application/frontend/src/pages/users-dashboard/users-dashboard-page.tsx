@@ -4,7 +4,7 @@ import { useUiAllowed } from "../../hooks/ui-allowed";
 import { Box } from "../../components/boxes";
 import { OtherUsers } from "./other-users/other-users";
 import { usePageSizer } from "../../hooks/page-sizer";
-import { PersonalDetailsBox } from "./personal-detials-box/personal-details-box";
+import { PersonalDetailsBox } from "./personal-details-box/personal-details-box";
 
 export const UsersDashboardPage: React.FC = () => {
   const pageSize = usePageSizer();

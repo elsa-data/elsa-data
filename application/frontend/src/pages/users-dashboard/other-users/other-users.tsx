@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import classNames from "classnames";
 import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
+import {
+  UserPermissionType,
+  UserSummaryType,
+} from "@umccr/elsa-types/schemas-users";
 import { useCookies } from "react-cookie";
 import {
   USER_NAME_COOKIE_NAME,
@@ -13,9 +16,41 @@ import {
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { PermissionDialog } from "./permission-dialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowsRotate,
+  faFolderPlus,
+  faUsersGear,
+  faUsersViewfinder,
+} from "@fortawesome/free-solid-svg-icons";
+
+const permissionIconProperties: {
+  key: UserPermissionType;
+  title: string;
+  icon: JSX.Element;
+}[] = [
+  {
+    title: "Allow user to create and become a release administrator.",
+    key: "isAllowedCreateRelease",
+    icon: <FontAwesomeIcon icon={faFolderPlus} />,
+  },
+  {
+    title: "Allow user to update/refresh dataset index.",
+    key: "isAllowedRefreshDatasetIndex",
+    icon: <FontAwesomeIcon icon={faArrowsRotate} />,
+  },
+  {
+    title: "Allow user to view as an Elsa-Data administrator.",
+    key: "isAllowedElsaAdminView",
+    icon: <FontAwesomeIcon icon={faUsersViewfinder} />,
+  },
+  {
+    title: "Allow user to change other user's permissions.",
+    key: "isAllowedChangeUserPermission",
+    icon: <FontAwesomeIcon icon={faUsersGear} />,
+  },
+];
 
 type Props = {
   // the (max) number of users shown on any single page
@@ -92,7 +127,15 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
               "w-auto"
             )}
           >
-            {row.subjectIdentifier}
+            {permissionIconProperties.map((prop) => (
+              <React.Fragment key={prop.key}>
+                {row[prop.key] == true && (
+                  <span key={prop.key} className="mx-1" title={prop.title}>
+                    {prop.icon}
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
           </td>
 
           <td

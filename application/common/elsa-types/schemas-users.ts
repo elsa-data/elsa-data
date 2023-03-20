@@ -24,3 +24,12 @@ export const UserSummarySchema = Type.Object({
 });
 
 export type UserSummaryType = Static<typeof UserSummarySchema>;
+
+// User permissions type
+const permissionTypeArray = [
+  "isAllowedChangeUserPermission",
+  "isAllowedRefreshDatasetIndex",
+  "isAllowedCreateRelease",
+  "isAllowedElsaAdminView",
+] as const;
+export type UserPermissionType = typeof permissionTypeArray[number];
