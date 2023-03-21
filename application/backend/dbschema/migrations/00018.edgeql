@@ -1,4 +1,4 @@
-CREATE MIGRATION m1q67hd73w556ohmmajbcjexso7d7kejpkh7l4htjwpzu4e2ggkaoa
+CREATE MIGRATION m1hy4gruokr3efblcplbldmrst7islgfx5sfloatuw27p3my32ce4a
     ONTO m1sdljd6avv3kjavniekruzju4g5y3u52j3afxt75r4lvhy3ykwxnq
 {
   ALTER TYPE permission::User {
@@ -8,7 +8,7 @@ CREATE MIGRATION m1q67hd73w556ohmmajbcjexso7d7kejpkh7l4htjwpzu4e2ggkaoa
   };
   ALTER TYPE permission::User {
       ALTER PROPERTY isAllowedViewAllAuditEvents {
-          RENAME TO isAllowedElsaAdminView;
+          RENAME TO isAllowedOverallAdministratorView;
       };
   };
   ALTER TYPE permission::User {

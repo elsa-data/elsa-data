@@ -212,7 +212,7 @@ export const apiAuthRoutes = async (
 
         if (
           authUser.isAllowedChangeUserPermission ||
-          authUser.isAllowedElsaAdminView
+          authUser.isAllowedOverallAdministratorView
         ) {
           allowed.add(ALLOWED_ELSA_ADMIN_VIEW);
         }
@@ -350,7 +350,7 @@ export const callbackRoutes = async (
 
     if (
       authUser.isAllowedChangeUserPermission ||
-      authUser.isAllowedElsaAdminView ||
+      authUser.isAllowedOverallAdministratorView ||
       isa
     ) {
       allowed.add(ALLOWED_ELSA_ADMIN_VIEW);

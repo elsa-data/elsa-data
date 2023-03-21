@@ -16,7 +16,7 @@ export class AuthenticatedUser {
       isNil(this.dbUser.isAllowedChangeUserPermission) ||
       isNil(this.dbUser.isAllowedRefreshDatasetIndex) ||
       isNil(this.dbUser.isAllowedCreateRelease) ||
-      isNil(this.dbUser.isAllowedElsaAdminView)
+      isNil(this.dbUser.isAllowedOverallAdministratorView)
     )
       throw new UnexpectedStateInternalServerError(
         "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
@@ -51,8 +51,8 @@ export class AuthenticatedUser {
   /**
    * Read permission
    */
-  public get isAllowedElsaAdminView(): boolean {
-    return this.dbUser!.isAllowedElsaAdminView;
+  public get isAllowedOverallAdministratorView(): boolean {
+    return this.dbUser!.isAllowedOverallAdministratorView;
   }
 
   /**

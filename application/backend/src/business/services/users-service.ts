@@ -32,7 +32,7 @@ export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
   isAllowedCreateRelease: boolean;
-  isAllowedElsaAdminView: boolean;
+  isAllowedOverallAdministratorView: boolean;
 };
 
 @injectable()
@@ -56,7 +56,7 @@ export class UsersService {
     user: AuthenticatedUser
   ): Promise<void> {
     // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedElsaAdminView;
+    const isPermissionAllow = user.isAllowedOverallAdministratorView;
     if (isPermissionAllow) return;
 
     throw new NotAuthorisedViewUserManagement();
@@ -97,7 +97,7 @@ export class UsersService {
         isAllowedCreateRelease: a.isAllowedCreateRelease,
 
         // Read Access
-        isAllowedElsaAdminView: a.isAllowedElsaAdminView,
+        isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
       })),
       totalEntries
     );
@@ -139,7 +139,8 @@ export class UsersService {
         set: {
           isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
           isAllowedCreateRelease: permission.isAllowedCreateRelease,
-          isAllowedElsaAdminView: permission.isAllowedElsaAdminView,
+          isAllowedOverallAdministratorView:
+            permission.isAllowedOverallAdministratorView,
           userAuditEvent: {
             "+=": addUserAuditEventPermissionChange(
               user.subjectId,

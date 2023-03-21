@@ -69,7 +69,7 @@ module permission {
         };
         
         # Read Access
-        required property isAllowedElsaAdminView -> bool {
+        required property isAllowedOverallAdministratorView -> bool {
             default := false;
         }
 

@@ -20,7 +20,7 @@ export const UserSummarySchema = Type.Object({
   isAllowedChangeUserPermission: Type.Boolean(),
   isAllowedCreateRelease: Type.Boolean(),
   isAllowedRefreshDatasetIndex: Type.Boolean(),
-  isAllowedElsaAdminView: Type.Boolean(),
+  isAllowedOverallAdministratorView: Type.Boolean(),
 });
 
 export type UserSummaryType = Static<typeof UserSummarySchema>;
@@ -30,6 +30,6 @@ const permissionTypeArray = [
   "isAllowedChangeUserPermission",
   "isAllowedRefreshDatasetIndex",
   "isAllowedCreateRelease",
-  "isAllowedElsaAdminView",
+  "isAllowedOverallAdministratorView",
 ] as const;
 export type UserPermissionType = typeof permissionTypeArray[number];

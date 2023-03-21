@@ -26,7 +26,7 @@ export function debugAllowedDescription(allowed: string) {
     case ALLOWED_CREATE_NEW_RELEASE:
       return "Allowed to create and become a release administrator.";
     case ALLOWED_ELSA_ADMIN_VIEW:
-      return "Allowed to view as an Elsa-Data administrator.";
+      return "Allowed to view as an app administrator.";
     case ALLOWED_DATASET_UPDATE:
       return "Allowed to update/refresh dataset index.";
     default:

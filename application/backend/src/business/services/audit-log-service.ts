@@ -80,7 +80,7 @@ export class AuditLogService {
     releaseKey?: string
   ): Promise<void> {
     // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedElsaAdminView;
+    const isPermissionAllow = user.isAllowedOverallAdministratorView;
     if (isPermissionAllow) return;
 
     // Check if user is part of release therefore have access

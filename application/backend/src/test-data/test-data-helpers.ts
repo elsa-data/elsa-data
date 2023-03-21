@@ -128,7 +128,7 @@ export async function createTestUser(
       displayName: displayName,
       email: email,
 
-      isAllowedElsaAdminView: isAllowedPermission,
+      isAllowedOverallAdministratorView: isAllowedPermission,
 
       isAllowedChangeUserPermission: isAllowedPermission,
       isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,

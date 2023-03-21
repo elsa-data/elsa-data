@@ -49,10 +49,10 @@ const permissionOptionProperties: {
     key: "isAllowedRefreshDatasetIndex",
   },
   {
-    title: "Allow user to view as an Elsa-Data administrator.",
+    title: "Allow user to view as an app administrator.",
     description:
       "Will be able to view all Datasets, Releases, and Audit Events.",
-    key: "isAllowedElsaAdminView",
+    key: "isAllowedOverallAdministratorView",
   },
   {
     title: "Allow user to change other user's permissions.",
@@ -67,7 +67,7 @@ const convertUserPropToPermissionState = (u: UserSummaryType) => ({
   isAllowedChangeUserPermission: u.isAllowedChangeUserPermission,
   isAllowedRefreshDatasetIndex: u.isAllowedRefreshDatasetIndex,
   isAllowedCreateRelease: u.isAllowedCreateRelease,
-  isAllowedElsaAdminView: u.isAllowedElsaAdminView,
+  isAllowedOverallAdministratorView: u.isAllowedOverallAdministratorView,
 });
 
 type Props = {

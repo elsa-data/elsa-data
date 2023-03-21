@@ -8,7 +8,7 @@ export const inputChangeUserPermission = z.object({
   userEmail: z.string(),
   isAllowedRefreshDatasetIndex: z.boolean(),
   isAllowedCreateRelease: z.boolean(),
-  isAllowedElsaAdminView: z.boolean(),
+  isAllowedOverallAdministratorView: z.boolean(),
 });
 
 export const userRouter = router({

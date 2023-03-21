@@ -73,7 +73,7 @@ it("SuperAdmin change other user permission", async () => {
 
   await userService.changePermission(existingUser, "test@example.com", {
     isAllowedCreateRelease: true,
-    isAllowedElsaAdminView: true,
+    isAllowedOverallAdministratorView: true,
     isAllowedRefreshDatasetIndex: true,
   });
 
@@ -81,7 +81,7 @@ it("SuperAdmin change other user permission", async () => {
   expect(u).toBeInstanceOf(AuthenticatedUser);
 
   expect(u!.isAllowedCreateRelease).toBe(true);
-  expect(u!.isAllowedElsaAdminView).toBe(true);
+  expect(u!.isAllowedOverallAdministratorView).toBe(true);
   expect(u!.isAllowedRefreshDatasetIndex).toBe(true);
 });
 
@@ -94,7 +94,7 @@ it("normal user change attempt change permission", async () => {
   await expect(async () => {
     await userService.changePermission(newUser, "test@example.com", {
       isAllowedCreateRelease: true,
-      isAllowedElsaAdminView: true,
+      isAllowedOverallAdministratorView: true,
       isAllowedRefreshDatasetIndex: true,
     });
   }).rejects.toThrow(NotAuthorisedModifyUserManagement);

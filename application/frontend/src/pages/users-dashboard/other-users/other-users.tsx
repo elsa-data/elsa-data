@@ -41,8 +41,8 @@ const permissionIconProperties: {
     icon: <FontAwesomeIcon icon={faArrowsRotate} />,
   },
   {
-    title: "Allow user to view as an Elsa-Data administrator.",
-    key: "isAllowedElsaAdminView",
+    title: "Allow user to view as an app administrator.",
+    key: "isAllowedOverallAdministratorView",
     icon: <FontAwesomeIcon icon={faUsersViewfinder} />,
   },
   {
