@@ -56,7 +56,7 @@ const permissionOptionProperties: {
   },
   {
     title: "Allow user to change other user's permissions.",
-    description: "It can only be changed by an app administrator.",
+    description: "It can only be modified within the app configuration.",
     key: "isAllowedChangeUserPermission",
     disabled: true,
   },
