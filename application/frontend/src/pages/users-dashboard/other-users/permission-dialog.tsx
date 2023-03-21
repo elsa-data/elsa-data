@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   UserPermissionType,
   UserSummaryType,
@@ -128,9 +128,10 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
       },
     }
   );
-  const onSave = () => {
+
+  const onSave = useCallback(() => {
     changeUserPermissionMutate.mutate({ userEmail: user.email, ...input });
-  };
+  }, []);
   const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
 
   return (

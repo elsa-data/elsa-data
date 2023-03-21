@@ -11,10 +11,7 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { useUiAllowed } from "../../../hooks/ui-allowed";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { PermissionDialog } from "../other-users/permission-dialog";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 
 type Props = {};
 
@@ -23,7 +20,7 @@ type Props = {};
  * Will be used purely for dev/debug purposes. Unless this is needed elsewhere it can live
  * permanently near the React that uses it.
  */
-export function debugAllowedDescription(allowed: string) {
+export function decodeAllowedDescription(allowed: string) {
   switch (allowed) {
     case ALLOWED_CHANGE_USER_PERMISSION:
       return "Allowed to change other user's permission.";
@@ -96,7 +93,7 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
           <ul className="list-inside list-disc">
             {Array.from(uiAllowed.values()).map((v) => (
               <li className="mt-2" key={v}>
-                {debugAllowedDescription(v)}
+                {decodeAllowedDescription(v)}
               </li>
             ))}
           </ul>
