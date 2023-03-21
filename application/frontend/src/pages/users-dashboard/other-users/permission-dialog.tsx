@@ -98,7 +98,8 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
   // e.g. Dialog open, editing mode button clicked, or user value changed will refresh the input state
   const [input, setInput] = useState(convertUserPropToPermissionState(user));
   useEffect(() => {
-    if (isDialogOpen) setInput(convertUserPropToPermissionState(user));
+    if (isDialogOpen && !isEditingMode)
+      setInput(convertUserPropToPermissionState(user));
   }, [isDialogOpen, isEditingMode, user]);
 
   // ERROR states
@@ -122,8 +123,6 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
     }
   );
   const onSave = () => {
-    setIsSuccess(false);
-    setIsEditingMode(false);
     changeUserPermissionMutate.mutate({ userEmail: user.email, ...input });
   };
   const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
@@ -207,7 +206,10 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
                     {isEditingAllowed && (
                       <button
                         className="btn-outline btn-xs btn-circle btn ml-2"
-                        onClick={() => setIsEditingMode((p) => !p)}
+                        onClick={() => {
+                          setIsSuccess(false);
+                          setIsEditingMode((p) => !p);
+                        }}
                       >
                         <FontAwesomeIcon icon={faPenToSquare} />
                       </button>
@@ -216,7 +218,7 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
 
                   {!isEditingAllowed && (
                     <div className="w-full bg-amber-100 py-2 text-center text-xs">
-                      You are only allowed to view this permissions.
+                      You are only allowed to view this section.
                     </div>
                   )}
                   {isSuccess && (
