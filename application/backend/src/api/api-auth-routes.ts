@@ -336,31 +336,24 @@ export const callbackRoutes = async (
     // MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
     const allowed = new Set<string>();
 
-    // the super admins are defined in settings/config - not in the db
-    // that is - they are a deployment instance level setting
-    const isa = isSuperAdmin(settings, authUser);
-
-    if (authUser.isAllowedCreateRelease || isa) {
+    if (authUser.isAllowedCreateRelease) {
       allowed.add(ALLOWED_CREATE_NEW_RELEASE);
     }
 
-    if (authUser.isAllowedRefreshDatasetIndex || isa) {
+    if (authUser.isAllowedRefreshDatasetIndex) {
       allowed.add(ALLOWED_DATASET_UPDATE);
     }
 
     if (
       authUser.isAllowedChangeUserPermission ||
-      authUser.isAllowedOverallAdministratorView ||
-      isa
+      authUser.isAllowedOverallAdministratorView
     ) {
       allowed.add(ALLOWED_ELSA_ADMIN_VIEW);
     }
 
-    if (authUser.isAllowedChangeUserPermission || isa) {
+    if (authUser.isAllowedChangeUserPermission) {
       allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
     }
-
-    cookieForBackend(request, reply, ALLOWED_ELSA_ADMIN_VIEW, isa);
 
     cookieForUI(
       request,
