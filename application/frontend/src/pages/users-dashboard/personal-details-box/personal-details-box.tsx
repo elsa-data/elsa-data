@@ -5,12 +5,16 @@ import {
   ALLOWED_CHANGE_USER_PERMISSION,
   ALLOWED_CREATE_NEW_RELEASE,
   ALLOWED_DATASET_UPDATE,
-  ALLOWED_ELSA_ADMIN_VIEW,
+  ALLOWED_OVERALL_ADMIN_VIEW,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import { useUiAllowed } from "../../../hooks/ui-allowed";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
+import { PermissionDialog } from "../other-users/permission-dialog";
+import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 
 type Props = {};
 
@@ -25,7 +29,7 @@ export function debugAllowedDescription(allowed: string) {
       return "Allowed to change other user's permission.";
     case ALLOWED_CREATE_NEW_RELEASE:
       return "Allowed to create and become a release administrator.";
-    case ALLOWED_ELSA_ADMIN_VIEW:
+    case ALLOWED_OVERALL_ADMIN_VIEW:
       return "Allowed to view as an app administrator.";
     case ALLOWED_DATASET_UPDATE:
       return "Allowed to update/refresh dataset index.";
@@ -45,8 +49,34 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
   // has "about you".. things like "here are all the releases you are involved with"..
   const uiAllowed = useUiAllowed();
 
+  const userObject = {
+    displayName: cookies[USER_NAME_COOKIE_NAME],
+    email: cookies[USER_EMAIL_COOKIE_NAME],
+    subjectIdentifier: cookies[USER_SUBJECT_COOKIE_NAME],
+    isAllowedChangeUserPermission: uiAllowed.has(
+      ALLOWED_CHANGE_USER_PERMISSION
+    ),
+    isAllowedCreateRelease: uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE),
+    isAllowedRefreshDatasetIndex: uiAllowed.has(ALLOWED_DATASET_UPDATE),
+    isAllowedOverallAdministratorView: uiAllowed.has(
+      ALLOWED_OVERALL_ADMIN_VIEW
+    ),
+  };
+  const isEditingAllowed = uiAllowed.has(ALLOWED_CHANGE_USER_PERMISSION);
+
+  const Heading = () => (
+    <div className="flex">
+      <div>Basic Info</div>
+      {isEditingAllowed && (
+        <div className="ml-2">
+          <PermissionDialog user={userObject} />
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <Box heading="Basic Info">
+    <Box heading={<Heading />}>
       <div className="flex w-full flex-col sm:flex-row">
         <div className="card rounded-box grid flex-grow">
           <h3 className="font-medium">Name</h3>

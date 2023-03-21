@@ -3,7 +3,7 @@ import {
   ALLOWED_CHANGE_USER_PERMISSION,
   ALLOWED_CREATE_NEW_RELEASE,
   ALLOWED_DATASET_UPDATE,
-  ALLOWED_ELSA_ADMIN_VIEW,
+  ALLOWED_OVERALL_ADMIN_VIEW,
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
@@ -198,7 +198,7 @@ export const apiAuthRoutes = async (
           USER_NAME_COOKIE_NAME,
           authUser.displayName
         );
-        cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, "user@email.com");
+        cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, authUser.email);
 
         const allowed = new Set<string>();
 
@@ -214,7 +214,7 @@ export const apiAuthRoutes = async (
           authUser.isAllowedChangeUserPermission ||
           authUser.isAllowedOverallAdministratorView
         ) {
-          allowed.add(ALLOWED_ELSA_ADMIN_VIEW);
+          allowed.add(ALLOWED_OVERALL_ADMIN_VIEW);
         }
 
         if (authUser.isAllowedChangeUserPermission) {
@@ -348,7 +348,7 @@ export const callbackRoutes = async (
       authUser.isAllowedChangeUserPermission ||
       authUser.isAllowedOverallAdministratorView
     ) {
-      allowed.add(ALLOWED_ELSA_ADMIN_VIEW);
+      allowed.add(ALLOWED_OVERALL_ADMIN_VIEW);
     }
 
     if (authUser.isAllowedChangeUserPermission) {

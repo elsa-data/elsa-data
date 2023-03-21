@@ -18,7 +18,7 @@ import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Column for User Information
-type userKey = "id" | "email" | "displayName" | "subjectIdentifier";
+type userKey = "email" | "displayName" | "subjectIdentifier";
 const userInfoProperties: { label: string; key: userKey }[] = [
   {
     label: "Name",
@@ -63,17 +63,23 @@ const permissionOptionProperties: {
 ];
 
 // A function converting user props to checkbox format useState
-const convertUserPropToPermissionState = (u: UserSummaryType) => ({
+const convertUserPropToPermissionState = (u: UserProps) => ({
   isAllowedChangeUserPermission: u.isAllowedChangeUserPermission,
   isAllowedRefreshDatasetIndex: u.isAllowedRefreshDatasetIndex,
   isAllowedCreateRelease: u.isAllowedCreateRelease,
   isAllowedOverallAdministratorView: u.isAllowedOverallAdministratorView,
 });
 
-type Props = {
-  user: UserSummaryType;
+type UserProps = {
+  displayName: string;
+  email: string;
+  subjectIdentifier: string;
+  isAllowedChangeUserPermission: boolean;
+  isAllowedCreateRelease: boolean;
+  isAllowedRefreshDatasetIndex: boolean;
+  isAllowedOverallAdministratorView: boolean;
 };
-export const PermissionDialog: React.FC<Props> = ({ user }) => {
+export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
   const queryClient = useQueryClient();
 
   // Check if user allowed to do some editing
@@ -146,10 +152,7 @@ export const PermissionDialog: React.FC<Props> = ({ user }) => {
                 <>
                   <button
                     type="button"
-                    disabled={
-                      isLoadingMutatePermission ||
-                      user.isAllowedChangeUserPermission
-                    }
+                    disabled={isLoadingMutatePermission}
                     className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
                     onClick={onSave}
                   >

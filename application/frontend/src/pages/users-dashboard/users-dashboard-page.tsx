@@ -1,5 +1,5 @@
 import React from "react";
-import { ALLOWED_ELSA_ADMIN_VIEW } from "@umccr/elsa-constants";
+import { ALLOWED_OVERALL_ADMIN_VIEW } from "@umccr/elsa-constants";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { Box } from "../../components/boxes";
 import { OtherUsers } from "./other-users/other-users";
@@ -14,7 +14,7 @@ export const UsersDashboardPage: React.FC = () => {
   return (
     <div className="flex flex-col space-y-4">
       <PersonalDetailsBox />
-      {uiAllowed.has(ALLOWED_ELSA_ADMIN_VIEW) && (
+      {uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW) && (
         <OtherUsers pageSize={pageSize} />
       )}
     </div>
