@@ -15,11 +15,6 @@ import { PermissionDialog } from "../other-users/permission-dialog";
 
 type Props = {};
 
-/**
- * An array that maps the above "allowed" flags into strings that can be printed.
- * Will be used purely for dev/debug purposes. Unless this is needed elsewhere it can live
- * permanently near the React that uses it.
- */
 export function decodeAllowedDescription(allowed: string) {
   switch (allowed) {
     case ALLOWED_CHANGE_USER_PERMISSION:

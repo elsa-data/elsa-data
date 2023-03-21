@@ -131,7 +131,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
 
   const onSave = useCallback(() => {
     changeUserPermissionMutate.mutate({ userEmail: user.email, ...input });
-  }, []);
+  }, [changeUserPermissionMutate.mutate, input]);
   const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
 
   return (
