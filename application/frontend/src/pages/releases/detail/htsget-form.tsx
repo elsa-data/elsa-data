@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
 import { ReleaseTypeLocal } from "../shared-types";
-import CSRFInputToken from "../../../components/csrf-token";
+import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;

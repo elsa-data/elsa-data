@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { REACT_QUERY_RELEASE_KEYS } from "../queries";
 import axios from "axios";
 import { trpc } from "../../../helpers/trpc";
-import CSRFInputToken from "../../../components/csrf-token";
+import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;

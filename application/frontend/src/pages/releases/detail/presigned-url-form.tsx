@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FileRecordHeaderType } from "@umccr/elsa-types";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
-import CSRFInputToken from "../../../components/csrf-token";
+import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;

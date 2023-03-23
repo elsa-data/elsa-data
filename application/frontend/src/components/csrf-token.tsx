@@ -10,11 +10,9 @@ import { useCookies } from "react-cookie";
  * @returns
  */
 
-function CSRFInputToken() {
+export const CSRFInputToken = () => {
   const [cookies, _setCookie, removeCookie] = useCookies<any>();
   return (
     <input type="hidden" name="_csrf" value={cookies[CSRF_TOKEN_COOKIE_NAME]} />
   );
-}
-
-export default CSRFInputToken;
+};

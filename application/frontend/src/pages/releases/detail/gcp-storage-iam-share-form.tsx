@@ -6,7 +6,7 @@ import axios from "axios";
 import { ReleaseTypeLocal } from "../shared-types";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
-import CSRFInputToken from "../../../components/csrf-token";
+import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
