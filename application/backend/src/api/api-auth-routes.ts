@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
-  ALLOWED_CHANGE_ADMINS,
-  ALLOWED_CREATE_NEW_RELEASES,
-  ALLOWED_VIEW_AUDIT_EVENTS,
+  ALLOWED_CHANGE_USER_PERMISSION,
+  ALLOWED_CREATE_NEW_RELEASE,
+  ALLOWED_DATASET_UPDATE,
+  ALLOWED_OVERALL_ADMIN_VIEW,
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
@@ -156,10 +157,17 @@ export const apiAuthRoutes = async (
     // NOTE: this has to replicate all the real auth login steps (set the same cookies etc)
     const addTestUserRoute = (
       path: string,
-      authUser: AuthenticatedUser,
-      allowed: string[]
+      subjectId: string,
+      name: string,
+      email: string
     ) => {
       fastify.post(path, async (request, reply) => {
+        const authUser = await userService.upsertUserForLogin(
+          subjectId,
+          name,
+          email
+        );
+
         logger.warn(
           `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`
         );
@@ -177,13 +185,6 @@ export const apiAuthRoutes = async (
           authUser.asJson()
         );
 
-        cookieForBackend(
-          request,
-          reply,
-          ALLOWED_VIEW_AUDIT_EVENTS,
-          allowed.includes(ALLOWED_VIEW_AUDIT_EVENTS)
-        );
-
         // these cookies however are available to React - PURELY for UI/display purposes
         cookieForUI(
           request,
@@ -197,12 +198,34 @@ export const apiAuthRoutes = async (
           USER_NAME_COOKIE_NAME,
           authUser.displayName
         );
-        cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, "user@email.com");
+        cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, authUser.email);
+
+        const allowed = new Set<string>();
+
+        if (authUser.isAllowedCreateRelease) {
+          allowed.add(ALLOWED_CREATE_NEW_RELEASE);
+        }
+
+        if (authUser.isAllowedRefreshDatasetIndex) {
+          allowed.add(ALLOWED_DATASET_UPDATE);
+        }
+
+        if (
+          authUser.isAllowedChangeUserPermission ||
+          authUser.isAllowedOverallAdministratorView
+        ) {
+          allowed.add(ALLOWED_OVERALL_ADMIN_VIEW);
+        }
+
+        if (authUser.isAllowedChangeUserPermission) {
+          allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
+        }
+
         cookieForUI(
           request,
           reply,
           USER_ALLOWED_COOKIE_NAME,
-          allowed.join(",")
+          Array.from(allowed.values()).join(",")
         );
 
         // CSRF Token passed as cookie
@@ -218,17 +241,26 @@ export const apiAuthRoutes = async (
     };
 
     // a test user that is in charge of a few datasets
-    addTestUserRoute("/login-bypass-1", subject1, [
-      ALLOWED_CREATE_NEW_RELEASES,
-    ]);
+    addTestUserRoute(
+      "/login-bypass-1",
+      TEST_SUBJECT_1,
+      TEST_SUBJECT_1_DISPLAY,
+      TEST_SUBJECT_1_EMAIL
+    );
     // a test user that is a Manager in some releases
-    addTestUserRoute("/login-bypass-2", subject2, []);
+    addTestUserRoute(
+      "/login-bypass-2",
+      TEST_SUBJECT_2,
+      TEST_SUBJECT_2_DISPLAY,
+      TEST_SUBJECT_2_EMAIL
+    );
     // a test user that is a super admin equivalent
-    addTestUserRoute("/login-bypass-3", subject3, [
-      ALLOWED_CREATE_NEW_RELEASES,
-      ALLOWED_CHANGE_ADMINS,
-      ALLOWED_VIEW_AUDIT_EVENTS,
-    ]);
+    addTestUserRoute(
+      "/login-bypass-3",
+      TEST_SUBJECT_3,
+      TEST_SUBJECT_3_DISPLAY,
+      TEST_SUBJECT_3_EMAIL
+    );
   }
 };
 
@@ -304,19 +336,24 @@ export const callbackRoutes = async (
     // MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
     const allowed = new Set<string>();
 
-    // the super admins are defined in settings/config - not in the db
-    // that is - they are a deployment instance level setting
-    const isa = isSuperAdmin(settings, authUser);
-
-    if (isa) {
-      allowed.add(ALLOWED_CHANGE_ADMINS);
-      allowed.add(ALLOWED_VIEW_AUDIT_EVENTS);
-
-      // for the moment if we want to do demos it is easy if the super admins get all the functionality
-      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
+    if (authUser.isAllowedCreateRelease) {
+      allowed.add(ALLOWED_CREATE_NEW_RELEASE);
     }
 
-    cookieForBackend(request, reply, ALLOWED_VIEW_AUDIT_EVENTS, isa);
+    if (authUser.isAllowedRefreshDatasetIndex) {
+      allowed.add(ALLOWED_DATASET_UPDATE);
+    }
+
+    if (
+      authUser.isAllowedChangeUserPermission ||
+      authUser.isAllowedOverallAdministratorView
+    ) {
+      allowed.add(ALLOWED_OVERALL_ADMIN_VIEW);
+    }
+
+    if (authUser.isAllowedChangeUserPermission) {
+      allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
+    }
 
     cookieForUI(
       request,

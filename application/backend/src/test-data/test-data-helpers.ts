@@ -128,14 +128,11 @@ export async function createTestUser(
       displayName: displayName,
       email: email,
 
-      isAllowedViewAllAuditEvents: isAllowedPermission,
-      isAllowedViewDatasetContent: isAllowedPermission,
-      isAllowedViewUserManagement: isAllowedPermission,
+      isAllowedOverallAdministratorView: isAllowedPermission,
 
+      isAllowedChangeUserPermission: isAllowedPermission,
       isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,
       isAllowedRefreshDatasetIndex: isAllowedPermission,
-      isAllowedSyncDataAccessEvents: isAllowedPermission,
-      isAllowedViewAllReleases: isAllowedPermission,
 
       userAuditEvent: e.insert(e.audit.UserAuditEvent, {
         whoId: subjectId,

@@ -44,11 +44,8 @@ export async function beforeEachCommon() {
     email: allowedPiEmail,
     isAllowedRefreshDatasetIndex: true,
     isAllowedCreateRelease: true,
-    isAllowedViewAllAuditEvents: true,
-    isAllowedSyncDataAccessEvents: true,
-    isAllowedViewDatasetContent: true,
-    isAllowedViewUserManagement: true,
-    isAllowedViewAllReleases: true,
+    isAllowedOverallAdministratorView: true,
+    isAllowedChangeUserPermission: true,
     lastLoginDateTime: new Date(),
   });
 
@@ -59,11 +56,8 @@ export async function beforeEachCommon() {
     email: "not-allow@emai.com",
     isAllowedRefreshDatasetIndex: false,
     isAllowedCreateRelease: false,
-    isAllowedViewAllAuditEvents: false,
-    isAllowedSyncDataAccessEvents: false,
-    isAllowedViewDatasetContent: false,
-    isAllowedViewUserManagement: false,
-    isAllowedViewAllReleases: false,
+    isAllowedOverallAdministratorView: false,
+    isAllowedChangeUserPermission: false,
     lastLoginDateTime: new Date(),
   });
 

@@ -4,7 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import classNames from "classnames";
 import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
+import {
+  UserPermissionType,
+  UserSummaryType,
+} from "@umccr/elsa-types/schemas-users";
 import { useCookies } from "react-cookie";
 import {
   USER_NAME_COOKIE_NAME,
@@ -13,13 +16,48 @@ import {
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
+import { PermissionDialog } from "./permission-dialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowsRotate,
+  faFolderPlus,
+  faUsersGear,
+  faUsersViewfinder,
+} from "@fortawesome/free-solid-svg-icons";
+
+const permissionIconProperties: {
+  key: UserPermissionType;
+  title: string;
+  icon: JSX.Element;
+}[] = [
+  {
+    title: "Allow user to create and become a release administrator.",
+    key: "isAllowedCreateRelease",
+    icon: <FontAwesomeIcon icon={faFolderPlus} />,
+  },
+  {
+    title: "Allow user to update/refresh dataset index.",
+    key: "isAllowedRefreshDatasetIndex",
+    icon: <FontAwesomeIcon icon={faArrowsRotate} />,
+  },
+  {
+    title: "Allow user to view as an app administrator.",
+    key: "isAllowedOverallAdministratorView",
+    icon: <FontAwesomeIcon icon={faUsersViewfinder} />,
+  },
+  {
+    title: "Allow user to change other user's permissions.",
+    key: "isAllowedChangeUserPermission",
+    icon: <FontAwesomeIcon icon={faUsersGear} />,
+  },
+];
 
 type Props = {
   // the (max) number of users shown on any single page
   pageSize: number;
 };
 
-export const OthersBox: React.FC<Props> = ({ pageSize }) => {
+export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -58,19 +96,48 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
           <td
             className={classNames(
               baseColumnClasses,
+              "w-12",
+              "text-right",
+              "pr-4"
+            )}
+          >
+            <PermissionDialog user={row} />
+          </td>
+
+          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
+            {row.displayName}
+          </td>
+
+          <td
+            className={classNames(
+              baseColumnClasses,
               "text-left",
               "pl-4",
               "w-auto"
             )}
           >
-            {row.subjectIdentifier}
+            {row.email}
           </td>
-          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-            {row.displayName}
+
+          <td
+            className={classNames(
+              baseColumnClasses,
+              "text-left",
+              "pl-4",
+              "w-auto"
+            )}
+          >
+            {permissionIconProperties.map((prop) => (
+              <React.Fragment key={prop.key}>
+                {row[prop.key] == true && (
+                  <span key={prop.key} className="mx-1" title={prop.title}>
+                    {prop.icon}
+                  </span>
+                )}
+              </React.Fragment>
+            ))}
           </td>
-          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
-            {row.isAllowedCreateRelease} {row.isAllowedRefreshDatasetIndex}
-          </td>
+
           <td
             className={classNames(
               baseColumnClasses,
@@ -88,7 +155,7 @@ export const OthersBox: React.FC<Props> = ({ pageSize }) => {
 
   return (
     <Box
-      heading="Users (not you)"
+      heading="Other Users"
       errorMessage={"Something went wrong fetching users."}
     >
       <div className="flex flex-col">

@@ -3,6 +3,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./user.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { UsersService } from "../../src/business/services/users-service";
+import { NotAuthorisedModifyUserManagement } from "../../src/business/exceptions/user";
 
 let existingUser: AuthenticatedUser;
 let edgeDbClient: edgedb.Client;
@@ -61,4 +62,40 @@ it("upsert an existing user to a new display name", async () => {
 
   expect(u!.subjectId).toBe("http://subject1.com");
   expect(u!.displayName).toBe("New Display Name");
+});
+
+it("SuperAdmin change other user permission", async () => {
+  const newUser = await userService.upsertUserForLogin(
+    "http://test.com",
+    "New Display Name",
+    "test@example.com"
+  );
+
+  await userService.changePermission(existingUser, "test@example.com", {
+    isAllowedCreateRelease: true,
+    isAllowedOverallAdministratorView: true,
+    isAllowedRefreshDatasetIndex: true,
+  });
+
+  const u = await userService.getBySubjectId("http://test.com");
+  expect(u).toBeInstanceOf(AuthenticatedUser);
+
+  expect(u!.isAllowedCreateRelease).toBe(true);
+  expect(u!.isAllowedOverallAdministratorView).toBe(true);
+  expect(u!.isAllowedRefreshDatasetIndex).toBe(true);
+});
+
+it("normal user change attempt change permission", async () => {
+  const newUser = await userService.upsertUserForLogin(
+    "http://test.com",
+    "New Display Name",
+    "test@example.com"
+  );
+  await expect(async () => {
+    await userService.changePermission(newUser, "test@example.com", {
+      isAllowedCreateRelease: true,
+      isAllowedOverallAdministratorView: true,
+      isAllowedRefreshDatasetIndex: true,
+    });
+  }).rejects.toThrow(NotAuthorisedModifyUserManagement);
 });

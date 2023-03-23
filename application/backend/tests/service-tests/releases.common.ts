@@ -118,11 +118,8 @@ export async function beforeEachCommon() {
         email: superAdminEmail,
         isAllowedRefreshDatasetIndex: true,
         isAllowedCreateRelease: true,
-        isAllowedViewAllAuditEvents: true,
-        isAllowedSyncDataAccessEvents: true,
-        isAllowedViewDatasetContent: true,
-        isAllowedViewUserManagement: true,
-        isAllowedViewAllReleases: true,
+        isAllowedOverallAdministratorView: true,
+        isAllowedChangeUserPermission: true,
       })
       .run(edgeDbClient);
 
@@ -134,11 +131,8 @@ export async function beforeEachCommon() {
       lastLoginDateTime: new Date(),
       isAllowedRefreshDatasetIndex: true,
       isAllowedCreateRelease: true,
-      isAllowedViewAllAuditEvents: true,
-      isAllowedSyncDataAccessEvents: true,
-      isAllowedViewDatasetContent: true,
-      isAllowedViewUserManagement: true,
-      isAllowedViewAllReleases: true,
+      isAllowedOverallAdministratorView: true,
+      isAllowedChangeUserPermission: true,
     });
   }
 
@@ -168,11 +162,8 @@ export async function beforeEachCommon() {
       lastLoginDateTime: new Date(),
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: true,
-      isAllowedViewAllAuditEvents: false,
-      isAllowedSyncDataAccessEvents: false,
-      isAllowedViewDatasetContent: false,
-      isAllowedViewUserManagement: false,
-      isAllowedViewAllReleases: false,
+      isAllowedOverallAdministratorView: false,
+      isAllowedChangeUserPermission: false,
     });
   }
 
@@ -202,11 +193,8 @@ export async function beforeEachCommon() {
       lastLoginDateTime: new Date(),
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: false,
-      isAllowedViewAllAuditEvents: false,
-      isAllowedSyncDataAccessEvents: false,
-      isAllowedViewDatasetContent: false,
-      isAllowedViewUserManagement: false,
-      isAllowedViewAllReleases: false,
+      isAllowedOverallAdministratorView: false,
+      isAllowedChangeUserPermission: false,
     });
   }
 
@@ -236,11 +224,8 @@ export async function beforeEachCommon() {
       lastLoginDateTime: new Date(),
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: false,
-      isAllowedViewAllAuditEvents: false,
-      isAllowedSyncDataAccessEvents: false,
-      isAllowedViewDatasetContent: false,
-      isAllowedViewUserManagement: false,
-      isAllowedViewAllReleases: false,
+      isAllowedOverallAdministratorView: false,
+      isAllowedChangeUserPermission: false,
     });
   }
 
@@ -266,11 +251,8 @@ export async function beforeEachCommon() {
       lastLoginDateTime: new Date(),
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: false,
-      isAllowedViewAllAuditEvents: false,
-      isAllowedSyncDataAccessEvents: false,
-      isAllowedViewDatasetContent: false,
-      isAllowedViewUserManagement: false,
-      isAllowedViewAllReleases: false,
+      isAllowedOverallAdministratorView: false,
+      isAllowedChangeUserPermission: false,
     });
   }
 

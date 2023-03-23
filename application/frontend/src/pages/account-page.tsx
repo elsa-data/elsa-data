@@ -48,8 +48,8 @@ const PageSizeSetting = () => {
           <div key={`${n}`} className="flex items-center gap-2">
             <input
               id={`page-size-${n}`}
+              type="radio"
               name="Page Size"
-              value={n}
               onChange={() => mutatePageSizeCookie(n)}
               checked={n == pageSize}
               className="radio focus:ring-0"
