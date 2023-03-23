@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { REACT_QUERY_RELEASE_KEYS } from "../queries";
 import axios from "axios";
 import { trpc } from "../../../helpers/trpc";
+import CSRFInputToken from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
@@ -137,6 +138,7 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
           method="POST"
           className="flex flex-col gap-4 p-6"
         >
+          <CSRFInputToken />
           <label className="prose block">
             The functionality from the perspective of a researcher.
           </label>

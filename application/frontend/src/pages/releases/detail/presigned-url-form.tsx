@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FileRecordHeaderType } from "@umccr/elsa-types";
 import { MinusIcon, PlusIcon } from "@heroicons/react/20/solid";
+import CSRFInputToken from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
@@ -52,6 +53,7 @@ export const PresignedUrlForm: React.FC<Props> = ({
     );
     setHeaderSelected(currentTextSelection);
   };
+
   return (
     <>
       {/* we use a POST form action here (rather than a onSubmit handler) because
@@ -62,6 +64,7 @@ export const PresignedUrlForm: React.FC<Props> = ({
         method="POST"
         className="p-6"
       >
+        <CSRFInputToken />
         <div className="flex flex-col gap-6">
           <article className="prose">
             <p>
