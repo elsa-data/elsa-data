@@ -15,10 +15,10 @@ export const DacImportPage: React.FC = () => {
   const uiAllowed = useUiAllowed();
 
   return (
-    <>
-      <div className="flex flex-row flex-wrap">
-        {/* SYNCHRONISE DAC BOX */}
-        {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
+    <div className="flex flex-row flex-wrap">
+      {/* SYNCHRONISE DAC BOX */}
+      {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
+        <>
           <Box
             heading="Import from DAC"
             errorMessage={"Something went wrong importing from DAC."}
@@ -59,16 +59,18 @@ export const DacImportPage: React.FC = () => {
               </button>
             </VerticalTabs>
           </Box>
-        )}
-      </div>
-      <ReleasesAddReleaseDialog
-        showing={showingRemsDialog}
-        cancelShowing={() => setShowingRemsDialog(false)}
-      />
-      <ReleasesManualEntryDialog
-        showing={showingManualEntryDialog}
-        cancelShowing={() => setShowingManualEntryDialog(false)}
-      />
-    </>
+
+          {/* Dialog component from buttons above */}
+          <ReleasesAddReleaseDialog
+            showing={showingRemsDialog}
+            cancelShowing={() => setShowingRemsDialog(false)}
+          />
+          <ReleasesManualEntryDialog
+            showing={showingManualEntryDialog}
+            cancelShowing={() => setShowingManualEntryDialog(false)}
+          />
+        </>
+      )}
+    </div>
   );
 };
