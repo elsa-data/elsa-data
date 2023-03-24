@@ -10,6 +10,8 @@ import { IPresignedUrlProvider } from "../src/business/services/presigned-urls-s
 import { AwsPresignedUrlsService } from "../src/business/services/aws-presigned-urls-service";
 import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-urls-service";
 import { CloudflarePresignedUrlsService } from "../src/business/services/cloudflare-presigned-urls-service";
+import { SESClient } from "@aws-sdk/client-ses";
+import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 
 export async function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
@@ -34,6 +36,14 @@ export async function registerTypes() {
 
   testContainer.register<CloudFormationClient>("CloudFormationClient", {
     useFactory: () => new CloudFormationClient({}),
+  });
+
+  testContainer.register<SESClient>("SESClient", {
+    useFactory: () => new SESClient({}),
+  });
+
+  testContainer.register<ServiceDiscoveryClient>("ServiceDiscoveryClient", {
+    useFactory: () => new ServiceDiscoveryClient({}),
   });
 
   testContainer.register<ElsaSettings>("Settings", {
