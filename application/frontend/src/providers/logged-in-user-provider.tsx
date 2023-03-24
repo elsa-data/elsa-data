@@ -29,7 +29,7 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
     (res) => res,
     (err) => {
       const errCode = err?.response?.status;
-      if (errCode === 403) {
+      if (errCode === 401) {
         removeCookie(USER_SUBJECT_COOKIE_NAME);
       }
       return Promise.reject(err);
