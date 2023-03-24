@@ -13,13 +13,10 @@ export class AuthenticatedUser {
       isNil(this.dbUser.displayName) ||
       isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
-      isNil(this.dbUser.isAllowedSyncDataAccessEvents) ||
+      isNil(this.dbUser.isAllowedChangeUserPermission) ||
       isNil(this.dbUser.isAllowedRefreshDatasetIndex) ||
       isNil(this.dbUser.isAllowedCreateRelease) ||
-      isNil(this.dbUser.isAllowedViewAllAuditEvents) ||
-      isNil(this.dbUser.isAllowedViewDatasetContent) ||
-      isNil(this.dbUser.isAllowedViewUserManagement) ||
-      isNil(this.dbUser.isAllowedViewAllReleases)
+      isNil(this.dbUser.isAllowedOverallAdministratorView)
     )
       throw new UnexpectedStateInternalServerError(
         "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
@@ -54,17 +51,8 @@ export class AuthenticatedUser {
   /**
    * Read permission
    */
-  public get isAllowedViewAllAuditEvents(): boolean {
-    return this.dbUser!.isAllowedViewAllAuditEvents;
-  }
-  public get isAllowedViewDatasetContent(): boolean {
-    return this.dbUser!.isAllowedViewDatasetContent;
-  }
-  public get isAllowedViewUserManagement(): boolean {
-    return this.dbUser!.isAllowedViewUserManagement;
-  }
-  public get isAllowedViewAllReleases(): boolean {
-    return this.dbUser!.isAllowedViewAllReleases;
+  public get isAllowedOverallAdministratorView(): boolean {
+    return this.dbUser!.isAllowedOverallAdministratorView;
   }
 
   /**
@@ -76,8 +64,8 @@ export class AuthenticatedUser {
   public get isAllowedRefreshDatasetIndex(): boolean {
     return this.dbUser!.isAllowedRefreshDatasetIndex;
   }
-  public get isAllowedSyncDataAccessEvents(): boolean {
-    return this.dbUser!.isAllowedSyncDataAccessEvents;
+  public get isAllowedChangeUserPermission(): boolean {
+    return this.dbUser!.isAllowedChangeUserPermission;
   }
 
   /**

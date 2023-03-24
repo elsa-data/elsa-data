@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { ReleaseManualType } from "@umccr/elsa-types";
 import { Controller, useForm } from "react-hook-form";
 import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
-import { ErrorBoundary } from "../../../components/errors";
+import { EagerErrorBoundary, ErrorBoundary } from "../../../components/errors";
 import { RhChecks, RhCheckItem } from "../../../components/rh/rh-checks";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
 import Select from "react-select";
@@ -66,19 +66,28 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
     }
   );
 
-  const [isDatasetMenuLoading, setIsDatasetMenuLoading] = useState(true);
-  const [datasetMenuOptions, setDatasetMenuOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
+  const {
+    data: datasetMenuOptions,
+    isLoading: isDatasetMenuLoading,
+    error: fetchDatasetError,
+    isError: isFetchDatasetError,
+  } = useQuery({
+    queryKey: [],
+    queryFn: async () => {
+      const res = await axios.get<DatasetLightType[]>("/api/datasets/");
+      return res.data.map((x) => ({ value: x.uri, label: x.uri }));
+    },
+  });
 
-  useEffect(() => {
-    axios.get<DatasetLightType[]>("/api/datasets/").then((response) => {
-      setDatasetMenuOptions(
-        response.data.map((x) => ({ value: x.uri, label: x.uri }))
-      );
-      setIsDatasetMenuLoading(false);
-    });
-  }, []);
+  if (isFetchDatasetError) {
+    return (
+      <EagerErrorBoundary
+        message={"Something went wrong fetching datasets."}
+        error={fetchDatasetError}
+        styling={"bg-red-100"}
+      />
+    );
+  }
 
   return (
     <ErrorBoundary styling={"bg-red-100"}>
@@ -91,7 +100,7 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
             <button
               type="button"
               className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={handleSubmit(createNewReleaseMutate.mutate)}
+              onClick={handleSubmit(() => createNewReleaseMutate.mutate())}
             >
               Create
             </button>

@@ -34,11 +34,8 @@ export async function beforeEachCommon() {
     email: allowedPiEmail,
     isAllowedRefreshDatasetIndex: true,
     isAllowedCreateRelease: true,
-    isAllowedViewAllAuditEvents: true,
-    isAllowedSyncDataAccessEvents: true,
-    isAllowedViewDatasetContent: true,
-    isAllowedViewUserManagement: true,
-    isAllowedViewAllReleases: true,
+    isAllowedOverallAdministratorView: true,
+    isAllowedChangeUserPermission: true,
     lastLoginDateTime: new Date(),
   });
 

@@ -4,6 +4,8 @@ import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 import { ErrorBoundary } from "../components/errors";
 import { LayoutBaseFooter } from "./layout-base-footer";
+import { useUiAllowed } from "../hooks/ui-allowed";
+import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";
 
 type Props = {};
 
@@ -31,6 +33,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
         <NavLink
           to={to}
           className={({ isActive }) => (isActive ? whenActive : whenInactive)}
+          onClick={() => setIsMenuBarOpen(false)}
         >
           <span className="pb-1 text-sm md:pb-0">{label}</span>
         </NavLink>
@@ -39,6 +42,8 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
   };
 
   const loggedInUser = useLoggedInUser();
+
+  const uiAllowed = useUiAllowed();
 
   return (
     <>
@@ -105,15 +110,17 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-green-500"
                   )}
                 </li>
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
-                    "/dac",
-                    "DAC",
-                    "text-yellow-500",
-                    "border-yellow-500",
-                    "hover:border-yellow-500"
-                  )}
-                </li>
+                {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
+                  <li className="my-2 mr-6 md:my-0">
+                    {navLink(
+                      "/dac",
+                      "DAC",
+                      "text-yellow-500",
+                      "border-yellow-500",
+                      "hover:border-yellow-500"
+                    )}
+                  </li>
+                )}
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/users",

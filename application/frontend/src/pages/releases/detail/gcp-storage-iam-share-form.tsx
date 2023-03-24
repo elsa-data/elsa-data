@@ -6,6 +6,7 @@ import axios from "axios";
 import { ReleaseTypeLocal } from "../shared-types";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
+import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
@@ -144,6 +145,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           method="POST"
           className="flex flex-col gap-4 p-6"
         >
+          <CSRFInputToken />
           <label className="prose block">
             The functionality from the perspective of a researcher.
           </label>

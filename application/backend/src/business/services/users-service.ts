@@ -21,10 +21,19 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import { NotAuthorisedViewUserManagement } from "../exceptions/user";
+import {
+  NotAuthorisedModifyUserManagement,
+  NotAuthorisedViewUserManagement,
+} from "../exceptions/user";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
+
+export type ChangeablePermission = {
+  isAllowedRefreshDatasetIndex: boolean;
+  isAllowedCreateRelease: boolean;
+  isAllowedOverallAdministratorView: boolean;
+};
 
 @injectable()
 export class UsersService {
@@ -33,12 +42,21 @@ export class UsersService {
     @inject("Settings") private settings: ElsaSettings
   ) {}
 
+  private async checkIsAllowedModifyUserPermission(
+    user: AuthenticatedUser
+  ): Promise<void> {
+    // Check if user has the permission to edit other user permissions
+    const isPermissionAllow = user.isAllowedChangeUserPermission;
+    if (isPermissionAllow) return;
+
+    throw new NotAuthorisedModifyUserManagement();
+  }
+
   private async checkIsAllowedViewUserManagement(
-    executor: Executor,
     user: AuthenticatedUser
   ): Promise<void> {
     // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedViewUserManagement;
+    const isPermissionAllow = user.isAllowedOverallAdministratorView;
     if (isPermissionAllow) return;
 
     throw new NotAuthorisedViewUserManagement();
@@ -56,7 +74,7 @@ export class UsersService {
     limit: number,
     offset: number
   ): Promise<PagedResult<UserSummaryType>> {
-    await this.checkIsAllowedViewUserManagement(this.edgeDbClient, user);
+    await this.checkIsAllowedViewUserManagement(user);
 
     const totalEntries = await countAllUserQuery.run(this.edgeDbClient);
 
@@ -69,11 +87,17 @@ export class UsersService {
       pageOfEntries.map((a) => ({
         id: a.id,
         subjectIdentifier: a.subjectId,
+        email: a.email,
         displayName: a.displayName,
         lastLogin: a.lastLoginDateTime,
+
+        // Write Access
+        isAllowedChangeUserPermission: a.isAllowedChangeUserPermission,
         isAllowedRefreshDatasetIndex: a.isAllowedRefreshDatasetIndex,
         isAllowedCreateRelease: a.isAllowedCreateRelease,
-        isAllowedViewAllAuditEvents: a.isAllowedViewAllAuditEvents,
+
+        // Read Access
+        isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
       })),
       totalEntries
     );
@@ -98,28 +122,30 @@ export class UsersService {
   }
 
   /**
-   * Change a permission property for the User. This also creates an audit event for this change.
-   * TODO: Add more change permission
    * @param user
    * @param permission
    * @param value
    */
   public async changePermission(
     user: AuthenticatedUser,
-    permission: "isAllowedCreateRelease" | "isAllowedRefreshDatasetIndex",
-    value: boolean
+    targetEmail: string,
+    permission: ChangeablePermission
   ): Promise<void> {
-    const permissionDescription = capitalize(lowerCase(permission));
+    await this.checkIsAllowedModifyUserPermission(user);
+
     await e
       .update(e.permission.User, (u) => ({
-        filter: e.op(e.uuid(user.dbId), "=", u.id),
+        filter: e.op(e.str(targetEmail), "=", u.email),
         set: {
-          [permission]: value,
+          isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+          isAllowedCreateRelease: permission.isAllowedCreateRelease,
+          isAllowedOverallAdministratorView:
+            permission.isAllowedOverallAdministratorView,
           userAuditEvent: {
             "+=": addUserAuditEventPermissionChange(
               user.subjectId,
               user.displayName,
-              permissionDescription
+              permission
             ),
           },
         },

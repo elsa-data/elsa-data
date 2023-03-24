@@ -2,6 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
 import { ReleaseTypeLocal } from "../shared-types";
+import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
@@ -26,6 +27,7 @@ export const HtsgetForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
         action={`/api/releases/${releaseKey}/htsget-manifest`}
         method="POST"
       >
+        <CSRFInputToken />
         <div className="flex flex-col gap-6">
           <article className="prose">
             <p>
