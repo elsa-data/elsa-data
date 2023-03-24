@@ -69,10 +69,14 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
 
   if (logLevel) loggerTransportTargets.forEach((l) => (l.level ??= logLevel));
 
+  // TODO fix this logic once we have a few more AWS settings and know what is required
   const hasAws =
-    config.has("aws.signingAccessKeyId") &&
-    config.has("aws.signingSecretAccessKey") &&
+    config.has("aws.signingAccessKeyId") ||
+    config.has("aws.signingSecretAccessKey") ||
     config.has("aws.tempBucket");
+  const hasAwsSigning =
+    config.has("aws.signingAccessKeyId") &&
+    config.has("aws.signingSecretAccessKey");
   const hasCloudflare =
     config.has("cloudflare.signingAccessKeyId") &&
     config.has("cloudflare.signingAccessKeyId");
@@ -93,9 +97,13 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     oidcIssuer: issuer,
     aws: hasAws
       ? {
-          signingAccessKeyId: config.get("aws.signingAccessKeyId")!,
-          signingSecretAccessKey: config.get("aws.signingSecretAccessKey")!,
-          tempBucket: config.get("aws.tempBucket")!,
+          signingAccessKeyId: hasAwsSigning
+            ? config.get("aws.signingAccessKeyId")
+            : undefined,
+          signingSecretAccessKey: hasAwsSigning
+            ? config.get("aws.signingSecretAccessKey")
+            : undefined,
+          tempBucket: config.get("aws.tempBucket"),
         }
       : undefined,
     cloudflare: hasCloudflare

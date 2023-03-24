@@ -106,9 +106,12 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
                       vpcId: vpcId,
                     });
                   }}
-                  disabled={installCloudFormationMutate.isLoading}
+                  disabled={
+                    installCloudFormationMutate.isLoading ||
+                    deleteCloudFormationMutate.isLoading
+                  }
                 >
-                  Enable Access Point
+                  Install Access Point
                 </button>
               </div>
             )}
@@ -117,14 +120,17 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
                 <button
                   type="button"
                   className="btn-normal"
-                  disabled={true}
+                  disabled={
+                    installCloudFormationMutate.isLoading ||
+                    deleteCloudFormationMutate.isLoading
+                  }
                   onClick={async () => {
                     deleteCloudFormationMutate.mutate({
                       releaseKey: releaseKey,
                     });
                   }}
                 >
-                  Disable Access Point (not working)
+                  Delete Access Point
                 </button>
               </div>
             )}

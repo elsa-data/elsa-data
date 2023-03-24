@@ -203,10 +203,11 @@ export class AwsAccessPointService extends AwsBaseService {
         releaseKey
       );
 
-    if (userRole === "Administrator") {
+    if (userRole !== "Administrator") {
       throw new ReleaseViewError(releaseKey);
     }
 
+    // TODO use file manifest
     // find all the files encompassed by this release as a flat array of S3 URLs
     const filesArray = await getAllFileRecords(
       this.edgeDbClient,

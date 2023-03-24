@@ -35,11 +35,13 @@ export type ElsaSettings = {
 
   logger: LoggerOptions;
 
-  // optional signing details to allow sharing of objects in AWS
+  // optional details to allow sharing of objects in AWS
   aws?: {
-    signingAccessKeyId: string;
-    signingSecretAccessKey: string;
+    // if using AWS then temp bucket is required
     tempBucket: string;
+    // it is possible to use AWS but not necessarily use signing
+    signingAccessKeyId?: string;
+    signingSecretAccessKey?: string;
   };
 
   // optional signing details to allow sharing of objects in CloudFlare R2
