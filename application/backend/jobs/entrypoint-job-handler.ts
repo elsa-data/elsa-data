@@ -21,8 +21,8 @@ bootstrapDependencyInjection();
     await getDirectConfig(breeWorkerData.job.worker.workerData)
   );
 
-  // we create a logger that always has a a field telling us the context was the
-  // job handler
+  // we create a logger that always has a field telling us that the context was the
+  // job handler - allows us to separate out job logs in CloudWatch
   const logger = pino(settings.logger).child({ context: "job-handler" });
 
   container.register<ElsaSettings>("Settings", {
@@ -33,15 +33,15 @@ bootstrapDependencyInjection();
     useValue: logger,
   });
 
-  // store boolean if the job is cancelled
-  let isCancelled = false;
+  // store boolean if the job handler is cancelled
+  let isJobHandlerCancelled = false;
 
   let failureCount = 0;
 
   // handle cancellation
   if (parentPort)
     parentPort.on("message", (message) => {
-      if (message === "cancel") isCancelled = true;
+      if (message === "cancel") isJobHandlerCancelled = true;
     });
 
   // this is a measure of the chunk size of work we want to do
@@ -155,7 +155,12 @@ bootstrapDependencyInjection();
       logger.flush();
 
       // the only way we finish the job service is if the parent asks us
-      if (isCancelled) process.exit(0);
+      if (isJobHandlerCancelled) {
+        logger.warn(
+          "JOB SERVICE FAILURE - RECEIVED PARENT CANCELLATION MESSAGE"
+        );
+        process.exit(0);
+      }
     } catch (e) {
       // TODO replace with a better failure mechanism
       // if we hit 1000 failures then chances are we *are* just looping with failure and we probably do want to exit
