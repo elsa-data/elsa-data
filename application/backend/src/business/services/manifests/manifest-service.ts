@@ -6,13 +6,25 @@ import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/que
 import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
 import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
+import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
 import { ManifestHtsgetType } from "./manifest-htsget-types";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
-import { ManifestBucketKeyType } from "./manifest-bucket-key-types";
+import { ManifestBucketKeyType, ManifestTsvBodyType } from "./manifest-bucket-key-types";
+import archiver, { ArchiverOptions } from "archiver";
+import { stringify } from "csv-stringify";
+import { Readable } from "stream";
+import streamConsumers from "node:stream/consumers";
+import { ReleaseService } from "../release-service";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
+import { PresignedUrlsService } from "../presigned-urls-service";
 
 @injectable()
 export class ManifestService {
-  constructor(@inject("Database") private edgeDbClient: edgedb.Client) {}
+  constructor(
+    @inject("Database") private edgeDbClient: edgedb.Client,
+    private readonly releaseService: ReleaseService
+  ) {}
 
   /**
    * Return the manifest for this release if present, else return null.
@@ -40,6 +52,8 @@ export class ManifestService {
 
     // TODO fix exceptions here
     if (!releaseWithManifest.activation) return null;
+
+    if (JSON.stringify(releaseWithManifest.activation.manifest) === "{}") return null;
 
     return releaseWithManifest.activation.manifest as ManifestMasterType;
   }
@@ -78,7 +92,68 @@ export class ManifestService {
     return transformMasterManifestToHtsgetManifest(masterManifest);
   }
 
-  public async createTsvManifest(masterManifest: ManifestMasterType) {}
+  public async getActiveTsvManifest(
+    presignedUrlsService: PresignedUrlsService,
+    releaseKey: string
+  ): Promise<ManifestTsvBodyType | null> {
+    const masterManifest = await this.getActiveManifest(releaseKey);
+
+    // TODO fix exceptions here
+    if (!masterManifest) return null;
+
+    return await transformMasterManifestToTsvManifest(
+      masterManifest,
+      presignedUrlsService,
+      releaseKey
+    );
+  }
+
+  public async getArchivedActiveTsvManifest(
+    presignedUrlsService: PresignedUrlsService,
+    user: AuthenticatedUser,
+    releaseKey: string,
+    header: (typeof ObjectStoreRecordKey[number])[]
+  ): Promise<archiver.Archiver | null> {
+    const manifest = await this.getActiveTsvManifest(
+      presignedUrlsService,
+      releaseKey
+    );
+    if (!manifest) {
+      return null;
+    }
+
+    // setup a TSV stream
+    const stringifyColumnOptions = [];
+    for (const column of header) {
+      stringifyColumnOptions.push({
+        key: column,
+        header: column.toUpperCase(),
+      });
+    }
+    const stringifier = stringify({
+      header: true,
+      columns: stringifyColumnOptions,
+      delimiter: "\t",
+    });
+
+    const readableStream = Readable.from(manifest);
+    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
+
+    const password = await this.releaseService.getPassword(user, releaseKey);
+
+    // create archive and specify method of encryption and password
+    let archive = archiver.create("zip-encrypted", {
+      zlib: { level: 8 },
+      encryptionMethod: "aes256",
+      password: password,
+    } as ArchiverOptions);
+
+    archive.append(buf, { name: "manifest.tsv" });
+
+    await archive.finalize();
+
+    return archive;
+  }
 
   public async getActiveBucketKeyManifest(
     releaseKey: string

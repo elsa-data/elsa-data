@@ -37,7 +37,7 @@ export class PresignedUrlsService {
     return this.presignedUrlsServices.some((p) => p.isEnabled);
   }
 
-  private async presign(
+  public async presign(
     releaseKey: string,
     protocol: string,
     bucket: string,

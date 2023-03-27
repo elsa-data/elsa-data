@@ -26,21 +26,22 @@ export const ReleaseRemsSyncRequestSchema = Type.Object({
   remsKey: Type.String(),
 });
 
-const ObjectStoreRecordKey = [
+export const ObjectStoreRecordKey = [
   "caseId",
   "patientId",
   "specimenId",
-  "objectType",
   "objectSize",
-  "objectStoreUrl",
+  "objectStoreProtocol",
   "objectStoreBucket",
   "objectStoreKey",
   "objectStoreSigned",
+  "objectStoreUrl",
+  "objectType",
   "md5",
 ] as const;
 
 export const FileRecordHeader = Type.Array(
-  Type.Union(ObjectStoreRecordKey.map((header: string) => Type.Literal(header)))
+  Type.Union(ObjectStoreRecordKey.map((header: typeof ObjectStoreRecordKey[number]) => Type.Literal(header)))
 );
 
 export const ReleasePresignRequestSchema = Type.Object({

@@ -5,13 +5,10 @@ import { UsersService } from "./users-service";
 import { GcpBaseService } from "./gcp-base-service";
 import { AuditLogService } from "./audit-log-service";
 import { Storage } from "@google-cloud/storage";
-import {
-  getAllFileRecords,
-  ReleaseFileListEntry,
-} from "./_release-file-list-helper";
+import { getAllFileRecords } from "./_release-file-list-helper";
 import pLimit, { Limit } from "p-limit";
-import { Metadata } from "@google-cloud/storage/build/src/nodejs-common";
 import { ReleaseService } from "./release-service";
+import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 
 @injectable()
 @singleton()
@@ -59,52 +56,6 @@ export class GcpStorageSharingService extends GcpBaseService {
     return this.objectLimits[uri];
   }
 
-  /**
-   * Adds/removes a metadata key-value pair to an object which indicates release
-   * membership.
-   *
-   * @param operation whether to add or delete the release's metadata
-   * @param bucket the bucket which the object belongs to
-   * @param key the object's key
-   * @param releaseKey the release the object belongs to
-   */
-  modifyObjectMetadataFn(
-    operation: "add" | "delete",
-    bucket: string,
-    key: string,
-    releaseKey: string
-  ): () => Promise<void> {
-    // TODO(DoxasticFox): Delete me when we start using the release service
-    // to figure out which objects belong to an active release
-    const go = async () => {
-      const metadataKey = `elsa-data-release-id-${releaseKey}`;
-
-      var updatedMetadata: Metadata = {};
-
-      if (operation === "add") {
-        updatedMetadata = {
-          metadata: {
-            [metadataKey]: true,
-          },
-        };
-      } else if (operation === "delete") {
-        updatedMetadata = {
-          metadata: {
-            [metadataKey]: null,
-          },
-        };
-      } else {
-        throw Error(`Unexpected operation ${operation}`);
-      }
-
-      await this.storage.bucket(bucket).file(key).setMetadata(updatedMetadata);
-    };
-
-    const objectLimit = this.getObjectLimit(bucket, key);
-
-    return () => objectLimit(go);
-  }
-
   modifyObjectPrincipalFn(
     operation: "add" | "delete",
     bucket: string,
@@ -134,23 +85,20 @@ export class GcpStorageSharingService extends GcpBaseService {
     releaseKey: string,
     principals: string[]
   ): (() => Promise<void>)[] {
-    return [
-      ...principals.map((principal) =>
-        this.modifyObjectPrincipalFn(
-          operation,
-          bucket,
-          key,
-          releaseKey,
-          principal
-        )
-      ),
-      this.modifyObjectMetadataFn(operation, bucket, key, releaseKey),
-    ];
+    return principals.map((principal) =>
+      this.modifyObjectPrincipalFn(
+        operation,
+        bucket,
+        key,
+        releaseKey,
+        principal
+      )
+    );
   }
 
   modifyObjectsPrincipalsFns(
     operation: "add" | "delete",
-    allFiles: ReleaseFileListEntry[],
+    allFiles: ManifestBucketKeyObjectType[],
     releaseKey: string,
     principals: string[]
   ): (() => Promise<void>)[] {
@@ -262,19 +210,5 @@ export class GcpStorageSharingService extends GcpBaseService {
     principals: string[]
   ): Promise<number> {
     return await this.modifyUsers("delete", user, releaseKey, principals);
-  }
-
-  async manifest(
-    user: AuthenticatedUser,
-    releaseKey: string,
-    tsvColumns: string[]
-  ): Promise<{ filename: string; content: string }> {
-    // TODO(DoxasticFox): Implement me. A manifest getter is already implemented
-    // here: application/backend/src/business/services/aws-access-point-service.ts
-    //
-    // Though, once it's implemented, it's probably better to use the release
-    // service which @andrewpatto started working on here:
-    // https://github.com/umccr/elsa-data/pull/186
-    return { filename: "", content: "" };
   }
 }

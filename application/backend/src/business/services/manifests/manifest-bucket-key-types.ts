@@ -1,4 +1,9 @@
 import { Static, Type } from "@sinclair/typebox";
+import {
+  FileRecordHeader,
+  ObjectStoreRecordKey,
+} from "../../../../../common/elsa-types/schemas";
+import assert from "assert";
 
 export const ManifestBucketKeyObjectSchema = Type.Object({
   caseId: Type.String(),
@@ -21,6 +26,12 @@ export const ManifestBucketKeyObjectSchema = Type.Object({
   md5: Type.Optional(Type.String()),
 });
 
+assert(
+  JSON.stringify([...Object.keys(ManifestBucketKeyObjectSchema.properties)].sort())
+  ===
+  JSON.stringify([...ObjectStoreRecordKey].sort())
+);
+
 export const ManifestBucketKeySchema = Type.Object({
   // the release identifier from Elsa Data
   id: Type.String(),
@@ -29,8 +40,12 @@ export const ManifestBucketKeySchema = Type.Object({
   objects: Type.Array(ManifestBucketKeyObjectSchema),
 });
 
+export const ManifestTsvBodySchema = Type.Array(ManifestBucketKeyObjectSchema);
+
 export type ManifestBucketKeyType = Static<typeof ManifestBucketKeySchema>;
 
 export type ManifestBucketKeyObjectType = Static<
   typeof ManifestBucketKeyObjectSchema
 >;
+
+export type ManifestTsvBodyType = Static<typeof ManifestTsvBodySchema>;
