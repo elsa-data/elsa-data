@@ -67,7 +67,7 @@ export abstract class ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    const isAllowed = user.isAllowedOverallAdministratorView;
+    this.edgeDbClient.withGlobals;
 
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,
@@ -76,8 +76,7 @@ export abstract class ReleaseBaseService {
 
     const role = boundaryInfo?.role;
 
-    if (!boundaryInfo || (!role && !isAllowed))
-      throw new ReleaseViewError(releaseKey);
+    if (!boundaryInfo) throw new ReleaseViewError(releaseKey);
 
     return {
       userRole: role as ReleaseRoleStrings,
