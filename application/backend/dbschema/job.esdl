@@ -100,4 +100,10 @@ module job {
         #
         required property awsStackId -> str;
     }
+
+    type CopyOutJob extending Job {
+        # the steps job that has been invoked
+        #
+        required property awsExecutionArn -> str;
+    }
 }
