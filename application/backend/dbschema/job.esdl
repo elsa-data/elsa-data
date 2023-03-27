@@ -93,11 +93,11 @@ module job {
     }
 
     type CloudFormationDeleteJob extending Job {
-
-        # the stack id of the cloud formation we are deleting
-        # NOTE this is solely used *during* the delete to track progress
+        # the stack id of the cloud formation we are delete
+        # THIS MUST BE DETERMINED BEFORE STARTING THE DELETE AS ONLY Stack Ids can be used for tracking
+        # delete operations
+        # NOTE stack ids are not passed here from the corresponding install job
         #
         required property awsStackId -> str;
     }
-
 }

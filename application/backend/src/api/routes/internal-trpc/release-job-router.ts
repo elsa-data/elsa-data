@@ -36,7 +36,7 @@ export const releaseJobRouter = router({
           input.vpcId
         );
 
-      await ctx.jobService.startCloudFormationInstallJob(
+      await ctx.jobCloudFormationCreateService.startCloudFormationInstallJob(
         ctx.user,
         input.releaseKey,
         s3HttpsUrl
@@ -45,7 +45,15 @@ export const releaseJobRouter = router({
   startAccessPointUninstall: internalProcedure
     .input(inputReleaseKeySingleParameter)
     .mutation(async ({ input, ctx }) => {
-      throw new Error();
+      if (!ctx.awsAccessPointService.isEnabled)
+        throw new Error(
+          "The AWS service was not started so AWS Access Point sharing will not work"
+        );
+
+      await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(
+        ctx.user,
+        input.releaseKey
+      );
     }),
   cancel: internalProcedure
     .input(inputReleaseKeySingleParameter)

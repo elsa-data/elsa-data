@@ -156,7 +156,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
    */
   const addNewStack = (bucketName: string) => {
     subStackCount++;
-    subStackAccessPointName = `${releaseKey}-${subStackCount}`;
+    subStackAccessPointName = `${releaseKey.toLowerCase()}-${subStackCount}`;
     subStackStackName = bucketNameAsResource(bucketName);
 
     subStackCurrent = {
