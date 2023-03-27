@@ -9,6 +9,7 @@ import { IPresignedUrlProvider } from "./business/services/presigned-urls-servic
 import { AwsPresignedUrlsService } from "./business/services/aws-presigned-urls-service";
 import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-service";
 import { CloudflarePresignedUrlsService } from "./business/services/cloudflare-presigned-urls-service";
+import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -45,6 +46,10 @@ export function bootstrapDependencyInjection() {
 
   container.register<SES>("SESClient", {
     useFactory: () => new SES(awsClientConfig),
+  });
+
+  container.register<ServiceDiscoveryClient>("ServiceDiscoveryClient", {
+    useFactory: () => new ServiceDiscoveryClient(awsClientConfig),
   });
 
   container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {

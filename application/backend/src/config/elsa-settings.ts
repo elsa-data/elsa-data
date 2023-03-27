@@ -22,6 +22,9 @@ export type ElsaSettings = {
     defaults?: any;
   };
 
+  // the namespace in which we should be doing service discovery for dynamic services
+  serviceDiscoveryNamespace: string;
+
   sessionSecret: string;
   sessionSalt: string;
 

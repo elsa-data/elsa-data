@@ -79,6 +79,8 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
 
   return {
     deployedUrl: deployedUrl,
+    // this might eventually come from config but for the moment with only AWS is static
+    serviceDiscoveryNamespace: "elsa-data",
     host: config.get("host"),
     port: config.get("port"),
     mailer: {

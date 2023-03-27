@@ -23,6 +23,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     mode: "None",
   },
   deployedUrl: "http://localhost:3000",
+  serviceDiscoveryNamespace: "elsa-data",
   datasets: [
     {
       name: "10G",
