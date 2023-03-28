@@ -9,7 +9,6 @@ import { stringify } from "csv-stringify";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { getAllFileRecords } from "./_release-file-list-helper";
 import { ReleaseViewError } from "../exceptions/release-authorisation";
 import { ManifestService } from "./manifests/manifest-service";
 import assert from "assert";
@@ -104,7 +103,7 @@ export class PresignedUrlsService {
               af.objectStoreBucket,
               af.objectStoreKey
             )
-          : "";
+          : undefined;
       } catch (e) {
         const errorString = e instanceof Error ? e.message : String(e);
 

@@ -22,11 +22,11 @@ export async function transformMasterManifestToBucketKeyManifest(
     // TODO regex don't support trailing slashes - and should be fixed if we introduce sharing 'folders'
     const OBJECT_URL_REGEX = new RegExp("^([^:]+):\\/\\/([^\\/]+)\\/(.+)$");
 
-    const getMd5 = (checksums: any[]): string => {
+    const getMd5 = (checksums: any[]): string | undefined => {
       for (const c of checksums || []) {
         if (c.type === "MD5") return c.value;
       }
-      return "";
+      return undefined;
     };
 
     const decomposeFileIntoParts = (
@@ -67,33 +67,11 @@ export async function transformMasterManifestToBucketKeyManifest(
     };
 
     for (const artifact of specimenWithArtifacts.artifacts) {
-      let objectType;
-
-      if (artifact.bamFile || artifact.baiFile) objectType = "BAM";
-      if (artifact.bclFile) objectType = "BCL";
-      if (artifact.cramFile || artifact.craiFile) objectType = "CRAM";
-      if (artifact.forwardFile || artifact.reverseFile) objectType = "FASTQ";
-      if (artifact.vcfFile || artifact.tbiFile) objectType = "VCF";
-
-      if (!objectType)
-        throw new Error(
-          `Encountered artifact ${artifact.id} that was not of an object type we knew`
-        );
-
-      // only one of these will be filled in and we are only interested in that one
-      const file =
-        artifact.baiFile ??
-        artifact.bamFile ??
-        artifact.bclFile ??
-        artifact.craiFile ??
-        artifact.cramFile ??
-        artifact.forwardFile ??
-        artifact.reverseFile ??
-        artifact.vcfFile ??
-        artifact.tbiFile;
-
-      if (file) {
-        const c: ManifestBucketKeyObjectType = {
+      const createEntry = (
+        file: typeof artifact.baiFile,
+        objectType: string
+      ) => {
+        return {
           caseId: collapseExternalIds(
             specimenWithArtifacts.case_?.externalIdentifiers
           ),
@@ -108,8 +86,26 @@ export async function transformMasterManifestToBucketKeyManifest(
           objectStoreUrl: file.url,
           ...decomposeFileIntoParts(file.url, file.size, file.checksums),
         };
-        converted.push(c);
-      }
+      };
+
+      if (artifact.bclFile)
+        converted.push(createEntry(artifact.bclFile, "BCL"));
+      if (artifact.bamFile)
+        converted.push(createEntry(artifact.bamFile, "BAM"));
+      if (artifact.baiFile)
+        converted.push(createEntry(artifact.baiFile, "BAM"));
+      if (artifact.craiFile)
+        converted.push(createEntry(artifact.craiFile, "CRAM"));
+      if (artifact.cramFile)
+        converted.push(createEntry(artifact.cramFile, "CRAM"));
+      if (artifact.forwardFile)
+        converted.push(createEntry(artifact.forwardFile, "FASTQ"));
+      if (artifact.reverseFile)
+        converted.push(createEntry(artifact.reverseFile, "FASTQ"));
+      if (artifact.vcfFile)
+        converted.push(createEntry(artifact.vcfFile, "VCF"));
+      if (artifact.tbiFile)
+        converted.push(createEntry(artifact.tbiFile, "VCF"));
     }
 
     // TODO note that this logic exposes all versions of every artifact.. we might consider if instead
