@@ -25,28 +25,55 @@ export async function transformMasterManifestToBucketKeyManifest(
     const GS_REGEX = new RegExp("^gs://([^/]+)/(.*?([^/]+))$");
     const R2_REGEX = new RegExp("^r2://([^/]+)/(.*?([^/]+))$");
 
-    const convert = (url: string): ManifestBucketKeyObjectType | null => {
+    const convert = (
+      artifactId: string,
+      url: string,
+      size: number
+    ): ManifestBucketKeyObjectType | null => {
       if (_.isString(url)) {
         const s3Match = url.match(S3_REGEX);
         if (s3Match)
-          return { service: "s3", bucket: s3Match[1], key: s3Match[2] };
+          return {
+            artifactId: artifactId,
+            service: "s3",
+            bucket: s3Match[1],
+            key: s3Match[2],
+          };
         const gsMatch = url.match(GS_REGEX);
         if (gsMatch)
-          return { service: "gs", bucket: gsMatch[1], key: gsMatch[2] };
+          return {
+            artifactId: artifactId,
+            service: "gs",
+            bucket: gsMatch[1],
+            key: gsMatch[2],
+          };
         const r2Match = url.match(R2_REGEX);
         if (r2Match)
-          return { service: "r2", bucket: r2Match[1], key: r2Match[2] };
+          return {
+            artifactId: artifactId,
+            service: "r2",
+            bucket: r2Match[1],
+            key: r2Match[2],
+          };
       }
       return null;
     };
 
     for (const art of filesResult.artifacts) {
-      if ("vcfFile" in art) {
-        const c = convert(art["vcfFile"]?.url);
-        if (c) converted.push(c);
-      }
-      if ("bamFile" in art) {
-        const c = convert(art["bamFile"]?.url);
+      // only one of these will be filled in and we are only interested in that one
+      const file =
+        art.baiFile ??
+        art.bamFile ??
+        art.bclFile ??
+        art.craiFile ??
+        art.cramFile ??
+        art.forwardFile ??
+        art.reverseFile ??
+        art.vcfFile ??
+        art.tbiFile;
+
+      if (file) {
+        const c = convert(art.id, file.url, file.size);
         if (c) converted.push(c);
       }
     }

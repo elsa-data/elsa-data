@@ -1,6 +1,7 @@
 import { Static, Type } from "@sinclair/typebox";
 
 export const ManifestBucketKeyObjectSchema = Type.Object({
+  artifactId: Type.String(),
   service: Type.String(),
   bucket: Type.String(),
   key: Type.String(),
