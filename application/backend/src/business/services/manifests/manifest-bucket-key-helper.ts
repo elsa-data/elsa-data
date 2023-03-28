@@ -1,9 +1,4 @@
 import _ from "lodash";
-import type {
-  ManifestHtsgetReadsFileType,
-  ManifestHtsgetType,
-  ManifestHtsgetVariantsFileType,
-} from "./manifest-htsget-types";
 import { ManifestMasterType } from "./manifest-master-types";
 import {
   ManifestBucketKeyObjectType,
@@ -25,28 +20,22 @@ export async function transformMasterManifestToBucketKeyManifest(
   for (const filesResult of masterManifest.specimenList) {
     // consider moving all these into *UrlService classes..
 
-    const S3_PREFIX = "s3://";
-    const GS_PREFIX = "gs://";
-    const R2_PREFIX = "r2://";
-
+    // TODO these regexes don't support trailing slashes - and should be fixed if we introduce sharing 'folders'
     const S3_REGEX = new RegExp("^s3://([^/]+)/(.*?([^/]+))$");
     const GS_REGEX = new RegExp("^gs://([^/]+)/(.*?([^/]+))$");
     const R2_REGEX = new RegExp("^r2://([^/]+)/(.*?([^/]+))$");
 
     const convert = (url: string): ManifestBucketKeyObjectType | null => {
       if (_.isString(url)) {
-        if (url.startsWith(S3_PREFIX)) {
-          const m = url.match(S3_REGEX);
-          if (m) return { service: "s3", bucket: m[1], key: m[2] };
-        }
-        if (url.startsWith(GS_PREFIX)) {
-          const m = url.match(GS_REGEX);
-          if (m) return { service: "gs", bucket: m[1], key: m[2] };
-        }
-        if (url.startsWith(R2_PREFIX)) {
-          const m = url.match(R2_REGEX);
-          if (m) return { service: "r2", bucket: m[1], key: m[2] };
-        }
+        const s3Match = url.match(S3_REGEX);
+        if (s3Match)
+          return { service: "s3", bucket: s3Match[1], key: s3Match[2] };
+        const gsMatch = url.match(GS_REGEX);
+        if (gsMatch)
+          return { service: "gs", bucket: gsMatch[1], key: gsMatch[2] };
+        const r2Match = url.match(R2_REGEX);
+        if (r2Match)
+          return { service: "r2", bucket: r2Match[1], key: r2Match[2] };
       }
       return null;
     };
