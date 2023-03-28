@@ -99,7 +99,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseKey: string,
-    userRole: string
+    userRole: ReleaseRoleStrings
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
@@ -118,13 +118,16 @@ export abstract class ReleaseBaseService {
         ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
         : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
 
-    const hasRunningJob =
-      releaseInfo.runningJob && releaseInfo.runningJob.length === 1;
-
     if (releaseInfo.runningJob && releaseInfo.runningJob.length > 1)
       throw new Error(
         "There should only be one running job (if any job is running)"
       );
+
+    // only the admins know about long-running jobs
+    const hasRunningJob =
+      userRole === "Administrator"
+        ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
+        : false;
 
     return {
       id: releaseInfo.id,
