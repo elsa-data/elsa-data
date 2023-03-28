@@ -27,9 +27,11 @@ export function createSessionCookieRouteHook(usersService: UsersService) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const authedUser = getAuthenticatedUserFromSecureSession(request);
     if (!authedUser) throw new NotAuthorisedCredentials();
+    request.log.trace(authedUser, `createSessionCookieRouteHook: user details`);
 
     const dbUser = await usersService.getBySubjectId(authedUser.subjectId);
     if (!dbUser) throw new NotAuthorisedCredentials();
+    request.log.trace(dbUser, `databaseUser: user details`);
 
     // Check for permissions different
     const dbPermission = createUserAllowedCookie(dbUser);
