@@ -7,6 +7,8 @@ import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
 import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
 import { ManifestHtsgetType } from "./manifest-htsget-types";
+import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
+import { ManifestBucketKeyType } from "./manifest-bucket-key-types";
 
 @injectable()
 export class ManifestService {
@@ -77,4 +79,15 @@ export class ManifestService {
   }
 
   public async createTsvManifest(masterManifest: ManifestMasterType) {}
+
+  public async getActiveBucketKeyManifest(
+    releaseKey: string
+  ): Promise<ManifestBucketKeyType | null> {
+    const masterManifest = await this.getActiveManifest(releaseKey);
+
+    // TODO fix exceptions here
+    if (!masterManifest) return null;
+
+    return transformMasterManifestToBucketKeyManifest(masterManifest);
+  }
 }

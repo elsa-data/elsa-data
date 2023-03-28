@@ -10,6 +10,7 @@ import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
 import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
 import { useReleasesMasterData } from "../releases-types";
+import { CopyOutForm } from "./copy-out-form";
 
 /**
  * The sub-page display the main details a single
@@ -44,6 +45,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
           tabHeadings={[
             "Manifest",
             "Presigned URLs",
+            "Copy Out",
             "AWS S3 VPC Share",
             "GCP Storage IAM Share",
             "htsget",
@@ -61,13 +63,10 @@ export const ReleasesDetailSubPage: React.FC = () => {
             </p>
           </div>
           <PresignedUrlForm releaseKey={releaseKey} releaseData={releaseData} />
+          <CopyOutForm releaseKey={releaseKey} />
           <AwsS3VpcShareForm releaseKey={releaseKey} />
           <GcpStorageIamShareForm releaseKey={releaseKey} />
           <HtsgetForm releaseKey={releaseKey} releaseData={releaseData} />
-          {/*<div className="prose">
-                  <p>Not implemented</p>
-                  <p>Will enable a GCP sharing as per AWS S3</p>
-                </div>*/}
         </VerticalTabs>
       </Box>
     </>

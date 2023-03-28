@@ -12,6 +12,7 @@ import { getDirectConfig } from "../src/config/config-schema";
 import pino, { Logger } from "pino";
 import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
 import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
+import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
 
 // global settings for DI
 bootstrapDependencyInjection();
@@ -59,6 +60,7 @@ bootstrapDependencyInjection();
       const jobCloudFormationDeleteService = container.resolve(
         JobCloudFormationDeleteService
       );
+      const jobCopyOutService = container.resolve(JobCopyOutService);
 
       const jobs = await jobsService.getInProgressJobs();
 
@@ -138,6 +140,15 @@ bootstrapDependencyInjection();
                         true
                       );
                   })
+              );
+              break;
+
+            case "CopyOutJob":
+              jobPromises.push(
+                jobCopyOutService.progressCopyOutJob(j.jobId).then((result) => {
+                  if (result === 0)
+                    return jobCopyOutService.endCopyOutJob(j.jobId, true);
+                })
               );
               break;
 

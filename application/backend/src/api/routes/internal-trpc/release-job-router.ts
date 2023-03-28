@@ -55,6 +55,20 @@ export const releaseJobRouter = router({
         input.releaseKey
       );
     }),
+  startCopyOut: internalProcedure
+    .input(
+      z.object({
+        releaseKey: inputReleaseKey,
+        destinationBucket: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.jobCopyOutService.startCopyOutJob(
+        ctx.user,
+        input.releaseKey,
+        input.destinationBucket
+      );
+    }),
   cancel: internalProcedure
     .input(inputReleaseKeySingleParameter)
     .mutation(async ({ input, ctx }) => {
