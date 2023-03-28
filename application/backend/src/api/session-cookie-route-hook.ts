@@ -3,6 +3,8 @@ import { UsersService } from "../business/services/users-service";
 import { ElsaSettings } from "../config/elsa-settings";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import { getAuthenticatedUserFromSecureSession } from "./auth/session-cookie-helpers";
+import { createUserAllowedCookie } from "./helpers/cookie-helpers";
+import { NotAuthorisedCredentials } from "./errors/authentication-error";
 
 export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
   for (const sa of settings.superAdmins || []) {
@@ -21,29 +23,24 @@ export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
  * @param allowSessionCookieUserNotMatchingDb if true, then do an extra check to make sure the session user matches the same user in the database (needed where the dev db can refresh)
  * // @param allowTestCookieEquals if the primary session token is present with this value - create a test user
  */
-export function createSessionCookieRouteHook(
-  usersService: UsersService,
-  allowSessionCookieUserNotMatchingDb: boolean
-) {
+export function createSessionCookieRouteHook(usersService: UsersService) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const authedUser = getAuthenticatedUserFromSecureSession(request);
+    const authedUser = getAuthenticatedUserFromSecureSession(request);
+    if (!authedUser) throw new NotAuthorisedCredentials();
 
-      if (!authedUser) return reply.code(401).send();
+    const dbUser = await usersService.getBySubjectId(authedUser.subjectId);
+    if (!dbUser) throw new NotAuthorisedCredentials();
 
-      request.log.trace(
-        authedUser,
-        `createSessionCookieRouteHook: user details`
+    // Check for permissions different
+    const dbPermission = createUserAllowedCookie(dbUser);
+    const sessionPermission = createUserAllowedCookie(authedUser);
+    if (dbPermission != sessionPermission) {
+      throw new NotAuthorisedCredentials(
+        "User permissions have changed. Please try logging back in!"
       );
-
-      // set the full authenticated user into the request state for the rest of the request handling
-      (request as any).user = authedUser;
-    } catch (error) {
-      request.log.error(error, "createSessionCookieRouteHook: overall error");
-
-      // we are interpreting a failure here as an authentication failure 401
-      // (where are 403 would have meant we parsed all the auth data, but then decided to reject it)
-      reply.code(401).send();
     }
+
+    // set the full authenticated user into the request state for the rest of the request handling
+    (request as any).user = authedUser;
   };
 }
