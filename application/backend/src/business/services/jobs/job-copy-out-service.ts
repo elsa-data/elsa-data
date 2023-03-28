@@ -150,18 +150,18 @@ export class JobCopyOutService extends JobsService {
       for (const s of manifest.objects) {
         // TODO replace with a proper CSV writing component if this becomes an issue (I don't think we are going to hit many
         //      buckets or keys with quotes)
-        if (s.bucket.includes('"'))
+        if (s.objectStoreBucket.includes('"'))
           throw new Error(
-            `One of the buckets contains a quote character that we cannot handle yet - ${s.bucket}`
+            `One of the buckets contains a quote character that we cannot handle yet - ${s.objectStoreBucket}`
           );
-        if (s.key.includes('"'))
+        if (s.objectStoreKey.includes('"'))
           throw new Error(
-            `One of the keys contains a quote character that we cannot handle yet - ${s.key}`
+            `One of the keys contains a quote character that we cannot handle yet - ${s.objectStoreKey}`
           );
 
-        if (s.service === "s3") {
+        if (s.objectStoreProtocol === "s3") {
           // we wrap in quotes for safety - we know the AWS S3 parser *does* handle this correctly
-          manifestCsv += `"${s.bucket}","${s.key}"\n`;
+          manifestCsv += `"${s.objectStoreBucket}","${s.objectStoreKey}"\n`;
         }
       }
 

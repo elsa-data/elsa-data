@@ -4,6 +4,7 @@ import {
   ManifestBucketKeyObjectType,
   ManifestBucketKeyType,
 } from "./manifest-bucket-key-types";
+import { collapseExternalIds } from "../helpers";
 
 /**
  * Create a simple list of files in the manifest broken into 3 fields - service, bucket, key
@@ -17,65 +18,94 @@ export async function transformMasterManifestToBucketKeyManifest(
 ): Promise<ManifestBucketKeyType> {
   const converted: ManifestBucketKeyObjectType[] = [];
 
-  for (const filesResult of masterManifest.specimenList) {
-    // consider moving all these into *UrlService classes..
+  for (const specimenWithArtifacts of masterManifest.specimenList) {
+    // TODO regex don't support trailing slashes - and should be fixed if we introduce sharing 'folders'
+    const OBJECT_URL_REGEX = new RegExp("^([^:]+):\\/\\/([^\\/]+)\\/(.+)$");
 
-    // TODO these regexes don't support trailing slashes - and should be fixed if we introduce sharing 'folders'
-    const S3_REGEX = new RegExp("^s3://([^/]+)/(.*?([^/]+))$");
-    const GS_REGEX = new RegExp("^gs://([^/]+)/(.*?([^/]+))$");
-    const R2_REGEX = new RegExp("^r2://([^/]+)/(.*?([^/]+))$");
-
-    const convert = (
-      artifactId: string,
-      url: string,
-      size: number
-    ): ManifestBucketKeyObjectType | null => {
-      if (_.isString(url)) {
-        const s3Match = url.match(S3_REGEX);
-        if (s3Match)
-          return {
-            artifactId: artifactId,
-            service: "s3",
-            bucket: s3Match[1],
-            key: s3Match[2],
-          };
-        const gsMatch = url.match(GS_REGEX);
-        if (gsMatch)
-          return {
-            artifactId: artifactId,
-            service: "gs",
-            bucket: gsMatch[1],
-            key: gsMatch[2],
-          };
-        const r2Match = url.match(R2_REGEX);
-        if (r2Match)
-          return {
-            artifactId: artifactId,
-            service: "r2",
-            bucket: r2Match[1],
-            key: r2Match[2],
-          };
+    const getMd5 = (checksums: any[]): string | undefined => {
+      for (const c of checksums || []) {
+        if (c.type === "MD5") return c.value;
       }
-      return null;
+      return undefined;
     };
 
-    for (const art of filesResult.artifacts) {
-      // only one of these will be filled in and we are only interested in that one
-      const file =
-        art.baiFile ??
-        art.bamFile ??
-        art.bclFile ??
-        art.craiFile ??
-        art.cramFile ??
-        art.forwardFile ??
-        art.reverseFile ??
-        art.vcfFile ??
-        art.tbiFile;
+    const decomposeFileIntoParts = (
+      url: string,
+      size: number,
+      checksums: {
+        type: "MD5" | "AWS_ETAG" | "SHA_1" | "SHA_256";
+        value: string;
+      }[]
+    ): Pick<
+      ManifestBucketKeyObjectType,
+      | "objectStoreProtocol"
+      | "objectStoreBucket"
+      | "objectStoreKey"
+      | "objectSize"
+      | "md5"
+    > => {
+      if (_.isString(url)) {
+        const match = url.match(OBJECT_URL_REGEX);
+        if (match) {
+          if (!["s3", "gs", "r2"].includes(match[1]))
+            throw new Error(
+              `Encountered object URL ${url} with unknown protocol ${match[1]}`
+            );
 
-      if (file) {
-        const c = convert(art.id, file.url, file.size);
-        if (c) converted.push(c);
+          return {
+            objectStoreProtocol: match[1],
+            objectStoreBucket: match[2],
+            objectStoreKey: match[3],
+            objectSize: size,
+            md5: getMd5(checksums),
+          };
+        }
       }
+      throw new Error(
+        `Encountered object URL ${url} that could not be correctly processed for release`
+      );
+    };
+
+    for (const artifact of specimenWithArtifacts.artifacts) {
+      const createEntry = (
+        file: typeof artifact.baiFile,
+        objectType: string
+      ) => {
+        return {
+          caseId: collapseExternalIds(
+            specimenWithArtifacts.case_?.externalIdentifiers
+          ),
+          patientId: collapseExternalIds(
+            specimenWithArtifacts.patient?.externalIdentifiers
+          ),
+          specimenId: collapseExternalIds(
+            specimenWithArtifacts.externalIdentifiers
+          ),
+          artifactId: artifact.id,
+          objectType: objectType,
+          objectStoreUrl: file.url,
+          ...decomposeFileIntoParts(file.url, file.size, file.checksums),
+        };
+      };
+
+      if (artifact.bclFile)
+        converted.push(createEntry(artifact.bclFile, "BCL"));
+      if (artifact.bamFile)
+        converted.push(createEntry(artifact.bamFile, "BAM"));
+      if (artifact.baiFile)
+        converted.push(createEntry(artifact.baiFile, "BAM"));
+      if (artifact.craiFile)
+        converted.push(createEntry(artifact.craiFile, "CRAM"));
+      if (artifact.cramFile)
+        converted.push(createEntry(artifact.cramFile, "CRAM"));
+      if (artifact.forwardFile)
+        converted.push(createEntry(artifact.forwardFile, "FASTQ"));
+      if (artifact.reverseFile)
+        converted.push(createEntry(artifact.reverseFile, "FASTQ"));
+      if (artifact.vcfFile)
+        converted.push(createEntry(artifact.vcfFile, "VCF"));
+      if (artifact.tbiFile)
+        converted.push(createEntry(artifact.tbiFile, "VCF"));
     }
 
     // TODO note that this logic exposes all versions of every artifact.. we might consider if instead
