@@ -35,6 +35,9 @@ select {
               runningJob: {
                 # we are avoiding fetching the message/details etc (which could be large) in this summary
                 id,
+                # we fetch the type though as it is useful in the UI for distinguishes what work is happening
+                __type__: { name },
+                # also want to report the completion in the UI
                 percentDone,
               },
               activation: {

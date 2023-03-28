@@ -76,63 +76,92 @@ export const ReleasesDashboardPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {query.data.map((r, idx) => (
-                  <tr key={idx}>
-                    {/* titles can be arbitrary length so we need to enable word wrapping */}
-                    <td className="whitespace-normal break-words">
-                      <div>
-                        <div className="font-bold">{r.applicationDacTitle}</div>
-                        <div className="flex flex-row space-x-2 text-sm">
-                          <span className="font-mono opacity-50">
-                            {r.releaseKey}
-                          </span>
-                          {/* a replication of the details in other columns - but we use Tailwind
-                              classes to make them disappear on small screens */}
-                          <span className="opacity-50 xl:hidden">
-                            as {r.roleInRelease}
-                          </span>
-                          {r.isActivated && (
-                            <span className="badge-success badge xl:hidden">
-                              activated
+                {query.data.map((r, idx) => {
+                  const jobBadgeContent = r.isRunningJobBadge
+                    ? `${r.isRunningJobBadge} ${r.isRunningJobPercentDone}%`
+                    : undefined;
+
+                  return (
+                    <tr key={idx}>
+                      {/* titles can be arbitrary length so we need to enable word wrapping */}
+                      <td className="whitespace-normal break-words">
+                        <div>
+                          <div className="font-bold">
+                            {r.applicationDacTitle}
+                          </div>
+                          <div className="flex flex-row space-x-2 text-sm">
+                            <span className="font-mono opacity-50">
+                              {r.releaseKey}
                             </span>
+                            {/* a replication of the details in other columns - but we use Tailwind
+                              classes to make them disappear on small screens */}
+                            <span className="opacity-50 xl:hidden">
+                              as {r.roleInRelease}
+                            </span>
+                            {r.isActivated && (
+                              <span className="badge-success badge xl:hidden">
+                                activated
+                              </span>
+                            )}
+                            {jobBadgeContent && (
+                              <span className="badge-info badge xl:hidden">
+                                {jobBadgeContent}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="hidden xl:table-cell">
+                        <div>
+                          <div className="break-all text-xs">
+                            {r.applicationDacIdentifierSystem}
+                          </div>
+                          <div className="break-all font-mono text-xs opacity-50">
+                            {r.applicationDacIdentifierValue}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="hidden xl:table-cell">
+                        {r.roleInRelease}
+                      </td>
+                      <td className="hidden xl:table-cell">
+                        <div className="flex flex-col space-y-1">
+                          <div>
+                            {formatLocalDateTime(
+                              r.lastUpdatedDateTime as string
+                            )}
+                          </div>
+
+                          {r.isActivated && (
+                            <div>
+                              <span className="badge-success badge">
+                                activated
+                              </span>
+                            </div>
+                          )}
+
+                          {jobBadgeContent && (
+                            <div>
+                              <span className="badge-info badge">
+                                {jobBadgeContent}
+                              </span>
+                            </div>
                           )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="hidden xl:table-cell">
-                      <div>
-                        <div className="break-all text-xs">
-                          {r.applicationDacIdentifierSystem}
-                        </div>
-                        <div className="break-all font-mono text-xs opacity-50">
-                          {r.applicationDacIdentifierValue}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="hidden xl:table-cell">{r.roleInRelease}</td>
-                    <td className="hidden xl:table-cell">
-                      <div>
-                        {formatLocalDateTime(r.lastUpdatedDateTime as string)}
-                      </div>
-
-                      {r.isActivated && (
-                        <div>
-                          <span className="badge-success badge">activated</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="text-right">
-                      <button
-                        className={classNames("btn-table-action-navigate")}
-                        onClick={async () => {
-                          navigate(`${r.releaseKey}/detail`);
-                        }}
-                      >
-                        view
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="text-right">
+                        <button
+                          className={classNames("btn-table-action-navigate")}
+                          onClick={async () => {
+                            navigate(`${r.releaseKey}/detail`);
+                          }}
+                        >
+                          view
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             <BoxPaginator
