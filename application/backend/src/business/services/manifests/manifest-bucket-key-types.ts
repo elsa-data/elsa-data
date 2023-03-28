@@ -1,10 +1,24 @@
 import { Static, Type } from "@sinclair/typebox";
 
 export const ManifestBucketKeyObjectSchema = Type.Object({
+  caseId: Type.String(),
+  patientId: Type.String(),
+  specimenId: Type.String(),
   artifactId: Type.String(),
-  service: Type.String(),
-  bucket: Type.String(),
-  key: Type.String(),
+
+  objectType: Type.String(),
+  objectSize: Type.Number(),
+
+  objectStoreProtocol: Type.String(),
+  objectStoreUrl: Type.String(),
+  objectStoreBucket: Type.String(),
+  objectStoreKey: Type.String(),
+
+  // optional fields depending on what type of access asked for
+  objectStoreSigned: Type.Optional(Type.String()),
+
+  // optional depending on what checksums have been entered
+  md5: Type.Optional(Type.String()),
 });
 
 export const ManifestBucketKeySchema = Type.Object({
