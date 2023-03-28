@@ -32,7 +32,11 @@ import {
   TEST_SUBJECT_3_DISPLAY,
   TEST_SUBJECT_3_EMAIL,
 } from "../test-data/insert-test-users";
-import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
+import {
+  cookieForBackend,
+  cookieForUI,
+  createUserAllowedCookie,
+} from "./helpers/cookie-helpers";
 import { Client } from "edgedb";
 import { Logger } from "pino";
 
@@ -330,36 +334,19 @@ export const callbackRoutes = async (
     cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
     cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, email); // TODO: save this in backend too.. (if needed?)
 
-    // NOTE: this is a UI cookie - the actual enforcement of this grouping at an API layer is elsewhere
-    // we do it this way so that we can centralise all permissions logic on the backend, and hand down
-    // simple "is allowed" decisions to the UI
-    // MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
-    const allowed = new Set<string>();
-
-    if (authUser.isAllowedCreateRelease) {
-      allowed.add(ALLOWED_CREATE_NEW_RELEASE);
-    }
-
-    if (authUser.isAllowedRefreshDatasetIndex) {
-      allowed.add(ALLOWED_DATASET_UPDATE);
-    }
-
-    if (
-      authUser.isAllowedChangeUserPermission ||
-      authUser.isAllowedOverallAdministratorView
-    ) {
-      allowed.add(ALLOWED_OVERALL_ADMIN_VIEW);
-    }
-
-    if (authUser.isAllowedChangeUserPermission) {
-      allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
-    }
+    const userAllowedCookieString = createUserAllowedCookie({
+      isAllowedCreateRelease: authUser.isAllowedCreateRelease,
+      isAllowedRefreshDatasetIndex: authUser.isAllowedRefreshDatasetIndex,
+      isAllowedOverallAdministratorView:
+        authUser.isAllowedOverallAdministratorView,
+      isAllowedChangeUserPermission: authUser.isAllowedChangeUserPermission,
+    });
 
     cookieForUI(
       request,
       reply,
       USER_ALLOWED_COOKIE_NAME,
-      Array.from(allowed.values()).join(",")
+      userAllowedCookieString
     );
 
     // CSRF Token passed as cookie

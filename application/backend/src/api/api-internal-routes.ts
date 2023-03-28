@@ -123,12 +123,9 @@ export const apiInternalRoutes = async (
 ) => {
   const usersService = opts.container.resolve(UsersService);
 
-  const authInternalHook = createSessionCookieRouteHook(
-    usersService,
-    opts.allowTestCookieEquals != null
-  );
-
   fastify.addHook("preHandler", fastify.csrfProtection);
+
+  const authInternalHook = createSessionCookieRouteHook(usersService);
 
   // now register the auth hook and then register all the rest of our routes nested within
   fastify.addHook("onRequest", authInternalHook).after(() => {
