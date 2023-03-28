@@ -67,8 +67,6 @@ export abstract class ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    this.edgeDbClient.withGlobals;
-
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,
       releaseKey: releaseKey,
