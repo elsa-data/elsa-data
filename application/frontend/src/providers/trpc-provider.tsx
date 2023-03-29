@@ -3,7 +3,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCookies } from "react-cookie";
 import { httpBatchLink } from "@trpc/client";
 import { trpc } from "../helpers/trpc";
-import { USER_SUBJECT_COOKIE_NAME } from "@umccr/elsa-constants";
+import {
+  CSRF_TOKEN_COOKIE_NAME,
+  USER_SUBJECT_COOKIE_NAME,
+} from "@umccr/elsa-constants";
 
 export const TRPCProvider: React.FC<Props> = (props: Props) => {
   const queryClient = new QueryClient({});
@@ -27,11 +30,11 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
 
           return res;
         },
-        // headers() {
-        //  return {
-        //    authorization: getAuthCookie(),
-        //  };
-        // },
+        headers() {
+          return {
+            "csrf-token": cookies[CSRF_TOKEN_COOKIE_NAME],
+          };
+        },
       }),
     ],
   });
