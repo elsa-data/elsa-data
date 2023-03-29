@@ -13,9 +13,9 @@ let allowedAdministratorUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
 });
@@ -26,7 +26,7 @@ beforeEach(async () => {
     allowedAdministratorUser,
     allowedManagerUser,
     notAllowedUser,
-  } = await beforeEachCommon());
+  } = await beforeEachCommon(testContainer));
 });
 
 /**

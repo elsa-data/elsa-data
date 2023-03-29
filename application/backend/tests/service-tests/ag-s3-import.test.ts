@@ -5,7 +5,6 @@ import {
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { container, DependencyContainer } from "tsyringe";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   File,
@@ -54,15 +53,14 @@ import { storage } from "../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./user.common";
 
+const testContainer = registerTypes();
+
 const s3ClientMock = mockClient(S3Client);
-let testContainer: DependencyContainer;
 let edgedbClient: edgedb.Client;
 let user: AuthenticatedUser;
 
 describe("AWS s3 client", () => {
-  beforeAll(async () => {
-    testContainer = await registerTypes();
-  });
+  beforeAll(async () => {});
 
   beforeEach(async () => {
     s3ClientMock.reset();
@@ -78,7 +76,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test getManifestKeyFromS3ObjectList", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
     const manifestObjectList = agService.getManifestUriFromS3ObjectList(
       MOCK_1_CARDIAC_S3_OBJECT_LIST
     );
@@ -88,13 +86,13 @@ describe("AWS s3 client", () => {
   });
 
   it("Test convertTsvToJson", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
     const jsonManifest = agService.convertTsvToJson(MOCK_1_CARDIAC_MANIFEST);
     expect(jsonManifest).toEqual(MOCK_1_MANIFEST_OBJECT);
   });
 
   it("Test groupManifestByStudyId", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
 
     const groupArtifactContent = agService.groupManifestByStudyId(
       MOCK_1_S3URL_MANIFEST_OBJECT
@@ -105,7 +103,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test groupManifestFileByArtifactTypeAndFilename", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
 
     const fileRecordListedInManifest: File[] = [
       ...MOCK_FASTQ_PAIR_FILE_SET,
@@ -150,7 +148,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test updateFileRecordFromManifest", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
 
     const mockInsertUrl = "s3://bucket/FILE_L001_R1.fastq.gz";
     const newManifestContent = {
@@ -195,7 +193,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test updateUnavailableFileRecord", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
 
     const mockInsertUrl = "s3://bucket/FILE_L001_R1.fastq.gz";
 
@@ -225,7 +223,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test insertNewArtifact", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
     const dataToInsert: Record<string, Record<string, artifactType[]>> = {
       FASTQ: {
         FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
@@ -270,7 +268,7 @@ describe("AWS s3 client", () => {
   });
 
   it("Test converts3ManifestTypeToFileRecord", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
 
     const artRec = agService.converts3ManifestTypeToArtifactTypeRecord(
       MOCK_1_S3URL_MANIFEST_OBJECT,
@@ -282,7 +280,7 @@ describe("AWS s3 client", () => {
 
   it("Test linkPedigreeRelationship", async () => {
     const DATA_CASE_ID = "FAM0001";
-    const agService = container.resolve(S3IndexApplicationService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
 
     // Mock Data
     const pedigreeIdList = [
@@ -332,8 +330,8 @@ describe("AWS s3 client", () => {
   });
 
   it("Test MOCK 1 insert new Cardiac from s3Key", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
-    const datasetService = container.resolve(DatasetService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
+    const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
       datasetUri: MOCK_DATASET_URI,
       datasetName: "Cardiac",
@@ -377,8 +375,8 @@ describe("AWS s3 client", () => {
   });
 
   it("Test MOCK 2 Updating Checksum", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
-    const datasetService = container.resolve(DatasetService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
+    const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
       datasetUri: MOCK_DATASET_URI,
       datasetName: "Cardiac",
@@ -444,8 +442,8 @@ describe("AWS s3 client", () => {
   });
 
   it("Test MOCK 3 Check file mark unavailable", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
-    const datasetService = container.resolve(DatasetService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
+    const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
       datasetUri: MOCK_DATASET_URI,
       datasetName: "Cardiac",
@@ -506,8 +504,8 @@ describe("AWS s3 client", () => {
   });
 
   it("Test MOCK 4 Multi Study Id", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
-    const datasetService = container.resolve(DatasetService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
+    const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
       datasetUri: MOCK_DATASET_URI,
       datasetName: "Cardiac",
@@ -551,8 +549,8 @@ describe("AWS s3 client", () => {
   });
 
   it("Test User Audit Event", async () => {
-    const agService = container.resolve(S3IndexApplicationService);
-    const datasetService = container.resolve(DatasetService);
+    const agService = testContainer.resolve(S3IndexApplicationService);
+    const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
       datasetUri: MOCK_DATASET_URI,
       datasetName: "Cardiac",

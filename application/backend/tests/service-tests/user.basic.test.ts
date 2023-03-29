@@ -9,10 +9,10 @@ let existingUser: AuthenticatedUser;
 let edgeDbClient: edgedb.Client;
 let userService: UsersService;
 
+const testContainer = registerTypes();
+
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
-
-  const testContainer = await registerTypes();
 
   userService = testContainer.resolve(UsersService);
 });

@@ -8,6 +8,8 @@ import {
   makeSystemlessIdentifier,
 } from "../../src/test-data/test-data-helpers";
 import { insert10F } from "../../src/test-data/insert-test-data-10f";
+import { registerTypes } from "../test-dependency-injection.common";
+import { DependencyContainer } from "tsyringe";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -18,12 +20,12 @@ import { insert10F } from "../../src/test-data/insert-test-data-10f";
  * If you make *any* changes here - you must re-run all the release tests
  * to ensure that the state change hasn't unexpectedly resulted in a test failing.
  */
-export async function beforeEachCommon() {
+export async function beforeEachCommon(dc: DependencyContainer) {
   const edgeDbClient = createClient({});
 
   await blankTestData();
-  const teng = await insert10G();
-  const tenf = await insert10F();
+  const teng = await insert10G(dc);
+  const tenf = await insert10F(dc);
 
   // TODO: we don't have an admin model for datasets yet so this is very simple
   const allowedPiSubject = "http://subject1.com";

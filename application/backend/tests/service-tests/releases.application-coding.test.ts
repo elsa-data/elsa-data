@@ -13,16 +13,16 @@ let superAdminUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
 });
 
 beforeEach(async () => {
   ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
-    await beforeEachCommon());
+    await beforeEachCommon(testContainer));
 });
 it("basic add/remove of diseases from coded application", async () => {
   {

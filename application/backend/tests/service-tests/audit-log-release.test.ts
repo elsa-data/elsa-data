@@ -14,16 +14,16 @@ let notAllowedUser: AuthenticatedUser;
 let auditLogService: AuditLogService;
 let edgeDbClient: edgedb.Client;
 
-beforeEach(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeEach(async () => {
   ({
     testReleaseKey,
     allowedAdministratorUser,
     allowedManagerUser,
     notAllowedUser,
     edgeDbClient,
-  } = await beforeEachCommon());
+  } = await beforeEachCommon(testContainer));
 
   auditLogService = testContainer.resolve(AuditLogService);
 });

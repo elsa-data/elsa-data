@@ -143,7 +143,7 @@ function printHelpText() {
             `Command ${ADD_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`
           );
 
-        todo.push(async () => commandAddScenario(parseInt(c.args[0])));
+        todo.push(async () => commandAddScenario(dc, parseInt(c.args[0])));
         break;
 
       case DB_BLANK_COMMAND:

@@ -1,6 +1,5 @@
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { container, DependencyContainer } from "tsyringe";
 import { RedcapImportApplicationService } from "../../src/business/services/australian-genomics/redcap-import-application-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
@@ -8,27 +7,26 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { UsersService } from "../../src/business/services/users-service";
 
+const testContainer = registerTypes();
+
 const edgedbClient = edgedb.createClient();
 
 describe("Redcap Import for AG", () => {
   let allowedAdministratorUser: AuthenticatedUser;
-  let testContainer: DependencyContainer;
 
-  beforeAll(async () => {
-    testContainer = await registerTypes();
-  });
+  beforeAll(async () => {});
 
   beforeEach(async () => {
     testContainer.clearInstances();
 
-    ({ allowedAdministratorUser } = await beforeEachCommon());
+    ({ allowedAdministratorUser } = await beforeEachCommon(testContainer));
   });
 
   it("Base case with two new users", async () => {
-    const redcapImportService = container.resolve(
+    const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
-    const usersService = container.resolve(UsersService);
+    const usersService = testContainer.resolve(UsersService);
 
     const app = {
       ...sampleApplication1,
@@ -63,7 +61,7 @@ describe("Redcap Import for AG", () => {
       .run(edgedbClient);
     expect(existingUserCount).toBe(4);
 
-    const redcapImportService = container.resolve(
+    const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
 
