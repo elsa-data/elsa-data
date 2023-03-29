@@ -23,6 +23,11 @@ jobs:
         with:
           node-version: 18
 
+      # Sanity/lint checks
+      - name: Run pre build lint checks
+        run: ! grep -R "container.*tsyringe" src/ tests/ jobs/
+        working-directory: application/backend
+
       # setup all our packages (with caching)
       - uses: bahmutov/npm-install@v1
         with:
