@@ -1,6 +1,6 @@
 import { inject, injectable, singleton } from "tsyringe";
 import { AwsBaseService } from "./aws-base-service";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { Logger } from "pino";
 import {
   DiscoverInstancesCommand,

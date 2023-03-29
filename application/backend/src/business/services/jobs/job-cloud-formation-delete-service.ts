@@ -6,17 +6,13 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable, singleton } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
-import {
-  AuditLogService,
-  OUTCOME_MINOR_FAILURE,
-  OUTCOME_SUCCESS,
-} from "../audit-log-service";
+import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
 import {
   CloudFormationClient,
   DeleteStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
-import { AwsAccessPointService } from "../aws-access-point-service";
+import { AwsAccessPointService } from "../aws/aws-access-point-service";
 import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
 
 /**

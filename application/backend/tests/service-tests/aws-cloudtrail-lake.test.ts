@@ -1,4 +1,4 @@
-import { AwsCloudTrailLakeService } from "../../src/business/services/aws-cloudtrail-lake-service";
+import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
 import e from "../../dbschema/edgeql-js";
 import { DependencyContainer } from "tsyringe";
 import { registerTypes } from "../test-dependency-injection.common";

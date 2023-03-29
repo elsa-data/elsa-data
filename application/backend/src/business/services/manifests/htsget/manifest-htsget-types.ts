@@ -1,4 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
+import { CloudStorageSchema } from "../../cloud-storage-service";
 
 /**
  * A dictionary storing external identifiers, keyed by the "system" of the
@@ -80,4 +81,38 @@ export type ManifestHtsgetReadsFileType = Static<
 >;
 export type ManifestHtsgetVariantsFileType = Static<
   typeof ManifestVariantsFileSchema
+>;
+
+/**
+ * Manifest route schema.
+ */
+export const ManifestHtsGetParamsSchema = Type.Object({
+  releaseKey: Type.String(),
+});
+export type ManifestHtsGetParamsType = Static<
+  typeof ManifestHtsGetParamsSchema
+>;
+
+/**
+ * Manifest route query string schema.
+ */
+export const ManifestHtsGetQuerySchema = Type.Object({
+  // Indicate the type of storage to reply with.
+  type: CloudStorageSchema,
+});
+export type ManifestHtsGetQueryType = Static<typeof ManifestHtsGetQuerySchema>;
+
+/**
+ * Manifest route response schema.
+ */
+export const ManifestHtsGetResponseSchema = Type.Optional(
+  Type.Object({
+    bucket: Type.String(),
+    key: Type.String(),
+    // True if the object was not updated and is cached and valid, false otherwise.
+    cached: Type.Boolean(),
+  })
+);
+export type ManifestHtsGetResponseType = Static<
+  typeof ManifestHtsGetResponseSchema
 >;

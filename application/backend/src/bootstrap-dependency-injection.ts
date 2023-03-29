@@ -1,16 +1,18 @@
 import * as edgedb from "edgedb";
+import { Duration } from "edgedb";
 import { container } from "tsyringe";
 import { S3Client } from "@aws-sdk/client-s3";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
-import { Duration } from "edgedb";
 import { SES } from "@aws-sdk/client-ses";
 import { IPresignedUrlProvider } from "./business/services/presigned-urls-service";
-import { AwsPresignedUrlsService } from "./business/services/aws-presigned-urls-service";
+import { AwsPresignedUrlsService } from "./business/services/aws/aws-presigned-urls-service";
 import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-service";
 import { CloudflarePresignedUrlsService } from "./business/services/cloudflare-presigned-urls-service";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import { CloudStorageFactory } from "./business/services/cloud-storage-service";
+import { AwsS3Service } from "./business/services/aws/aws-s3-service";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -65,5 +67,11 @@ export function bootstrapDependencyInjection() {
   });
   container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
     useClass: CloudflarePresignedUrlsService,
+  });
+
+  container.registerSingleton<AwsS3Service>(AwsS3Service, AwsS3Service);
+
+  container.register<CloudStorageFactory>(CloudStorageFactory, {
+    useClass: CloudStorageFactory,
   });
 }

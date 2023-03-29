@@ -72,6 +72,22 @@ export const configDefinition = {
       env: `${env_prefix}SESSION_SALT`,
     },
   },
+  htsget: {
+    enabled: {
+      doc: "Is the htsget functionality enabled",
+      format: "Boolean",
+      sensitive: false,
+      default: true,
+      env: `${env_prefix}HTSGET_ENABLED`,
+    },
+    manifestTTL: {
+      doc: "The amount of time that a htsget manifest remains valid in seconds",
+      format: "Number",
+      sensitive: false,
+      default: "86400",
+      env: `${env_prefix}HTSGET_MANIFEST_TTL`,
+    },
+  },
   aws: {
     signingAccessKeyId: {
       doc: "An AWS access key id for a user with read permission of files that can be shared via S3 signed URLs",

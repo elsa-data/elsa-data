@@ -7,7 +7,7 @@ import { ElsaSettings } from "../src/config/elsa-settings";
 import { createTestElsaSettings } from "./test-elsa-settings.common";
 import { Logger, pino } from "pino";
 import { IPresignedUrlProvider } from "../src/business/services/presigned-urls-service";
-import { AwsPresignedUrlsService } from "../src/business/services/aws-presigned-urls-service";
+import { AwsPresignedUrlsService } from "../src/business/services/aws/aws-presigned-urls-service";
 import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-urls-service";
 import { CloudflarePresignedUrlsService } from "../src/business/services/cloudflare-presigned-urls-service";
 import { SESClient } from "@aws-sdk/client-ses";

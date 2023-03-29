@@ -18,9 +18,8 @@ import {
   sendPagedResult,
 } from "../../api-internal-routes";
 import { container } from "tsyringe";
-import { JobsService } from "../../../business/services/jobs/jobs-base-service";
 import { ReleaseService } from "../../../business/services/release-service";
-import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
+import { AwsAccessPointService } from "../../../business/services/aws/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";

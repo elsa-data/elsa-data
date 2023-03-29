@@ -1,7 +1,14 @@
 import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
-import { ManifestHtsgetType } from "../../../business/services/manifests/manifest-htsget-types";
+import {
+  ManifestHtsGetParamsSchema,
+  ManifestHtsGetParamsType,
+  ManifestHtsGetQuerySchema,
+  ManifestHtsGetQueryType,
+  ManifestHtsGetResponseSchema,
+  ManifestHtsGetResponseType,
+} from "../../../business/services/manifests/htsget/manifest-htsget-types";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,
@@ -13,20 +20,27 @@ export const manifestRoutes = async (
 
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
-  fastify.get<{ Params: { releaseKey: string }; Reply: ManifestHtsgetType }>(
-    "/manifest/:releaseKey",
-    {},
+  fastify.get<{
+    Params: ManifestHtsGetParamsType;
+    Reply: ManifestHtsGetResponseType;
+    Querystring: ManifestHtsGetQueryType;
+  }>(
+    "/manifest/htsget/:releaseKey",
+    {
+      schema: {
+        params: ManifestHtsGetParamsSchema,
+        response: ManifestHtsGetResponseSchema,
+        querystring: ManifestHtsGetQuerySchema,
+      },
+    },
     async function (request, reply) {
       const releaseKey = request.params.releaseKey;
 
-      const manifest = await manifestService.getActiveHtsgetManifest(
+      const output = await manifestService.publishHtsGetManifest(
+        request.query.type,
         releaseKey
       );
-
-      // whether it be lack of permissions, or bad release id, or non active release - we return 404 Not Found
-      // if we have nothing correct to send
-      if (!manifest) reply.status(404).send();
-      else reply.send(manifest);
+      reply.send(output);
     }
   );
 };

@@ -6,7 +6,7 @@ import { ReleaseService } from "../../business/services/release-service";
 import { getServices } from "../../di-helpers";
 import { ReleaseActivationService } from "../../business/services/release-activation-service";
 import { JobsService } from "../../business/services/jobs/jobs-base-service";
-import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
+import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
 import { ReleaseParticipationService } from "../../business/services/release-participation-service";
 import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";

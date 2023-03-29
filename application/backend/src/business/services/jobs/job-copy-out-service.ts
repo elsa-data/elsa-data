@@ -17,7 +17,7 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
-import { AwsDiscoveryService } from "../aws-discovery-service";
+import { AwsDiscoveryService } from "../aws/aws-discovery-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,

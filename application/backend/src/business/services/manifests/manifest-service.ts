@@ -5,14 +5,32 @@ import { Executor } from "edgedb";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
-import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
-import { ManifestHtsgetType } from "./manifest-htsget-types";
+import { transformMasterManifestToHtsgetManifest } from "./htsget/manifest-htsget-helper";
+import {
+  ManifestHtsGetResponseType,
+  ManifestHtsgetType,
+} from "./htsget/manifest-htsget-types";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
 import { ManifestBucketKeyType } from "./manifest-bucket-key-types";
+import {
+  CloudStorageFactory,
+  CloudStorageType,
+} from "../cloud-storage-service";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import { NotFound } from "@aws-sdk/client-s3";
+import { add, isPast } from "date-fns";
+import { HtsGetManifestError } from "./htsget/manifest-htsget-errors";
 
 @injectable()
 export class ManifestService {
-  constructor(@inject("Database") private edgeDbClient: edgedb.Client) {}
+  private static readonly HTSGET_MANIFESTS_FOLDER = "htsget-manifests";
+
+  constructor(
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject(CloudStorageFactory)
+    private readonly cloudStorageFactory: CloudStorageFactory
+  ) {}
 
   /**
    * Return the manifest for this release if present, else return null.
@@ -67,7 +85,7 @@ export class ManifestService {
     return transformDbManifestToMasterManifest(manifest);
   }
 
-  public async getActiveHtsgetManifest(
+  public async getActiveHtsGetManifest(
     releaseKey: string
   ): Promise<ManifestHtsgetType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
@@ -76,6 +94,55 @@ export class ManifestService {
     if (!masterManifest) return null;
 
     return transformMasterManifestToHtsgetManifest(masterManifest);
+  }
+
+  public async publishHtsGetManifest(
+    type: CloudStorageType,
+    releaseKey: string
+  ): Promise<ManifestHtsGetResponseType> {
+    const storage = this.cloudStorageFactory.getStorage(type);
+
+    if (storage === null) {
+      throw HtsGetManifestError.unimplemented();
+    }
+    if (this.settings.htsget === undefined || this.settings.aws === undefined) {
+      throw HtsGetManifestError.not_enabled();
+    }
+
+    console.log(`GOT STORAGE: ${storage}`, storage);
+
+    let shouldUpdate = false;
+    try {
+      const head = await storage.head(this.settings.aws.tempBucket, releaseKey);
+      console.log(`HEAD: ${head}`, head);
+      shouldUpdate =
+        head.lastModified === undefined ||
+        isPast(add(head.lastModified, this.settings.htsget.manifestTTL));
+    } catch (error) {
+      if (error instanceof NotFound) {
+        shouldUpdate = true;
+      } else {
+        throw error;
+      }
+    }
+
+    if (shouldUpdate) {
+      const manifest = await this.getActiveHtsGetManifest(releaseKey);
+
+      if (manifest === null) {
+        throw HtsGetManifestError.manifest_error();
+      }
+
+      console.log(`GOT MANIFEST: ${manifest}`, manifest);
+
+      // await storage.put(this.settings.aws.tempBucket, `${ManifestService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`, manifest.toString());
+    }
+
+    return {
+      bucket: this.settings.aws.tempBucket,
+      key: releaseKey,
+      cached: !shouldUpdate,
+    };
   }
 
   public async createTsvManifest(masterManifest: ManifestMasterType) {}

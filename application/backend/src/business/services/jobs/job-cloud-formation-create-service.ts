@@ -16,7 +16,7 @@ import {
   CreateStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
-import { AwsAccessPointService } from "../aws-access-point-service";
+import { AwsAccessPointService } from "../aws/aws-access-point-service";
 import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
 
 /**

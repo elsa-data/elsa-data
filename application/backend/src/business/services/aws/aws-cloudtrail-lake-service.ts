@@ -1,21 +1,20 @@
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
-import e from "../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable, singleton } from "tsyringe";
 import {
   CloudTrailClient,
-  StartQueryCommand,
   GetQueryResultsCommand,
+  StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
 import { AwsBaseService } from "./aws-base-service";
-import { AuditLogService } from "./audit-log-service";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { AuditLogService } from "../audit-log-service";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
-import { touchRelease } from "../db/release-queries";
-import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
+import { touchRelease } from "../../db/release-queries";
+import { NotAuthorisedSyncDataAccessEvents } from "../../exceptions/audit-authorisation";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",

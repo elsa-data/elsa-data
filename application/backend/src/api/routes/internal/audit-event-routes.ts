@@ -8,20 +8,20 @@ import {
 import * as edgedb from "edgedb";
 import { container } from "tsyringe";
 import { AuditLogService } from "../../../business/services/audit-log-service";
-import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
+import { AwsCloudTrailLakeService } from "../../../business/services/aws/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
-import DataAccessAuditEvent = audit.DataAccessAuditEvent;
-import AuditEvent = audit.AuditEvent;
 import {
   AuditDataAccessType,
   AuditEventDetailsType,
-  AuditEventType,
   AuditEventFullType,
+  AuditEventType,
   RouteValidation,
 } from "@umccr/elsa-types";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import _ from "lodash";
+import DataAccessAuditEvent = audit.DataAccessAuditEvent;
+import AuditEvent = audit.AuditEvent;
 import AuditEventForQuerySchema = RouteValidation.AuditEventForQuerySchema;
 import AuditEventForQueryType = RouteValidation.AuditEventForQueryType;
 import AuditEventDetailsQueryType = RouteValidation.AuditEventDetailsQueryType;
