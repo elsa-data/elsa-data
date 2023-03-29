@@ -40,6 +40,11 @@ jobs:
             application/frontend
           install-command: npm ci --install-links=false
 
+      # Sanity/lint checks
+      - name: Run pre build lint checks
+        run: if [[ grep -R "container.*tsyringe" src/ tests/ jobs/ ]]; then exit 0; else exit 1; fi
+        working-directory: application/backend
+
       # unit tests can run first before any databases are set up
       - name: Run unit tests
         run: npm run test:unit
