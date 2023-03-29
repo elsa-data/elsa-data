@@ -16,7 +16,6 @@ import {
  * once other deployment environments exist.
  */
 @injectable()
-@singleton()
 export class AwsDiscoveryService extends AwsBaseService {
   constructor(
     @inject("ServiceDiscoveryClient")

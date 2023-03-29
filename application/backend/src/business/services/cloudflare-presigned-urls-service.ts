@@ -9,7 +9,6 @@ import { IPresignedUrlProvider } from "./presigned-urls-service";
 import assert from "assert";
 
 @injectable()
-@singleton()
 export class CloudflarePresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "r2";
 

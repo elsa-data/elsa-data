@@ -64,7 +64,6 @@ export type artifactType = { sampleIdsArray: string[] } & File;
 export type manifestDict = Record<string, s3ManifestType>;
 
 @injectable()
-@singleton()
 export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,

@@ -1,4 +1,3 @@
-import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import {
   createArtifacts,
@@ -6,10 +5,8 @@ import {
   createFile,
 } from "./test-data-helpers";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
-import { container } from "tsyringe";
-import { ElsaSettings } from "../config/elsa-settings";
-
-const edgeDbClient = edgedb.createClient();
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../di-helpers";
 
 export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
 
@@ -17,8 +14,8 @@ export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
  * to test specific areas of data sharing.
  */
-export async function insert10G() {
-  const settings = container.resolve<ElsaSettings>("Settings");
+export async function insert10G(dc: DependencyContainer) {
+  const { settings, logger, edgeDbClient } = getServices(dc);
 
   const makeCase = async (
     caseId: string,

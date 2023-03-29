@@ -1,7 +1,6 @@
 import "reflect-metadata";
 
 import { parentPort } from "worker_threads";
-import { container } from "tsyringe";
 import { JobsService } from "../src/business/services/jobs/jobs-base-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
@@ -15,7 +14,7 @@ import { JobCloudFormationCreateService } from "../src/business/services/jobs/jo
 import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
 
 // global settings for DI
-bootstrapDependencyInjection();
+const dc = bootstrapDependencyInjection();
 
 (async () => {
   const settings = await bootstrapSettings(
@@ -26,11 +25,11 @@ bootstrapDependencyInjection();
   // job handler - allows us to separate out job logs in CloudWatch
   const logger = pino(settings.logger).child({ context: "job-handler" });
 
-  container.register<ElsaSettings>("Settings", {
+  dc.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
 
-  container.register<Logger>("Logger", {
+  dc.register<Logger>("Logger", {
     useValue: logger,
   });
 
@@ -53,14 +52,14 @@ bootstrapDependencyInjection();
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
-      const jobsService = container.resolve(JobsService);
-      const jobCloudFormationCreateService = container.resolve(
+      const jobsService = dc.resolve(JobsService);
+      const jobCloudFormationCreateService = dc.resolve(
         JobCloudFormationCreateService
       );
-      const jobCloudFormationDeleteService = container.resolve(
+      const jobCloudFormationDeleteService = dc.resolve(
         JobCloudFormationDeleteService
       );
-      const jobCopyOutService = container.resolve(JobCopyOutService);
+      const jobCopyOutService = dc.resolve(JobCopyOutService);
 
       const jobs = await jobsService.getInProgressJobs();
 

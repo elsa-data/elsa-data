@@ -15,23 +15,25 @@ import {
 import { ErrorHandler } from "./api/errors/_error.handler";
 import { apiInternalRoutes } from "./api/api-internal-routes";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
-import { container, inject, injectable, singleton } from "tsyringe";
+import { DependencyContainer, injectable, singleton } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
 import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
-import { createContext } from "./api/routes/trpc-context";
 import { appRouter } from "./app-router";
 import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
+import { Context } from "./api/routes/trpc-bootstrap";
 
 @injectable()
 @singleton()
 export class App {
-  public server: FastifyInstance;
+  public readonly server: FastifyInstance;
 
   // a absolute path to where static files are to be served from
-  public staticFilesPath: string;
+  public readonly staticFilesPath: string;
+
+  private readonly trpcCreateContext: () => Promise<Context>;
 
   /**
    * Our constructor does all the setup that can be done without async/await
@@ -39,20 +41,31 @@ export class App {
    * anything that cannot be changed.
    */
   constructor(
-    @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Logger") private readonly logger: Logger
+    private readonly dc: DependencyContainer,
+    private readonly settings: ElsaSettings,
+    private readonly logger: Logger
   ) {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
 
     this.server = Fastify({ logger: logger, maxParamLength: 5000 });
 
-    // inject a copy of the Elsa settings into every request
+    // inject a copy of the Elsa settings and a custom child DI container into every Fastify request
     this.server.decorateRequest("settings", null);
+    this.server.decorateRequest("container", null);
+
     this.server.addHook("onRequest", async (req, reply) => {
       // we make a shallow copy of the settings on each fastify request to (somewhat)
       // protect against routes doing mutations
       (req as any).settings = { ...settings };
+      // give each request its own DI container
+      (req as any).container = dc.createChildContainer();
+    });
+
+    // similarly for TRPC, start each request context with a copy of the Elsa settings and a custom child DI container
+    this.trpcCreateContext = async () => ({
+      settings: { ...settings },
+      container: dc.createChildContainer(),
     });
   }
 
@@ -111,23 +124,30 @@ export class App {
 
     await this.server.register(fastifyTRPCPlugin, {
       prefix: "/api/trpc",
-      trpcOptions: { router: appRouter, createContext },
+      trpcOptions: {
+        router: appRouter,
+        // we start the context for each request with a child container - so we can specialise
+        // resolution if we want
+        // each stage of our middleware can add to both the context object and the container
+        // depending on what is appropriate
+        createContext: this.trpcCreateContext,
+      },
     });
 
     this.server.register(apiExternalRoutes, {
       prefix: "/api",
-      container: container,
+      container: this.dc,
     });
 
     this.server.register(apiInternalRoutes, {
       prefix: "/api",
-      container: container,
+      container: this.dc,
       allowTestCookieEquals: undefined,
     });
 
     this.server.register(apiUnauthenticatedRoutes, {
       prefix: "/api",
-      container: container,
+      container: this.dc,
       addDevTestingRoutes: this.settings.devTesting?.allowTestRoutes ?? false,
     });
 
@@ -135,14 +155,14 @@ export class App {
     //       including callback as a special case (because it has to be registered with the OIDC provider)
     this.server.register(apiAuthRoutes, {
       prefix: "/auth",
-      container: container,
+      container: this.dc,
       redirectUri: this.settings.deployedUrl + "/cb",
       includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
     });
 
     this.server.register(callbackRoutes, {
       prefix: "/cb",
-      container: container,
+      container: this.dc,
       redirectUri: this.settings.deployedUrl + "/cb",
       includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
     });

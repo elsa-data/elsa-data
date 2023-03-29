@@ -24,7 +24,6 @@ import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
  * Cloud Formation stacks.
  */
 @injectable()
-@singleton()
 export class JobCloudFormationDeleteService extends JobsService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
