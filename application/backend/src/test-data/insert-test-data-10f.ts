@@ -10,8 +10,8 @@ import { makeSimpsonsTrio } from "./insert-test-data-10f-simpsons";
 import { makeTrio, TENF_URI } from "./insert-test-data-10f-helpers";
 import { makeJetsonsTrio } from "./insert-test-data-10f-jetsons";
 import { randomUUID } from "crypto";
-
-const edgeDbClient = edgedb.createClient();
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../di-helpers";
 
 // we haven't copied some of the other files up yet so we just point to nothing
 const blankFile = () =>
@@ -24,7 +24,9 @@ const blankFile = () =>
  * The 10F dataset is a subset of the 1000 genomes data with a combination of more complex
  * families.
  */
-export async function insert10F() {
+export async function insert10F(dc: DependencyContainer) {
+  const { edgeDbClient } = getServices(dc);
+
   const addPatient = async (
     familyId: string,
     patientId: string,
@@ -80,7 +82,7 @@ export async function insert10F() {
       externalIdentifiers: makeSystemlessIdentifierArray("10F"),
       description: "UMCCR 10F",
       cases: e.set(
-        await makeSimpsonsTrio(),
+        await makeSimpsonsTrio(dc),
         await makeJetsonsTrio(),
         // convert this to a full family at some point
         await makeTrio(

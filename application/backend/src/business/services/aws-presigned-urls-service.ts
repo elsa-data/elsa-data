@@ -11,7 +11,6 @@ import { IPresignedUrlProvider } from "./presigned-urls-service";
 import assert from "assert";
 
 @injectable()
-@singleton()
 export class AwsPresignedUrlsService
   extends AwsBaseService
   implements IPresignedUrlProvider

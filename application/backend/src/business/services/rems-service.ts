@@ -14,7 +14,6 @@ import { getNextReleaseKey } from "../db/release-queries";
 import { ReleaseService } from "./release-service";
 
 @injectable()
-@singleton()
 export class RemsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,

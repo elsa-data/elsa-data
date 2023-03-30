@@ -25,7 +25,6 @@ import { AuditLogService } from "./audit-log-service";
 import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
 
 @injectable()
-@singleton()
 export class DatasetService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,

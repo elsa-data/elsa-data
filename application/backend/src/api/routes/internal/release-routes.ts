@@ -17,8 +17,7 @@ import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../../api-internal-routes";
-import { container } from "tsyringe";
-import { JobsService } from "../../../business/services/jobs/jobs-base-service";
+import { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
@@ -26,15 +25,22 @@ import { PresignedUrlsService } from "../../../business/services/presigned-urls-
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
 
-export const releaseRoutes = async (fastify: FastifyInstance) => {
-  const presignedUrlsService = container.resolve(PresignedUrlsService);
-  const awsAccessPointService = container.resolve(AwsAccessPointService);
-  const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
-  const releaseService = container.resolve(ReleaseService);
-  const releaseParticipantService = container.resolve(
+export const releaseRoutes = async (
+  fastify: FastifyInstance,
+  _opts: { container: DependencyContainer }
+) => {
+  const presignedUrlsService = _opts.container.resolve(PresignedUrlsService);
+  const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
+  const gcpStorageSharingService = _opts.container.resolve(
+    GcpStorageSharingService
+  );
+  const releaseService = _opts.container.resolve(ReleaseService);
+  const releaseParticipantService = _opts.container.resolve(
     ReleaseParticipationService
   );
-  const releaseSelectionService = container.resolve(ReleaseSelectionService);
+  const releaseSelectionService = _opts.container.resolve(
+    ReleaseSelectionService
+  );
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/releases",

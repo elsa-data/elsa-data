@@ -27,7 +27,6 @@ import {
   commandDeleteDataset,
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
-import { container } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
 
@@ -35,7 +34,7 @@ import pino, { Logger } from "pino";
 bootstrapGlobalSynchronous();
 
 // global settings for DI
-bootstrapDependencyInjection();
+const dc = bootstrapDependencyInjection();
 
 /**
  * Help text for the commands that can be executed
@@ -80,12 +79,24 @@ function printHelpText() {
     `Configuration (redacted) was sourced from "${sources}"`
   );
 
+  dc.afterResolution(
+    "Database",
+    // Callback signature is (token: InjectionToken<T>, result: T | T[], resolutionType: ResolutionType)
+    (_t, result, resolutionType) => {
+      logger.debug(
+        "Expect the resolution type for the database client to be Single = " +
+          resolutionType
+      );
+    },
+    { frequency: "Once" }
+  );
+
   // register all these for use in any service that supports DI
-  container.register<ElsaSettings>("Settings", {
+  dc.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
 
-  container.register<Logger>("Logger", {
+  dc.register<Logger>("Logger", {
     useValue: logger,
   });
 
@@ -110,9 +121,9 @@ function printHelpText() {
         break;
 
       case WEB_SERVER_COMMAND:
-        todo.push(async () => waitForDatabaseReady());
+        todo.push(async () => waitForDatabaseReady(dc));
         todo.push(async () => startJobQueue(config));
-        todo.push(async () => startWebServer(null));
+        todo.push(async () => startWebServer(dc, null));
         break;
 
       case WEB_SERVER_WITH_SCENARIO_COMMAND:
@@ -121,9 +132,9 @@ function printHelpText() {
             `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
           );
 
-        todo.push(async () => waitForDatabaseReady());
+        todo.push(async () => waitForDatabaseReady(dc));
         todo.push(async () => startJobQueue(config));
-        todo.push(async () => startWebServer(parseInt(c.args[0])));
+        todo.push(async () => startWebServer(dc, parseInt(c.args[0])));
         break;
 
       case ADD_SCENARIO_COMMAND:
@@ -132,7 +143,7 @@ function printHelpText() {
             `Command ${ADD_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`
           );
 
-        todo.push(async () => commandAddScenario(parseInt(c.args[0])));
+        todo.push(async () => commandAddScenario(dc, parseInt(c.args[0])));
         break;
 
       case DB_BLANK_COMMAND:
@@ -144,7 +155,7 @@ function printHelpText() {
         break;
 
       case DELETE_DATASETS_COMMAND:
-        todo.push(async () => commandDeleteDataset(c.args));
+        todo.push(async () => commandDeleteDataset(dc, c.args));
         break;
 
       default:
@@ -156,9 +167,9 @@ function printHelpText() {
 
   // if no commands were specified - then our default behaviour is to pretend they asked us todo start-web-server
   if (todo.length === 0) {
-    await waitForDatabaseReady();
+    await waitForDatabaseReady(dc);
     await startJobQueue(config);
-    await startWebServer(null);
+    await startWebServer(dc, null);
   } else {
     for (const t of todo) {
       const returnCode = await t();

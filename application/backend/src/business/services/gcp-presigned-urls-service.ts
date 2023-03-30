@@ -9,7 +9,6 @@ import { IPresignedUrlProvider } from "./presigned-urls-service";
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
 
 @injectable()
-@singleton()
 export class GcpPresignedUrlsService
   extends GcpBaseService
   implements IPresignedUrlProvider

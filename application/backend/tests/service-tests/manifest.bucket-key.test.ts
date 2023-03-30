@@ -15,6 +15,8 @@ import { ReleaseSelectionService } from "../../src/business/services/release-sel
 import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
 import _ from "lodash";
 
+const testContainer = registerTypes();
+
 let edgeDbClient: Client;
 let testReleaseKey: string;
 let allowedAdministratorUser: AuthenticatedUser;
@@ -24,8 +26,6 @@ let releaseSelectionService: ReleaseSelectionService;
 let releaseActivationService: ReleaseActivationService;
 
 beforeAll(async () => {
-  const testContainer = await registerTypes();
-
   edgeDbClient = testContainer.resolve("Database");
   manifestService = testContainer.resolve(ManifestService);
   releaseService = testContainer.resolve(ReleaseService);
@@ -34,7 +34,9 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon());
+  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
+    testContainer
+  ));
 
   // note that passing an empty array means "unselect all"
   await releaseSelectionService.setUnselected(

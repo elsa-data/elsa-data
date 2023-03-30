@@ -20,7 +20,6 @@ export interface IPresignedUrlProvider {
 }
 
 @injectable()
-@singleton()
 export class PresignedUrlsService {
   constructor(
     @inject("Database") protected readonly edgeDbClient: edgedb.Client,

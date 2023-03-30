@@ -14,7 +14,6 @@ import { Metadata } from "@google-cloud/storage/build/src/nodejs-common";
 import { ReleaseService } from "./release-service";
 
 @injectable()
-@singleton()
 export class GcpStorageSharingService extends GcpBaseService {
   storage: Storage;
   globalLimit: Limit;

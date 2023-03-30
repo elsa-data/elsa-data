@@ -40,6 +40,17 @@ jobs:
             application/frontend
           install-command: npm ci --install-links=false
 
+      # Sanity/lint checks
+      - name: Run pre build lint checks
+        run: |
+          if ! grep -qR "container.*tsyringe" src/ tests/ jobs/; then
+            echo "No use of global tsyringe container"
+          else
+            echo "Found an import of the global tsyringe container"
+            exit 1
+          fi
+        working-directory: application/backend
+
       # unit tests can run first before any databases are set up
       - name: Run unit tests
         run: npm run test:unit

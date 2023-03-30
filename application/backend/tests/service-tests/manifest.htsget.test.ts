@@ -7,6 +7,8 @@ import { transformMasterManifestToHtsgetManifest } from "../../src/business/serv
 import { ReleaseService } from "../../src/business/services/release-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 
+const testContainer = registerTypes();
+
 let edgeDbClient: Client;
 let testReleaseKey: string;
 let allowedAdministratorUser: AuthenticatedUser;
@@ -14,15 +16,15 @@ let manifestService: ManifestService;
 let releaseService: ReleaseService;
 
 beforeAll(async () => {
-  const testContainer = await registerTypes();
-
   edgeDbClient = testContainer.resolve("Database");
   manifestService = testContainer.resolve(ManifestService);
   releaseService = testContainer.resolve(ReleaseService);
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon());
+  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
+    testContainer
+  ));
 
   // assert a release state so that everything is included for the moment
   await releaseService.setIsAllowed(

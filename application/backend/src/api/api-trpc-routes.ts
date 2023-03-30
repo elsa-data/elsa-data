@@ -1,17 +1,28 @@
 import { FastifyInstance } from "fastify";
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import { appRouter } from "../app-router";
-import { createContext } from "./routes/trpc-context";
+import { Context } from "./routes/trpc-bootstrap";
 
 /**
- * Defined for trpc routes
+ * Define the Fastify setup for TRPC - the TRPC middleware, routes etc is
+ * further defined in the appRouter definition.
  *
  * @param fastify
+ * @param opts
  */
-export const trpcRoutes = async (fastify: FastifyInstance) => {
+export const trpcRoutes = async (
+  fastify: FastifyInstance,
+  opts: {
+    // we need a minimum context that at least provides us with a DI container
+    trpcCreateContext: () => Promise<Context>;
+  }
+) => {
   fastify.addHook("preHandler", fastify.csrfProtection);
 
-  fastify.register(fastifyTRPCPlugin, {
-    trpcOptions: { router: appRouter, createContext },
+  await fastify.register(fastifyTRPCPlugin, {
+    trpcOptions: {
+      router: appRouter,
+      createContext: opts.trpcCreateContext,
+    },
   });
 };
