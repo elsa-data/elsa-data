@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { inject, injectable, Lifecycle, scoped, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
   CloudTrailClient,
   GetQueryResultsCommand,
@@ -37,7 +37,6 @@ type CloudTrailLakeResponseType = {
 };
 
 @injectable()
-@scoped(Lifecycle.ContainerScoped)
 export class AwsCloudTrailLakeService extends AwsBaseService {
   constructor(
     @inject("Settings") private settings: ElsaSettings,
