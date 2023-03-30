@@ -6,7 +6,6 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyTraps from "@dnlup/fastify-traps";
-import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,
@@ -21,9 +20,8 @@ import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
-import { createContext } from "./api/routes/trpc-context";
-import { appRouter } from "./app-router";
 import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
+import { trpcRoutes } from "./api/api-trpc-routes";
 
 @injectable()
 @singleton()
@@ -109,9 +107,8 @@ export class App {
       this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
     });
 
-    await this.server.register(fastifyTRPCPlugin, {
+    await this.server.register(trpcRoutes, {
       prefix: "/api/trpc",
-      trpcOptions: { router: appRouter, createContext },
     });
 
     this.server.register(apiExternalRoutes, {
