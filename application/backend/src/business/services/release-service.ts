@@ -26,17 +26,18 @@ import {
   auditSuccess,
 } from "../../audit-helpers";
 import { Logger } from "pino";
+import { ReleaseHtsgetNotConfigured } from "../exceptions/release-htsget";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
+    @inject("Settings") settings: ElsaSettings,
     @inject("Logger") private logger: Logger,
     private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
-    super(edgeDbClient, usersService);
+    super(settings, edgeDbClient, usersService);
   }
 
   /**
@@ -422,11 +423,19 @@ ${release.applicantEmailAddresses}
       | "isAllowedPhenotypeData"
       | "isAllowedS3Data"
       | "isAllowedGSData"
-      | "isAllowedR2Data",
+      | "isAllowedR2Data"
+      | "isAllowedHtsget",
     value: boolean
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    if (
+      type === "isAllowedHtsget" &&
+      !this.isFeatureEnabled("isAllowedHtsget")
+    ) {
+      throw new ReleaseHtsgetNotConfigured();
+    }
 
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
       this.auditLogService,
@@ -464,6 +473,7 @@ ${release.applicantEmailAddresses}
           isAllowedGSData: value,
         },
         isAllowedR2Data: { isAllowedR2Data: value },
+        isAllowedHtsget: { isAllowedHtsget: value },
       }[type];
 
       if (!fieldToSet)

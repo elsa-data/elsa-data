@@ -11,8 +11,6 @@ import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-
 import { CloudflarePresignedUrlsService } from "./business/services/cloudflare-presigned-urls-service";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { SFNClient } from "@aws-sdk/client-sfn";
-import { CloudStorageFactory } from "./business/services/cloud-storage-service";
-import { AwsS3Service } from "./business/services/aws/aws-s3-service";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -67,11 +65,5 @@ export function bootstrapDependencyInjection() {
   });
   container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
     useClass: CloudflarePresignedUrlsService,
-  });
-
-  container.registerSingleton<AwsS3Service>(AwsS3Service, AwsS3Service);
-
-  container.register<CloudStorageFactory>(CloudStorageFactory, {
-    useClass: CloudStorageFactory,
   });
 }

@@ -9,6 +9,7 @@ import {
   ReleaseCreateError,
   ReleaseViewError,
 } from "../exceptions/release-authorisation";
+import { ElsaSettings } from "../../config/elsa-settings";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -23,6 +24,7 @@ type CodeArrayFields = "diseases" | "countries" | "type";
  */
 export abstract class ReleaseBaseService {
   protected constructor(
+    protected readonly settings: ElsaSettings,
     protected readonly edgeDbClient: edgedb.Client,
     protected readonly usersService: UsersService
   ) {}
@@ -84,6 +86,16 @@ export abstract class ReleaseBaseService {
       isActivated: !!boundaryInfo.activation,
       isRunningJob: !!boundaryInfo.runningJob,
     };
+  }
+
+  /**
+   * Is a feature enabled in the config. Currently, this can just check for htsget.
+   * It might be good to check this for other features that require config properties to
+   * be set.
+   * @param property
+   */
+  public isFeatureEnabled(property: "isAllowedHtsget"): boolean {
+    return this.settings.htsget !== undefined;
   }
 
   /**
@@ -160,6 +172,8 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
+      isAllowedHtsget: releaseInfo.isAllowedHtsget,
+      isHtsgetEnabled: this.isFeatureEnabled("isAllowedHtsget"),
       // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,

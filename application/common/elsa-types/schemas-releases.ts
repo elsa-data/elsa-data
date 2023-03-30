@@ -1,11 +1,4 @@
-import {
-  Static,
-  TLiteral,
-  TSchema,
-  TString,
-  TUnion,
-  Type,
-} from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
 import { StringUnion, TypeDate } from "./typebox-helpers";
 
@@ -87,6 +80,9 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedS3Data: Type.Boolean(),
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
+
+  isAllowedHtsget: Type.Boolean(),
+  isHtsgetEnabled: Type.Boolean(),
 
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),

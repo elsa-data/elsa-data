@@ -7,7 +7,7 @@ import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
 import { transformMasterManifestToHtsgetManifest } from "./htsget/manifest-htsget-helper";
 import {
-  ManifestHtsGetResponseType,
+  ManifestHtsgetResponseType,
   ManifestHtsgetType,
 } from "./htsget/manifest-htsget-types";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
@@ -19,7 +19,11 @@ import {
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { NotFound } from "@aws-sdk/client-s3";
 import { add, isPast } from "date-fns";
-import { HtsGetManifestError } from "./htsget/manifest-htsget-errors";
+import {
+  ManifestHtsgetEndpointNotEnabled,
+  ManifestHtsgetError,
+  ManifestHtsgetStorageNotEnabled,
+} from "../../exceptions/manifest-htsget";
 
 @injectable()
 export class ManifestService {
@@ -85,7 +89,7 @@ export class ManifestService {
     return transformDbManifestToMasterManifest(manifest);
   }
 
-  public async getActiveHtsGetManifest(
+  public async getActiveHtsgetManifest(
     releaseKey: string
   ): Promise<ManifestHtsgetType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
@@ -93,28 +97,27 @@ export class ManifestService {
     // TODO fix exceptions here
     if (!masterManifest) return null;
 
+    console.log(masterManifest);
     return transformMasterManifestToHtsgetManifest(masterManifest);
   }
 
-  public async publishHtsGetManifest(
+  public async publishHtsgetManifest(
     type: CloudStorageType,
     releaseKey: string
-  ): Promise<ManifestHtsGetResponseType> {
+  ): Promise<ManifestHtsgetResponseType> {
     const storage = this.cloudStorageFactory.getStorage(type);
 
     if (storage === null) {
-      throw HtsGetManifestError.unimplemented();
+      throw new ManifestHtsgetStorageNotEnabled();
     }
     if (this.settings.htsget === undefined || this.settings.aws === undefined) {
-      throw HtsGetManifestError.not_enabled();
+      throw new ManifestHtsgetEndpointNotEnabled();
     }
-
-    console.log(`GOT STORAGE: ${storage}`, storage);
 
     let shouldUpdate = false;
     try {
       const head = await storage.head(this.settings.aws.tempBucket, releaseKey);
-      console.log(`HEAD: ${head}`, head);
+
       shouldUpdate =
         head.lastModified === undefined ||
         isPast(add(head.lastModified, this.settings.htsget.manifestTTL));
@@ -127,20 +130,24 @@ export class ManifestService {
     }
 
     if (shouldUpdate) {
-      const manifest = await this.getActiveHtsGetManifest(releaseKey);
+      const manifest = await this.getActiveHtsgetManifest(releaseKey);
 
       if (manifest === null) {
-        throw HtsGetManifestError.manifest_error();
+        throw new ManifestHtsgetError();
       }
 
-      console.log(`GOT MANIFEST: ${manifest}`, manifest);
-
-      // await storage.put(this.settings.aws.tempBucket, `${ManifestService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`, manifest.toString());
+      await storage.put(
+        this.settings.aws.tempBucket,
+        `${ManifestService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`,
+        manifest.toString()
+      );
     }
 
     return {
-      bucket: this.settings.aws.tempBucket,
-      key: releaseKey,
+      location: {
+        bucket: this.settings.aws.tempBucket,
+        key: releaseKey,
+      },
       cached: !shouldUpdate,
     };
   }

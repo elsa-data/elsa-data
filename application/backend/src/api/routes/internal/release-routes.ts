@@ -356,6 +356,16 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                   )
                 );
                 return;
+              case "/allowedHtsget":
+                reply.send(
+                  await releaseService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedHtsget",
+                    op.value
+                  )
+                );
+                return;
               default:
                 throw new Error(
                   `Unknown "replace" operation path ${(op as any).path}`

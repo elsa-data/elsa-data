@@ -84,35 +84,37 @@ export type ManifestHtsgetVariantsFileType = Static<
 >;
 
 /**
- * Manifest route schema.
+ * Htsget manifest route schema.
  */
-export const ManifestHtsGetParamsSchema = Type.Object({
+export const ManifestHtsgetParamsSchema = Type.Object({
   releaseKey: Type.String(),
 });
-export type ManifestHtsGetParamsType = Static<
-  typeof ManifestHtsGetParamsSchema
+export type ManifestHtsgetParamsType = Static<
+  typeof ManifestHtsgetParamsSchema
 >;
 
 /**
- * Manifest route query string schema.
+ * Htsget manifest route query string schema.
  */
-export const ManifestHtsGetQuerySchema = Type.Object({
+export const ManifestHtsgetQuerySchema = Type.Object({
   // Indicate the type of storage to reply with.
   type: CloudStorageSchema,
 });
-export type ManifestHtsGetQueryType = Static<typeof ManifestHtsGetQuerySchema>;
+export type ManifestHtsgetQueryType = Static<typeof ManifestHtsgetQuerySchema>;
 
 /**
- * Manifest route response schema.
+ * Htsget manifest route response schema.
  */
-export const ManifestHtsGetResponseSchema = Type.Optional(
-  Type.Object({
-    bucket: Type.String(),
-    key: Type.String(),
-    // True if the object was not updated and is cached and valid, false otherwise.
-    cached: Type.Boolean(),
-  })
-);
-export type ManifestHtsGetResponseType = Static<
-  typeof ManifestHtsGetResponseSchema
+export const ManifestHtsgetResponseSchema = Type.Object({
+  location: Type.Optional(
+    Type.Object({
+      bucket: Type.String(),
+      key: Type.String(),
+    })
+  ),
+  // True if the object was not updated and is cached and valid, false otherwise.
+  cached: Type.Boolean(),
+});
+export type ManifestHtsgetResponseType = Static<
+  typeof ManifestHtsgetResponseSchema
 >;
