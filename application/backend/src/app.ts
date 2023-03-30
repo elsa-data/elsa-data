@@ -124,14 +124,7 @@ export class App {
 
     await this.server.register(trpcRoutes, {
       prefix: "/api/trpc",
-      trpcOptions: {
-        router: appRouter,
-        // we start the context for each request with a child container - so we can specialise
-        // resolution if we want
-        // each stage of our middleware can add to both the context object and the container
-        // depending on what is appropriate
-        createContext: this.trpcCreateContext,
-      },
+      trpcCreateContext: this.trpcCreateContext,
     });
 
     this.server.register(apiExternalRoutes, {
