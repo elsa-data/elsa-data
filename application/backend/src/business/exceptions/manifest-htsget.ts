@@ -21,3 +21,9 @@ export class ManifestHtsgetError extends Base7807Error {
     super("manifest error", 404, "failed to get manifest for htsget endpoint");
   }
 }
+
+export class HtsgetNotAllowed extends Base7807Error {
+  constructor() {
+    super("not allowed", 404, "htsget is not allowed for this release");
+  }
+}

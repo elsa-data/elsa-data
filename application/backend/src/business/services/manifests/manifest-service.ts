@@ -2,7 +2,10 @@ import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
-import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
+import {
+  releaseGetSpecimenTreeAndFileArtifacts,
+  releaseIsAllowedHtsget,
+} from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
 import { transformMasterManifestToHtsgetManifest } from "./htsget/manifest-htsget-helper";
@@ -20,10 +23,12 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { NotFound } from "@aws-sdk/client-s3";
 import { add, isPast } from "date-fns";
 import {
+  HtsgetNotAllowed,
   ManifestHtsgetEndpointNotEnabled,
   ManifestHtsgetError,
   ManifestHtsgetStorageNotEnabled,
 } from "../../exceptions/manifest-htsget";
+import { AuditLogService } from "../audit-log-service";
 
 @injectable()
 export class ManifestService {
@@ -32,8 +37,8 @@ export class ManifestService {
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject(CloudStorageFactory)
-    private readonly cloudStorageFactory: CloudStorageFactory
+    private readonly cloudStorageFactory: CloudStorageFactory,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   /**
@@ -97,19 +102,27 @@ export class ManifestService {
     // TODO fix exceptions here
     if (!masterManifest) return null;
 
-    console.log(masterManifest);
     return transformMasterManifestToHtsgetManifest(masterManifest);
   }
 
-  public async publishHtsgetManifest(
+  async publishHtsgetManifestAuditFn(
     type: CloudStorageType,
-    releaseKey: string
+    releaseKey: string,
+    completeAuditFn: (executor: Executor, details: any) => Promise<void>
   ): Promise<ManifestHtsgetResponseType> {
+    const allowed = await releaseIsAllowedHtsget(this.edgeDbClient, {
+      releaseKey,
+    });
+    if (!allowed?.isAllowedHtsget) {
+      throw new HtsgetNotAllowed();
+    }
+
     const storage = this.cloudStorageFactory.getStorage(type);
 
     if (storage === null) {
       throw new ManifestHtsgetStorageNotEnabled();
     }
+
     if (this.settings.htsget === undefined || this.settings.aws === undefined) {
       throw new ManifestHtsgetEndpointNotEnabled();
     }
@@ -143,13 +156,33 @@ export class ManifestService {
       );
     }
 
-    return {
+    const output = {
       location: {
         bucket: this.settings.aws.tempBucket,
         key: releaseKey,
       },
       cached: !shouldUpdate,
     };
+
+    await completeAuditFn(this.edgeDbClient, output);
+
+    return output;
+  }
+
+  public async publishHtsgetManifest(
+    type: CloudStorageType,
+    releaseKey: string
+  ): Promise<ManifestHtsgetResponseType> {
+    return await this.auditLogService.systemAuditEventPattern(
+      "publish htsget manifest",
+      async (completeAudit) => {
+        return await this.publishHtsgetManifestAuditFn(
+          type,
+          releaseKey,
+          completeAudit
+        );
+      }
+    );
   }
 
   public async createTsvManifest(masterManifest: ManifestMasterType) {}
