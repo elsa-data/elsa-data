@@ -408,41 +408,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     Body: ReleasePresignRequestType;
     Params: { rid: string };
   }>(
-    "/releases/:rid/presigned",
-    {
-      schema: {
-        body: ReleasePresignRequestSchema,
-      },
-    },
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-      if (!presignedUrlsService.isEnabled)
-        throw new Error(
-          "The presigned URLs service was not started so URL presigning will " +
-            "not work"
-        );
-
-      const presignResult = await presignedUrlsService.getPresigned(
-        authenticatedUser,
-        releaseKey,
-        request.body.presignHeader
-      );
-
-      reply.raw.writeHead(200, {
-        "Content-Disposition": `attachment; filename=${presignResult.filename}`,
-        "Content-Type": "application/octet-stream",
-      });
-
-      presignResult.archive.pipe(reply.raw);
-    }
-  );
-
-  fastify.post<{
-    Body: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>(
     "/releases/:rid/cfn/manifest",
     {
       schema: {
@@ -548,32 +513,28 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   fastify.post<{
     Body?: ReleasePresignRequestType;
     Params: { rid: string };
-  }>(
-    "/releases/:rid/tsv-manifest",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+  }>("/releases/:rid/tsv-manifest", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseKey = request.params.rid;
+    const releaseKey = request.params.rid;
 
-      const manifest = await manifestService.getArchivedActiveTsvManifest(
-        presignedUrlsService,
-        authenticatedUser,
-        releaseKey,
-        request.body?.presignHeader ?? []
-      );
+    const manifest = await manifestService.getArchivedActiveTsvManifest(
+      presignedUrlsService,
+      authenticatedUser,
+      releaseKey,
+      request.body?.presignHeader ?? []
+    );
 
-      if (!manifest) {
-        reply.status(404).send();
-        return;
-      }
-
-      reply.raw.writeHead(200, {
-        "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
-        "Content-Type": "application/octet-stream",
-      });
-
-      manifest.pipe(reply.raw);
+    if (!manifest) {
+      reply.status(404).send();
+      return;
     }
-  );
+
+    reply.raw.writeHead(200, {
+      "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
+      "Content-Type": "application/octet-stream",
+    });
+
+    manifest.pipe(reply.raw);
+  });
 };

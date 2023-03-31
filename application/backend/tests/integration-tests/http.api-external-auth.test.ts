@@ -18,7 +18,7 @@ describe("http integration tests", () => {
     // we haven't yet determined what the auth schema for external is - but we are proving here
     // that the base concept works
     const res = await server.inject({
-      url: "/api/manifest/htsget/areleaseid",
+      url: "/api/manifest/areleaseid",
       headers: {
         authorization: "Blah",
       },
@@ -30,7 +30,7 @@ describe("http integration tests", () => {
 
   it("get fail testing external manifest auth request with no bearer", async () => {
     const res = await server.inject({
-      url: "/api/manifest/htsget/areleaseid",
+      url: "/api/manifest/areleaseid",
     });
     expect(res.statusCode).toEqual(401);
   });

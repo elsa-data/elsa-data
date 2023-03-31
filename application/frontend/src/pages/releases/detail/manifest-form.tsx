@@ -7,7 +7,11 @@ type Props = {
   releaseData: ReleaseTypeLocal;
 };
 
-const tsvColumnCheck = (field: string) => (
+type TsvColumnCheckProps = {
+  field: string;
+};
+
+const TsvColumnCheck: React.FC<TsvColumnCheckProps> = ({ field }) => (
   <div key={field} className="flex items-center gap-2">
     <input
       type="checkbox"
@@ -23,7 +27,7 @@ const tsvColumnCheck = (field: string) => (
   </div>
 );
 
-export const ManifestForm: React.FC<Props> = ({releaseKey, releaseData}) => {
+export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
   return (
     <form
       action={`/api/releases/${releaseKey}/tsv-manifest`}
@@ -39,22 +43,25 @@ export const ManifestForm: React.FC<Props> = ({releaseKey, releaseData}) => {
           </p>
           <p>
             Downloading the manifest does not automatically provide access to
-            files in this release. Access must be provided using the adjacent
-            tabs.
+            files in this release. Access must be provided by activating the
+            release and, if desired, by also using the tabs to the left.
           </p>
         </article>
 
-        {ObjectStoreRecordKey.map(tsvColumnCheck)}
+        {ObjectStoreRecordKey.map((field, i) => (
+          <TsvColumnCheck key={i} field={field} />
+        ))}
 
         <div className="prose">
           <input
             type="submit"
             disabled={!releaseData.activation}
-            className="mt-4 btn-normal"
+            className="btn-normal mt-4"
             value={
-              "Download Zip" + (
-                !releaseData.activation ? " (Release Must Be Active)" : "")
-            } />
+              "Download Zip" +
+              (!releaseData.activation ? " (Release Must Be Active)" : "")
+            }
+          />
         </div>
       </div>
     </form>

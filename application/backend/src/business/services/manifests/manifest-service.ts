@@ -9,7 +9,10 @@ import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helpe
 import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
 import { ManifestHtsgetType } from "./manifest-htsget-types";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
-import { ManifestBucketKeyType, ManifestTsvBodyType } from "./manifest-bucket-key-types";
+import {
+  ManifestBucketKeyType,
+  ManifestTsvBodyType,
+} from "./manifest-bucket-key-types";
 import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
@@ -18,12 +21,15 @@ import { ReleaseService } from "../release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
 import { PresignedUrlsService } from "../presigned-urls-service";
+import { ReleaseViewError } from "../../exceptions/release-authorisation";
+import { AuditLogService } from "../audit-log-service";
 
 @injectable()
 export class ManifestService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,
-    private readonly releaseService: ReleaseService
+    private readonly releaseService: ReleaseService,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   /**
@@ -53,7 +59,8 @@ export class ManifestService {
     // TODO fix exceptions here
     if (!releaseWithManifest.activation) return null;
 
-    if (JSON.stringify(releaseWithManifest.activation.manifest) === "{}") return null;
+    if (JSON.stringify(releaseWithManifest.activation.manifest) === "{}")
+      return null;
 
     return releaseWithManifest.activation.manifest as ManifestMasterType;
   }
@@ -112,47 +119,94 @@ export class ManifestService {
     presignedUrlsService: PresignedUrlsService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey[number])[]
+    header: typeof ObjectStoreRecordKey[number][]
   ): Promise<archiver.Archiver | null> {
-    const manifest = await this.getActiveTsvManifest(
-      presignedUrlsService,
-      releaseKey
-    );
-    if (!manifest) {
-      return null;
+    const { userRole, isActivated } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (!(userRole === "Manager" || userRole === "Member")) {
+      throw new ReleaseViewError(releaseKey);
     }
 
-    // setup a TSV stream
-    const stringifyColumnOptions = [];
-    for (const column of header) {
-      stringifyColumnOptions.push({
-        key: column,
-        header: column.toUpperCase(),
+    if (!isActivated) throw new Error("needs to be activated");
+
+    const createPresignedZip = async () => {
+      const manifest = await this.getActiveTsvManifest(
+        presignedUrlsService,
+        releaseKey
+      );
+      if (!manifest) return null;
+
+      // setup a TSV stream
+      const stringifyColumnOptions = [];
+      for (const column of header) {
+        stringifyColumnOptions.push({
+          key: column,
+          header: column.toUpperCase(),
+        });
+      }
+      const stringifier = stringify({
+        header: true,
+        columns: stringifyColumnOptions,
+        delimiter: "\t",
       });
+
+      const readableStream = Readable.from(manifest);
+      const buf = await streamConsumers.text(readableStream.pipe(stringifier));
+
+      const password = await this.releaseService.getPassword(user, releaseKey);
+
+      // create archive and specify method of encryption and password
+      let archive = archiver.create("zip-encrypted", {
+        zlib: { level: 8 },
+        encryptionMethod: "aes256",
+        password: password,
+      } as ArchiverOptions);
+
+      archive.append(buf, { name: "manifest.tsv" });
+
+      await archive.finalize();
+
+      return archive;
+    };
+
+    const now = new Date();
+    const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      "E",
+      "Created Presigned Zip",
+      now
+    );
+
+    try {
+      const archive = createPresignedZip();
+      await this.auditLogService.completeReleaseAuditEvent(
+        this.edgeDbClient,
+        newAuditEventId,
+        0,
+        now,
+        new Date()
+      );
+      return archive;
+    } catch (e) {
+      const errorString = e instanceof Error ? e.message : String(e);
+
+      await this.auditLogService.completeReleaseAuditEvent(
+        this.edgeDbClient,
+        newAuditEventId,
+        8,
+        now,
+        new Date(),
+        { error: errorString }
+      );
+
+      throw e;
     }
-    const stringifier = stringify({
-      header: true,
-      columns: stringifyColumnOptions,
-      delimiter: "\t",
-    });
-
-    const readableStream = Readable.from(manifest);
-    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
-
-    const password = await this.releaseService.getPassword(user, releaseKey);
-
-    // create archive and specify method of encryption and password
-    let archive = archiver.create("zip-encrypted", {
-      zlib: { level: 8 },
-      encryptionMethod: "aes256",
-      password: password,
-    } as ArchiverOptions);
-
-    archive.append(buf, { name: "manifest.tsv" });
-
-    await archive.finalize();
-
-    return archive;
   }
 
   public async getActiveBucketKeyManifest(
