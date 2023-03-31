@@ -1,4 +1,4 @@
-import { router, internalProcedure } from "../trpc-bootstrap";
+import { internalProcedure, router } from "../trpc-bootstrap";
 import { z } from "zod";
 import {
   inputReleaseKey,
@@ -23,11 +23,6 @@ export const releaseJobRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.awsAccessPointService.isEnabled)
-        throw new Error(
-          "The AWS service was not started so AWS Access Point sharing will not work"
-        );
-
       const s3HttpsUrl =
         await ctx.awsAccessPointService.createAccessPointCloudFormationTemplate(
           ctx.user,
@@ -45,11 +40,6 @@ export const releaseJobRouter = router({
   startAccessPointUninstall: internalProcedure
     .input(inputReleaseKeySingleParameter)
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.awsAccessPointService.isEnabled)
-        throw new Error(
-          "The AWS service was not started so AWS Access Point sharing will not work"
-        );
-
       await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(
         ctx.user,
         input.releaseKey

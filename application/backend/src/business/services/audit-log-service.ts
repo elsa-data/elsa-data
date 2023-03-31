@@ -5,8 +5,8 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import {
-  AuditDataSummaryType,
   AuditDataAccessType,
+  AuditDataSummaryType,
   AuditEventDetailsType,
   AuditEventFullType,
   AuditEventType,
@@ -30,10 +30,6 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
 import { audit } from "../../../dbschema/interfaces";
-import DataAccessAuditEvent = audit.DataAccessAuditEvent;
-import AuditEvent = audit.AuditEvent;
-import ActionType = audit.ActionType;
-import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import {
   getReleaseKeyFromReleaseAuditEvent,
   insertReleaseAuditEvent,
@@ -43,6 +39,10 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
+import DataAccessAuditEvent = audit.DataAccessAuditEvent;
+import AuditEvent = audit.AuditEvent;
+import ActionType = audit.ActionType;
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -1048,9 +1048,10 @@ export class AuditLogService {
    * in a try block, which must complete the audit event, or if an error is throw, completes a failed
    * audit event.
    */
-  protected async auditPattern<T>(
+  protected async auditPattern<R, T>(
     startAuditFn: (start: Date) => Promise<string>,
     completeAuditFn: (
+      this: AuditLogService,
       executor: Executor,
       auditEventId: string,
       outcome: AuditEventOutcome,
@@ -1060,15 +1061,16 @@ export class AuditLogService {
     ) => Promise<void>,
     tryFn: (
       completeAuditFn: (executor: Executor, details: any) => Promise<void>
-    ) => Promise<T>
-  ): Promise<T> {
+    ) => Promise<R>
+  ): Promise<R> {
     // Is this refactor getting out of hand?
     const auditEventStart = new Date();
     const auditEventId = await startAuditFn(auditEventStart);
 
     try {
       return await tryFn(async (executor, details) => {
-        await completeAuditFn(
+        await completeAuditFn.call(
+          this,
           executor,
           auditEventId,
           OUTCOME_SUCCESS,
@@ -1082,10 +1084,11 @@ export class AuditLogService {
       const errorString =
         error instanceof Error ? error.message : String(error);
 
-      await this.completeReleaseAuditEvent(
+      await completeAuditFn.call(
+        this,
         this.edgeDbClient,
         auditEventId,
-        OUTCOME_SERIOUS_FAILURE,
+        OUTCOME_SUCCESS,
         auditEventStart,
         new Date(),
         { error: errorString }

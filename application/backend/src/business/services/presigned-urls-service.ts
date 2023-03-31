@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
-import { inject, injectAll, injectable, singleton } from "tsyringe";
+import { inject, injectable, injectAll, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
 import { AuditLogService } from "./audit-log-service";
 import { Readable } from "stream";
@@ -13,7 +13,7 @@ import { getAllFileRecords } from "./_release-file-list-helper";
 import { ReleaseViewError } from "../exceptions/release-authorisation";
 
 export interface IPresignedUrlProvider {
-  isEnabled: boolean;
+  isEnabled(): Promise<boolean>;
   protocol: string;
   presign(releaseKey: string, bucket: string, key: string): Promise<string>;
 }
@@ -31,8 +31,13 @@ export class PresignedUrlsService {
     private auditLogService: AuditLogService
   ) {}
 
-  public get isEnabled(): boolean {
-    return this.presignedUrlsServices.some((p) => p.isEnabled);
+  public async isEnabled(): Promise<boolean> {
+    for (const service of this.presignedUrlsServices) {
+      if (await service.isEnabled()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private async presign(
@@ -60,6 +65,12 @@ export class PresignedUrlsService {
     releaseKey: string,
     presignHeader: string[]
   ): Promise<any> {
+    if (!(await this.isEnabled()))
+      throw new Error(
+        "The presigned URLs service was not started so URL presigning will " +
+          "not work"
+      );
+
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,

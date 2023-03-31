@@ -11,6 +11,7 @@ import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-
 import { CloudflarePresignedUrlsService } from "./business/services/cloudflare-presigned-urls-service";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import { STSClient } from "@aws-sdk/client-sts";
 
 export function bootstrapDependencyInjection() {
   container.register<edgedb.Client>("Database", {
@@ -55,6 +56,10 @@ export function bootstrapDependencyInjection() {
 
   container.register<SFNClient>("SFNClient", {
     useFactory: () => new SFNClient(awsClientConfig),
+  });
+
+  container.register<STSClient>("STSClient", {
+    useFactory: () => new STSClient(awsClientConfig),
   });
 
   container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {

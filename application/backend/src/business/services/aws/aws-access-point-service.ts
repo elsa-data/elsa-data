@@ -3,7 +3,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "../users-service";
-import { AwsBaseService } from "./aws-base-service";
+import { AwsEnabledService } from "./aws-enabled-service";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
@@ -29,7 +29,7 @@ const REGION = "ap-southeast-2";
 
 @injectable()
 @singleton()
-export class AwsAccessPointService extends AwsBaseService {
+export class AwsAccessPointService {
   constructor(
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
@@ -39,11 +39,9 @@ export class AwsAccessPointService extends AwsBaseService {
     private readonly releaseService: ReleaseService,
     @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService,
-    private auditLogService: AuditLogService
-  ) {
-    super();
-  }
-
+    private auditLogService: AuditLogService,
+    private readonly awsEnabledService: AwsEnabledService
+  ) {}
   public static getReleaseStackName(releaseKey: string): string {
     return `elsa-data-release-${releaseKey}`;
   }
@@ -65,6 +63,8 @@ export class AwsAccessPointService extends AwsBaseService {
     stackId: string;
     bucketNameMap: { [x: string]: string };
   } | null> {
+    await this.awsEnabledService.enabledGuard();
+
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
@@ -116,6 +116,7 @@ export class AwsAccessPointService extends AwsBaseService {
     releaseKey: string,
     tsvColumns: string[]
   ) {
+    await this.awsEnabledService.enabledGuard();
     // find all the files encompassed by this release as a flat array of S3 URLs
     // noting that these files will be S3 paths that
     const filesArray = await getAllFileRecords(
@@ -193,7 +194,7 @@ export class AwsAccessPointService extends AwsBaseService {
     vpcId?: string
   ): Promise<string> {
     // the AWS guard is switched on as this needs to write out to S3
-    this.enabledGuard();
+    await this.awsEnabledService.enabledGuard();
 
     assert(this.settings.aws);
 

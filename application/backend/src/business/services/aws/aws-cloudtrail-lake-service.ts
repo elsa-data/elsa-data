@@ -7,7 +7,7 @@ import {
   GetQueryResultsCommand,
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
-import { AwsBaseService } from "./aws-base-service";
+import { AwsEnabledService } from "./aws-enabled-service";
 import { AuditLogService } from "../audit-log-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
@@ -38,17 +38,16 @@ type CloudTrailLakeResponseType = {
 
 @injectable()
 @singleton()
-export class AwsCloudTrailLakeService extends AwsBaseService {
+export class AwsCloudTrailLakeService {
   constructor(
     @inject("Settings") private settings: ElsaSettings,
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
     private awsAccessPointService: AwsAccessPointService,
-    private auditLogService: AuditLogService
-  ) {
-    super();
-  }
+    private auditLogService: AuditLogService,
+    private readonly awsEnabledService: AwsEnabledService
+  ) {}
   private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
   private checkisAllowedChangeUserPermissions(user: AuthenticatedUser): void {
@@ -112,6 +111,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
    * @returns
    */
   async startCommandQueryCloudTrailLake(sqlStatement: string): Promise<string> {
+    await this.awsEnabledService.enabledGuard();
+
     // Sending request to query
     const command = new StartQueryCommand({ QueryStatement: sqlStatement });
     const queryResponse = await this.cloudTrailClient.send(command);
@@ -132,6 +133,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     queryId: string;
     eventDataStoreId: string;
   }): Promise<Record<string, string>[]> {
+    await this.awsEnabledService.enabledGuard();
+
     // Setting up init variables
     let nextToken: undefined | string;
     const queryResult: Record<string, string>[] = [];

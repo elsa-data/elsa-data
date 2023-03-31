@@ -1,6 +1,6 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { inject, injectable, singleton } from "tsyringe";
-import { AwsBaseService } from "./aws-base-service";
+import { AwsEnabledService } from "./aws-enabled-service";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
 import { parseUrl } from "@aws-sdk/url-parser";
@@ -12,21 +12,21 @@ import assert from "assert";
 
 @injectable()
 @singleton()
-export class AwsPresignedUrlsService
-  extends AwsBaseService
-  implements IPresignedUrlProvider
-{
+export class AwsPresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "s3";
 
-  constructor(@inject("Settings") private settings: ElsaSettings) {
-    super();
-  }
+  constructor(
+    @inject("Settings") private settings: ElsaSettings,
+    private readonly awsEnabledService: AwsEnabledService
+  ) {}
 
-  async presign(
+  public async presign(
     releaseKey: string,
     bucket: string,
     key: string
   ): Promise<string> {
+    await this.awsEnabledService.enabledGuard();
+
     const s3Client = new S3Client({});
     const awsRegion = await s3Client.config.region();
 
@@ -63,5 +63,9 @@ export class AwsPresignedUrlsService
       })
     );
     return url;
+  }
+
+  public async isEnabled(): Promise<boolean> {
+    return await this.awsEnabledService.isEnabled();
   }
 }

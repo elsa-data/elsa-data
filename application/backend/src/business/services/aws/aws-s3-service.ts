@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { AwsBaseService } from "./aws-base-service";
+import { AwsEnabledService } from "./aws-enabled-service";
 import { CloudStorage, HeadOutput } from "../cloud-storage-service";
 import {
   HeadObjectCommand,
@@ -8,17 +8,18 @@ import {
 } from "@aws-sdk/client-s3";
 
 @injectable()
-export class AwsS3Service extends AwsBaseService implements CloudStorage {
-  constructor(@inject("S3Client") private readonly s3Client: S3Client) {
-    super();
-  }
+export class AwsS3Service implements CloudStorage {
+  constructor(
+    @inject("S3Client") private readonly s3Client: S3Client,
+    private readonly awsEnabledService: AwsEnabledService
+  ) {}
 
-  async put(
+  public async put(
     bucket: string,
     key: string,
     data: string
   ): Promise<{ [key: string]: any }> {
-    this.enabledGuard();
+    await this.awsEnabledService.enabledGuard();
 
     const input = {
       Body: data,
@@ -30,8 +31,8 @@ export class AwsS3Service extends AwsBaseService implements CloudStorage {
     return await this.s3Client.send(command);
   }
 
-  async head(bucket: string, key: string): Promise<HeadOutput> {
-    this.enabledGuard();
+  public async head(bucket: string, key: string): Promise<HeadOutput> {
+    await this.awsEnabledService.enabledGuard();
 
     const input = {
       Bucket: bucket,

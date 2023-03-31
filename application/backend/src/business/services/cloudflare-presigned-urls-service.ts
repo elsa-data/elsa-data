@@ -15,10 +15,9 @@ export class CloudflarePresignedUrlsService implements IPresignedUrlProvider {
 
   constructor(@inject("Settings") private settings: ElsaSettings) {}
 
-  public get isEnabled() {
+  public async isEnabled(): Promise<boolean> {
     return !!this.settings.cloudflare;
   }
-
   async presign(
     releaseKey: string,
     bucket: string,

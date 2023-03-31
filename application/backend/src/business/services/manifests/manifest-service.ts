@@ -129,6 +129,7 @@ export class ManifestService {
 
     let shouldUpdate = false;
     try {
+      // Should htsget have its own bucket, or is the tempBucket okay?
       const head = await storage.head(this.settings.aws.tempBucket, releaseKey);
 
       shouldUpdate =
@@ -175,11 +176,11 @@ export class ManifestService {
   ): Promise<ManifestHtsgetResponseType> {
     return await this.auditLogService.systemAuditEventPattern(
       "publish htsget manifest",
-      async (completeAudit) => {
+      async (completeAuditFn) => {
         return await this.publishHtsgetManifestAuditFn(
           type,
           releaseKey,
-          completeAudit
+          completeAuditFn
         );
       }
     );

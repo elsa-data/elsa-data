@@ -2,7 +2,7 @@ import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
 import { inject, injectable, singleton } from "tsyringe";
 import { UsersService } from "./users-service";
-import { GcpBaseService } from "./gcp-base-service";
+import { GcpEnabledService } from "./gcp-enabled-service";
 import { AuditLogService } from "./audit-log-service";
 import { Storage } from "@google-cloud/storage";
 import {
@@ -15,7 +15,7 @@ import { ReleaseService } from "./release-service";
 
 @injectable()
 @singleton()
-export class GcpStorageSharingService extends GcpBaseService {
+export class GcpStorageSharingService {
   storage: Storage;
   globalLimit: Limit;
   objectLimits: { [uri: string]: Limit };
@@ -24,10 +24,9 @@ export class GcpStorageSharingService extends GcpBaseService {
     @inject("Database") protected edgeDbClient: edgedb.Client,
     private usersService: UsersService,
     private releaseService: ReleaseService,
-    private auditLogService: AuditLogService
+    private auditLogService: AuditLogService,
+    private readonly gcpEnabledService: GcpEnabledService
   ) {
-    super();
-
     this.storage = new Storage();
 
     // GCP probably rate-limits API requests, otherwise their `Storage` library
@@ -97,6 +96,8 @@ export class GcpStorageSharingService extends GcpBaseService {
         throw Error(`Unexpected operation ${operation}`);
       }
 
+      await this.gcpEnabledService.enabledGuard();
+
       await this.storage.bucket(bucket).file(key).setMetadata(updatedMetadata);
     };
 
@@ -113,6 +114,8 @@ export class GcpStorageSharingService extends GcpBaseService {
     principal: string
   ): () => Promise<void> {
     const go = async () => {
+      await this.gcpEnabledService.enabledGuard();
+
       await this.storage
         .bucket(bucket)
         .file(key)
@@ -253,6 +256,8 @@ export class GcpStorageSharingService extends GcpBaseService {
     releaseKey: string,
     principals: string[]
   ): Promise<number> {
+    await this.gcpEnabledService.enabledGuard();
+
     return await this.modifyUsers("add", user, releaseKey, principals);
   }
 
@@ -261,6 +266,8 @@ export class GcpStorageSharingService extends GcpBaseService {
     releaseKey: string,
     principals: string[]
   ): Promise<number> {
+    await this.gcpEnabledService.enabledGuard();
+
     return await this.modifyUsers("delete", user, releaseKey, principals);
   }
 
@@ -269,6 +276,7 @@ export class GcpStorageSharingService extends GcpBaseService {
     releaseKey: string,
     tsvColumns: string[]
   ): Promise<{ filename: string; content: string }> {
+    await this.gcpEnabledService.enabledGuard();
     // TODO(DoxasticFox): Implement me. A manifest getter is already implemented
     // here: application/backend/src/business/services/aws-access-point-service.ts
     //

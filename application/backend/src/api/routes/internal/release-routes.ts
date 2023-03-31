@@ -398,11 +398,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     const releaseKey = request.params.rid;
 
-    if (!awsAccessPointService.isEnabled)
-      throw new Error(
-        "The AWS service was not started so AWS VPC sharing will not work"
-      );
-
     const res = await awsAccessPointService.getInstalledAccessPointResources(
       authenticatedUser,
       releaseKey
@@ -425,11 +420,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseKey = request.params.rid;
-      if (!presignedUrlsService.isEnabled)
-        throw new Error(
-          "The presigned URLs service was not started so URL presigning will " +
-            "not work"
-        );
 
       const presignResult = await presignedUrlsService.getPresigned(
         authenticatedUser,
@@ -460,10 +450,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseKey = request.params.rid;
-      if (!awsAccessPointService.isEnabled)
-        throw new Error(
-          "The AWS service was not started so AWS S3 Access Points will not work"
-        );
 
       const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
         authenticatedUser,
@@ -506,11 +492,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      if (!gcpStorageSharingService.isEnabled)
-        throw new Error(
-          "The GCP storage sharing service was not started so object sharing will not work"
-        );
-
       const releaseKey = request.params.rid;
       const users = request.body.users;
 
@@ -534,11 +515,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      if (!gcpStorageSharingService.isEnabled)
-        throw new Error(
-          "The GCP storage sharing service was not started so object sharing will not work"
-        );
-
       const releaseKey = request.params.rid;
       const users = request.body.users;
 
@@ -560,11 +536,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      if (!gcpStorageSharingService.isEnabled)
-        throw new Error(
-          "The GCP storage sharing service was not started so object sharing will not work"
-        );
 
       const releaseKey = request.params.rid;
 
