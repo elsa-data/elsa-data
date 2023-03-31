@@ -7,11 +7,9 @@ import {
   findPatientExpected,
   findSpecimen,
 } from "./utils";
-import { ReleaseCaseType, ReleaseSpecimenType } from "@umccr/elsa-types";
-import { PagedResult } from "../../src/api/helpers/pagination-helpers";
+import { ReleaseSpecimenType } from "@umccr/elsa-types";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
-import { ReleaseService } from "../../src/business/services/release-service";
 import { Client } from "edgedb";
 import {
   BART_SPECIMEN,
@@ -40,16 +38,16 @@ let notAllowedUser: AuthenticatedUser;
 const DEFAULT_LIMIT = 10000;
 const DEFAULT_OFFSET = 0;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseSelectionService = testContainer.resolve(ReleaseSelectionService);
 });
 
 beforeEach(async () => {
   ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
-    await beforeEachCommon());
+    await beforeEachCommon(testContainer));
 });
 
 /**

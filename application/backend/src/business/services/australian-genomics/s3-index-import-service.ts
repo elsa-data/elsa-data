@@ -1,7 +1,7 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e from "../../../../dbschema/edgeql-js";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
   awsListObjects,
   readObjectToStringFromS3Url,
@@ -63,7 +63,6 @@ export type artifactType = { sampleIdsArray: string[] } & File;
 export type manifestDict = Record<string, s3ManifestType>;
 
 @injectable()
-@singleton()
 export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private s3Client: S3Client,

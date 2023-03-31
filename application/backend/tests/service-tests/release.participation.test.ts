@@ -17,9 +17,9 @@ let allowedManagerUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
   releaseParticipationService = testContainer.resolve(
@@ -34,7 +34,7 @@ beforeEach(async () => {
     allowedManagerUser,
     allowedMemberUser,
     notAllowedUser,
-  } = await beforeEachCommon());
+  } = await beforeEachCommon(testContainer));
 });
 
 it("all the participants in a release are correctly returned", async () => {

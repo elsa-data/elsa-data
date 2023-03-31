@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../test-data/test-data-helpers";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { randomUUID } from "crypto";
@@ -14,7 +14,6 @@ import { getNextReleaseKey } from "../db/release-queries";
 import { ReleaseService } from "./release-service";
 
 @injectable()
-@singleton()
 export class RemsService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,

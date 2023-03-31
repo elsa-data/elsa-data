@@ -14,15 +14,15 @@ let superAdminUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   remsService = testContainer.resolve(RemsService);
 });
 
 beforeEach(async () => {
   ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
-    await beforeEachCommon());
+    await beforeEachCommon(testContainer));
 });
 
 /**

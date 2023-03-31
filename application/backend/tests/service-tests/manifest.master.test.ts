@@ -11,16 +11,18 @@ let allowedAdministratorUser: AuthenticatedUser;
 let manifestService: ManifestService;
 let releaseService: ReleaseService;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   manifestService = testContainer.resolve(ManifestService);
   releaseService = testContainer.resolve(ReleaseService);
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon());
+  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
+    testContainer
+  ));
 
   // assert a release state so that everything is included for the moment
   // (these are probably already set to true in the release setup but this makes sure it is true)

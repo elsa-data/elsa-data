@@ -7,7 +7,7 @@ import {
   DuoLimitationCodedType,
 } from "@umccr/elsa-types";
 import { datasetGen3SyncRequestValidate } from "../../../validators/validate-json";
-import { container } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { S3IndexApplicationService } from "../../../business/services/australian-genomics/s3-index-import-service";
 import {
@@ -22,10 +22,13 @@ export const DatasetSummaryQuerySchema = Type.Object({
 });
 export type DatasetSummaryQueryType = Static<typeof DatasetSummaryQuerySchema>;
 
-export const datasetRoutes = async (fastify: FastifyInstance) => {
-  const datasetsService = container.resolve(DatasetService);
-  const agService = container.resolve(S3IndexApplicationService);
-  const settings = container.resolve<ElsaSettings>("Settings");
+export const datasetRoutes = async (
+  fastify: FastifyInstance,
+  _opts: { container: DependencyContainer }
+) => {
+  const datasetsService = _opts.container.resolve(DatasetService);
+  const agService = _opts.container.resolve(S3IndexApplicationService);
+  const settings = _opts.container.resolve<ElsaSettings>("Settings");
 
   /**
    * Pageable fetching of top-level dataset information (summary level info)

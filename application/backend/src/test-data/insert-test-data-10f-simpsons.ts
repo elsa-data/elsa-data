@@ -1,10 +1,10 @@
 import { createFile } from "./test-data-helpers";
 import {
-  makeTrio,
   CORIELL_CELL_SYSTEM,
   CORIELL_DNA_SYSTEM,
   CORIELL_FAMILY_SYSTEM,
   GIAB_FAMILY_SYSTEM,
+  makeTrio,
   PGP_SYSTEM,
   THOUSAND_GENOMES_SYSTEM,
 } from "./insert-test-data-10f-helpers";
@@ -16,8 +16,8 @@ import {
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
 } from "@umccr/elsa-types";
-import { container } from "tsyringe";
 import { ElsaSettings } from "../config/elsa-settings";
+import { DependencyContainer } from "tsyringe";
 
 // we make these identifers as external consts so they can be used as insertion values
 // but can also be in test suites for looking up know cases etc
@@ -57,7 +57,7 @@ export const SIMPSONS_JOINT_BCF_CSI_S3 = `${SIMPSONS_BASE_S3}HG002-HG003-HG004.j
 /**
  * Creates a set of data representing three of the SIMPSONS family as a trio.
  */
-export async function makeSimpsonsTrio() {
+export async function makeSimpsonsTrio(dc: DependencyContainer) {
   // NOTE: we are still dealing with how to link to a single joint VCF file so for the moment we are
   // making some extra VCF file entries that are not correct (see MARGE and HOMER VCF)
   return await makeTrio(
@@ -118,8 +118,7 @@ export async function makeSimpsonsTrio() {
       {
         code: "DUO:0000007",
         // inherited auditory system disease
-        diseaseSystem:
-          container.resolve<ElsaSettings>("Settings").mondoSystem.uri,
+        diseaseSystem: dc.resolve<ElsaSettings>("Settings").mondoSystem.uri,
         diseaseCode: "MONDO:0037940",
         // also SCTID:362991006
         modifiers: [

@@ -1,6 +1,5 @@
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
 import e from "../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
 import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { beforeEachCommon } from "./releases.common";
@@ -11,17 +10,17 @@ import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { NotAuthorisedSyncDataAccessEvents } from "../../src/business/exceptions/audit-authorisation";
 
+const testContainer = registerTypes();
+
 let edgeDbClient: Client;
 let cloudTrailClient: CloudTrailClient;
 let testReleaseKey: string;
-let testContainer: DependencyContainer;
 let elsaSetting: ElsaSettings;
 let superAdminUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
-    testContainer = await registerTypes();
     elsaSetting = testContainer.resolve("Settings");
     edgeDbClient = testContainer.resolve("Database");
     cloudTrailClient = testContainer.resolve("CloudTrailClient");
@@ -29,7 +28,7 @@ describe("Test CloudTrailLake Service", () => {
 
   beforeEach(async () => {
     ({ superAdminUser, testReleaseKey, allowedMemberUser } =
-      await beforeEachCommon());
+      await beforeEachCommon(testContainer));
   });
 
   it("Test recordCloudTrailLake", async () => {

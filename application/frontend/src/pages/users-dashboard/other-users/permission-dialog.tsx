@@ -1,8 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  UserPermissionType,
-  UserSummaryType,
-} from "@umccr/elsa-types/schemas-users";
+import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
 import { ALLOWED_CHANGE_USER_PERMISSION } from "@umccr/elsa-constants";
 import {
   EagerErrorBoundary,
@@ -228,8 +225,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                   {isSuccess && (
                     // For temporary, user need to re-logged in order to get latest permission in their UI.
                     <div className="w-full bg-green-200 py-2 text-center text-xs">
-                      {`Permissions changed saved successfully. (This user need to
-                      re-login)`}
+                      {`Permissions changed successfully.`}
                     </div>
                   )}
 

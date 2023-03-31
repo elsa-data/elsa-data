@@ -1,5 +1,5 @@
 import { S3Client } from "@aws-sdk/client-s3";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { AwsEnabledService } from "./aws-enabled-service";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
@@ -11,7 +11,6 @@ import { IPresignedUrlProvider } from "../presigned-urls-service";
 import assert from "assert";
 
 @injectable()
-@singleton()
 export class AwsPresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "s3";
 

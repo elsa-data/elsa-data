@@ -3,7 +3,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
@@ -21,7 +21,6 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
  * Cloud Formation stacks.
  */
 @injectable()
-@singleton()
 export class JobCloudFormationDeleteService extends JobsService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,

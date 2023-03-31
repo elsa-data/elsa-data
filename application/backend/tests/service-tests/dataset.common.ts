@@ -1,13 +1,10 @@
 import { createClient } from "edgedb";
 import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { insert10G } from "../../src/test-data/insert-test-data-10g";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import {
-  makeSingleCodeArray,
-  makeSystemlessIdentifier,
-} from "../../src/test-data/test-data-helpers";
 import { insert10F } from "../../src/test-data/insert-test-data-10f";
+import { DependencyContainer } from "tsyringe";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -18,12 +15,12 @@ import { insert10F } from "../../src/test-data/insert-test-data-10f";
  * If you make *any* changes here - you must re-run all the release tests
  * to ensure that the state change hasn't unexpectedly resulted in a test failing.
  */
-export async function beforeEachCommon() {
+export async function beforeEachCommon(dc: DependencyContainer) {
   const edgeDbClient = createClient({});
 
   await blankTestData();
-  const teng = await insert10G();
-  const tenf = await insert10F();
+  const teng = await insert10G(dc);
+  const tenf = await insert10F(dc);
 
   // TODO: we don't have an admin model for datasets yet so this is very simple
   const allowedPiSubject = "http://subject1.com";

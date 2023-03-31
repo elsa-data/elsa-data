@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../authenticated-user";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { UsersService } from "../users-service";
 import { AwsEnabledService } from "./aws-enabled-service";
 import {
@@ -28,7 +28,6 @@ import assert from "assert";
 const REGION = "ap-southeast-2";
 
 @injectable()
-@singleton()
 export class AwsAccessPointService {
   constructor(
     @inject("CloudFormationClient")

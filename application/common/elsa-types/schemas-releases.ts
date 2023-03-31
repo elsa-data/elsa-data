@@ -17,8 +17,10 @@ export const ReleaseSummarySchema = Type.Object({
   // if this release has been activated for allowing actual data sharing activity
   isActivated: Type.Boolean(),
 
-  // if a job is running then this is the percent it is complete
+  // if a job is running then this is the percent it is complete - this info will
+  // only appear if the caller is an administrator in the release
   isRunningJobPercentDone: Type.Optional(Type.Number()),
+  isRunningJobBadge: Type.Optional(Type.String()),
 
   // the role the caller has in this particular release
   roleInRelease: Type.String(),

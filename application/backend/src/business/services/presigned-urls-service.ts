@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
-import { inject, injectable, injectAll, singleton } from "tsyringe";
+import { inject, injectable, injectAll } from "tsyringe";
 import { UsersService } from "./users-service";
 import { AuditLogService } from "./audit-log-service";
 import { Readable } from "stream";
@@ -9,8 +9,9 @@ import { stringify } from "csv-stringify";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { getAllFileRecords } from "./_release-file-list-helper";
 import { ReleaseViewError } from "../exceptions/release-authorisation";
+import { ManifestService } from "./manifests/manifest-service";
+import assert from "assert";
 
 export interface IPresignedUrlProvider {
   isEnabled(): Promise<boolean>;
@@ -19,16 +20,16 @@ export interface IPresignedUrlProvider {
 }
 
 @injectable()
-@singleton()
 export class PresignedUrlsService {
   constructor(
-    @inject("Database") protected edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
+    @inject("Database") protected readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings,
     @injectAll("IPresignedUrlProvider")
-    private presignedUrlsServices: IPresignedUrlProvider[],
-    private releaseService: ReleaseService,
-    private usersService: UsersService,
-    private auditLogService: AuditLogService
+    private readonly presignedUrlsServices: IPresignedUrlProvider[],
+    private readonly releaseService: ReleaseService,
+    private readonly usersService: UsersService,
+    private readonly manifestService: ManifestService,
+    private readonly auditLogService: AuditLogService
   ) {}
 
   public async isEnabled(): Promise<boolean> {
@@ -71,15 +72,20 @@ export class PresignedUrlsService {
           "not work"
       );
 
-    const { userRole } =
+    const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
         releaseKey
       );
 
+    // the decision here is that administrators of a release cannot download the files in TSV
+    // as that is not the appropriate way for them to access files (noting they already kind of have access
+    // to the files - its just that this isn't the right path to get file urls)
     if (!(userRole === "Manager" || userRole === "Member")) {
       throw new ReleaseViewError(releaseKey);
     }
+
+    if (!isActivated) throw new Error("needs to be activated");
 
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
@@ -91,15 +97,14 @@ export class PresignedUrlsService {
       now
     );
 
-    const allFiles = await getAllFileRecords(
-      this.edgeDbClient,
-      this.usersService,
-      user,
+    const manifest = await this.manifestService.getActiveBucketKeyManifest(
       releaseKey
     );
 
+    assert(manifest);
+
     // fill in the actual signed urls
-    for (const af of allFiles) {
+    for (const af of manifest.objects) {
       try {
         af.objectStoreSigned = af.objectStoreUrl
           ? await this.presign(
@@ -108,7 +113,7 @@ export class PresignedUrlsService {
               af.objectStoreBucket,
               af.objectStoreKey
             )
-          : "";
+          : undefined;
       } catch (e) {
         const errorString = e instanceof Error ? e.message : String(e);
 
@@ -142,7 +147,7 @@ export class PresignedUrlsService {
       delimiter: "\t",
     });
 
-    const readableStream = Readable.from(allFiles);
+    const readableStream = Readable.from(manifest.objects);
     const buf = await streamConsumers.text(readableStream.pipe(stringifier));
 
     const password = await this.releaseService.getPassword(user, releaseKey);
@@ -170,7 +175,7 @@ export class PresignedUrlsService {
       0,
       now,
       new Date(),
-      { numUrls: allFiles.length, filename: filename }
+      { numUrls: manifest.objects.length, filename: filename }
     );
 
     /* *************************************************************************
@@ -183,7 +188,7 @@ export class PresignedUrlsService {
     const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
 
     // Insert all records except the last to be able to demonstrate incomplete download log
-    for (const file of allFiles.slice(0, -1)) {
+    for (const file of manifest.objects.slice(0, -1)) {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
         releaseKey: releaseKey,
@@ -191,7 +196,7 @@ export class PresignedUrlsService {
         whoDisplayName: ipLocation,
         fileUrl: file.objectStoreUrl,
         description: "Data read from presigned URL.",
-        egressBytes: Number(file.size),
+        egressBytes: Number(file.objectSize),
         date: mockTimeAccessed,
       });
     }
@@ -202,14 +207,14 @@ export class PresignedUrlsService {
       releaseKey: releaseKey,
       whoId: ipAddress,
       whoDisplayName: ipLocation,
-      fileUrl: allFiles[0].objectStoreUrl,
+      fileUrl: manifest.objects[0].objectStoreUrl,
       description: "Data read from presigned URL.",
-      egressBytes: Number(allFiles[0].size),
+      egressBytes: Number(manifest.objects[0].objectSize),
       date: mockTimeAccessed,
     });
 
     // Insert last record to be incomplete
-    const lastFile = allFiles.pop();
+    const lastFile = manifest.objects.pop();
     if (lastFile) {
       await this.auditLogService.updateDataAccessAuditEvent({
         executor: this.edgeDbClient,
@@ -218,7 +223,7 @@ export class PresignedUrlsService {
         whoDisplayName: ipLocation,
         fileUrl: lastFile.objectStoreUrl,
         description: "Data read from presigned URL.",
-        egressBytes: Math.floor(Number(lastFile.size) / 2),
+        egressBytes: Math.floor(Number(lastFile.objectSize) / 2),
         date: mockTimeAccessed,
       });
     }

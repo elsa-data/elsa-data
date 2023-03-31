@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
 import { ReleaseService } from "./release-service";
@@ -8,7 +8,6 @@ import { IPresignedUrlProvider } from "./presigned-urls-service";
 import { GetSignedUrlConfig, Storage } from "@google-cloud/storage";
 
 @injectable()
-@singleton()
 export class GcpPresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "gs";
   storage: Storage;

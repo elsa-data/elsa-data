@@ -1,5 +1,4 @@
-import * as edgedb from "edgedb";
-import { Duration } from "edgedb";
+import { Client, Duration } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
@@ -20,20 +19,17 @@ import {
 import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
 import * as MOCK_JSON from "./mock-json.json";
-import { container } from "tsyringe";
-import { ElsaSettings } from "../config/elsa-settings";
 import {
   TEST_SUBJECT_2,
   TEST_SUBJECT_2_DISPLAY,
   TEST_SUBJECT_3,
   TEST_SUBJECT_3_DISPLAY,
 } from "./insert-test-users";
-import { getNextReleaseKey } from "../business/db/release-queries";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../di-helpers";
 
-const edgeDbClient = edgedb.createClient();
-
-export async function insertRelease1() {
-  const settings = container.resolve<ElsaSettings>("Settings");
+export async function insertRelease1(dc: DependencyContainer) {
+  const { settings, logger, edgeDbClient } = getServices(dc);
 
   return await e
     .insert(e.release.Release, {
@@ -121,7 +117,7 @@ Ethics form XYZ.
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
       releaseAuditLog: makeSytheticAuditLog(),
-      dataAccessAuditLog: await makeSyntheticDataAccessLog(),
+      dataAccessAuditLog: await makeSyntheticDataAccessLog(edgeDbClient),
     })
     .run(edgeDbClient);
 }
@@ -209,7 +205,7 @@ function makeSytheticAuditLog() {
   );
 }
 
-const makeSyntheticDataAccessLog = async () => {
+const makeSyntheticDataAccessLog = async (edgeDbClient: Client) => {
   const makeDataAccessLog = async (fileUrl: string) => {
     const fileJson = await e
       .select(e.storage.File, (f) => ({

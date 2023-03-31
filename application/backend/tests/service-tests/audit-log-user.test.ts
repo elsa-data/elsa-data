@@ -9,9 +9,9 @@ let existingUser: AuthenticatedUser;
 let auditLogService: AuditLogService;
 let edgeDbClient: edgedb.Client;
 
-beforeEach(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
   auditLogService = testContainer.resolve(AuditLogService);

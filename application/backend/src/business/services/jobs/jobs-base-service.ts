@@ -4,13 +4,14 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { Transaction } from "edgedb/dist/transaction";
 import { AuditLogService } from "../audit-log-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
+import { jobAsType } from "./job-helpers";
 
 export class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseKey: string) {
@@ -23,7 +24,6 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 }
 
 @injectable()
-@singleton()
 export class JobsService {
   constructor(
     @inject("Database") protected edgeDbClient: edgedb.Client,
@@ -93,24 +93,14 @@ export class JobsService {
       }))
       .run(this.edgeDbClient);
 
-    return jobsInProgress.map((j) => {
-      // we need to return the job type so the job system can know which 'work' to do
-      const typeName = j.__type__.name;
-
-      if (typeName.startsWith("job::")) {
-        return {
-          jobId: j.id,
-          jobType: typeName.substring("job::".length),
-          releaseKey: j.forRelease.releaseKey,
-          auditEntryId: j.auditEntry.id,
-          auditEntryStarted: j.started,
-          requestedCancellation: j.requestedCancellation,
-        };
-      } else
-        throw new Error(
-          "Our job type name no longer starts with the expected module of job::"
-        );
-    });
+    return jobsInProgress.map((j) => ({
+      jobId: j.id,
+      jobType: jobAsType(j),
+      releaseKey: j.forRelease.releaseKey,
+      auditEntryId: j.auditEntry.id,
+      auditEntryStarted: j.started,
+      requestedCancellation: j.requestedCancellation,
+    }));
   }
 
   /**

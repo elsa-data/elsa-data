@@ -1,4 +1,4 @@
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
 import { parseUrl } from "@aws-sdk/url-parser";
@@ -9,7 +9,6 @@ import { IPresignedUrlProvider } from "./presigned-urls-service";
 import assert from "assert";
 
 @injectable()
-@singleton()
 export class CloudflarePresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "r2";
 

@@ -1,4 +1,4 @@
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { AwsEnabledService } from "./aws-enabled-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { Logger } from "pino";
@@ -16,7 +16,6 @@ import {
  * once other deployment environments exist.
  */
 @injectable()
-@singleton()
 export class AwsDiscoveryService {
   constructor(
     @inject("ServiceDiscoveryClient")

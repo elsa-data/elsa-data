@@ -56,6 +56,9 @@ export async function transformMasterManifestToHtsgetManifest(
     const R2_PREFIX = "r2://";
 
     for (const art of filesResult.artifacts) {
+      // NOTE htsget protocol only supports BAMs and VCFS currently (and the indexes are dealt with by htsget)
+      //      hence us only interested in vcfFile and bamFile
+
       if ("vcfFile" in art) {
         const url = art["vcfFile"]?.url;
         if (_.isString(url)) {

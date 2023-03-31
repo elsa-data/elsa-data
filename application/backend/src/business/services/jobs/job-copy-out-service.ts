@@ -4,7 +4,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
@@ -34,7 +34,6 @@ import assert from "node:assert";
  * external microservice).
  */
 @injectable()
-@singleton()
 export class JobCopyOutService extends JobsService {
   public static readonly JOB_NAME = "CopyOut";
 
@@ -150,18 +149,18 @@ export class JobCopyOutService extends JobsService {
       for (const s of manifest.objects) {
         // TODO replace with a proper CSV writing component if this becomes an issue (I don't think we are going to hit many
         //      buckets or keys with quotes)
-        if (s.bucket.includes('"'))
+        if (s.objectStoreBucket.includes('"'))
           throw new Error(
-            `One of the buckets contains a quote character that we cannot handle yet - ${s.bucket}`
+            `One of the buckets contains a quote character that we cannot handle yet - ${s.objectStoreBucket}`
           );
-        if (s.key.includes('"'))
+        if (s.objectStoreKey.includes('"'))
           throw new Error(
-            `One of the keys contains a quote character that we cannot handle yet - ${s.key}`
+            `One of the keys contains a quote character that we cannot handle yet - ${s.objectStoreKey}`
           );
 
-        if (s.service === "s3") {
+        if (s.objectStoreProtocol === "s3") {
           // we wrap in quotes for safety - we know the AWS S3 parser *does* handle this correctly
-          manifestCsv += `"${s.bucket}","${s.key}"\n`;
+          manifestCsv += `"${s.objectStoreBucket}","${s.objectStoreKey}"\n`;
         }
       }
 

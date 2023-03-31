@@ -1,5 +1,4 @@
-import { Static, TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
-import { CodingSchema } from "./schemas-coding";
+import { Static, Type } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
 /**
@@ -30,8 +29,8 @@ const ObjectStoreRecordKey = [
   "caseId",
   "patientId",
   "specimenId",
-  "fileType",
-  "size",
+  "objectType",
+  "objectSize",
   "objectStoreUrl",
   "objectStoreBucket",
   "objectStoreKey",

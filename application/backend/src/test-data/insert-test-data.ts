@@ -1,4 +1,3 @@
-import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { insert10G } from "./insert-test-data-10g";
 import { createTestUser, insertBlankDataset } from "./test-data-helpers";
@@ -10,7 +9,6 @@ import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
 import { insertRelease4 } from "./insert-test-data-release4";
 import { insertRelease5 } from "./insert-test-data-release5";
-import { ElsaSettings } from "../config/elsa-settings";
 import {
   TEST_SUBJECT_1,
   TEST_SUBJECT_1_DISPLAY,
@@ -23,15 +21,17 @@ import {
   TEST_SUBJECT_3_EMAIL,
 } from "./insert-test-users";
 import { insertSystemAuditEvent } from "../../dbschema/queries";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../di-helpers";
 
-const edgeDbClient = edgedb.createClient();
+export async function insertTestData(dc: DependencyContainer) {
+  const { settings, logger, edgeDbClient } = getServices(dc);
 
-export async function insertTestData(settings: ElsaSettings) {
   console.log(`Inserting test data`);
-  await insert10G();
-  await insert10F();
+  await insert10G(dc);
+  await insert10F(dc);
   await insert10C();
-  await insertGs();
+  await insertGs(dc);
   await insertBlankDataset("10M", "urn:fdc:umccr.org:2022:dataset/10m");
   // await insertCARDIAC();
 
@@ -84,7 +84,7 @@ export async function insertTestData(settings: ElsaSettings) {
     "urn:fdc:australiangenomics.org.au:2022:datasets/zz"
   );
 
-  const r1 = await insertRelease1();
+  const r1 = await insertRelease1(dc);
   const r2 = await insertRelease2();
   const r3 = await insertRelease3();
   const r4 = await insertRelease4();

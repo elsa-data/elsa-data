@@ -8,19 +8,33 @@
 
 with 
 
-  r := (
-        select release::Release {
-          userRole := (
-                        select .<releaseParticipant[is permission::User] {@role}
-                        filter .id = <uuid>$userDbId
-                      ),
-        }
-        # if no userRole then $userDbId is not participating
-        filter .releaseKey = <str>$releaseKey
-       )
+  r :=  (
+          select release::Release {
+            userRole := (
+                          select .<releaseParticipant[is permission::User] {@role}
+                          filter .id = <uuid>$userDbId
+                        ),
+          }
+          # if no userRole then $userDbId is not participating
+          filter .releaseKey = <str>$releaseKey
+        ),
+
+  isAllowedOverallAdministratorView := (
+                                          select permission::User {
+                                            isAllowedOverallAdministratorView
+                                          }
+                                          filter .id = <uuid>$userDbId
+                                        ).isAllowedOverallAdministratorView,
+
+  isAllowed := (
+    select exists(r.userRole)
+    or 
+    isAllowedOverallAdministratorView
+  )
 
 select r {
     runningJob,
     activation,
     role := (select assert_single(.userRole@role))
 }
+filter isAllowed

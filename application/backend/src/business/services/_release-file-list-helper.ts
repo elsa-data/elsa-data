@@ -1,9 +1,11 @@
-import e from "../../../dbschema/edgeql-js";
-import { collapseExternalIds } from "./helpers";
-import { Executor } from "edgedb";
+import {
+  collapseExternalIds,
+  doRoleInReleaseCheck,
+  getReleaseInfo,
+} from "./helpers";
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UsersService } from "./users-service";
 
@@ -39,6 +41,7 @@ export type ReleaseFileListEntry = {
  * @param specimens the list of (string) ids of the specimens for the release
  * @param includeReadData whether to include BAM/FASTQ etc
  * @param includeVariantData whether to include VCF etc
+ * @deprecated
  */
 export async function createReleaseFileList(
   executor: Executor,
@@ -190,6 +193,7 @@ export async function createReleaseFileList(
  *
  * @param user
  * @param releaseKey
+ * @deprecated
  */
 export async function getAllFileRecords(
   edgeDbClient: edgedb.Client,

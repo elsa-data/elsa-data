@@ -27,6 +27,7 @@ import {
 } from "../../audit-helpers";
 import { Logger } from "pino";
 import { ReleaseHtsgetNotConfigured } from "../exceptions/release-htsget";
+import { jobAsBadgeLabel } from "./jobs/job-helpers";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -72,7 +73,15 @@ export class ReleaseService extends ReleaseBaseService {
         applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
         applicationDacIdentifierValue: a.applicationDacIdentifier.value,
         applicationDacTitle: a.applicationDacTitle,
-        isRunningJobPercentDone: undefined,
+        // running jobs are only really a concern for admins so only they find out this info (not that it really matters)
+        isRunningJobPercentDone:
+          a.role === "Administrator" && a.runningJob.length > 0
+            ? a.runningJob[0].percentDone
+            : undefined,
+        isRunningJobBadge:
+          a.role === "Administrator" && a.runningJob.length > 0
+            ? jobAsBadgeLabel(a.runningJob[0])
+            : undefined,
         isActivated: a.activation != null,
         roleInRelease: a.role!,
       })),

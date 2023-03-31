@@ -15,16 +15,16 @@ let notAllowedUser: AuthenticatedUser;
 let tenfDatasetId: string;
 let tengDatasetId2: string;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   datasetService = testContainer.resolve(DatasetService);
 });
 
 beforeEach(async () => {
   ({ tenfDatasetId, tengDatasetId2, adminUser, notAllowedUser } =
-    await beforeEachCommon());
+    await beforeEachCommon(testContainer));
 });
 
 it("basic summary get all works", async () => {

@@ -69,8 +69,6 @@ export abstract class ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    const isAllowed = user.isAllowedOverallAdministratorView;
-
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,
       releaseKey: releaseKey,
@@ -78,8 +76,7 @@ export abstract class ReleaseBaseService {
 
     const role = boundaryInfo?.role;
 
-    if (!boundaryInfo || (!role && !isAllowed))
-      throw new ReleaseViewError(releaseKey);
+    if (!boundaryInfo) throw new ReleaseViewError(releaseKey);
 
     return {
       userRole: role as ReleaseRoleStrings,
@@ -111,7 +108,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseKey: string,
-    userRole: string
+    userRole: ReleaseRoleStrings
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
@@ -130,13 +127,16 @@ export abstract class ReleaseBaseService {
         ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
         : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
 
-    const hasRunningJob =
-      releaseInfo.runningJob && releaseInfo.runningJob.length === 1;
-
     if (releaseInfo.runningJob && releaseInfo.runningJob.length > 1)
       throw new Error(
         "There should only be one running job (if any job is running)"
       );
+
+    // only the admins know about long-running jobs
+    const hasRunningJob =
+      userRole === "Administrator"
+        ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
+        : false;
 
     return {
       id: releaseInfo.id,

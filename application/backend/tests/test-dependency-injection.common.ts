@@ -1,4 +1,4 @@
-import { container } from "tsyringe";
+import * as tsyringe from "tsyringe";
 import { S3Client } from "@aws-sdk/client-s3";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
@@ -13,11 +13,11 @@ import { CloudflarePresignedUrlsService } from "../src/business/services/cloudfl
 import { SESClient } from "@aws-sdk/client-ses";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 
-export async function registerTypes() {
+export function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
   // WE RETURN A CONTAINER IN ANTICIPATION OF ONE DAY DOING THAT
 
-  const testContainer = container; //.createChildContainer();
+  const testContainer = tsyringe.container; //.createChildContainer();
 
   // we want an independent setup each call to this in testing (unlike in real code)
   testContainer.reset();

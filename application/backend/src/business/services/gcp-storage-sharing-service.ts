@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
 import { AuditLogService } from "./audit-log-service";
@@ -14,7 +14,6 @@ import { Metadata } from "@google-cloud/storage/build/src/nodejs-common";
 import { ReleaseService } from "./release-service";
 
 @injectable()
-@singleton()
 export class GcpStorageSharingService {
   storage: Storage;
   globalLimit: Limit;
