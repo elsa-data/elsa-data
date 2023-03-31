@@ -133,38 +133,38 @@ it("audit release stuff duration", async () => {
   console.log(JSON.stringify(events));
 });
 
-it("audit data access log", async () => {
-  const start = new Date();
+// it("audit data access log", async () => {
+//   const start = new Date();
 
-  // Pre-insert file storage
-  const fileUrl = "s3://elsa-bucket/PRM001.fastq.gz";
-  await e
-    .insert(e.storage.File, {
-      url: fileUrl,
-      size: 123,
-      checksums: [{ type: "MD5", value: "abcde123" }],
-    })
-    .run(edgeDbClient);
+//   // Pre-insert file storage
+//   const fileUrl = "s3://elsa-bucket/PRM001.fastq.gz";
+//   await e
+//     .insert(e.storage.File, {
+//       url: fileUrl,
+//       size: 123,
+//       checksums: [{ type: "MD5", value: "abcde123" }],
+//     })
+//     .run(edgeDbClient);
 
-  const aeId = await auditLogService.startReleaseAuditEvent(
-    edgeDbClient,
-    allowedManagerUser,
-    testReleaseKey,
-    "C",
-    "Data access release",
-    start
-  );
-  const se = await auditLogService.updateDataAccessAuditEvent({
-    executor: edgeDbClient,
-    fileUrl: fileUrl,
-    whoId: "123.123.12.123",
-    whoDisplayName: "Melbourne, VIC, AU",
-    egressBytes: 123456,
-    description: "Test data access log.",
-    date: new Date("2022-10-24 05:56:40.000"),
-    releaseKey: testReleaseKey,
-  });
-});
+//   const aeId = await auditLogService.startReleaseAuditEvent(
+//     edgeDbClient,
+//     allowedManagerUser,
+//     testReleaseKey,
+//     "C",
+//     "Data access release",
+//     start
+//   );
+//   const se = await auditLogService.updateDataAccessAuditEvent({
+//     executor: edgeDbClient,
+//     fileUrl: fileUrl,
+//     whoId: "123.123.12.123",
+//     whoDisplayName: "Melbourne, VIC, AU",
+//     egressBytes: 123456,
+//     description: "Test data access log.",
+//     date: new Date("2022-10-24 05:56:40.000"),
+//     releaseKey: testReleaseKey,
+//   });
+// });
 
 it("get entries with release filter", async () => {
   const start = new Date();

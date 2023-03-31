@@ -14,6 +14,8 @@ import { JobCloudFormationDeleteService } from "../../business/services/jobs/job
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import * as edgedb from "edgedb";
+import { currentPageSize } from "../helpers/pagination-helpers";
+import { ReleaseDataAccessedService } from "../../business/services/release-data-access-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -49,6 +51,9 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
     });
   }
   ctx.req.log.trace(authedUser, `isCookieSessionAuthed: user details`);
+
+  // Parse pagination from req
+  const pageSize = currentPageSize(ctx.req);
 
   // Checking cookie with Db
   const dbUser = await ctx.container
@@ -89,6 +94,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   return next({
     ctx: {
       user: authedUser,
+      pageSize: pageSize,
       edgeDbClient,
       settings,
       logger,
@@ -97,6 +103,9 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(
         ReleaseParticipationService
+      ),
+      releaseDataAccessedService: ctx.container.resolve(
+        ReleaseDataAccessedService
       ),
       jobService: ctx.container.resolve(JobsService),
       jobCloudFormationCreateService: ctx.container.resolve(
@@ -115,3 +124,10 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
 });
 
 export const internalProcedure = t.procedure.use(isSessionCookieAuthed);
+
+export const calculateOffset = (
+  page: number | undefined = 1,
+  pageSize: number
+) => {
+  return (page - 1) * pageSize;
+};

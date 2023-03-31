@@ -24,6 +24,7 @@ import { appRouter } from "./app-router";
 import { Context } from "./api/routes/trpc-bootstrap";
 import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 import { trpcRoutes } from "./api/api-trpc-routes";
+import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 
 @injectable()
 @singleton()
@@ -33,7 +34,9 @@ export class App {
   // a absolute path to where static files are to be served from
   public readonly staticFilesPath: string;
 
-  private readonly trpcCreateContext: () => Promise<Context>;
+  private readonly trpcCreateContext: (
+    opts: CreateFastifyContextOptions
+  ) => Promise<Context>;
 
   /**
    * Our constructor does all the setup that can be done without async/await
@@ -63,9 +66,11 @@ export class App {
     });
 
     // similarly for TRPC, start each request context with a copy of the Elsa settings and a custom child DI container
-    this.trpcCreateContext = async () => ({
+    this.trpcCreateContext = async (opts: CreateFastifyContextOptions) => ({
       settings: { ...settings },
       container: dc.createChildContainer(),
+      req: opts.req,
+      res: opts.res,
     });
   }
 

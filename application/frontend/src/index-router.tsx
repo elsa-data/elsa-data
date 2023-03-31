@@ -28,6 +28,7 @@ import { AuditEventDetailedPage } from "./components/audit-event/audit-event-det
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
+import { DataAccessSummaryRecordsPage } from "./pages/releases/data-access-summary-sub-page/data-access-summary-records-page";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -88,6 +89,12 @@ export function createRouter(addBypassLoginPage: boolean) {
       text: "Data Access Summary",
       path: "data-access-summary",
       element: <DataAccessSummarySubPage />,
+      children: <></>,
+    },
+    {
+      text: "Data Access Summary",
+      path: "data-access-summary/records",
+      element: <DataAccessSummaryRecordsPage />,
       children: <></>,
     },
     {

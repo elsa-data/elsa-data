@@ -10,7 +10,6 @@ import { AuditLogService } from "../../../business/services/audit-log-service";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
-import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
 import {
   AuditDataAccessType,
@@ -118,58 +117,6 @@ export const auditEventRoutes = async (
 
     sendResult(reply, events);
   });
-
-  fastify.get<{
-    Params: { releaseKey: string };
-    Reply: AuditDataAccessType[] | null;
-    Querystring: AuditEventForQueryType;
-  }>(
-    "/releases/:releaseKey/audit-event/data-access",
-    {
-      schema: {
-        querystring: AuditEventForQuerySchema,
-      },
-    },
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, page } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.releaseKey;
-      const { orderByProperty = "occurredDateTime", orderAscending = false } =
-        request.query;
-
-      const events = await auditLogService.getDataAccessAuditByReleaseKey(
-        edgeDbClient,
-        authenticatedUser,
-        releaseKey,
-        pageSize,
-        (page - 1) * pageSize,
-        orderByProperty as keyof DataAccessAuditEvent | "fileUrl" | "fileSize",
-        orderAscending
-      );
-
-      sendPagedResult(reply, events);
-    }
-  );
-
-  fastify.get<{
-    Params: { releaseKey: string };
-    Reply: AuditDataAccessType[] | null;
-  }>(
-    "/releases/:releaseKey/audit-event/data-access/summary",
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const events =
-        await auditLogService.getSummaryDataAccessAuditByReleaseKey(
-          edgeDbClient,
-          authenticatedUser,
-          request.params.releaseKey
-        );
-
-      sendResult(reply, events);
-    }
-  );
 
   fastify.post<{
     Params: {

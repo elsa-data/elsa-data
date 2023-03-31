@@ -15,6 +15,10 @@ import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
 import { touchRelease } from "../db/release-queries";
 import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
+import {
+  updateLastDataAccessedQueryTimestamp,
+  updateReleaseDataAccessed,
+} from "../../../dbschema/queries";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -50,8 +54,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
   private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
-  private checkisAllowedChangeUserPermissions(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedChangeUserPermission;
+  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
+    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
     if (isPermissionAllow) return;
 
     throw new NotAuthorisedSyncDataAccessEvents();
@@ -189,17 +193,20 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         }
       }
 
-      await this.auditLogService.updateDataAccessAuditEvent({
-        executor: this.edgeDbClient,
-        releaseKey: releaseKey,
-        whoId: trailEvent.sourceIPAddress,
-        whoDisplayName: loc,
-        fileUrl: s3Url,
-        description: description,
+      await updateReleaseDataAccessed(this.edgeDbClient, {
+        releaseKey,
+        description,
+        releaseCount: 0,
+
+        occurredDateTime: utcDate,
+        sourceIpAddress: trailEvent.sourceIPAddress,
+        sourceLocation: loc,
+
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
-        date: utcDate,
+        fileUrl: s3Url,
       });
     }
+    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
   }
 
   /**
@@ -233,7 +240,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
 
   /**
-   * Creare SQL CloudTrailLake statement for PresignedUrl
+   * Create SQL CloudTrailLake statement for PresignedUrl
    * Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
    *
    * @param props
@@ -323,10 +330,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     releaseKey: string;
     eventDataStoreIds: string[];
   }) {
-    this.checkisAllowedChangeUserPermissions(user);
+    this.checkIsAllowedRefreshDatasetIndex(user);
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
-    const endQueryDate = new Date().toISOString();
+    const endQueryDate = new Date();
+    const endQueryDateISO = endQueryDate.toISOString();
 
     // Try initiate maxmind reader if available
     try {
@@ -344,7 +352,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         if (method == CloudTrailQueryType.PresignUrl) {
           const sqlQueryStatement = this.createSQLQueryByReleaseKeyReqParams({
             startTimestamp: startQueryDate ?? undefined,
-            endTimestamp: endQueryDate,
+            endTimestamp: endQueryDateISO,
             releaseKey: releaseKey,
             eventDataStoreId: edsi,
           });
@@ -370,7 +378,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
           for (const a of apAlias) {
             const sqlQueryStatement = this.createSQLQueryByAccessPointAlias({
               startTimestamp: startQueryDate ?? undefined,
-              endTimestamp: endQueryDate,
+              endTimestamp: endQueryDateISO,
               eventDataStoreId: edsi,
               apAlias: a,
             });
@@ -394,15 +402,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
 
     // Update last query date to release record
-    await e
-      .update(e.release.Release, (r) => ({
-        filter: e.op(r.releaseKey, "=", releaseKey),
-        set: {
-          lastDateTimeDataAccessLogQuery: e.datetime(endQueryDate),
-        },
-      }))
-      .run(this.edgeDbClient);
-
+    updateLastDataAccessedQueryTimestamp(this.edgeDbClient, {
+      releaseKey,
+      lastQueryTimestamp: endQueryDate,
+    });
     await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
   }
 }

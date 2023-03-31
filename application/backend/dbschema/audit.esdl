@@ -60,14 +60,6 @@ module audit {
         required property whoDisplayName -> str;
     }
 
-    type DataAccessAuditEvent extending OwnedAuditEvent {
-        # Link back which audit owns this
-        link release_ := .<dataAccessAuditLog[is release::Release];
-
-        # Number of bytes transfer out from storage
-        required property egressBytes -> int64;
-    }
-
     type ReleaseAuditEvent extending OwnedAuditEvent {
         # Link back which release own this audit log
         link release_ := .<releaseAuditLog[is release::Release];

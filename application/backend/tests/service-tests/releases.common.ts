@@ -87,7 +87,7 @@ export async function beforeEachCommon(dc: DependencyContainer) {
           occurredDateTime: e.datetime_current(),
         })
       ),
-      lastDateTimeDataAccessLogQuery: e.datetime_current(),
+      lastDataAccessQueryTimestamp: e.datetime_current(),
     })
     .run(edgeDbClient);
 

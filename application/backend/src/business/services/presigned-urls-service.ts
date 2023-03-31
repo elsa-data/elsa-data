@@ -172,50 +172,50 @@ export class PresignedUrlsService {
      * This will show a data access log from the given file above.
      * ************************************************************************* */
 
-    const ipAddress = "128.250.161.231";
-    const ipLocation = "Melbourne, VIC, AU";
-    const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
+    // const ipAddress = "128.250.161.231";
+    // const ipLocation = "Melbourne, VIC, AU";
+    // const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
 
-    // Insert all records except the last to be able to demonstrate incomplete download log
-    for (const file of manifest.objects.slice(0, -1)) {
-      await this.auditLogService.updateDataAccessAuditEvent({
-        executor: this.edgeDbClient,
-        releaseKey: releaseKey,
-        whoId: ipAddress,
-        whoDisplayName: ipLocation,
-        fileUrl: file.objectStoreUrl,
-        description: "Data read from presigned URL.",
-        egressBytes: Number(file.objectSize),
-        date: mockTimeAccessed,
-      });
-    }
+    // // Insert all records except the last to be able to demonstrate incomplete download log
+    // for (const file of manifest.objects.slice(0, -1)) {
+    //   await this.auditLogService.updateDataAccessAuditEvent({
+    //     executor: this.edgeDbClient,
+    //     releaseKey: releaseKey,
+    //     whoId: ipAddress,
+    //     whoDisplayName: ipLocation,
+    //     fileUrl: file.objectStoreUrl,
+    //     description: "Data read from presigned URL.",
+    //     egressBytes: Number(file.objectSize),
+    //     date: mockTimeAccessed,
+    //   });
+    // }
 
-    // Insert first record twice to show multiple-download in UI
-    await this.auditLogService.updateDataAccessAuditEvent({
-      executor: this.edgeDbClient,
-      releaseKey: releaseKey,
-      whoId: ipAddress,
-      whoDisplayName: ipLocation,
-      fileUrl: manifest.objects[0].objectStoreUrl,
-      description: "Data read from presigned URL.",
-      egressBytes: Number(manifest.objects[0].objectSize),
-      date: mockTimeAccessed,
-    });
+    // // Insert first record twice to show multiple-download in UI
+    // await this.auditLogService.updateDataAccessAuditEvent({
+    //   executor: this.edgeDbClient,
+    //   releaseKey: releaseKey,
+    //   whoId: ipAddress,
+    //   whoDisplayName: ipLocation,
+    //   fileUrl: manifest.objects[0].objectStoreUrl,
+    //   description: "Data read from presigned URL.",
+    //   egressBytes: Number(manifest.objects[0].objectSize),
+    //   date: mockTimeAccessed,
+    // });
 
-    // Insert last record to be incomplete
-    const lastFile = manifest.objects.pop();
-    if (lastFile) {
-      await this.auditLogService.updateDataAccessAuditEvent({
-        executor: this.edgeDbClient,
-        releaseKey: releaseKey,
-        whoId: ipAddress,
-        whoDisplayName: ipLocation,
-        fileUrl: lastFile.objectStoreUrl,
-        description: "Data read from presigned URL.",
-        egressBytes: Math.floor(Number(lastFile.objectSize) / 2),
-        date: mockTimeAccessed,
-      });
-    }
+    // // Insert last record to be incomplete
+    // const lastFile = manifest.objects.pop();
+    // if (lastFile) {
+    //   await this.auditLogService.updateDataAccessAuditEvent({
+    //     executor: this.edgeDbClient,
+    //     releaseKey: releaseKey,
+    //     whoId: ipAddress,
+    //     whoDisplayName: ipLocation,
+    //     fileUrl: lastFile.objectStoreUrl,
+    //     description: "Data read from presigned URL.",
+    //     egressBytes: Math.floor(Number(lastFile.objectSize) / 2),
+    //     date: mockTimeAccessed,
+    //   });
+    // }
 
     /* ************************************************************************ */
 

@@ -29,6 +29,8 @@ import {
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../di-helpers";
 
+const RELEASE_KEY_1 = "R001";
+
 export async function insertRelease1(dc: DependencyContainer) {
   const { settings, logger, edgeDbClient } = getServices(dc);
 
@@ -84,7 +86,7 @@ Ethics form XYZ.
       // B5MN76L3BN
       //
       //
-      releaseKey: `R001`,
+      releaseKey: RELEASE_KEY_1,
       activation: e.insert(e.release.Activation, {
         activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
         activatedById: TEST_SUBJECT_2,
@@ -118,7 +120,7 @@ Ethics form XYZ.
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
       releaseAuditLog: makeSytheticAuditLog(),
-      dataAccessAuditLog: await makeSyntheticDataAccessLog(edgeDbClient),
+      dataAccessedRecord: await makeSyntheticDataAccessedRecords(),
     })
     .run(edgeDbClient);
 }
@@ -206,35 +208,28 @@ function makeSytheticAuditLog() {
   );
 }
 
-const makeSyntheticDataAccessLog = async (edgeDbClient: Client) => {
+const makeSyntheticDataAccessedRecords = async () => {
   const makeDataAccessLog = async (fileUrl: string) => {
-    const fileJson = await e
-      .select(e.storage.File, (f) => ({
-        ...f["*"],
-        filter: e.op(f.url, "ilike", `%${fileUrl}`),
-      }))
-      .assert_single()
-      .run(edgeDbClient);
-
     return {
-      details: e.json(fileJson),
-      egressBytes: 10188721080,
-      whoId: "123.123.123.123",
-      whoDisplayName: "Melbourne, Australia",
-      actionCategory: e.audit.ActionType.R,
-      actionDescription: "Data Access",
+      releaseCount: 1,
       occurredDateTime: e.datetime(new Date()),
-      outcome: 0,
+      description: "Accessed via pre-signed URL",
+
+      sourceIpAddress: "123.123.123.123",
+      sourceLocation: "Melbourne, Australia",
+      egressBytes: 10188721080,
+      fileUrl: fileUrl,
+      fileSize: 30,
     };
   };
 
   return e.set(
     e.insert(
-      e.audit.DataAccessAuditEvent,
+      e.release.DataAccessedRecord,
       await makeDataAccessLog(MARGE_BAM_S3)
     ),
     e.insert(
-      e.audit.DataAccessAuditEvent,
+      e.release.DataAccessedRecord,
       await makeDataAccessLog(MARGE_BAI_S3)
     )
   );
