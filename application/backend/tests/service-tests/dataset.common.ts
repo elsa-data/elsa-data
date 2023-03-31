@@ -1,9 +1,14 @@
 import { createClient } from "edgedb";
 import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insert10G } from "../../src/test-data/insert-test-data-10g";
+import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import {
+  makeSingleCodeArray,
+  makeSystemlessIdentifier,
+} from "../../src/test-data/test-data-helpers";
 import { insert10F } from "../../src/test-data/insert-test-data-10f";
+import { registerTypes } from "../test-dependency-injection.common";
 import { DependencyContainer } from "tsyringe";
 
 /**

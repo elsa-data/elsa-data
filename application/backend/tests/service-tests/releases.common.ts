@@ -6,14 +6,17 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import {
   findSpecimenQuery,
   makeSingleCodeArray,
+  makeSystemlessIdentifier,
 } from "../../src/test-data/test-data-helpers";
 import { insert10F } from "../../src/test-data/insert-test-data-10f";
+import { findSpecimen } from "./utils";
 import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
 } from "../../src/test-data/insert-test-data-10f-simpsons";
 import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
+import { getNextReleaseKey } from "../../src/business/db/release-queries";
 import { insert10C } from "../../src/test-data/insert-test-data-10c";
 import { DependencyContainer } from "tsyringe";
 
@@ -62,7 +65,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       isAllowedS3Data: true,
       isAllowedGSData: true,
       isAllowedR2Data: true,
-      isAllowedHtsget: true,
       releaseKey: "TESTRELEASE0001",
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f

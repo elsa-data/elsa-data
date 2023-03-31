@@ -1,51 +1,51 @@
 import {
-  artifactType,
   S3IndexApplicationService,
+  artifactType,
 } from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { mockClient } from "aws-sdk-client-mock";
 import {
-  ArtifactType,
   File,
+  ArtifactType,
   insertArtifactBamQuery,
 } from "../../src/business/db/lab-queries";
 import { fileByUrlQuery } from "../../src/business/db/storage-queries";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import {
-  MOCK_1_CARDIAC_FASTQ1_FILENAME,
-  MOCK_1_CARDIAC_FASTQ2_FILENAME,
+  S3_URL_PREFIX,
+  MOCK_STORAGE_PREFIX_URL,
+  MOCK_DATASET_URI,
+  MOCK_BAM_FILE_SET,
+  MOCK_FASTQ_PAIR_FILE_SET,
+  MOCK_VCF_FILE_SET,
   MOCK_1_CARDIAC_MANIFEST,
   MOCK_1_CARDIAC_S3_OBJECT_LIST,
   MOCK_1_MANIFEST_OBJECT,
   MOCK_1_S3URL_MANIFEST_OBJECT,
+  MOCK_1_CARDIAC_FASTQ1_FILENAME,
+  MOCK_1_CARDIAC_FASTQ2_FILENAME,
   MOCK_1_STUDY_ID,
-  MOCK_2_BAI_FILE_RECORD,
-  MOCK_2_BAM_FILE_RECORD,
-  MOCK_2_CARDIAC_MANIFEST,
-  MOCK_2_CARDIAC_S3_OBJECT_LIST,
   MOCK_2_STUDY_ID,
-  MOCK_3_CARDIAC_MANIFEST,
+  MOCK_2_CARDIAC_S3_OBJECT_LIST,
+  MOCK_2_CARDIAC_MANIFEST,
+  MOCK_2_BAM_FILE_RECORD,
+  MOCK_2_BAI_FILE_RECORD,
   MOCK_3_CARDIAC_S3_OBJECT_LIST,
+  MOCK_3_CARDIAC_MANIFEST,
   MOCK_4_CARDIAC_MANIFEST,
   MOCK_4_CARDIAC_S3_OBJECT_LIST,
-  MOCK_4_CARDIAC_VCF_FILENAME,
-  MOCK_4_STUDY_ID_1,
-  MOCK_4_STUDY_ID_2,
   MOCK_4_STUDY_ID_3,
-  MOCK_BAM_FILE_SET,
-  MOCK_DATASET_URI,
-  MOCK_FASTQ_PAIR_FILE_SET,
-  MOCK_STORAGE_PREFIX_URL,
-  MOCK_VCF_FILE_SET,
-  S3_URL_PREFIX,
+  MOCK_4_STUDY_ID_2,
+  MOCK_4_STUDY_ID_1,
+  MOCK_4_CARDIAC_VCF_FILENAME,
 } from "./ag.common";
 import * as awsHelper from "../../src/business/services/aws/aws-helper";
 import {
   getMd5FromChecksumsArray,
-  makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
+  makeEmptyIdentifierArray,
 } from "../../src/business/db/helper";
 import { registerTypes } from "../test-dependency-injection.common";
 import { DatasetService } from "../../src/business/services/dataset-service";

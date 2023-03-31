@@ -7,9 +7,11 @@ import {
   findPatientExpected,
   findSpecimen,
 } from "./utils";
-import { ReleaseSpecimenType } from "@umccr/elsa-types";
+import { ReleaseCaseType, ReleaseSpecimenType } from "@umccr/elsa-types";
+import { PagedResult } from "../../src/api/helpers/pagination-helpers";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
+import { ReleaseService } from "../../src/business/services/release-service";
 import { Client } from "edgedb";
 import {
   BART_SPECIMEN,

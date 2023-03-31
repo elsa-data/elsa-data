@@ -56,7 +56,6 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       email: TEST_SUBJECT_3_EMAIL,
     },
   ],
-  htsget: { manifestTTL: { seconds: 86400 } },
   logger: {
     level: "trace",
     transport: {

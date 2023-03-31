@@ -1,5 +1,4 @@
 {
-  host: "127.0.0.1",
   // the security of our localhost dev cookies is not so important - for the real deployments
   // we need to get these secrets from a real secret source
   session: {

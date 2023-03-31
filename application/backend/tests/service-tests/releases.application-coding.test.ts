@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import { Client, createClient } from "edgedb";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { findDatabaseRelease } from "./utils";
 import { beforeEachCommon } from "./releases.common";

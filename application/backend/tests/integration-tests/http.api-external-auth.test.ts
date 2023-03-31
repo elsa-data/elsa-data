@@ -1,6 +1,7 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../test-dependency-injection.common";
+import { Logger } from "pino";
 import { getServices } from "../../src/di-helpers";
 
 describe("http integration tests", () => {

@@ -4,6 +4,7 @@ import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
 import {
   releaseGetSpecimenTreeAndFileArtifacts,
+  releaseIsActivated,
   releaseIsAllowedHtsget,
 } from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
@@ -110,10 +111,14 @@ export class ManifestService {
     releaseKey: string,
     completeAuditFn: (executor: Executor, details: any) => Promise<void>
   ): Promise<ManifestHtsgetResponseType> {
+    const activated = await releaseIsActivated(this.edgeDbClient, {
+      releaseKey,
+    });
     const allowed = await releaseIsAllowedHtsget(this.edgeDbClient, {
       releaseKey,
     });
-    if (!allowed?.isAllowedHtsget) {
+
+    if (!activated?.isActivated || !allowed?.isAllowedHtsget) {
       throw new HtsgetNotAllowed();
     }
 

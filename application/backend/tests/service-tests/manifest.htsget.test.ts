@@ -3,9 +3,9 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/insert-test-data-10f-helpers";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { transformMasterManifestToHtsgetManifest } from "../../src/business/services/manifests/htsget/manifest-htsget-helper";
 import { ReleaseService } from "../../src/business/services/release-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { transformMasterManifestToHtsgetManifest } from "../../src/business/services/manifests/htsget/manifest-htsget-helper";
 
 const testContainer = registerTypes();
 
@@ -55,6 +55,12 @@ beforeEach(async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
+    true
+  );
+  await releaseService.setIsAllowed(
+    allowedAdministratorUser,
+    testReleaseKey,
+    "isAllowedHtsget",
     true
   );
 });
