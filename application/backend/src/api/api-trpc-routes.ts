@@ -1,5 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
+import {
+  CreateFastifyContextOptions,
+  fastifyTRPCPlugin,
+} from "@trpc/server/adapters/fastify";
 import { appRouter } from "../app-router";
 import { Context } from "./routes/trpc-bootstrap";
 
@@ -14,7 +17,7 @@ export const trpcRoutes = async (
   fastify: FastifyInstance,
   opts: {
     // we need a minimum context that at least provides us with a DI container
-    trpcCreateContext: () => Promise<Context>;
+    trpcCreateContext: (opts: CreateFastifyContextOptions) => Promise<Context>;
   }
 ) => {
   fastify.addHook("preHandler", fastify.csrfProtection);
