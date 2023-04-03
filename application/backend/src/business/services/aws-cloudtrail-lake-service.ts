@@ -16,8 +16,8 @@ import maxmind, { CityResponse, Reader } from "maxmind";
 import { touchRelease } from "../db/release-queries";
 import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
 import {
-  updateLastDataAccessedQueryTimestamp,
-  updateReleaseDataAccessed,
+  updateLastDataEgressQueryTimestamp,
+  updateReleaseDataEgress,
 } from "../../../dbschema/queries";
 
 enum CloudTrailQueryType {
@@ -193,10 +193,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         }
       }
 
-      await updateReleaseDataAccessed(this.edgeDbClient, {
+      await updateReleaseDataEgress(this.edgeDbClient, {
         releaseKey,
         description,
-        releaseCount: 0,
+        releaseCounter: 0,
 
         occurredDateTime: utcDate,
         sourceIpAddress: trailEvent.sourceIPAddress,
@@ -402,7 +402,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
 
     // Update last query date to release record
-    updateLastDataAccessedQueryTimestamp(this.edgeDbClient, {
+    updateLastDataEgressQueryTimestamp(this.edgeDbClient, {
       releaseKey,
       lastQueryTimestamp: endQueryDate,
     });

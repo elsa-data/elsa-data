@@ -15,7 +15,7 @@ import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-ser
 import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import * as edgedb from "edgedb";
 import { currentPageSize } from "../helpers/pagination-helpers";
-import { ReleaseDataAccessedService } from "../../business/services/release-data-access-service";
+import { ReleaseDataEgressService } from "../../business/services/release-data-access-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -104,9 +104,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       releaseParticipantService: ctx.container.resolve(
         ReleaseParticipationService
       ),
-      releaseDataAccessedService: ctx.container.resolve(
-        ReleaseDataAccessedService
-      ),
+      releaseDataEgressService: ctx.container.resolve(ReleaseDataEgressService),
       jobService: ctx.container.resolve(JobsService),
       jobCloudFormationCreateService: ctx.container.resolve(
         JobCloudFormationCreateService

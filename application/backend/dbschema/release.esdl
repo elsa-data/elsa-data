@@ -127,7 +127,7 @@ module release {
         }
 
         # Store records of data being accessed (mostly 3rd parties e.g. CloudTrailLake)
-        multi link dataAccessedRecord -> DataAccessedRecord {
+        multi link dataEgressRecord -> DataEgressRecord {
             on target delete restrict;
         }
         # A quick access to when the last data access query was made (to determine the next interval query)
@@ -197,13 +197,13 @@ module release {
     }
 
 
-    type DataAccessedRecord {
+    type DataEgressRecord {
 
         # Link back which audit owns this
-        link release := .<dataAccessedRecord[is release::Release];
+        link release := .<dataEgressRecord[is release::Release];
 
         # Additional release details
-        required property releaseCount -> int32;
+        required property releaseCounter -> int32;
         required property occurredDateTime -> datetime;
         property description -> str;
 

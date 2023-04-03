@@ -12,9 +12,9 @@ import {
 } from "../../api/helpers/pagination-helpers";
 
 import {
-  countReleaseDataAccessed,
-  getReleaseDataAccessed,
-  getReleaseDataAccessedSummary,
+  countReleaseDataEgress,
+  getReleaseDataEgress,
+  getReleaseDataEgressSummary,
 } from "../../../dbschema/queries";
 
 /**
@@ -22,7 +22,7 @@ import {
  * and what roles they play in that release.
  */
 @injectable()
-export class ReleaseDataAccessedService extends ReleaseBaseService {
+export class ReleaseDataEgressService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
@@ -43,7 +43,7 @@ export class ReleaseDataAccessedService extends ReleaseBaseService {
       releaseKey
     );
 
-    const dataAccessedSummaryResult = await getReleaseDataAccessedSummary(
+    const dataEgressSummaryResult = await getReleaseDataEgressSummary(
       this.edgeDbClient,
       {
         releaseKey,
@@ -53,8 +53,8 @@ export class ReleaseDataAccessedService extends ReleaseBaseService {
     );
 
     return createPagedResult(
-      dataAccessedSummaryResult.results,
-      dataAccessedSummaryResult.totalCount
+      dataEgressSummaryResult.results,
+      dataEgressSummaryResult.totalCount
     );
   }
 
@@ -69,16 +69,16 @@ export class ReleaseDataAccessedService extends ReleaseBaseService {
       releaseKey
     );
 
-    const totalEntries = await countReleaseDataAccessed(this.edgeDbClient, {
+    const totalEntries = await countReleaseDataEgress(this.edgeDbClient, {
       releaseKey,
     });
 
-    const dataAccessArray = await getReleaseDataAccessed(this.edgeDbClient, {
+    const dataEgressArray = await getReleaseDataEgress(this.edgeDbClient, {
       releaseKey,
       offset,
       limit,
     });
 
-    return createPagedResult(dataAccessArray, totalEntries);
+    return createPagedResult(dataEgressArray, totalEntries);
   }
 }

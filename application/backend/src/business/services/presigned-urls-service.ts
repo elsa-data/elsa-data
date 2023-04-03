@@ -168,7 +168,7 @@ export class PresignedUrlsService {
     );
 
     /* *************************************************************************
-     * For demonstration purposes, will add some DataAccessedAudit after link has been generated
+     * For demonstration purposes, will add some DataEgressAudit after link has been generated
      * This will show a data access log from the given file above.
      * ************************************************************************* */
 

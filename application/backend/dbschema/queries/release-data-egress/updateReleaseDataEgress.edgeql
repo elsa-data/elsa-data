@@ -1,12 +1,12 @@
-# Insert a new DataAccessedRecord to the relevant release record
+# Insert a new DataEgressRecord to the relevant release record
 
 update release::Release
 filter .releaseKey = <str>$releaseKey
 set {
-  dataAccessedRecord += (
-    insert release::DataAccessedRecord{
+  dataEgressRecord += (
+    insert release::DataEgressRecord{
 
-      releaseCount := <int32>$releaseCount,
+      releaseCounter := <int32>$releaseCounter,
       occurredDateTime := <datetime>$occurredDateTime,
       description := <str>$description,
 

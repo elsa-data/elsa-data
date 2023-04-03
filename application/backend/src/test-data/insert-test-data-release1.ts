@@ -120,7 +120,7 @@ Ethics form XYZ.
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
       releaseAuditLog: makeSytheticAuditLog(),
-      dataAccessedRecord: await makeSyntheticDataAccessedRecords(),
+      dataEgressRecord: await makeSyntheticDataEgressRecord(),
     })
     .run(edgeDbClient);
 }
@@ -208,10 +208,10 @@ function makeSytheticAuditLog() {
   );
 }
 
-const makeSyntheticDataAccessedRecords = async () => {
+const makeSyntheticDataEgressRecord = async () => {
   const makeDataAccessLog = async (fileUrl: string) => {
     return {
-      releaseCount: 1,
+      releaseCounter: 1,
       occurredDateTime: e.datetime(new Date()),
       description: "Accessed via pre-signed URL",
 
@@ -224,13 +224,7 @@ const makeSyntheticDataAccessedRecords = async () => {
   };
 
   return e.set(
-    e.insert(
-      e.release.DataAccessedRecord,
-      await makeDataAccessLog(MARGE_BAM_S3)
-    ),
-    e.insert(
-      e.release.DataAccessedRecord,
-      await makeDataAccessLog(MARGE_BAI_S3)
-    )
+    e.insert(e.release.DataEgressRecord, await makeDataAccessLog(MARGE_BAM_S3)),
+    e.insert(e.release.DataEgressRecord, await makeDataAccessLog(MARGE_BAI_S3))
   );
 };

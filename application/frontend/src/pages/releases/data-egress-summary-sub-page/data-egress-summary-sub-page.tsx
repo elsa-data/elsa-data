@@ -1,5 +1,5 @@
 import React from "react";
-import { DataAccessSummaryBox } from "./data-access-summary-box";
+import { DataAccessSummaryBox } from "./data-egress-summary-box";
 import { useReleasesMasterData } from "../releases-types";
 
 export const DataAccessSummarySubPage = () => {

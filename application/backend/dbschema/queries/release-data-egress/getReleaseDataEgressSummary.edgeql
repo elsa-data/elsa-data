@@ -1,3 +1,5 @@
+# A query that summarize egress size groped by file level.
+
 with
 
   # Select all files related with this release
@@ -125,8 +127,8 @@ select {
       for file in allFiles
       union (
         with
-          dataAccessedRecord := ( 
-            select release::DataAccessedRecord { egressBytes, occurredDateTime }
+          dataEgressRecord := ( 
+            select release::DataEgressRecord { egressBytes, occurredDateTime }
             filter .release.releaseKey = <str>$releaseKey and .fileUrl = file.url
             order by .occurredDateTime
           )
@@ -135,9 +137,9 @@ select {
           fileUrl := file.url,
           fileSize := file.size,
           totalDataEgressInBytes := sum((
-            dataAccessedRecord.egressBytes
+            dataEgressRecord.egressBytes
           )),
-          lastOccurredDateTime := (select assert_single((select dataAccessedRecord.occurredDateTime limit 1)))
+          lastOccurredDateTime := (select assert_single((select dataEgressRecord.occurredDateTime limit 1)))
         }
       )
     )

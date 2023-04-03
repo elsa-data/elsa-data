@@ -67,8 +67,8 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     .delete(e.audit.SystemAuditEvent)
     .run(edgeDbClient);
 
-  const dataAccessedRecordDeleted = await e
-    .delete(e.release.DataAccessedRecord)
+  const dataEgressRecordDeleted = await e
+    .delete(e.release.DataEgressRecord)
     .run(edgeDbClient);
 
   if (printDetailsToConsole) {
@@ -81,7 +81,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`  ${releaseAuditDeleted.length} releaseAudit(s)`);
     console.log(`  ${userAuditDeleted.length} userAudit(s)`);
     console.log(`  ${systemAuditDeleted.length} systemAudit(s)`);
-    console.log(`  ${dataAccessedRecordDeleted.length} dataAccessedRecord(s)`);
+    console.log(`  ${dataEgressRecordDeleted.length} dataEgressRecord(s)`);
 
     console.log(
       `  ${specimensDeleted.length}/${patientsDeleted.length}/${casesDeleted.length}/${datasetsDeleted.length} dataset specimen(s)/patient(s)/case(s)/set(s)`
