@@ -80,7 +80,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     const releaseDates = await e
       .select(e.release.Release, (r) => ({
         created: true,
-        lastDateTimeDataAccessLogQuery: true,
+        lastDataEgressQueryTimestamp: true,
         filter: e.op(r.releaseKey, "=", releaseKey),
       }))
       .assert_single()
@@ -94,12 +94,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
 
     // If have not been queried before, will be using the release created date.
-    if (!releaseDates.lastDateTimeDataAccessLogQuery) {
+    if (!releaseDates.lastDataEgressQueryTimestamp) {
       return releaseDates.created.toISOString();
     }
 
     // Adding 1 ms from previous query to prevent overlap results.
-    const dateObj = new Date(releaseDates.lastDateTimeDataAccessLogQuery);
+    const dateObj = new Date(releaseDates.lastDataEgressQueryTimestamp);
     dateObj.setTime(dateObj.getTime() + 1);
 
     return dateObj.toISOString();
@@ -324,13 +324,18 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   public async fetchCloudTrailLakeLog({
     user,
     releaseKey,
-    eventDataStoreIds,
+    datasetUrisArray,
   }: {
     user: AuthenticatedUser;
     releaseKey: string;
-    eventDataStoreIds: string[];
+    datasetUrisArray: string[];
   }) {
     this.checkIsAllowedRefreshDatasetIndex(user);
+
+    const eventDataStoreIds = await this.getEventDataStoreIdFromDatasetUris(
+      datasetUrisArray
+    );
+    if (!eventDataStoreIds) throw new Error("No AWS CloudTrailLake Configured");
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
     const endQueryDate = new Date();

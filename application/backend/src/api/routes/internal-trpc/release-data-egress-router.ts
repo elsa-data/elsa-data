@@ -3,12 +3,21 @@ import {
   inputReleaseKeySingleParameter,
   inputPaginationParameter,
 } from "./input-schemas-common";
-import { sendPagedResult } from "../../api-internal-routes";
 
 /**
  * TRPC for release Data Accessed Records
  */
 export const releaseDataEgressRouter = router({
+  syncDataEgress: internalProcedure
+    .input(inputReleaseKeySingleParameter)
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey } = input;
+      await ctx.releaseDataEgressService.syncDataEgressByReleaseKey(
+        user,
+        releaseKey
+      );
+    }),
   dataEgressSummary: internalProcedure
     .input(inputPaginationParameter.merge(inputReleaseKeySingleParameter))
     .query(async ({ input, ctx }) => {

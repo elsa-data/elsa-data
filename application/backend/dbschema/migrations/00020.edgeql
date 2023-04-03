@@ -1,4 +1,4 @@
-CREATE MIGRATION m13k25tfjc7qrmg4grspfqujwgnbxhgmu6mbqqwnkfiew25tp4h53a
+CREATE MIGRATION m1pv25lb557irls6owqneezcpmrebfo2qrxpcsvgqy36nlptwn3tsq
     ONTO m1v4abs537ah5gus3ndpa3usluni455mxyk7qxjypvu5j6ett5iypq
 {
   ALTER TYPE audit::DataAccessAuditEvent {
@@ -29,7 +29,7 @@ CREATE MIGRATION m13k25tfjc7qrmg4grspfqujwgnbxhgmu6mbqqwnkfiew25tp4h53a
   };
   ALTER TYPE release::Release {
       ALTER PROPERTY lastDateTimeDataAccessLogQuery {
-          RENAME TO lastDataAccessQueryTimestamp;
+          RENAME TO lastDataEgressQueryTimestamp;
       };
   };
 };

@@ -3,5 +3,5 @@
 update release::Release
 filter .releaseKey = <str>$releaseKey
 set {
-  lastDataAccessQueryTimestamp := <datetime>$lastQueryTimestamp
+  lastDataEgressQueryTimestamp := <datetime>$lastQueryTimestamp
 }

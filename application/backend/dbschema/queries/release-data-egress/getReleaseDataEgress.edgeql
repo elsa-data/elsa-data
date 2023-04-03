@@ -1,6 +1,5 @@
 # A simple get query for DataEgressRecord
 
-
 select release::DataEgressRecord{
   releaseCounter,
   occurredDateTime,

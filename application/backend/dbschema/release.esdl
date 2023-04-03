@@ -130,9 +130,9 @@ module release {
         multi link dataEgressRecord -> DataEgressRecord {
             on target delete restrict;
         }
-        # A quick access to when the last data access query was made (to determine the next interval query)
+        # A quick access to know the last data egress records query was made (to determine the next interval query)
         # 
-        property lastDataAccessQueryTimestamp -> datetime;
+        property lastDataEgressQueryTimestamp -> datetime;
 
         # the participants of this release as Users
         #

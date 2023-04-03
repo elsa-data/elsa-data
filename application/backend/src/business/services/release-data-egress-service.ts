@@ -15,7 +15,11 @@ import {
   countReleaseDataEgress,
   getReleaseDataEgress,
   getReleaseDataEgressSummary,
+  releaseGetByReleaseKey,
 } from "../../../dbschema/queries";
+import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
+import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
+import { AwsCloudTrailLakeService } from "./aws-cloudtrail-lake-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -26,10 +30,39 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
+    private awsCloudTrailLakeService: AwsCloudTrailLakeService,
     private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
     super(edgeDbClient, usersService);
+  }
+
+  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
+    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
+    if (isPermissionAllow) return;
+
+    throw new NotAuthorisedSyncDataAccessEvents();
+  }
+
+  public async syncDataEgressByReleaseKey(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ) {
+    this.checkIsAllowedRefreshDatasetIndex(user);
+
+    const datasetUrisArray = (
+      await releaseGetByReleaseKey(this.edgeDbClient, {
+        releaseKey,
+      })
+    )?.datasetUris;
+
+    if (!datasetUrisArray) throw new Error("No dataset found!");
+
+    this.awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+      user,
+      releaseKey,
+      datasetUrisArray,
+    });
   }
 
   public async getSummaryDataAccessAuditByReleaseKey(
