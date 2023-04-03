@@ -1,12 +1,9 @@
 import React from "react";
-import { useForm } from "react-hook-form";
-import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
-import { ReleaseTypeLocal } from "../shared-types";
 import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
-  releaseData: ReleaseTypeLocal;
+  htsgetUrl: string;
 };
 
 /**
@@ -17,7 +14,7 @@ type Props = {
  * @param releaseData
  * @constructor
  */
-export const HtsgetForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
+export const HtsgetForm: React.FC<Props> = ({ releaseKey, htsgetUrl }) => {
   return (
     <>
       {/* we use a POST form action here (rather than a onSubmit handler) because
@@ -38,8 +35,7 @@ export const HtsgetForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
             </p>
             <p>
               The <code>htsget</code> endpoint below will need to be presented
-              with a valid Passport containing a Visa corresponding to this
-              release.
+              with a valid authentication corresponding to this release.
             </p>
           </article>
           <label className="prose">
@@ -50,7 +46,7 @@ export const HtsgetForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
               type="text"
               disabled={true}
               required={false}
-              defaultValue={"https://htsget.umccr.org/releases/abcdef"}
+              defaultValue={htsgetUrl}
               className="mt-1 block w-full rounded-md border-transparent bg-gray-50 font-mono focus:border-gray-500 focus:bg-white focus:ring-0"
             />
           </label>

@@ -40,6 +40,7 @@ export type ElsaSettings = {
 
   htsget?: {
     manifestTTL: Duration;
+    url: URL;
   };
 
   // optional details to allow sharing of objects in AWS

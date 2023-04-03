@@ -18,8 +18,12 @@ export function cookieForUI(
   request: FastifyRequest,
   reply: FastifyReply,
   k: string,
-  v: string
+  v?: string
 ) {
+  if (v === undefined) {
+    return;
+  }
+
   return reply.setCookie(k, v, {
     path: "/",
     secure: true,

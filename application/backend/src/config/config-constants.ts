@@ -87,6 +87,14 @@ export const configDefinition = {
       default: "86400",
       env: `${env_prefix}HTSGET_MANIFEST_TTL`,
     },
+    url: {
+      doc: "The url for the htsget endpoint",
+      format: String,
+      sensitive: false,
+      default: null,
+      nullable: false,
+      env: `${env_prefix}HTSGET_URL`,
+    },
   },
   aws: {
     signingAccessKeyId: {

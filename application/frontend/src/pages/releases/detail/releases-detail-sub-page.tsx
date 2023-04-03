@@ -11,6 +11,8 @@ import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
 import { useReleasesMasterData } from "../releases-types";
 import { CopyOutForm } from "./copy-out-form";
+import { useCookies } from "react-cookie";
+import { USER_HTSGET_URL } from "@umccr/elsa-constants";
 
 /**
  * The sub-page display the main details a single
@@ -20,6 +22,9 @@ export const ReleasesDetailSubPage: React.FC = () => {
   const { releaseKey, releaseData } = useReleasesMasterData();
 
   const pageSize = usePageSizer();
+
+  const [cookie] = useCookies<string>([USER_HTSGET_URL]);
+  const htsgetUrl = cookie[USER_HTSGET_URL];
 
   return (
     <>
@@ -66,7 +71,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
           <CopyOutForm releaseKey={releaseKey} />
           <AwsS3VpcShareForm releaseKey={releaseKey} />
           <GcpStorageIamShareForm releaseKey={releaseKey} />
-          <HtsgetForm releaseKey={releaseKey} releaseData={releaseData} />
+          <HtsgetForm releaseKey={releaseKey} htsgetUrl={htsgetUrl} />
         </VerticalTabs>
       </Box>
     </>

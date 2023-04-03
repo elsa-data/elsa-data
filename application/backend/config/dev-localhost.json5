@@ -1,6 +1,7 @@
 {
   // the security of our localhost dev cookies is not so important - for the real deployments
   // we need to get these secrets from a real secret source
+  host: "127.0.0.1",
   session: {
     secret: "This is a long string that will encrypt our session cookies but only for localhost", // pragma: allowlist secret
     salt: "Also a string 16",
@@ -24,5 +25,8 @@
   },
   mailer: {
     mode: "SES",
+  },
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org/",
   },
 }

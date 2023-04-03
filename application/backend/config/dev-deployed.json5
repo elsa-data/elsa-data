@@ -4,4 +4,7 @@
   logger: {
     level: "debug",
   },
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org/",
+  },
 }
