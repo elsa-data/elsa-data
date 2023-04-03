@@ -211,7 +211,7 @@ function makeSytheticAuditLog() {
 const makeSyntheticDataEgressRecord = async () => {
   const makeDataAccessLog = async (fileUrl: string) => {
     return {
-      releaseCounter: 1,
+      auditId: "0f8e7694-d1eb-11ed-afa1-0242ac120002",
       occurredDateTime: e.datetime(new Date()),
       description: "Accessed via pre-signed URL",
 

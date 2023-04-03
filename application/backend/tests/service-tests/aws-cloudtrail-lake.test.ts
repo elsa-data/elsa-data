@@ -32,93 +32,95 @@ describe("Test CloudTrailLake Service", () => {
       await beforeEachCommon(testContainer));
   });
 
-  // it("Test recordCloudTrailLake", async () => {
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
-  //   const BUCKET_NAME = "umccr-10g-data-dev";
-  //   const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
+  it("Test recordCloudTrailLake", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+    const BUCKET_NAME = "umccr-10g-data-dev";
+    const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
 
-  //   const mockData = [
-  //     {
-  //       eventTime: "2022-10-24 05:56:40.000",
-  //       sourceIPAddress: "192.19.192.192",
-  //       bucketName: BUCKET_NAME,
-  //       key: KEY,
-  //       bytesTransferredOut: "101.0",
-  //     },
-  //   ];
+    const mockData = [
+      {
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+        releaseKey: testReleaseKey,
+        auditId: "abcd-defg-hijk-lmno",
+      },
+    ];
 
-  //   await awsCloudTrailLakeService.recordCloudTrailLake({
-  //     lakeResponse: mockData,
-  //     releaseKey: testReleaseKey,
-  //     description: "Object accessed",
-  //   });
+    await awsCloudTrailLakeService.recordCloudTrailLake({
+      lakeResponse: mockData,
+      releaseKey: testReleaseKey,
+      description: "Object accessed",
+    });
 
-  //   const daArr = await e
-  //     .select(e.audit.DataAccessAuditEvent, (da) => ({
-  //       ...da["*"],
-  //       filter: e.op(da.release_.releaseKey, "=", testReleaseKey),
-  //     }))
-  //     .run(edgeDbClient);
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
+      }))
+      .run(edgeDbClient);
 
-  //   expect(daArr.length).toEqual(1);
+    expect(deArr.length).toEqual(1);
 
-  //   const singleLog = daArr[0];
-  //   expect(singleLog.egressBytes).toEqual(101);
-  // });
+    const singleLog = deArr[0];
+    expect(singleLog.egressBytes).toEqual(101);
+  });
 
-  // it("Test getEventDataStoreIdFromReleaseKey", async () => {
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
+  it("Test getEventDataStoreIdFromReleaseKey", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
 
-  //   const eventDataStoreIdArr =
-  //     await awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris([
-  //       TENG_URI,
-  //     ]);
+    const eventDataStoreIdArr =
+      await awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris([
+        TENG_URI,
+      ]);
 
-  //   expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
-  // });
+    expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
+  });
 
-  // it("Test fetchCloudTrailLakeLog", async () => {
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
-  //   const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
-  //   const BUCKET_NAME = "umccr-10g-data-dev";
-  //   const mockData = [
-  //     {
-  //       eventTime: "2022-10-24 05:56:40.000",
-  //       sourceIPAddress: "192.19.192.192",
-  //       bucketName: BUCKET_NAME,
-  //       key: KEY,
-  //       bytesTransferredOut: "101.0",
-  //     },
-  //   ];
+  it("Test fetchCloudTrailLakeLog", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+    const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
+    const BUCKET_NAME = "umccr-10g-data-dev";
+    const mockData = [
+      {
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+      },
+    ];
 
-  //   jest
-  //     .spyOn(awsCloudTrailLakeService, "startCommandQueryCloudTrailLake")
-  //     .mockImplementation(async () => "RANDOM_ID");
-  //   jest
-  //     .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
-  //     .mockImplementation(async () => mockData);
-  //   await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-  //     user: superAdminUser,
-  //     releaseKey: testReleaseKey,
-  //     eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
-  //   });
+    jest
+      .spyOn(awsCloudTrailLakeService, "startCommandQueryCloudTrailLake")
+      .mockImplementation(async () => "RANDOM_ID");
+    jest
+      .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
+      .mockImplementation(async () => mockData);
+    await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+      user: superAdminUser,
+      releaseKey: testReleaseKey,
+      datasetUrisArray: [TENG_URI],
+    });
 
-  //   const daArr = await e
-  //     .select(e.audit.DataAccessAuditEvent, (da) => ({
-  //       ...da["*"],
-  //       filter: e.op(da.release_.releaseKey, "=", testReleaseKey),
-  //     }))
-  //     .run(edgeDbClient);
-  //   expect(daArr.length).toEqual(1);
-  //   const singleLog = daArr[0];
-  //   expect(singleLog.egressBytes).toEqual(101);
-  // });
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
+      }))
+      .run(edgeDbClient);
+    expect(deArr.length).toEqual(1);
+    const singleLog = deArr[0];
+    expect(singleLog.egressBytes).toEqual(101);
+  });
 
   it("Test unauthorised attempt ", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
@@ -129,7 +131,7 @@ describe("Test CloudTrailLake Service", () => {
       const result = await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
         user: allowedMemberUser,
         releaseKey: testReleaseKey,
-        eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+        datasetUrisArray: [TENG_URI],
       });
     }).rejects.toThrow(NotAuthorisedSyncDataAccessEvents);
   });

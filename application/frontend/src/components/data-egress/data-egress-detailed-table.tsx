@@ -15,7 +15,6 @@ const COLUMN_TO_SHOW = [
   { key: "sourceIpAddress", value: "Source IP Address" },
   { key: "sourceLocation", value: "Estimate Location" },
   { key: "fileSize", value: "File Size" },
-  { key: "releaseCounter", value: "Release Count" },
 ];
 
 export function DataEgressDetailedTable({
@@ -69,7 +68,6 @@ export function DataEgressDetailedTable({
                         : objKey === "occurredDateTime"
                         ? formatLocalDateTime(row[objKey])
                         : objKey === "fileUrl" ||
-                          objKey === "releaseCounter" ||
                           objKey === "description" ||
                           objKey === "sourceIpAddress" ||
                           objKey === "sourceLocation"

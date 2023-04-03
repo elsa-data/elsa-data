@@ -1,4 +1,4 @@
-CREATE MIGRATION m1pv25lb557irls6owqneezcpmrebfo2qrxpcsvgqy36nlptwn3tsq
+CREATE MIGRATION m1v6b372hl2vh5uwpg2nmg6etkk6mfzu36ttqmyzfsxsagmr5cws6a
     ONTO m1v4abs537ah5gus3ndpa3usluni455mxyk7qxjypvu5j6ett5iypq
 {
   ALTER TYPE audit::DataAccessAuditEvent {
@@ -10,12 +10,12 @@ CREATE MIGRATION m1pv25lb557irls6owqneezcpmrebfo2qrxpcsvgqy36nlptwn3tsq
   };
   DROP TYPE audit::DataAccessAuditEvent;
   CREATE TYPE release::DataEgressRecord {
+      CREATE PROPERTY auditId -> std::str;
       CREATE PROPERTY description -> std::str;
       CREATE PROPERTY egressBytes -> std::int64;
       CREATE REQUIRED PROPERTY fileSize -> std::int64;
       CREATE REQUIRED PROPERTY fileUrl -> std::str;
       CREATE REQUIRED PROPERTY occurredDateTime -> std::datetime;
-      CREATE REQUIRED PROPERTY releaseCounter -> std::int32;
       CREATE PROPERTY sourceIpAddress -> std::str;
       CREATE PROPERTY sourceLocation -> std::str;
   };

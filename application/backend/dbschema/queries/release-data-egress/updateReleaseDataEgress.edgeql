@@ -6,7 +6,7 @@ set {
   dataEgressRecord += (
     insert release::DataEgressRecord{
 
-      releaseCounter := <int32>$releaseCounter,
+      auditId := <str>$auditId,
       occurredDateTime := <datetime>$occurredDateTime,
       description := <str>$description,
 

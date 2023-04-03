@@ -203,7 +203,7 @@ module release {
         link release := .<dataEgressRecord[is release::Release];
 
         # Additional release details
-        required property releaseCounter -> int32;
+        property auditId -> str;
         required property occurredDateTime -> datetime;
         property description -> str;
 

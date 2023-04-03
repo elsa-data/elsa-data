@@ -12,11 +12,17 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { ReleaseViewError } from "../exceptions/release-authorisation";
 import { ManifestService } from "./manifests/manifest-service";
 import assert from "assert";
+import { updateReleaseDataEgress } from "../../../dbschema/queries";
 
 export interface IPresignedUrlProvider {
   isEnabled: boolean;
   protocol: string;
-  presign(releaseKey: string, bucket: string, key: string): Promise<string>;
+  presign(
+    releaseKey: string,
+    bucket: string,
+    key: string,
+    auditId: string
+  ): Promise<string>;
 }
 
 @injectable()
@@ -40,10 +46,12 @@ export class PresignedUrlsService {
     releaseKey: string,
     protocol: string,
     bucket: string,
-    key: string
+    key: string,
+    auditId: string
   ): Promise<string> {
     for (const p of this.presignedUrlsServices)
-      if (protocol === p.protocol) return p.presign(releaseKey, bucket, key);
+      if (protocol === p.protocol)
+        return p.presign(releaseKey, bucket, key, auditId);
 
     throw new Error(`Unhandled protocol ${protocol}`);
   }
@@ -100,7 +108,8 @@ export class PresignedUrlsService {
               releaseKey,
               af.objectStoreProtocol,
               af.objectStoreBucket,
-              af.objectStoreKey
+              af.objectStoreKey,
+              newAuditEventId
             )
           : undefined;
       } catch (e) {
@@ -172,50 +181,50 @@ export class PresignedUrlsService {
      * This will show a data access log from the given file above.
      * ************************************************************************* */
 
-    // const ipAddress = "128.250.161.231";
-    // const ipLocation = "Melbourne, VIC, AU";
-    // const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
+    const ipAddress = "128.250.161.231";
+    const ipLocation = "Melbourne, VIC, AU";
+    const mockTimeAccessed = new Date("2022-01-01 05:51:30.000 UTC");
 
-    // // Insert all records except the last to be able to demonstrate incomplete download log
-    // for (const file of manifest.objects.slice(0, -1)) {
-    //   await this.auditLogService.updateDataAccessAuditEvent({
-    //     executor: this.edgeDbClient,
-    //     releaseKey: releaseKey,
-    //     whoId: ipAddress,
-    //     whoDisplayName: ipLocation,
-    //     fileUrl: file.objectStoreUrl,
-    //     description: "Data read from presigned URL.",
-    //     egressBytes: Number(file.objectSize),
-    //     date: mockTimeAccessed,
-    //   });
-    // }
+    // Insert all records except the last to be able to demonstrate incomplete download log
+    for (const file of manifest.objects.slice(0, -1)) {
+      await updateReleaseDataEgress(this.edgeDbClient, {
+        releaseKey,
+        auditId: newAuditEventId,
+        description: "Accessed via pre-signed URL",
+        sourceIpAddress: ipAddress,
+        sourceLocation: ipLocation,
+        fileUrl: file.objectStoreUrl,
+        egressBytes: Number(file.objectSize),
+        occurredDateTime: mockTimeAccessed,
+      });
+    }
 
-    // // Insert first record twice to show multiple-download in UI
-    // await this.auditLogService.updateDataAccessAuditEvent({
-    //   executor: this.edgeDbClient,
-    //   releaseKey: releaseKey,
-    //   whoId: ipAddress,
-    //   whoDisplayName: ipLocation,
-    //   fileUrl: manifest.objects[0].objectStoreUrl,
-    //   description: "Data read from presigned URL.",
-    //   egressBytes: Number(manifest.objects[0].objectSize),
-    //   date: mockTimeAccessed,
-    // });
+    // Insert first record twice to show multiple-download in UI
+    await updateReleaseDataEgress(this.edgeDbClient, {
+      releaseKey,
+      auditId: newAuditEventId,
+      description: "Accessed via pre-signed URL",
+      sourceIpAddress: ipAddress,
+      sourceLocation: ipLocation,
+      fileUrl: manifest.objects[0].objectStoreUrl,
+      egressBytes: Number(manifest.objects[0].objectSize),
+      occurredDateTime: mockTimeAccessed,
+    });
 
-    // // Insert last record to be incomplete
-    // const lastFile = manifest.objects.pop();
-    // if (lastFile) {
-    //   await this.auditLogService.updateDataAccessAuditEvent({
-    //     executor: this.edgeDbClient,
-    //     releaseKey: releaseKey,
-    //     whoId: ipAddress,
-    //     whoDisplayName: ipLocation,
-    //     fileUrl: lastFile.objectStoreUrl,
-    //     description: "Data read from presigned URL.",
-    //     egressBytes: Math.floor(Number(lastFile.objectSize) / 2),
-    //     date: mockTimeAccessed,
-    //   });
-    // }
+    // Insert last record to be incomplete
+    const lastFile = manifest.objects.pop();
+    if (lastFile) {
+      await updateReleaseDataEgress(this.edgeDbClient, {
+        releaseKey,
+        auditId: newAuditEventId,
+        description: "Accessed via pre-signed URL",
+        sourceIpAddress: ipAddress,
+        sourceLocation: ipLocation,
+        fileUrl: lastFile.objectStoreUrl,
+        egressBytes: Math.floor(Number(lastFile.objectSize) / 2),
+        occurredDateTime: mockTimeAccessed,
+      });
+    }
 
     /* ************************************************************************ */
 

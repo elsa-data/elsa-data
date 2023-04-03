@@ -38,6 +38,8 @@ type CloudTrailLakeResponseType = {
   bucketName: string;
   key: string;
   bytesTransferredOut: string;
+  releaseKey: string;
+  auditId: string;
 };
 
 @injectable()
@@ -196,7 +198,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
       await updateReleaseDataEgress(this.edgeDbClient, {
         releaseKey,
         description,
-        releaseCounter: 0,
+        auditId: trailEvent.auditId,
 
         occurredDateTime: utcDate,
         sourceIpAddress: trailEvent.sourceIPAddress,
@@ -250,6 +252,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     props: CloudTrailInputQueryType & { releaseKey: string }
   ): string {
     const requestedField =
+      "element_at(requestParameters, 'x-auditId') as auditId, " +
       "element_at(requestParameters, 'x-releaseKey') as releaseKey, " +
       "eventTime, " +
       "sourceIPAddress, " +
