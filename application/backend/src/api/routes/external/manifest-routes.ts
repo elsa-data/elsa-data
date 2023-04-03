@@ -9,6 +9,7 @@ import {
   ManifestHtsgetResponseType,
 } from "../../../business/services/manifests/htsget/manifest-htsget-types";
 import { ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
+import { ManifestHtsgetStorageNotEnabled } from "../../../business/exceptions/manifest-htsget";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,
@@ -34,6 +35,10 @@ export const manifestRoutes = async (
       },
     },
     async function (request, reply) {
+      if (request.query.type === "GCP" || request.query.type === "R2") {
+        throw new ManifestHtsgetStorageNotEnabled();
+      }
+
       const releaseKey = request.params.releaseKey;
 
       const manifestService = opts.container.resolve<ManifestHtsgetService>(
