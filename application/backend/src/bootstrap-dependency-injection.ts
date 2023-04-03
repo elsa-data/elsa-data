@@ -22,6 +22,9 @@ import { AwsAccessPointService } from "./business/services/aws/aws-access-point-
 import { AwsCloudTrailLakeService } from "./business/services/aws/aws-cloudtrail-lake-service";
 import { GcpEnabledService } from "./business/services/gcp-enabled-service";
 import { GcpStorageSharingService } from "./business/services/gcp-storage-sharing-service";
+import { S3 } from "./business/services/cloud-storage-service";
+import { ManifestService } from "./business/services/manifests/manifest-service";
+import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 
 /**
  * Bootstrap the DI with some basic services that are
@@ -109,7 +112,10 @@ export function bootstrapDependencyInjection() {
   dc.registerSingleton(GcpStorageSharingService);
   dc.registerSingleton(GcpPresignedUrlsService);
   dc.registerSingleton(CloudflarePresignedUrlsService);
+  dc.registerSingleton(ManifestService);
   dc.registerSingleton(PresignedUrlsService);
+
+  dc.registerSingleton<S3ManifestHtsgetService>(S3, S3ManifestHtsgetService);
 
   return dc;
 }

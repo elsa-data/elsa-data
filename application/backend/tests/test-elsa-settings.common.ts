@@ -22,6 +22,9 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   mailer: {
     mode: "None",
   },
+  htsget: {
+    manifestTTL: { seconds: 86400 },
+  },
   deployedUrl: "http://localhost:3000",
   serviceDiscoveryNamespace: "elsa-data",
   datasets: [

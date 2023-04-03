@@ -22,7 +22,7 @@ export class ManifestHtsgetError extends Base7807Error {
   }
 }
 
-export class HtsgetNotAllowed extends Base7807Error {
+export class ManifestHtsgetNotAllowed extends Base7807Error {
   constructor() {
     super("not allowed", 404, "htsget is not allowed for this release");
   }

@@ -1,6 +1,5 @@
 import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
-import { ManifestService } from "../../../business/services/manifests/manifest-service";
 import {
   ManifestHtsgetParamsSchema,
   ManifestHtsgetParamsType,
@@ -9,6 +8,7 @@ import {
   ManifestHtsgetResponseSchema,
   ManifestHtsgetResponseType,
 } from "../../../business/services/manifests/htsget/manifest-htsget-types";
+import { ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,
@@ -16,8 +16,6 @@ export const manifestRoutes = async (
     container: DependencyContainer;
   }
 ) => {
-  const manifestService = opts.container.resolve(ManifestService);
-
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
   fastify.get<{
@@ -38,10 +36,11 @@ export const manifestRoutes = async (
     async function (request, reply) {
       const releaseKey = request.params.releaseKey;
 
-      const output = await manifestService.publishHtsgetManifest(
-        request.query.type,
-        releaseKey
+      const manifestService = opts.container.resolve<ManifestHtsgetService>(
+        request.query.type
       );
+
+      const output = await manifestService.publishHtsgetManifest(releaseKey);
       reply.send(output);
     }
   );

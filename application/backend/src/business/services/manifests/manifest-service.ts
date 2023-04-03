@@ -2,44 +2,20 @@ import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
-import {
-  releaseGetSpecimenTreeAndFileArtifacts,
-  releaseIsActivated,
-  releaseIsAllowedHtsget,
-} from "../../../../dbschema/queries";
+import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
-import { transformMasterManifestToHtsgetManifest } from "./htsget/manifest-htsget-helper";
-import {
-  ManifestHtsgetResponseType,
-  ManifestHtsgetType,
-} from "./htsget/manifest-htsget-types";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
 import { ManifestBucketKeyType } from "./manifest-bucket-key-types";
-import {
-  CloudStorageFactory,
-  CloudStorageType,
-} from "../cloud-storage-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
-import { NotFound } from "@aws-sdk/client-s3";
-import { add, isPast } from "date-fns";
-import {
-  HtsgetNotAllowed,
-  ManifestHtsgetEndpointNotEnabled,
-  ManifestHtsgetError,
-  ManifestHtsgetStorageNotEnabled,
-} from "../../exceptions/manifest-htsget";
-import { AuditLogService } from "../audit-log-service";
+import { Logger } from "pino";
 
 @injectable()
 export class ManifestService {
-  private static readonly HTSGET_MANIFESTS_FOLDER = "htsget-manifests";
-
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    private readonly cloudStorageFactory: CloudStorageFactory,
-    private readonly auditLogService: AuditLogService
+    @inject("Logger") private logger: Logger
   ) {}
 
   /**
@@ -93,102 +69,6 @@ export class ManifestService {
     });
 
     return transformDbManifestToMasterManifest(manifest);
-  }
-
-  public async getActiveHtsgetManifest(
-    releaseKey: string
-  ): Promise<ManifestHtsgetType | null> {
-    const masterManifest = await this.getActiveManifest(releaseKey);
-
-    // TODO fix exceptions here
-    if (!masterManifest) return null;
-
-    return transformMasterManifestToHtsgetManifest(masterManifest);
-  }
-
-  async publishHtsgetManifestAuditFn(
-    type: CloudStorageType,
-    releaseKey: string,
-    completeAuditFn: (executor: Executor, details: any) => Promise<void>
-  ): Promise<ManifestHtsgetResponseType> {
-    const activated = await releaseIsActivated(this.edgeDbClient, {
-      releaseKey,
-    });
-    const allowed = await releaseIsAllowedHtsget(this.edgeDbClient, {
-      releaseKey,
-    });
-
-    if (!activated?.isActivated || !allowed?.isAllowedHtsget) {
-      throw new HtsgetNotAllowed();
-    }
-
-    const storage = this.cloudStorageFactory.getStorage(type);
-
-    if (storage === null) {
-      throw new ManifestHtsgetStorageNotEnabled();
-    }
-
-    if (this.settings.htsget === undefined || this.settings.aws === undefined) {
-      throw new ManifestHtsgetEndpointNotEnabled();
-    }
-
-    let shouldUpdate = false;
-    try {
-      // Should htsget have its own bucket, or is the tempBucket okay?
-      const head = await storage.head(this.settings.aws.tempBucket, releaseKey);
-
-      shouldUpdate =
-        head.lastModified === undefined ||
-        isPast(add(head.lastModified, this.settings.htsget.manifestTTL));
-    } catch (error) {
-      if (error instanceof NotFound) {
-        shouldUpdate = true;
-      } else {
-        throw error;
-      }
-    }
-
-    if (shouldUpdate) {
-      const manifest = await this.getActiveHtsgetManifest(releaseKey);
-
-      if (manifest === null) {
-        throw new ManifestHtsgetError();
-      }
-
-      await storage.put(
-        this.settings.aws.tempBucket,
-        `${ManifestService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`,
-        manifest.toString()
-      );
-    }
-
-    const output = {
-      location: {
-        bucket: this.settings.aws.tempBucket,
-        key: releaseKey,
-      },
-      cached: !shouldUpdate,
-    };
-
-    await completeAuditFn(this.edgeDbClient, output);
-
-    return output;
-  }
-
-  public async publishHtsgetManifest(
-    type: CloudStorageType,
-    releaseKey: string
-  ): Promise<ManifestHtsgetResponseType> {
-    return await this.auditLogService.systemAuditEventPattern(
-      "publish htsget manifest",
-      async (completeAuditFn) => {
-        return await this.publishHtsgetManifestAuditFn(
-          type,
-          releaseKey,
-          completeAuditFn
-        );
-      }
-    );
   }
 
   public async createTsvManifest(masterManifest: ManifestMasterType) {}
