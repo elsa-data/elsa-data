@@ -1,5 +1,5 @@
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { Logger } from "pino";
 
 /**
@@ -7,7 +7,6 @@ import { Logger } from "pino";
  * AWS.
  */
 @injectable()
-@singleton()
 export class AwsEnabledService {
   private enabled?: boolean;
 

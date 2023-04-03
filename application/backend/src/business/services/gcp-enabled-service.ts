@@ -1,9 +1,8 @@
 import { GoogleAuth } from "google-auth-library";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { Logger } from "pino";
 
 @injectable()
-@singleton()
 export class GcpEnabledService {
   private enabled?: boolean;
 
