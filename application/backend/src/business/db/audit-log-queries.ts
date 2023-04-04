@@ -1,6 +1,5 @@
 import e from "../../../dbschema/edgeql-js";
 import { audit } from "../../../dbschema/interfaces";
-import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import ReleaseAuditEvent = audit.ReleaseAuditEvent;
 import AuditEvent = audit.AuditEvent;
 import { RouteValidation } from "@umccr/elsa-types";
@@ -42,22 +41,6 @@ export const countAuditLogEntriesForUserQuery = e.params(
     e.count(
       e.select(e.audit.UserAuditEvent, (ae) => ({
         filter: e.op(ae.user_.id, "=", params.userId),
-      }))
-    )
-);
-
-/**
- * An EdgeDb query to count the DataAccessAudit log entries associated
- * with a given release.
- */
-export const countDataAccessAuditLogEntriesQuery = e.params(
-  {
-    releaseKey: e.str,
-  },
-  (params) =>
-    e.count(
-      e.select(e.audit.DataAccessAuditEvent, (da) => ({
-        filter: e.op(da.release_.releaseKey, "=", params.releaseKey),
       }))
     )
 );
@@ -369,43 +352,6 @@ export const pageableAuditLogEntriesForUserQuery = (
       }),
     })
   );
-};
-
-export const selectDataAccessAuditEventByReleaseKeyQuery = (
-  releaseKey: string,
-  limit: number,
-  offset: number,
-  orderByProperty:
-    | keyof DataAccessAuditEvent
-    | "fileUrl"
-    | "fileSize" = "occurredDateTime",
-  orderAscending: boolean = false
-) => {
-  return e.select(e.audit.DataAccessAuditEvent, (da) => ({
-    ...e.audit.DataAccessAuditEvent["*"],
-    fileSize: da.details.size,
-    fileUrl: da.details.url,
-    filter: e.op(da.release_.releaseKey, "=", releaseKey),
-    order_by: [
-      {
-        expression:
-          orderByProperty === "actionCategory"
-            ? e.cast(e.str, da.actionCategory)
-            : orderByProperty === "fileUrl"
-            ? da.details.url
-            : orderByProperty === "fileSize"
-            ? da.details.fileUrl
-            : da[orderByProperty],
-        direction: orderAscending ? e.ASC : e.DESC,
-      },
-      {
-        expression: da.occurredDateTime,
-        direction: e.DESC,
-      },
-    ],
-    limit: limit,
-    offset: offset,
-  }));
 };
 
 /**
