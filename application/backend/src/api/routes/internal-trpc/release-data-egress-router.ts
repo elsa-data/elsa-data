@@ -24,7 +24,7 @@ export const releaseDataEgressRouter = router({
       const { user, pageSize, res: reply } = ctx;
       const { releaseKey, page = 1 } = input;
 
-      return await ctx.releaseDataEgressService.getSummaryDataAccessAuditByReleaseKey(
+      return await ctx.releaseDataEgressService.getSummaryDataEgressByReleaseKey(
         user,
         releaseKey,
         pageSize,
@@ -37,7 +37,7 @@ export const releaseDataEgressRouter = router({
       const { user, pageSize, res: reply } = ctx;
       const { releaseKey, page = 1 } = input;
 
-      return await ctx.releaseDataEgressService.getDataAccessAuditByReleaseKey(
+      return await ctx.releaseDataEgressService.getDataEgressRecordsByReleaseKey(
         user,
         releaseKey,
         pageSize,

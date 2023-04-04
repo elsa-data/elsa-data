@@ -5,7 +5,6 @@ import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
-import { AuditDataAccessType } from "@umccr/elsa-types";
 import {
   createPagedResult,
   PagedResult,
@@ -17,7 +16,7 @@ import {
   getReleaseDataEgressSummary,
   releaseGetByReleaseKey,
 } from "../../../dbschema/queries";
-import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
+import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
 import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
 import { AwsCloudTrailLakeService } from "./aws-cloudtrail-lake-service";
 
@@ -41,7 +40,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
     if (isPermissionAllow) return;
 
-    throw new NotAuthorisedSyncDataAccessEvents();
+    throw new NotAuthorisedSyncDataEgressRecords();
   }
 
   public async syncDataEgressByReleaseKey(
@@ -65,7 +64,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     });
   }
 
-  public async getSummaryDataAccessAuditByReleaseKey(
+  public async getSummaryDataEgressByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string,
     limit: number,
@@ -91,7 +90,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
   }
 
-  public async getDataAccessAuditByReleaseKey(
+  public async getDataEgressRecordsByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string,
     limit: number,

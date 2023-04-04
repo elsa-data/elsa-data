@@ -63,7 +63,7 @@ it("audit data access log", async () => {
     }))
     .run(edgeDbClient);
 
-  const res = await releaseDataEgressService.getDataAccessAuditByReleaseKey(
+  const res = await releaseDataEgressService.getDataEgressRecordsByReleaseKey(
     allowedAdministratorUser,
     testReleaseKey,
     10,

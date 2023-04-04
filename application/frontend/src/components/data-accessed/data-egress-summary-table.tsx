@@ -33,7 +33,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const dataAccessQuery = trpc.releaseDataEgress.dataEgressSummary.useQuery(
+  const dataEgressQuery = trpc.releaseDataEgress.dataEgressSummary.useQuery(
     { releaseKey, page: currentPage },
     {
       onSuccess: (res) => {
@@ -42,8 +42,8 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
     }
   );
 
-  const data = dataAccessQuery.data?.data;
-  if (isNil(data) && dataAccessQuery.isSuccess) return <>No Data Found!</>;
+  const data = dataEgressQuery.data?.data;
+  if (isNil(data) && dataEgressQuery.isSuccess) return <>No Data Found!</>;
 
   return (
     <>
@@ -58,7 +58,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
           </tr>
         </thead>
         <tbody>
-          {dataAccessQuery.isSuccess &&
+          {dataEgressQuery.isSuccess &&
             data &&
             data.map((row, rowIdx) => (
               <tr key={`body-row-${rowIdx}`}>
@@ -89,10 +89,10 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
             ))}
         </tbody>
       </table>
-      {dataAccessQuery.isError && (
+      {dataEgressQuery.isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching audit logs."}
-          error={dataAccessQuery.error}
+          error={dataEgressQuery.error}
           styling={"bg-red-100"}
         />
       )}
@@ -101,7 +101,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
         setPage={(n) => setCurrentPage(n)}
         rowCount={currentTotal}
         rowsPerPage={pageSize}
-        rowWord="dataAccess"
+        rowWord="dataEgress"
       />
     </>
   );

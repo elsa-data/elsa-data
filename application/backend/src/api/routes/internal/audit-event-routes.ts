@@ -12,7 +12,6 @@ import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
 import AuditEvent = audit.AuditEvent;
 import {
-  AuditDataAccessType,
   AuditEventDetailsType,
   AuditEventType,
   AuditEventFullType,

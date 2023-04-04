@@ -1,13 +1,13 @@
 import React from "react";
-import { DataAccessSummaryBox } from "./data-egress-summary-box";
+import { DataEgressSummaryBox } from "./data-egress-summary-box";
 import { useReleasesMasterData } from "../releases-types";
 
-export const DataAccessSummarySubPage = () => {
+export const DataEgressSummarySubPage = () => {
   const { releaseKey, releaseData } = useReleasesMasterData();
 
   return (
     <>
-      <DataAccessSummaryBox releaseKey={releaseKey} />
+      <DataEgressSummaryBox releaseKey={releaseKey} />
     </>
   );
 };

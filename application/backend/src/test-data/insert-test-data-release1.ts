@@ -209,7 +209,7 @@ function makeSytheticAuditLog() {
 }
 
 const makeSyntheticDataEgressRecord = async () => {
-  const makeDataAccessLog = async (fileUrl: string) => {
+  const makeDataEgressLog = async (fileUrl: string) => {
     return {
       auditId: "0f8e7694-d1eb-11ed-afa1-0242ac120002",
       occurredDateTime: e.datetime(new Date()),
@@ -224,7 +224,7 @@ const makeSyntheticDataEgressRecord = async () => {
   };
 
   return e.set(
-    e.insert(e.release.DataEgressRecord, await makeDataAccessLog(MARGE_BAM_S3)),
-    e.insert(e.release.DataEgressRecord, await makeDataAccessLog(MARGE_BAI_S3))
+    e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAM_S3)),
+    e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAI_S3))
   );
 };

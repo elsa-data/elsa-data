@@ -10,7 +10,7 @@ import { EagerErrorBoundary } from "../../../components/errors";
 import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
 
-export const DataAccessSummaryBox = ({
+export const DataEgressSummaryBox = ({
   releaseKey,
 }: {
   releaseKey: string;

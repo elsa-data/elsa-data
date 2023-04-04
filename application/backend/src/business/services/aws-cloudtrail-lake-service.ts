@@ -14,7 +14,7 @@ import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
 import { touchRelease } from "../db/release-queries";
-import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
+import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
 import {
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
@@ -60,7 +60,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
     if (isPermissionAllow) return;
 
-    throw new NotAuthorisedSyncDataAccessEvents();
+    throw new NotAuthorisedSyncDataEgressRecords();
   }
 
   async getEventDataStoreIdFromDatasetUris(
