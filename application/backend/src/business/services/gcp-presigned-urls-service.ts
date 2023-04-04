@@ -1,18 +1,14 @@
 import * as edgedb from "edgedb";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
-import { GcpBaseService } from "./gcp-base-service";
-import { AuditLogService } from "./audit-log-service";
+import { GcpEnabledService } from "./gcp-enabled-service";
 import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { IPresignedUrlProvider } from "./presigned-urls-service";
-import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
+import { GetSignedUrlConfig, Storage } from "@google-cloud/storage";
 
 @injectable()
-export class GcpPresignedUrlsService
-  extends GcpBaseService
-  implements IPresignedUrlProvider
-{
+export class GcpPresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "gs";
   storage: Storage;
 
@@ -20,11 +16,14 @@ export class GcpPresignedUrlsService
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject("Settings") private settings: ElsaSettings,
     private releaseService: ReleaseService,
-    usersService: UsersService
+    usersService: UsersService,
+    private readonly gcpEnabledService: GcpEnabledService
   ) {
-    super();
-
     this.storage = new Storage();
+  }
+
+  public async isEnabled(): Promise<boolean> {
+    return await this.gcpEnabledService.isEnabled();
   }
 
   async presign(
@@ -32,6 +31,8 @@ export class GcpPresignedUrlsService
     bucket: string,
     key: string
   ): Promise<string> {
+    await this.gcpEnabledService.enabledGuard();
+
     const options: GetSignedUrlConfig = {
       version: "v4",
       action: "read",

@@ -1,21 +1,23 @@
-import e from "../../../dbschema/edgeql-js";
-import { collapseExternalIds } from "./helpers";
-import { Executor } from "edgedb";
+import {
+  collapseExternalIds,
+  doRoleInReleaseCheck,
+  getReleaseInfo,
+} from "./helpers";
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UsersService } from "./users-service";
 import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 
-  // note that we are processing here every artifact that is accessible from
-  // the chosen specimens
-  // below we apply some simple logic that will rule out classes of artifacts
-  // based on the isAllowedReadData, isAllowedVariantData etc
+// note that we are processing here every artifact that is accessible from
+// the chosen specimens
+// below we apply some simple logic that will rule out classes of artifacts
+// based on the isAllowedReadData, isAllowedVariantData etc
 export const unpackFileArtifact = (
   fileArtifact: any,
   includeReadData: boolean = true,
-  includeVariantData: boolean = true,
+  includeVariantData: boolean = true
 ): Pick<
   ManifestBucketKeyObjectType,
   | "artifactId"
@@ -37,11 +39,7 @@ export const unpackFileArtifact = (
 
   const getRaw = (): Pick<
     ManifestBucketKeyObjectType,
-    | "artifactId"
-    | "md5"
-    | "objectSize"
-    | "objectStoreUrl"
-    | "objectType"
+    "artifactId" | "md5" | "objectSize" | "objectStoreUrl" | "objectType"
   > | null => {
     if (fileArtifact.bclFile) {
       if (!includeReadData) return null;
@@ -127,15 +125,13 @@ export const unpackFileArtifact = (
     }
 
     return null;
-  }
+  };
 
   const raw = getRaw();
 
   if (raw) {
     // decompose the object URL into protocol, bucket and key
-    const match = raw.objectStoreUrl.match(
-      /^([^:]+):\/\/([^\/]+)\/(.+)$/
-    );
+    const match = raw.objectStoreUrl.match(/^([^:]+):\/\/([^\/]+)\/(.+)$/);
 
     if (!match) {
       throw new Error(`Bad URL format: ${raw.objectStoreUrl}`);
@@ -146,7 +142,7 @@ export const unpackFileArtifact = (
       objectStoreProtocol: match[1],
       objectStoreBucket: match[2],
       objectStoreKey: match[3],
-    }
+    };
   }
 
   return null;

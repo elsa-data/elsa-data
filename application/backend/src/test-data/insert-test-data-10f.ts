@@ -1,10 +1,9 @@
-import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import {
   createArtifacts,
-  makeSystemlessIdentifierArray,
   createFile,
   makeSystemlessIdentifier,
+  makeSystemlessIdentifierArray,
 } from "./test-data-helpers";
 import { makeSimpsonsTrio } from "./insert-test-data-10f-simpsons";
 import { makeTrio, TENF_URI } from "./insert-test-data-10f-helpers";

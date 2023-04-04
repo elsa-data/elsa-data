@@ -3,4 +3,7 @@
   ontoFhirUrl: "https://server.com/fhir",
   // JSON5 supports trailing ,
   port: 8000,
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org",
+  },
 }

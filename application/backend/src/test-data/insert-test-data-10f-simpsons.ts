@@ -1,10 +1,10 @@
 import { createFile } from "./test-data-helpers";
 import {
-  makeTrio,
   CORIELL_CELL_SYSTEM,
   CORIELL_DNA_SYSTEM,
   CORIELL_FAMILY_SYSTEM,
   GIAB_FAMILY_SYSTEM,
+  makeTrio,
   PGP_SYSTEM,
   THOUSAND_GENOMES_SYSTEM,
 } from "./insert-test-data-10f-helpers";

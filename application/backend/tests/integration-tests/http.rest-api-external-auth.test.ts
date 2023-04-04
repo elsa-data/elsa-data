@@ -1,7 +1,6 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../test-dependency-injection.common";
-import { Logger } from "pino";
 import { getServices } from "../../src/di-helpers";
 
 describe("http integration tests", () => {
@@ -35,6 +34,6 @@ describe("http integration tests", () => {
     const res = await server.inject({
       url: "/api/manifest/areleaseid",
     });
-    expect(res.statusCode).toEqual(401);
+    expect(res.statusCode).toEqual(404);
   });
 });

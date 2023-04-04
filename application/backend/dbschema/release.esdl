@@ -91,6 +91,9 @@ module release {
         required property isAllowedGSData -> bool { default := false };
         required property isAllowedR2Data -> bool { default := false };
 
+        # is the htsget sharing functionality enabled
+        required property isAllowedHtsget -> bool { default := false };
+
         # if present indicates that a running job is active in the context of this release
         #
         optional link runningJob := (

@@ -1,11 +1,4 @@
-import {
-  Static,
-  TLiteral,
-  TSchema,
-  TString,
-  TUnion,
-  Type,
-} from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
 import { StringUnion, TypeDate } from "./typebox-helpers";
 
@@ -89,6 +82,15 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedS3Data: Type.Boolean(),
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
+
+  // Is htsget allowed in the database, e.g. by switching the htsget checkbox in the further restrictions page.
+  isAllowedHtsget: Type.Boolean(),
+  // If this value is undefined, then htsgeti s not enabled in the config.
+  htsgetConfig: Type.Optional(
+    Type.Object({
+      url: Type.String(),
+    })
+  ),
 
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),

@@ -1,5 +1,4 @@
 import { insertTestData } from "./test-data/insert-test-data";
-import { getFromEnv } from "./entrypoint-command-helper";
 import { DependencyContainer } from "tsyringe";
 
 export const ADD_SCENARIO_COMMAND = "add-scenario";

@@ -1,5 +1,4 @@
-import * as edgedb from "edgedb";
-import { Client, Duration } from "edgedb";
+import { Duration } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,

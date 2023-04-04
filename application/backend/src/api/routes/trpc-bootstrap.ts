@@ -12,11 +12,11 @@ import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
-import { AwsAccessPointService } from "../../business/services/aws-access-point-service";
 import * as edgedb from "edgedb";
 import { currentPageSize } from "../helpers/pagination-helpers";
 import { ReleaseDataEgressService } from "../../business/services/release-data-egress-service";
-import { AwsCloudTrailLakeService } from "../../business/services/aws-cloudtrail-lake-service";
+import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
+import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for

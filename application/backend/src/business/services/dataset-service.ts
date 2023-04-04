@@ -1,5 +1,4 @@
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
   DatasetDeepType,
@@ -7,7 +6,7 @@ import {
   DuoLimitationCodedType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
   createPagedResult,
   PagedResult,
@@ -17,8 +16,8 @@ import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
   datasetAllSummaryQuery,
-  singleDatasetSummaryQuery,
   selectDatasetIdByDatasetUri,
+  singleDatasetSummaryQuery,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";

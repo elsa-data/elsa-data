@@ -22,6 +22,10 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   mailer: {
     mode: "None",
   },
+  htsget: {
+    maxAge: 86400,
+    url: new URL("https://htsget.elsa.dev.umccr.org"),
+  },
   deployedUrl: "http://localhost:3000",
   serviceDiscoveryNamespace: "elsa-data",
   datasets: [

@@ -1,12 +1,11 @@
 import e from "../../../dbschema/edgeql-js";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { Client } from "edgedb";
 import { org } from "../../generated/phenopackets";
-
+import { AuthenticatedUser } from "../authenticated-user";
 import Phenopacket = org.phenopackets.schema.v2.Phenopacket;
 import Sex = org.phenopackets.schema.v2.core.Sex;
 import KaryotypicSex = org.phenopackets.schema.v2.core.KaryotypicSex;
-import { AuthenticatedUser } from "../authenticated-user";
 
 @injectable()
 export class PhenopacketsService {

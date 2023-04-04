@@ -4,7 +4,7 @@ import type {
   ManifestHtsgetType,
   ManifestHtsgetVariantsFileType,
 } from "./manifest-htsget-types";
-import { ManifestMasterType } from "./manifest-master-types";
+import { ManifestMasterType } from "../manifest-master-types";
 
 /**
  * Create a structured/tree manifest for the data included in a release.

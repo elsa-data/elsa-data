@@ -5,10 +5,7 @@ import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
+import { createPagedResult } from "../../api/helpers/pagination-helpers";
 
 import {
   countReleaseDataEgress,
@@ -17,8 +14,7 @@ import {
   releaseGetByReleaseKey,
 } from "../../../dbschema/queries";
 import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
-import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
-import { AwsCloudTrailLakeService } from "./aws-cloudtrail-lake-service";
+import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -28,12 +24,12 @@ import { AwsCloudTrailLakeService } from "./aws-cloudtrail-lake-service";
 export class ReleaseDataEgressService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
+    @inject("Settings") settings: ElsaSettings,
     private awsCloudTrailLakeService: AwsCloudTrailLakeService,
     private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
-    super(edgeDbClient, usersService);
+    super(settings, edgeDbClient, usersService);
   }
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {

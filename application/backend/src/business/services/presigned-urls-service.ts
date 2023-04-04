@@ -1,9 +1,9 @@
 import * as edgedb from "edgedb";
-import { inject, injectAll, injectable } from "tsyringe";
+import { inject, injectable, injectAll } from "tsyringe";
 import { ElsaSettings } from "../../config/elsa-settings";
 
 export interface IPresignedUrlProvider {
-  isEnabled: boolean;
+  isEnabled(): Promise<boolean>;
   protocol: string;
   presign(
     releaseKey: string,
@@ -22,8 +22,13 @@ export class PresignedUrlsService {
     private readonly presignedUrlsServices: IPresignedUrlProvider[]
   ) {}
 
-  public get isEnabled(): boolean {
-    return this.presignedUrlsServices.some((p) => p.isEnabled);
+  public async isEnabled(): Promise<boolean> {
+    for (const service of this.presignedUrlsServices) {
+      if (await service.isEnabled()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public async presign(

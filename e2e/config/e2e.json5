@@ -12,4 +12,7 @@
     clientId: "cilogon:/client_id/53eda5a561fa1d514dbdc94202b5bf9f",
     clientSecret: "notavalidsecert", // pragma: allowlist secret
   },
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org",
+  },
 }

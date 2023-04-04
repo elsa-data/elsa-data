@@ -1,6 +1,4 @@
-import { AwsCloudTrailLakeService } from "../../src/business/services/aws-cloudtrail-lake-service";
 import e from "../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
 import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { beforeEachCommon } from "./releases.common";
@@ -10,6 +8,7 @@ import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
+import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
 
 const testContainer = registerTypes();
 

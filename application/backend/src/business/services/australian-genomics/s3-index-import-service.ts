@@ -1,42 +1,41 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
 import e from "../../../../dbschema/edgeql-js";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
-  S3ObjectMetadata,
   awsListObjects,
   readObjectToStringFromS3Url,
-} from "../aws-helper";
+  S3ObjectMetadata,
+} from "../aws/aws-helper";
 import {
-  File,
   ArtifactType,
-  insertArtifactFastqPairQuery,
-  insertArtifactBamQuery,
-  insertArtifactVcfQuery,
-  insertArtifactCramQuery,
-  fastqArtifactStudyIdAndFileIdByDatasetIdQuery,
   bamArtifactStudyIdAndFileIdByDatasetIdQuery,
-  vcfArtifactStudyIdAndFileIdByDatasetIdQuery,
   cramArtifactStudyIdAndFileIdByDatasetIdQuery,
+  fastqArtifactStudyIdAndFileIdByDatasetIdQuery,
+  File,
+  insertArtifactBamQuery,
+  insertArtifactCramQuery,
+  insertArtifactFastqPairQuery,
+  insertArtifactVcfQuery,
+  vcfArtifactStudyIdAndFileIdByDatasetIdQuery,
 } from "../../db/lab-queries";
 import { fileByFileIdQuery, fileByUrlQuery } from "../../db/storage-queries";
 import {
-  makeSystemlessIdentifierArray,
   getMd5FromChecksumsArray,
+  makeSystemlessIdentifierArray,
 } from "../../db/helper";
 import { isNil } from "lodash";
 import {
-  selectPedigreeByDatasetCaseIdQuery,
   insertPedigreeByDatasetCaseIdQuery,
-  updatePedigreeProbandAndDatasetPatientQuery,
+  selectPedigreeByDatasetCaseIdQuery,
   updatePedigreeMaternalRelationshipQuery,
   updatePedigreePaternalRelationshipQuery,
+  updatePedigreeProbandAndDatasetPatientQuery,
 } from "../../db/pedigree-queries";
 import {
-  selectDatasetPatientByExternalIdentifiersQuery,
   selectDatasetCaseByExternalIdentifiersQuery,
   selectDatasetIdByDatasetUri,
+  selectDatasetPatientByExternalIdentifiersQuery,
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";

@@ -4,7 +4,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";

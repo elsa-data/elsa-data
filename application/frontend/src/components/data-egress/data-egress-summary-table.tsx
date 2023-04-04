@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { fileSize } from "humanize-plus";
 import { isNil } from "lodash";
-import { faInfo } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { EagerErrorBoundary } from "../errors";
 import { BoxPaginator } from "../box-paginator";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";

@@ -1,5 +1,5 @@
 import { registerTypes } from "../test-dependency-injection.common";
-import { AwsDiscoveryService } from "../../src/business/services/aws-discovery-service";
+import { AwsDiscoveryService } from "../../src/business/services/aws/aws-discovery-service";
 
 const testContainer = registerTypes();
 

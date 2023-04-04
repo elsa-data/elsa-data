@@ -1,4 +1,4 @@
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
 import { parseUrl } from "@aws-sdk/url-parser";
@@ -14,10 +14,9 @@ export class CloudflarePresignedUrlsService implements IPresignedUrlProvider {
 
   constructor(@inject("Settings") private settings: ElsaSettings) {}
 
-  public get isEnabled() {
+  public async isEnabled(): Promise<boolean> {
     return !!this.settings.cloudflare;
   }
-
   async presign(
     releaseKey: string,
     bucket: string,

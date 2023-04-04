@@ -1,4 +1,3 @@
-import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { insert10G } from "./insert-test-data-10g";
 import { createTestUser, insertBlankDataset } from "./test-data-helpers";
@@ -10,7 +9,6 @@ import { insertRelease2 } from "./insert-test-data-release2";
 import { insertRelease3 } from "./insert-test-data-release3";
 import { insertRelease4 } from "./insert-test-data-release4";
 import { insertRelease5 } from "./insert-test-data-release5";
-import { ElsaSettings } from "../config/elsa-settings";
 import {
   TEST_SUBJECT_1,
   TEST_SUBJECT_1_DISPLAY,

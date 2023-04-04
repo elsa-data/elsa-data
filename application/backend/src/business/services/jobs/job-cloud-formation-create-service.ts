@@ -3,7 +3,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import {
@@ -16,8 +16,9 @@ import {
   CreateStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
-import { AwsAccessPointService } from "../aws-access-point-service";
+import { AwsAccessPointService } from "../aws/aws-access-point-service";
 import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
+import { AwsEnabledService } from "../aws/aws-enabled-service";
 
 /**
  * A service for performing long-running operations creating new
@@ -30,7 +31,8 @@ export class JobCloudFormationCreateService extends JobsService {
     auditLogService: AuditLogService,
     releaseService: ReleaseService,
     selectService: SelectService,
-    @inject("CloudFormationClient") private cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") private cfnClient: CloudFormationClient,
+    private readonly awsEnabledService: AwsEnabledService
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);
   }
@@ -45,6 +47,8 @@ export class JobCloudFormationCreateService extends JobsService {
     releaseKey: string,
     s3HttpsUrl: string
   ): Promise<ReleaseDetailType> {
+    await this.awsEnabledService.enabledGuard();
+
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
