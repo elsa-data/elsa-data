@@ -441,7 +441,7 @@ ${release.applicantEmailAddresses}
 
     if (
       type === "isAllowedHtsget" &&
-      !this.isFeatureEnabled("isAllowedHtsget")
+      this.configForFeature("isAllowedHtsget") === undefined
     ) {
       throw new ReleaseHtsgetNotConfigured();
     }

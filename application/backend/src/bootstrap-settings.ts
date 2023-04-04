@@ -96,7 +96,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
     oidcIssuer: issuer,
-    htsget: config.get("htsget.enabled")
+    htsget: config.get("htsget.url")
       ? {
           manifestTTL: { seconds: config.get("htsget.manifestTTL") },
           url: new URL(config.get("htsget.url")),

@@ -7,7 +7,6 @@ import {
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
-  USER_HTSGET_URL,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
@@ -239,13 +238,6 @@ export const apiAuthRoutes = async (
           await reply.generateCsrf()
         );
 
-        cookieForUI(
-          request,
-          reply,
-          USER_HTSGET_URL,
-          settings.htsget?.url.toString()
-        );
-
         reply.redirect("/");
       });
     };
@@ -361,13 +353,6 @@ export const callbackRoutes = async (
       reply,
       CSRF_TOKEN_COOKIE_NAME,
       await reply.generateCsrf()
-    );
-
-    cookieForUI(
-      request,
-      reply,
-      USER_HTSGET_URL,
-      settings.htsget?.url.toString()
     );
 
     reply.redirect("/");

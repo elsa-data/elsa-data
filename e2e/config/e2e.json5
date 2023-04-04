@@ -13,6 +13,6 @@
     clientSecret: "notavalidsecert", // pragma: allowlist secret
   },
   htsget: {
-    url: "https://htsget.elsa.dev.umccr.org/",
+    url: "https://htsget.elsa.dev.umccr.org",
   },
 }

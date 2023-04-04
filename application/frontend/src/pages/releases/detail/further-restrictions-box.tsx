@@ -136,7 +136,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
         <RightDiv>
           <RhChecks label="Access Via">
             {isAllowedCheck("Presigned URLs (always enabled)", null, true)}
-            {!releaseData.isHtsgetEnabled
+            {!releaseData.isHtsgetEnabledInConfig
               ? isAllowedCheck("htsget (disabled in config)", null, false)
               : isAllowedCheck(
                   "htsget",

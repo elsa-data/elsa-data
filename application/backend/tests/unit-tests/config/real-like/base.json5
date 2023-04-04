@@ -4,6 +4,6 @@
   // JSON5 supports trailing ,
   port: 8000,
   htsget: {
-    url: "https://htsget.elsa.dev.umccr.org/",
+    url: "https://htsget.elsa.dev.umccr.org",
   },
 }

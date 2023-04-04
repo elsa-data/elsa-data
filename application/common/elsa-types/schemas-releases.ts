@@ -83,8 +83,14 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
 
+  // Is htsget allowed in the database, e.g. by switching the htsget checkbox in the further restrictions page.
   isAllowedHtsget: Type.Boolean(),
-  isHtsgetEnabled: Type.Boolean(),
+  // If this value is undefined, then htsgeti s not enabled in the config.
+  htsgetConfig: Type.Optional(
+    Type.Object({
+      url: Type.String(),
+    })
+  ),
 
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),

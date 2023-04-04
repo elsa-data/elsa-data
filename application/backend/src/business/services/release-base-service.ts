@@ -86,13 +86,13 @@ export abstract class ReleaseBaseService {
   }
 
   /**
-   * Is a feature enabled in the config. Currently, this can just check for htsget.
-   * It might be good to check this for other features that require config properties to
+   * Get the config for a feature. Currently, this can just get config for htsget.
+   * It might be good to have this for other features that require config properties to
    * be set.
    * @param property
    */
-  public isFeatureEnabled(property: "isAllowedHtsget"): boolean {
-    return this.settings.htsget !== undefined;
+  public configForFeature(property: "isAllowedHtsget"): any | undefined {
+    return { url: this.settings.htsget?.url };
   }
 
   /**
@@ -173,7 +173,7 @@ export abstract class ReleaseBaseService {
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
       isAllowedHtsget: releaseInfo.isAllowedHtsget,
-      isHtsgetEnabled: this.isFeatureEnabled("isAllowedHtsget"),
+      htsgetConfig: this.configForFeature("isAllowedHtsget"),
       // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,

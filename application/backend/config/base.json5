@@ -7,6 +7,6 @@
     issuerUrl: "https://test.cilogon.org",
   },
   htsget: {
-    url: "https://htsget.elsa.dev.umccr.org/",
+    url: "https://htsget.elsa.dev.umccr.org",
   },
 }

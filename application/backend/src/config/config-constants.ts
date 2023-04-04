@@ -73,18 +73,12 @@ export const configDefinition = {
     },
   },
   htsget: {
-    enabled: {
-      doc: "Is the htsget functionality enabled",
-      format: "Boolean",
-      sensitive: false,
-      default: true,
-      env: `${env_prefix}HTSGET_ENABLED`,
-    },
     manifestTTL: {
       doc: "The amount of time that a htsget manifest remains valid in seconds",
       format: "Number",
       sensitive: false,
       default: "86400",
+      nullable: false,
       env: `${env_prefix}HTSGET_MANIFEST_TTL`,
     },
     url: {
@@ -92,7 +86,7 @@ export const configDefinition = {
       format: String,
       sensitive: false,
       default: null,
-      nullable: false,
+      nullable: true,
       env: `${env_prefix}HTSGET_URL`,
     },
   },
