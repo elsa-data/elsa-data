@@ -5,8 +5,6 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import {
-  AuditDataAccessType,
-  AuditDataSummaryType,
   AuditEventDetailsType,
   AuditEventFullType,
   AuditEventType,
@@ -21,11 +19,9 @@ import {
   auditLogFullForIdQuery,
   countAuditLogEntriesForReleaseQuery,
   countAuditLogEntriesForSystemQuery,
-  countDataAccessAuditLogEntriesQuery,
   pageableAuditEventsQuery,
   pageableAuditLogEntriesForReleaseQuery,
   pageableAuditLogEntriesForSystemQuery,
-  selectDataAccessAuditEventByReleaseKeyQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
@@ -39,7 +35,6 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
-import DataAccessAuditEvent = audit.DataAccessAuditEvent;
 import AuditEvent = audit.AuditEvent;
 import ActionType = audit.ActionType;
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
@@ -401,59 +396,6 @@ export class AuditLogService {
       .run(executor);
   }
 
-  /**
-   * Insert DataAccessAudit
-   */
-  public async updateDataAccessAuditEvent({
-    executor,
-    releaseKey,
-    whoId,
-    whoDisplayName,
-    fileUrl,
-    egressBytes,
-    description,
-    date,
-  }: {
-    executor: Executor;
-    releaseKey: string;
-    whoId: string;
-    whoDisplayName: string;
-    fileUrl: string;
-    description: string;
-    egressBytes: number;
-    date: Date;
-  }) {
-    const fileJson = await e
-      .select(e.storage.File, (f) => ({
-        ...f["*"],
-        filter: e.op(f.url, "=", fileUrl),
-      }))
-      .assert_single()
-      .run(executor);
-
-    await e
-      .update(e.release.Release, (r) => ({
-        filter: e.op(r.releaseKey, "=", releaseKey),
-        set: {
-          dataAccessAuditLog: {
-            "+=": e.insert(e.audit.DataAccessAuditEvent, {
-              details: e.json(fileJson),
-              egressBytes: egressBytes,
-              whoId: whoId,
-              whoDisplayName: whoDisplayName,
-              actionCategory: e.audit.ActionType.R,
-              actionDescription: description,
-              occurredDateTime: e.datetime(date),
-              outcome: 0,
-            }),
-          },
-        },
-      }))
-      .run(executor);
-
-    await touchRelease.run(executor, { releaseKey: releaseKey });
-  }
-
   public async getReleaseEntries(
     executor: Executor,
     user: AuthenticatedUser,
@@ -655,141 +597,6 @@ export class AuditLogService {
         details: entry.details,
       };
     }
-  }
-
-  public async getDataAccessAuditByReleaseKey(
-    executor: Executor,
-    user: AuthenticatedUser,
-    releaseKey: string,
-    limit: number,
-    offset: number,
-    orderByProperty:
-      | keyof DataAccessAuditEvent
-      | "fileUrl"
-      | "fileSize" = "occurredDateTime",
-    orderAscending: boolean = false
-  ): Promise<PagedResult<AuditDataAccessType> | null> {
-    await this.checkIsAllowedViewAuditEvents(executor, user, releaseKey);
-
-    const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
-      executor,
-      { releaseKey }
-    );
-
-    const dataAccessLogArray =
-      await selectDataAccessAuditEventByReleaseKeyQuery(
-        releaseKey,
-        limit,
-        offset,
-        orderByProperty,
-        orderAscending
-      ).run(executor);
-
-    return createPagedResult(
-      dataAccessLogArray.map((entry) => ({
-        objectId: entry.id,
-        whoId: entry.whoId,
-        whoDisplayName: entry.whoDisplayName,
-        actionCategory: entry.actionCategory,
-        actionDescription: entry.actionDescription,
-        recordedDateTime: entry.recordedDateTime,
-        updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime.toString(),
-        occurredDuration: entry.occurredDuration?.toString(),
-        outcome: entry.outcome,
-        egressBytes: entry.egressBytes,
-        fileUrl: entry.fileUrl as string,
-        fileSize: entry.fileSize as number,
-      })),
-      totalEntries
-    );
-  }
-
-  sortString(
-    a: Record<string, string | number>,
-    b: Record<string, string | number>,
-    column: string
-  ) {
-    if (a[column] < b[column]) return -1;
-    if (a[column] > b[column]) return 1;
-    return 0;
-  }
-
-  public async getSummaryDataAccessAuditByReleaseKey(
-    executor: Executor,
-    user: AuthenticatedUser,
-    releaseKey: string
-  ): Promise<AuditDataSummaryType[] | null> {
-    await this.checkIsAllowedViewAuditEvents(executor, user, releaseKey);
-
-    // TODO: Make this paginate
-    const totalEntries = await countDataAccessAuditLogEntriesQuery.run(
-      executor,
-      { releaseKey }
-    );
-
-    const dataAccessLogArray =
-      await selectDataAccessAuditEventByReleaseKeyQuery(
-        releaseKey,
-        totalEntries,
-        0,
-        "occurredDateTime",
-        false
-      ).run(executor);
-
-    if (!dataAccessLogArray) return null;
-
-    // Grouping result by fileUrl
-    const groupedByFileUrl = dataAccessLogArray.reduce((group: any, log) => {
-      const fileUrl = log.fileUrl as string;
-
-      group[fileUrl] = group[fileUrl] ?? [];
-      group[fileUrl].push(log);
-      return group;
-    }, {});
-
-    const dataAccessSummaryResult = [];
-    for (const fileUrl in groupedByFileUrl) {
-      const dataAccessEventArray = groupedByFileUrl[fileUrl];
-
-      // Finding last event for that object
-      // In some field we are only interested on the last event.
-      const sortedEvent = dataAccessEventArray.sort((a: any, b: any) =>
-        this.sortString(a, b, "occurredDateTime")
-      );
-      const lastEvent = sortedEvent.at(sortedEvent.length - 1);
-
-      // Total egress (in bytes)
-      let totalEgressBytes: number = 0;
-      for (const log of dataAccessEventArray) {
-        const { egressBytes } = log;
-        totalEgressBytes += egressBytes;
-      }
-
-      // Calculate status of download. Rough indicate if download was complete, incomplete, multi-download
-      let downloadStatus: string;
-      const { fileSize } = lastEvent; // All other should value should be the same
-      if (totalEgressBytes == fileSize) {
-        downloadStatus = "complete";
-      } else if (totalEgressBytes < fileSize) {
-        downloadStatus = "incomplete";
-      } else if (totalEgressBytes > fileSize) {
-        downloadStatus = "multiple-download";
-      } else {
-        downloadStatus = "-";
-      }
-
-      dataAccessSummaryResult.push({
-        target: lastEvent.whoDisplayName,
-        fileUrl: fileUrl,
-        fileSize: fileSize,
-        dataAccessedInBytes: totalEgressBytes,
-        downloadStatus: downloadStatus,
-        lastAccessedTime: lastEvent.occurredDateTime,
-      });
-    }
-
-    return dataAccessSummaryResult;
   }
 
   /**

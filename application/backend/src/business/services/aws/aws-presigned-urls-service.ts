@@ -22,7 +22,8 @@ export class AwsPresignedUrlsService implements IPresignedUrlProvider {
   public async presign(
     releaseKey: string,
     bucket: string,
-    key: string
+    key: string,
+    auditId: string
   ): Promise<string> {
     await this.awsEnabledService.enabledGuard();
 
@@ -49,6 +50,7 @@ export class AwsPresignedUrlsService implements IPresignedUrlProvider {
     );
     s3ObjectUrl.query = {
       "x-releaseKey": releaseKey,
+      "x-auditId": auditId,
     };
 
     const presigner = new S3RequestPresigner({

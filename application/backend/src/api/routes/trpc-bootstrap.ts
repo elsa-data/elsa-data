@@ -13,7 +13,10 @@ import { JobCloudFormationCreateService } from "../../business/services/jobs/job
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
 import * as edgedb from "edgedb";
+import { currentPageSize } from "../helpers/pagination-helpers";
+import { ReleaseDataEgressService } from "../../business/services/release-data-egress-service";
 import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
+import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -49,6 +52,9 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
     });
   }
   ctx.req.log.trace(authedUser, `isCookieSessionAuthed: user details`);
+
+  // Parse pagination from req
+  const pageSize = currentPageSize(ctx.req);
 
   // Checking cookie with Db
   const dbUser = await ctx.container
@@ -89,6 +95,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   return next({
     ctx: {
       user: authedUser,
+      pageSize: pageSize,
       edgeDbClient,
       settings,
       logger,
@@ -98,6 +105,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       releaseParticipantService: ctx.container.resolve(
         ReleaseParticipationService
       ),
+      releaseDataEgressService: ctx.container.resolve(ReleaseDataEgressService),
       jobService: ctx.container.resolve(JobsService),
       jobCloudFormationCreateService: ctx.container.resolve(
         JobCloudFormationCreateService
@@ -107,6 +115,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       ),
       jobCopyOutService: ctx.container.resolve(JobCopyOutService),
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
+      awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       req: ctx.req,
       res: ctx.res,
       ...ctx,
@@ -115,3 +124,10 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
 });
 
 export const internalProcedure = t.procedure.use(isSessionCookieAuthed);
+
+export const calculateOffset = (
+  page: number | undefined = 1,
+  pageSize: number
+) => {
+  return (page - 1) * pageSize;
+};

@@ -24,6 +24,7 @@ import { GcpStorageSharingService } from "../../../business/services/gcp-storage
 import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
+import { ManifestService } from "../../../business/services/manifests/manifest-service";
 
 export const releaseRoutes = async (
   fastify: FastifyInstance,
@@ -41,6 +42,7 @@ export const releaseRoutes = async (
   const releaseSelectionService = _opts.container.resolve(
     ReleaseSelectionService
   );
+  const manifestService = _opts.container.resolve(ManifestService);
 
   fastify.get<{ Reply: ReleaseSummaryType[] }>(
     "/releases",
@@ -417,36 +419,6 @@ export const releaseRoutes = async (
     Body: ReleasePresignRequestType;
     Params: { rid: string };
   }>(
-    "/releases/:rid/presigned",
-    {
-      schema: {
-        body: ReleasePresignRequestSchema,
-      },
-    },
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      const presignResult = await presignedUrlsService.getPresigned(
-        authenticatedUser,
-        releaseKey,
-        request.body.presignHeader
-      );
-
-      reply.raw.writeHead(200, {
-        "Content-Disposition": `attachment; filename=${presignResult.filename}`,
-        "Content-Type": "application/octet-stream",
-      });
-
-      presignResult.archive.pipe(reply.raw);
-    }
-  );
-
-  fastify.post<{
-    Body: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>(
     "/releases/:rid/cfn/manifest",
     {
       schema: {
@@ -535,29 +507,31 @@ export const releaseRoutes = async (
     }
   );
 
-  fastify.get<{
-    Body: ReleasePresignRequestType;
+  fastify.post<{
+    Body?: ReleasePresignRequestType;
     Params: { rid: string };
-  }>(
-    "/releases/:rid/gcp-storage/acls/manifest",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+  }>("/releases/:rid/tsv-manifest", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseKey = request.params.rid;
+    const releaseKey = request.params.rid;
 
-      const manifest = await gcpStorageSharingService.manifest(
-        authenticatedUser,
-        releaseKey,
-        request.body.presignHeader
-      );
+    const manifest = await manifestService.getArchivedActiveTsvManifest(
+      presignedUrlsService,
+      authenticatedUser,
+      releaseKey,
+      request.body?.presignHeader ?? []
+    );
 
-      reply.header(
-        "Content-disposition",
-        `attachment; filename=${manifest.filename}`
-      );
-      reply.type("text/tab-separated-values");
-      reply.send(manifest.content);
+    if (!manifest) {
+      reply.status(404).send();
+      return;
     }
-  );
+
+    reply.raw.writeHead(200, {
+      "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
+      "Content-Type": "application/octet-stream",
+    });
+
+    manifest.pipe(reply.raw);
+  });
 };

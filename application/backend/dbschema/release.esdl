@@ -129,11 +129,13 @@ module release {
             on target delete restrict;
         }
 
-        multi link dataAccessAuditLog -> audit::DataAccessAuditEvent {
-            # audit events should not be able to be deleted (singly)
+        # Store records of data being accessed (mostly 3rd parties e.g. CloudTrailLake)
+        multi link dataEgressRecord -> DataEgressRecord {
             on target delete restrict;
         }
-        property lastDateTimeDataAccessLogQuery -> datetime;
+        # A quick access to know the last data egress records query was made (to determine the next interval query)
+        # 
+        property lastDataEgressQueryTimestamp -> datetime;
 
         # the participants of this release as Users
         #
@@ -194,6 +196,28 @@ module release {
         # of the manifest information
         #
         required property manifestEtag -> str;
+
+    }
+
+
+    type DataEgressRecord {
+
+        # Link back which audit owns this
+        link release := .<dataEgressRecord[is release::Release];
+
+        # Additional release details
+        property auditId -> str;
+        required property occurredDateTime -> datetime;
+        property description -> str;
+
+        # Details of accessor
+        property sourceIpAddress -> str;
+        property sourceLocation -> str;
+        property egressBytes -> int64;
+
+        # Details of data the object
+        required property fileUrl -> str;
+        required property fileSize -> int64;
 
     }
 

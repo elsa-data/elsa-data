@@ -1,4 +1,4 @@
-import { Client, Duration } from "edgedb";
+import { Duration } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
@@ -27,6 +27,8 @@ import {
 } from "./insert-test-users";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../di-helpers";
+
+const RELEASE_KEY_1 = "R001";
 
 export async function insertRelease1(dc: DependencyContainer) {
   const { settings, logger, edgeDbClient } = getServices(dc);
@@ -83,7 +85,7 @@ Ethics form XYZ.
       // B5MN76L3BN
       //
       //
-      releaseKey: `R001`,
+      releaseKey: RELEASE_KEY_1,
       activation: e.insert(e.release.Activation, {
         activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
         activatedById: TEST_SUBJECT_2,
@@ -117,7 +119,7 @@ Ethics form XYZ.
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
       releaseAuditLog: makeSytheticAuditLog(),
-      dataAccessAuditLog: await makeSyntheticDataAccessLog(edgeDbClient),
+      dataEgressRecord: await makeSyntheticDataEgressRecord(),
     })
     .run(edgeDbClient);
 }
@@ -205,36 +207,23 @@ function makeSytheticAuditLog() {
   );
 }
 
-const makeSyntheticDataAccessLog = async (edgeDbClient: Client) => {
-  const makeDataAccessLog = async (fileUrl: string) => {
-    const fileJson = await e
-      .select(e.storage.File, (f) => ({
-        ...f["*"],
-        filter: e.op(f.url, "ilike", `%${fileUrl}`),
-      }))
-      .assert_single()
-      .run(edgeDbClient);
-
+const makeSyntheticDataEgressRecord = async () => {
+  const makeDataEgressLog = async (fileUrl: string) => {
     return {
-      details: e.json(fileJson),
-      egressBytes: 10188721080,
-      whoId: "123.123.123.123",
-      whoDisplayName: "Melbourne, Australia",
-      actionCategory: e.audit.ActionType.R,
-      actionDescription: "Data Access",
+      auditId: "0f8e7694-d1eb-11ed-afa1-0242ac120002",
       occurredDateTime: e.datetime(new Date()),
-      outcome: 0,
+      description: "Accessed via pre-signed URL",
+
+      sourceIpAddress: "123.123.123.123",
+      sourceLocation: "Melbourne, Australia",
+      egressBytes: 10188721080,
+      fileUrl: fileUrl,
+      fileSize: 30,
     };
   };
 
   return e.set(
-    e.insert(
-      e.audit.DataAccessAuditEvent,
-      await makeDataAccessLog(MARGE_BAM_S3)
-    ),
-    e.insert(
-      e.audit.DataAccessAuditEvent,
-      await makeDataAccessLog(MARGE_BAI_S3)
-    )
+    e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAM_S3)),
+    e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAI_S3))
   );
 };
