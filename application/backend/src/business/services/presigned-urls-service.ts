@@ -1,10 +1,6 @@
 import * as edgedb from "edgedb";
 import { inject, injectAll, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
-import { AuditLogService } from "./audit-log-service";
-import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { ManifestService } from "./manifests/manifest-service";
 
 export interface IPresignedUrlProvider {
   isEnabled: boolean;
@@ -23,11 +19,7 @@ export class PresignedUrlsService {
     @inject("Database") protected readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @injectAll("IPresignedUrlProvider")
-    private readonly presignedUrlsServices: IPresignedUrlProvider[],
-    private readonly releaseService: ReleaseService,
-    private readonly usersService: UsersService,
-    private readonly manifestService: ManifestService,
-    private readonly auditLogService: AuditLogService
+    private readonly presignedUrlsServices: IPresignedUrlProvider[]
   ) {}
 
   public get isEnabled(): boolean {

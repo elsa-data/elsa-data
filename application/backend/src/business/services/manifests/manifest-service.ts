@@ -101,7 +101,8 @@ export class ManifestService {
 
   public async getActiveTsvManifest(
     presignedUrlsService: PresignedUrlsService,
-    releaseKey: string
+    releaseKey: string,
+    auditId: string
   ): Promise<ManifestTsvBodyType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
 
@@ -111,7 +112,8 @@ export class ManifestService {
     return await transformMasterManifestToTsvManifest(
       masterManifest,
       presignedUrlsService,
-      releaseKey
+      releaseKey,
+      auditId
     );
   }
 
@@ -133,10 +135,11 @@ export class ManifestService {
 
     if (!isActivated) throw new Error("needs to be activated");
 
-    const createPresignedZip = async () => {
+    const createPresignedZip = async (auditId: string) => {
       const manifest = await this.getActiveTsvManifest(
         presignedUrlsService,
-        releaseKey
+        releaseKey,
+        auditId
       );
       if (!manifest) return null;
 
@@ -184,7 +187,7 @@ export class ManifestService {
     );
 
     try {
-      const archive = createPresignedZip();
+      const archive = createPresignedZip(newAuditEventId);
       await this.auditLogService.completeReleaseAuditEvent(
         this.edgeDbClient,
         newAuditEventId,
