@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import { Client, Executor } from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
@@ -26,9 +26,6 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
 import { audit } from "../../../dbschema/interfaces";
-import AuditEvent = audit.AuditEvent;
-import ActionType = audit.ActionType;
-import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import {
   getReleaseKeyFromReleaseAuditEvent,
   insertReleaseAuditEvent,
@@ -38,6 +35,9 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
+import AuditEvent = audit.AuditEvent;
+import ActionType = audit.ActionType;
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -748,6 +748,29 @@ export class AuditLogService {
   }
 
   /**
+   * Standard non-transactional system audit event pattern
+   */
+  public async systemAuditEventPattern<T>(
+    actionDescription: string,
+    tryFunc: (
+      completeAudit: (executor: Executor, details: any) => Promise<void>
+    ) => Promise<T>
+  ): Promise<T> {
+    return this.auditPattern(
+      async (start) => {
+        return await this.startSystemAuditEvent(
+          this.edgeDbClient,
+          "E",
+          actionDescription,
+          start
+        );
+      },
+      this.completeSystemAuditEvent,
+      tryFunc
+    );
+  }
+
+  /**
    * Perform our standard audit pattern for a execute to a release
    * including transactions and try/catch.
    *
@@ -799,46 +822,80 @@ export class AuditLogService {
     transFunc: (tx: Transaction, a: T) => Promise<U>,
     finishFunc: (a: U) => Promise<V>
   ) {
-    const auditEventStart = new Date();
-    const auditEventId = await this.startReleaseAuditEvent(
-      this.edgeDbClient,
-      user,
-      releaseKey,
-      actionCategory,
-      actionDescription,
-      auditEventStart
+    return await this.auditPattern(
+      async (start) => {
+        return await this.startReleaseAuditEvent(
+          this.edgeDbClient,
+          user,
+          releaseKey,
+          actionCategory,
+          actionDescription,
+          start
+        );
+      },
+      this.completeReleaseAuditEvent,
+      async (completeAudit) => {
+        const initBlockResult = await initFunc();
+
+        const transResult = await this.edgeDbClient.transaction(async (tx) => {
+          const transBlockResult = await transFunc(tx, initBlockResult);
+
+          await completeAudit(tx, transBlockResult);
+
+          return transBlockResult;
+        });
+
+        return await finishFunc(transResult);
+      }
     );
+  }
+
+  /**
+   * The general audit pattern in a try catch block. Starts an audit event, then executes a function
+   * in a try block, which must complete the audit event, or if an error is throw, completes a failed
+   * audit event.
+   */
+  protected async auditPattern<R, T>(
+    startAuditFn: (start: Date) => Promise<string>,
+    completeAuditFn: (
+      this: AuditLogService,
+      executor: Executor,
+      auditEventId: string,
+      outcome: AuditEventOutcome,
+      start: Date,
+      end: Date,
+      details: any
+    ) => Promise<void>,
+    tryFn: (
+      completeAuditFn: (executor: Executor, details: any) => Promise<void>
+    ) => Promise<R>
+  ): Promise<R> {
+    // Is this refactor getting out of hand?
+    const auditEventStart = new Date();
+    const auditEventId = await startAuditFn(auditEventStart);
 
     try {
-      const initBlockResult = await initFunc();
-
-      const transResult = await this.edgeDbClient.transaction(async (tx) => {
-        const transBlockResult = await transFunc(tx, initBlockResult);
-
-        await this.completeReleaseAuditEvent(
-          tx,
+      return await tryFn(async (executor, details) => {
+        await completeAuditFn.call(
+          this,
+          executor,
           auditEventId,
           OUTCOME_SUCCESS,
           auditEventStart,
           new Date(),
-          // need to consider whether we always audit details the whole transaction
-          // function return value - or if we need to split this  [auditDetail, transactionResult]
-          transBlockResult
+          details
         );
-
-        return transBlockResult;
       });
-
-      return await finishFunc(transResult);
     } catch (error) {
       // TODO possibly better breakdown of the details of the error
       const errorString =
         error instanceof Error ? error.message : String(error);
 
-      await this.completeReleaseAuditEvent(
+      await completeAuditFn.call(
+        this,
         this.edgeDbClient,
         auditEventId,
-        OUTCOME_SERIOUS_FAILURE,
+        OUTCOME_SUCCESS,
         auditEventStart,
         new Date(),
         { error: errorString }

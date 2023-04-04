@@ -3,21 +3,18 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
-import {
-  AuditLogService,
-  OUTCOME_MINOR_FAILURE,
-  OUTCOME_SUCCESS,
-} from "../audit-log-service";
+import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
 import {
   CloudFormationClient,
   DeleteStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
-import { AwsAccessPointService } from "../aws-access-point-service";
+import { AwsAccessPointService } from "../aws/aws-access-point-service";
 import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
+import { AwsEnabledService } from "../aws/aws-enabled-service";
 
 /**
  * A service for performing long-running operations deleting previously installed
@@ -30,7 +27,8 @@ export class JobCloudFormationDeleteService extends JobsService {
     auditLogService: AuditLogService,
     releaseService: ReleaseService,
     selectService: SelectService,
-    @inject("CloudFormationClient") private cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") private cfnClient: CloudFormationClient,
+    private readonly awsEnabledService: AwsEnabledService
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);
   }
@@ -46,6 +44,8 @@ export class JobCloudFormationDeleteService extends JobsService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<ReleaseDetailType> {
+    await this.awsEnabledService.enabledGuard();
+
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,

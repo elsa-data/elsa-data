@@ -1,8 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
-import {
-  FileRecordHeader,
-  ObjectStoreRecordKey,
-} from "../../../../../common/elsa-types/schemas";
+import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
 import assert from "assert";
 
 export const ManifestBucketKeyObjectSchema = Type.Object({
@@ -27,9 +24,9 @@ export const ManifestBucketKeyObjectSchema = Type.Object({
 });
 
 assert(
-  JSON.stringify([...Object.keys(ManifestBucketKeyObjectSchema.properties)].sort())
-  ===
-  JSON.stringify([...ObjectStoreRecordKey].sort())
+  JSON.stringify(
+    [...Object.keys(ManifestBucketKeyObjectSchema.properties)].sort()
+  ) === JSON.stringify([...ObjectStoreRecordKey].sort())
 );
 
 export const ManifestBucketKeySchema = Type.Object({

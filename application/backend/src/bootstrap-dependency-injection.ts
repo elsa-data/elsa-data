@@ -5,13 +5,26 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { SES } from "@aws-sdk/client-ses";
-import { IPresignedUrlProvider } from "./business/services/presigned-urls-service";
-import { AwsPresignedUrlsService } from "./business/services/aws-presigned-urls-service";
+import {
+  IPresignedUrlProvider,
+  PresignedUrlsService,
+} from "./business/services/presigned-urls-service";
+import { AwsPresignedUrlsService } from "./business/services/aws/aws-presigned-urls-service";
 import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-service";
 import { CloudflarePresignedUrlsService } from "./business/services/cloudflare-presigned-urls-service";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { SFNClient } from "@aws-sdk/client-sfn";
-import { AwsDiscoveryService } from "./business/services/aws-discovery-service";
+import { STSClient } from "@aws-sdk/client-sts";
+import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
+import { AwsEnabledService } from "./business/services/aws/aws-enabled-service";
+import { AwsS3Service } from "./business/services/aws/aws-s3-service";
+import { AwsAccessPointService } from "./business/services/aws/aws-access-point-service";
+import { AwsCloudTrailLakeService } from "./business/services/aws/aws-cloudtrail-lake-service";
+import { GcpEnabledService } from "./business/services/gcp-enabled-service";
+import { GcpStorageSharingService } from "./business/services/gcp-storage-sharing-service";
+import { S3 } from "./business/services/cloud-storage-service";
+import { ManifestService } from "./business/services/manifests/manifest-service";
+import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 
 /**
  * Bootstrap the DI with some basic services that are
@@ -73,6 +86,10 @@ export function bootstrapDependencyInjection() {
     useFactory: () => new SFNClient(awsClientConfig),
   });
 
+  dc.register<STSClient>("STSClient", {
+    useFactory: () => new STSClient(awsClientConfig),
+  });
+
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
     useClass: AwsPresignedUrlsService,
   });
@@ -86,6 +103,19 @@ export function bootstrapDependencyInjection() {
   // we register our singletons this way as this is the only way to prevent them being registered
   // in the global container namespace (we DON'T use the @singleton decorator)
   dc.registerSingleton(AwsDiscoveryService);
+  dc.registerSingleton(AwsEnabledService);
+  dc.registerSingleton(AwsPresignedUrlsService);
+  dc.registerSingleton(AwsS3Service);
+  dc.registerSingleton(AwsAccessPointService);
+  dc.registerSingleton(AwsCloudTrailLakeService);
+  dc.registerSingleton(GcpEnabledService);
+  dc.registerSingleton(GcpStorageSharingService);
+  dc.registerSingleton(GcpPresignedUrlsService);
+  dc.registerSingleton(CloudflarePresignedUrlsService);
+  dc.registerSingleton(ManifestService);
+  dc.registerSingleton(PresignedUrlsService);
+
+  dc.registerSingleton<S3ManifestHtsgetService>(S3, S3ManifestHtsgetService);
 
   return dc;
 }

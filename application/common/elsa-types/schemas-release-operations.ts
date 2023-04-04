@@ -75,6 +75,11 @@ export const ReleasePatchOperationSchema = Type.Union([
     path: Type.Literal("/allowedR2"),
     value: Type.Boolean(),
   }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/allowedHtsget"),
+    value: Type.Boolean(),
+  }),
 ]);
 
 export const ReleasePatchOperationsSchema = Type.Array(

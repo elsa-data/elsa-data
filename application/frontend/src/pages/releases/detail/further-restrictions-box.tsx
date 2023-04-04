@@ -46,6 +46,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       | "/allowedS3"
       | "/allowedGS"
       | "/allowedR2"
+      | "/allowedHtsget"
       | null,
     current: boolean
   ) => (
@@ -135,7 +136,13 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
         <RightDiv>
           <RhChecks label="Access Via">
             {isAllowedCheck("Presigned URLs (always enabled)", null, true)}
-            {isAllowedCheck("htsget (currently disabled)", null, false)}
+            {!releaseData.htsgetConfig
+              ? isAllowedCheck("htsget (disabled in config)", null, false)
+              : isAllowedCheck(
+                  "htsget",
+                  "/allowedHtsget",
+                  releaseData.isAllowedHtsget
+                )}
           </RhChecks>
         </RightDiv>
       </div>

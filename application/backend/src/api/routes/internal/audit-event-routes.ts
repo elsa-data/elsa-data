@@ -7,23 +7,23 @@ import {
 } from "../../api-internal-routes";
 import * as edgedb from "edgedb";
 import { AuditLogService } from "../../../business/services/audit-log-service";
-import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
+import { AwsCloudTrailLakeService } from "../../../business/services/aws/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import { audit } from "../../../../dbschema/interfaces";
-import AuditEvent = audit.AuditEvent;
 import {
   AuditEventDetailsType,
-  AuditEventType,
   AuditEventFullType,
+  AuditEventType,
   RouteValidation,
 } from "@umccr/elsa-types";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import _ from "lodash";
+import { DependencyContainer } from "tsyringe";
+import AuditEvent = audit.AuditEvent;
 import AuditEventForQuerySchema = RouteValidation.AuditEventForQuerySchema;
 import AuditEventForQueryType = RouteValidation.AuditEventForQueryType;
 import AuditEventDetailsQueryType = RouteValidation.AuditEventDetailsQueryType;
 import AuditEventDetailsQuerySchema = RouteValidation.AuditEventDetailsQuerySchema;
-import { DependencyContainer } from "tsyringe";
 
 export const auditEventRoutes = async (
   fastify: FastifyInstance,

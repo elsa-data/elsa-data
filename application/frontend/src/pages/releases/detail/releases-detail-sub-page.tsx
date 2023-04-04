@@ -47,14 +47,19 @@ export const ReleasesDetailSubPage: React.FC = () => {
             "Copy Out",
             "AWS S3 VPC Share",
             "GCP Storage IAM Share",
-            "htsget",
+            ...(releaseData.htsgetConfig !== undefined ? ["htsget"] : []),
           ]}
         >
           <ManifestForm releaseKey={releaseKey} releaseData={releaseData} />
           <CopyOutForm releaseKey={releaseKey} />
           <AwsS3VpcShareForm releaseKey={releaseKey} />
           <GcpStorageIamShareForm releaseKey={releaseKey} />
-          <HtsgetForm releaseKey={releaseKey} releaseData={releaseData} />
+          {releaseData.htsgetConfig && (
+            <HtsgetForm
+              releaseKey={releaseKey}
+              htsgetUrl={releaseData.htsgetConfig.url}
+            />
+          )}
         </VerticalTabs>
       </Box>
     </>

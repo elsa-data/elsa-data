@@ -1,6 +1,6 @@
-import { inject, injectable, singleton } from "tsyringe";
-import { AwsBaseService } from "./aws-base-service";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { inject, injectable } from "tsyringe";
+import { AwsEnabledService } from "./aws-enabled-service";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { Logger } from "pino";
 import {
   DiscoverInstancesCommand,
@@ -16,15 +16,14 @@ import {
  * once other deployment environments exist.
  */
 @injectable()
-export class AwsDiscoveryService extends AwsBaseService {
+export class AwsDiscoveryService {
   constructor(
     @inject("ServiceDiscoveryClient")
     private readonly serviceDiscoveryClient: ServiceDiscoveryClient,
     @inject("Logger") private readonly logger: Logger,
-    @inject("Settings") private readonly settings: ElsaSettings
+    @inject("Settings") private readonly settings: ElsaSettings,
+    private readonly awsEnabledService: AwsEnabledService
   ) {
-    super();
-
     logger.debug(
       "Created AwsDiscoveryService instance - expecting this to only happen once"
     );
@@ -38,6 +37,8 @@ export class AwsDiscoveryService extends AwsBaseService {
    * setup, or else return null. Aggressively caches the value.
    */
   public async locateCopyOutStepsArn(): Promise<string | null> {
+    await this.awsEnabledService.enabledGuard();
+
     if (!this.copyOutStepsRunSuccessfully) {
       const key = "stateMachineArn";
       const service = "ElsaDataCopyOut";
@@ -73,6 +74,8 @@ export class AwsDiscoveryService extends AwsBaseService {
    * setup, or else return null. Aggressively caches the value.
    */
   public async locateBeaconLambdaArn(): Promise<string | null> {
+    await this.awsEnabledService.enabledGuard();
+
     if (!this.beaconLambdaRunSuccessfully) {
       const key = "lambdaArn";
       const service = "ElsaDataBeacon";

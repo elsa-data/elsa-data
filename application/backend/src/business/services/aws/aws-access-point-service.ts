@@ -1,34 +1,34 @@
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import { inject, injectable, singleton } from "tsyringe";
-import { UsersService } from "./users-service";
-import { AwsBaseService } from "./aws-base-service";
+import { inject, injectable } from "tsyringe";
+import { UsersService } from "../users-service";
+import { AwsEnabledService } from "./aws-enabled-service";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
 } from "@aws-sdk/client-cloudformation";
-import { AuditLogService } from "./audit-log-service";
+import { AuditLogService } from "../audit-log-service";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
-import { ReleaseService } from "./release-service";
+import { ReleaseService } from "../release-service";
 import {
   correctAccessPointTemplateOutputs,
   createAccessPointTemplateFromReleaseFileEntries,
-} from "./_access-point-template-helper";
-import { ElsaSettings } from "../../config/elsa-settings";
+} from "../_access-point-template-helper";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { Logger } from "pino";
-import { getAllFileRecords } from "./_release-file-list-helper";
-import { ReleaseViewError } from "../exceptions/release-authorisation";
+import { getAllFileRecords } from "../_release-file-list-helper";
+import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import assert from "assert";
 
 // TODO we need to decide where we get the region from (running setting?) - or is it a config
 const REGION = "ap-southeast-2";
 
 @injectable()
-export class AwsAccessPointService extends AwsBaseService {
+export class AwsAccessPointService {
   constructor(
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
@@ -38,11 +38,9 @@ export class AwsAccessPointService extends AwsBaseService {
     private readonly releaseService: ReleaseService,
     @inject("Database") private edgeDbClient: edgedb.Client,
     private usersService: UsersService,
-    private auditLogService: AuditLogService
-  ) {
-    super();
-  }
-
+    private auditLogService: AuditLogService,
+    private readonly awsEnabledService: AwsEnabledService
+  ) {}
   public static getReleaseStackName(releaseKey: string): string {
     return `elsa-data-release-${releaseKey}`;
   }
@@ -64,6 +62,8 @@ export class AwsAccessPointService extends AwsBaseService {
     stackId: string;
     bucketNameMap: { [x: string]: string };
   } | null> {
+    await this.awsEnabledService.enabledGuard();
+
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
@@ -115,6 +115,7 @@ export class AwsAccessPointService extends AwsBaseService {
     releaseKey: string,
     tsvColumns: string[]
   ) {
+    await this.awsEnabledService.enabledGuard();
     // find all the files encompassed by this release as a flat array of S3 URLs
     // noting that these files will be S3 paths that
     const filesArray = await getAllFileRecords(
@@ -192,7 +193,7 @@ export class AwsAccessPointService extends AwsBaseService {
     vpcId?: string
   ): Promise<string> {
     // the AWS guard is switched on as this needs to write out to S3
-    this.enabledGuard();
+    await this.awsEnabledService.enabledGuard();
 
     assert(this.settings.aws);
 

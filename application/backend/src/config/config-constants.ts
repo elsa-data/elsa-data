@@ -72,6 +72,24 @@ export const configDefinition = {
       env: `${env_prefix}SESSION_SALT`,
     },
   },
+  htsget: {
+    maxAge: {
+      doc: "The amount of time that a htsget manifest remains valid in seconds",
+      format: "Number",
+      sensitive: false,
+      default: "86400",
+      nullable: false,
+      env: `${env_prefix}HTSGET_MANIFEST_TTL`,
+    },
+    url: {
+      doc: "The url for the htsget endpoint",
+      format: String,
+      sensitive: false,
+      default: null,
+      nullable: true,
+      env: `${env_prefix}HTSGET_URL`,
+    },
+  },
   aws: {
     signingAccessKeyId: {
       doc: "An AWS access key id for a user with read permission of files that can be shared via S3 signed URLs",

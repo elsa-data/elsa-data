@@ -1,24 +1,24 @@
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
 import {
   CloudTrailClient,
   GetQueryResultsCommand,
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
-import { AwsBaseService } from "./aws-base-service";
-import { AuditLogService } from "./audit-log-service";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { AwsEnabledService } from "./aws-enabled-service";
+import { AuditLogService } from "../audit-log-service";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
-import { touchRelease } from "../db/release-queries";
-import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
+import { touchRelease } from "../../db/release-queries";
+import { NotAuthorisedSyncDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
-} from "../../../dbschema/queries";
+} from "../../../../dbschema/queries";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -43,17 +43,16 @@ type CloudTrailLakeResponseType = {
 };
 
 @injectable()
-export class AwsCloudTrailLakeService extends AwsBaseService {
+export class AwsCloudTrailLakeService {
   constructor(
     @inject("Settings") private settings: ElsaSettings,
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
     private awsAccessPointService: AwsAccessPointService,
-    private auditLogService: AuditLogService
-  ) {
-    super();
-  }
+    private auditLogService: AuditLogService,
+    private readonly awsEnabledService: AwsEnabledService
+  ) {}
   private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
@@ -117,6 +116,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
    * @returns
    */
   async startCommandQueryCloudTrailLake(sqlStatement: string): Promise<string> {
+    await this.awsEnabledService.enabledGuard();
+
     // Sending request to query
     const command = new StartQueryCommand({ QueryStatement: sqlStatement });
     const queryResponse = await this.cloudTrailClient.send(command);
@@ -137,6 +138,8 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     queryId: string;
     eventDataStoreId: string;
   }): Promise<Record<string, string>[]> {
+    await this.awsEnabledService.enabledGuard();
+
     // Setting up init variables
     let nextToken: undefined | string;
     const queryResult: Record<string, string>[] = [];
@@ -410,7 +413,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
 
     // Update last query date to release record
-    updateLastDataEgressQueryTimestamp(this.edgeDbClient, {
+    await updateLastDataEgressQueryTimestamp(this.edgeDbClient, {
       releaseKey,
       lastQueryTimestamp: endQueryDate,
     });

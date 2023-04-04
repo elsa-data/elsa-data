@@ -2,7 +2,6 @@ import { Issuer } from "openid-client";
 import { writeFile } from "fs/promises";
 import * as temp from "temp";
 import { ElsaSettings } from "./config/elsa-settings";
-import { TransportMultiOptions } from "pino";
 import _ from "lodash";
 
 export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
@@ -97,6 +96,12 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     oidcClientId: config.get("oidc.clientId")!,
     oidcClientSecret: config.get("oidc.clientSecret")!,
     oidcIssuer: issuer,
+    htsget: config.get("htsget.url")
+      ? {
+          maxAge: config.get("htsget.maxAge"),
+          url: new URL(config.get("htsget.url")),
+        }
+      : undefined,
     aws: hasAws
       ? {
           signingAccessKeyId: hasAwsSigning

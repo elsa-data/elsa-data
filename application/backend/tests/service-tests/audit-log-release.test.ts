@@ -1,6 +1,5 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AuditLogService } from "../../src/business/services/audit-log-service";

@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import e from "../../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../../test-data/test-data-helpers";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
   australianGenomicsDacRedcapToDatasetUris,
   australianGenomicsDacRedcapToDuoString,

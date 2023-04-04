@@ -1,6 +1,5 @@
 import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
 import { UsersService } from "./users-service";
 import { ReleaseBaseService } from "./release-base-service";
@@ -12,19 +11,13 @@ import {
   releaseParticipantRemovePotentialUser,
   releaseParticipantRemoveUser,
 } from "../../../dbschema/queries";
-import { touchRelease } from "../db/release-queries";
 import { ReleaseParticipationPermissionError } from "../exceptions/release-participation";
 import {
   singlePotentialUserByEmailQuery,
   singleUserByEmailQuery,
 } from "../db/user-queries";
 import e from "../../../dbschema/edgeql-js";
-import {
-  AuditLogService,
-  OUTCOME_MINOR_FAILURE,
-  OUTCOME_SERIOUS_FAILURE,
-  OUTCOME_SUCCESS,
-} from "./audit-log-service";
+import { AuditLogService } from "./audit-log-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -34,11 +27,11 @@ import {
 export class ReleaseParticipationService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
+    @inject("Settings") settings: ElsaSettings,
     private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
-    super(edgeDbClient, usersService);
+    super(settings, edgeDbClient, usersService);
   }
 
   public async getParticipants(user: AuthenticatedUser, releaseKey: string) {

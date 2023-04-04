@@ -4,7 +4,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { ReleaseDetailType } from "@umccr/elsa-types";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
@@ -17,7 +17,7 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
-import { AwsDiscoveryService } from "../aws-discovery-service";
+import { AwsDiscoveryService } from "../aws/aws-discovery-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,

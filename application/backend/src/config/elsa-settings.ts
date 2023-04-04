@@ -38,6 +38,11 @@ export type ElsaSettings = {
 
   logger: LoggerOptions;
 
+  htsget?: {
+    maxAge: number;
+    url: URL;
+  };
+
   // optional details to allow sharing of objects in AWS
   aws?: {
     // if using AWS then temp bucket is required

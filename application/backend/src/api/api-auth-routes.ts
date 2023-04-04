@@ -18,9 +18,7 @@ import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UsersService } from "../business/services/users-service";
 import { generators } from "openid-client";
-import { isSuperAdmin } from "./session-cookie-route-hook";
 import { AuditLogService } from "../business/services/audit-log-service";
-import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   TEST_SUBJECT_1,
   TEST_SUBJECT_1_DISPLAY,

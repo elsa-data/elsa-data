@@ -1,12 +1,7 @@
-import React, { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
-import { ReleaseRemsSyncRequestType } from "@umccr/elsa-types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { ReleaseTypeLocal } from "../shared-types";
-import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
-import { CSRFInputToken } from "../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;
@@ -72,9 +67,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           <button
             type="button"
             className="btn-normal"
-            onClick={() =>
-              addAclUsersMutate.mutate({ users: iamUsersArray })
-            }
+            onClick={() => addAclUsersMutate.mutate({ users: iamUsersArray })}
           >
             Add IAM Users
           </button>
@@ -103,21 +96,19 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           Working...
         </div>
       )}
-      {status?.recordsUpdated !== undefined &&
-        status?.recordsUpdated === 0 && (
-          <div className="mt-5 bg-yellow-200 p-5 text-yellow-700 shadow sm:rounded-md">
-            The operation completed successfully but no objects were
-            updated. Make sure to select the cases which you would like to
-            be included in the release. Also make sure to enter IAM users
-            who the release should be made accessible to.
-          </div>
-        )}
-      {status?.recordsUpdated !== undefined &&
-        status?.recordsUpdated > 0 && (
-          <div className="mt-5 bg-green-200 p-5 text-green-700 shadow sm:rounded-md">
-            Successfully updated ACLs for {status?.recordsUpdated} objects
-          </div>
-        )}
+      {status?.recordsUpdated !== undefined && status?.recordsUpdated === 0 && (
+        <div className="mt-5 bg-yellow-200 p-5 text-yellow-700 shadow sm:rounded-md">
+          The operation completed successfully but no objects were updated. Make
+          sure to select the cases which you would like to be included in the
+          release. Also make sure to enter IAM users who the release should be
+          made accessible to.
+        </div>
+      )}
+      {status?.recordsUpdated !== undefined && status?.recordsUpdated > 0 && (
+        <div className="mt-5 bg-green-200 p-5 text-green-700 shadow sm:rounded-md">
+          Successfully updated ACLs for {status?.recordsUpdated} objects
+        </div>
+      )}
     </form>
   );
 };

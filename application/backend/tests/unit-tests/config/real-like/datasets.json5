@@ -15,4 +15,7 @@
       storageUriPrefix: "example/dataset002",
     },
   ],
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org",
+  },
 }

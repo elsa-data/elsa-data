@@ -56,6 +56,12 @@ beforeEach(async () => {
     "isAllowedR2Data",
     true
   );
+  await releaseService.setIsAllowed(
+    allowedAdministratorUser,
+    testReleaseKey,
+    "isAllowedHtsget",
+    true
+  );
 });
 
 it("test basic operation of manifest helper", async () => {

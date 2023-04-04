@@ -41,7 +41,7 @@ import {
   MOCK_4_STUDY_ID_1,
   MOCK_4_CARDIAC_VCF_FILENAME,
 } from "./ag.common";
-import * as awsHelper from "../../src/business/services/aws-helper";
+import * as awsHelper from "../../src/business/services/aws/aws-helper";
 import {
   getMd5FromChecksumsArray,
   makeSystemlessIdentifierArray,

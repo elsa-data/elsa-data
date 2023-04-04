@@ -3,25 +3,55 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/insert-test-data-10f-helpers";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { transformMasterManifestToHtsgetManifest } from "../../src/business/services/manifests/manifest-htsget-helper";
 import { ReleaseService } from "../../src/business/services/release-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { transformMasterManifestToHtsgetManifest } from "../../src/business/services/manifests/htsget/manifest-htsget-helper";
+import {
+  ManifestHtsgetEndpointNotEnabled,
+  ManifestHtsgetNotAllowed,
+} from "../../src/business/exceptions/manifest-htsget";
+import {
+  ManifestHtsgetService,
+  S3ManifestHtsgetService,
+} from "../../src/business/services/manifests/htsget/manifest-htsget-service";
+import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
+import { ElsaSettings } from "../../src/config/elsa-settings";
+import { mockClient } from "aws-sdk-client-mock";
+import {
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { Logger } from "pino";
+import { addSeconds } from "date-fns";
 
 const testContainer = registerTypes();
 
 let edgeDbClient: Client;
+let settings: ElsaSettings;
 let testReleaseKey: string;
 let allowedAdministratorUser: AuthenticatedUser;
 let manifestService: ManifestService;
 let releaseService: ReleaseService;
+let manifestHtsgetService: ManifestHtsgetService;
+let releaseActivationService: ReleaseActivationService;
+let logger: Logger;
+
+const s3ClientMock = mockClient(S3Client);
 
 beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
+  settings = testContainer.resolve("Settings");
   manifestService = testContainer.resolve(ManifestService);
   releaseService = testContainer.resolve(ReleaseService);
+  manifestHtsgetService = testContainer.resolve(S3ManifestHtsgetService);
+  releaseActivationService = testContainer.resolve(ReleaseActivationService);
+  logger = testContainer.resolve("Logger");
 });
 
 beforeEach(async () => {
+  s3ClientMock.reset();
+
   ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
     testContainer
   ));
@@ -55,6 +85,12 @@ beforeEach(async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
+    true
+  );
+  await releaseService.setIsAllowed(
+    allowedAdministratorUser,
+    testReleaseKey,
+    "isAllowedHtsget",
     true
   );
 });
@@ -173,4 +209,101 @@ it("test variants data needs to be specified to be included", async () => {
     masterManifest
   );
   expect(htsgetManifest.variants).toStrictEqual({});
+});
+
+it("test publish htsget manifest release not activated", async () => {
+  const throwsHtsgetNotAllowed = async () => {
+    await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
+  };
+
+  await expect(throwsHtsgetNotAllowed()).rejects.toThrow(
+    ManifestHtsgetNotAllowed
+  );
+});
+
+it("test publish htsget manifest htsget not allowed", async () => {
+  await releaseService.setIsAllowed(
+    allowedAdministratorUser,
+    testReleaseKey,
+    "isAllowedHtsget",
+    false
+  );
+  await releaseActivationService.activateRelease(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
+
+  const throwsHtsgetNotAllowed = async () => {
+    await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
+  };
+
+  await expect(throwsHtsgetNotAllowed()).rejects.toThrow(
+    ManifestHtsgetNotAllowed
+  );
+});
+
+it("test publish htsget manifest htsget not enabled", async () => {
+  settings.htsget = undefined;
+
+  await releaseActivationService.activateRelease(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
+
+  const throwsHtsgetEndpointNotEnabled = async () => {
+    await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
+  };
+
+  await expect(throwsHtsgetEndpointNotEnabled()).rejects.toThrow(
+    ManifestHtsgetEndpointNotEnabled
+  );
+});
+
+it("test publish htsget cached", async () => {
+  if (settings.htsget?.maxAge === undefined) {
+    logger.warn("Skipping test because htsget is not defined.");
+    return;
+  }
+
+  await releaseActivationService.activateRelease(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
+
+  s3ClientMock.on(HeadObjectCommand).resolves({
+    LastModified: addSeconds(new Date(), settings.htsget.maxAge + 1000),
+  });
+
+  let value = await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
+
+  expect(value.location).toEqual({
+    bucket: settings.aws?.tempBucket,
+    key: testReleaseKey,
+  });
+  expect(value.maxAge).toBeLessThan(settings.htsget.maxAge);
+});
+
+it("test publish htsget not cached", async () => {
+  if (settings.htsget?.maxAge === undefined) {
+    logger.warn("Skipping test because htsget is not defined.");
+    return;
+  }
+
+  await releaseActivationService.activateRelease(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
+
+  s3ClientMock.on(HeadObjectCommand).resolves({
+    LastModified: addSeconds(new Date(), settings.htsget.maxAge - 1000),
+  });
+  s3ClientMock.on(PutObjectCommand).resolves({});
+
+  let value = await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
+
+  expect(value.location).toEqual({
+    bucket: settings.aws?.tempBucket,
+    key: testReleaseKey,
+  });
+  expect(value.maxAge).toEqual(settings.htsget.maxAge);
 });

@@ -5,9 +5,7 @@ import { Executor } from "edgedb";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
 import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
-import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
 import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
-import { ManifestHtsgetType } from "./manifest-htsget-types";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
 import {
   ManifestBucketKeyType,
@@ -86,17 +84,6 @@ export class ManifestService {
     });
 
     return transformDbManifestToMasterManifest(manifest);
-  }
-
-  public async getActiveHtsgetManifest(
-    releaseKey: string
-  ): Promise<ManifestHtsgetType | null> {
-    const masterManifest = await this.getActiveManifest(releaseKey);
-
-    // TODO fix exceptions here
-    if (!masterManifest) return null;
-
-    return transformMasterManifestToHtsgetManifest(masterManifest);
   }
 
   public async getActiveTsvManifest(
