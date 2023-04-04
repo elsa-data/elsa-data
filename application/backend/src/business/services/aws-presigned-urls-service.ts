@@ -24,7 +24,8 @@ export class AwsPresignedUrlsService
   async presign(
     releaseKey: string,
     bucket: string,
-    key: string
+    key: string,
+    auditId: string
   ): Promise<string> {
     const s3Client = new S3Client({});
     const awsRegion = await s3Client.config.region();
@@ -49,6 +50,7 @@ export class AwsPresignedUrlsService
     );
     s3ObjectUrl.query = {
       "x-releaseKey": releaseKey,
+      "x-auditId": auditId,
     };
 
     const presigner = new S3RequestPresigner({

@@ -42,25 +42,6 @@ export const AuditEventFullSchema = Type.Object({
 });
 export type AuditEventFullType = Static<typeof AuditEventFullSchema>;
 
-export const AuditDataAccessSchema = Type.Object({
-  ...AuditEventBaseSchema.properties,
-  occurredDateTime: Type.String(),
-  fileUrl: Type.String(),
-  fileSize: Type.Integer(),
-  egressBytes: Type.Integer(),
-});
-export type AuditDataAccessType = Static<typeof AuditDataAccessSchema>;
-
-export const AuditDataSummarySchema = Type.Object({
-  fileUrl: Type.String(),
-  fileSize: Type.Integer(),
-  dataAccessedInBytes: Type.Integer(),
-  downloadStatus: Type.String(),
-  lastAccessedTime: Type.String(),
-  target: Type.String(),
-});
-export type AuditDataSummaryType = Static<typeof AuditDataSummarySchema>;
-
 export namespace RouteValidation {
   export const AuditEventUserFilterSchema = Type.Union([
     Type.Literal("release"),

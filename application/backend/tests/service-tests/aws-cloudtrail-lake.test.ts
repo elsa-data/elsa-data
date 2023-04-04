@@ -9,7 +9,7 @@ import { ElsaSettings } from "../../src/config/elsa-settings";
 import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { NotAuthorisedSyncDataAccessEvents } from "../../src/business/exceptions/audit-authorisation";
+import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
 
 const testContainer = registerTypes();
 
@@ -46,6 +46,8 @@ describe("Test CloudTrailLake Service", () => {
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
+        releaseKey: testReleaseKey,
+        auditId: "abcd-defg-hijk-lmno",
       },
     ];
 
@@ -55,16 +57,16 @@ describe("Test CloudTrailLake Service", () => {
       description: "Object accessed",
     });
 
-    const daArr = await e
-      .select(e.audit.DataAccessAuditEvent, (da) => ({
-        ...da["*"],
-        filter: e.op(da.release_.releaseKey, "=", testReleaseKey),
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
       }))
       .run(edgeDbClient);
 
-    expect(daArr.length).toEqual(1);
+    expect(deArr.length).toEqual(1);
 
-    const singleLog = daArr[0];
+    const singleLog = deArr[0];
     expect(singleLog.egressBytes).toEqual(101);
   });
 
@@ -106,17 +108,17 @@ describe("Test CloudTrailLake Service", () => {
     await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
       user: superAdminUser,
       releaseKey: testReleaseKey,
-      eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+      datasetUrisArray: [TENG_URI],
     });
 
-    const daArr = await e
-      .select(e.audit.DataAccessAuditEvent, (da) => ({
-        ...da["*"],
-        filter: e.op(da.release_.releaseKey, "=", testReleaseKey),
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
       }))
       .run(edgeDbClient);
-    expect(daArr.length).toEqual(1);
-    const singleLog = daArr[0];
+    expect(deArr.length).toEqual(1);
+    const singleLog = deArr[0];
     expect(singleLog.egressBytes).toEqual(101);
   });
 
@@ -129,8 +131,8 @@ describe("Test CloudTrailLake Service", () => {
       const result = await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
         user: allowedMemberUser,
         releaseKey: testReleaseKey,
-        eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+        datasetUrisArray: [TENG_URI],
       });
-    }).rejects.toThrow(NotAuthorisedSyncDataAccessEvents);
+    }).rejects.toThrow(NotAuthorisedSyncDataEgressRecords);
   });
 });

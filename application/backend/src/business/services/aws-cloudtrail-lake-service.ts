@@ -14,7 +14,11 @@ import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
 import { touchRelease } from "../db/release-queries";
-import { NotAuthorisedSyncDataAccessEvents } from "../exceptions/audit-authorisation";
+import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
+import {
+  updateLastDataEgressQueryTimestamp,
+  updateReleaseDataEgress,
+} from "../../../dbschema/queries";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -34,6 +38,8 @@ type CloudTrailLakeResponseType = {
   bucketName: string;
   key: string;
   bytesTransferredOut: string;
+  releaseKey: string;
+  auditId: string;
 };
 
 @injectable()
@@ -50,11 +56,11 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
   private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
-  private checkisAllowedChangeUserPermissions(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedChangeUserPermission;
+  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
+    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
     if (isPermissionAllow) return;
 
-    throw new NotAuthorisedSyncDataAccessEvents();
+    throw new NotAuthorisedSyncDataEgressRecords();
   }
 
   async getEventDataStoreIdFromDatasetUris(
@@ -76,7 +82,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     const releaseDates = await e
       .select(e.release.Release, (r) => ({
         created: true,
-        lastDateTimeDataAccessLogQuery: true,
+        lastDataEgressQueryTimestamp: true,
         filter: e.op(r.releaseKey, "=", releaseKey),
       }))
       .assert_single()
@@ -90,12 +96,12 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
 
     // If have not been queried before, will be using the release created date.
-    if (!releaseDates.lastDateTimeDataAccessLogQuery) {
+    if (!releaseDates.lastDataEgressQueryTimestamp) {
       return releaseDates.created.toISOString();
     }
 
     // Adding 1 ms from previous query to prevent overlap results.
-    const dateObj = new Date(releaseDates.lastDateTimeDataAccessLogQuery);
+    const dateObj = new Date(releaseDates.lastDataEgressQueryTimestamp);
     dateObj.setTime(dateObj.getTime() + 1);
 
     return dateObj.toISOString();
@@ -189,17 +195,20 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         }
       }
 
-      await this.auditLogService.updateDataAccessAuditEvent({
-        executor: this.edgeDbClient,
-        releaseKey: releaseKey,
-        whoId: trailEvent.sourceIPAddress,
-        whoDisplayName: loc,
-        fileUrl: s3Url,
-        description: description,
+      await updateReleaseDataEgress(this.edgeDbClient, {
+        releaseKey,
+        description,
+        auditId: trailEvent.auditId,
+
+        occurredDateTime: utcDate,
+        sourceIpAddress: trailEvent.sourceIPAddress,
+        sourceLocation: loc,
+
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
-        date: utcDate,
+        fileUrl: s3Url,
       });
     }
+    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
   }
 
   /**
@@ -233,7 +242,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   }
 
   /**
-   * Creare SQL CloudTrailLake statement for PresignedUrl
+   * Create SQL CloudTrailLake statement for PresignedUrl
    * Ref: https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-limitations.html
    *
    * @param props
@@ -243,6 +252,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     props: CloudTrailInputQueryType & { releaseKey: string }
   ): string {
     const requestedField =
+      "element_at(requestParameters, 'x-auditId') as auditId, " +
       "element_at(requestParameters, 'x-releaseKey') as releaseKey, " +
       "eventTime, " +
       "sourceIPAddress, " +
@@ -317,16 +327,22 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
   public async fetchCloudTrailLakeLog({
     user,
     releaseKey,
-    eventDataStoreIds,
+    datasetUrisArray,
   }: {
     user: AuthenticatedUser;
     releaseKey: string;
-    eventDataStoreIds: string[];
+    datasetUrisArray: string[];
   }) {
-    this.checkisAllowedChangeUserPermissions(user);
+    this.checkIsAllowedRefreshDatasetIndex(user);
+
+    const eventDataStoreIds = await this.getEventDataStoreIdFromDatasetUris(
+      datasetUrisArray
+    );
+    if (!eventDataStoreIds) throw new Error("No AWS CloudTrailLake Configured");
 
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
-    const endQueryDate = new Date().toISOString();
+    const endQueryDate = new Date();
+    const endQueryDateISO = endQueryDate.toISOString();
 
     // Try initiate maxmind reader if available
     try {
@@ -344,7 +360,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
         if (method == CloudTrailQueryType.PresignUrl) {
           const sqlQueryStatement = this.createSQLQueryByReleaseKeyReqParams({
             startTimestamp: startQueryDate ?? undefined,
-            endTimestamp: endQueryDate,
+            endTimestamp: endQueryDateISO,
             releaseKey: releaseKey,
             eventDataStoreId: edsi,
           });
@@ -370,7 +386,7 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
           for (const a of apAlias) {
             const sqlQueryStatement = this.createSQLQueryByAccessPointAlias({
               startTimestamp: startQueryDate ?? undefined,
-              endTimestamp: endQueryDate,
+              endTimestamp: endQueryDateISO,
               eventDataStoreId: edsi,
               apAlias: a,
             });
@@ -394,15 +410,10 @@ export class AwsCloudTrailLakeService extends AwsBaseService {
     }
 
     // Update last query date to release record
-    await e
-      .update(e.release.Release, (r) => ({
-        filter: e.op(r.releaseKey, "=", releaseKey),
-        set: {
-          lastDateTimeDataAccessLogQuery: e.datetime(endQueryDate),
-        },
-      }))
-      .run(this.edgeDbClient);
-
+    updateLastDataEgressQueryTimestamp(this.edgeDbClient, {
+      releaseKey,
+      lastQueryTimestamp: endQueryDate,
+    });
     await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
   }
 }
