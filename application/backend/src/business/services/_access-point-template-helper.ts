@@ -1,7 +1,7 @@
-import { ReleaseFileListEntry } from "./_release-file-list-helper";
 import { has } from "lodash";
 import { randomBytes } from "crypto";
 import { Stack } from "@aws-sdk/client-cloudformation";
+import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 
 export type AccessPointTemplateToSave = {
   root: boolean;
@@ -65,7 +65,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   templateBucket: string,
   templateRegion: string,
   releaseKey: string,
-  files: ReleaseFileListEntry[],
+  files: ManifestBucketKeyObjectType[],
   shareToAccountIds: string[],
   shareToVpcId?: string
 ): AccessPointTemplateToSave[] {
@@ -75,7 +75,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
 
   // unlike the file entries array which has other fields (like specimenId etc) - we only interested in
   // the file entries - and duplicates should be removed
-  // (e.g. a trio VCF might have three ReleaseFileListEntry (one for each person) - but we want to only list once)
+  // (e.g. a trio VCF might have three ManifestBucketKeyObjectType (one for each person) - but we want to only list once)
   const uniqueEntries: { [u: string]: AccessPointEntry } = {};
 
   // I'd normally use a Set() here but we want to not have to the S3Url -> S3Bucket,S3key logic again

@@ -1,17 +1,17 @@
-import { ReleaseFileListEntry } from "../../../src/business/services/_release-file-list-helper";
 import {
   AccessPointTemplateToSave,
   createAccessPointTemplateFromReleaseFileEntries,
 } from "../../../src/business/services/_access-point-template-helper";
+import { ManifestBucketKeyObjectType } from "../../../src/business/services/manifests/manifest-bucket-key-types";
 
 describe("Creating Access Point CloudFormation Templates", () => {
-  let singleBucketFiles: ReleaseFileListEntry[];
-  let dualBucketFiles: ReleaseFileListEntry[];
+  let singleBucketFiles: ManifestBucketKeyObjectType[];
+  let dualBucketFiles: ManifestBucketKeyObjectType[];
 
   const getTemplateJson = (apt: AccessPointTemplateToSave): any =>
     JSON.parse(apt.content);
 
-  const makeEntry = (s3Url: string): ReleaseFileListEntry => {
+  const makeEntry = (s3Url: string): ManifestBucketKeyObjectType => {
     const _match = s3Url.match(/^s3?:\/\/([^\/]+)\/?(.*?)$/);
 
     if (!_match) {
@@ -23,12 +23,13 @@ describe("Creating Access Point CloudFormation Templates", () => {
       objectStoreBucket: _match[1],
       objectStoreKey: _match[2],
       // the fields below are not actually used in the template creation - so can be anything
-      fileType: "NOTIMPORTANT",
+      objectType: "NOTIMPORTANT",
       caseId: "ACASEID",
       patientId: "APATIENTID",
       specimenId: "ASPECIMENID",
       md5: "1234",
-      size: "1000",
+      objectSize: 1000,
+      artifactId: "ANARTFACTID",
     };
   };
   beforeEach(() => {

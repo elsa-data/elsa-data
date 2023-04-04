@@ -20,7 +20,6 @@ import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
-import { appRouter } from "./app-router";
 import { Context } from "./api/routes/trpc-bootstrap";
 import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 import { trpcRoutes } from "./api/api-trpc-routes";
