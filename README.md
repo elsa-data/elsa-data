@@ -2,6 +2,42 @@
 
 Genomic data sharing support software ("let the data go").
 
+### Roles and Permissions
+
+#### User Permissions
+
+Within the system permissions, there are the following permissions that stick to every account.
+
+- `isAllowedOverallAdministratorView` - This permission will have no restriction to view all records in the application. This is mainly intended for admins that able to view, but unable to make changes to any records.
+- `isAllowedCreateRelease` - This permission allows the user to create a new release from existing dataset records. Making new releases will become an administrator role in the context of release.
+- `isAllowedRefreshDatasetIndex` - This permission allows the user to update the current dataset by fetching the latest data from its respective data-storage. This includes fetching data-egress records if configured.
+- `isAllowedChangeUserPermission` - This is a special permission that allows changing user permissions. This permission itself is mutable only through the system configuration, and changing this requires a system reboot.
+
+All of these permissions will be set to `false` by default.
+
+#### Release Roles
+
+In the context of release, there are a couple of roles within each release as follows.
+
+- `Administrator` - This role is given to the data custodian that created the release. (This user will have the `isAllowedCreateRelease` permission from the user permissions above.)
+- `Manager` - This role is given to the Person In Charge (PIC) / research lead for the release.
+- `Member` - This role is given by the `Manager`/`Administrator` to access the data in the release. The use case for this is a person from the PIC research group need to access the given data, but instead of using the `Manager` credentials to retrieve it, the manager could delegate this (`Member`) role to that person.
+
+Permissions bound on each role are as follows.
+
+|                                                                                                                                        | `Administrator`    | `Manager`          | `Member`           |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ |
+| Modify cases/patients to be included in the release                                                                                    | :white_check_mark: |                    |                    |
+| Modify files to be included in the release                                                                                             | :white_check_mark: |                    |                    |
+| Modify what type of method allowed for the data access<br>(e.g. only allow HTSGET endpoint)                                            | :white_check_mark: |                    |                    |
+| Enable/suspend data sharing in a release                                                                                               | :white_check_mark: |                    |                    |
+| Add/remove `Member` from the release                                                                                                   | :white_check_mark: | :white_check_mark: |                    |
+| Promote/Demote `Manager` from/to a `Member` role                                                                                       | :white_check_mark: | :white_check_mark: |                    |
+| View details of the release<br>(e.g. purpose of release, DAC details, user involved in the release)                                    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| View all audit events occurred within the release                                                                                      | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| View password for encrypted manifest.<br>(Manifest will be protected with password to prevent storing it randomly on local directory.) | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| Accessed the data-content available in the release.                                                                                    |                    | :white_check_mark: | :white_check_mark: |
+
 ## Dev
 
 ### On Checkout
