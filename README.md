@@ -6,12 +6,12 @@ Genomic data sharing support software ("let the data go").
 
 #### User Permissions
 
-Within the system permissions, there are the following permissions that stick to every account.
+Within the system permissions, there are the following permissions that stick to every user account.
 
 | Permission                          | Description                                                                                                                                                                                  |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `isAllowedOverallAdministratorView` | This permission will have no restriction to view all records in the application. This is mainly intended for admins that able to view, but unable to make changes to any records.            |
-| `isAllowedCreateRelease`            | Allow user to create a new release from existing dataset records. Making new releases will become an administrator role in the context of release.                                           |
+| `isAllowedCreateRelease`            | Allow user to create a new release from existing dataset records. Making a new releases will become an `Administrator` role in the context of release.                                       |
 | `isAllowedRefreshDatasetIndex`      | Allow the user to update the current dataset by fetching the latest data from its respective data-storage. This includes fetching data-egress records if configured.                         |
 | `isAllowedChangeUserPermission`     | This is a special permission that allows changing a user's permissions. This permission itself is mutable only through the system configuration, and changing this requires a system reboot. |
 
@@ -21,11 +21,11 @@ All of these permissions will be set to `false` by default.
 
 In the context of release, there are a couple of roles within each release as follows.
 
-| Roles           | Description                                                                                                                                                                                                                                                                                           |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Administrator` | Given to the data custodian that created the release. (This user will have the `isAllowedCreateRelease` permission from the user permissions above.)                                                                                                                                                  |
-| `Manager`       | Given to the Person In Charge (PIC) / research lead for the release.                                                                                                                                                                                                                                  |
-| `Member`        | Given by the `Manager`/`Administrator` to access the data in the release. The use case for this is a person from the PIC research group need to access the given data, but instead of using the `Manager` credentials to retrieve it, the manager could delegate this (`Member`) role to that person. |
+| Roles           | Description                                                                                                                                                                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Administrator` | Given to the data custodian that created the release. (This user will have the `isAllowedCreateRelease` permission from the user permissions above.)                                                                                                                                              |
+| `Manager`       | Given to the Person In Charge (PIC) / research lead for the release.                                                                                                                                                                                                                              |
+| `Member`        | Given by the `Manager`/`Administrator` to access the data in the release. The use case for this is a person from the research group need to access the given data, but instead of using the `Manager` credentials to retrieve it, the manager could delegate this (`Member`) role to that person. |
 
 Permissions bound on each role are as follows.
 
