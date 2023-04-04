@@ -13,7 +13,7 @@ import {
   ManifestHtsgetError,
   ManifestHtsgetNotAllowed,
 } from "../../../exceptions/manifest-htsget";
-import { add, isPast } from "date-fns";
+import { addSeconds, differenceInSeconds } from "date-fns";
 import { NotFound } from "@aws-sdk/client-s3";
 import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
 import { inject, injectable } from "tsyringe";
@@ -71,30 +71,38 @@ export abstract class ManifestHtsgetService {
       throw new ManifestHtsgetEndpointNotEnabled();
     }
 
-    let shouldUpdate = false;
+    const manifestKey = `${ManifestHtsgetService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`;
+
+    let timeDifference = 0;
     try {
       // Should htsget have its own bucket, or is the tempBucket okay?
       const head = await this.cloudStorage.head(
         this.settings.aws.tempBucket,
-        releaseKey
+        manifestKey
       );
 
       this.logger.debug(
-        `received head object in htsget manifest route: ${head}`
+        `received head object in htsget manifest route: ${JSON.stringify(head)}`
       );
 
-      shouldUpdate =
-        head.lastModified === undefined ||
-        isPast(add(head.lastModified, this.settings.htsget.manifestTTL));
+      // Get the difference in time between now and the last modified date of the object, plus it's max age.
+      if (head.lastModified !== undefined) {
+        const addMaxAge = addSeconds(
+          head.lastModified,
+          this.settings.htsget.maxAge
+        );
+        timeDifference = differenceInSeconds(addMaxAge, new Date());
+      }
     } catch (error) {
       if (error instanceof NotFound) {
-        shouldUpdate = true;
+        this.logger.debug("manifest object not found");
+        // Do nothing
       } else {
         throw error;
       }
     }
 
-    if (shouldUpdate) {
+    if (timeDifference <= 0) {
       const manifest = await this.getActiveHtsgetManifest(releaseKey);
 
       if (manifest === null) {
@@ -102,14 +110,18 @@ export abstract class ManifestHtsgetService {
       }
 
       this.logger.debug(
-        `publishing manifest: ${manifest} to bucket: ${this.settings.aws.tempBucket}`
+        `publishing manifest: ${JSON.stringify(manifest)} to bucket: ${
+          this.settings.aws.tempBucket
+        }`
       );
 
       await this.cloudStorage.put(
         this.settings.aws.tempBucket,
-        `${ManifestHtsgetService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`,
+        manifestKey,
         manifest.toString()
       );
+
+      timeDifference = this.settings.htsget.maxAge;
     }
 
     const output = {
@@ -117,12 +129,12 @@ export abstract class ManifestHtsgetService {
         bucket: this.settings.aws.tempBucket,
         key: releaseKey,
       },
-      cached: !shouldUpdate,
+      maxAge: timeDifference,
     };
 
     await completeAuditFn(this.edgeDbClient, output);
 
-    this.logger.debug(`published manifest with output: ${output}`);
+    this.logger.debug(`htsget manifest with output: ${JSON.stringify(output)}`);
 
     return output;
   }

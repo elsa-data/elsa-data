@@ -46,7 +46,13 @@ export const manifestRoutes = async (
       );
 
       const output = await manifestService.publishHtsgetManifest(releaseKey);
-      reply.send(output);
+
+      reply
+        .header(
+          "Cache-Control",
+          `public, max-age=${output.maxAge}, must-revalidate, immutable`
+        )
+        .send(output);
     }
   );
 };

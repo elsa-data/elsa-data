@@ -23,7 +23,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     mode: "None",
   },
   htsget: {
-    manifestTTL: { seconds: 86400 },
+    maxAge: 86400,
     url: new URL("https://htsget.elsa.dev.umccr.org"),
   },
   deployedUrl: "http://localhost:3000",

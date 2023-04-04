@@ -73,7 +73,7 @@ export const configDefinition = {
     },
   },
   htsget: {
-    manifestTTL: {
+    maxAge: {
       doc: "The amount of time that a htsget manifest remains valid in seconds",
       format: "Number",
       sensitive: false,

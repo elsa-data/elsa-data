@@ -112,8 +112,7 @@ export const ManifestHtsgetResponseSchema = Type.Object({
       key: Type.String(),
     })
   ),
-  // True if the object was not updated and is cached and valid, false otherwise.
-  cached: Type.Boolean(),
+  maxAge: Type.Number(),
 });
 export type ManifestHtsgetResponseType = Static<
   typeof ManifestHtsgetResponseSchema

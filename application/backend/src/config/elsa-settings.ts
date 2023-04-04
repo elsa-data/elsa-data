@@ -39,7 +39,7 @@ export type ElsaSettings = {
   logger: LoggerOptions;
 
   htsget?: {
-    manifestTTL: Duration;
+    maxAge: number;
     url: URL;
   };
 

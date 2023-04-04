@@ -22,8 +22,8 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { addSeconds } from "date-fns";
 import { Logger } from "pino";
+import { addSeconds } from "date-fns";
 
 const testContainer = registerTypes();
 
@@ -260,10 +260,8 @@ it("test publish htsget manifest htsget not enabled", async () => {
 });
 
 it("test publish htsget cached", async () => {
-  if (settings.htsget?.manifestTTL.seconds === undefined) {
-    logger.warn(
-      "Skipping test because htsget manifestTTL seconds is not defined."
-    );
+  if (settings.htsget?.maxAge === undefined) {
+    logger.warn("Skipping test because htsget is not defined.");
     return;
   }
 
@@ -273,30 +271,21 @@ it("test publish htsget cached", async () => {
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
-    LastModified: addSeconds(
-      new Date(),
-      settings.htsget.manifestTTL.seconds + 1000
-    ),
+    LastModified: addSeconds(new Date(), settings.htsget.maxAge + 1000),
   });
 
-  const cachedManifest = async () => {
-    return await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
-  };
+  let value = await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
 
-  await expect(cachedManifest()).resolves.toEqual({
-    location: {
-      bucket: settings.aws?.tempBucket,
-      key: testReleaseKey,
-    },
-    cached: true,
+  expect(value.location).toEqual({
+    bucket: settings.aws?.tempBucket,
+    key: testReleaseKey,
   });
+  expect(value.maxAge).toBeLessThan(settings.htsget.maxAge);
 });
 
 it("test publish htsget not cached", async () => {
-  if (settings.htsget?.manifestTTL.seconds === undefined) {
-    logger.warn(
-      "Skipping test because htsget manifestTTL seconds is not defined."
-    );
+  if (settings.htsget?.maxAge === undefined) {
+    logger.warn("Skipping test because htsget is not defined.");
     return;
   }
 
@@ -306,22 +295,15 @@ it("test publish htsget not cached", async () => {
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
-    LastModified: addSeconds(
-      new Date(),
-      settings.htsget.manifestTTL.seconds - 1000
-    ),
+    LastModified: addSeconds(new Date(), settings.htsget.maxAge - 1000),
   });
   s3ClientMock.on(PutObjectCommand).resolves({});
 
-  const notCachedManifest = async () => {
-    return await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
-  };
+  let value = await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
 
-  await expect(notCachedManifest()).resolves.toEqual({
-    location: {
-      bucket: settings.aws?.tempBucket,
-      key: testReleaseKey,
-    },
-    cached: false,
+  expect(value.location).toEqual({
+    bucket: settings.aws?.tempBucket,
+    key: testReleaseKey,
   });
+  expect(value.maxAge).toEqual(settings.htsget.maxAge);
 });

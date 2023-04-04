@@ -89,10 +89,13 @@ export abstract class ReleaseBaseService {
    * Get the config for a feature. Currently, this can just get config for htsget.
    * It might be good to have this for other features that require config properties to
    * be set.
+   *
    * @param property
    */
   public configForFeature(property: "isAllowedHtsget"): any | undefined {
-    return { url: this.settings.htsget?.url };
+    return this.settings.htsget !== undefined
+      ? { url: this.settings.htsget.url }
+      : undefined;
   }
 
   /**
