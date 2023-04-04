@@ -35,7 +35,6 @@ interface ApplicationUser {
 }
 
 @injectable()
-@singleton()
 export class RedcapImportApplicationService {
   constructor(
     @inject("Database") private edgeDbClient: edgedb.Client,

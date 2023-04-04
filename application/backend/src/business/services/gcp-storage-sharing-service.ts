@@ -11,7 +11,6 @@ import { ReleaseService } from "./release-service";
 import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 
 @injectable()
-@singleton()
 export class GcpStorageSharingService extends GcpBaseService {
   storage: Storage;
   globalLimit: Limit;

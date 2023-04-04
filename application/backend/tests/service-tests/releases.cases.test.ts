@@ -40,16 +40,16 @@ let notAllowedUser: AuthenticatedUser;
 const DEFAULT_LIMIT = 10000;
 const DEFAULT_OFFSET = 0;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseSelectionService = testContainer.resolve(ReleaseSelectionService);
 });
 
 beforeEach(async () => {
   ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
-    await beforeEachCommon());
+    await beforeEachCommon(testContainer));
 });
 
 /**

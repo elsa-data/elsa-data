@@ -1,12 +1,11 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
   CloudTrailClient,
-  StartQueryCommand,
   GetQueryResultsCommand,
+  StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
 import { AwsBaseService } from "./aws-base-service";
 import { AuditLogService } from "./audit-log-service";
@@ -38,7 +37,6 @@ type CloudTrailLakeResponseType = {
 };
 
 @injectable()
-@singleton()
 export class AwsCloudTrailLakeService extends AwsBaseService {
   constructor(
     @inject("Settings") private settings: ElsaSettings,

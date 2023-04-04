@@ -9,7 +9,6 @@ import KaryotypicSex = org.phenopackets.schema.v2.core.KaryotypicSex;
 import { AuthenticatedUser } from "../authenticated-user";
 
 @injectable()
-@singleton()
 export class PhenopacketsService {
   constructor(@inject("Database") private edgeDbClient: Client) {}
 

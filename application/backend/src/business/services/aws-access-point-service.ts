@@ -28,7 +28,6 @@ import assert from "assert";
 const REGION = "ap-southeast-2";
 
 @injectable()
-@singleton()
 export class AwsAccessPointService extends AwsBaseService {
   constructor(
     @inject("CloudFormationClient")

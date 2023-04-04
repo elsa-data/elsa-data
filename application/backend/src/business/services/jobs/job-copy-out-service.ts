@@ -34,7 +34,6 @@ import assert from "node:assert";
  * external microservice).
  */
 @injectable()
-@singleton()
 export class JobCopyOutService extends JobsService {
   public static readonly JOB_NAME = "CopyOut";
 

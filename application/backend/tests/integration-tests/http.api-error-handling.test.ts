@@ -2,13 +2,15 @@ import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { Base7807Response } from "@umccr/elsa-types/error-types";
 import { registerTypes } from "../test-dependency-injection.common";
+import { getServices } from "../../src/di-helpers";
 
 describe("http API error handling tests", () => {
   let server: FastifyInstance;
 
   beforeAll(async () => {
     const testContainer = await registerTypes();
-    const app = testContainer.resolve(App);
+    const { settings, logger } = getServices(testContainer);
+    const app = new App(testContainer, settings, logger);
     server = await app.setupServer();
     await server.ready();
   });

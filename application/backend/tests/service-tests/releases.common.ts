@@ -18,6 +18,7 @@ import {
 import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
 import { getNextReleaseKey } from "../../src/business/db/release-queries";
 import { insert10C } from "../../src/test-data/insert-test-data-10c";
+import { DependencyContainer } from "tsyringe";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -28,12 +29,12 @@ import { insert10C } from "../../src/test-data/insert-test-data-10c";
  * If you make *any* changes here - you must re-run all the release tests
  * to ensure that the state change hasn't unexpectedly resulted in a test failing.
  */
-export async function beforeEachCommon() {
+export async function beforeEachCommon(dc: DependencyContainer) {
   const edgeDbClient = createClient({});
 
   await blankTestData();
-  await insert10G();
-  await insert10F();
+  await insert10G(dc);
+  await insert10F(dc);
   // note that we insert these in order to have some records that _aren't_ in involved in this release
   // ONLY 10G and 10F are actually in the release
   await insert10C();

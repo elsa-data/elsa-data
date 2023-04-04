@@ -6,10 +6,8 @@ import {
   createFile,
 } from "./test-data-helpers";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
-import { container } from "tsyringe";
-import { ElsaSettings } from "../config/elsa-settings";
-
-const edgeDbClient = edgedb.createClient();
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../di-helpers";
 
 export const GS_URI = "urn:fdc:umccr.org:2022:dataset/gs";
 
@@ -17,8 +15,8 @@ export const GS_URI = "urn:fdc:umccr.org:2022:dataset/gs";
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
  * to test specific areas of data sharing.
  */
-export async function insertGs() {
-  const settings = container.resolve<ElsaSettings>("Settings");
+export async function insertGs(dc: DependencyContainer) {
+  const { settings, logger, edgeDbClient } = getServices(dc);
 
   const makeCase = async (
     caseId: string,

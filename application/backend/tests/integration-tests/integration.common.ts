@@ -20,6 +20,7 @@ import {
 } from "../../src/test-data/insert-test-users";
 import { registerTypes } from "../test-dependency-injection.common";
 import { App } from "../../src/app";
+import { getServices } from "../../src/di-helpers";
 
 const testReleaseKey = "R0001";
 const authCookieName = "elsa-data-id-and-bearer-tokens";
@@ -36,14 +37,15 @@ export async function createLoggedInServerWithRelease() {
   await blankTestData();
 
   const testContainer = await registerTypes();
-  const app = testContainer.resolve(App);
+  const { settings, logger } = getServices(testContainer);
+  const app = new App(testContainer, settings, logger);
   const server = await app.setupServer();
   await server.ready();
 
   const edgeDbClient = createClient({});
 
-  await insert10G();
-  await insert10F();
+  await insert10G(testContainer);
+  await insert10F(testContainer);
 
   await e
     .insert(e.release.Release, {

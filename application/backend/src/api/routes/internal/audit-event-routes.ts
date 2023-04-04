@@ -6,7 +6,6 @@ import {
   sendUncheckedPagedResult,
 } from "../../api-internal-routes";
 import * as edgedb from "edgedb";
-import { container } from "tsyringe";
 import { AuditLogService } from "../../../business/services/audit-log-service";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
@@ -26,16 +25,23 @@ import AuditEventForQuerySchema = RouteValidation.AuditEventForQuerySchema;
 import AuditEventForQueryType = RouteValidation.AuditEventForQueryType;
 import AuditEventDetailsQueryType = RouteValidation.AuditEventDetailsQueryType;
 import AuditEventDetailsQuerySchema = RouteValidation.AuditEventDetailsQuerySchema;
+import { DependencyContainer } from "tsyringe";
 
 export const auditEventRoutes = async (
   fastify: FastifyInstance,
-  _opts: any
+  _opts: {
+    container: DependencyContainer;
+  }
 ) => {
-  const settings = container.resolve<ElsaSettings>("Settings");
-  const edgeDbClient = container.resolve<edgedb.Client>("Database");
-  const datasetService = container.resolve<DatasetService>(DatasetService);
-  const auditLogService = container.resolve<AuditLogService>(AuditLogService);
-  const awsCloudTrailLakeService = container.resolve(AwsCloudTrailLakeService);
+  const settings = _opts.container.resolve<ElsaSettings>("Settings");
+  const edgeDbClient = _opts.container.resolve<edgedb.Client>("Database");
+  const datasetService =
+    _opts.container.resolve<DatasetService>(DatasetService);
+  const auditLogService =
+    _opts.container.resolve<AuditLogService>(AuditLogService);
+  const awsCloudTrailLakeService = _opts.container.resolve(
+    AwsCloudTrailLakeService
+  );
 
   fastify.get<{
     Params: { releaseKey: string };

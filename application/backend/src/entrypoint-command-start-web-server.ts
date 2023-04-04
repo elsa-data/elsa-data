@@ -2,7 +2,7 @@ import { App } from "./app";
 import { insertTestData } from "./test-data/insert-test-data";
 import { blankTestData } from "./test-data/blank-test-data";
 import Bree from "bree";
-import { container } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import path from "path";
 import { sleep } from "edgedb/dist/utils";
 import { DatasetService } from "./business/services/dataset-service";
@@ -20,10 +20,14 @@ export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
  * A command that starts (and waits) for the Elsa Data web server to serve
  * the Elsa Data application.
  *
+ * @param dc
  * @param scenario
  */
-export async function startWebServer(scenario: number | null): Promise<number> {
-  const { settings, logger } = getServices(container);
+export async function startWebServer(
+  dc: DependencyContainer,
+  scenario: number | null
+): Promise<number> {
+  const { settings, logger } = getServices(dc);
 
   // in a real deployment - "add scenario", "db blank" etc would all be handled by 'commands'.
   // we have one dev use case though - where we nodemon the local code base and restart the server
@@ -34,7 +38,7 @@ export async function startWebServer(scenario: number | null): Promise<number> {
 
       await blankTestData();
       // TODO allow different scenarios to be inserted based on the value
-      await insertTestData(settings);
+      await insertTestData(dc);
     } else {
       // a simple guard to hopefully stop an accident in prod
       console.log(
@@ -56,14 +60,14 @@ export async function startWebServer(scenario: number | null): Promise<number> {
   }
 
   // Insert datasets from config
-  const datasetService = container.resolve(DatasetService);
+  const datasetService = dc.resolve(DatasetService);
   await datasetService.configureDataset(settings.datasets);
 
   // create the actual webserver/app
-  const app = container.resolve(App);
+  const app = new App(dc, settings, logger);
   const server = await app.setupServer();
 
-  const mailService = container.resolve(MailService);
+  const mailService = dc.resolve(MailService);
   mailService.setup();
 
   try {
@@ -113,8 +117,8 @@ export async function startJobQueue(config: any) {
  * This provides useful feedback on first startup as the service cannot
  * proceed until the initial schema is migrated.
  */
-export async function waitForDatabaseReady() {
-  const { settings, logger, edgeDbClient } = getServices(container);
+export async function waitForDatabaseReady(dc: DependencyContainer) {
+  const { settings, logger, edgeDbClient } = getServices(dc);
 
   // a simple test to exercise the base db/schema expectations
   const dbTest = async (): Promise<string | null> => {
