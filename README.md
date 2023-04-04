@@ -27,16 +27,16 @@ Permissions bound on each role are as follows.
 
 |                                                                                                                                        | `Administrator`    | `Manager`          | `Member`           |
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ |
-| Modify cases/patients to be included in the release                                                                                    | :white_check_mark: |                    |                    |
-| Modify files to be included in the release                                                                                             | :white_check_mark: |                    |                    |
-| Modify what type of method allowed for the data access<br>(e.g. only allow HTSGET endpoint)                                            | :white_check_mark: |                    |                    |
-| Enable/suspend data sharing in a release                                                                                               | :white_check_mark: |                    |                    |
-| Add/remove `Member` from the release                                                                                                   | :white_check_mark: | :white_check_mark: |                    |
-| Promote/Demote `Manager` from/to a `Member` role                                                                                       | :white_check_mark: | :white_check_mark: |                    |
+| Modify cases/patients to be included in the release                                                                                    | :white_check_mark: | :x:                | :x:                |
+| Modify files to be included in the release                                                                                             | :white_check_mark: | :x:                | :x:                |
+| Modify what type of method allowed for the data access<br>(e.g. only allow `htsget` endpoint)                                          | :white_check_mark: | :x:                | :x:                |
+| Enable/suspend data sharing in a release                                                                                               | :white_check_mark: | :x:                | :x:                |
+| Add/remove `Member` from the release                                                                                                   | :white_check_mark: | :white_check_mark: | :x:                |
+| Promote/Demote `Manager` from/to a `Member` role                                                                                       | :white_check_mark: | :white_check_mark: | :x:                |
 | View details of the release<br>(e.g. purpose of release, DAC details, user involved in the release)                                    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | View all audit events occurred within the release                                                                                      | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 | View password for encrypted manifest.<br>(Manifest will be protected with password to prevent storing it randomly on local directory.) | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Accessed the data-content available in the release.                                                                                    |                    | :white_check_mark: | :white_check_mark: |
+| Accessed the data-content available in the release.                                                                                    | :x:                | :white_check_mark: | :white_check_mark: |
 
 ## Dev
 
