@@ -27,6 +27,7 @@ import { ManifestService } from "../src/business/services/manifests/manifest-ser
 import { S3 } from "../src/business/services/cloud-storage-service";
 import { S3ManifestHtsgetService } from "../src/business/services/manifests/htsget/manifest-htsget-service";
 import { STSClient } from "@aws-sdk/client-sts";
+import { SFNClient } from "@aws-sdk/client-sfn";
 
 export function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
