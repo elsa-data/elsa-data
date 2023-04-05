@@ -68,7 +68,7 @@ const dc = bootstrapDependencyInjection();
 
       if (!jobs || jobs.length < 1) {
         if (
-          differenceInHours(Date.now(), lastEmptyInProgressMessageDateTime) > 1
+          differenceInHours(Date.now(), lastEmptyInProgressMessageDateTime) > 0
         ) {
           logger.debug(
             `Check for in progress jobs resulted in empty set (this message occurs hourly even though checks are more frequent)`
