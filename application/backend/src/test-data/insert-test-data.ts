@@ -27,7 +27,6 @@ import { getServices } from "../di-helpers";
 export async function insertTestData(dc: DependencyContainer) {
   const { settings, logger, edgeDbClient } = getServices(dc);
 
-  console.log(`Inserting test data`);
   await insert10G(dc);
   await insert10F(dc);
   await insert10C();
@@ -121,38 +120,39 @@ export async function insertTestData(dc: DependencyContainer) {
     true
   );
 
-  console.log(
-    `  Number of object artifacts present = ${await e
+  logger.debug(
+    `insertTestData: Number of object artifacts present = ${await e
       .count(e.lab.ArtifactBase)
       .run(edgeDbClient)}`
   );
-  console.log(
-    `  Number of users present = ${await e
+  logger.debug(
+    `insertTestData: Number of users present = ${await e
       .count(e.permission.User)
       .run(edgeDbClient)}`
   );
-  console.log(
-    `  Number of runs present = ${await e.count(e.lab.Run).run(edgeDbClient)}`
+  logger.debug(
+    `insertTestData: Number of runs present = ${await e
+      .count(e.lab.Run)
+      .run(edgeDbClient)}`
   );
-  console.log(
-    `  Number of releases present = ${await e
+  logger.debug(
+    `insertTestData: Number of releases present = ${await e
       .count(e.release.Release)
       .run(edgeDbClient)}`
   );
 
-  const eachDs = e.for(e.dataset.Dataset, (ds) => {
-    return e.select({
-      dataset: ds.uri,
-      casesCount: e.count(ds.cases),
-      patientsCount: e.count(ds.cases.patients),
-      specimensCount: e.count(ds.cases.patients.specimens),
-    });
-  });
+  //const eachDs = e.for(e.dataset.Dataset, (ds) => {
+  //  return e.select({
+  //    dataset: ds.uri,
+  //    casesCount: e.count(ds.cases),
+  //    patientsCount: e.count(ds.cases.patients),
+  //     specimensCount: e.count(ds.cases.patients.specimens),
+  //  });
+  // });
+  //console.log(await eachDs.run(edgeDbClient));
 
   await insertSystemAuditEvent(edgeDbClient, {
     actionCategory: "E",
     actionDescription: "Email Sent",
   });
-
-  console.log(await eachDs.run(edgeDbClient));
 }

@@ -12,6 +12,7 @@ import pino, { Logger } from "pino";
 import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
 import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
 import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
+import { differenceInHours, minTime } from "date-fns";
 
 // global settings for DI
 const dc = bootstrapDependencyInjection();
@@ -49,6 +50,8 @@ const dc = bootstrapDependencyInjection();
   // jobs will take about this amount of seconds before the signal is noticed
   const secondsChunk = 10;
 
+  let lastEmptyInProgressMessageDateTime = minTime;
+
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
@@ -63,9 +66,19 @@ const dc = bootstrapDependencyInjection();
 
       const jobs = await jobsService.getInProgressJobs();
 
-      logger.debug(`Check for in progress jobs resulted in set ${jobs}`);
+      if (!jobs || jobs.length < 1) {
+        if (
+          differenceInHours(Date.now(), lastEmptyInProgressMessageDateTime) > 1
+        ) {
+          logger.debug(
+            `Check for in progress jobs resulted in empty set (this message occurs hourly even though checks are more frequent)`
+          );
+          lastEmptyInProgressMessageDateTime = Date.now();
+        }
+      } else {
+        // we always want to log this if we have actual jobs in progress
+        logger.debug(`Check for in progress jobs resulted in set ${jobs}`);
 
-      if (jobs && jobs.length > 0) {
         // our jobs will be a mixture of 'compute' and 'io'.. what we want to do is structure them
         // into small chunks of work (be that compute or io)
         // we then ask each job to progress its work...
@@ -158,9 +171,9 @@ const dc = bootstrapDependencyInjection();
 
         // we progress some work from each that wants work done
         const jobResults = await Promise.all(jobPromises);
-      } else {
-        await sleep(secondsChunk * 1000);
       }
+
+      await sleep(secondsChunk * 1000);
 
       logger.flush();
 
