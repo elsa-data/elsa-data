@@ -14,7 +14,6 @@ import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-
 import { CloudflarePresignedUrlsService } from "../src/business/services/cloudflare-presigned-urls-service";
 import { SESClient } from "@aws-sdk/client-ses";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
-import { SFNClient } from "@aws-sdk/client-sfn";
 import { AwsPresignedUrlsService } from "../src/business/services/aws/aws-presigned-urls-service";
 import { AwsDiscoveryService } from "../src/business/services/aws/aws-discovery-service";
 import { AwsEnabledService } from "../src/business/services/aws/aws-enabled-service";
