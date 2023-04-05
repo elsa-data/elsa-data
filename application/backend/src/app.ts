@@ -123,7 +123,8 @@ export class App {
     this.server.setErrorHandler(ErrorHandler);
 
     this.server.ready(() => {
-      this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
+      // only enable if we are having problems with API routing
+      // this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
     });
 
     await this.server.register(trpcRoutes, {
