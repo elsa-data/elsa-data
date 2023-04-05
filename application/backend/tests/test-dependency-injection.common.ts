@@ -12,6 +12,7 @@ import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-
 import { CloudflarePresignedUrlsService } from "../src/business/services/cloudflare-presigned-urls-service";
 import { SESClient } from "@aws-sdk/client-ses";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
+import { SFNClient } from "@aws-sdk/client-sfn";
 
 export function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
@@ -44,6 +45,10 @@ export function registerTypes() {
 
   testContainer.register<ServiceDiscoveryClient>("ServiceDiscoveryClient", {
     useFactory: () => new ServiceDiscoveryClient({}),
+  });
+
+  testContainer.register<SFNClient>("SFNClient", {
+    useFactory: () => new SFNClient({}),
   });
 
   testContainer.register<ElsaSettings>("Settings", {
