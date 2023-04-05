@@ -13,9 +13,9 @@ describe("http patch schema handling tests", () => {
       authCookieName,
       authCookieValue,
       csrfHeaderName,
-      csrfCookieValue,
+      csrfHeaderValue,
       server: newServer,
-    } = await createLoggedInServerWithRelease();
+    } = await createLoggedInServerWithRelease("Administrator");
 
     server = newServer;
 
@@ -33,7 +33,7 @@ describe("http patch schema handling tests", () => {
         [authCookieName]: authCookieValue,
       },
       headers: {
-        [csrfHeaderName]: csrfCookieValue,
+        [csrfHeaderName]: csrfHeaderValue,
       },
     });
 
@@ -47,9 +47,9 @@ describe("http patch schema handling tests", () => {
       authCookieName,
       authCookieValue,
       csrfHeaderName,
-      csrfCookieValue,
+      csrfHeaderValue,
       server: newServer,
-    } = await createLoggedInServerWithRelease();
+    } = await createLoggedInServerWithRelease("Administrator");
 
     server = newServer;
 
@@ -67,7 +67,7 @@ describe("http patch schema handling tests", () => {
         [authCookieName]: authCookieValue,
       },
       headers: {
-        [csrfHeaderName]: csrfCookieValue,
+        [csrfHeaderName]: csrfHeaderValue,
       },
     });
 
