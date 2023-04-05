@@ -129,8 +129,12 @@ select {
         with
           dataEgressRecord := ( 
             select release::DataEgressRecord { egressBytes, occurredDateTime }
-            filter .release.releaseKey = <str>$releaseKey and .fileUrl = file.url
-            order by .occurredDateTime
+            filter 
+                .release.releaseKey = <str>$releaseKey 
+              and 
+                .fileUrl = file.url
+            order by 
+              .occurredDateTime desc
           )
 
         select {
@@ -139,7 +143,9 @@ select {
           totalDataEgressInBytes := sum((
             dataEgressRecord.egressBytes
           )),
-          lastOccurredDateTime := (select assert_single((select dataEgressRecord.occurredDateTime limit 1)))
+          lastOccurredDateTime := (
+              select assert_single((select dataEgressRecord.occurredDateTime limit 1))
+          )
         }
       )
     )
