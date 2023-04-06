@@ -1,22 +1,45 @@
-# A simple get query for DataEgressRecord
+# A simple get query for DataEgressRecord based on releaseKey
 
-select release::DataEgressRecord{
-  auditId,
-  occurredDateTime,
-  description,
+with 
 
-  sourceIpAddress,
-  sourceLocation,
-  egressBytes,
+  allRelatedEgressRecords := (
+    select release::DataEgressRecord{
+      auditId,
+      occurredDateTime,
+      description,
 
-  fileUrl,
-  fileSize,
+      sourceIpAddress,
+      sourceLocation,
+      egressBytes,
+
+      fileUrl,
+      fileSize,
+    }
+    filter 
+        .release.releaseKey = <str>$releaseKey
+    order by
+        .occurredDateTime desc
+  )
+
+select {
+
+  totalCount := count(allRelatedEgressRecords),
+  results := (
+      select allRelatedEgressRecords {
+        auditId,
+        occurredDateTime,
+        description,
+
+        sourceIpAddress,
+        sourceLocation,
+        egressBytes,
+
+        fileUrl,
+        fileSize,
+      }
+      offset
+        <int16>$offset
+      limit
+        <int16>$limit
+  )
 }
-filter 
-    .release.releaseKey = <str>$releaseKey
-order by
-    .occurredDateTime desc
-offset
-    <int16>$offset
-limit
-    <int16>$limit

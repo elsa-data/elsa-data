@@ -8,7 +8,6 @@ import { AuditLogService } from "./audit-log-service";
 import { createPagedResult } from "../../api/helpers/pagination-helpers";
 
 import {
-  countReleaseDataEgress,
   getReleaseDataEgress,
   getReleaseDataEgressSummary,
   releaseGetByReleaseKey,
@@ -97,16 +96,15 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       releaseKey
     );
 
-    const totalEntries = await countReleaseDataEgress(this.edgeDbClient, {
-      releaseKey,
-    });
-
-    const dataEgressArray = await getReleaseDataEgress(this.edgeDbClient, {
+    const dataEgressQueryRes = await getReleaseDataEgress(this.edgeDbClient, {
       releaseKey,
       offset,
       limit,
     });
 
-    return createPagedResult(dataEgressArray, totalEntries);
+    return createPagedResult(
+      dataEgressQueryRes.results,
+      dataEgressQueryRes.totalCount
+    );
   }
 }
