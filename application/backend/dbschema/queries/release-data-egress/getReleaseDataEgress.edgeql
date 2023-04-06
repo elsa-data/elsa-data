@@ -3,18 +3,7 @@
 with 
 
   allRelatedEgressRecords := (
-    select release::DataEgressRecord{
-      auditId,
-      occurredDateTime,
-      description,
-
-      sourceIpAddress,
-      sourceLocation,
-      egressBytes,
-
-      fileUrl,
-      fileSize,
-    }
+    select release::DataEgressRecord
     filter 
         .release.releaseKey = <str>$releaseKey
     order by
