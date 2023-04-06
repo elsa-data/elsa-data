@@ -56,7 +56,7 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
         // invalidate the keys so that going to the dashboard will be refreshed
         queryClient.invalidateQueries(REACT_QUERY_RELEASE_KEYS.all).then(() => {
           // bounce us to the details page for the release we just made
-          navigate(`/releases/${newReleaseKey}`);
+          navigate(`/releases/${newReleaseKey}/detail`);
         });
 
         // now close the dialog

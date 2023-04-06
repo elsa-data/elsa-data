@@ -5,7 +5,6 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
-import { getNextReleaseKey } from "../business/db/release-queries";
 
 const edgeDbClient = edgedb.createClient();
 
