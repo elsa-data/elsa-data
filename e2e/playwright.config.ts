@@ -60,7 +60,8 @@ const config: PlaywrightTestConfig = {
   /* set up so our test server runs directly from dev */
   webServer: {
     cwd: "../application/backend",
-    command: "node --loader ts-node/esm src/entrypoint.ts",
+    command:
+      "node --loader ts-node/esm src/entrypoint.ts web-server-with-scenario 1",
     port: 3000,
     // there should be nothing running on our port in CI
     reuseExistingServer: !process.env.CI,
