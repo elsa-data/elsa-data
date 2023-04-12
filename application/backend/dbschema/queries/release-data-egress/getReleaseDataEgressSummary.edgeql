@@ -29,7 +29,7 @@ with
   artifacts := (select distinct(
     for s in json_array_unpack(specimenList)
     union (
-      select s['artifacts']
+      select json_get(s, 'artifacts')
     )
   )),
 
