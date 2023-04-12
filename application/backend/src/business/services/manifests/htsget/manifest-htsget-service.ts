@@ -102,7 +102,7 @@ export abstract class ManifestHtsgetService {
       }
     }
 
-    if (timeDifference <= 0) {
+    if (timeDifference <= 0 || timeDifference > this.settings.htsget.maxAge) {
       const manifest = await this.getActiveHtsgetManifest(releaseKey);
 
       if (manifest === null) {
@@ -118,7 +118,7 @@ export abstract class ManifestHtsgetService {
       await this.cloudStorage.put(
         this.settings.aws.tempBucket,
         manifestKey,
-        manifest.toString()
+        JSON.stringify(manifest)
       );
 
       timeDifference = this.settings.htsget.maxAge;
@@ -127,7 +127,7 @@ export abstract class ManifestHtsgetService {
     const output = {
       location: {
         bucket: this.settings.aws.tempBucket,
-        key: releaseKey,
+        key: manifestKey,
       },
       maxAge: timeDifference,
     };
