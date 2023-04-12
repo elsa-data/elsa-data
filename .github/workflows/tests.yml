@@ -116,7 +116,7 @@ jobs:
         working-directory: application/backend
 
       # run the UI tests
-      - run: npx playwright test
+      - run: npx playwright test --trace on
         working-directory: e2e
 
       - uses: actions/upload-artifact@v3

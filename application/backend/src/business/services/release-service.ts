@@ -118,7 +118,9 @@ export class ReleaseService extends ReleaseBaseService {
   ): Promise<string> {
     this.checkIsAllowedCreateReleases(user);
 
-    const releaseKey = getNextReleaseKey(this.settings.releaseKeyPrefix);
+    const releaseKey = await getNextReleaseKey(
+      this.settings.releaseKeyPrefix
+    ).run(this.edgeDbClient);
 
     const releaseRow = await e
       .insert(e.release.Release, {
@@ -170,12 +172,12 @@ ${release.applicantEmailAddresses}
       this.edgeDbClient,
       releaseRow.id,
       user.dbId,
-      "Member",
+      "Administrator",
       user.subjectId,
       user.displayName
     );
 
-    return releaseRow.id;
+    return releaseKey;
   }
 
   /**
