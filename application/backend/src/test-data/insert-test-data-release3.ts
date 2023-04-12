@@ -1,6 +1,5 @@
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { getNextReleaseKey } from "../business/db/release-queries";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,

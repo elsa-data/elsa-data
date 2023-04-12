@@ -2,144 +2,81 @@
 
 with
 
-  # Select all files related with this release
-  bclFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<bclFile[is lab::ArtifactBcl]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
+  prevReleaseActivation := (
+    select release::Activation
+    filter 
+      .<previouslyActivated[is release::Release]
       .releaseKey = <str>$releaseKey
   ),
 
-  fastqForwardFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<forwardFile[is lab::ArtifactFastqPair]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
+  activeReleaseActivation := (
+    select release::Activation
+    filter 
+      .<activation[is release::Release]
       .releaseKey = <str>$releaseKey
-  ),
-  fastqReverseFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<reverseFile[is lab::ArtifactFastqPair]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
+
   ),
 
-  vcfFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<vcfFile[is lab::ArtifactVcf]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
-  ),
-  tbiFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<tbiFile[is lab::ArtifactVcf]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
+  allActivation := (
+    prevReleaseActivation union activeReleaseActivation
   ),
 
-  bamFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<bamFile[is lab::ArtifactBam]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
-  ),
-  baiFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<baiFile[is lab::ArtifactBam]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
-  ),
-  
-  cramFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<cramFile[is lab::ArtifactCram]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
-  ),
-  craiFile := (
-    select storage::File{
-      url,
-      size
-    }
-    filter
-      .<craiFile[is lab::ArtifactCram]
-      .<artifacts[is dataset::DatasetSpecimen]
-      .<selectedSpecimens[is release::Release]
-      .releaseKey = <str>$releaseKey
+  specimenList := json_get(
+    (select allActivation).manifest,
+    "specimenList"
   ),
 
-  allFiles := (
-    bclFile 
-    union fastqForwardFile 
-    union fastqReverseFile 
-    union vcfFile 
-    union tbiFile
-    union bamFile 
-    union baiFile
-    union cramFile 
-    union craiFile
-  ),
+  artifacts := (select distinct(
+    for s in json_array_unpack(specimenList)
+    union (
+      select json_get(s, 'artifacts')
+    )
+  )),
 
-  fileCount := count(allFiles),
+  fileObjectJson := (select distinct(
+    for a in json_array_unpack(artifacts)
+    union (
+      select {
+        json_get(a, 'bclFile'),
+        json_get(a, 'forwardFile'),
+        json_get(a, 'reverseFile'),
+        json_get(a, 'bamFile'),
+        json_get(a, 'baiFile'),
+        json_get(a, 'cramFile'),
+        json_get(a, 'craiFile'),
+        json_get(a, 'vcfFile'),
+        json_get(a, 'tbiFile')
+      }
+    )
+  )),
+
+  fileCount := count(fileObjectJson),
 
 select {
-  results := (
+  results := assert_distinct((
     select (
-      for file in allFiles
+      for jsonFile in fileObjectJson
       union (
         with
           dataEgressRecord := ( 
-            select release::DataEgressRecord { egressBytes, occurredDateTime }
-            filter .release.releaseKey = <str>$releaseKey and .fileUrl = file.url
-            order by .occurredDateTime
+            select release::DataEgressRecord
+            filter 
+                .release.releaseKey = <str>$releaseKey 
+              and 
+                .fileUrl = <str>json_get(jsonFile, 'url')
+            order by 
+              .occurredDateTime desc
           )
 
         select {
-          fileUrl := file.url,
-          fileSize := file.size,
+          fileUrl := <str>json_get(jsonFile, 'url'),
+          fileSize := <int64>json_get(jsonFile, 'size'),
           totalDataEgressInBytes := sum((
             dataEgressRecord.egressBytes
           )),
-          lastOccurredDateTime := (select assert_single((select dataEgressRecord.occurredDateTime limit 1)))
+          lastOccurredDateTime := (
+              select assert_single((select dataEgressRecord.occurredDateTime limit 1))
+          )
         }
       )
     )
@@ -149,6 +86,6 @@ select {
         <int16>$offset
     limit
         <int16>$limit
-  ),
+  )),
   totalCount := fileCount
 }

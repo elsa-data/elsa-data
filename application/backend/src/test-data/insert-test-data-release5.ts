@@ -5,7 +5,6 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { GS_URI } from "./insert-test-data-gs";
-import { getNextReleaseKey } from "../business/db/release-queries";
 
 const edgeDbClient = edgedb.createClient();
 
