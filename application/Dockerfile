@@ -94,30 +94,41 @@ RUN cd backend && node bundle-build.js
 
 
 #
-# Deployed app
-# Optimised for size
+# Deployed Elsa Data application
 #
-FROM node:18-alpine
+# No building actually done in this image to hopefully minimise size
+#
+# NOTE we use binaries here that are sourced directly from the edgedb image
+# https://github.com/edgedb/edgedb-docker/blob/master/Dockerfile
+# so our choice of FROM image is somewhat constrained to something vaguelly compatible
+#
+FROM node:18-buster-slim
 
 # we want to embed into the image environment immutable tags passed in by the build environment
 # this is the 'semantic' version as set by developers i.e. 1.0.3
 ARG ELSA_DATA_VERSION
-RUN ["/bin/ash", "-c", "[ -n \"${ELSA_DATA_VERSION}\" ]"]
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_VERSION:?Build argument needs to be set and not null.}"]
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
 
 # this is the literal timestamp of building
 ARG ELSA_DATA_BUILT
-RUN ["/bin/ash", "-c", "[ -n \"${ELSA_DATA_BUILT}\" ]"]
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_BUILT:?Build argument needs to be set and not null.}"]
 ENV ELSA_DATA_BUILT $ELSA_DATA_BUILT
 
 # this is the github revision tag that precisely indicates the commit trigger
 ARG ELSA_DATA_REVISION
-RUN ["/bin/ash", "-c", "[ -n \"${ELSA_DATA_REVISION}\" ]"]
+RUN ["/bin/bash", "-c", ": ${ELSA_DATA_REVISION:?Build argument needs to be set and not null.}"]
 ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
 EXPOSE 80
 
 WORKDIR /a
+
+# we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
+# NOTE this is a path that is just referred to in some of the entrypoint - so this is just expected to exist for
+# some things to function
+# TODO add a startup check the make sure it does exist
+COPY --from=edgedb-builder /usr/bin/edgedb /a/
 
 # bring in needed configs and migrations
 # NOTE these need to be relative to the current directory of where node launches from (not relative to entrypoint src)
