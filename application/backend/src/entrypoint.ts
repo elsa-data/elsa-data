@@ -29,6 +29,9 @@ import {
 } from "./entrypoint-command-delete-datasets";
 import { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
+import { AuditLogService } from "./business/services/audit-log-service";
+import { ReleaseActivationService } from "./business/services/release-activation-service";
+import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -99,6 +102,24 @@ function printHelpText() {
   dc.register<Logger>("Logger", {
     useValue: logger,
   });
+
+  // do some DI resolutions nice and early because if DI is broken (as can happen with @decorators)
+  // then we should find out now rather than failing later
+  logger.info(
+    `Sample DI resolve of AuditLogService gave us ${typeof dc.resolve(
+      AuditLogService
+    )}`
+  );
+  logger.info(
+    `Sample DI resolve of ReleaseActivationService gave us ${typeof dc.resolve(
+      ReleaseActivationService
+    )}`
+  );
+  logger.info(
+    `Sample DI resolve of AwsDiscoveryService gave us ${typeof dc.resolve(
+      AwsDiscoveryService
+    )}`
+  );
 
   const commands = getCommands(process.argv);
   const todo = [];

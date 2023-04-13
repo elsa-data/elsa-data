@@ -12,6 +12,8 @@ import { downloadMaxmindDb } from "./app-helpers";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
+import { constants, exists } from "fs";
+import { access } from "fs/promises";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -95,11 +97,22 @@ export async function startWebServer(
  * @param config
  */
 export async function startJobQueue(config: any) {
+  let jobFileName = "entrypoint-job-handler.ts";
+  let root = path.resolve("jobs");
+
+  try {
+    await access(path.resolve("jobs", jobFileName), constants.R_OK);
+  } catch (e) {
+    root = path.resolve("server/dist/jobs");
+    jobFileName = "entrypoint-job-handler.js";
+  }
+
   const bree = new Bree({
-    root: path.resolve("jobs"),
+    root: root,
+    // only one of the following jobs will be present depending on where we are deployed
     jobs: [
       {
-        name: "entrypoint-job-handler.ts",
+        name: jobFileName,
         worker: {
           workerData: config,
         },
@@ -210,7 +223,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
     await sleep(1000);
 
     // we also give a way of proceeding *without* the test being triggered via a web visit
-    // we don't want to do this every second though as there'd be *lots* of logs of failures..
+    // we don't want to do this every second though as there'd be *lots* of logs of failures...
     if (count % 60 === 0)
       if (!(await dbTest())) {
         break;
