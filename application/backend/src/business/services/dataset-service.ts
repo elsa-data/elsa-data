@@ -15,13 +15,13 @@ import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import {
   datasetAllCountQuery,
-  datasetAllSummaryQuery,
   selectDatasetIdByDatasetUri,
   singleDatasetSummaryQuery,
 } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
 import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
+import { getAllDatasetSummary } from "../../../dbschema/queries";
 
 @injectable()
 export class DatasetService {
@@ -106,50 +106,21 @@ export class DatasetService {
   public async getSummary(
     user: AuthenticatedUser,
     includeDeletedFile: boolean,
-    limit?: number,
-    offset?: number
-  ): Promise<PagedResult<DatasetLightType>> {
+    limit: number,
+    offset: number
+  ) {
     this.checkIsAllowedViewDataset(user);
 
-    if (
-      (limit !== undefined && limit <= 0) ||
-      (offset !== undefined && offset < 0)
-    )
-      throw new BadLimitOffset(limit, offset);
-
-    // TODO: if we introduce any security model into dataset (i.e. at the moment
-    // all administrators can see all datasets) - we need to add some filtering to these
-    // queries
-    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-    const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
-      ...(limit === undefined ? {} : { limit }),
-      ...(offset === undefined ? {} : { offset }),
-      includeDeletedFile: includeDeletedFile,
+    const datasetSummaryQuery = await getAllDatasetSummary(this.edgeDbClient, {
+      includeDeletedFile,
+      limit,
+      offset,
     });
 
-    const converted: DatasetLightType[] = fullDatasets.map((fd: any) => {
-      const includes: string[] = [];
-      if (fd.summaryBamCount > 0) includes.push("BAM");
-      if (fd.summaryBclCount > 0) includes.push("BCL");
-      if (fd.summaryCramCount > 0) includes.push("CRAM");
-      if (fd.summaryFastqCount > 0) includes.push("FASTQ");
-      if (fd.summaryVcfCount > 0) includes.push("VCF");
-      return {
-        id: fd.id,
-        uri: fd.uri!,
-        description: fd.description,
-        updatedDateTime: fd.updatedDateTime,
-        isInConfig: fd.isInConfig,
-        summaryCaseCount: fd.summaryCaseCount,
-        summaryPatientCount: fd.summaryPatientCount,
-        summarySpecimenCount: fd.summarySpecimenCount,
-        summaryArtifactCount: fd.summaryArtifactCount,
-        summaryArtifactIncludes: includes.join(" "),
-        summaryArtifactSizeBytes: fd.summaryArtifactBytes,
-      };
-    });
-
-    return createPagedResult(converted, fullCount);
+    return createPagedResult(
+      datasetSummaryQuery.results,
+      datasetSummaryQuery.totalCount
+    );
   }
 
   public async get(

@@ -17,6 +17,7 @@ import { currentPageSize } from "../helpers/pagination-helpers";
 import { ReleaseDataEgressService } from "../../business/services/release-data-egress-service";
 import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
 import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
+import { DatasetService } from "../../business/services/dataset-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -100,6 +101,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       settings,
       logger,
       userService: ctx.container.resolve(UsersService),
+      datasetService: ctx.container.resolve(DatasetService),
       releaseService: ctx.container.resolve(ReleaseService),
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(

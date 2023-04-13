@@ -10,7 +10,7 @@ import { EagerErrorBoundary, ErrorBoundary } from "../../../components/errors";
 import { RhChecks, RhCheckItem } from "../../../components/rh/rh-checks";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
 import Select from "react-select";
-import { DatasetLightType } from "@umccr/elsa-types";
+import { trpc } from "../../../helpers/trpc";
 
 type Props = {
   showing: boolean;
@@ -31,6 +31,18 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
 }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Paginate dataset URIs
+  const [datasetUriOptions, setDatasetUriOptions] = useState<
+    {
+      value: string;
+      label: string;
+    }[]
+  >([]);
+  const pageSize = 10;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentTotal, setCurrentTotal] = useState<number>(1);
+  const maxPage = Math.ceil(currentTotal / pageSize);
 
   const {
     control,
@@ -66,18 +78,29 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
     }
   );
 
-  const {
-    data: datasetMenuOptions,
-    isLoading: isDatasetMenuLoading,
-    error: fetchDatasetError,
-    isError: isFetchDatasetError,
-  } = useQuery({
-    queryKey: [],
-    queryFn: async () => {
-      const res = await axios.get<DatasetLightType[]>("/api/datasets/");
-      return res.data.map((x) => ({ value: x.uri, label: x.uri }));
+  const datasetQuery = trpc.datasetRouter.getDataset.useQuery(
+    {
+      page: currentPage,
+      includeDeletedFile: false,
     },
-  });
+    {
+      keepPreviousData: true,
+      onSuccess: (res) => {
+        setCurrentTotal(res.total);
+
+        const datasetMenuOptions = res.data?.map((x) => ({
+          value: x.uri,
+          label: x.uri,
+        }));
+        if (datasetMenuOptions)
+          setDatasetUriOptions((prev) => [...prev, ...datasetMenuOptions]);
+      },
+    }
+  );
+
+  const isDatasetMenuLoading = datasetQuery.isLoading;
+  const fetchDatasetError = datasetQuery.error;
+  const isFetchDatasetError = datasetQuery.isError;
 
   if (isFetchDatasetError) {
     return (
@@ -142,25 +165,37 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
                 name="datasetUris"
                 rules={{ required: true }}
                 render={({ field: { onChange } }) => (
-                  <Select
-                    placeholder="Dataset URIs"
-                    noOptionsMessage={() =>
-                      "There are no datasets to select from"
-                    }
-                    options={datasetMenuOptions}
-                    isMulti={true}
-                    isLoading={isDatasetMenuLoading}
-                    isSearchable={false}
-                    closeMenuOnSelect={false}
-                    classNames={{
-                      container: () =>
-                        "!my-4 !focus:border-blue-500 !focus:ring-blue-500",
-                      control: () => "!rounded-lg !border !border-gray-300",
-                      option: () => "!font-medium !text-gray-700",
-                      placeholder: () => "!text-sm !text-gray-500",
-                    }}
-                    onChange={(opts) => onChange(opts.map((opt) => opt.value))}
-                  />
+                  <>
+                    <Select
+                      placeholder="Dataset URIs"
+                      noOptionsMessage={() =>
+                        "There are no datasets to select from"
+                      }
+                      options={datasetUriOptions}
+                      isMulti={true}
+                      isLoading={isDatasetMenuLoading}
+                      isSearchable={false}
+                      closeMenuOnSelect={false}
+                      classNames={{
+                        container: () =>
+                          "!my-4 !focus:border-blue-500 !focus:ring-blue-500",
+                        control: () => "!rounded-lg !border !border-gray-300",
+                        option: () => "!font-medium !text-gray-700",
+                        placeholder: () => "!text-sm !text-gray-500",
+                      }}
+                      onChange={(opts) =>
+                        onChange(opts.map((opt) => opt.value))
+                      }
+                    />
+                    {currentPage < maxPage && (
+                      <div
+                        className="cursor-pointer text-xs text-gray-500 underline"
+                        onClick={() => setCurrentPage((p) => p + 1)}
+                      >
+                        Load more dataset URIs options
+                      </div>
+                    )}
+                  </>
                 )}
               />
               {errors.datasetUris && <Required />}

@@ -117,66 +117,6 @@ const artifactDatasetQuery = (ds: any, isDeletedFileFilter: any) => {
   };
 };
 
-/**
- * A pageable EdgeDb query for all our summary dataset info + counts/calcs. It *does not*
- * however recurse deep into the dataset structures for all the sub cases/patients etc - those
- * query elements need to be added elsewhere
- */
-export const datasetAllSummaryQuery = e.params(
-  {
-    limit: e.optional(e.int32),
-    offset: e.optional(e.int32),
-    includeDeletedFile: e.bool,
-  },
-  (params) =>
-    e.select(e.dataset.Dataset, (ds) => {
-      const isDeletedFileFilter = params.includeDeletedFile;
-
-      const artifactDataset = artifactDatasetQuery(ds, isDeletedFileFilter);
-
-      return {
-        // get the top level dataset elements
-        ...e.dataset.Dataset["*"],
-        // compute some useful summary counts
-        summaryCaseCount: e.count(ds.cases),
-        summaryPatientCount: e.count(ds.cases.patients),
-        summarySpecimenCount: e.count(ds.cases.patients.specimens),
-        summaryArtifactCount: artifactDataset.artifactTotalSum,
-        summaryBclCount: e.count(artifactDataset.availBclArtifact),
-        summaryFastqCount: e.count(artifactDataset.availFastqArtifact),
-        summaryBamCount: e.count(artifactDataset.availBamArtifact),
-        summaryCramCount: e.count(artifactDataset.availCramArtifact),
-        summaryVcfCount: e.count(artifactDataset.availVcfArtifact),
-        // the byte size of all artifacts
-        summaryArtifactBytes: e.sum(
-          e.set(
-            e.sum(artifactDataset.availBclArtifact.bclFile.size),
-            e.sum(artifactDataset.availFastqArtifact.forwardFile.size),
-            e.sum(artifactDataset.availFastqArtifact.reverseFile.size),
-            e.sum(artifactDataset.availBamArtifact.bamFile.size),
-            e.sum(artifactDataset.availBamArtifact.baiFile.size),
-            e.sum(artifactDataset.availCramArtifact.cramFile.size),
-            e.sum(artifactDataset.availCramArtifact.craiFile.size),
-            e.sum(artifactDataset.availVcfArtifact.vcfFile.size),
-            e.sum(artifactDataset.availVcfArtifact.tbiFile.size)
-          )
-        ),
-        order_by: [
-          {
-            expression: ds.uri,
-            direction: e.ASC,
-          },
-          {
-            expression: ds.id,
-            direction: e.ASC,
-          },
-        ],
-        limit: params.limit,
-        offset: params.offset,
-      };
-    })
-);
-
 export const singleDatasetSummaryQuery = e.params(
   {
     datasetId: e.uuid,
