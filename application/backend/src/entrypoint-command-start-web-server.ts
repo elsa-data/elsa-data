@@ -98,15 +98,17 @@ export async function startWebServer(
  */
 export async function startJobQueue(config: any) {
   let jobFileName = "entrypoint-job-handler.ts";
+  let root = path.resolve("jobs");
 
   try {
     await access(path.resolve("jobs", jobFileName), constants.R_OK);
   } catch (e) {
+    root = path.resolve("server/dist/jobs");
     jobFileName = "entrypoint-job-handler.js";
   }
 
   const bree = new Bree({
-    root: path.resolve("jobs"),
+    root: root,
     // only one of the following jobs will be present depending on where we are deployed
     jobs: [
       {

@@ -80,7 +80,7 @@ COPY --from=edgedb-builder /build/dbschema/interfaces.ts ./backend/dbschema/
 COPY --from=edgedb-builder /build/dbschema/queries.ts ./backend/dbschema/
 
 # add in an extra compile step - which whilst not needed for runtime does help keep
-# crazy errors away (ts-node does not actually do type checking)
+# crazy errors away (ts-node/esbuild does not actually do type checking)
 RUN : \
   && cd backend && npx tsc --noEmit
 
@@ -90,64 +90,36 @@ RUN : \
 
 RUN cd backend && cat dbschema/interfaces.ts
 
+RUN cd backend && node bundle-build.js
+
 RUN cd backend && ls -alRt
 
 # NOTE: we currently exclude from bundling those things that don't handle bundling!
-RUN : \
-  && cd backend && npx esbuild src/entrypoint.ts \
-    --bundle \
-    --external:pino \
-    --external:sodium-native \
-    --external:node-gyp-build \
-    --platform=node \
-    --target=node18 \
-    --outfile=./elsa.cjs
+#RUN : \
+#  && cd backend && npx esbuild src/entrypoint.ts \
+#    --bundle \
+#    --external:pino \
+#    --external:sodium-native \
+#    --external:node-gyp-build \
+#    --platform=node \
+#    --target=node18 \
+#    --outfile=./elsa.cjs
 
-RUN : \
-  && cd backend && npx esbuild jobs/entrypoint-job-handler.ts \
-    --bundle \
-    --external:pino \
-    --external:sodium-native \
-    --external:node-gyp-build \
-    --platform=node \
-    --target=node18 \
-    --outfile=./entrypoint-job-handler.js
+#RUN : \
+#  && cd backend && npx esbuild jobs/entrypoint-job-handler.ts \
+#    --bundle \
+#    --external:pino \
+#    --external:sodium-native \
+#    --external:node-gyp-build \
+#    --platform=node \
+#    --target=node18 \
+#    --outfile=./entrypoint-job-handler.js
 
 
 #
 # Deployed app
 #
 FROM node:18-slim
-
-WORKDIR /app
-
-# RUN dnf install -y nodejs npm findutils shadow util-linux
-
-# TODO: Discard the useless stuff using a multi-stage build
-COPY . .
-
-RUN cd backend && npm ci
-RUN cd frontend && npm ci
-RUN cd common/elsa-constants && npm ci
-RUN cd common/elsa-types && npm ci
-
-# pick out only the EdgeDb schema files we need for our app runtime
-COPY --from=edgedb-builder /build/dbschema/migrations/ ./backend/dbschema/migrations/
-COPY --from=edgedb-builder /build/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
-COPY --from=edgedb-builder /build/dbschema/interfaces.ts ./backend/dbschema/
-COPY --from=edgedb-builder /build/dbschema/queries.ts ./backend/dbschema/
-
-# we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
-COPY --from=edgedb-builder /usr/bin/edgedb ./backend/
-
-# add in an extra compile step - which whilst not needed for runtime, does help keep
-# crazy errors away (ts-node does not actually do type checking)
-RUN : \
-  && cd backend && npx tsc --noEmit
-
-RUN : \
-  && cd frontend \
-  && npm run build:prod
 
 # we want to embed into the image environment immutable tags passed in by the build environment
 
@@ -168,38 +140,30 @@ ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
 EXPOSE 80
 
-# WORKDIR /app/backend
 WORKDIR /a
 
+COPY --from=edgedb-builder /build/dbschema/migrations/ /a/dbschema/migrations/
 COPY --from=app-builder /build/backend/config/ /a/config/
+COPY --from=app-builder /build/backend/locales/ /a/locales/
 
 # bring in any node_modules incompatible with bundling
 COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /a/node_modules/node-gyp-build/
 COPY --from=app-builder /build/backend/node_modules/sodium-native/ /a/node_modules/sodium-native/
-COPY --from=app-builder /build/backend/node_modules/pino/ /a/node_modules/pino/
-COPY --from=app-builder /build/backend/node_modules/ /a/node_modules/
 
 COPY --from=app-builder /build/backend/client/ /a/client/
+COPY --from=app-builder /build/backend/server/ /a/server/
 
-COPY --from=app-builder /build/backend/elsa.cjs /a
-COPY --from=app-builder /build/backend/entrypoint-job-handler.js /a/jobs/
-
-ENTRYPOINT [ "node", "/a/elsa.cjs" ]
+ENTRYPOINT [ "node", "server/dist/src/entrypoint.js" ]
 
 # NOTE: a feature of using node directly as the entrypoint is that container signal handling
 # correctly passes SIGTERM to the Fastify server which can then shut down gracefully
 # ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
 
-# TODO: careful crafting has broken stuff.. for the moment just throwing everything together
-# TODO: decide if anything below is useful and if not delete
 
 #COPY backend/src/favicon.ico ./
+
 # we carefully craft the runtime structure from bits and pieces of the build
 #COPY --from=backend-builder /build/common/ /common/
-# bring in any node_modules incompatible with bundling
-#COPY --from=backend-builder /build/backend/node_modules/node-gyp-build/ ./node_modules/node-gyp-build/
-#COPY --from=backend-builder /build/backend/node_modules/sodium-native/ ./node_modules/sodium-native/
-#COPY --from=backend-builder /build/backend/node_modules/ ./node_modules/
 # the configurations and translations
 #COPY --from=backend-builder /build/backend/config/ ./config/
 #COPY --from=backend-builder /build/backend/locales/ ./locales/
