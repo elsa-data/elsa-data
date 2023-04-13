@@ -102,7 +102,7 @@ export async function startJobQueue(config: any) {
   try {
     await access(path.resolve("jobs", jobFileName), constants.R_OK);
   } catch (e) {
-    jobFileName = "entrypoint-job-handler.mjs";
+    jobFileName = "entrypoint-job-handler.js";
   }
 
   const bree = new Bree({

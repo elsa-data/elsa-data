@@ -111,7 +111,7 @@ RUN : \
     --external:node-gyp-build \
     --platform=node \
     --target=node18 \
-    --outfile=./entrypoint-job-handler.mjs
+    --outfile=./entrypoint-job-handler.js
 
 
 #
@@ -182,7 +182,7 @@ COPY --from=app-builder /build/backend/node_modules/ /a/node_modules/
 COPY --from=app-builder /build/backend/client/ /a/client/
 
 COPY --from=app-builder /build/backend/elsa.cjs /a
-COPY --from=app-builder /build/backend/entrypoint-job-handler.mjs /a/jobs/
+COPY --from=app-builder /build/backend/entrypoint-job-handler.js /a/jobs/
 
 ENTRYPOINT [ "node", "/a/elsa.cjs" ]
 
