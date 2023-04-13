@@ -60,15 +60,58 @@ RUN edgedb-server \
     --target ts \
     --tls-security insecure
 
+#
+# Application builder builds the frontend and any other possible directory structuring etc
+#
+FROM node:18 AS app-builder
+
+WORKDIR /build
+
+COPY . .
+
+RUN cd backend && npm ci
+RUN cd frontend && npm ci
+RUN cd common/elsa-constants && npm ci
+RUN cd common/elsa-types && npm ci
+
+# pick out the edgedb source artifacts we need to build Elsa Data
+COPY --from=edgedb-builder /build/dbschema/edgeql-js/ ./backend/dbschema/edgeql-js/
+COPY --from=edgedb-builder /build/dbschema/interfaces.ts ./backend/dbschema/
+COPY --from=edgedb-builder /build/dbschema/queries.ts ./backend/dbschema/
+
+# add in an extra compile step - which whilst not needed for runtime does help keep
+# crazy errors away (ts-node does not actually do type checking)
+RUN : \
+  && cd backend && npx tsc --noEmit
+
+RUN : \
+  && cd frontend \
+  && npm run build:prod
+
+RUN cd backend && cat dbschema/interfaces.ts
+
+RUN cd backend && ls -alRt
+
+# NOTE: we currently exclude from bundling those things that don't handle bundling!
+RUN : \
+  && cd backend && npx esbuild src/entrypoint.ts \
+    --bundle \
+    --external:pino \
+    --external:sodium-native \
+    --external:node-gyp-build \
+    --platform=node \
+    --target=node18 \
+    --outfile=./elsa.cjs
+
 
 #
 # Deployed app
 #
-FROM amazonlinux:2022
+FROM node:18-slim
 
 WORKDIR /app
 
-RUN dnf install -y nodejs npm findutils shadow util-linux
+# RUN dnf install -y nodejs npm findutils shadow util-linux
 
 # TODO: Discard the useless stuff using a multi-stage build
 COPY . .
@@ -117,9 +160,19 @@ EXPOSE 80
 
 WORKDIR /app/backend
 
+# bring in any node_modules incompatible with bundling
+COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /app/node_modules/node-gyp-build/
+COPY --from=app-builder /build/backend/node_modules/sodium-native/ /app/node_modules/sodium-native/
+COPY --from=app-builder /build/backend/node_modules/pino/ /app/node_modules/pino/
+COPY --from=app-builder /build/backend/node_modules/ /app/node_modules/
+
+COPY --from=app-builder /build/backend/elsa.cjs /app
+
+ENTRYPOINT [ "node", "/app/elsa.cjs" ]
+
 # NOTE: a feature of using node directly as the entrypoint is that container signal handling
 # correctly passes SIGTERM to the Fastify server which can then shut down gracefully
-ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
+# ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
 
 # TODO: careful crafting has broken stuff.. for the moment just throwing everything together
 # TODO: decide if anything below is useful and if not delete

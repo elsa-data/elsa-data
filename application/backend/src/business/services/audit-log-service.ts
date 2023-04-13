@@ -25,7 +25,7 @@ import {
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { touchRelease } from "../db/release-queries";
-import { audit } from "../../../dbschema/interfaces";
+import * as interfaces from "../../../dbschema/interfaces";
 import {
   getReleaseKeyFromReleaseAuditEvent,
   insertReleaseAuditEvent,
@@ -35,8 +35,8 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
-import AuditEvent = audit.AuditEvent;
-import ActionType = audit.ActionType;
+import AuditEvent = interfaces.audit.AuditEvent;
+import ActionType = interfaces.audit.ActionType;
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 export const OUTCOME_SUCCESS = 0;
@@ -50,7 +50,7 @@ export const OUTCOME_MAJOR_FAILURE = 12;
 // 8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
 // 12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
 
-export type AuditEventAction = audit.ActionType;
+export type AuditEventAction = interfaces.audit.ActionType;
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
@@ -816,7 +816,7 @@ export class AuditLogService {
   protected async transactionalAuditPattern<T, U, V>(
     user: AuthenticatedUser,
     releaseKey: string,
-    actionCategory: audit.ActionType,
+    actionCategory: interfaces.audit.ActionType,
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,

@@ -210,7 +210,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
     await sleep(1000);
 
     // we also give a way of proceeding *without* the test being triggered via a web visit
-    // we don't want to do this every second though as there'd be *lots* of logs of failures..
+    // we don't want to do this every second though as there'd be *lots* of logs of failures...
     if (count % 60 === 0)
       if (!(await dbTest())) {
         break;

@@ -1,8 +1,9 @@
 import e from "../../../dbschema/edgeql-js";
-import { audit } from "../../../dbschema/interfaces";
 import { RouteValidation } from "@umccr/elsa-types";
-import ReleaseAuditEvent = audit.ReleaseAuditEvent;
-import AuditEvent = audit.AuditEvent;
+import * as interfaces from "../../../dbschema/interfaces";
+
+import ReleaseAuditEvent = interfaces.audit.ReleaseAuditEvent;
+import AuditEvent = interfaces.audit.AuditEvent;
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 /**
