@@ -24,6 +24,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { Logger } from "pino";
 import { addSeconds } from "date-fns";
+import { createTestElsaSettings } from "../test-elsa-settings.common";
 
 const testContainer = registerTypes();
 
@@ -243,7 +244,19 @@ it("test publish htsget manifest htsget not allowed", async () => {
 });
 
 it("test publish htsget manifest htsget not enabled", async () => {
-  settings.htsget = undefined;
+  const testContainerNoHtsget = testContainer.createChildContainer();
+  testContainerNoHtsget.register<ElsaSettings>("Settings", {
+    useFactory: () => {
+      let settings = createTestElsaSettings();
+      settings.htsget = undefined;
+
+      return settings;
+    },
+  });
+
+  const manifestHtsgetServiceNoHtsget = testContainerNoHtsget.resolve(
+    S3ManifestHtsgetService
+  );
 
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
@@ -251,7 +264,7 @@ it("test publish htsget manifest htsget not enabled", async () => {
   );
 
   const throwsHtsgetEndpointNotEnabled = async () => {
-    await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
+    await manifestHtsgetServiceNoHtsget.publishHtsgetManifest(testReleaseKey);
   };
 
   await expect(throwsHtsgetEndpointNotEnabled()).rejects.toThrow(
@@ -271,14 +284,14 @@ it("test publish htsget cached", async () => {
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
-    LastModified: addSeconds(new Date(), settings.htsget.maxAge + 1000),
+    LastModified: addSeconds(new Date(), -settings.htsget.maxAge + 1000),
   });
 
   let value = await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
 
   expect(value.location).toEqual({
     bucket: settings.aws?.tempBucket,
-    key: testReleaseKey,
+    key: `htsget-manifests/${testReleaseKey}`,
   });
   expect(value.maxAge).toBeLessThan(settings.htsget.maxAge);
 });
@@ -295,7 +308,7 @@ it("test publish htsget not cached", async () => {
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
-    LastModified: addSeconds(new Date(), settings.htsget.maxAge - 1000),
+    LastModified: addSeconds(new Date(), -settings.htsget.maxAge - 1000),
   });
   s3ClientMock.on(PutObjectCommand).resolves({});
 
@@ -303,7 +316,7 @@ it("test publish htsget not cached", async () => {
 
   expect(value.location).toEqual({
     bucket: settings.aws?.tempBucket,
-    key: testReleaseKey,
+    key: `htsget-manifests/${testReleaseKey}`,
   });
   expect(value.maxAge).toEqual(settings.htsget.maxAge);
 });

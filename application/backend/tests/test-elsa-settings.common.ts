@@ -98,9 +98,11 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     uri: "",
     oid: "",
   },
-  awsSigningSecretAccessKey: "A", // pragma: allowlist secret
-  awsSigningAccessKeyId: "B", // pragma: allowlist secret
-  awsTempBucket: "a-temp-bucket",
+  aws: {
+    signingSecretAccessKey: "A", // pragma: allowlist secret
+    signingAccessKeyId: "B", // pragma: allowlist secret
+    tempBucket: "a-temp-bucket",
+  },
   rateLimit: {},
   devTesting: {
     sourceFrontEndDirect: false,
