@@ -18,7 +18,7 @@ RUN echo '{ \
 #
 # Database builder to create all generated files that require the install database
 #
-FROM edgedb/edgedb:2.12 AS edgedb-builder
+FROM edgedb/edgedb:2.13 AS edgedb-builder
 
 # bring in the compatible node binary
 COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
@@ -61,12 +61,14 @@ RUN edgedb-server \
     --tls-security insecure
 
 #
-# Application builder builds the frontend and any other possible directory structuring etc
+# Application builder bundles the frontend and backend
 #
 FROM node:18 AS app-builder
 
 WORKDIR /build
 
+# this doesn't affect the image size - but does affect the time taken to build - possibly
+# can fix - we don't use Docker in dev though so maybe it doesn't really matter
 COPY . .
 
 RUN cd backend && npm ci
@@ -88,60 +90,37 @@ RUN : \
   && cd frontend \
   && npm run build:prod
 
-RUN cd backend && cat dbschema/interfaces.ts
-
 RUN cd backend && node bundle-build.js
-
-RUN cd backend && ls -alRt
-
-# NOTE: we currently exclude from bundling those things that don't handle bundling!
-#RUN : \
-#  && cd backend && npx esbuild src/entrypoint.ts \
-#    --bundle \
-#    --external:pino \
-#    --external:sodium-native \
-#    --external:node-gyp-build \
-#    --platform=node \
-#    --target=node18 \
-#    --outfile=./elsa.cjs
-
-#RUN : \
-#  && cd backend && npx esbuild jobs/entrypoint-job-handler.ts \
-#    --bundle \
-#    --external:pino \
-#    --external:sodium-native \
-#    --external:node-gyp-build \
-#    --platform=node \
-#    --target=node18 \
-#    --outfile=./entrypoint-job-handler.js
 
 
 #
 # Deployed app
+# Optimised for size
 #
-FROM node:18-slim
+FROM node:18-alpine
 
 # we want to embed into the image environment immutable tags passed in by the build environment
-
 # this is the 'semantic' version as set by developers i.e. 1.0.3
 ARG ELSA_DATA_VERSION
-RUN ["/bin/bash", "-c", ": ${ELSA_DATA_VERSION:?Build argument needs to be set and not null.}"]
+RUN ["/bin/ash", "-c", "[ -n \"${ELSA_DATA_VERSION}\" ]"]
 ENV ELSA_DATA_VERSION $ELSA_DATA_VERSION
 
 # this is the literal timestamp of building
 ARG ELSA_DATA_BUILT
-RUN ["/bin/bash", "-c", ": ${ELSA_DATA_BUILT:?Build argument needs to be set and not null.}"]
+RUN ["/bin/ash", "-c", "[ -n \"${ELSA_DATA_BUILT}\" ]"]
 ENV ELSA_DATA_BUILT $ELSA_DATA_BUILT
 
 # this is the github revision tag that precisely indicates the commit trigger
 ARG ELSA_DATA_REVISION
-RUN ["/bin/bash", "-c", ": ${ELSA_DATA_REVISION:?Build argument needs to be set and not null.}"]
+RUN ["/bin/ash", "-c", "[ -n \"${ELSA_DATA_REVISION}\" ]"]
 ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
 EXPOSE 80
 
 WORKDIR /a
 
+# bring in needed configs and migrations
+# NOTE these need to be relative to the current directory of where node launches from (not relative to entrypoint src)
 COPY --from=edgedb-builder /build/dbschema/migrations/ /a/dbschema/migrations/
 COPY --from=app-builder /build/backend/config/ /a/config/
 COPY --from=app-builder /build/backend/locales/ /a/locales/
@@ -150,68 +129,13 @@ COPY --from=app-builder /build/backend/locales/ /a/locales/
 COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /a/node_modules/node-gyp-build/
 COPY --from=app-builder /build/backend/node_modules/sodium-native/ /a/node_modules/sodium-native/
 
+# the front end bundled up as per normal
 COPY --from=app-builder /build/backend/client/ /a/client/
+
+# the backend bundled up, including some directory structure imposed by the bundler
+# (otherwise we would put it into /a)
 COPY --from=app-builder /build/backend/server/ /a/server/
 
-ENTRYPOINT [ "node", "server/dist/src/entrypoint.js" ]
-
-# NOTE: a feature of using node directly as the entrypoint is that container signal handling
+# NOTE a feature of using node directly as the entrypoint is that container signal handling
 # correctly passes SIGTERM to the Fastify server which can then shut down gracefully
-# ENTRYPOINT [ "node", "--loader", "ts-node/esm", "src/entrypoint.ts" ]
-
-
-#COPY backend/src/favicon.ico ./
-
-# we carefully craft the runtime structure from bits and pieces of the build
-#COPY --from=backend-builder /build/common/ /common/
-# the configurations and translations
-#COPY --from=backend-builder /build/backend/config/ ./config/
-#COPY --from=backend-builder /build/backend/locales/ ./locales/
-# aargs
-#COPY --from=backend-builder /build/backend/dbschema/ ./dbschema/
-#COPY --from=backend-builder /build/backend/jobs/ ./jobs/
-#COPY --from=backend-builder /build/backend/src/ ./src/
-#COPY --from=backend-builder /build/backend/package.json ./
-#COPY --from=backend-builder /build/backend/tsconfig.json ./
-# the react front end bundled into a dist directory
-#COPY --from=backend-builder /build/frontend/build ./client/dist/
-# each Bree job gets built/bundled as a standalone
-#COPY --from=backend-builder /build/backend/*-job.js ./
-# the main elsa app bundled
-#COPY --from=backend-builder /build/backend/elsa.cjs ./
-
-#
-# We use a single builder for both frontend and backend as they share
-# some common code and setup
-#
-#FROM amazonlinux:2022 AS backend-builder
-
-#RUN dnf install -y nodejs npm
-
-#WORKDIR /build
-
-# the common packages need to be already in place in the folder struct *before* npm install
-#COPY common/ ./common/
-
-# install packages for backend and frontend
-#COPY backend/package* ./backend/
-#RUN cd backend && npm clean-install
-#COPY frontend/package* ./frontend/
-#RUN cd frontend && npm clean-install
-
-# create the react app
-# (frontend build is *way* slower than backend so we do this first to hopefully docker cache)
-#COPY frontend/ ./frontend/
-#RUN cd frontend && npx react-scripts build
-
-# copy the entire backend structure as the bundler uses it all
-#COPY backend/ ./backend/
-
-# NOTE: we currently exclude from bundling
-#   sodium-native and node-gyp-build - these don't get bundled well because they include native libs etc
-#RUN cd backend && npx esbuild src/entrypoint-container.ts --bundle --external:sodium-native --external:node-gyp-build --platform=node --target=node18 --outfile=./elsa.cjs
-
-# we also bundle each Bree job as an individual bundle
-#RUN cd backend && npx esbuild jobs/entrypoint-job-handler.ts --bundle --platform=node --target=node18 --outfile=./select-job.js
-
-# ENTRYPOINT [ "node", "elsa.cjs" ]
+ENTRYPOINT [ "node", "server/dist/src/entrypoint.js" ]
