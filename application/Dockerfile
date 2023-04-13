@@ -103,6 +103,16 @@ RUN : \
     --target=node18 \
     --outfile=./elsa.cjs
 
+RUN : \
+  && cd backend && npx esbuild jobs/entrypoint-job-handler.ts \
+    --bundle \
+    --external:pino \
+    --external:sodium-native \
+    --external:node-gyp-build \
+    --platform=node \
+    --target=node18 \
+    --outfile=./entrypoint-job-handler.mjs
+
 
 #
 # Deployed app
@@ -158,17 +168,21 @@ ENV ELSA_DATA_REVISION $ELSA_DATA_REVISION
 
 EXPOSE 80
 
-WORKDIR /app/backend
+# WORKDIR /app/backend
+WORKDIR /a
+
+COPY --from=app-builder /build/backend/config/ /a/config/
 
 # bring in any node_modules incompatible with bundling
-COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /app/node_modules/node-gyp-build/
-COPY --from=app-builder /build/backend/node_modules/sodium-native/ /app/node_modules/sodium-native/
-COPY --from=app-builder /build/backend/node_modules/pino/ /app/node_modules/pino/
-COPY --from=app-builder /build/backend/node_modules/ /app/node_modules/
+COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /a/node_modules/node-gyp-build/
+COPY --from=app-builder /build/backend/node_modules/sodium-native/ /a/node_modules/sodium-native/
+COPY --from=app-builder /build/backend/node_modules/pino/ /a/node_modules/pino/
+COPY --from=app-builder /build/backend/node_modules/ /a/node_modules/
 
-COPY --from=app-builder /build/backend/elsa.cjs /app
+COPY --from=app-builder /build/backend/elsa.cjs /a
+COPY --from=app-builder /build/backend/entrypoint-job-handler.mjs /a/jobs/
 
-ENTRYPOINT [ "node", "/app/elsa.cjs" ]
+ENTRYPOINT [ "node", "/a/elsa.cjs" ]
 
 # NOTE: a feature of using node directly as the entrypoint is that container signal handling
 # correctly passes SIGTERM to the Fastify server which can then shut down gracefully

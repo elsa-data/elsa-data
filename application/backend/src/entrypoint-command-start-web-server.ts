@@ -12,6 +12,8 @@ import { downloadMaxmindDb } from "./app-helpers";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
+import { constants, exists } from "fs";
+import { access } from "fs/promises";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -95,11 +97,20 @@ export async function startWebServer(
  * @param config
  */
 export async function startJobQueue(config: any) {
+  let jobFileName = "entrypoint-job-handler.ts";
+
+  try {
+    await access(path.resolve("jobs", jobFileName), constants.R_OK);
+  } catch (e) {
+    jobFileName = "entrypoint-job-handler.mjs";
+  }
+
   const bree = new Bree({
     root: path.resolve("jobs"),
+    // only one of the following jobs will be present depending on where we are deployed
     jobs: [
       {
-        name: "entrypoint-job-handler.ts",
+        name: jobFileName,
         worker: {
           workerData: config,
         },

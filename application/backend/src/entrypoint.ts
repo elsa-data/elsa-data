@@ -103,6 +103,8 @@ function printHelpText() {
     useValue: logger,
   });
 
+  // do some DI resolutions nice and early because if DI is broken (as can happen with @decorators)
+  // then we should find out now rather than failing later
   logger.info(
     `Sample DI resolve of AuditLogService gave us ${typeof dc.resolve(
       AuditLogService
