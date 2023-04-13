@@ -179,6 +179,8 @@ COPY --from=app-builder /build/backend/node_modules/sodium-native/ /a/node_modul
 COPY --from=app-builder /build/backend/node_modules/pino/ /a/node_modules/pino/
 COPY --from=app-builder /build/backend/node_modules/ /a/node_modules/
 
+COPY --from=app-builder /build/backend/client/ /a/client/
+
 COPY --from=app-builder /build/backend/elsa.cjs /a
 COPY --from=app-builder /build/backend/entrypoint-job-handler.mjs /a/jobs/
 
