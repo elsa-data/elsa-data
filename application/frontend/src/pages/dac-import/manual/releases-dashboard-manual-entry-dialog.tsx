@@ -78,7 +78,7 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
     }
   );
 
-  const datasetQuery = trpc.datasetRouter.getDataset.useQuery(
+  const datasetQuery = trpc.datasetRouter.getAllDataset.useQuery(
     {
       page: currentPage,
       includeDeletedFile: false,

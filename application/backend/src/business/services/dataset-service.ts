@@ -13,15 +13,11 @@ import {
 } from "../../api/helpers/pagination-helpers";
 import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
-import {
-  datasetAllCountQuery,
-  selectDatasetIdByDatasetUri,
-  singleDatasetSummaryQuery,
-} from "../db/dataset-queries";
+import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
 import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
-import { getAllDatasetSummary } from "../../../dbschema/queries";
+import { getDatasetSummary } from "../../../dbschema/queries";
 
 @injectable()
 export class DatasetService {
@@ -47,7 +43,6 @@ export class DatasetService {
     const isAllowedRefreshDatasetIndex = user.isAllowedRefreshDatasetIndex;
     const isViewReleaseAllow = user.isAllowedOverallAdministratorView;
 
-    console.log("user", user);
     if (
       isCreateReleaseAllow ||
       isAllowedRefreshDatasetIndex ||
@@ -103,61 +98,87 @@ export class DatasetService {
    * @param limit
    * @param offset
    */
-  public async getSummary(
-    user: AuthenticatedUser,
-    includeDeletedFile: boolean,
-    limit: number,
-    offset: number
-  ) {
+  public async getSummary({
+    user,
+    includeDeletedFile,
+    limit,
+    offset,
+  }: {
+    user: AuthenticatedUser;
+    includeDeletedFile: boolean;
+    limit: number;
+    offset: number;
+  }): Promise<PagedResult<DatasetLightType>> {
     this.checkIsAllowedViewDataset(user);
 
-    const datasetSummaryQuery = await getAllDatasetSummary(this.edgeDbClient, {
+    const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
       includeDeletedFile,
       limit,
       offset,
+      isSingleUriQuery: false,
+      datasetUri: "NONE",
     });
 
     return createPagedResult(
-      datasetSummaryQuery.results,
+      datasetSummaryQuery.results.map((r) => ({
+        uri: r.uri,
+        description: r.description,
+        updatedDateTime: r.updatedDateTime,
+        isInConfig: r.isInConfig,
+        totalCaseCount: r.totalCaseCount,
+        totalPatientCount: r.totalPatientCount,
+        totalSpecimenCount: r.totalSpecimenCount,
+        totalArtifactCount: r.totalArtifactCount,
+        totalArtifactIncludes: r.artifactTypes.trim(),
+        totalArtifactSizeBytes: r.totalArtifactSizeBytes,
+      })),
       datasetSummaryQuery.totalCount
     );
   }
 
-  public async get(
-    user: AuthenticatedUser,
-    datasetId: string
-  ): Promise<DatasetDeepType | null> {
+  public async get({
+    user,
+    datasetUri,
+    includeDeletedFile,
+  }: {
+    user: AuthenticatedUser;
+    datasetUri: string;
+    includeDeletedFile: boolean;
+  }): Promise<DatasetDeepType | null> {
     this.checkIsAllowedViewDataset(user);
 
-    const sd = await singleDatasetSummaryQuery.run(this.edgeDbClient, {
-      includeDeletedFile: false,
-      datasetId: datasetId,
+    const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
+      includeDeletedFile,
+      limit: 1, // Only expect one value from single URI filter
+      offset: 0,
+      isSingleUriQuery: true,
+      datasetUri: datasetUri,
     });
 
-    if (sd) {
-      const includes: string[] = [];
-      if (sd.summaryBamCount > 0) includes.push("BAM");
-      if (sd.summaryBclCount > 0) includes.push("BCL");
-      if (sd.summaryCramCount > 0) includes.push("CRAM");
-      if (sd.summaryFastqCount > 0) includes.push("FASTQ");
-      if (sd.summaryVcfCount > 0) includes.push("VCF");
-      return {
-        id: sd.id,
-        uri: sd.uri,
-        updatedDateTime: sd.updatedDateTime,
-        isInConfig: sd.isInConfig,
-        description: sd.description,
-        summaryCaseCount: sd.summaryCaseCount,
-        summaryPatientCount: sd.summaryPatientCount,
-        summarySpecimenCount: sd.summarySpecimenCount,
-        summaryArtifactCount: sd.summaryArtifactCount,
-        summaryArtifactIncludes: includes.join(" "),
-        summaryArtifactSizeBytes: sd.summaryArtifactBytes,
-        cases: sd.cases,
-      };
-    }
+    if (datasetSummaryQuery.results.length != 1) return null;
 
-    return sd;
+    const r = datasetSummaryQuery.results[0];
+    return {
+      uri: r.uri,
+      description: r.description,
+      updatedDateTime: r.updatedDateTime,
+      isInConfig: r.isInConfig,
+      totalCaseCount: r.totalCaseCount,
+      totalPatientCount: r.totalPatientCount,
+      totalSpecimenCount: r.totalSpecimenCount,
+      totalArtifactCount: r.totalArtifactCount,
+      totalArtifactIncludes: r.artifactTypes.trim(),
+      totalArtifactSizeBytes: r.totalArtifactSizeBytes,
+
+      // Artifact Type Count
+      bclCount: r.bclCount,
+      fastqCount: r.fastqCount,
+      vcfCount: r.vcfCount,
+      bamCount: r.bamCount,
+      cramCount: r.cramCount,
+
+      cases: r.cases,
+    };
   }
 
   /**

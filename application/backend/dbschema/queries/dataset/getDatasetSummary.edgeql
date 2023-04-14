@@ -1,13 +1,27 @@
-# A dataset summary query via edgeql
+# A dataset summary query via edgeql.
+# Ideally this query could be used for listing all datasets or for a filtered datasetUri
+# There are 2 parameters for these configuration (datasetUri and isSingleUri)
+# 
+# Example use of filtering:
+# 1. All datasets query - Set `isSingleUriQUery` to false and have datasetUri as empty string
+# 2. Single dataset query - Set `isSingleUriQuery` to true and have the datasetUri set.
+# 
+# Therefore, `isSingleUriQuery` have higher precedence than `datasetUri`
 
 with
 
-  allDataset := (select dataset::Dataset)
+  dataset := (
+    select dataset::Dataset
+    filter
+      .uri = <str>$datasetUri
+        or
+      (not <bool>$isSingleUriQuery)
+  )
 
 select {
   results := assert_distinct((
     select (
-      for d in allDataset
+      for d in dataset
       union (
         with
 
@@ -123,9 +137,21 @@ select {
           updatedDateTime := d.updatedDateTime,
           isInConfig := d.isInConfig,
 
-          summaryCaseCount := count(d.cases),
-          summaryPatientCount := count(d.cases.patients),
-          summarySpecimenCount := count(d.cases.patients.specimens),
+          cases := (
+            select d.cases { 
+              consent: { id },
+              externalIdentifiers,
+              patients: {
+                sexAtBirth,
+                consent : { id },
+                externalIdentifiers,
+              }
+            }
+          ),
+
+          totalCaseCount := count(d.cases),
+          totalPatientCount := count(d.cases.patients),
+          totalSpecimenCount := count(d.cases.patients.specimens),
 
           bclCount := bclCount,
           fastqCount := fastqCount,
@@ -133,10 +159,10 @@ select {
           bamCount := bamCount,
           cramCount := cramCount,
 
-          artifactTypesSummary := artifactList,
+          artifactTypes := artifactList,
           
-          summaryArtifactCount := totalArtifactCount,
-          summaryArtifactSizeBytes := totalArtifactSize,
+          totalArtifactCount := totalArtifactCount,
+          totalArtifactSizeBytes := totalArtifactSize,
         }
       )
     )
@@ -148,5 +174,5 @@ select {
     limit
         <int16>$limit
   )),
-  totalCount := count(allDataset)
+  totalCount := count(dataset)
 }

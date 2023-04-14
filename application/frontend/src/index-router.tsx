@@ -159,7 +159,7 @@ export function createRouter(addBypassLoginPage: boolean) {
 
           <Route path={`datasets`}>
             <Route index element={<DatasetsDashboardPage />} />
-            <Route path={`:datasetId`} element={<DatasetsDetailPage />} />
+            <Route path={`:datasetUri`} element={<DatasetsDetailPage />} />
           </Route>
 
           <Route path={`dac`} element={<DacImportPage />} />

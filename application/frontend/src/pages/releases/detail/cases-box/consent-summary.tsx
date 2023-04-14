@@ -7,6 +7,7 @@ import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { doLookup } from "../../../../helpers/ontology-helper";
+import { trpc } from "../../../../helpers/trpc";
 
 type Props = {
   releaseKey?: string;
@@ -84,29 +85,22 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
 
   const terminologyFhirUrl = envRelay.terminologyFhirUrl;
 
-  // Url to fetch depending on what is given from props.
-  let u = "";
+  let consentQuery;
   if (consentId) {
-    u = `/api/datasets/consent/${consentId}`;
+    consentQuery = trpc.datasetRouter.getDatasetConsent.useQuery({ consentId });
   } else {
-    u = `/api/releases/${releaseKey}/consent/${nodeId}`;
+    consentQuery = trpc.releaseRouter.getReleaseConsent.useQuery({
+      releaseKey: releaseKey ?? "",
+      nodeId: nodeId ?? "",
+    });
   }
+
+  const duosCode = (consentQuery.data ?? []) as DuoLimitationCodedType[];
 
   useEffect(() => {
     const fetchConsent = async () => {
-      const duos = await axios
-        .get<DuoLimitationCodedType[]>(u)
-        .then((response) => {
-          setError({ error: null, isSuccess: true });
-          return response.data;
-        })
-        .catch((error: any) => {
-          setError({ error, isSuccess: false });
-          return [];
-        });
-
       const resolvedDuos = await Promise.all(
-        duos.map(async function (
+        duosCode.map(async function (
           duo: DuoLimitationCodedType
         ): Promise<ResolvedDuo> {
           const duoCode: string = (duo as any)?.code;
@@ -136,7 +130,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
     };
 
     fetchConsent();
-  }, [consentId, releaseKey, nodeId]);
+  }, [duosCode]);
 
   return (
     <div className="space-y-4">

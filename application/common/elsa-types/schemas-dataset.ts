@@ -21,7 +21,7 @@ export const DatasetSpecimenSchema = Type.Object({
 });
 
 export const DatasetPatientSchema = Type.Object({
-  specimens: Type.Array(DatasetSpecimenSchema),
+  // specimens: Type.Array(DatasetSpecimenSchema),
   externalIdentifiers: Type.Union([
     Type.Optional(
       Type.Array(
@@ -54,17 +54,24 @@ export const DatasetCaseSchema = Type.Object({
 });
 
 export const DatasetSchemaLight = Type.Object({
-  id: Type.String(),
   uri: Type.String(),
   description: Type.String(),
   updatedDateTime: TypeDate,
   isInConfig: Type.Boolean(),
-  summaryCaseCount: Type.Number(),
-  summaryPatientCount: Type.Number(),
-  summarySpecimenCount: Type.Number(),
-  summaryArtifactCount: Type.Number(),
-  summaryArtifactIncludes: Type.String(),
-  summaryArtifactSizeBytes: Type.Number(),
+  totalCaseCount: Type.Number(),
+  totalPatientCount: Type.Number(),
+  totalSpecimenCount: Type.Number(),
+  totalArtifactCount: Type.Number(),
+  totalArtifactIncludes: Type.String(),
+  totalArtifactSizeBytes: Type.Number(),
+});
+
+export const DatasetArtifactCount = Type.Object({
+  bclCount: Type.Number(),
+  fastqCount: Type.Number(),
+  vcfCount: Type.Number(),
+  bamCount: Type.Number(),
+  cramCount: Type.Number(),
 });
 
 export const DatasetSchemaNesting = Type.Object({
@@ -74,6 +81,7 @@ export const DatasetSchemaNesting = Type.Object({
 export const DatasetSchemaDeep = Type.Intersect([
   DatasetSchemaLight,
   DatasetSchemaNesting,
+  DatasetArtifactCount,
 ]);
 
 export type DatasetLightType = Static<typeof DatasetSchemaLight>;

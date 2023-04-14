@@ -1,6 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { releaseRoutes } from "./routes/internal/release-routes";
-import { datasetRoutes } from "./routes/internal/dataset-routes";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
@@ -139,7 +138,6 @@ export const apiInternalRoutes = async (
     fastify.register(auditEventRoutes, routeOpts);
     fastify.register(releaseRoutes, routeOpts);
     fastify.register(dacRoutes, routeOpts);
-    fastify.register(datasetRoutes, routeOpts);
 
     fastify.register(userRoutes, routeOpts);
   });

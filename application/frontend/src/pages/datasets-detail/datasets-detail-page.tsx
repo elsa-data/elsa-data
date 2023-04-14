@@ -1,59 +1,85 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { DatasetDeepType, DatasetCaseType } from "@umccr/elsa-types";
-import { LayoutBase } from "../../layouts/layout-base";
+import { DatasetCaseType } from "@umccr/elsa-types";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMale, faFemale } from "@fortawesome/free-solid-svg-icons";
+import { faMale, faFemale, faRotate } from "@fortawesome/free-solid-svg-icons";
 import ConsentSummary from "../releases/detail/cases-box/consent-summary";
+import { trpc } from "../../helpers/trpc";
+import { IsLoadingDiv } from "../../components/is-loading-div";
+import { isNil } from "lodash";
+import { useUiAllowed } from "../../hooks/ui-allowed";
+import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DatasetsSpecificPageParams = {
-  datasetId: string;
+  datasetUri: string;
 };
 
-const DATASET_REACT_QUERY_KEY = "dataset";
-
 export const DatasetsDetailPage: React.FC = () => {
-  const { datasetId: datasetIdParam } = useParams<DatasetsSpecificPageParams>();
+  const uiAllowed = useUiAllowed();
+  const queryClient = useQueryClient();
 
-  const { data: datasetData, error } = useQuery({
-    queryKey: [DATASET_REACT_QUERY_KEY, datasetIdParam],
-    queryFn: async ({ queryKey }) => {
-      const did = queryKey[1];
+  const { datasetUri: encodedDatasetUri } =
+    useParams<DatasetsSpecificPageParams>();
+  const datasetUri = decodeURIComponent(encodedDatasetUri ?? "");
 
-      return await axios
-        .get<DatasetDeepType>(`/api/datasets/${did}`)
-        .then((response) => response.data);
+  const datasetMutate = trpc.datasetRouter.updateDataset.useMutation({
+    onSettled: () => {
+      queryClient.invalidateQueries();
     },
   });
+
+  const datasetQuery = trpc.datasetRouter.getSingleDataset.useQuery(
+    {
+      datasetUri: datasetUri,
+    },
+    {
+      keepPreviousData: true,
+    }
+  );
+
+  if (datasetQuery.isLoading) return <IsLoadingDiv />;
+  const data = datasetQuery?.data;
+  if (isNil(data))
+    return (
+      <div className={""}>
+        <p>No dataset URI found</p>
+      </div>
+    );
+
+  // Some ArtifactType COUNT
+  let fileTypes = "";
+  if (data.bclCount) fileTypes += `BCL(${data.bclCount}) `;
+  if (data.fastqCount) fileTypes += `FASTQ(${data.fastqCount}) `;
+  if (data.vcfCount) fileTypes += `VCF(${data.vcfCount}) `;
+  if (data.bamCount) fileTypes += `BAM(${data.bamCount}) `;
+  if (data.cramCount) fileTypes += `CRAM(${data.cramCount}) `;
 
   return (
     <div className="mt-2 flex flex-grow flex-row flex-wrap space-y-4">
       <>
-        {datasetData && (
+        {data && (
           <>
             <Box heading="Summary">
               <JSONToTable
                 jsonObj={{
-                  ID: datasetData.id,
-                  URI: datasetData.uri,
-                  Description: datasetData.description,
-                  "Last Updated": datasetData.updatedDateTime ?? "-",
-                  "Artifact Count": datasetData.summaryArtifactCount,
-                  "Artifact Filetypes": datasetData.summaryArtifactIncludes
-                    ? datasetData.summaryArtifactIncludes.replaceAll(" ", "/")
-                    : "-",
-                  "Artifact Size": fileSize(
-                    datasetData.summaryArtifactSizeBytes ?? 0
-                  ),
-                  Configuration: configurationChip(datasetData.isInConfig),
+                  URI: data.uri,
+                  Description: data.description,
+                  "Last Updated": data.updatedDateTime ?? "-",
+                  "Artifact Count": data.totalArtifactCount,
+                  "Artifact Filetypes":
+                    fileTypes != ""
+                      ? fileTypes.trim().replaceAll(" ", "/")
+                      : "-",
+                  "Artifact Size": fileSize(data.totalArtifactSizeBytes ?? 0),
+                  Configuration: configurationChip(data.isInConfig),
                 }}
               />
             </Box>
@@ -62,32 +88,37 @@ export const DatasetsDetailPage: React.FC = () => {
               heading={
                 <div className="flex items-center	justify-between">
                   <div>Dataset</div>
-                  <button
-                    disabled={!datasetData.id}
-                    onClick={async () =>
-                      await axios.post<any>(`/api/datasets/sync/`, {
-                        datasetURI: datasetData.uri,
-                      })
-                    }
-                    type="button"
-                    className="ml-2	inline-block cursor-pointer rounded bg-slate-200 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
-                  >
-                    SYNC
-                  </button>
+
+                  {uiAllowed.has(ALLOWED_DATASET_UPDATE) && (
+                    <button
+                      className="btn-outline btn-xs btn ml-2"
+                      onClick={() => datasetMutate.mutate({ datasetUri })}
+                    >
+                      <FontAwesomeIcon
+                        spin={datasetMutate.isLoading}
+                        icon={faRotate}
+                      />
+                    </button>
+                  )}
                 </div>
               }
             >
-              <div>
-                {datasetData && <DatasetTable cases={datasetData.cases} />}
-              </div>
+              <div>{data && <DatasetTable cases={data.cases} />}</div>
             </Box>
             {/* <ConsentBox /> */}
           </>
         )}
-        {error && (
+        {datasetQuery.isError && (
           <EagerErrorBoundary
             message={"Something went wrong fetching datasets."}
-            error={error}
+            error={datasetQuery.error}
+            styling={"bg-red-100"}
+          />
+        )}
+        {datasetMutate.isError && (
+          <EagerErrorBoundary
+            message={"Something went wrong updating datasets."}
+            error={datasetMutate.error}
             styling={"bg-red-100"}
           />
         )}
@@ -104,11 +135,13 @@ const DATASET_COLUMN = [
 ];
 const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
   return (
-    <table className="table">
+    <table className="table w-full">
       <thead>
-        {DATASET_COLUMN.map((val, i) => (
-          <th key={i}>{val.columnTitle}</th>
-        ))}
+        <tr>
+          {DATASET_COLUMN.map((val, i) => (
+            <th key={i}>{val.columnTitle}</th>
+          ))}
+        </tr>
       </thead>
       <tbody className="divide-y">
         {cases.map((caseVal: DatasetCaseType, caseIdx: number) => {

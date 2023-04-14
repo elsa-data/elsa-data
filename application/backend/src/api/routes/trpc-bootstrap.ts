@@ -18,6 +18,8 @@ import { ReleaseDataEgressService } from "../../business/services/release-data-e
 import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
 import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../business/services/dataset-service";
+import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
+import { ReleaseSelectionService } from "../../business/services/release-selection-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -107,6 +109,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       releaseParticipantService: ctx.container.resolve(
         ReleaseParticipationService
       ),
+      releaseSelectionService: ctx.container.resolve(ReleaseSelectionService),
       releaseDataEgressService: ctx.container.resolve(ReleaseDataEgressService),
       jobService: ctx.container.resolve(JobsService),
       jobCloudFormationCreateService: ctx.container.resolve(
@@ -118,6 +121,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       jobCopyOutService: ctx.container.resolve(JobCopyOutService),
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
+      agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
       req: ctx.req,
       res: ctx.res,
       ...ctx,

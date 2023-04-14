@@ -45,7 +45,7 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const datasetQuery = trpc.datasetRouter.getDataset.useQuery(
+  const datasetQuery = trpc.datasetRouter.getAllDataset.useQuery(
     {
       page: currentPage,
       includeDeletedFile: includeDeletedFile,
@@ -103,17 +103,17 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                     : ""}
                 </td>
                 <td>
-                  {row.summaryArtifactCount > 0 && (
+                  {row.totalArtifactCount > 0 && (
                     <div>
                       <div>
-                        {row.summaryArtifactCount}{" "}
-                        {oxford(row.artifactTypesSummary.trim().split(" "))}
+                        {row.totalArtifactCount}{" "}
+                        {oxford(row.totalArtifactIncludes.split(" "))}
                         {" (s)"}
                       </div>
                       <div>
                         totalling{" "}
                         <span className="font-bold">
-                          {fileSize(row.summaryArtifactSizeBytes)}
+                          {fileSize(row.totalArtifactSizeBytes)}
                         </span>
                       </div>
                     </div>
@@ -123,7 +123,7 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                   <button
                     className={classNames("btn-table-action-navigate")}
                     onClick={async () => {
-                      navigate(row.uri);
+                      navigate(encodeURIComponent(row.uri));
                     }}
                   >
                     view
