@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../../di-helpers";
 import { version, platform } from "node:process";
+import { getMandatoryEnv } from "../../../app-env";
 
 /**
  * Routes that exist mainly for confirming functionality (health checks).
@@ -34,7 +35,12 @@ export const healthRoutes = async (
    * This should appear in the logs.
    */
   fastify.get("/health/check-detailed", {}, async function (request, reply) {
-    const { edgeDbClient } = getServices(opts.container);
+    const { edgeDbClient, logger } = getServices(opts.container);
+    // do a log very early (just in case we have a problem with responding - this at least lets us know the input
+    // got to the backend)
+    logger.info("health-check-detailed: called");
+
+    // confirm our database is still accessible
     let dbResult = "";
     try {
       const fortyTwoResult = await edgeDbClient.query("select 42;");
@@ -42,8 +48,14 @@ export const healthRoutes = async (
     } catch (e: any) {
       dbResult = e.toString();
     }
+
+    // reply with some random information - keep in mind this is a public endpoint so don't be
+    // too generous with information!
     reply.send({
-      server: "Fastify",
+      elsaDataVersion: getMandatoryEnv("ELSA_DATA_VERSION"),
+      elsaDataBuilt: getMandatoryEnv("ELSA_DATA_BUILT"),
+      elsaDataRevision: getMandatoryEnv("ELSA_DATA_REVISION"),
+      webServer: "Fastify",
       nodeVersion: version,
       nodePlatform: platform,
       databaseResult: dbResult,
