@@ -117,7 +117,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         isAllowedRefreshDatasetIndex: true,
         isAllowedCreateRelease: true,
         isAllowedOverallAdministratorView: true,
-        isAllowedChangeUserPermission: true,
       })
       .run(edgeDbClient);
 
@@ -130,7 +129,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       isAllowedRefreshDatasetIndex: true,
       isAllowedCreateRelease: true,
       isAllowedOverallAdministratorView: true,
-      isAllowedChangeUserPermission: true,
     });
   }
 
@@ -161,7 +159,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: true,
       isAllowedOverallAdministratorView: false,
-      isAllowedChangeUserPermission: false,
     });
   }
 
@@ -192,7 +189,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: false,
       isAllowedOverallAdministratorView: false,
-      isAllowedChangeUserPermission: false,
     });
   }
 
@@ -223,7 +219,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: false,
       isAllowedOverallAdministratorView: false,
-      isAllowedChangeUserPermission: false,
     });
   }
 
@@ -250,7 +245,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       isAllowedRefreshDatasetIndex: false,
       isAllowedCreateRelease: false,
       isAllowedOverallAdministratorView: false,
-      isAllowedChangeUserPermission: false,
     });
   }
 

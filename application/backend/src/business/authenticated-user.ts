@@ -13,7 +13,6 @@ export class AuthenticatedUser {
       isNil(this.dbUser.displayName) ||
       isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
-      isNil(this.dbUser.isAllowedChangeUserPermission) ||
       isNil(this.dbUser.isAllowedRefreshDatasetIndex) ||
       isNil(this.dbUser.isAllowedCreateRelease) ||
       isNil(this.dbUser.isAllowedOverallAdministratorView)
@@ -50,6 +49,7 @@ export class AuthenticatedUser {
 
   /**
    * Read permission
+   * @deprecated moving our queries over to using the field directly from the db
    */
   public get isAllowedOverallAdministratorView(): boolean {
     return this.dbUser!.isAllowedOverallAdministratorView;
@@ -57,15 +57,17 @@ export class AuthenticatedUser {
 
   /**
    * Write permission
+   * @deprecated moving our queries over to using the field directly from the db
    */
   public get isAllowedCreateRelease(): boolean {
     return this.dbUser!.isAllowedCreateRelease;
   }
+
+  /**
+   * @deprecated moving our queries over to using the field directly from the db
+   */
   public get isAllowedRefreshDatasetIndex(): boolean {
     return this.dbUser!.isAllowedRefreshDatasetIndex;
-  }
-  public get isAllowedChangeUserPermission(): boolean {
-    return this.dbUser!.isAllowedChangeUserPermission;
   }
 
   /**

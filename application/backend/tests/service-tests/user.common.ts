@@ -35,7 +35,6 @@ export async function beforeEachCommon() {
     isAllowedRefreshDatasetIndex: true,
     isAllowedCreateRelease: true,
     isAllowedOverallAdministratorView: true,
-    isAllowedChangeUserPermission: true,
     lastLoginDateTime: new Date(),
   });
 

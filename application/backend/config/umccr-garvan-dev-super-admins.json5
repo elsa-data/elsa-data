@@ -1,0 +1,22 @@
+{
+  // all the dev cilogon ids so that in dev they can change other
+  // user permissions
+  superAdmins: [
+    {
+      // andrew
+      id: "http://cilogon.org/serverA/users/46001501",
+    },
+    {
+      // christian
+      id: "http://cilogon.org/serverF/users/25372",
+    },
+    {
+      // william
+      id: "http://cilogon.org/serverF/users/24191",
+    },
+    {
+      // marko
+      id: "http://cilogon.org/serverF/users/31333",
+    },
+  ],
+}

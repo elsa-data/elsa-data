@@ -76,7 +76,7 @@ export type ElsaSettings = {
   isoCountrySystemUri: string;
   snomedSystem: { uri: string; oid: string };
 
-  superAdmins: { id: string; email: string }[];
+  superAdmins: { id: string }[];
 
   datasets: {
     name: string;

@@ -129,8 +129,6 @@ export async function createTestUser(
       email: email,
 
       isAllowedOverallAdministratorView: isAllowedPermission,
-
-      isAllowedChangeUserPermission: isAllowedPermission,
       isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,
       isAllowedRefreshDatasetIndex: isAllowedPermission,
 
