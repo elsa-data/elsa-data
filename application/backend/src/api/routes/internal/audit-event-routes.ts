@@ -9,7 +9,7 @@ import * as edgedb from "edgedb";
 import { AuditLogService } from "../../../business/services/audit-log-service";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
-import { audit } from "../../../../dbschema/interfaces";
+import * as interfaces from "../../../../dbschema/interfaces";
 import {
   AuditEventDetailsType,
   AuditEventFullType,
@@ -19,7 +19,7 @@ import {
 import { ElsaSettings } from "../../../config/elsa-settings";
 import _ from "lodash";
 import { DependencyContainer } from "tsyringe";
-import AuditEvent = audit.AuditEvent;
+import AuditEvent = interfaces.audit.AuditEvent;
 import AuditEventForQuerySchema = RouteValidation.AuditEventForQuerySchema;
 import AuditEventForQueryType = RouteValidation.AuditEventForQueryType;
 import AuditEventDetailsQueryType = RouteValidation.AuditEventDetailsQueryType;
