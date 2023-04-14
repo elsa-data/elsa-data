@@ -47,7 +47,7 @@ export class UsersService {
    */
   public isConfiguredSuperAdmin(subjectId: string): boolean {
     for (const su of this.settings.superAdmins || []) {
-      if (su.id === subjectId) return true;
+      if (su.sub === subjectId) return true;
     }
 
     return false;

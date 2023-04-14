@@ -30,7 +30,7 @@
   },
   "+superAdmins": [
     {
-      id: "http://subject1.com",
+      sub: "http://subject3.com",
     },
   ],
 }

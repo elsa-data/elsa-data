@@ -4,19 +4,19 @@
   superAdmins: [
     {
       // andrew
-      id: "http://cilogon.org/serverA/users/46001501",
+      sub: "http://cilogon.org/serverA/users/46001501",
     },
     {
       // christian
-      id: "http://cilogon.org/serverF/users/25372",
+      sub: "http://cilogon.org/serverF/users/25372",
     },
     {
       // william
-      id: "http://cilogon.org/serverF/users/24191",
+      sub: "http://cilogon.org/serverF/users/24191",
     },
     {
       // marko
-      id: "http://cilogon.org/serverF/users/31333",
+      sub: "http://cilogon.org/serverF/users/31333",
     },
   ],
 }

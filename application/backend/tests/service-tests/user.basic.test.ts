@@ -4,6 +4,8 @@ import { beforeEachCommon } from "./user.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { UsersService } from "../../src/business/services/users-service";
 import { NotAuthorisedModifyUserManagement } from "../../src/business/exceptions/user";
+import { getServices } from "../../src/di-helpers";
+import { ElsaSettings } from "../../src/config/elsa-settings";
 
 let existingUser: AuthenticatedUser;
 let edgeDbClient: edgedb.Client;
@@ -65,19 +67,39 @@ it("upsert an existing user to a new display name", async () => {
 });
 
 it("SuperAdmin change other user permission", async () => {
-  const newUser = await userService.upsertUserForLogin(
+  const newContainer = testContainer.createChildContainer();
+
+  // because "superadmin" is a permission derived solely from the config - we need to
+  // alter the settings to make this true just for this test
+  {
+    const { settings } = getServices(newContainer);
+
+    // fix the settings
+    settings.superAdmins.push({
+      sub: existingUser.subjectId,
+    });
+
+    // and set back into the DI container
+    newContainer.register<ElsaSettings>("Settings", {
+      useValue: settings,
+    });
+  }
+
+  const newUserService = newContainer.resolve(UsersService);
+
+  const newUser = await newUserService.upsertUserForLogin(
     "http://test.com",
     "New Display Name",
     "test@example.com"
   );
 
-  await userService.changePermission(existingUser, "test@example.com", {
+  await newUserService.changePermission(existingUser, "test@example.com", {
     isAllowedCreateRelease: true,
     isAllowedOverallAdministratorView: true,
     isAllowedRefreshDatasetIndex: true,
   });
 
-  const u = await userService.getBySubjectId("http://test.com");
+  const u = await newUserService.getBySubjectId("http://test.com");
   expect(u).toBeInstanceOf(AuthenticatedUser);
 
   expect(u!.isAllowedCreateRelease).toBe(true);

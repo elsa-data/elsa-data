@@ -3,8 +3,7 @@
   stringValue: "still a string",
   superAdmins: [
     {
-      id: "http://test3",
-      email: "test3@example.com",
+      sub: "http://test3",
     },
   ],
 }
