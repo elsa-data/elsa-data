@@ -3,12 +3,10 @@
   stringValue: "a string",
   superAdmins: [
     {
-      id: "http://test1",
-      email: "test1@example.com",
+      sub: "http://test1",
     },
     {
-      id: "http://test2",
-      email: "test2@example.com",
+      sub: "http://test2",
     },
   ],
 }

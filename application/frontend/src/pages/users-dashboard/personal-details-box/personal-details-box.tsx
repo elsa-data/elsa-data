@@ -26,7 +26,7 @@ export function decodeAllowedDescription(allowed: string) {
     case ALLOWED_DATASET_UPDATE:
       return "Allowed to update/refresh dataset index.";
     default:
-      return `Unknown 'allowed' with code ${allowed}`;
+      return `Unknown 'allowed' code ->${allowed}<-`;
   }
 }
 

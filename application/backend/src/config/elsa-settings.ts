@@ -76,7 +76,10 @@ export type ElsaSettings = {
   isoCountrySystemUri: string;
   snomedSystem: { uri: string; oid: string };
 
-  superAdmins: { id: string; email: string }[];
+  superAdmins: {
+    // the sub id from the upstream OIDC provider
+    sub: string;
+  }[];
 
   datasets: {
     name: string;

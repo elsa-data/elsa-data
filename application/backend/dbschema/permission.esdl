@@ -6,13 +6,19 @@ module permission {
 
     type PotentialUser {
 
-        property subjectId -> str;
-        property displayName -> str;
+        # note that email is the only identifier we are likely to be able to source from
+        # upstream DACs so this is key we use for potential users
+        # acknowledging that emails aren't a good long term identifier - but is relatively
+        # stable over short periods of time (months)
+        #
         required property email -> str {
             constraint exclusive on (str_lower(__subject__));
             readonly := true;
         }
 
+        # if we have display name information we should fill it in
+        #
+        property displayName -> str;
 
         # whether this user will become a participant of a release when they login
 
@@ -26,9 +32,7 @@ module permission {
             #
             on target delete allow;
         }
-
     }
-
 
 
     type User {
@@ -53,11 +57,6 @@ module permission {
 
         # These are the set of administrator level permissions that can be given
         # to a user
-
-        # Admin Access
-        required property isAllowedChangeUserPermission -> bool {
-            default := false;
-        }
 
         # Write Access
         required property isAllowedRefreshDatasetIndex -> bool {

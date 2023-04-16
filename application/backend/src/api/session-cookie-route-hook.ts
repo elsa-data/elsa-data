@@ -1,17 +1,8 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { UsersService } from "../business/services/users-service";
-import { ElsaSettings } from "../config/elsa-settings";
-import { AuthenticatedUser } from "../business/authenticated-user";
 import { getAuthenticatedUserFromSecureSession } from "./auth/session-cookie-helpers";
 import { createUserAllowedCookie } from "./helpers/cookie-helpers";
 import { NotAuthorisedCredentials } from "./errors/authentication-error";
-
-export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
-  for (const sa of settings.superAdmins || []) {
-    if (sa.id === user.subjectId) return true;
-  }
-  return false;
-}
 
 /**
  * Creates a hook that does all the auth setup for each request needing authenticated users (does the cookie handling,
@@ -20,12 +11,13 @@ export function isSuperAdmin(settings: ElsaSettings, user: AuthenticatedUser) {
  * that is required for this hook is that which is setup for internal use i.e. login and cookie sessions.
  *
  * @param usersService the Users service
- * @param allowSessionCookieUserNotMatchingDb if true, then do an extra check to make sure the session user matches the same user in the database (needed where the dev db can refresh)
- * // @param allowTestCookieEquals if the primary session token is present with this value - create a test user
  */
 export function createSessionCookieRouteHook(usersService: UsersService) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const authedUser = getAuthenticatedUserFromSecureSession(request);
+    const authedUser = getAuthenticatedUserFromSecureSession(
+      usersService,
+      request
+    );
     if (!authedUser) throw new NotAuthorisedCredentials();
     request.log.trace(authedUser, `createSessionCookieRouteHook: user details`);
 
@@ -34,8 +26,14 @@ export function createSessionCookieRouteHook(usersService: UsersService) {
     request.log.trace(dbUser, `databaseUser: user details`);
 
     // Check for permissions different
-    const dbPermission = createUserAllowedCookie(dbUser);
-    const sessionPermission = createUserAllowedCookie(authedUser);
+    const dbPermission = createUserAllowedCookie(
+      usersService.isConfiguredSuperAdmin(dbUser.subjectId),
+      dbUser
+    );
+    const sessionPermission = createUserAllowedCookie(
+      usersService.isConfiguredSuperAdmin(authedUser.subjectId),
+      authedUser
+    );
     if (dbPermission != sessionPermission) {
       throw new NotAuthorisedCredentials(
         "User permissions have changed. Please try logging back in!"
