@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { trpc } from "../../../helpers/trpc";
 import { useQueryClient } from "@tanstack/react-query";
+import { EagerErrorBoundary } from "../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -39,6 +40,8 @@ export const InformationBox: React.FC<Props> = ({
 
   const activateMutation = trpc.releaseActivation.activate.useMutation();
   const deactivateMutation = trpc.releaseActivation.deactivate.useMutation();
+
+  const error = activateMutation.error ?? deactivateMutation.error;
 
   // some handy state booleans
   const mutationInProgress =
@@ -109,6 +112,13 @@ export const InformationBox: React.FC<Props> = ({
             )}
           </div>
         </div>
+        {error && (
+          <EagerErrorBoundary
+            message="Something went wrong while (de)activating the release."
+            error={error}
+            styling="mt-5 shadow sm:rounded-md bg-red-100"
+          />
+        )}
       </div>
     </Box>
   );

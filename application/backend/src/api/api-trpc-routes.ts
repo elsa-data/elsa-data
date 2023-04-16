@@ -26,6 +26,9 @@ export const trpcRoutes = async (
     trpcOptions: {
       router: appRouter,
       createContext: opts.trpcCreateContext,
+      onError: (error: any) => {
+        fastify.log.error(error.error.cause);
+      },
     },
   });
 };
