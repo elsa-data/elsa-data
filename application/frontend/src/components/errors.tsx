@@ -6,6 +6,7 @@ import {
 } from "@umccr/elsa-types/error-types";
 import classNames from "classnames";
 import axios from "axios";
+import { TRPCClientError } from "@trpc/client";
 
 export type ErrorDisplayProps = {
   children?: ReactNode;
@@ -133,6 +134,22 @@ export const ErrorFormatterDetail = ({
           </div>
         );
       }
+    } else if (error instanceof TRPCClientError) {
+      const code = error?.shape?.data?.httpStatus;
+      return (
+        <div className="pl-4 pt-4">
+          <div>
+            <span className="font-bold">message: </span>
+            {error.message}
+          </div>
+          {code && (
+            <div>
+              <span className="font-bold">code: </span>
+              {code}
+            </div>
+          )}
+        </div>
+      );
     } else if (error instanceof Error) {
       return <div className="pl-4 pt-4">{error.message}</div>;
     } else if (
