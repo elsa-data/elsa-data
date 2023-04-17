@@ -1,11 +1,10 @@
 # A dataset summary query via edgeql.
 # Ideally this query could be used for listing all datasets or for a filtered datasetUri
-# There are 2 parameters for these configuration (datasetUri and isSingleUri)
 # 
-# Example using or not filtering:
-# 1. All datasets query - Set `isSingleUriQUery` to false and have datasetUri as empty string
+# Explanation on how to use filtered or not filtered query:
+# 1. All datasets query - Set `isSingleUriQuery` to false and have datasetUri as empty string
 # 2. Single dataset query - Set `isSingleUriQuery` to true and have the datasetUri set.
-# 
+#
 # Therefore, `isSingleUriQuery` have higher precedence than `datasetUri`
 
 with
