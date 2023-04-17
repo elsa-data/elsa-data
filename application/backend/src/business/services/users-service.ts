@@ -1,18 +1,15 @@
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { capitalize, isEmpty, isNil, lowerCase } from "lodash";
+import { isEmpty, isNil } from "lodash";
 import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
 import {
-  countAllUserQuery,
   deletePotentialUserByEmailQuery,
-  pageableAllUserQuery,
   singlePotentialUserByEmailQuery,
   singleUserBySubjectIdQuery,
 } from "../db/user-queries";
@@ -21,10 +18,8 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import {
-  NotAuthorisedModifyUserManagement,
-  NotAuthorisedViewUserManagement,
-} from "../exceptions/user";
+import { NotAuthorisedModifyUserManagement } from "../exceptions/user";
+import { userGetAllByUser } from "../../../dbschema/queries";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
@@ -42,30 +37,28 @@ export class UsersService {
     @inject("Settings") private settings: ElsaSettings
   ) {}
 
-  private async checkIsAllowedModifyUserPermission(
-    user: AuthenticatedUser
-  ): Promise<void> {
-    // Check if user has the permission to edit other user permissions
-    const isPermissionAllow = user.isAllowedChangeUserPermission;
-    if (isPermissionAllow) return;
+  /**
+   * Return whether the given subject id is for a super admin
+   * (who are given a small set of additional rights by virtue of being
+   * listed). For instance - this might give them the right to
+   * "alter other user permissions".
+   *
+   * @param subjectId
+   */
+  public isConfiguredSuperAdmin(subjectId: string): boolean {
+    for (const su of this.settings.superAdmins || []) {
+      if (su.sub === subjectId) return true;
+    }
 
-    throw new NotAuthorisedModifyUserManagement();
-  }
-
-  private async checkIsAllowedViewUserManagement(
-    user: AuthenticatedUser
-  ): Promise<void> {
-    // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedOverallAdministratorView;
-    if (isPermissionAllow) return;
-
-    throw new NotAuthorisedViewUserManagement();
+    return false;
   }
 
   /**
-   * Get all the users.
+   * Get all the users. Users always have permission to make this call, but
+   * will be limited in which records are returned to them if they do
+   * not have broader permissions than an ordinary user.
    *
-   * @param user
+   * @param user the user making the call
    * @param limit
    * @param offset
    */
@@ -74,17 +67,15 @@ export class UsersService {
     limit: number,
     offset: number
   ): Promise<PagedResult<UserSummaryType>> {
-    await this.checkIsAllowedViewUserManagement(user);
-
-    const totalEntries = await countAllUserQuery.run(this.edgeDbClient);
-
-    const pageOfEntries = await pageableAllUserQuery.run(this.edgeDbClient, {
-      limit: limit,
+    const { total, data } = await userGetAllByUser(this.edgeDbClient, {
+      userDbId: user.dbId,
+      isSuperAdmin: this.isConfiguredSuperAdmin(user.subjectId),
       offset: offset,
+      limit: limit,
     });
 
     return createPagedResult(
-      pageOfEntries.map((a) => ({
+      data.map((a) => ({
         id: a.id,
         subjectIdentifier: a.subjectId,
         email: a.email,
@@ -92,14 +83,14 @@ export class UsersService {
         lastLogin: a.lastLoginDateTime,
 
         // Write Access
-        isAllowedChangeUserPermission: a.isAllowedChangeUserPermission,
+        isAllowedChangeUserPermission: this.isConfiguredSuperAdmin(a.subjectId),
         isAllowedRefreshDatasetIndex: a.isAllowedRefreshDatasetIndex,
         isAllowedCreateRelease: a.isAllowedCreateRelease,
 
         // Read Access
         isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
       })),
-      totalEntries
+      total
     );
   }
 
@@ -123,15 +114,17 @@ export class UsersService {
 
   /**
    * @param user
+   * @param targetEmail
    * @param permission
-   * @param value
    */
   public async changePermission(
     user: AuthenticatedUser,
+    // TODO change this to subjectId (if this is possible?)
     targetEmail: string,
     permission: ChangeablePermission
   ): Promise<void> {
-    await this.checkIsAllowedModifyUserPermission(user);
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedModifyUserManagement();
 
     await e
       .update(e.permission.User, (u) => ({

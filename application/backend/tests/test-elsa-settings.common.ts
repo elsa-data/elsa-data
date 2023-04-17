@@ -1,6 +1,6 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
-import { TEST_SUBJECT_3_EMAIL } from "../src/test-data/insert-test-users";
+import { TEST_SUBJECT_3 } from "../src/test-data/insert-test-users";
 
 export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
 
@@ -56,8 +56,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   ],
   superAdmins: [
     {
-      id: "http://cilogon.org/serverA/users/123456",
-      email: TEST_SUBJECT_3_EMAIL,
+      sub: TEST_SUBJECT_3,
     },
   ],
   logger: {

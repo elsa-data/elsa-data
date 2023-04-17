@@ -28,4 +28,9 @@
   htsget: {
     url: "https://htsget.elsa.dev.umccr.org",
   },
+  "+superAdmins": [
+    {
+      sub: "http://subject3.com",
+    },
+  ],
 }

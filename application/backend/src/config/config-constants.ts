@@ -358,13 +358,8 @@ export const configDefinition = {
     default: [],
 
     children: {
-      id: {
-        doc: "The user subject id",
-        format: "*",
-        default: undefined,
-      },
-      email: {
-        doc: "The user email",
+      sub: {
+        doc: "The subject id of the user that should be given super admin permissions",
         format: "*",
         default: undefined,
       },

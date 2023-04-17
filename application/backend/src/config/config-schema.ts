@@ -60,6 +60,7 @@ function handleConfigArraysBeforeConvict(
       if (k === "uri" && v === possibleId) return true;
       if (k === "id" && v === possibleId) return true;
       if (k === "name" && v === possibleId) return true;
+      if (k === "sub" && v === possibleId) return true;
     }
 
     return false;

@@ -1,3 +1,4 @@
+import * as edgedb from "edgedb";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-helpers";
 import { createUserAllowedCookie } from "../helpers/cookie-helpers";
@@ -12,7 +13,6 @@ import { JobsService } from "../../business/services/jobs/jobs-base-service";
 import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
-import * as edgedb from "edgedb";
 import { currentPageSize } from "../helpers/pagination-helpers";
 import { ReleaseDataEgressService } from "../../business/services/release-data-egress-service";
 import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
@@ -44,7 +44,12 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
     throw new Error("You are missing `req` or `res` in your call.");
   }
 
-  const authedUser = getAuthenticatedUserFromSecureSession(ctx.req);
+  const userService = ctx.container.resolve(UsersService);
+
+  const authedUser = getAuthenticatedUserFromSecureSession(
+    userService,
+    ctx.req
+  );
   if (!authedUser) {
     ctx.req.log.error(
       "isSessionCookieAuthed: no session cookie data was present so failing authentication"
@@ -60,9 +65,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   const pageSize = currentPageSize(ctx.req);
 
   // Checking cookie with Db
-  const dbUser = await ctx.container
-    .resolve(UsersService)
-    .getBySubjectId(authedUser.subjectId);
+  const dbUser = await userService.getBySubjectId(authedUser.subjectId);
   if (!dbUser) {
     ctx.req.log.error(
       "isDbAuthed: no user data was present in database so failing authentication"
@@ -73,8 +76,14 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   }
 
   // Checking cookie permissions
-  const dbPermission = createUserAllowedCookie(dbUser);
-  const sessionPermission = createUserAllowedCookie(authedUser);
+  const dbPermission = createUserAllowedCookie(
+    userService.isConfiguredSuperAdmin(dbUser.subjectId),
+    dbUser
+  );
+  const sessionPermission = createUserAllowedCookie(
+    userService.isConfiguredSuperAdmin(authedUser.subjectId),
+    authedUser
+  );
   if (dbPermission != sessionPermission) {
     ctx.req.log.error(
       "isCookieDataUpdated: cookie permissions do not match with Db so failing authentication"
@@ -102,8 +111,8 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       edgeDbClient,
       settings,
       logger,
-      userService: ctx.container.resolve(UsersService),
       datasetService: ctx.container.resolve(DatasetService),
+      userService: userService,
       releaseService: ctx.container.resolve(ReleaseService),
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(

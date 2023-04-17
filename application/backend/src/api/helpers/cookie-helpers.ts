@@ -56,20 +56,22 @@ export function cookieForBackend(
  * simple "is allowed" decisions to the UI
  * MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
  *
- * @param  props user permissions
+ * @param isSuperAdmin the config based super admin permission
+ * @param props user permissions
  * @returns
  */
-export function createUserAllowedCookie({
-  isAllowedCreateRelease,
-  isAllowedRefreshDatasetIndex,
-  isAllowedOverallAdministratorView,
-  isAllowedChangeUserPermission,
-}: {
-  isAllowedCreateRelease: boolean;
-  isAllowedRefreshDatasetIndex: boolean;
-  isAllowedOverallAdministratorView: boolean;
-  isAllowedChangeUserPermission: boolean;
-} & Record<string, any>): string {
+export function createUserAllowedCookie(
+  isSuperAdmin: boolean,
+  {
+    isAllowedCreateRelease,
+    isAllowedRefreshDatasetIndex,
+    isAllowedOverallAdministratorView,
+  }: {
+    isAllowedCreateRelease: boolean;
+    isAllowedRefreshDatasetIndex: boolean;
+    isAllowedOverallAdministratorView: boolean;
+  } & Record<string, any>
+): string {
   const allowed = new Set<string>();
 
   if (isAllowedCreateRelease) {
@@ -84,7 +86,10 @@ export function createUserAllowedCookie({
     allowed.add(ALLOWED_OVERALL_ADMIN_VIEW);
   }
 
-  if (isAllowedChangeUserPermission) {
+  // this is a special case - when someone is a super admin - this is
+  // all the permissions that they should get
+  // these permissions MUST NOT overlap with permissions that get assigned by the database
+  if (isSuperAdmin) {
     allowed.add(ALLOWED_CHANGE_USER_PERMISSION);
   }
 

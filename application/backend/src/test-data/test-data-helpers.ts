@@ -107,7 +107,8 @@ export function makeTripleCodeArray(
  * @param releasesAsAdministrator
  * @param releasesAsManager
  * @param releasesAsMember
- * @param lastLogin if present, also sets the last login to the given date
+ * @param isReleaseAdmin
+ * @param giveAdminAllowed if true, give this user permissions like a kind of admin
  */
 export async function createTestUser(
   subjectId: string,
@@ -117,9 +118,9 @@ export async function createTestUser(
   releasesAsManager: string[],
   releasesAsMember: string[],
   isReleaseAdmin: boolean = false,
-  isSuperAdmin: boolean = false
+  giveAdminAllowed: boolean = false
 ) {
-  const isAllowedPermission = isSuperAdmin;
+  const isAllowedPermission = giveAdminAllowed;
 
   // create the user
   const newUser = await e
@@ -129,8 +130,6 @@ export async function createTestUser(
       email: email,
 
       isAllowedOverallAdministratorView: isAllowedPermission,
-
-      isAllowedChangeUserPermission: isAllowedPermission,
       isAllowedCreateRelease: isAllowedPermission || isReleaseAdmin,
       isAllowedRefreshDatasetIndex: isAllowedPermission,
 
