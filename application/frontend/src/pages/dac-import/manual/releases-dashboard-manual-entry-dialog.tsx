@@ -167,6 +167,7 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
                 render={({ field: { onChange } }) => (
                   <>
                     <Select
+                      id="datasetUriSelector"
                       placeholder="Dataset URIs"
                       noOptionsMessage={() =>
                         "There are no datasets to select from"
@@ -192,7 +193,7 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
                         className="cursor-pointer text-xs text-gray-500 underline"
                         onClick={() => setCurrentPage((p) => p + 1)}
                       >
-                        Load more dataset URIs options
+                        Load more dataset URIs
                       </div>
                     )}
                   </>
