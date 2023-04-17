@@ -2,7 +2,7 @@
 # Ideally this query could be used for listing all datasets or for a filtered datasetUri
 # There are 2 parameters for these configuration (datasetUri and isSingleUri)
 # 
-# Example use of filtering:
+# Example using or not filtering:
 # 1. All datasets query - Set `isSingleUriQUery` to false and have datasetUri as empty string
 # 2. Single dataset query - Set `isSingleUriQuery` to true and have the datasetUri set.
 # 
@@ -10,12 +10,27 @@
 
 with
 
+  userPermission := (
+    select permission::User
+    filter .id = <uuid>$userDbId
+  ),
+
+  isAllowedQuery := (
+    userPermission.isAllowedRefreshDatasetIndex 
+      or 
+    userPermission.isAllowedOverallAdministratorView
+  ),
+
   dataset := (
     select dataset::Dataset
     filter
-      .uri = <str>$datasetUri
-        or
-      (not <bool>$isSingleUriQuery)
+      (
+        .uri = <str>$datasetUri
+          or
+        (not <bool>$isSingleUriQuery)
+      )
+        and
+      isAllowedQuery
   )
 
 select {

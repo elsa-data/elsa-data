@@ -11,13 +11,14 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
-import { NotAuthorisedViewDataset } from "../exceptions/dataset-authorisation";
-import { getDatasetSummary } from "../../../dbschema/queries";
+import {
+  getDatasetConsent,
+  getDatasetSummary,
+} from "../../../dbschema/queries";
 
 @injectable()
 export class DatasetService {
@@ -26,33 +27,6 @@ export class DatasetService {
     @inject("Settings") private settings: ElsaSettings,
     private readonly auditLogService: AuditLogService
   ) {}
-
-  /**
-   *
-   * @param executor the EdgeDb execution context (either client or transaction)
-   * @param user
-   * @param releaseKey
-   * @returns
-   */
-  private checkIsAllowedViewDataset(
-    user: AuthenticatedUser,
-    datasetUri?: string
-  ): void {
-    // Allowed to view dataset if allowed to createRelease, importDataset, viewReleases
-    const isCreateReleaseAllow = user.isAllowedCreateRelease;
-    const isAllowedRefreshDatasetIndex = user.isAllowedRefreshDatasetIndex;
-    const isViewReleaseAllow = user.isAllowedOverallAdministratorView;
-
-    if (
-      isCreateReleaseAllow ||
-      isAllowedRefreshDatasetIndex ||
-      isViewReleaseAllow
-    ) {
-      return;
-    }
-
-    throw new NotAuthorisedViewDataset();
-  }
 
   /**
    * Get Storage URI Prefix from dataset URI
@@ -109,9 +83,8 @@ export class DatasetService {
     limit: number;
     offset: number;
   }): Promise<PagedResult<DatasetLightType>> {
-    this.checkIsAllowedViewDataset(user);
-
     const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
+      userDbId: user.dbId,
       includeDeletedFile,
       limit,
       offset,
@@ -145,9 +118,8 @@ export class DatasetService {
     datasetUri: string;
     includeDeletedFile: boolean;
   }): Promise<DatasetDeepType | null> {
-    this.checkIsAllowedViewDataset(user);
-
     const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
+      userDbId: user.dbId,
       includeDeletedFile,
       limit: 1, // Only expect one value from single URI filter
       offset: 0,
@@ -362,20 +334,10 @@ export class DatasetService {
     user: AuthenticatedUser,
     consentId: string
   ): Promise<DuoLimitationCodedType[]> {
-    // With this, all consent in Db is accessible if user had access to view all datasets.
-    this.checkIsAllowedViewDataset(user);
-
-    const consentQuery = e
-      .select(e.consent.Consent, (c) => ({
-        id: true,
-        statements: {
-          ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
-        },
-        filter: e.op(c.id, "=", e.uuid(consentId)),
-      }))
-      .assert_single();
-
-    const consent = await consentQuery.run(this.edgeDbClient);
+    const consent = await getDatasetConsent(this.edgeDbClient, {
+      userDbId: user.dbId,
+      consentDbId: consentId,
+    });
 
     if (!consent) return [];
 
