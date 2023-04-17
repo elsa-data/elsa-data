@@ -88,8 +88,7 @@ export class DatasetService {
       includeDeletedFile,
       limit,
       offset,
-      isSingleUriQuery: false,
-      datasetUri: "NONE",
+      datasetUri: null,
     });
 
     return createPagedResult(
@@ -123,7 +122,6 @@ export class DatasetService {
       includeDeletedFile,
       limit: 1, // Only expect one value from single URI filter
       offset: 0,
-      isSingleUriQuery: true,
       datasetUri: datasetUri,
     });
 

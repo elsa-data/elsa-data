@@ -2,10 +2,8 @@
 # Ideally this query could be used for listing all datasets or for a filtered datasetUri
 # 
 # Explanation on how to use filtered or not filtered query:
-# 1. All datasets query - Set `isSingleUriQuery` to false and have datasetUri as empty string
-# 2. Single dataset query - Set `isSingleUriQuery` to true and have the datasetUri set.
-#
-# Therefore, `isSingleUriQuery` have higher precedence than `datasetUri`
+# 1. All datasets query - Set `datasetUri` as empty `undefined` or empty set
+# 2. Single dataset query - Set `datasetUri` accordingly
 
 with
 
@@ -24,9 +22,11 @@ with
     select dataset::Dataset
     filter
       (
-        .uri = <str>$datasetUri
-          or
-        (not <bool>$isSingleUriQuery)
+        .uri = <optional str>$datasetUri
+          if
+        (select exists ((<optional str>$datasetUri)))
+          else
+        true
       )
         and
       isAllowedQuery
