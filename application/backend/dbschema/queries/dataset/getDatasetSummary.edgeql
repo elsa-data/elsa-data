@@ -125,15 +125,15 @@ select {
           }),
 
           totalArtifactSize := sum({
-            count(bclArtifact.bclFile.size),
-            count(fastqArtifact.forwardFile.size),
-            count(fastqArtifact.reverseFile.size),
-            count(vcfArtifact.vcfFile.size),
-            count(vcfArtifact.tbiFile.size),
-            count(bamArtifact.bamFile.size),
-            count(bamArtifact.baiFile.size),
-            count(cramArtifact.cramFile.size),
-            count(cramArtifact.craiFile.size),
+            bclArtifact.bclFile.size,
+            fastqArtifact.forwardFile.size,
+            fastqArtifact.reverseFile.size,
+            vcfArtifact.vcfFile.size,
+            vcfArtifact.tbiFile.size,
+            bamArtifact.bamFile.size,
+            bamArtifact.baiFile.size,
+            cramArtifact.cramFile.size,
+            cramArtifact.craiFile.size,
           }),
 
           # List all type of artifacts
