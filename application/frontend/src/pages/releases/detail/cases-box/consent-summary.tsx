@@ -95,7 +95,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
     });
   }
 
-  const duosCode = (consentQuery.data ?? []) as DuoLimitationCodedType[];
+  const duosCode: DuoLimitationCodedType[] = consentQuery.data ?? [];
 
   useEffect(() => {
     const fetchConsent = async () => {

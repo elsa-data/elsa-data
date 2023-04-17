@@ -99,7 +99,7 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
 
                 <td className={classNames(baseColumnClasses, "text-left")}>
                   {row.updatedDateTime
-                    ? formatLocalDateTime(row.updatedDateTime as string)
+                    ? formatLocalDateTime(String(row.updatedDateTime))
                     : ""}
                 </td>
                 <td>
