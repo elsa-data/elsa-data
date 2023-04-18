@@ -542,11 +542,13 @@ ${release.applicantEmailAddresses}
   public async setDataSharingConfigurationField(
     user: AuthenticatedUser,
     releaseKey: string,
+    // NOTE these strings match the patch operations/types as listed in schemas-release-operations.ts
     type:
       | "/dataSharingConfiguration/objectSigningEnabled"
       | "/dataSharingConfiguration/objectSigningExpiryHours"
       | "/dataSharingConfiguration/copyOutEnabled"
       | "/dataSharingConfiguration/copyOutDestinationLocation"
+      | "/dataSharingConfiguration/htsgetEnabled"
       | "/dataSharingConfiguration/awsAccessPointEnabled"
       | "/dataSharingConfiguration/awsAccessPointVpcId"
       | "/dataSharingConfiguration/awsAccessPointAccountId"
@@ -554,8 +556,10 @@ ${release.applicantEmailAddresses}
       | "/dataSharingConfiguration/gcpStorageIamUsers",
     value: any
   ): Promise<ReleaseDetailType> {
-    const { userRole, isActivated } =
-      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
 
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
       this.auditLogService,
@@ -565,12 +569,16 @@ ${release.applicantEmailAddresses}
       `Updated Data Sharing Configuration field`
     );
 
-    try {
-      if (isActivated)
-        throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+    // TODO permission checks depending on the field type
 
+    try {
       let fieldToSet: any = undefined;
 
+      // this switch matches the operation type to the corresponding database field to set
+      // - which in general should be the same name - but we do have the flexibility here to adapt
+      // to multiple fields / renamed fields etc
+      // we add EdgeDb type coercions to make sure our input value is correct
+      // for the corresponding operation type
       switch (type) {
         case "/dataSharingConfiguration/objectSigningEnabled":
           fieldToSet = {
@@ -590,6 +598,11 @@ ${release.applicantEmailAddresses}
         case "/dataSharingConfiguration/copyOutDestinationLocation":
           fieldToSet = {
             copyOutDestinationLocation: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/htsgetEnabled":
+          fieldToSet = {
+            htsgetEnabled: e.bool(value),
           };
           break;
         case "/dataSharingConfiguration/awsAccessPointEnabled":

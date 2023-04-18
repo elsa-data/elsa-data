@@ -41,6 +41,40 @@ describe("http patch schema handling tests", () => {
     expect(res.json()).toHaveProperty("id");
   });
 
+  it("a replace operation for arrays works", async () => {
+    const {
+      testReleaseKey,
+      authCookieName,
+      authCookieValue,
+      csrfHeaderName,
+      csrfHeaderValue,
+      server: newServer,
+    } = await createLoggedInServerWithRelease("Administrator");
+
+    server = newServer;
+
+    const replaceOp: ReleasePatchOperationType = {
+      op: "replace",
+      path: "/dataSharingConfiguration/gcpStorageIamUsers",
+      value: ["andrew", "william"],
+    };
+
+    const res = await server.inject({
+      method: "PATCH",
+      url: `/api/releases/${testReleaseKey}`,
+      payload: [replaceOp],
+      cookies: {
+        [authCookieName]: authCookieValue,
+      },
+      headers: {
+        [csrfHeaderName]: csrfHeaderValue,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toHaveProperty("id");
+  });
+
   it("a replace operation with wrong value type should trigger schema failure at backend", async () => {
     const {
       testReleaseKey,

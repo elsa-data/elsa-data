@@ -1,6 +1,6 @@
-import { CSRFInputToken } from "../../../components/csrf-token";
-import { ReleaseTypeLocal } from "../shared-types";
-import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
+import { CSRFInputToken } from "../../../../components/csrf-token";
+import { ReleaseTypeLocal } from "../../shared-types";
+import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 
 type Props = {
   releaseKey: string;

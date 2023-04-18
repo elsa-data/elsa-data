@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
+import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -46,6 +46,9 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
 
   const iamUsersArray = iamUsers.split(/[ ,]+/).filter((u) => u);
 
+  const isSuccessState = (status: any): status is SuccessState => true;
+  const isErrorState = (status: any): status is ErrorState => true;
+
   return (
     <form>
       <div className="flex flex-col gap-6">
@@ -84,7 +87,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           </button>
         </div>
       </div>
-      {status?.isSuccess === false && (
+      {isErrorState(status) && (
         <EagerErrorBoundary
           message="Something went wrong fetching release data."
           error={status.error}
@@ -96,7 +99,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           Working...
         </div>
       )}
-      {status?.recordsUpdated !== undefined && status?.recordsUpdated === 0 && (
+      {isSuccessState(status) && status.recordsUpdated === 0 && (
         <div className="mt-5 bg-yellow-200 p-5 text-yellow-700 shadow sm:rounded-md">
           The operation completed successfully but no objects were updated. Make
           sure to select the cases which you would like to be included in the
@@ -104,7 +107,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           made accessible to.
         </div>
       )}
-      {status?.recordsUpdated !== undefined && status?.recordsUpdated > 0 && (
+      {isSuccessState(status) && status?.recordsUpdated > 0 && (
         <div className="mt-5 bg-green-200 p-5 text-green-700 shadow sm:rounded-md">
           Successfully updated ACLs for {status?.recordsUpdated} objects
         </div>

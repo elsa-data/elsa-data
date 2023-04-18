@@ -284,7 +284,11 @@ export class App {
       "data-terminology-fhir-url",
       this.settings.ontoFhirUrl || "undefined"
     );
-    addAttribute("data-features", Array.from(this.features.values()).join(" "));
+    if (this.features.size > 0)
+      addAttribute(
+        "data-features",
+        Array.from(this.features.values()).join(" ")
+      );
 
     return {
       data_attributes: dataAttributes,

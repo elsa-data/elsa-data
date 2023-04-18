@@ -369,6 +369,12 @@ export const releaseRoutes = async (
               case "/dataSharingConfiguration/objectSigningExpiryHours":
               case "/dataSharingConfiguration/copyOutEnabled":
               case "/dataSharingConfiguration/copyOutDestinationLocation":
+              case "/dataSharingConfiguration/htsgetEnabled":
+              case "/dataSharingConfiguration/awsAccessPointEnabled":
+              case "/dataSharingConfiguration/awsAccessPointAccountId":
+              case "/dataSharingConfiguration/awsAccessPointVpcId":
+              case "/dataSharingConfiguration/gcpStorageIamEnabled":
+              case "/dataSharingConfiguration/gcpStorageIamUsers":
                 reply.send(
                   await releaseService.setDataSharingConfigurationField(
                     authenticatedUser,

@@ -1,4 +1,4 @@
-CREATE MIGRATION m1r5klggz2gmhgsqcf5pkhezm5xx2hdkz7m73bw6bfcqprt5nrw5wq
+CREATE MIGRATION m1lt44twvfd75hhuuyjgxhwxzsm2uteenmn3gnus2nuqztoxqvsgla
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -174,6 +174,12 @@ CREATE MIGRATION m1r5klggz2gmhgsqcf5pkhezm5xx2hdkz7m73bw6bfcqprt5nrw5wq
       };
       CREATE REQUIRED PROPERTY copyOutEnabled -> std::bool {
           SET default := false;
+      };
+      CREATE REQUIRED PROPERTY gcpStorageIamEnabled -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY gcpStorageIamUsers -> array<std::str> {
+          SET default := (<array<std::str>>[]);
       };
       CREATE REQUIRED PROPERTY htsgetEnabled -> std::bool {
           SET default := false;

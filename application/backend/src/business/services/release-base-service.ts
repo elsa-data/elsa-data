@@ -202,6 +202,20 @@ export abstract class ReleaseBaseService {
       dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
         ? this.configForFeature("isAllowedHtsget")
         : undefined,
+      dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
+        .awsAccessPointEnabled
+        ? {
+            accountId:
+              releaseInfo.dataSharingConfiguration.awsAccessPointAccountId,
+            vpcId: releaseInfo.dataSharingConfiguration.awsAccessPointVpcId,
+          }
+        : undefined,
+      dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
+        .gcpStorageIamEnabled
+        ? {
+            users: releaseInfo.dataSharingConfiguration.gcpStorageIamUsers,
+          }
+        : undefined,
     };
   }
 

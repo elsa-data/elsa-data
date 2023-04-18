@@ -5,8 +5,8 @@ import {
   ManifestHtsgetType,
 } from "./manifest-htsget-types";
 import {
+  releaseDataSharingConfigurationGetHtsget,
   releaseIsActivated,
-  releaseDataSharingConfigurationHtsget,
 } from "../../../../../dbschema/queries";
 import {
   ManifestHtsgetEndpointNotEnabled,
@@ -59,7 +59,7 @@ export abstract class ManifestHtsgetService {
     const activated = await releaseIsActivated(this.edgeDbClient, {
       releaseKey,
     });
-    const htsgetSharingConfig = await releaseDataSharingConfigurationHtsget(
+    const htsgetSharingConfig = await releaseDataSharingConfigurationGetHtsget(
       this.edgeDbClient,
       {
         releaseKey,

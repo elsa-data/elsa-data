@@ -9,7 +9,7 @@ describe("http integration tests", () => {
   beforeAll(async () => {
     const testContainer = await registerTypes();
     const { settings, logger } = getServices(testContainer);
-    const app = new App(testContainer, settings, logger);
+    const app = new App(testContainer, settings, logger, new Set<string>());
     server = await app.setupServer();
     await server.ready();
   });

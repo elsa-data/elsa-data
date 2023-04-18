@@ -3,8 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   axiosPatchOperationMutationFn,
   REACT_QUERY_RELEASE_KEYS,
-} from "../queries";
-import { ReleaseTypeLocal } from "../shared-types";
+} from "../../queries";
+import { ReleaseTypeLocal } from "../../shared-types";
 
 type Props = {
   releaseKey: string;
@@ -26,7 +26,7 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const releasePatchMutate = useMutation(
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // whenever we do a mutation of application coded data - our API returns the complete updated
+      // whenever we do a patch mutations of our release - our API returns the complete updated
       // state of the *whole* release - and we can use that data to replace the stored react-query state
       onSuccess: (result: ReleaseTypeLocal) => {
         queryClient.setQueryData(
@@ -49,6 +49,7 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
               type="text"
               className="input-bordered input w-full"
               defaultValue={releaseData.dataSharingCopyOut?.destinationLocation}
+              disabled={releasePatchMutate.isLoading}
               onBlur={(e) =>
                 releasePatchMutate.mutate({
                   op: "replace",

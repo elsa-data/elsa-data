@@ -125,6 +125,13 @@ export const ReleaseDetailSchema = Type.Object({
     })
   ),
 
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingGcpStorageIam: Type.Optional(
+    Type.Object({
+      users: Type.Array(Type.String()),
+    })
+  ),
+
   // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),
 });
