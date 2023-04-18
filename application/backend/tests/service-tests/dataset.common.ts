@@ -22,34 +22,46 @@ export async function beforeEachCommon(dc: DependencyContainer) {
   const teng = await insert10G(dc);
   const tenf = await insert10F(dc);
 
-  // TODO: we don't have an admin model for datasets yet so this is very simple
-  const allowedPiSubject = "http://subject1.com";
-  const allowedPiEmail = "admin-user@elsa.net";
-
-  const allowedManagerUserInsert = await e
+  const allowedAdminSubject = "http://subject1.com";
+  const allowedAdminEmail = "admin-user@elsa.net";
+  const adminUserInsert = await e
     .insert(e.permission.User, {
-      subjectId: allowedPiSubject,
+      subjectId: allowedAdminSubject,
       displayName: "Test User Who Is An Admin",
-      email: allowedPiEmail,
+      email: allowedAdminEmail,
+      isAllowedRefreshDatasetIndex: true,
+      isAllowedCreateRelease: true,
+      isAllowedOverallAdministratorView: true,
     })
     .run(edgeDbClient);
-
   const adminUser = new AuthenticatedUser({
-    id: allowedManagerUserInsert.id,
-    subjectId: allowedPiSubject,
-    displayName: "Allowed Manager",
-    email: allowedPiEmail,
+    id: adminUserInsert.id,
+    subjectId: allowedAdminSubject,
+    displayName: "Admin",
+    email: allowedAdminEmail,
     isAllowedRefreshDatasetIndex: true,
     isAllowedCreateRelease: true,
     isAllowedOverallAdministratorView: true,
     lastLoginDateTime: new Date(),
   });
 
+  const allowedMemberSubject = "http://subject2.com";
+  const allowedMemberEmail = "manager-user@elsa.net";
+  const memberUserInsert = await e
+    .insert(e.permission.User, {
+      subjectId: allowedMemberSubject,
+      displayName: "Test User Who Is An Admin",
+      email: allowedMemberEmail,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedOverallAdministratorView: false,
+    })
+    .run(edgeDbClient);
   const notAllowedUser = new AuthenticatedUser({
-    id: allowedManagerUserInsert.id,
+    id: memberUserInsert.id,
     subjectId: "http://subject-not-allowed.com",
     displayName: "not-allowed Member",
-    email: "not-allow@emai.com",
+    email: "not-allow@email.com",
     isAllowedRefreshDatasetIndex: false,
     isAllowedCreateRelease: false,
     isAllowedOverallAdministratorView: false,
