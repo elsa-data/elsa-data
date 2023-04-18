@@ -5,7 +5,7 @@ import {
 } from "./input-schemas-common";
 
 /**
- * TRPC for release Data Accessed Records
+ * RPC for release Data Egress Records
  */
 export const releaseDataEgressRouter = router({
   syncDataEgress: internalProcedure

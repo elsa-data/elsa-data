@@ -11,7 +11,7 @@ async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   await page.goto(baseURL! + "/dev-bm3ey56");
-  await page.click("text=/Administrator/");
+  await page.click("text=/SuperAdmin/");
   await page.context().storageState({ path: storageState as string });
   await browser.close();
 }
