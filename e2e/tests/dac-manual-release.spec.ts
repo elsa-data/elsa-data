@@ -18,9 +18,22 @@ test("A release can be created manually which has selectable cases", async ({
     .fill("My release description");
 
   await page.locator(".css-art2ul-ValueContainer2").click(); // Expand the dataset dropdown
-  await page.locator("#react-select-3-option-12").click(); // Choose dataset: 10c
-  await page.locator("#react-select-3-option-13").click(); // Choose dataset: 10f
-  await page.locator("#react-select-3-option-14").click(); // Choose dataset: 10g
+
+  await page
+    .locator("#datasetUriSelector > div")
+    .getByText("urn:fdc:umccr.org:2022:dataset/10c")
+    .click();
+
+  await page
+    .locator("#datasetUriSelector > div")
+    .getByText("urn:fdc:umccr.org:2022:dataset/10f")
+    .click();
+
+  await page
+    .locator("#datasetUriSelector > div")
+    .getByText("urn:fdc:umccr.org:2022:dataset/10g")
+    .click();
+
   await page.keyboard.press("Escape");
 
   await page.getByLabel("General Research Use").check();

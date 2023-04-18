@@ -68,7 +68,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
                     <td key={`body-row-${rowIdx}-col-${colIdx}`}>
                       {objKey === "totalDataEgressInBytes" ||
                       objKey === "fileSize" ? (
-                        fileSize(row[objKey])
+                        fileSize(row[objKey] ?? 0)
                       ) : objKey === "lastOccurredDateTime" &&
                         row[objKey] != null ? (
                         formatLocalDateTime(row[objKey] as string)
@@ -77,7 +77,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
                       ) : objKey === "downloadStatus" ? (
                         <DisplayDownloadStatus
                           downloadedSize={row["totalDataEgressInBytes"]}
-                          fileSize={row["fileSize"]}
+                          fileSize={row["fileSize"] ?? 0}
                         />
                       ) : (
                         ""

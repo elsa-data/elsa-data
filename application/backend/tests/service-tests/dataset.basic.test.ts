@@ -28,7 +28,12 @@ beforeEach(async () => {
 });
 
 it("basic summary get all works", async () => {
-  const result = await datasetService.getSummary(adminUser, true, 1000, 0);
+  const result = await datasetService.getSummary({
+    user: adminUser,
+    includeDeletedFile: true,
+    limit: 1000,
+    offset: 0,
+  });
 
   expect(result).not.toBeNull();
   assert(result && result.data);
@@ -37,7 +42,12 @@ it("basic summary get all works", async () => {
 });
 
 it("basic summary get all has correct summary values for family dataset", async () => {
-  const result = await datasetService.getSummary(adminUser, true, 1000, 0);
+  const result = await datasetService.getSummary({
+    user: adminUser,
+    includeDeletedFile: true,
+    limit: 1000,
+    offset: 0,
+  });
 
   expect(result).not.toBeNull();
   assert(result && result.data);
@@ -47,20 +57,24 @@ it("basic summary get all has correct summary values for family dataset", async 
   // because we get consistently sorted results (by uri) - we expect family dataset to be first
   const family = result.data[1];
 
-  expect(family.id).toBe(tengDatasetId2);
   expect(family.uri).toBe(TENG_URI);
   expect(family.description).toBe("UMCCR 10G");
-  expect(family.summaryArtifactCount).toBe(50);
-  expect(family.summaryArtifactIncludes).toBe("BAM VCF");
-  expect(family.summaryArtifactSizeBytes).toBe(1097309374141);
-  expect(family.summaryCaseCount).toBe(10);
-  expect(family.summaryPatientCount).toBe(10);
-  expect(family.summarySpecimenCount).toBe(10);
+  expect(family.totalArtifactCount).toBe(50);
+  expect(family.totalArtifactIncludes).toBe("BAM VCF");
+  expect(family.totalArtifactSizeBytes).toBe(1097309374141);
+  expect(family.totalCaseCount).toBe(10);
+  expect(family.totalPatientCount).toBe(10);
+  expect(family.totalSpecimenCount).toBe(10);
 });
 
 it("basic summary get all is sorted by dataset URI", async () => {
   {
-    const result = await datasetService.getSummary(adminUser, true, 1000, 0);
+    const result = await datasetService.getSummary({
+      user: adminUser,
+      includeDeletedFile: true,
+      limit: 1000,
+      offset: 0,
+    });
 
     assert(result && result.data);
     expect(result.data.length).toBe(2);
@@ -72,7 +86,12 @@ it("basic summary get all is sorted by dataset URI", async () => {
   await insert10C();
 
   {
-    const result = await datasetService.getSummary(adminUser, true, 1000, 0);
+    const result = await datasetService.getSummary({
+      user: adminUser,
+      includeDeletedFile: true,
+      limit: 1000,
+      offset: 0,
+    });
 
     assert(result && result.data);
     expect(result.data.length).toBe(3);
@@ -84,11 +103,11 @@ it("basic summary get all is sorted by dataset URI", async () => {
 
 it("not allowed users cannot get dataset data", async () => {
   await expect(async () => {
-    const result = await datasetService.getSummary(
-      notAllowedUser,
-      true,
-      1000,
-      0
-    );
+    const result = await datasetService.getSummary({
+      user: notAllowedUser,
+      includeDeletedFile: true,
+      limit: 1000,
+      offset: 0,
+    });
   }).rejects.toThrow(Error);
 });
