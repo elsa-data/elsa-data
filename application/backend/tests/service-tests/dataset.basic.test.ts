@@ -12,8 +12,6 @@ let edgeDbClient: Client;
 let datasetService: DatasetService;
 let adminUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
-let tenfDatasetId: string;
-let tengDatasetId2: string;
 
 const testContainer = registerTypes();
 
@@ -28,8 +26,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ tenfDatasetId, tengDatasetId2, adminUser, notAllowedUser } =
-    await beforeEachCommon(testContainer));
+  ({ adminUser, notAllowedUser } = await beforeEachCommon(testContainer));
 });
 
 it("basic summary get all works", async () => {
