@@ -165,6 +165,10 @@ ${release.applicantEmailAddresses}
         isAllowedReadData: true,
         isAllowedVariantData: true,
         isAllowedPhenotypeData: true,
+        dataSharingConfiguration: e.insert(
+          e.release.DataSharingConfiguration,
+          {}
+        ),
       })
       .run(this.edgeDbClient);
 
@@ -513,6 +517,136 @@ ${release.applicantEmailAddresses}
       });
 
       // TODO should this be part of the transaction?
+      return await this.getBase(releaseKey, userRole);
+    } catch (e) {
+      await auditFailure(
+        this.auditLogService,
+        this.edgeDbClient,
+        auditEventId,
+        auditEventStart,
+        e
+      );
+
+      throw e;
+    }
+  }
+
+  /**
+   * Change any of the data sharing configuration fields.
+   *
+   * @param user the user performing the action
+   * @param releaseKey the key of the release
+   * @param type the type of data sharing configuration field to be changed
+   * @param value the boolean/string/number value to set
+   */
+  public async setDataSharingConfigurationField(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    type:
+      | "/dataSharingConfiguration/objectSigningEnabled"
+      | "/dataSharingConfiguration/objectSigningExpiryHours"
+      | "/dataSharingConfiguration/copyOutEnabled"
+      | "/dataSharingConfiguration/copyOutDestinationLocation"
+      | "/dataSharingConfiguration/awsAccessPointEnabled"
+      | "/dataSharingConfiguration/awsAccessPointVpcId"
+      | "/dataSharingConfiguration/awsAccessPointAccountId"
+      | "/dataSharingConfiguration/gcpStorageIamEnabled"
+      | "/dataSharingConfiguration/gcpStorageIamUsers",
+    value: any
+  ): Promise<ReleaseDetailType> {
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+      this.auditLogService,
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      `Updated Data Sharing Configuration field`
+    );
+
+    try {
+      if (isActivated)
+        throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+
+      let fieldToSet: any = undefined;
+
+      switch (type) {
+        case "/dataSharingConfiguration/objectSigningEnabled":
+          fieldToSet = {
+            objectSigningEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/objectSigningExpiryHours":
+          fieldToSet = {
+            objectSigningExpiryHours: e.int16(value),
+          };
+          break;
+        case "/dataSharingConfiguration/copyOutEnabled":
+          fieldToSet = {
+            copyOutEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/copyOutDestinationLocation":
+          fieldToSet = {
+            copyOutDestinationLocation: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/awsAccessPointEnabled":
+          fieldToSet = {
+            awsAccessPointEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/awsAccessPointAccountId":
+          fieldToSet = {
+            awsAccessPointAccountId: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/awsAccessPointVpcId":
+          fieldToSet = {
+            awsAccessPointVpcId: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/gcpStorageIamEnabled":
+          fieldToSet = {
+            gcpStorageIamEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/gcpStorageIamUsers":
+          fieldToSet = {
+            gcpStorageIamUsers: e.array(value),
+          };
+          break;
+        default:
+          throw new Error(
+            `setDataSharingConfigurationField passed in unknown field type to set '${type}'`
+          );
+      }
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        await e
+          .update(e.release.Release.dataSharingConfiguration, (dsc) => ({
+            filter_single: e.op(
+              dsc["<dataSharingConfiguration[is release::Release]"].releaseKey,
+              "=",
+              releaseKey
+            ),
+            set: fieldToSet,
+          }))
+          .run(tx);
+
+        await auditSuccess(
+          this.auditLogService,
+          tx,
+          auditEventId,
+          auditEventStart,
+          {
+            field: type,
+            newValue: value,
+          }
+        );
+      });
+
       return await this.getBase(releaseKey, userRole);
     } catch (e) {
       await auditFailure(

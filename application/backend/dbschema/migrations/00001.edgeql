@@ -1,4 +1,4 @@
-CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
+CREATE MIGRATION m1r5klggz2gmhgsqcf5pkhezm5xx2hdkz7m73bw6bfcqprt5nrw5wq
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -56,22 +56,19 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
-  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
-  };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE MULTI LINK patients -> dataset::DatasetPatient {
-          ON SOURCE DELETE DELETE TARGET;
-          ON TARGET DELETE ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-  };
   CREATE ABSTRACT TYPE lab::ArtifactBase;
   CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE MULTI LINK artifacts -> lab::ArtifactBase;
       CREATE OPTIONAL PROPERTY sampleType -> std::str;
+  };
+  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
+  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
+          ON SOURCE DELETE DELETE TARGET;
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE OPTIONAL PROPERTY sexAtBirth -> dataset::SexAtBirthType;
   };
   CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE storage::File {
@@ -162,6 +159,32 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
       CREATE REQUIRED PROPERTY manifest -> std::json;
       CREATE REQUIRED PROPERTY manifestEtag -> std::str;
   };
+  CREATE TYPE release::DataSharingConfiguration {
+      CREATE REQUIRED PROPERTY awsAccessPointAccountId -> std::str {
+          SET default := '';
+      };
+      CREATE REQUIRED PROPERTY awsAccessPointEnabled -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY awsAccessPointVpcId -> std::str {
+          SET default := '';
+      };
+      CREATE REQUIRED PROPERTY copyOutDestinationLocation -> std::str {
+          SET default := '';
+      };
+      CREATE REQUIRED PROPERTY copyOutEnabled -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY htsgetEnabled -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY objectSigningEnabled -> std::bool {
+          SET default := false;
+      };
+      CREATE REQUIRED PROPERTY objectSigningExpiryHours -> std::int16 {
+          SET default := ((6 * 24));
+      };
+  };
   CREATE SCALAR TYPE release::ReleaseCounterSequence EXTENDING std::sequence;
   CREATE TYPE release::Release {
       CREATE MULTI LINK releaseAuditLog -> audit::ReleaseAuditEvent {
@@ -182,6 +205,10 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
           ON SOURCE DELETE DELETE TARGET;
           CREATE CONSTRAINT std::exclusive;
       };
+      CREATE REQUIRED LINK dataSharingConfiguration -> release::DataSharingConfiguration {
+          ON SOURCE DELETE DELETE TARGET;
+          CREATE CONSTRAINT std::exclusive;
+      };
       CREATE REQUIRED PROPERTY applicationDacDetails -> std::str;
       CREATE REQUIRED PROPERTY applicationDacIdentifier -> tuple<system: std::str, value: std::str> {
           CREATE CONSTRAINT std::exclusive;
@@ -199,9 +226,6 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
       CREATE REQUIRED PROPERTY datasetSpecimenUrisOrderPreference -> array<std::str>;
       CREATE REQUIRED PROPERTY datasetUris -> array<std::str>;
       CREATE REQUIRED PROPERTY isAllowedGSData -> std::bool {
-          SET default := false;
-      };
-      CREATE REQUIRED PROPERTY isAllowedHtsget -> std::bool {
           SET default := false;
       };
       CREATE REQUIRED PROPERTY isAllowedPhenotypeData -> std::bool {
@@ -246,9 +270,6 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
           SET readonly := true;
           CREATE CONSTRAINT std::exclusive ON (std::str_lower(__subject__));
       };
-      CREATE REQUIRED PROPERTY isAllowedChangeUserPermission -> std::bool {
-          SET default := false;
-      };
       CREATE REQUIRED PROPERTY isAllowedCreateRelease -> std::bool {
           SET default := false;
       };
@@ -273,13 +294,16 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation -> std::json;
   };
-  ALTER TYPE dataset::DatasetPatient {
-      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK specimens -> dataset::DatasetSpecimen {
+  ALTER TYPE dataset::DatasetCase {
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK patients -> dataset::DatasetPatient {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
+  };
+  ALTER TYPE dataset::DatasetPatient {
+      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
@@ -407,7 +431,6 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
           SET readonly := true;
           CREATE CONSTRAINT std::exclusive ON (std::str_lower(__subject__));
       };
-      CREATE PROPERTY subjectId -> std::str;
   };
   CREATE TYPE release::DataEgressRecord {
       CREATE PROPERTY auditId -> std::str;
@@ -421,7 +444,7 @@ CREATE MIGRATION m1umtlgdbtod433p7qejxjjyqvq3yhqaxtnkusjw3jjs4m3ssrwyla
   };
   ALTER TYPE release::Release {
       CREATE MULTI LINK dataEgressRecord -> release::DataEgressRecord {
-          ON TARGET DELETE RESTRICT;
+          ON SOURCE DELETE DELETE TARGET;
       };
   };
   ALTER TYPE release::DataEgressRecord {

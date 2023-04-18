@@ -77,8 +77,23 @@ export const ReleasePatchOperationSchema = Type.Union([
   }),
   Type.Object({
     op: Type.Literal("replace"),
-    path: Type.Literal("/allowedHtsget"),
+    path: Type.Literal("/dataSharingConfiguration/objectSigningEnabled"),
     value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/dataSharingConfiguration/objectSigningExpiryHours"),
+    value: Type.Integer(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/dataSharingConfiguration/copyOutEnabled"),
+    value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/dataSharingConfiguration/copyOutDestinationLocation"),
+    value: Type.String(),
   }),
 ]);
 

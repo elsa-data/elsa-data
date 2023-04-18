@@ -77,6 +77,9 @@ export async function getReleaseInfo(
     activation: {
       ...e.release.Activation["*"],
     },
+    dataSharingConfiguration: {
+      ...e.release.DataSharingConfiguration["*"],
+    },
     // we are loosely linked (by uri) to datasets which this release draws data from
     // TODO: revisit the loose linking
     datasetIds: e.select(e.dataset.Dataset, (ds) => ({

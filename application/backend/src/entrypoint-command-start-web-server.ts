@@ -14,6 +14,7 @@ import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
 import { constants, exists } from "fs";
 import { access } from "fs/promises";
+import { getFeaturesEnabled } from "./features";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -65,8 +66,10 @@ export async function startWebServer(
   const datasetService = dc.resolve(DatasetService);
   await datasetService.configureDataset(settings.datasets);
 
+  const featuresEnabled = await getFeaturesEnabled(dc, settings);
+
   // create the actual webserver/app
-  const app = new App(dc, settings, logger);
+  const app = new App(dc, settings, logger, featuresEnabled);
   const server = await app.setupServer();
 
   const mailService = dc.resolve(MailService);

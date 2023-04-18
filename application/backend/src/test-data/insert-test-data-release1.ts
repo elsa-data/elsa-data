@@ -102,6 +102,10 @@ Ethics form XYZ.
           manifestEtag: "abcdef",
         })
       ),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       releasePassword: "abcd", // pragma: allowlist secret
       datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
       datasetCaseUrisOrderPreference: [""],

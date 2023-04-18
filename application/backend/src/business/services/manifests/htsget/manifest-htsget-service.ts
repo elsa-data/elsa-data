@@ -6,7 +6,7 @@ import {
 } from "./manifest-htsget-types";
 import {
   releaseIsActivated,
-  releaseIsAllowedHtsget,
+  releaseDataSharingConfigurationHtsget,
 } from "../../../../../dbschema/queries";
 import {
   ManifestHtsgetEndpointNotEnabled,
@@ -59,11 +59,14 @@ export abstract class ManifestHtsgetService {
     const activated = await releaseIsActivated(this.edgeDbClient, {
       releaseKey,
     });
-    const allowed = await releaseIsAllowedHtsget(this.edgeDbClient, {
-      releaseKey,
-    });
+    const htsgetSharingConfig = await releaseDataSharingConfigurationHtsget(
+      this.edgeDbClient,
+      {
+        releaseKey,
+      }
+    );
 
-    if (!activated?.isActivated || !allowed?.isAllowedHtsget) {
+    if (!activated?.isActivated || !htsgetSharingConfig?.htsgetEnabled) {
       throw new ManifestHtsgetNotAllowed();
     }
 

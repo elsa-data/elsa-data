@@ -3,7 +3,11 @@ import classNames from "classnames";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
-import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
+import {
+  LeftDiv,
+  RhSection,
+  RightDiv,
+} from "../../../components/rh/rh-structural";
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import {
   axiosPatchOperationMutationFn,
@@ -46,7 +50,6 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       | "/allowedS3"
       | "/allowedGS"
       | "/allowedR2"
-      | "/allowedHtsget"
       | null,
     current: boolean
   ) => (
@@ -69,19 +72,19 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   );
 
   return (
-    <Box heading="Sharing" applyIsLockedStyle={!!releaseData.activation}>
-      <div className="md:grid md:grid-cols-5 md:gap-6">
+    <Box heading="Access Control" applyIsLockedStyle={!!releaseData.activation}>
+      <RhSection>
         <LeftDiv
           heading={"Data"}
           extra={
-            "Access can be restricted to different types of data based on the requirements of the study"
+            "Access must be granted based on the type and location of the data"
           }
         />
         <RightDiv>
           <div className="flex w-full">
             <div className="grid flex-grow">
               <RhChecks label="By Data Type">
-                {isAllowedCheck("Manifest (always allowed)", null, true)}
+                {isAllowedCheck("Identifiers (always allowed)", null, true)}
                 {isAllowedCheck(
                   "Reads (e.g. BAM, CRAM, FASTQ, ORA)",
                   "/allowedRead",
@@ -127,25 +130,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
             </div>
           </div>
         </RightDiv>
-        <LeftDiv
-          heading={"Mechanism"}
-          extra={
-            "The technical mechanisms by which data can be accessed can be restricted according to data transfer agreements and organisation policy"
-          }
-        />
-        <RightDiv>
-          <RhChecks label="Access Via">
-            {isAllowedCheck("Presigned URLs (always enabled)", null, true)}
-            {!releaseData.htsgetConfig
-              ? isAllowedCheck("htsget (disabled in config)", null, false)
-              : isAllowedCheck(
-                  "htsget",
-                  "/allowedHtsget",
-                  releaseData.isAllowedHtsget
-                )}
-          </RhChecks>
-        </RightDiv>
-      </div>
+      </RhSection>
     </Box>
   );
 };

@@ -365,12 +365,15 @@ export const releaseRoutes = async (
                   )
                 );
                 return;
-              case "/allowedHtsget":
+              case "/dataSharingConfiguration/objectSigningEnabled":
+              case "/dataSharingConfiguration/objectSigningExpiryHours":
+              case "/dataSharingConfiguration/copyOutEnabled":
+              case "/dataSharingConfiguration/copyOutDestinationLocation":
                 reply.send(
-                  await releaseService.setIsAllowed(
+                  await releaseService.setDataSharingConfigurationField(
                     authenticatedUser,
                     releaseKey,
-                    "isAllowedHtsget",
+                    op.path,
                     op.value
                   )
                 );

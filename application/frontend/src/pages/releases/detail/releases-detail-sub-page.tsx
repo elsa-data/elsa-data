@@ -11,6 +11,7 @@ import { HtsgetForm } from "./htsget-form";
 import { useReleasesMasterData } from "../releases-types";
 import { CopyOutForm } from "./copy-out-form";
 import { ManifestForm } from "./manifest-form";
+import { SharingControlBox } from "./sharing-control-box/sharing-control-box";
 
 /**
  * The sub-page display the main details a single
@@ -40,6 +41,8 @@ export const ReleasesDetailSubPage: React.FC = () => {
         />
       )}
 
+      <SharingControlBox releaseKey={releaseKey} releaseData={releaseData} />
+
       <Box heading="Access Data" applyIsDisabledStyle={!releaseData.activation}>
         <VerticalTabs
           tabHeadings={[
@@ -51,7 +54,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
           ]}
         >
           <ManifestForm releaseKey={releaseKey} releaseData={releaseData} />
-          <CopyOutForm releaseKey={releaseKey} />
+          <CopyOutForm releaseKey={releaseKey} releaseData={releaseData} />
           <AwsS3VpcShareForm releaseKey={releaseKey} />
           <GcpStorageIamShareForm releaseKey={releaseKey} />
           {releaseData.htsgetConfig && (

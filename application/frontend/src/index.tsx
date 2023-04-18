@@ -11,6 +11,7 @@ import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
 import { createRouter } from "./index-router";
 import { TRPCProvider } from "./providers/trpc-provider";
+import { isString } from "lodash";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -34,6 +35,11 @@ if (rootElement != null) {
     "development") as DeployedEnvironments;
   const tfu =
     rootElement.dataset.terminologyFhirUrl || "undefined terminology FHIR URL";
+  const fea: Set<string> = new Set<string>();
+  if (isString(rootElement.dataset.features))
+    for (const f of rootElement.dataset.features.split(" ")) {
+      if (f.trim().length > 0) fea.add(f.trim());
+    }
 
   root.render(
     <React.StrictMode>
@@ -46,6 +52,7 @@ if (rootElement != null) {
           revision={rev}
           deployedEnvironment={de}
           terminologyFhirUrl={tfu}
+          features={fea}
         >
           {/* we use session cookies for auth and use this provider to make them easily available */}
           <CookiesProvider>

@@ -1,61 +1,62 @@
-import React, { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { REACT_QUERY_RELEASE_KEYS } from "../queries";
-import { trpc } from "../../../helpers/trpc";
+import React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  axiosPatchOperationMutationFn,
+  REACT_QUERY_RELEASE_KEYS,
+} from "../queries";
+import { ReleaseTypeLocal } from "../shared-types";
 
 type Props = {
   releaseKey: string;
+  releaseData: ReleaseTypeLocal;
 };
 
 /**
- * A form that trigger a copy out process.
+ * A form that allows researchers to entry the copy out destination
  *
  * @param releaseKey
+ * @param releaseData
  * @constructor
  */
-export const CopyOutForm: React.FC<Props> = ({ releaseKey }) => {
+export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const queryClient = useQueryClient();
 
-  const copyOutMutate = trpc.releaseJob.startCopyOut.useMutation({
-    onSettled: async () =>
-      queryClient.invalidateQueries(
-        REACT_QUERY_RELEASE_KEYS.detail(releaseKey)
-      ),
-  });
-
-  const [destinationBucket, setDestinationBucket] = useState(
-    "elsa-data-copy-target-sydney"
+  // a mutator that can alter any field set up using our REST PATCH mechanism
+  // the argument to the mutator needs to be a single ReleasePatchOperationType operation
+  const releasePatchMutate = useMutation(
+    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
+    {
+      // whenever we do a mutation of application coded data - our API returns the complete updated
+      // state of the *whole* release - and we can use that data to replace the stored react-query state
+      onSuccess: (result: ReleaseTypeLocal) => {
+        queryClient.setQueryData(
+          REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
+          result
+        );
+      },
+    }
   );
 
   return (
     <>
       <form>
         <div className="flex flex-col gap-6">
-          <label className="prose block">
-            <span className="text-xs font-bold uppercase text-gray-700">
-              AWS Account(s)
-            </span>
+          <div className="form-control prose">
+            <label className="label">
+              <span className="label-text">Destination for Copy Out</span>
+            </label>
             <input
               type="text"
-              value={destinationBucket}
-              onChange={(e) => setDestinationBucket(e.target.value)}
-              className="mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
+              className="input-bordered input w-full"
+              defaultValue={releaseData.dataSharingCopyOut?.destinationLocation}
+              onBlur={(e) =>
+                releasePatchMutate.mutate({
+                  op: "replace",
+                  path: "/dataSharingConfiguration/copyOutDestinationLocation",
+                  value: e.target.value,
+                })
+              }
             />
-          </label>
-          <div className="prose">
-            <button
-              type="button"
-              className="btn-normal"
-              onClick={() => {
-                copyOutMutate.mutate({
-                  releaseKey: releaseKey,
-                  destinationBucket: destinationBucket,
-                });
-              }}
-              disabled={copyOutMutate.isLoading}
-            >
-              Copy Out
-            </button>
           </div>
         </div>
       </form>
