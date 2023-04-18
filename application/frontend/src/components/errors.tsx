@@ -117,6 +117,26 @@ export const ErrorFormatterDetail = ({
       return <Format7807Error error={error.toResponse()} />;
     } else if (isBase7807Response(error)) {
       return <Format7807Error error={error} />;
+    } else if (error instanceof TRPCClientError) {
+      const base7807ErrorRes = error?.shape?.data?.base7807ErrorRes;
+      if (base7807ErrorRes) return <Format7807Error error={base7807ErrorRes} />;
+
+      // Some anticipation if 7807 error res does not exist
+      const code = error?.shape?.data?.httpStatus;
+      return (
+        <div className="pl-4 pt-4">
+          <div>
+            <span className="font-bold">message: </span>
+            {error.message}
+          </div>
+          {code && (
+            <div>
+              <span className="font-bold">code: </span>
+              {code}
+            </div>
+          )}
+        </div>
+      );
     } else if (axios.isAxiosError(error)) {
       if (error.response?.data instanceof Base7807Error) {
         return <ErrorFormatterDetail error={error.response.data} />;
@@ -134,22 +154,6 @@ export const ErrorFormatterDetail = ({
           </div>
         );
       }
-    } else if (error instanceof TRPCClientError) {
-      const code = error?.shape?.data?.httpStatus;
-      return (
-        <div className="pl-4 pt-4">
-          <div>
-            <span className="font-bold">message: </span>
-            {error.message}
-          </div>
-          {code && (
-            <div>
-              <span className="font-bold">code: </span>
-              {code}
-            </div>
-          )}
-        </div>
-      );
     } else if (error instanceof Error) {
       return <div className="pl-4 pt-4">{error.message}</div>;
     } else if (

@@ -17,6 +17,7 @@ import { currentPageSize } from "../helpers/pagination-helpers";
 import { ReleaseDataEgressService } from "../../business/services/release-data-egress-service";
 import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
 import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
+import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { DatasetService } from "../../business/services/dataset-service";
 import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
 import { ReleaseSelectionService } from "../../business/services/release-selection-service";
@@ -31,7 +32,19 @@ export type Context = {
   res?: FastifyReply;
 };
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      data: {
+        base7807ErrorRes:
+          error.cause instanceof Base7807Error
+            ? error.cause.toResponse()
+            : null,
+      },
+    };
+  },
+});
 
 export const router = t.router;
 export const middleware = t.middleware;
