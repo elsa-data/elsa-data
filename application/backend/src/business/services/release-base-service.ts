@@ -27,6 +27,7 @@ export abstract class ReleaseBaseService {
   protected constructor(
     protected readonly settings: ElsaSettings,
     protected readonly edgeDbClient: edgedb.Client,
+    protected readonly features: ReadonlySet<string>,
     protected readonly usersService: UsersService
   ) {}
 

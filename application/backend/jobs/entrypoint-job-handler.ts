@@ -13,6 +13,7 @@ import { JobCloudFormationDeleteService } from "../src/business/services/jobs/jo
 import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
 import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
 import { differenceInHours, minTime } from "date-fns";
+import { getFeaturesEnabled } from "../src/features";
 
 // global settings for DI
 const dc = bootstrapDependencyInjection();
@@ -32,6 +33,12 @@ const dc = bootstrapDependencyInjection();
 
   dc.register<Logger>("Logger", {
     useValue: logger,
+  });
+
+  const features = await getFeaturesEnabled(dc, settings);
+
+  dc.register<ReadonlySet<string>>("Features", {
+    useValue: features,
   });
 
   // store boolean if the job handler is cancelled
