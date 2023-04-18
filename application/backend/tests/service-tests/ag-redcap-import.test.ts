@@ -17,8 +17,6 @@ describe("Redcap Import for AG", () => {
   beforeAll(async () => {});
 
   beforeEach(async () => {
-    testContainer.clearInstances();
-
     ({ allowedAdministratorUser } = await beforeEachCommon(testContainer));
   });
 

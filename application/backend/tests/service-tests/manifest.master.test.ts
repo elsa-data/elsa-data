@@ -56,10 +56,10 @@ beforeEach(async () => {
     "isAllowedR2Data",
     true
   );
-  await releaseService.setIsAllowed(
+  await releaseService.setDataSharingConfigurationField(
     allowedAdministratorUser,
     testReleaseKey,
-    "isAllowedHtsget",
+    "/dataSharingConfiguration/htsgetEnabled",
     true
   );
 });

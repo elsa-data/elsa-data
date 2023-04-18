@@ -438,19 +438,11 @@ ${release.applicantEmailAddresses}
       | "isAllowedPhenotypeData"
       | "isAllowedS3Data"
       | "isAllowedGSData"
-      | "isAllowedR2Data"
-      | "isAllowedHtsget",
+      | "isAllowedR2Data",
     value: boolean
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
-
-    if (
-      type === "isAllowedHtsget" &&
-      this.configForFeature("isAllowedHtsget") === undefined
-    ) {
-      throw new ReleaseHtsgetNotConfigured();
-    }
 
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
       this.auditLogService,
@@ -488,7 +480,6 @@ ${release.applicantEmailAddresses}
           isAllowedGSData: value,
         },
         isAllowedR2Data: { isAllowedR2Data: value },
-        isAllowedHtsget: { isAllowedHtsget: value },
       }[type];
 
       if (!fieldToSet)
@@ -570,6 +561,12 @@ ${release.applicantEmailAddresses}
     );
 
     // TODO permission checks depending on the field type
+    //egif (
+    ///        type === "isAllowedHtsget" &&
+    //     this.configForFeature("isAllowedHtsget") === undefined
+    // ) {
+    //   throw new ReleaseHtsgetNotConfigured();
+    // }
 
     try {
       let fieldToSet: any = undefined;
