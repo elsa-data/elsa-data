@@ -4,7 +4,10 @@
   "description": "E2E test scripts for any deployment of Elsa Data",
   "main": "index.js",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "build": "npm --prefix ../application/frontend run build:dev && npm --prefix ../application/backend run edgetypes",
+    "test": "npx playwright test --trace on"
+  },
   "keywords": [],
   "author": "UMCCR",
   "license": "ISC",

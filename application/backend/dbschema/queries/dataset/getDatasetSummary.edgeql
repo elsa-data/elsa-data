@@ -181,8 +181,11 @@ select {
       )
     )
     order by
-        .isInConfig desc then 
+        .isInConfig desc 
+          then 
         .updatedDateTime desc
+          then 
+        .uri desc
     offset
         <int16>$offset
     limit

@@ -23,7 +23,6 @@ test("A release can be created manually which has selectable cases", async ({
     .locator("#datasetUriSelector > div")
     .getByText("urn:fdc:umccr.org:2022:dataset/10c")
     .click();
-
   await page
     .locator("#datasetUriSelector > div")
     .getByText("urn:fdc:umccr.org:2022:dataset/10f")
