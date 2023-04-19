@@ -509,11 +509,10 @@ export const releaseRoutes = async (
 
   fastify.post<{
     Body?: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>("/releases/:rid/tsv-manifest", {}, async function (request, reply) {
+    Params: { releaseKey: string };
+  }>("/releases/:releaseKey/tsv-manifest", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
+    const { releaseKey } = request.params;
 
     const manifest = await manifestService.getArchivedActiveTsvManifest(
       presignedUrlsService,

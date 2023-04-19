@@ -92,7 +92,6 @@ export class ManifestService {
     auditId: string
   ): Promise<ManifestTsvBodyType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
-
     // TODO fix exceptions here
     if (!masterManifest) return null;
 
@@ -146,7 +145,6 @@ export class ManifestService {
 
       const readableStream = Readable.from(manifest);
       const buf = await streamConsumers.text(readableStream.pipe(stringifier));
-
       const password = await this.releaseService.getPassword(user, releaseKey);
 
       // create archive and specify method of encryption and password
@@ -159,7 +157,6 @@ export class ManifestService {
       archive.append(buf, { name: "manifest.tsv" });
 
       await archive.finalize();
-
       return archive;
     };
 
@@ -174,7 +171,7 @@ export class ManifestService {
     );
 
     try {
-      const archive = createPresignedZip(newAuditEventId);
+      const archive = await createPresignedZip(newAuditEventId);
       await this.auditLogService.completeReleaseAuditEvent(
         this.edgeDbClient,
         newAuditEventId,
