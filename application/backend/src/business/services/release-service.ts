@@ -32,13 +32,14 @@ import { jobAsBadgeLabel } from "./jobs/job-helpers";
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
-    @inject("Settings") settings: ElsaSettings,
+    @inject("Database") readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") readonly settings: ElsaSettings,
+    @inject("Features") readonly features: ReadonlySet<string>,
     @inject("Logger") private logger: Logger,
     private auditLogService: AuditLogService,
     usersService: UsersService
   ) {
-    super(settings, edgeDbClient, usersService);
+    super(settings, edgeDbClient, features, usersService);
   }
 
   /**
@@ -165,6 +166,10 @@ ${release.applicantEmailAddresses}
         isAllowedReadData: true,
         isAllowedVariantData: true,
         isAllowedPhenotypeData: true,
+        dataSharingConfiguration: e.insert(
+          e.release.DataSharingConfiguration,
+          {}
+        ),
       })
       .run(this.edgeDbClient);
 
@@ -434,19 +439,11 @@ ${release.applicantEmailAddresses}
       | "isAllowedPhenotypeData"
       | "isAllowedS3Data"
       | "isAllowedGSData"
-      | "isAllowedR2Data"
-      | "isAllowedHtsget",
+      | "isAllowedR2Data",
     value: boolean
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
-
-    if (
-      type === "isAllowedHtsget" &&
-      this.configForFeature("isAllowedHtsget") === undefined
-    ) {
-      throw new ReleaseHtsgetNotConfigured();
-    }
 
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
       this.auditLogService,
@@ -484,7 +481,6 @@ ${release.applicantEmailAddresses}
           isAllowedGSData: value,
         },
         isAllowedR2Data: { isAllowedR2Data: value },
-        isAllowedHtsget: { isAllowedHtsget: value },
       }[type];
 
       if (!fieldToSet)
@@ -513,6 +509,155 @@ ${release.applicantEmailAddresses}
       });
 
       // TODO should this be part of the transaction?
+      return await this.getBase(releaseKey, userRole);
+    } catch (e) {
+      await auditFailure(
+        this.auditLogService,
+        this.edgeDbClient,
+        auditEventId,
+        auditEventStart,
+        e
+      );
+
+      throw e;
+    }
+  }
+
+  /**
+   * Change any of the data sharing configuration fields.
+   *
+   * @param user the user performing the action
+   * @param releaseKey the key of the release
+   * @param type the type of data sharing configuration field to be changed
+   * @param value the boolean/string/number value to set
+   */
+  public async setDataSharingConfigurationField(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    // NOTE these strings match the patch operations/types as listed in schemas-release-operations.ts
+    type:
+      | "/dataSharingConfiguration/objectSigningEnabled"
+      | "/dataSharingConfiguration/objectSigningExpiryHours"
+      | "/dataSharingConfiguration/copyOutEnabled"
+      | "/dataSharingConfiguration/copyOutDestinationLocation"
+      | "/dataSharingConfiguration/htsgetEnabled"
+      | "/dataSharingConfiguration/awsAccessPointEnabled"
+      | "/dataSharingConfiguration/awsAccessPointVpcId"
+      | "/dataSharingConfiguration/awsAccessPointAccountId"
+      | "/dataSharingConfiguration/gcpStorageIamEnabled"
+      | "/dataSharingConfiguration/gcpStorageIamUsers",
+    value: any
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
+
+    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+      this.auditLogService,
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      `Updated Data Sharing Configuration field`
+    );
+
+    // TODO permission checks depending on the field type
+    //egif (
+    ///        type === "isAllowedHtsget" &&
+    //     this.configForFeature("isAllowedHtsget") === undefined
+    // ) {
+    //   throw new ReleaseHtsgetNotConfigured();
+    // }
+
+    try {
+      let fieldToSet: any = undefined;
+
+      // this switch matches the operation type to the corresponding database field to set
+      // - which in general should be the same name - but we do have the flexibility here to adapt
+      // to multiple fields / renamed fields etc
+      // we add EdgeDb type coercions to make sure our input value is correct
+      // for the corresponding operation type
+      switch (type) {
+        case "/dataSharingConfiguration/objectSigningEnabled":
+          fieldToSet = {
+            objectSigningEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/objectSigningExpiryHours":
+          fieldToSet = {
+            objectSigningExpiryHours: e.int16(value),
+          };
+          break;
+        case "/dataSharingConfiguration/copyOutEnabled":
+          fieldToSet = {
+            copyOutEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/copyOutDestinationLocation":
+          fieldToSet = {
+            copyOutDestinationLocation: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/htsgetEnabled":
+          fieldToSet = {
+            htsgetEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/awsAccessPointEnabled":
+          fieldToSet = {
+            awsAccessPointEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/awsAccessPointAccountId":
+          fieldToSet = {
+            awsAccessPointAccountId: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/awsAccessPointVpcId":
+          fieldToSet = {
+            awsAccessPointVpcId: e.str(value),
+          };
+          break;
+        case "/dataSharingConfiguration/gcpStorageIamEnabled":
+          fieldToSet = {
+            gcpStorageIamEnabled: e.bool(value),
+          };
+          break;
+        case "/dataSharingConfiguration/gcpStorageIamUsers":
+          fieldToSet = {
+            gcpStorageIamUsers: e.array(value),
+          };
+          break;
+        default:
+          throw new Error(
+            `setDataSharingConfigurationField passed in unknown field type to set '${type}'`
+          );
+      }
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        await e
+          .update(e.release.Release.dataSharingConfiguration, (dsc) => ({
+            filter_single: e.op(
+              dsc["<dataSharingConfiguration[is release::Release]"].releaseKey,
+              "=",
+              releaseKey
+            ),
+            set: fieldToSet,
+          }))
+          .run(tx);
+
+        await auditSuccess(
+          this.auditLogService,
+          tx,
+          auditEventId,
+          auditEventStart,
+          {
+            field: type,
+            newValue: value,
+          }
+        );
+      });
+
       return await this.getBase(releaseKey, userRole);
     } catch (e) {
       await auditFailure(

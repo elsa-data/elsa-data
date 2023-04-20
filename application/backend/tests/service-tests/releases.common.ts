@@ -74,6 +74,10 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(JUDY_SPECIMEN)
       ),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",

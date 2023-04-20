@@ -48,7 +48,7 @@ export async function createLoggedInServerWithRelease(role: string) {
   const { settings, logger, edgeDbClient } = getServices(testContainer);
 
   // create a real instance of the app server
-  const app = new App(testContainer, settings, logger);
+  const app = new App(testContainer, settings, logger, new Set<string>());
   const server = await app.setupServer();
   await server.ready();
 
@@ -90,6 +90,10 @@ export async function createLoggedInServerWithRelease(role: string) {
         findSpecimenQuery(BART_SPECIMEN),
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(JUDY_SPECIMEN)
+      ),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
       ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {

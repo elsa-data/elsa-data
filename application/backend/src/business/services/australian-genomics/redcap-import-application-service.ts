@@ -287,6 +287,10 @@ ${roleTable.join("\n")}
             e.array(e.str),
             Object.keys(resourceToDatasetMap)
           ),
+          dataSharingConfiguration: e.insert(
+            e.release.DataSharingConfiguration,
+            {}
+          ),
           // NOTE: this is slightly non-standard as the audit event here is not created as part of the
           // audit service - however this allows us to make it all a single db operation
           // make sure the audit code here keeps in sync with the basic add audit event

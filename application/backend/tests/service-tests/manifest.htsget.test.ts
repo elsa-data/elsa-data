@@ -88,10 +88,10 @@ beforeEach(async () => {
     "isAllowedR2Data",
     true
   );
-  await releaseService.setIsAllowed(
+  await releaseService.setDataSharingConfigurationField(
     allowedAdministratorUser,
     testReleaseKey,
-    "isAllowedHtsget",
+    "/dataSharingConfiguration/htsgetEnabled",
     true
   );
 });
@@ -223,10 +223,10 @@ it("test publish htsget manifest release not activated", async () => {
 });
 
 it("test publish htsget manifest htsget not allowed", async () => {
-  await releaseService.setIsAllowed(
+  await releaseService.setDataSharingConfigurationField(
     allowedAdministratorUser,
     testReleaseKey,
-    "isAllowedHtsget",
+    "/dataSharingConfiguration/htsgetEnabled",
     false
   );
   await releaseActivationService.activateRelease(

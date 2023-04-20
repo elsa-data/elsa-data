@@ -32,6 +32,7 @@ import pino, { Logger } from "pino";
 import { AuditLogService } from "./business/services/audit-log-service";
 import { ReleaseActivationService } from "./business/services/release-activation-service";
 import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
+import { getFeaturesEnabled } from "./features";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -101,6 +102,12 @@ function printHelpText() {
 
   dc.register<Logger>("Logger", {
     useValue: logger,
+  });
+
+  const features = await getFeaturesEnabled(dc, settings);
+
+  dc.register<ReadonlySet<string>>("Features", {
+    useValue: features,
   });
 
   // do some DI resolutions nice and early because if DI is broken (as can happen with @decorators)

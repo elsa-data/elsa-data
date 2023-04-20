@@ -46,6 +46,10 @@ export async function insertRelease4() {
           },
         },
       }),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       datasetUris: e.array([TENG_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],

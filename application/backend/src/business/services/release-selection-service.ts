@@ -41,11 +41,12 @@ export class ReleaseSelectionService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") readonly settings: ElsaSettings,
+    @inject("Features") readonly features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
     private readonly auditLogService: AuditLogService,
     usersService: UsersService
   ) {
-    super(settings, edgeDbClient, usersService);
+    super(settings, edgeDbClient, features, usersService);
   }
 
   /**

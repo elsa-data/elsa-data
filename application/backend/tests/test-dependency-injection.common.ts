@@ -79,6 +79,10 @@ export function registerTypes() {
     useValue: pino(createTestElsaSettings().logger),
   });
 
+  testContainer.register<ReadonlySet<string>>("Features", {
+    useValue: new Set<string>(),
+  });
+
   testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
     useClass: AwsPresignedUrlsService,
   });

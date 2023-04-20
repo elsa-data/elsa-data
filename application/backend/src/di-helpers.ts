@@ -26,5 +26,6 @@ export function getServices(dc: DependencyContainer) {
     edgeDbClient: dc.resolve<Client>("Database"),
     settings: dc.resolve<ElsaSettings>("Settings"),
     logger: dc.resolve<Logger>("Logger"),
+    features: dc.resolve<ReadonlySet<string>>("Features"),
   };
 }

@@ -42,6 +42,10 @@ export async function insertRelease3() {
       datasetUris: e.array([
         "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
       ]),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
