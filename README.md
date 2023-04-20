@@ -2,45 +2,62 @@
 
 Genomic data sharing support software ("let the data go").
 
-### Roles and Permissions
+### Permissions and Roles
+
+#### Super Admin Permissions
+
+Super admins must be listed in the Elsa Data configuration files - and cannot be changed dynamically
+(to add/remove super admin rights for a user - one of the configuration sources must be changed -
+and the system restarted).
+
+NOTE the following permissions are the _only_ permissions granted by being listed as a super admin. Super
+admins will not otherwise be able to do anything that an ordinary user cannot - until they grant themselves
+further user permissions.
+
+| Permission                      | Description                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------- |
+| `isAllowedChangeUserPermission` | Allows the user to change the "user permissions" (see below) of users (including themselves) |
 
 #### User Permissions
 
-Within the system permissions, there are the following permissions that stick to every user account.
+Within the overall system context (i.e. outside any specific release) the following user permissions can be granted.
 
-| Permission                          | Description                                                                                                                                                                                  |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isAllowedOverallAdministratorView` | This permission will have no restriction to view all records in the application. This is mainly intended for admins that able to view, but unable to make changes to any records.            |
-| `isAllowedCreateRelease`            | Allow user to create a new release from existing dataset records. Making a new releases will become an `Administrator` role in the context of release.                                       |
-| `isAllowedRefreshDatasetIndex`      | Allow the user to update the current dataset by fetching the latest data from its respective data-storage. This includes fetching data-egress records if configured.                         |
-| `isAllowedChangeUserPermission`     | This is a special permission that allows changing a user's permissions. This permission itself is mutable only through the system configuration, and changing this requires a system reboot. |
+| Permission                          | Description                                                                                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isAllowedOverallAdministratorView` | This permissions grants an implicit Viewer role for releases where this user is not otherwise involved                                                   |
+| `isAllowedCreateRelease`            | Allow user to create a new release via any configured DAC mechanisms                                                                                     |
+| `isAllowedRefreshDatasetIndex`      | Allow the user to update the current dataset index by triggering the respective indexing task. This includes fetching data-egress records if configured. |
 
-All of these permissions will be set to `false` by default.
+All of these permissions will be disabled on first log in for a user.
 
 #### Release Roles
 
-In the context of release, there are a couple of roles within each release as follows.
+In the context of each release, users are assigned a Role which affects the permissions
+they are granted. When a user is granted a role in a release - we say they are involved in the release. This
+is the primary security boundary of the system - users must be involved in a release in order
+to see or interact with it in the UI/API (NOTE with the caveat of the Viewer role listed below).
 
 | Roles           | Description                                                                                                                                                                                                                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Administrator` | Given to the data custodian that created the release. (This user will have the `isAllowedCreateRelease` permission from the user permissions above.)                                                                                                                                              |
-| `Manager`       | Given to the Person In Charge (PIC) / research lead for the release.                                                                                                                                                                                                                              |
+| `Administrator` | Given to the data custodians of the release                                                                                                                                                                                                                                                       |
+| `Manager`       | Given to the managers of this release from the perspective of the applicant (i.e. project manager / CI / PI)                                                                                                                                                                                      |
 | `Member`        | Given by the `Manager`/`Administrator` to access the data in the release. The use case for this is a person from the research group need to access the given data, but instead of using the `Manager` credentials to retrieve it, the manager could delegate this (`Member`) role to that person. |
+| `Viewer`        | An implicit role given to those with `isAllowedOverallAdministratorView` and who otherwise aren't involved in a release                                                                                                                                                                           |
 
 Permissions bound on each role are as follows.
 
-|                                                                                                                                        | `Administrator`    | `Manager`          | `Member`           |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ |
-| Modify cases/patients to be included in the release                                                                                    | :white_check_mark: | :x:                | :x:                |
-| Modify files to be included in the release                                                                                             | :white_check_mark: | :x:                | :x:                |
-| Modify what type of method allowed for the data access<br>(e.g. only allow `htsget` endpoint)                                          | :white_check_mark: | :x:                | :x:                |
-| Enable/suspend data sharing in a release                                                                                               | :white_check_mark: | :x:                | :x:                |
-| Add/remove `Member` from the release                                                                                                   | :white_check_mark: | :white_check_mark: | :x:                |
-| Promote/Demote `Manager` from/to a `Member` role                                                                                       | :white_check_mark: | :white_check_mark: | :x:                |
-| View details of the release<br>(e.g. purpose of release, DAC details, user involved in the release)                                    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| View all audit events occurred within the release                                                                                      | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| View password for encrypted manifest.<br>(Manifest will be protected with password to prevent storing it randomly on local directory.) | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Accessed the data-content available in the release.                                                                                    | :x:                | :white_check_mark: | :white_check_mark: |
+|                                                                                                                                        | `Administrator`    | `Manager`          | `Member`           | `Viewer`           |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
+| Modify cases/patients to be included in the release                                                                                    | :white_check_mark: | :x:                | :x:                |                    |
+| Modify files to be included in the release                                                                                             | :white_check_mark: | :x:                | :x:                |                    |
+| Modify what type of method allowed for the data access<br>(e.g. only allow `htsget` endpoint)                                          | :white_check_mark: | :x:                | :x:                |                    |
+| Enable/suspend data sharing in a release                                                                                               | :white_check_mark: | :x:                | :x:                |                    |
+| Add/remove `Member` from the release                                                                                                   | :white_check_mark: | :white_check_mark: | :x:                |                    |
+| Promote/Demote `Manager` from/to a `Member` role                                                                                       | :white_check_mark: | :white_check_mark: | :x:                |                    |
+| View details of the release<br>(e.g. purpose of release, DAC details, user involved in the release)                                    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| View all audit events occurred within the release                                                                                      | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| View password for encrypted manifest.<br>(Manifest will be protected with password to prevent storing it randomly on local directory.) | :white_check_mark: | :white_check_mark: | :white_check_mark: |                    |
+| Accessed the data-content available in the release.                                                                                    | :x:                | :white_check_mark: | :white_check_mark: |                    |
 
 ## Dev
 
