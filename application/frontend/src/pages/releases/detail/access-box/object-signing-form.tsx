@@ -12,7 +12,7 @@ type TsvColumnCheckProps = {
 };
 
 const TsvColumnCheck: React.FC<TsvColumnCheckProps> = ({ field }) => (
-  <div key={field} className="flex items-center gap-2">
+  <div className="flex items-center gap-2">
     <input
       type="checkbox"
       className="checkbox"
