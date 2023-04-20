@@ -104,6 +104,13 @@ Ethics form XYZ.
           manifestEtag: "abcdef",
         })
       ),
+      dataSharingConfiguration: e.insert(e.release.DataSharingConfiguration, {
+        objectSigningEnabled: true,
+        htsgetEnabled: true,
+        awsAccessPointEnabled: true,
+        gcpStorageIamEnabled: true,
+        copyOutEnabled: true,
+      }),
       releasePassword: "abcd", // pragma: allowlist secret
       datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
       datasetCaseUrisOrderPreference: [""],
@@ -121,7 +128,16 @@ Ethics form XYZ.
         // and just the proband of another trio
         findSpecimenQuery(ELROY_SPECIMEN)
       ),
-      releaseAuditLog: makeSytheticAuditLog(),
+      releaseAuditLog: e.set(
+        e.insert(e.audit.ReleaseAuditEvent, {
+          actionCategory: "C",
+          actionDescription: "Created Release",
+          outcome: 0,
+          whoDisplayName: "System",
+          whoId: "system",
+          occurredDateTime: e.datetime_current(),
+        })
+      ),
       dataEgressRecord: await makeSyntheticDataEgressRecord(),
     })
     .run(edgeDbClient);
@@ -147,89 +163,6 @@ Ethics form XYZ.
     .run(edgeDbClient);
 
   return insertRelease1;
-}
-
-function makeSytheticAuditLog() {
-  const makeCreate = () => ({
-    actionCategory: "C" as "C",
-    actionDescription: "Created Release",
-    outcome: 0,
-    whoDisplayName: "Someone",
-    whoId: "a",
-    occurredDateTime: e.op(
-      e.datetime_current(),
-      "-",
-      e.duration(new Duration(0, 0, 0, 0, 1, 2, 3))
-    ),
-    details: MOCK_JSON,
-  });
-
-  const makeRead = () => ({
-    actionCategory: "R" as "R",
-    actionDescription: "Viewed Release",
-    outcome: 0,
-    whoDisplayName: "Bruce Smith",
-    whoId: "a",
-    occurredDateTime: e.op(
-      e.datetime_current(),
-      "-",
-      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
-    ),
-  });
-
-  const makeOperation = (op: string) => ({
-    actionCategory: "E" as "E",
-    actionDescription: op,
-    outcome: 0,
-    whoDisplayName: "Bruce Smith",
-    whoId: "a",
-    occurredDateTime: e.op(
-      e.datetime_current(),
-      "-",
-      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
-    ),
-  });
-
-  const makeLongOperation = (op: string) => ({
-    actionCategory: "E" as "E",
-    actionDescription: op,
-    outcome: 0,
-    whoDisplayName: "Alice Smythe",
-    whoId: "a",
-    occurredDateTime: e.op(
-      e.datetime_current(),
-      "-",
-      e.duration(new Duration(0, 0, 0, 0, 0, random(59), random(59)))
-    ),
-    occurredDuration: e.duration(
-      new Duration(0, 0, 0, 0, 0, random(59), random(59))
-    ),
-    details: MOCK_JSON,
-  });
-
-  return e.set(
-    e.insert(
-      e.audit.ReleaseAuditEvent,
-      makeLongOperation("Ran Dynamic Consent")
-    ),
-    e.insert(e.audit.ReleaseAuditEvent, makeCreate()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeRead()),
-    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Selected Case")),
-    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen")),
-    e.insert(e.audit.ReleaseAuditEvent, makeOperation("Unselected Specimen"))
-  );
 }
 
 const makeSyntheticDataEgressRecord = async () => {

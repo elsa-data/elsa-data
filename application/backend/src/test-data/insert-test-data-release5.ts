@@ -46,6 +46,10 @@ export async function insertRelease5() {
           },
         },
       }),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       datasetUris: e.array([GS_URI]),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],

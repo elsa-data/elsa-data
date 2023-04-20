@@ -85,14 +85,21 @@ module release {
         required property isAllowedVariantData -> bool { default := false };
         required property isAllowedPhenotypeData -> bool { default := false };
 
-        # which file locations are allowed to be access for the selectedSpecimens
+        # which file locations are allowed to be accessed for the selectedSpecimens
         #
         required property isAllowedS3Data -> bool { default := false };
         required property isAllowedGSData -> bool { default := false };
         required property isAllowedR2Data -> bool { default := false };
 
-        # is the htsget sharing functionality enabled
-        required property isAllowedHtsget -> bool { default := false };
+        # once a release is activated, the data sharing configuration defines
+        # the actual practical mechanisms of how data can be accessed
+        #
+        required link dataSharingConfiguration -> DataSharingConfiguration {
+            constraint exclusive;
+
+            # we cascade delete this configuration if the release itself is deleted
+            on source delete delete target;
+        }
 
         # if present indicates that a running job is active in the context of this release
         #
@@ -129,10 +136,15 @@ module release {
             on target delete restrict;
         }
 
-        # Store records of data being accessed (mostly 3rd parties e.g. CloudTrailLake)
+        # store records of data being accessed (mostly 3rd parties e.g. CloudTrailLake)
+        #
         multi link dataEgressRecord -> DataEgressRecord {
-            on target delete restrict;
+            # as these records are 3rd party data - we are free to delete our copies
+            # of them if the release itself is deleted
+            #
+            on source delete delete target;
         }
+
         # A quick access to know the last data egress records query was made (to determine the next interval query)
         # 
         property lastDataEgressQueryTimestamp -> datetime;
@@ -202,7 +214,8 @@ module release {
 
     type DataEgressRecord {
 
-        # Link back which audit owns this
+        # link back to which release owns this egress record
+        #
         link release := .<dataEgressRecord[is release::Release];
 
         # Additional release details
@@ -218,7 +231,28 @@ module release {
         # Details of data the object
         required property fileUrl -> str;
         required property fileSize -> int64;
-
     }
 
+    # A collection of settings for how data can be shared - including potentially
+    # bespoke fields for each sharing type (these fields only need to make sense once
+    # their particular sharing type is enabled - they will otherwise be blank or null or random).
+    #
+    type DataSharingConfiguration {
+
+        required property objectSigningEnabled -> bool { default := false };
+        required property objectSigningExpiryHours -> int16 { default := 6*24 };
+
+        required property copyOutEnabled -> bool { default := false };
+        required property copyOutDestinationLocation -> str { default := "" };
+
+        required property htsgetEnabled -> bool { default := false };
+        # TODO htsget endpoint selection - currently only one htsget endpoint so not needed yet
+
+        required property awsAccessPointEnabled -> bool { default := false };
+        required property awsAccessPointAccountId -> str { default := "" };
+        required property awsAccessPointVpcId -> str { default := "" };
+
+        required property gcpStorageIamEnabled -> bool { default := false };
+        required property gcpStorageIamUsers -> array<str> { default := <array<str>>[] };
+    }
 }

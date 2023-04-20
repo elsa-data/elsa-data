@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { REACT_QUERY_RELEASE_KEYS } from "../queries";
+import { REACT_QUERY_RELEASE_KEYS } from "../../queries";
 import axios from "axios";
-import { trpc } from "../../../helpers/trpc";
+import { trpc } from "../../../../helpers/trpc";
 
 type Props = {
   releaseKey: string;
@@ -44,10 +44,6 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
     },
   });
 
-  // for umccr demo purposes - to be removed - a demo VPC in a throwaway account
-  const [accountId, setAccountId] = useState("842385035780");
-  const [vpcId, setVpcId] = useState("vpc-0ae1fbadcf21859f3");
-
   return (
     <form>
       <div className="flex flex-col gap-6">
@@ -58,23 +54,11 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
           <span className="text-xs font-bold uppercase text-gray-700">
             AWS Account(s)
           </span>
-          <input
-            type="text"
-            value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
-            className="mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
-          />
         </label>
         <label className="prose block">
           <span className="text-xs font-bold uppercase text-gray-700">
             VPC ID
           </span>
-          <input
-            type="text"
-            value={vpcId}
-            onChange={(e) => setVpcId(e.target.value)}
-            className="mt-1 block w-full rounded-md border-transparent bg-gray-50 focus:border-gray-500 focus:bg-white focus:ring-0"
-          />
         </label>
         {(!cfnQuery.isSuccess || cfnQuery.data === null) && (
           <div className="prose">
@@ -84,8 +68,8 @@ export const AwsS3VpcShareForm: React.FC<Props> = ({ releaseKey }) => {
               onClick={() => {
                 installCloudFormationMutate.mutate({
                   releaseKey: releaseKey,
-                  accounts: [accountId],
-                  vpcId: vpcId,
+                  accounts: [""],
+                  vpcId: "",
                 });
               }}
               disabled={

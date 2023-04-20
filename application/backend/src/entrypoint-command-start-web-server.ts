@@ -29,7 +29,7 @@ export async function startWebServer(
   dc: DependencyContainer,
   scenario: number | null
 ): Promise<number> {
-  const { settings, logger } = getServices(dc);
+  const { settings, logger, features } = getServices(dc);
 
   // in a real deployment - "add scenario", "db blank" etc would all be handled by 'commands'.
   // we have one dev use case though - where we nodemon the local code base and restart the server
@@ -66,7 +66,7 @@ export async function startWebServer(
   await datasetService.configureDataset(settings.datasets);
 
   // create the actual webserver/app
-  const app = new App(dc, settings, logger);
+  const app = new App(dc, settings, logger, features);
   const server = await app.setupServer();
 
   const mailService = dc.resolve(MailService);

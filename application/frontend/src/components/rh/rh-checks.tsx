@@ -58,6 +58,23 @@ export const RhChecks: React.FC<
   );
 };
 
+export const RhChecksDetail: React.FC<
+  PropsWithChildren<{ enabled: boolean; inputClassName?: string }> &
+    React.HTMLAttributes<HTMLFieldSetElement>
+> = ({ enabled, children, className }) => {
+  return (
+    <div className={classNames("flex w-full flex-row")}>
+      <div
+        className={classNames(
+          "ml-4 w-12 border-l-4",
+          enabled ? "border-green-500" : "border-gray-500"
+        )}
+      ></div>
+      {children}
+    </div>
+  );
+};
+
 {
   /*
       <div className="col-span-6 sm:col-span-3">

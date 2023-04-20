@@ -1,5 +1,5 @@
 import React from "react";
-import { CSRFInputToken } from "../../../components/csrf-token";
+import { CSRFInputToken } from "../../../../components/csrf-token";
 
 type Props = {
   releaseKey: string;

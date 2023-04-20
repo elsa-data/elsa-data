@@ -27,6 +27,13 @@ export type EnvRelay = {
 
   deployedEnvironment: DeployedEnvironments;
   terminologyFhirUrl: string;
+
+  /**
+   * The string codes for features which are enabled in the base configuration of
+   * this particular Elsa Data. For instance - these flags can be used to disable
+   * any AWS UI when running in an environment that does not have AWS credentials.
+   */
+  features: ReadonlySet<string>;
 };
 
 /**

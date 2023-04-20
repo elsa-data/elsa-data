@@ -2,6 +2,7 @@ import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../test-dependency-injection.common";
 import { getServices } from "../../src/di-helpers";
+import { FEATURE_DATA_SHARING_COPY_OUT } from "@umccr/elsa-constants";
 
 describe("http integration tests", () => {
   let server: FastifyInstance;
@@ -9,7 +10,12 @@ describe("http integration tests", () => {
   beforeAll(async () => {
     const testContainer = await registerTypes();
     const { settings, logger } = getServices(testContainer);
-    const app = new App(testContainer, settings, logger);
+    const app = new App(
+      testContainer,
+      settings,
+      logger,
+      new Set<string>([FEATURE_DATA_SHARING_COPY_OUT])
+    );
     server = await app.setupServer();
     await server.ready();
   });

@@ -38,6 +38,10 @@ export async function insertRelease2() {
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
       selectedSpecimens: e.set(),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",

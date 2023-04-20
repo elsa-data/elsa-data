@@ -10,6 +10,7 @@ import {
   ReleaseViewError,
 } from "../exceptions/release-authorisation";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { FEATURE_DATA_SHARING_HTSGET } from "@umccr/elsa-constants";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -26,6 +27,7 @@ export abstract class ReleaseBaseService {
   protected constructor(
     protected readonly settings: ElsaSettings,
     protected readonly edgeDbClient: edgedb.Client,
+    protected readonly features: ReadonlySet<string>,
     protected readonly usersService: UsersService
   ) {}
 
@@ -175,8 +177,6 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
-      isAllowedHtsget: releaseInfo.isAllowedHtsget,
-      htsgetConfig: this.configForFeature("isAllowedHtsget"),
       // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
@@ -185,6 +185,38 @@ export abstract class ReleaseBaseService {
       permissionEditApplicationCoded: userRole === "Administrator",
       // administrators cannot however access the raw data (if they want access to their data - they need to go other ways)
       permissionAccessData: userRole !== "Administrator",
+
+      // data sharing objects
+      dataSharingObjectSigning: releaseInfo.dataSharingConfiguration
+        .objectSigningEnabled
+        ? {
+            expiryHours:
+              releaseInfo.dataSharingConfiguration.objectSigningExpiryHours,
+          }
+        : undefined,
+      dataSharingCopyOut: releaseInfo.dataSharingConfiguration.copyOutEnabled
+        ? {
+            destinationLocation:
+              releaseInfo.dataSharingConfiguration.copyOutDestinationLocation,
+          }
+        : undefined,
+      dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
+        ? this.configForFeature("isAllowedHtsget")
+        : undefined,
+      dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
+        .awsAccessPointEnabled
+        ? {
+            accountId:
+              releaseInfo.dataSharingConfiguration.awsAccessPointAccountId,
+            vpcId: releaseInfo.dataSharingConfiguration.awsAccessPointVpcId,
+          }
+        : undefined,
+      dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
+        .gcpStorageIamEnabled
+        ? {
+            users: releaseInfo.dataSharingConfiguration.gcpStorageIamUsers,
+          }
+        : undefined,
     };
   }
 

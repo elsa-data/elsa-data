@@ -41,11 +41,17 @@ export class App {
    * Our constructor does all the setup that can be done without async/await
    * (increasingly almost nothing). It should check settings and establish
    * anything that cannot be changed.
+   *
+   * @param dc
+   * @param settings
+   * @param logger
+   * @param features
    */
   constructor(
     private readonly dc: DependencyContainer,
     private readonly settings: ElsaSettings,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly features: ReadonlySet<string>
   ) {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
@@ -62,12 +68,14 @@ export class App {
       (req as any).settings = { ...settings };
       // give each request its own DI container
       (req as any).container = dc.createChildContainer();
+      (req as any).features = features;
     });
 
     // similarly for TRPC, start each request context with a copy of the Elsa settings and a custom child DI container
     this.trpcCreateContext = async (opts: CreateFastifyContextOptions) => ({
       settings: { ...settings },
       container: dc.createChildContainer(),
+      features: features,
       req: opts.req,
       res: opts.res,
     });
@@ -276,6 +284,11 @@ export class App {
       "data-terminology-fhir-url",
       this.settings.ontoFhirUrl || "undefined"
     );
+    if (this.features.size > 0)
+      addAttribute(
+        "data-features",
+        Array.from(this.features.values()).join(" ")
+      );
 
     return {
       data_attributes: dataAttributes,

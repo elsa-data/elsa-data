@@ -83,15 +83,6 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
 
-  // Is htsget allowed in the database, e.g. by switching the htsget checkbox in the further restrictions page.
-  isAllowedHtsget: Type.Boolean(),
-  // If this value is undefined, then htsgeti s not enabled in the config.
-  htsgetConfig: Type.Optional(
-    Type.Object({
-      url: Type.String(),
-    })
-  ),
-
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),
 
@@ -104,6 +95,42 @@ export const ReleaseDetailSchema = Type.Object({
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
   permissionAccessData: Type.Optional(Type.Boolean()),
+
+  // if enabled by the data custodian AND as a feature, this structure is present.. if not, it is not
+  dataSharingObjectSigning: Type.Optional(
+    Type.Object({
+      expiryHours: Type.Integer(),
+    })
+  ),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingCopyOut: Type.Optional(
+    Type.Object({
+      destinationLocation: Type.String(),
+    })
+  ),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingHtsget: Type.Optional(
+    Type.Object({
+      url: Type.String(),
+    })
+  ),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingAwsAccessPoint: Type.Optional(
+    Type.Object({
+      accountId: Type.String(),
+      vpcId: Type.Optional(Type.String()),
+    })
+  ),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingGcpStorageIam: Type.Optional(
+    Type.Object({
+      users: Type.Array(Type.String()),
+    })
+  ),
 
   // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),

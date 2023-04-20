@@ -1,6 +1,6 @@
-import { CSRFInputToken } from "../../../components/csrf-token";
-import { ReleaseTypeLocal } from "../shared-types";
-import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
+import { CSRFInputToken } from "../../../../components/csrf-token";
+import { ReleaseTypeLocal } from "../../shared-types";
+import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 
 type Props = {
   releaseKey: string;
@@ -12,7 +12,7 @@ type TsvColumnCheckProps = {
 };
 
 const TsvColumnCheck: React.FC<TsvColumnCheckProps> = ({ field }) => (
-  <div key={field} className="flex items-center gap-2">
+  <div className="flex items-center gap-2">
     <input
       type="checkbox"
       className="checkbox"
@@ -27,24 +27,19 @@ const TsvColumnCheck: React.FC<TsvColumnCheckProps> = ({ field }) => (
   </div>
 );
 
-export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
+export const ObjectSigningForm: React.FC<Props> = ({
+  releaseKey,
+  releaseData,
+}) => {
   return (
-    <form
-      action={`/api/releases/${releaseKey}/tsv-manifest`}
-      method="POST"
-      className="p-6"
-    >
+    <form action={`/api/releases/${releaseKey}/tsv-manifest`} method="POST">
       <CSRFInputToken />
       <div className="flex flex-col gap-6">
         <article className="prose">
           <p>
-            The manifest contains all the files accessible within this release.
-            It's provided as a TSV file within a password-protected zip file.
-          </p>
-          <p>
-            Downloading the manifest does not automatically provide access to
-            files in this release. Access must be provided by activating the
-            release and, if desired, by also using the tabs to the left.
+            This allows you to download an encrypted zip file containing a TSV
+            file. The TSV file contains one column holding signed object URLS -
+            URLs that allow you to directly download the given genomic file.
           </p>
         </article>
 
