@@ -25,7 +25,7 @@ export const loggerTransportTargetsArray = {
   },
 };
 
-type Sensitive = "Sensitive";
+type Sensitive = string;
 
 export const configZodDefinition = z.object({
   edgeDb: z.optional(
