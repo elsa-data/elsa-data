@@ -24,7 +24,7 @@ describe("Redcap Import for AG", () => {
     const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
-    const usersService = testContainer.resolve(UserService);
+    const userService = testContainer.resolve(UserService);
 
     const app = {
       ...sampleApplication1,
