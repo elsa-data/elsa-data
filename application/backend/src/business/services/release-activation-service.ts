@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import e from "../../../dbschema/edgeql-js";
@@ -23,15 +23,15 @@ import { ManifestService } from "./manifests/manifest-service";
 @injectable()
 export class ReleaseActivationService extends ReleaseBaseService {
   constructor(
-    @inject("Database") readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") readonly settings: ElsaSettings,
-    @inject("Features") readonly features: ReadonlySet<string>,
-    @inject("Logger") private logger: Logger,
-    private auditLogService: AuditLogService,
-    private manifestService: ManifestService,
-    usersService: UsersService
+    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Settings") settings: ElsaSettings,
+    @inject("Features") features: ReadonlySet<string>,
+    @inject("Logger") private readonly logger: Logger,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(ManifestService) private readonly manifestService: ManifestService,
+    @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, usersService);
+    super(settings, edgeDbClient, features, userService);
   }
 
   /**

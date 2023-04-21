@@ -3,14 +3,13 @@ import e from "../../../dbschema/edgeql-js";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { getReleaseInfo } from "./helpers";
-import { ReleaseRoleStrings, UsersService } from "./users-service";
+import { ReleaseRoleStrings, UserService } from "./user-service";
 import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
 import {
   ReleaseCreateError,
   ReleaseViewError,
 } from "../exceptions/release-authorisation";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { FEATURE_DATA_SHARING_HTSGET } from "@umccr/elsa-constants";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -28,7 +27,7 @@ export abstract class ReleaseBaseService {
     protected readonly settings: ElsaSettings,
     protected readonly edgeDbClient: edgedb.Client,
     protected readonly features: ReadonlySet<string>,
-    protected readonly usersService: UsersService
+    protected readonly userService: UserService
   ) {}
 
   /**

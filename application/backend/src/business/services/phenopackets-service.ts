@@ -9,7 +9,7 @@ import KaryotypicSex = org.phenopackets.schema.v2.core.KaryotypicSex;
 
 @injectable()
 export class PhenopacketsService {
-  constructor(@inject("Database") private edgeDbClient: Client) {}
+  constructor(@inject("Database") private readonly edgeDbClient: Client) {}
 
   public async getPhenopacket(
     user: AuthenticatedUser,

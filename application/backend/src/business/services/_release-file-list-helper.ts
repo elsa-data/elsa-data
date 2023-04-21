@@ -7,7 +7,7 @@ import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
 import { AuthenticatedUser } from "../authenticated-user";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 
 // note that we are processing here every artifact that is accessible from
@@ -216,12 +216,12 @@ export async function createReleaseFileList(
  */
 export async function getAllFileRecords(
   edgeDbClient: edgedb.Client,
-  usersService: UsersService,
+  userService: UserService,
   user: AuthenticatedUser,
   releaseKey: string
 ): Promise<ManifestBucketKeyObjectType[]> {
   const { userRole } = await doRoleInReleaseCheck(
-    usersService,
+    userService,
     user,
     releaseKey
   );

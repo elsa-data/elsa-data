@@ -4,12 +4,12 @@ import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-he
 import { createUserAllowedCookie } from "../helpers/cookie-helpers";
 import { DependencyContainer } from "tsyringe";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UsersService } from "../../business/services/users-service";
+import { UserService } from "../../business/services/user-service";
 import { getServices } from "../../di-helpers";
 import { ReleaseService } from "../../business/services/release-service";
 import { ReleaseActivationService } from "../../business/services/release-activation-service";
 import { ReleaseParticipationService } from "../../business/services/release-participation-service";
-import { JobsService } from "../../business/services/jobs/jobs-base-service";
+import { JobService } from "../../business/services/jobs/job-service";
 import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
@@ -57,7 +57,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
     throw new Error("You are missing `req` or `res` in your call.");
   }
 
-  const userService = ctx.container.resolve(UsersService);
+  const userService = ctx.container.resolve(UserService);
 
   const authedUser = getAuthenticatedUserFromSecureSession(
     userService,
@@ -133,7 +133,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       ),
       releaseSelectionService: ctx.container.resolve(ReleaseSelectionService),
       releaseDataEgressService: ctx.container.resolve(ReleaseDataEgressService),
-      jobService: ctx.container.resolve(JobsService),
+      jobService: ctx.container.resolve(JobService),
       jobCloudFormationCreateService: ctx.container.resolve(
         JobCloudFormationCreateService
       ),

@@ -18,16 +18,16 @@ import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
-import { PresignedUrlsService } from "../presigned-urls-service";
+import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditLogService } from "../audit-log-service";
 
 @injectable()
 export class ManifestService {
   constructor(
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    private readonly releaseService: ReleaseService,
-    private readonly auditLogService: AuditLogService
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService
   ) {}
 
   /**
@@ -87,7 +87,7 @@ export class ManifestService {
   }
 
   public async getActiveTsvManifest(
-    presignedUrlsService: PresignedUrlsService,
+    presignedUrlService: PresignedUrlService,
     releaseKey: string,
     auditId: string
   ): Promise<ManifestTsvBodyType | null> {
@@ -98,14 +98,14 @@ export class ManifestService {
 
     return await transformMasterManifestToTsvManifest(
       masterManifest,
-      presignedUrlsService,
+      presignedUrlService,
       releaseKey,
       auditId
     );
   }
 
   public async getArchivedActiveTsvManifest(
-    presignedUrlsService: PresignedUrlsService,
+    presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
     header: typeof ObjectStoreRecordKey[number][]
@@ -124,7 +124,7 @@ export class ManifestService {
 
     const createPresignedZip = async (auditId: string) => {
       const manifest = await this.getActiveTsvManifest(
-        presignedUrlsService,
+        presignedUrlService,
         releaseKey,
         auditId
       );

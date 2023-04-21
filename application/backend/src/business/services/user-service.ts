@@ -31,10 +31,10 @@ export type ChangeablePermission = {
 };
 
 @injectable()
-export class UsersService {
+export class UserService {
   constructor(
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings
   ) {}
 
   /**
@@ -262,7 +262,7 @@ export class UsersService {
     releaseUuid: string,
     role: ReleaseRoleStrings
   ) {
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       this.edgeDbClient,
       releaseUuid,
       user.dbId,

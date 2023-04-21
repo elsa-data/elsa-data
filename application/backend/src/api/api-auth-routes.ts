@@ -1,9 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
-  ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASE,
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
@@ -16,27 +12,14 @@ import {
 } from "./auth/session-cookie-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import { generators } from "openid-client";
 import { AuditLogService } from "../business/services/audit-log-service";
-import {
-  TEST_SUBJECT_1,
-  TEST_SUBJECT_1_DISPLAY,
-  TEST_SUBJECT_1_EMAIL,
-  TEST_SUBJECT_2,
-  TEST_SUBJECT_2_DISPLAY,
-  TEST_SUBJECT_2_EMAIL,
-  TEST_SUBJECT_3,
-  TEST_SUBJECT_3_DISPLAY,
-  TEST_SUBJECT_3_EMAIL,
-} from "../test-data/insert-test-users";
 import {
   cookieForBackend,
   cookieForUI,
   createUserAllowedCookie,
 } from "./helpers/cookie-helpers";
-import { Client } from "edgedb";
-import { Logger } from "pino";
 import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 
@@ -70,7 +53,7 @@ export const apiAuthRoutes = async (
 ) => {
   const { logger, edgeDbClient, settings } = getServices(opts.container);
 
-  const userService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
   const auditLogService = opts.container.resolve(AuditLogService);
 
   const client = createClient(settings, opts.redirectUri);
@@ -157,7 +140,7 @@ export const callbackRoutes = async (
   }
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
-  const userService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
 
   // TODO persist the client/flow info somehow - so we can use nonces, state etc
   const client = createClient(settings, opts.redirectUri);

@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
 import { AuditLogService } from "./audit-log-service";
 import { Storage } from "@google-cloud/storage";
@@ -12,15 +12,16 @@ import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-typ
 
 @injectable()
 export class GcpStorageSharingService {
-  storage: Storage;
-  globalLimit: Limit;
-  objectLimits: { [uri: string]: Limit };
+  private readonly storage: Storage;
+  private readonly globalLimit: Limit;
+  private readonly objectLimits: { [uri: string]: Limit };
 
   constructor(
     @inject("Database") protected edgeDbClient: edgedb.Client,
-    private usersService: UsersService,
-    private releaseService: ReleaseService,
-    private auditLogService: AuditLogService,
+    @inject(UserService) private readonly userService: UserService,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(GcpEnabledService)
     private readonly gcpEnabledService: GcpEnabledService
   ) {
     this.storage = new Storage();
@@ -153,7 +154,7 @@ export class GcpStorageSharingService {
 
     const allFiles = await getAllFileRecords(
       this.edgeDbClient,
-      this.usersService,
+      this.userService,
       user,
       releaseKey
     );

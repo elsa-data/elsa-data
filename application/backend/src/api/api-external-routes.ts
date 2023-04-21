@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import { createBearerRouteHook } from "./bearer-route-hook";
 import { manifestRoutes } from "./routes/external/manifest-routes";
 
@@ -19,9 +19,9 @@ export const apiExternalRoutes = async (
     container: DependencyContainer;
   }
 ) => {
-  const usersService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
 
-  const authExternalHook = createBearerRouteHook(usersService);
+  const authExternalHook = createBearerRouteHook(userService);
 
   fastify.addHook("onRequest", authExternalHook).after(() => {
     fastify.register(manifestRoutes, { container: opts.container });

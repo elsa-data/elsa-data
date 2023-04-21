@@ -7,7 +7,7 @@ import {
   TOTAL_COUNT_HEADER_NAME,
 } from "./helpers/pagination-helpers";
 import { DependencyContainer } from "tsyringe";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import { isEmpty, isString, trim } from "lodash";
 import { auditEventRoutes } from "./routes/internal/audit-event-routes";
 import { dacRoutes } from "./routes/internal/dac-routes";
@@ -120,11 +120,11 @@ export const apiInternalRoutes = async (
     allowTestCookieEquals?: string;
   }
 ) => {
-  const usersService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
 
   fastify.addHook("preHandler", fastify.csrfProtection);
 
-  const authInternalHook = createSessionCookieRouteHook(usersService);
+  const authInternalHook = createSessionCookieRouteHook(userService);
 
   // now register the auth hook and then register all the rest of our routes nested within
   fastify.addHook("onRequest", authInternalHook).after(() => {

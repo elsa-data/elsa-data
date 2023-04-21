@@ -11,7 +11,9 @@ import { dataset, release } from "../../../dbschema/interfaces";
 
 @injectable()
 export class SelectService {
-  constructor(@inject("Database") private edgeDbClient: edgedb.Client) {}
+  constructor(
+    @inject("Database") private readonly edgeDbClient: edgedb.Client
+  ) {}
 
   /**
    * For a given chain of specimen->patient->case decide if the specimen should
