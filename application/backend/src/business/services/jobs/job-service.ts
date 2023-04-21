@@ -24,13 +24,13 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 }
 
 @injectable()
-export class JobsService {
+export class JobService {
   constructor(
-    @inject("Database") protected edgeDbClient: edgedb.Client,
-
-    protected auditLogService: AuditLogService,
-    protected releaseService: ReleaseService,
-    protected selectService: SelectService
+    @inject("Database") protected readonly edgeDbClient: edgedb.Client,
+    @inject(AuditLogService)
+    protected readonly auditLogService: AuditLogService,
+    @inject(ReleaseService) protected readonly releaseService: ReleaseService,
+    @inject(SelectService) protected readonly selectService: SelectService
   ) {}
 
   /**

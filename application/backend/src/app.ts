@@ -14,7 +14,7 @@ import {
 import { ErrorHandler } from "./api/errors/_error.handler";
 import { apiInternalRoutes } from "./api/api-internal-routes";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
-import { DependencyContainer, injectable, singleton } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
 import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
@@ -25,8 +25,6 @@ import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 import { trpcRoutes } from "./api/api-trpc-routes";
 import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 
-@injectable()
-@singleton()
 export class App {
   public readonly server: FastifyInstance;
 

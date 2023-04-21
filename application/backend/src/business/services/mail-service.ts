@@ -15,8 +15,8 @@ export class MailService {
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("SESClient") private readonly ses: aws.SES,
-    @inject("Logger") private logger: Logger,
-    private readonly auditLogService: AuditLogService
+    @inject("Logger") private readonly logger: Logger,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService
   ) {}
 
   /**

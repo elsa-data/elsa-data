@@ -11,6 +11,7 @@ import {
 export class AwsS3Service implements CloudStorage {
   constructor(
     @inject("S3Client") private readonly s3Client: S3Client,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
 

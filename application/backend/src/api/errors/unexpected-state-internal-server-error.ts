@@ -6,7 +6,7 @@ import { Base7807Error } from "@umccr/elsa-types/error-types";
  * for the condition to occur, then we should have a real error.
  */
 export class UnexpectedStateInternalServerError extends Base7807Error {
-  constructor(private detailMessage: string) {
+  constructor(detailMessage: string) {
     super("Unexpected State Internal Server Error", 500, detailMessage);
   }
 }

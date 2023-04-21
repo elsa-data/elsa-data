@@ -5,7 +5,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
-import { UsersService } from "../../src/business/services/users-service";
+import { UserService } from "../../src/business/services/user-service";
 
 const testContainer = registerTypes();
 
@@ -24,7 +24,7 @@ describe("Redcap Import for AG", () => {
     const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
-    const usersService = testContainer.resolve(UsersService);
+    const userService = testContainer.resolve(UserService);
 
     const app = {
       ...sampleApplication1,
@@ -53,11 +53,11 @@ describe("Redcap Import for AG", () => {
   });
 
   it("Base case with existing user mention", async () => {
-    // our base scenario makes 4 users but lets confirm that
+    // our base scenario makes 5 users but lets confirm that
     const existingUserCount = await e
       .count(e.permission.User)
       .run(edgedbClient);
-    expect(existingUserCount).toBe(4);
+    expect(existingUserCount).toBe(5);
 
     const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
@@ -94,7 +94,7 @@ describe("Redcap Import for AG", () => {
     expect(potentialCount).toBe(1);
 
     const userCount = await e.count(e.permission.User).run(edgedbClient);
-    expect(userCount).toBe(4);
+    expect(userCount).toBe(5);
   });
 });
 

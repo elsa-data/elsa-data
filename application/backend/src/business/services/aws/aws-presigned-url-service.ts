@@ -7,15 +7,16 @@ import { parseUrl } from "@aws-sdk/url-parser";
 import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../../config/elsa-settings";
-import { IPresignedUrlProvider } from "../presigned-urls-service";
+import { IPresignedUrlProvider } from "../presigned-url-service";
 import assert from "assert";
 
 @injectable()
-export class AwsPresignedUrlsService implements IPresignedUrlProvider {
+export class AwsPresignedUrlService implements IPresignedUrlProvider {
   readonly protocol = "s3";
 
   constructor(
     @inject("Settings") private settings: ElsaSettings,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
 
@@ -58,12 +59,12 @@ export class AwsPresignedUrlsService implements IPresignedUrlProvider {
       region: awsRegion,
       sha256: Hash.bind(null, "sha256"),
     });
-    const url = formatUrl(
+
+    return formatUrl(
       await presigner.presign(new HttpRequest(s3ObjectUrl), {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
       })
     );
-    return url;
   }
 
   public async isEnabled(): Promise<boolean> {

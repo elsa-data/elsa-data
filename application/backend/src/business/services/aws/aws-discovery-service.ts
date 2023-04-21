@@ -22,6 +22,7 @@ export class AwsDiscoveryService {
     private readonly serviceDiscoveryClient: ServiceDiscoveryClient,
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {
     logger.debug(

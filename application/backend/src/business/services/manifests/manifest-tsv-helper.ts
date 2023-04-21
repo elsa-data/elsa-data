@@ -4,11 +4,11 @@ import type {
 } from "./manifest-bucket-key-types";
 import { ManifestMasterType } from "./manifest-master-types";
 import { unpackFileArtifact } from "../_release-file-list-helper";
-import { PresignedUrlsService } from "../presigned-urls-service";
+import { PresignedUrlService } from "../presigned-url-service";
 
 async function manifestBodyElements(
   datasetSpecimen: any,
-  presignedUrlsService: PresignedUrlsService,
+  presignedUrlService: PresignedUrlService,
   releaseKey: string,
   auditId: string
 ): Promise<ManifestBucketKeyObjectType[]> {
@@ -19,7 +19,7 @@ async function manifestBodyElements(
   const signedFileArtifacts = await Promise.all(
     unpackedFileArtifacts.map(async (f) => ({
       ...f,
-      objectStoreSigned: await presignedUrlsService.presign(
+      objectStoreSigned: await presignedUrlService.presign(
         releaseKey,
         f.objectStoreProtocol,
         f.objectStoreBucket,
@@ -41,7 +41,7 @@ async function manifestBodyElements(
 
 export async function transformMasterManifestToTsvManifest(
   masterManifest: ManifestMasterType,
-  presignedUrlsService: PresignedUrlsService,
+  presignedUrlService: PresignedUrlService,
   releaseKey: string,
   auditId: string
 ): Promise<ManifestTsvBodyType> {
@@ -51,7 +51,7 @@ export async function transformMasterManifestToTsvManifest(
         async (s) =>
           await manifestBodyElements(
             s,
-            presignedUrlsService,
+            presignedUrlService,
             releaseKey,
             auditId
           )

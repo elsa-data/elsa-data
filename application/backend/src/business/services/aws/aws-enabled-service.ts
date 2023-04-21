@@ -12,8 +12,7 @@ export class AwsEnabledService {
 
   constructor(
     @inject("Logger") private readonly logger: Logger,
-    @inject("STSClient")
-    private readonly stsClient: STSClient
+    @inject("STSClient") private readonly stsClient: STSClient
   ) {
     logger.debug(
       "Created AwsEnabledService instance - expecting this to only happen once"

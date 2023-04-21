@@ -9,6 +9,7 @@ import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
+import { AwsEnabledServiceMock } from "./client-mocks";
 
 const testContainer = registerTypes();
 
@@ -18,15 +19,19 @@ let testReleaseKey: string;
 let elsaSetting: ElsaSettings;
 let superAdminUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
+let awsEnabledServiceMock: AwsEnabledServiceMock;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
     elsaSetting = testContainer.resolve("Settings");
     edgeDbClient = testContainer.resolve("Database");
     cloudTrailClient = testContainer.resolve("CloudTrailClient");
+    awsEnabledServiceMock = testContainer.resolve(AwsEnabledServiceMock);
   });
 
   beforeEach(async () => {
+    awsEnabledServiceMock.reset();
+
     ({ superAdminUser, testReleaseKey, allowedMemberUser } =
       await beforeEachCommon(testContainer));
   });
@@ -83,6 +88,8 @@ describe("Test CloudTrailLake Service", () => {
   });
 
   it("Test fetchCloudTrailLakeLog", async () => {
+    awsEnabledServiceMock.enable();
+
     const awsCloudTrailLakeService = testContainer.resolve(
       AwsCloudTrailLakeService
     );
@@ -95,6 +102,7 @@ describe("Test CloudTrailLake Service", () => {
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
+        auditId: "id",
       },
     ];
 
