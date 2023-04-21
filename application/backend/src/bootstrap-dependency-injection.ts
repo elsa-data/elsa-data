@@ -117,5 +117,6 @@ export function bootstrapDependencyInjection() {
 
   dc.registerSingleton<S3ManifestHtsgetService>(S3, S3ManifestHtsgetService);
 
+  // Note: dependencies of class constructors must be injected manually when using esbuild.
   return dc;
 }
