@@ -135,6 +135,7 @@
     "aws-sdk-client-mock": "2.0.1",
     "cross-env": "7.0.3",
     "esbuild-jest": "^0.5.0",
+    "jest": "^29.5.0",
     "nodemon": "2.0.20",
     "prettier": "2.8.4",
     "protobufjs-cli": "1.1.1",
