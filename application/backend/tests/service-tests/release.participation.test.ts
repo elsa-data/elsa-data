@@ -46,8 +46,8 @@ it("all the participants in a release are correctly returned", async () => {
   expect(result).not.toBeNull();
   assert(result != null);
 
-  // our demo release has 3 people involved
-  expect(result.length).toBe(3);
+  // our demo release has 4 people involved
+  expect(result.length).toBe(4);
 
   const comparableResults = _.map(result, (item) =>
     _.pick(item, ["role", "email", "subjectId", "displayName"])
@@ -57,7 +57,7 @@ it("all the participants in a release are correctly returned", async () => {
     role: "Administrator",
     email: "admin@elsa.net",
     subjectId: "https://i-am-admin.org",
-    displayName: "Test User Who Is Allowed Data Owner Access",
+    displayName: "Test User Who Is Allowed Administrator Access",
   });
 
   expect(comparableResults).toContainEqual({
@@ -88,7 +88,7 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
   assert(result != null);
 
   // our potential user should come back
-  expect(result.length).toBe(4);
+  expect(result.length).toBe(5);
 
   const noLastLoginArray = result.filter((x) => x.lastLogin === null);
 
@@ -113,7 +113,7 @@ it("real users and potential users can both have their roles altered", async () 
 
     expect(
       startingResult.filter((r) => r.role === "Administrator")
-    ).toHaveLength(1);
+    ).toHaveLength(2);
     expect(startingResult.filter((r) => r.role === "Manager")).toHaveLength(1);
     // we should have two Members
     expect(startingResult.filter((r) => r.role === "Member")).toHaveLength(2);
@@ -144,7 +144,7 @@ it("real users and potential users can both have their roles altered", async () 
     expect(result).not.toBeNull();
     assert(result != null);
 
-    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(2);
     // the two Members have been upgraded
     expect(result.filter((r) => r.role === "Manager")).toHaveLength(3);
     expect(result.filter((r) => r.role === "Member")).toHaveLength(0);
@@ -180,7 +180,7 @@ it("real users and potential users can be removed", async () => {
     expect(result).not.toBeNull();
     assert(result != null);
 
-    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(1);
+    expect(result.filter((r) => r.role === "Administrator")).toHaveLength(2);
     // the two Members have been upgraded
     expect(result.filter((r) => r.role === "Manager")).toHaveLength(1);
     expect(result.filter((r) => r.role === "Member")).toHaveLength(0);

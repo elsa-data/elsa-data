@@ -48,7 +48,7 @@ it("releases can be activated", async () => {
   assert(result != null);
   expect(result.activation).toBeDefined();
   expect(result.activation!.activatedByDisplayName).toBe(
-    "Test User Who Is Allowed Data Owner Access"
+    "Test User Who Is a SuperAdmin Access"
   );
 });
 

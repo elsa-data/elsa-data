@@ -121,6 +121,10 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         isAllowedRefreshDatasetIndex: true,
         isAllowedCreateRelease: true,
         isAllowedOverallAdministratorView: true,
+        releaseParticipant: e.select(e.release.Release, (r) => ({
+          filter: e.op(testReleaseKey, "=", r.releaseKey),
+          "@role": e.str("Administrator"),
+        })),
       })
       .run(edgeDbClient);
 
