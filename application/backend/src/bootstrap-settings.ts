@@ -3,16 +3,19 @@ import { writeFile } from "fs/promises";
 import * as temp from "temp";
 import { ElsaSettings } from "./config/elsa-settings";
 import _ from "lodash";
+import { ElsaConfiguration } from "./config/config-constants";
 
-export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
+export async function bootstrapSettings(
+  config: ElsaConfiguration
+): Promise<ElsaSettings> {
   // we now have our 'config' - which is the plain text values from all our configuration sources..
   // however our 'settings' are more than that - the settings involve things that need to be
   // constructed/discovered etc.
   // Settings might involve writing a cert file to disk and setting a corresponding env variable.
   // Settings might involve doing OIDC discovery and then using the returned value
-  const issuer = await Issuer.discover(config.get("oidc.issuerUrl")!);
+  const issuer = await Issuer.discover(config.oidc?.issuerUrl!);
 
-  const rootCa: string | undefined = config.get("edgeDb.tlsRootCa");
+  const rootCa: string | undefined = config.edgeDb?.tlsRootCa;
 
   if (rootCa) {
     // edge db requires a TLS connection - and so we need to construct our own
@@ -37,7 +40,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
   const isDevelopment = process.env["NODE_ENV"] === "development";
 
   // we are prepared to default this to localhost
-  let deployedUrl = `http://localhost:${config.get("port")}`;
+  let deployedUrl = `http://localhost:${config.port}`;
 
   // but only if we are in dev and it is not set
   if (config.get("deployedUrl")) {
@@ -64,15 +67,15 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       },
     ];
 
-  const logLevel = config.get("logger.level");
+  const logLevel = config.logger.level;
 
   if (logLevel) loggerTransportTargets.forEach((l) => (l.level ??= logLevel));
 
   // TODO fix this logic once we have a few more AWS settings and know what is required
   const hasAws =
-    config.has("aws.signingAccessKeyId") ||
-    config.has("aws.signingSecretAccessKey") ||
-    config.has("aws.tempBucket");
+    config.aws?.signingAccessKeyId ||
+    config.aws?.signingSecretAccessKey ||
+    config.aws?.tempBucket;
   const hasAwsSigning =
     config.has("aws.signingAccessKeyId") &&
     config.has("aws.signingSecretAccessKey");
@@ -167,7 +170,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
         }
       : undefined,
     // these are our special arrays that can be constructed with + and - definitions
-    datasets: (config.get("datasets") as any[]) ?? [],
-    superAdmins: (config.get("superAdmins") as any[]) ?? [],
+    datasets: (config.datasets as any[]) ?? [],
+    superAdmins: (config.superAdmins as any[]) ?? [],
   };
 }

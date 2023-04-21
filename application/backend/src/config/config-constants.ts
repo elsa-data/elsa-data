@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { z } from "zod";
 
 const env_prefix = "ELSA_DATA_CONFIG_";
 
@@ -24,54 +25,111 @@ export const loggerTransportTargetsArray = {
   },
 };
 
+type Sensitive = "Sensitive";
+
+export const configZodDefinition = z.object({
+  edgeDb: z.optional(
+    z.object({
+      tlsRootCa: z
+        .string()
+        .describe(
+          "A single line string (use \\n for breaks) of TLS Root CA used by the TLS of the EdgeDb"
+        )
+        .brand<Sensitive>(),
+    })
+  ),
+  oidc: z.optional(
+    z.object({
+      issuerUrl: z.string().describe("The URL of the OIDC issuer for authn"),
+      clientId: z
+        .string()
+        .describe("The client id registered with the OIDC issuer"),
+      clientSecret: z
+        .string()
+        .describe("The client secret of the OIDC issuer")
+        .brand<Sensitive>(),
+    })
+  ),
+  session: z.optional(
+    z.object({
+      secret: z
+        .string()
+        .describe(
+          "A long string secret that is used as part of the session encryption"
+        )
+        .brand<Sensitive>(),
+      salt: z
+        .string()
+        .length(16)
+        .describe(
+          "A 16 character salt that is used as part of the session encryption"
+        )
+        .brand<Sensitive>(),
+    })
+  ),
+  htsget: z.optional(
+    z.object({
+      url: z.optional(z.string()),
+    })
+  ),
+  aws: z.optional(
+    z.object({
+      signingAccessKeyId: z
+        .optional(z.string())
+        .describe(
+          "An AWS access key id for a user with read permission of files that can be shared via S3 signed URLs"
+        )
+        .brand<Sensitive>(),
+      signingSecretAccessKey: z
+        .optional(z.string())
+        .describe(
+          "An AWS secret access key for a user with read permission of files that can be shared via S3 signed URLs"
+        )
+        .brand<Sensitive>(),
+      tempBucket: z
+        .optional(z.string())
+        .describe(
+          "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day"
+        ),
+    })
+  ),
+  cloudflare: z.optional(
+    z.object({
+      signingAccessKeyId: z
+        .string()
+        .describe(
+          "A CloudFlare R2 access key id for a user with read permission of files that can be shared via signed URLs"
+        )
+        .brand<Sensitive>(),
+      signingSecretAccessKey: z
+        .string()
+        .describe(
+          "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs"
+        )
+        .brand<Sensitive>(),
+    })
+  ),
+  rateLimit: z.optional(
+    z.object({
+      allowList: z.optional(z.array(z.string())),
+      max: z.optional(z.string()),
+      timeWindow: z.optional(z.string()),
+    })
+  ),
+  ontoFhirUrl: z.optional(z.string()),
+  deployUrl: z
+    .string()
+    .describe(
+      "The externally accessible Url for the deployed location of Elsa Data"
+    ),
+  port: z.optional(z.coerce.number().positive().int()).default(3000),
+  datasets: z.array(z.any()).default([]),
+  superAdmins: z.array(z.any()).default([]),
+});
+
+export type ElsaConfiguration = z.infer<typeof configZodDefinition>;
+
 export const configDefinition = {
-  edgeDb: {
-    tlsRootCa: {
-      doc: "A single line string (use \\n for breaks) of TLS Root CA used by the TLS of the EdgeDb",
-      sensitive: true,
-      format: "tls",
-      default: undefined,
-    },
-  },
-  oidc: {
-    issuerUrl: {
-      doc: "The URL of the OIDC issuer for authn",
-      format: "*",
-      default: null,
-      nullable: false,
-    },
-    clientId: {
-      doc: "The client id registered with the OIDC issuer",
-      format: "*",
-      default: null,
-      nullable: false,
-    },
-    clientSecret: {
-      doc: "The client secret of the OIDC issuer",
-      format: "*",
-      sensitive: true,
-      default: null,
-      nullable: false,
-    },
-  },
-  session: {
-    secret: {
-      doc: "A long string secret that is used as part of the session encryption",
-      format: "*",
-      sensitive: true,
-      default: null,
-      nullable: false,
-      env: `${env_prefix}SESSION_SECRET`,
-    },
-    salt: {
-      doc: "A 16 character salt that is used as part of the session encryption",
-      format: "*",
-      sensitive: true,
-      default: null,
-      nullable: false,
-      env: `${env_prefix}SESSION_SALT`,
-    },
-  },
   htsget: {
     maxAge: {
       doc: "The amount of time that a htsget manifest remains valid in seconds",
@@ -88,45 +146,6 @@ export const configDefinition = {
       default: null,
       nullable: true,
       env: `${env_prefix}HTSGET_URL`,
-    },
-  },
-  aws: {
-    signingAccessKeyId: {
-      doc: "An AWS access key id for a user with read permission of files that can be shared via S3 signed URLs",
-      format: "*",
-      sensitive: false,
-      default: undefined,
-      env: `${env_prefix}AWS_SIGNING_ACCESS_KEY_ID`,
-    },
-    signingSecretAccessKey: {
-      doc: "An AWS secret access key for a user with read permission of files that can be shared via S3 signed URLs",
-      format: "*",
-      sensitive: true,
-      default: undefined,
-      env: `${env_prefix}AWS_SIGNING_SECRET_ACCESS_KEY`,
-    },
-    tempBucket: {
-      doc: "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day",
-      format: "*",
-      sensitive: false,
-      default: undefined,
-      env: `${env_prefix}AWS_TEMP_BUCKET`,
-    },
-  },
-  cloudflare: {
-    signingAccessKeyId: {
-      doc: "A CloudFlare R2 access key id for a user with read permission of files that can be shared via signed URLs",
-      format: "*",
-      sensitive: false,
-      default: undefined,
-      env: `${env_prefix}AWS_SIGNING_ACCESS_KEY_ID`,
-    },
-    signingSecretAccessKey: {
-      doc: "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs",
-      format: "*",
-      sensitive: true,
-      default: undefined,
-      env: `${env_prefix}AWS_SIGNING_SECRET_ACCESS_KEY`,
     },
   },
   // the rate limiting options are basically a pass through to the Fastify rate limit plugin
@@ -167,11 +186,6 @@ export const configDefinition = {
       default: undefined,
     },
   },
-  ontoFhirUrl: {
-    doc: "The FHIR ontology service",
-    format: "*",
-    default: "",
-  },
   maxmindDbAssetPath: {
     doc: "The path where maxmind city database live.",
     format: "*",
@@ -182,50 +196,7 @@ export const configDefinition = {
     format: "*",
     default: "R",
   },
-  mondoSystem: {
-    uri: {
-      format: String,
-      default: "http://purl.obolibrary.org/obo/mondo.owl",
-    },
-    oid: {
-      format: String,
-      default: "2.16.840.1.113883.3.9216",
-    },
-  },
-  hgncGenesSystem: {
-    uri: {
-      format: String,
-      default: "http://www.genenames.org",
-    },
-    oid: {
-      format: String,
-      default: "2.16.840.1.113883.6.281",
-    },
-  },
-  hpoSystem: {
-    uri: {
-      format: String,
-      default: "http://human-phenotype-ontology.org",
-    },
-    nonPreferredUri: {
-      format: String,
-      default: "http://purl.obolibrary.org/obo/hp.owl",
-    },
-  },
-  isoCountrySystemUri: {
-    format: String,
-    default: "urn:iso:std:iso:3166",
-  },
-  snomedSystem: {
-    uri: {
-      format: String,
-      default: "http://snomed.info/sct",
-    },
-    oid: {
-      format: String,
-      default: "2.16.840.1.113883.6.96",
-    },
-  },
+
   host: {
     doc: "The host to bind.",
     format: "*",
@@ -291,12 +262,6 @@ export const configDefinition = {
       env: `${env_prefix}MAILER_DEFAULTS`,
       arg: "mailer-defaults",
     },
-  },
-  deployedUrl: {
-    doc: "The externally accessible Url for the deployed location of Elsa Data",
-    format: "*",
-    default: undefined,
-    env: `${env_prefix}DEPLOYED_URL`,
   },
   logger: {
     level: {

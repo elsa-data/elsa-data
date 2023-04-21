@@ -10,11 +10,8 @@ it("basic parsing of meta syntax", async () => {
 
   const config = await getMetaConfig("file('base') file('dev-localhost')");
 
-  expect(config.getProperties()).toHaveProperty("port", 8000);
-  expect(config.getProperties()).toHaveProperty(
-    "ontoFhirUrl",
-    "https://server.com/fhir"
-  );
+  expect(config).toHaveProperty("port", 8000);
+  expect(config).toHaveProperty("ontoFhirUrl", "https://server.com/fhir");
 });
 
 it("basic parsing with right most providers overriding", async () => {
@@ -26,7 +23,7 @@ it("basic parsing with right most providers overriding", async () => {
   );
 
   // here the dev-common overrides the port as set in base
-  expect(config.getProperties()).toHaveProperty("port", 8001);
+  expect(config).toHaveProperty("port", 8001);
 });
 
 it("plus minus operations for arrays", async () => {
@@ -37,9 +34,9 @@ it("plus minus operations for arrays", async () => {
   {
     const config = await getMetaConfig("file('datasets')");
 
-    expect(config.getProperties()).toHaveProperty("datasets");
+    expect(config).toHaveProperty("datasets");
 
-    const datasets = config.getProperties()["datasets"];
+    const datasets = config["datasets"];
 
     expect(datasets).toHaveLength(2);
 
@@ -55,9 +52,9 @@ it("plus minus operations for arrays", async () => {
   {
     const config = await getMetaConfig("file('datasets') file('add-delete')");
 
-    expect(config.getProperties()).toHaveProperty("datasets");
+    expect(config).toHaveProperty("datasets");
 
-    const datasets = config.getProperties()["datasets"];
+    const datasets = config["datasets"];
 
     expect(datasets).toHaveLength(3);
 
@@ -83,6 +80,21 @@ it("minus an entry that doesn't exist is an error", async () => {
   }
 });
 
+it("complex key with path expression works", async () => {
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+    "./tests/unit-tests/config/complex-keys";
+
+  const config = await getMetaConfig(
+    "file('test0') file('test1') file('test2')"
+  );
+
+  expect(config).toHaveProperty("aws");
+
+  const aws = config["aws"];
+
+  expect(aws).toHaveProperty("tempBucket", "replaced temp bucket");
+});
+
 it("basic parsing but with env variable override", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
     "./tests/unit-tests/config/real-like";
@@ -93,7 +105,7 @@ it("basic parsing but with env variable override", async () => {
   );
 
   // here the explicit env variables overrides any file content
-  expect(config.getProperties()).toHaveProperty("port", 9999);
+  expect(config).toHaveProperty("port", 9999);
 });
 
 it("parser error with double left bracket", async () => {
