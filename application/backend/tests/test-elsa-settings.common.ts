@@ -60,7 +60,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     },
   ],
   logger: {
-    level: "warn",
+    level: "trace",
     transport: {
       targets: [
         {
