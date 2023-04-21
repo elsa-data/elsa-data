@@ -24,7 +24,7 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 }
 
 @injectable()
-export class JobsService {
+export class JobService {
   constructor(
     @inject("Database") protected readonly edgeDbClient: edgedb.Client,
     @inject(AuditLogService)

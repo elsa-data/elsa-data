@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
 import { AuditLogService } from "./audit-log-service";
 import { Storage } from "@google-cloud/storage";
@@ -18,7 +18,7 @@ export class GcpStorageSharingService {
 
   constructor(
     @inject("Database") protected edgeDbClient: edgedb.Client,
-    @inject(UsersService) private readonly usersService: UsersService,
+    @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(AuditLogService) private readonly auditLogService: AuditLogService,
     @inject(GcpEnabledService)
@@ -154,7 +154,7 @@ export class GcpStorageSharingService {
 
     const allFiles = await getAllFileRecords(
       this.edgeDbClient,
-      this.usersService,
+      this.userService,
       user,
       releaseKey
     );

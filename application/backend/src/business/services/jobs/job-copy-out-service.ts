@@ -8,7 +8,7 @@ import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
-import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
+import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import {
   DescribeExecutionCommand,
   DescribeMapRunCommand,
@@ -34,7 +34,7 @@ import assert from "node:assert";
  * external microservice).
  */
 @injectable()
-export class JobCopyOutService extends JobsService {
+export class JobCopyOutService extends JobService {
   public static readonly JOB_NAME = "CopyOut";
 
   constructor(

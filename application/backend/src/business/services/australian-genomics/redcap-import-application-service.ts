@@ -6,7 +6,7 @@ import {
   australianGenomicsDacRedcapToDatasetUris,
   australianGenomicsDacRedcapToDuoString,
 } from "@umccr/elsa-types";
-import { UsersService } from "../users-service";
+import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
@@ -39,7 +39,7 @@ export class RedcapImportApplicationService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject(UsersService) private readonly usersService: UsersService,
+    @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService
   ) {}
 
@@ -384,7 +384,7 @@ ${roleTable.join("\n")}
     });
 
     // TODO: move this inside the transaction once we have a 'transactionable' version of this service method
-    await this.usersService.registerRoleInRelease(
+    await this.userService.registerRoleInRelease(
       user,
       newRelease.id,
       "Administrator"

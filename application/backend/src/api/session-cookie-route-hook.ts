@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import { getAuthenticatedUserFromSecureSession } from "./auth/session-cookie-helpers";
 import { createUserAllowedCookie } from "./helpers/cookie-helpers";
 import { NotAuthorisedCredentials } from "./errors/authentication-error";
@@ -10,28 +10,28 @@ import { NotAuthorisedCredentials } from "./errors/authentication-error";
  * on it - that is - it prevents any unauthenticated requests from continuing. The authentication
  * that is required for this hook is that which is setup for internal use i.e. login and cookie sessions.
  *
- * @param usersService the Users service
+ * @param userService the Users service
  */
-export function createSessionCookieRouteHook(usersService: UsersService) {
+export function createSessionCookieRouteHook(userService: UserService) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const authedUser = getAuthenticatedUserFromSecureSession(
-      usersService,
+      userService,
       request
     );
     if (!authedUser) throw new NotAuthorisedCredentials();
     request.log.trace(authedUser, `createSessionCookieRouteHook: user details`);
 
-    const dbUser = await usersService.getBySubjectId(authedUser.subjectId);
+    const dbUser = await userService.getBySubjectId(authedUser.subjectId);
     if (!dbUser) throw new NotAuthorisedCredentials();
     request.log.trace(dbUser, `databaseUser: user details`);
 
     // Check for permissions different
     const dbPermission = createUserAllowedCookie(
-      usersService.isConfiguredSuperAdmin(dbUser.subjectId),
+      userService.isConfiguredSuperAdmin(dbUser.subjectId),
       dbUser
     );
     const sessionPermission = createUserAllowedCookie(
-      usersService.isConfiguredSuperAdmin(authedUser.subjectId),
+      userService.isConfiguredSuperAdmin(authedUser.subjectId),
       authedUser
     );
     if (dbPermission != sessionPermission) {

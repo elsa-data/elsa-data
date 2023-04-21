@@ -5,7 +5,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
-import { UsersService } from "../../src/business/services/users-service";
+import { UserService } from "../../src/business/services/user-service";
 
 const testContainer = registerTypes();
 
@@ -24,7 +24,7 @@ describe("Redcap Import for AG", () => {
     const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
-    const usersService = testContainer.resolve(UsersService);
+    const usersService = testContainer.resolve(UserService);
 
     const app = {
       ...sampleApplication1,

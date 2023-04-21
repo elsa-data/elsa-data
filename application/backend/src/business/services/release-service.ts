@@ -10,7 +10,7 @@ import _ from "lodash";
 import { PagedResult } from "../../api/helpers/pagination-helpers";
 import { getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { getNextReleaseKey } from "../db/release-queries";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
@@ -36,9 +36,9 @@ export class ReleaseService extends ReleaseBaseService {
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
     @inject(AuditLogService) private readonly auditLogService: AuditLogService,
-    @inject(UsersService) usersService: UsersService
+    @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, usersService);
+    super(settings, edgeDbClient, features, userService);
   }
 
   /**
@@ -172,7 +172,7 @@ ${release.applicantEmailAddresses}
       })
       .run(this.edgeDbClient);
 
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       this.edgeDbClient,
       releaseRow.id,
       user.dbId,

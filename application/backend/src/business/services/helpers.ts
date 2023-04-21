@@ -1,7 +1,7 @@
 import e from "../../../dbschema/edgeql-js";
-import { Client, Executor } from "edgedb";
+import { Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 
 /**
@@ -19,18 +19,18 @@ export function collapseExternalIds(externals: any): string {
  * checks if the user has a role in the given release (and therefore also if the release
  * exists).
  *
- * @param usersService
+ * @param userService
  * @param user
  * @param releaseKey
  * @deprecated use the base boundary method in Release preferably
  */
 export async function doRoleInReleaseCheck(
-  usersService: UsersService,
+  userService: UserService,
   user: AuthenticatedUser,
   releaseKey?: string
 ) {
   const userRole = releaseKey
-    ? await usersService.roleInRelease(user, releaseKey)
+    ? await userService.roleInRelease(user, releaseKey)
     : null;
 
   if (!userRole)

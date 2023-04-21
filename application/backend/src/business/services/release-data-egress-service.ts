@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
@@ -28,9 +28,9 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject(AwsCloudTrailLakeService)
     private readonly awsCloudTrailLakeService: AwsCloudTrailLakeService,
     @inject(AuditLogService) private readonly auditLogService: AuditLogService,
-    @inject(UsersService) usersService: UsersService
+    @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, usersService);
+    super(settings, edgeDbClient, features, userService);
   }
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {

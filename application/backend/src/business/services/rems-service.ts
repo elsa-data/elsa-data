@@ -5,7 +5,7 @@ import { inject, injectable } from "tsyringe";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { randomUUID } from "crypto";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { AuthenticatedUser } from "../authenticated-user";
 import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -18,7 +18,7 @@ export class RemsService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject(UsersService) private readonly usersService: UsersService,
+    @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService
   ) {}
 
@@ -220,7 +220,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
         })
         .run(this.edgeDbClient);
 
-      await this.usersService.registerRoleInRelease(
+      await this.userService.registerRoleInRelease(
         user,
         newRelease.id,
         "Administrator"

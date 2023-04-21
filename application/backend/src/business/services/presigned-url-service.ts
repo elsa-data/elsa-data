@@ -15,16 +15,16 @@ export interface IPresignedUrlProvider {
 }
 
 @injectable()
-export class PresignedUrlsService {
+export class PresignedUrlService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @injectAll("IPresignedUrlProvider")
-    private readonly presignedUrlsServices: IPresignedUrlProvider[]
+    private readonly presignedUrlServices: IPresignedUrlProvider[]
   ) {}
 
   public async isEnabled(): Promise<boolean> {
-    for (const service of this.presignedUrlsServices) {
+    for (const service of this.presignedUrlServices) {
       if (await service.isEnabled()) {
         return true;
       }
@@ -39,7 +39,7 @@ export class PresignedUrlsService {
     key: string,
     auditId: string
   ): Promise<string> {
-    for (const p of this.presignedUrlsServices)
+    for (const p of this.presignedUrlServices)
       if (protocol === p.protocol)
         return p.presign(releaseKey, bucket, key, auditId);
 

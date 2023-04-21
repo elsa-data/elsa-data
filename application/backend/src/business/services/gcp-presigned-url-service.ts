@@ -1,14 +1,14 @@
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
 import { ReleaseService } from "./release-service";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { IPresignedUrlProvider } from "./presigned-urls-service";
+import { IPresignedUrlProvider } from "./presigned-url-service";
 import { GetSignedUrlConfig, Storage } from "@google-cloud/storage";
 
 @injectable()
-export class GcpPresignedUrlsService implements IPresignedUrlProvider {
+export class GcpPresignedUrlService implements IPresignedUrlProvider {
   readonly protocol = "gs";
   private readonly storage: Storage;
 
@@ -16,7 +16,7 @@ export class GcpPresignedUrlsService implements IPresignedUrlProvider {
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
-    @inject(UsersService) usersService: UsersService,
+    @inject(UserService) userService: UserService,
     @inject(GcpEnabledService)
     private readonly gcpEnabledService: GcpEnabledService
   ) {

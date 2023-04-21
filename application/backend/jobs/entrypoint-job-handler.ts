@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { parentPort } from "worker_threads";
-import { JobsService } from "../src/business/services/jobs/jobs-base-service";
+import { JobService } from "../src/business/services/jobs/job-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
@@ -62,7 +62,7 @@ const dc = bootstrapDependencyInjection();
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
-      const jobsService = dc.resolve(JobsService);
+      const jobsService = dc.resolve(JobService);
       const jobCloudFormationCreateService = dc.resolve(
         JobCloudFormationCreateService
       );

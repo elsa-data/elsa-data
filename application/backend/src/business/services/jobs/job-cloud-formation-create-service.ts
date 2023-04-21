@@ -17,7 +17,7 @@ import {
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
 import { AwsAccessPointService } from "../aws/aws-access-point-service";
-import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
+import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
 
 /**
@@ -25,7 +25,7 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
  * Cloud Formation stacks.
  */
 @injectable()
-export class JobCloudFormationCreateService extends JobsService {
+export class JobCloudFormationCreateService extends JobService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject(AuditLogService) auditLogService: AuditLogService,

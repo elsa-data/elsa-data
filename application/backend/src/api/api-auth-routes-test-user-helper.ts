@@ -1,9 +1,5 @@
 import { FastifyInstance } from "fastify";
 import {
-  ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASE,
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
@@ -15,7 +11,7 @@ import {
   SESSION_USER_DB_OBJECT,
 } from "./auth/session-cookie-constants";
 import { DependencyContainer } from "tsyringe";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import {
   TEST_SUBJECT_1,
   TEST_SUBJECT_1_DISPLAY,
@@ -52,7 +48,7 @@ export async function addTestUserRoutesAndActualUsers(
 ) {
   const { logger } = getServices(opts.container);
 
-  const userService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
 
   const subject1 = await userService.upsertUserForLogin(
     TEST_SUBJECT_1,

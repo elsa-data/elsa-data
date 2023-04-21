@@ -5,11 +5,11 @@ import { parseUrl } from "@aws-sdk/url-parser";
 import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { IPresignedUrlProvider } from "./presigned-urls-service";
+import { IPresignedUrlProvider } from "./presigned-url-service";
 import assert from "assert";
 
 @injectable()
-export class CloudflarePresignedUrlsService implements IPresignedUrlProvider {
+export class CloudflarePresignedUrlService implements IPresignedUrlProvider {
   readonly protocol = "r2";
 
   constructor(@inject("Settings") private readonly settings: ElsaSettings) {}

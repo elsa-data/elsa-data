@@ -1,7 +1,7 @@
 import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import {
@@ -30,9 +30,9 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject(AuditLogService) private readonly auditLogService: AuditLogService,
-    @inject(UsersService) usersService: UsersService
+    @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, usersService);
+    super(settings, edgeDbClient, features, userService);
   }
 
   public async getParticipants(user: AuthenticatedUser, releaseKey: string) {
