@@ -33,8 +33,8 @@ export type ChangeablePermission = {
 @injectable()
 export class UsersService {
   constructor(
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings
   ) {}
 
   /**

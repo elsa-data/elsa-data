@@ -35,10 +35,11 @@ export class AwsAccessPointService {
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
-    private readonly releaseService: ReleaseService,
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    private usersService: UsersService,
-    private auditLogService: AuditLogService,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject(UsersService) private readonly usersService: UsersService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
   public static getReleaseStackName(releaseKey: string): string {

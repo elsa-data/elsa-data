@@ -22,12 +22,13 @@ import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 @injectable()
 export class ReleaseDataEgressService extends ReleaseBaseService {
   constructor(
-    @inject("Database") readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") readonly settings: ElsaSettings,
-    @inject("Features") readonly features: ReadonlySet<string>,
-    private awsCloudTrailLakeService: AwsCloudTrailLakeService,
-    private auditLogService: AuditLogService,
-    usersService: UsersService
+    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Settings") settings: ElsaSettings,
+    @inject("Features") features: ReadonlySet<string>,
+    @inject(AwsCloudTrailLakeService)
+    private readonly awsCloudTrailLakeService: AwsCloudTrailLakeService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(UsersService) usersService: UsersService
   ) {
     super(settings, edgeDbClient, features, usersService);
   }

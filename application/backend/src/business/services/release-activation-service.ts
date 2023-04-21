@@ -23,13 +23,13 @@ import { ManifestService } from "./manifests/manifest-service";
 @injectable()
 export class ReleaseActivationService extends ReleaseBaseService {
   constructor(
-    @inject("Database") readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") readonly settings: ElsaSettings,
-    @inject("Features") readonly features: ReadonlySet<string>,
-    @inject("Logger") private logger: Logger,
-    private auditLogService: AuditLogService,
-    private manifestService: ManifestService,
-    usersService: UsersService
+    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Settings") settings: ElsaSettings,
+    @inject("Features") features: ReadonlySet<string>,
+    @inject("Logger") private readonly logger: Logger,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(ManifestService) private readonly manifestService: ManifestService,
+    @inject(UsersService) usersService: UsersService
   ) {
     super(settings, edgeDbClient, features, usersService);
   }

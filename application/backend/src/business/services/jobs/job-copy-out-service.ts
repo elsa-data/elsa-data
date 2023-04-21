@@ -39,10 +39,11 @@ export class JobCopyOutService extends JobsService {
 
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    auditLogService: AuditLogService,
-    releaseService: ReleaseService,
-    selectService: SelectService,
-    private readonly manifestService: ManifestService,
+    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(ReleaseService) releaseService: ReleaseService,
+    @inject(SelectService) selectService: SelectService,
+    @inject(ManifestService) private readonly manifestService: ManifestService,
+    @inject(AwsDiscoveryService)
     private readonly awsDiscoveryService: AwsDiscoveryService,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("S3Client") private readonly s3Client: S3Client,

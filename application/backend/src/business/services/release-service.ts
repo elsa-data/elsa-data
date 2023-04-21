@@ -26,18 +26,17 @@ import {
   auditSuccess,
 } from "../../audit-helpers";
 import { Logger } from "pino";
-import { ReleaseHtsgetNotConfigured } from "../exceptions/release-htsget";
 import { jobAsBadgeLabel } from "./jobs/job-helpers";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
-    @inject("Database") readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") readonly settings: ElsaSettings,
-    @inject("Features") readonly features: ReadonlySet<string>,
-    @inject("Logger") private logger: Logger,
-    private auditLogService: AuditLogService,
-    usersService: UsersService
+    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Settings") settings: ElsaSettings,
+    @inject("Features") features: ReadonlySet<string>,
+    @inject("Logger") private readonly logger: Logger,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(UsersService) usersService: UsersService
   ) {
     super(settings, edgeDbClient, features, usersService);
   }

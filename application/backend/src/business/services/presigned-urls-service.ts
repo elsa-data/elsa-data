@@ -3,8 +3,9 @@ import { inject, injectable, injectAll } from "tsyringe";
 import { ElsaSettings } from "../../config/elsa-settings";
 
 export interface IPresignedUrlProvider {
+  readonly protocol: string;
+
   isEnabled(): Promise<boolean>;
-  protocol: string;
   presign(
     releaseKey: string,
     bucket: string,
@@ -16,7 +17,7 @@ export interface IPresignedUrlProvider {
 @injectable()
 export class PresignedUrlsService {
   constructor(
-    @inject("Database") protected readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @injectAll("IPresignedUrlProvider")
     private readonly presignedUrlsServices: IPresignedUrlProvider[]

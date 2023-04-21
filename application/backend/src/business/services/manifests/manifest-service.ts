@@ -25,9 +25,9 @@ import { AuditLogService } from "../audit-log-service";
 @injectable()
 export class ManifestService {
   constructor(
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    private readonly releaseService: ReleaseService,
-    private readonly auditLogService: AuditLogService
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService
   ) {}
 
   /**

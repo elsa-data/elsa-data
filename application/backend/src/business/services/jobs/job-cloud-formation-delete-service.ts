@@ -24,10 +24,12 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
 export class JobCloudFormationDeleteService extends JobsService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    auditLogService: AuditLogService,
-    releaseService: ReleaseService,
-    selectService: SelectService,
-    @inject("CloudFormationClient") private cfnClient: CloudFormationClient,
+    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(ReleaseService) releaseService: ReleaseService,
+    @inject(SelectService) selectService: SelectService,
+    @inject("CloudFormationClient")
+    private readonly cfnClient: CloudFormationClient,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);

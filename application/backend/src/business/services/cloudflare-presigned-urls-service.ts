@@ -12,11 +12,12 @@ import assert from "assert";
 export class CloudflarePresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "r2";
 
-  constructor(@inject("Settings") private settings: ElsaSettings) {}
+  constructor(@inject("Settings") private readonly settings: ElsaSettings) {}
 
   public async isEnabled(): Promise<boolean> {
     return !!this.settings.cloudflare;
   }
+
   async presign(
     releaseKey: string,
     bucket: string,

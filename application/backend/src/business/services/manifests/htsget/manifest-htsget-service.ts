@@ -31,9 +31,9 @@ export abstract class ManifestHtsgetService {
   private static readonly HTSGET_MANIFESTS_FOLDER = "htsget-manifests";
 
   protected constructor(
-    @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Logger") private logger: Logger,
+    private readonly settings: ElsaSettings,
+    private readonly edgeDbClient: edgedb.Client,
+    private readonly logger: Logger,
     private readonly cloudStorage: CloudStorage,
     private readonly auditLogService: AuditLogService,
     private readonly manifestService: ManifestService
@@ -166,9 +166,9 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
     @inject("Settings") settings: ElsaSettings,
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Logger") logger: Logger,
-    awsS3Service: AwsS3Service,
-    auditLogService: AuditLogService,
-    manifestService: ManifestService
+    @inject(AwsS3Service) awsS3Service: AwsS3Service,
+    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(ManifestService) manifestService: ManifestService
   ) {
     super(
       settings,

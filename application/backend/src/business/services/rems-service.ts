@@ -16,10 +16,10 @@ import { ReleaseService } from "./release-service";
 @injectable()
 export class RemsService {
   constructor(
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
-    private usersService: UsersService,
-    private releaseService: ReleaseService
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(UsersService) private readonly usersService: UsersService,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService
   ) {}
 
   public async detectNewReleases(

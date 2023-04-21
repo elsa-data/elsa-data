@@ -26,11 +26,11 @@ import { AuditLogService } from "./audit-log-service";
 @injectable()
 export class ReleaseParticipationService extends ReleaseBaseService {
   constructor(
-    @inject("Database") readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") readonly settings: ElsaSettings,
-    @inject("Features") readonly features: ReadonlySet<string>,
-    private auditLogService: AuditLogService,
-    usersService: UsersService
+    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Settings") settings: ElsaSettings,
+    @inject("Features") features: ReadonlySet<string>,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(UsersService) usersService: UsersService
   ) {
     super(settings, edgeDbClient, features, usersService);
   }

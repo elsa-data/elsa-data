@@ -12,15 +12,16 @@ import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-typ
 
 @injectable()
 export class GcpStorageSharingService {
-  storage: Storage;
-  globalLimit: Limit;
-  objectLimits: { [uri: string]: Limit };
+  private readonly storage: Storage;
+  private readonly globalLimit: Limit;
+  private readonly objectLimits: { [uri: string]: Limit };
 
   constructor(
     @inject("Database") protected edgeDbClient: edgedb.Client,
-    private usersService: UsersService,
-    private releaseService: ReleaseService,
-    private auditLogService: AuditLogService,
+    @inject(UsersService) private readonly usersService: UsersService,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(GcpEnabledService)
     private readonly gcpEnabledService: GcpEnabledService
   ) {
     this.storage = new Storage();

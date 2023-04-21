@@ -16,6 +16,7 @@ export class AwsPresignedUrlsService implements IPresignedUrlProvider {
 
   constructor(
     @inject("Settings") private settings: ElsaSettings,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
 
@@ -58,12 +59,12 @@ export class AwsPresignedUrlsService implements IPresignedUrlProvider {
       region: awsRegion,
       sha256: Hash.bind(null, "sha256"),
     });
-    const url = formatUrl(
+
+    return formatUrl(
       await presigner.presign(new HttpRequest(s3ObjectUrl), {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
       })
     );
-    return url;
   }
 
   public async isEnabled(): Promise<boolean> {

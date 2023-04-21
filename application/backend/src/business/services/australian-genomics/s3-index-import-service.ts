@@ -65,10 +65,10 @@ export type manifestDict = Record<string, s3ManifestType>;
 @injectable()
 export class S3IndexApplicationService {
   constructor(
-    @inject("S3Client") private s3Client: S3Client,
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    private datasetService: DatasetService,
-    private readonly auditLogService: AuditLogService
+    @inject("S3Client") private readonly s3Client: S3Client,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject(DatasetService) private readonly datasetService: DatasetService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService
   ) {}
 
   /**

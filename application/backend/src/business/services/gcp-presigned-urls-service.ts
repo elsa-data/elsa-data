@@ -10,13 +10,14 @@ import { GetSignedUrlConfig, Storage } from "@google-cloud/storage";
 @injectable()
 export class GcpPresignedUrlsService implements IPresignedUrlProvider {
   readonly protocol = "gs";
-  storage: Storage;
+  private readonly storage: Storage;
 
   constructor(
-    @inject("Database") protected edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
-    private releaseService: ReleaseService,
-    usersService: UsersService,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(UsersService) usersService: UsersService,
+    @inject(GcpEnabledService)
     private readonly gcpEnabledService: GcpEnabledService
   ) {
     this.storage = new Storage();
