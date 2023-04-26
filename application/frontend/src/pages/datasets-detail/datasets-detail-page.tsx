@@ -28,7 +28,11 @@ export const DatasetsDetailPage: React.FC = () => {
 
   const { datasetUri: encodedDatasetUri } =
     useParams<DatasetsSpecificPageParams>();
-  const datasetUri = decodeURIComponent(encodedDatasetUri ?? "");
+  const datasetUri = decodeURIComponent(encodedDatasetUri ?? "").replaceAll(
+    "[dot]",
+    "."
+  );
+  console.log("datasetUri: ", datasetUri);
 
   const datasetMutate = trpc.datasetRouter.updateDataset.useMutation({
     onSettled: () => {

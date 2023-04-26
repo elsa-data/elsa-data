@@ -123,7 +123,9 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                   <button
                     className={classNames("btn-table-action-navigate")}
                     onClick={async () => {
-                      navigate(encodeURIComponent(row.uri));
+                      navigate(
+                        encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
+                      );
                     }}
                   >
                     view
