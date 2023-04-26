@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Outlet, useOutletContext, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Outlet, useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import {
-  axiosPostNullMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseQuery,
-} from "./queries";
+import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
 import { isUndefined } from "lodash";
 import { ReleaseTypeLocal } from "./shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../components/errors";
@@ -15,6 +11,14 @@ import { SkeletonOneDiv } from "../../components/skeleton-one";
 import { SkeletonTwoDiv } from "../../components/skeleton-two";
 import { ReleasesMasterContextType } from "./releases-types";
 import { trpc } from "../../helpers/trpc";
+import { Alert } from "../../components/alert";
+import {
+  differenceFromNow,
+  formatFromNowTime,
+  Millisecond,
+} from "../../helpers/datetime-helper";
+
+const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -77,9 +81,21 @@ export const ReleasesMasterPage: React.FC = () => {
     releaseData: releaseQuery.data!,
   };
 
+  const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as
+    | string
+    | undefined;
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
+        {releaseQuery.isSuccess &&
+          differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME && (
+            <Alert
+              description={`This release was last edited ${formatFromNowTime(
+                lastUpdated
+              )}.`}
+            />
+          )}
+
         <ReleasesBreadcrumbsDiv releaseKey={releaseKey} />
 
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (

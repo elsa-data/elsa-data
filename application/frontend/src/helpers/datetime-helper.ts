@@ -7,6 +7,16 @@ dayjs.extend(relativeTime);
 dayjs.extend(duration);
 dayjs.extend(LocalizedFormat);
 
+export type Millisecond = number;
+
+export const differenceFromNow = (time?: string): Millisecond => {
+  if (!duration) {
+    return NaN;
+  }
+
+  return dayjs().diff(dayjs(time), "millisecond");
+};
+
 export const formatFromNowTime = (time?: string): string => {
   if (!duration) {
     return "";

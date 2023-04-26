@@ -58,6 +58,7 @@ export const ReleaseActivationSchema = Type.Object({
 
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
+  lastUpdatedDateTime: TypeDate,
 
   datasetUris: Type.Array(Type.String()),
 
