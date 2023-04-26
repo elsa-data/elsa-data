@@ -32,7 +32,6 @@ export const DatasetsDetailPage: React.FC = () => {
     "[dot]",
     "."
   );
-  console.log("datasetUri: ", datasetUri);
 
   const datasetMutate = trpc.datasetRouter.updateDataset.useMutation({
     onSettled: () => {
