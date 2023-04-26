@@ -45,12 +45,15 @@ type CloudTrailLakeResponseType = {
 @injectable()
 export class AwsCloudTrailLakeService {
   constructor(
-    @inject("Settings") private settings: ElsaSettings,
-    @inject("Database") protected edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Logger") private readonly logger: Logger,
-    @inject("CloudTrailClient") private cloudTrailClient: CloudTrailClient,
-    private awsAccessPointService: AwsAccessPointService,
-    private auditLogService: AuditLogService,
+    @inject("CloudTrailClient")
+    private readonly cloudTrailClient: CloudTrailClient,
+    @inject(AwsAccessPointService)
+    private readonly awsAccessPointService: AwsAccessPointService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
   private maxmindLookup: Reader<CityResponse> | undefined = undefined;
@@ -232,13 +235,13 @@ export class AwsCloudTrailLakeService {
     const queryId = await this.startCommandQueryCloudTrailLake(
       sqlQueryStatement
     );
-    const s3CloudTrailLogs = (await this.getResultQueryCloudTrailLakeQuery({
+    const s3CloudTrailLogs = await this.getResultQueryCloudTrailLakeQuery({
       queryId: queryId,
       eventDataStoreId: eventDataStoreId,
-    })) as CloudTrailLakeResponseType[];
+    });
 
     await this.recordCloudTrailLake({
-      lakeResponse: s3CloudTrailLogs,
+      lakeResponse: s3CloudTrailLogs as CloudTrailLakeResponseType[],
       releaseKey: releaseKey,
       description: recordDescription,
     });
@@ -367,8 +370,6 @@ export class AwsCloudTrailLakeService {
             releaseKey: releaseKey,
             eventDataStoreId: edsi,
           });
-
-          this.logger.debug("SQL statement: ", sqlQueryStatement);
 
           await this.queryAndRecord({
             sqlQueryStatement: sqlQueryStatement,

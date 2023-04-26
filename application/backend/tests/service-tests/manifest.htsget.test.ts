@@ -25,6 +25,7 @@ import {
 import { Logger } from "pino";
 import { addSeconds } from "date-fns";
 import { createTestElsaSettings } from "../test-elsa-settings.common";
+import { AwsEnabledServiceMock } from "./client-mocks";
 
 const testContainer = registerTypes();
 
@@ -37,6 +38,7 @@ let releaseService: ReleaseService;
 let manifestHtsgetService: ManifestHtsgetService;
 let releaseActivationService: ReleaseActivationService;
 let logger: Logger;
+let awsEnabledServiceMock: AwsEnabledServiceMock;
 
 const s3ClientMock = mockClient(S3Client);
 
@@ -48,10 +50,12 @@ beforeAll(async () => {
   manifestHtsgetService = testContainer.resolve(S3ManifestHtsgetService);
   releaseActivationService = testContainer.resolve(ReleaseActivationService);
   logger = testContainer.resolve("Logger");
+  awsEnabledServiceMock = testContainer.resolve(AwsEnabledServiceMock);
 });
 
 beforeEach(async () => {
   s3ClientMock.reset();
+  awsEnabledServiceMock.reset();
 
   ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
     testContainer
@@ -273,6 +277,8 @@ it("test publish htsget manifest htsget not enabled", async () => {
 });
 
 it("test publish htsget cached", async () => {
+  awsEnabledServiceMock.enable();
+
   if (settings.htsget?.maxAge === undefined) {
     logger.warn("Skipping test because htsget is not defined.");
     return;
@@ -297,6 +303,8 @@ it("test publish htsget cached", async () => {
 });
 
 it("test publish htsget not cached", async () => {
+  awsEnabledServiceMock.enable();
+
   if (settings.htsget?.maxAge === undefined) {
     logger.warn("Skipping test because htsget is not defined.");
     return;

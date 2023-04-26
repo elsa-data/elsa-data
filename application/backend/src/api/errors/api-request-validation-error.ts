@@ -2,7 +2,7 @@ import { Base7807Error, Base7807Response } from "@umccr/elsa-types/error-types";
 import { ErrorObject } from "ajv";
 
 export class ApiRequestValidationError extends Base7807Error {
-  constructor(private errors: ErrorObject[]) {
+  constructor(private readonly errors: ErrorObject[]) {
     super("Validation Error", 400);
   }
 

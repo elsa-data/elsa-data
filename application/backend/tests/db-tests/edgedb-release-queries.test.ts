@@ -8,7 +8,7 @@ import {
 } from "../../src/test-data/insert-test-data-release2";
 import { insertRelease4 } from "../../src/test-data/insert-test-data-release4";
 import { insertRelease3 } from "../../src/test-data/insert-test-data-release3";
-import { UsersService } from "../../src/business/services/users-service";
+import { UserService } from "../../src/business/services/user-service";
 import { releaseGetAllByUser } from "../../dbschema/queries";
 
 describe("edgedb release queries tests", () => {
@@ -46,7 +46,7 @@ describe("edgedb release queries tests", () => {
   it("get all on releases returns correct roles and fields", async () => {
     const testUserInsert = await createTestUser();
 
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       edgeDbClient,
       release2.id,
       testUserInsert.id,
@@ -55,7 +55,7 @@ describe("edgedb release queries tests", () => {
       "name1"
     );
 
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       edgeDbClient,
       release3.id,
       testUserInsert.id,
@@ -109,7 +109,7 @@ describe("edgedb release queries tests", () => {
   it("get all on releases does basic paging", async () => {
     const testUserInsert = await createTestUser();
 
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       edgeDbClient,
       release2.id,
       testUserInsert.id,
@@ -118,7 +118,7 @@ describe("edgedb release queries tests", () => {
       "name1"
     );
 
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       edgeDbClient,
       release3.id,
       testUserInsert.id,
@@ -127,7 +127,7 @@ describe("edgedb release queries tests", () => {
       "name2"
     );
 
-    await UsersService.addUserToReleaseWithRole(
+    await UserService.addUserToReleaseWithRole(
       edgeDbClient,
       release4.id,
       testUserInsert.id,
