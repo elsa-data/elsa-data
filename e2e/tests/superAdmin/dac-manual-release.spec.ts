@@ -1,8 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { superAdminSetup } from "./superAdmin.common";
 
 test("A release can be created manually which has selectable cases", async ({
   page,
 }) => {
+  await superAdminSetup(page);
+
   await page.goto("./");
 
   await page.getByRole("listitem").filter({ hasText: "DAC" }).click();

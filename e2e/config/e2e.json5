@@ -15,4 +15,8 @@
   htsget: {
     url: "https://htsget.elsa.dev.umccr.org",
   },
+  aws: {
+    signingSecretAccessKey: "notavalidsecert", //pragma: allowlist secret
+    signingAccessKeyId: "notavalidsecert", //pragma: allowlist secret
+  },
 }
