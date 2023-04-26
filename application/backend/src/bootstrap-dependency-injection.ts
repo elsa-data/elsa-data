@@ -7,11 +7,11 @@ import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { SES } from "@aws-sdk/client-ses";
 import {
   IPresignedUrlProvider,
-  PresignedUrlsService,
-} from "./business/services/presigned-urls-service";
-import { AwsPresignedUrlsService } from "./business/services/aws/aws-presigned-urls-service";
-import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-service";
-import { CloudflarePresignedUrlsService } from "./business/services/cloudflare-presigned-urls-service";
+  PresignedUrlService,
+} from "./business/services/presigned-url-service";
+import { AwsPresignedUrlService } from "./business/services/aws/aws-presigned-url-service";
+import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
+import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { STSClient } from "@aws-sdk/client-sts";
@@ -91,31 +91,32 @@ export function bootstrapDependencyInjection() {
   });
 
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: AwsPresignedUrlsService,
+    useClass: AwsPresignedUrlService,
   });
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: GcpPresignedUrlsService,
+    useClass: GcpPresignedUrlService,
   });
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: CloudflarePresignedUrlsService,
+    useClass: CloudflarePresignedUrlService,
   });
 
   // we register our singletons this way as this is the only way to prevent them being registered
   // in the global container namespace (we DON'T use the @singleton decorator)
   dc.registerSingleton(AwsDiscoveryService);
   dc.registerSingleton(AwsEnabledService);
-  dc.registerSingleton(AwsPresignedUrlsService);
+  dc.registerSingleton(AwsPresignedUrlService);
   dc.registerSingleton(AwsS3Service);
   dc.registerSingleton(AwsAccessPointService);
   dc.registerSingleton(AwsCloudTrailLakeService);
   dc.registerSingleton(GcpEnabledService);
   dc.registerSingleton(GcpStorageSharingService);
-  dc.registerSingleton(GcpPresignedUrlsService);
-  dc.registerSingleton(CloudflarePresignedUrlsService);
+  dc.registerSingleton(GcpPresignedUrlService);
+  dc.registerSingleton(CloudflarePresignedUrlService);
   dc.registerSingleton(ManifestService);
-  dc.registerSingleton(PresignedUrlsService);
+  dc.registerSingleton(PresignedUrlService);
 
   dc.registerSingleton<S3ManifestHtsgetService>(S3, S3ManifestHtsgetService);
 
+  // Note: dependencies of class constructors must be injected manually when using esbuild.
   return dc;
 }

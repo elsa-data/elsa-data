@@ -5,7 +5,7 @@ import { SECURE_COOKIE_NAME } from "@umccr/elsa-constants";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { SingleUserBySubjectIdType } from "../../business/db/user-queries";
 import { AuthenticatedUser } from "../../business/authenticated-user";
-import { UsersService } from "../../business/services/users-service";
+import { UserService } from "../../business/services/user-service";
 
 /**
  * Return a secure sessions plugin options object for Fastify.
@@ -38,7 +38,7 @@ export function getSecureSessionOptions(
  * @param request
  */
 export function getAuthenticatedUserFromSecureSession(
-  userService: UsersService,
+  userService: UserService,
   request: FastifyRequest
 ): AuthenticatedUser | null {
   // cannot return authenticated users if our session management was not installed

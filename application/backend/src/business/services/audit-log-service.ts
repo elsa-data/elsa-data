@@ -55,11 +55,11 @@ export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
 export class AuditLogService {
-  private readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
+  private static readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
-    @inject("Settings") private settings: ElsaSettings,
-    @inject("Database") private edgeDbClient: edgedb.Client
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client
   ) {}
 
   /**
@@ -169,7 +169,7 @@ export class AuditLogService {
           outcome: outcome,
           details: details ? e.json(details) : e.json({}),
           occurredDuration:
-            diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+            diffSeconds > AuditLogService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
@@ -300,7 +300,7 @@ export class AuditLogService {
           outcome: outcome,
           details: e.json(details),
           occurredDuration:
-            diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+            diffSeconds > AuditLogService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
@@ -387,7 +387,7 @@ export class AuditLogService {
           outcome: outcome,
           details: details ? e.json(details) : e.json({}),
           occurredDuration:
-            diffSeconds > this.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+            diffSeconds > AuditLogService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),

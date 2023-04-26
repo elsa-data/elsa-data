@@ -16,7 +16,7 @@ import {
 } from "../../api/helpers/pagination-helpers";
 import { collapseExternalIds, getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import { ElsaSettings } from "../../config/elsa-settings";
@@ -40,13 +40,13 @@ import { releaseGetSpecimenToDataSetCrossLinks } from "../../../dbschema/queries
 export class ReleaseSelectionService extends ReleaseBaseService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject("Settings") readonly settings: ElsaSettings,
-    @inject("Features") readonly features: ReadonlySet<string>,
+    @inject("Settings") settings: ElsaSettings,
+    @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
-    private readonly auditLogService: AuditLogService,
-    usersService: UsersService
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, usersService);
+    super(settings, edgeDbClient, features, userService);
   }
 
   /**

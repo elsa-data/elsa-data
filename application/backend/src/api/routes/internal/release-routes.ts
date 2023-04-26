@@ -21,7 +21,7 @@ import { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
-import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
+import { PresignedUrlService } from "../../../business/services/presigned-url-service";
 import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
 import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
@@ -30,7 +30,7 @@ export const releaseRoutes = async (
   fastify: FastifyInstance,
   _opts: { container: DependencyContainer }
 ) => {
-  const presignedUrlsService = _opts.container.resolve(PresignedUrlsService);
+  const presignedUrlService = _opts.container.resolve(PresignedUrlService);
   const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
   const gcpStorageSharingService = _opts.container.resolve(
     GcpStorageSharingService
@@ -524,7 +524,7 @@ export const releaseRoutes = async (
     const { releaseKey } = request.params;
 
     const manifest = await manifestService.getArchivedActiveTsvManifest(
-      presignedUrlsService,
+      presignedUrlService,
       authenticatedUser,
       releaseKey,
       request.body?.presignHeader ?? []

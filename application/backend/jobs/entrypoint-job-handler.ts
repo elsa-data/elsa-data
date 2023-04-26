@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
 import { parentPort } from "worker_threads";
-import { JobsService } from "../src/business/services/jobs/jobs-base-service";
+import { JobService } from "../src/business/services/jobs/job-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
@@ -62,7 +62,7 @@ const dc = bootstrapDependencyInjection();
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
-      const jobsService = dc.resolve(JobsService);
+      const jobService = dc.resolve(JobService);
       const jobCloudFormationCreateService = dc.resolve(
         JobCloudFormationCreateService
       );
@@ -71,7 +71,7 @@ const dc = bootstrapDependencyInjection();
       );
       const jobCopyOutService = dc.resolve(JobCopyOutService);
 
-      const jobs = await jobsService.getInProgressJobs();
+      const jobs = await jobService.getInProgressJobs();
 
       if (!jobs || jobs.length < 1) {
         if (
@@ -119,16 +119,14 @@ const dc = bootstrapDependencyInjection();
           switch (j.jobType) {
             case "SelectJob":
               if (j.requestedCancellation)
-                jobPromises.push(
-                  jobsService.endSelectJob(j.jobId, false, true)
-                );
+                jobPromises.push(jobService.endSelectJob(j.jobId, false, true));
               else
                 jobPromises.push(
-                  jobsService
+                  jobService
                     .doSelectJobWork(j.jobId, secondsChunk)
                     .then((result) => {
                       if (result === 0)
-                        return jobsService.endSelectJob(j.jobId, true, false);
+                        return jobService.endSelectJob(j.jobId, true, false);
                     })
                 );
               break;

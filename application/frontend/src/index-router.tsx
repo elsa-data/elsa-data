@@ -28,6 +28,9 @@ import { AuditEventDetailedPage } from "./components/audit-event/audit-event-det
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
+import { useUiAllowed } from "./hooks/ui-allowed";
+import { DatasetLayout } from "./layouts/layout-base-dataset";
+import { DacLayout } from "./layouts/layout-base-dac";
 
 export function createRouter(addBypassLoginPage: boolean) {
   const NoMatch = () => {
@@ -157,12 +160,14 @@ export function createRouter(addBypassLoginPage: boolean) {
             </Route>
           </Route>
 
-          <Route path={`datasets`}>
+          <Route path={`datasets`} element={<DatasetLayout />}>
             <Route index element={<DatasetsDashboardPage />} />
             <Route path={`:datasetUri`} element={<DatasetsDetailPage />} />
           </Route>
 
-          <Route path={`dac`} element={<DacImportPage />} />
+          <Route path={`dac`} element={<DacLayout />}>
+            <Route index element={<DacImportPage />} />
+          </Route>
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
@@ -179,3 +184,10 @@ export function createRouter(addBypassLoginPage: boolean) {
     )
   );
 }
+
+// Redirection component
+const IsDatasetAllowed = () => {
+  const uiAllowed = useUiAllowed();
+
+  return <></>;
+};

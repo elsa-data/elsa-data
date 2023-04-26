@@ -2,21 +2,21 @@ import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./user.common";
 import { registerTypes } from "../test-dependency-injection.common";
-import { UsersService } from "../../src/business/services/users-service";
+import { UserService } from "../../src/business/services/user-service";
 import { NotAuthorisedModifyUserManagement } from "../../src/business/exceptions/user";
 import { getServices } from "../../src/di-helpers";
 import { ElsaSettings } from "../../src/config/elsa-settings";
 
 let existingUser: AuthenticatedUser;
 let edgeDbClient: edgedb.Client;
-let userService: UsersService;
+let userService: UserService;
 
 const testContainer = registerTypes();
 
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  userService = testContainer.resolve(UsersService);
+  userService = testContainer.resolve(UserService);
 });
 
 it("test for existence of user who does exist", async () => {
@@ -85,7 +85,7 @@ it("SuperAdmin change other user permission", async () => {
     });
   }
 
-  const newUserService = newContainer.resolve(UsersService);
+  const newUserService = newContainer.resolve(UserService);
 
   const newUser = await newUserService.upsertUserForLogin(
     "http://test.com",

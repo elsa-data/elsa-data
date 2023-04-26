@@ -13,7 +13,7 @@ import {
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
 import { AwsAccessPointService } from "../aws/aws-access-point-service";
-import { JobsService, NotAuthorisedToControlJob } from "./jobs-base-service";
+import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
 
 /**
@@ -21,13 +21,15 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
  * Cloud Formation stacks.
  */
 @injectable()
-export class JobCloudFormationDeleteService extends JobsService {
+export class JobCloudFormationDeleteService extends JobService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    auditLogService: AuditLogService,
-    releaseService: ReleaseService,
-    selectService: SelectService,
-    @inject("CloudFormationClient") private cfnClient: CloudFormationClient,
+    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(ReleaseService) releaseService: ReleaseService,
+    @inject(SelectService) selectService: SelectService,
+    @inject("CloudFormationClient")
+    private readonly cfnClient: CloudFormationClient,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);

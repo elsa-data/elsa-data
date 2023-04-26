@@ -8,13 +8,13 @@ import { createTestElsaSettings } from "./test-elsa-settings.common";
 import { Logger, pino } from "pino";
 import {
   IPresignedUrlProvider,
-  PresignedUrlsService,
-} from "../src/business/services/presigned-urls-service";
-import { GcpPresignedUrlsService } from "../src/business/services/gcp-presigned-urls-service";
-import { CloudflarePresignedUrlsService } from "../src/business/services/cloudflare-presigned-urls-service";
+  PresignedUrlService,
+} from "../src/business/services/presigned-url-service";
+import { GcpPresignedUrlService } from "../src/business/services/gcp-presigned-url-service";
+import { CloudflarePresignedUrlService } from "../src/business/services/cloudflare-presigned-url-service";
 import { SESClient } from "@aws-sdk/client-ses";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
-import { AwsPresignedUrlsService } from "../src/business/services/aws/aws-presigned-urls-service";
+import { AwsPresignedUrlService } from "../src/business/services/aws/aws-presigned-url-service";
 import { AwsDiscoveryService } from "../src/business/services/aws/aws-discovery-service";
 import { AwsEnabledService } from "../src/business/services/aws/aws-enabled-service";
 import { AwsS3Service } from "../src/business/services/aws/aws-s3-service";
@@ -84,29 +84,29 @@ export function registerTypes() {
   });
 
   testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: AwsPresignedUrlsService,
+    useClass: AwsPresignedUrlService,
   });
 
   testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: GcpPresignedUrlsService,
+    useClass: GcpPresignedUrlService,
   });
 
   testContainer.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: CloudflarePresignedUrlsService,
+    useClass: CloudflarePresignedUrlService,
   });
 
   testContainer.registerSingleton(AwsDiscoveryService);
   testContainer.registerSingleton(AwsEnabledService);
-  testContainer.registerSingleton(AwsPresignedUrlsService);
+  testContainer.registerSingleton(AwsPresignedUrlService);
   testContainer.registerSingleton(AwsS3Service);
   testContainer.registerSingleton(AwsAccessPointService);
   testContainer.registerSingleton(AwsCloudTrailLakeService);
   testContainer.registerSingleton(GcpEnabledService);
   testContainer.registerSingleton(GcpStorageSharingService);
-  testContainer.registerSingleton(GcpPresignedUrlsService);
-  testContainer.registerSingleton(CloudflarePresignedUrlsService);
+  testContainer.registerSingleton(GcpPresignedUrlService);
+  testContainer.registerSingleton(CloudflarePresignedUrlService);
   testContainer.registerSingleton(ManifestService);
-  testContainer.registerSingleton(PresignedUrlsService);
+  testContainer.registerSingleton(PresignedUrlService);
 
   testContainer.registerSingleton<S3ManifestHtsgetService>(
     S3,

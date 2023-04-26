@@ -2,7 +2,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { UsersService } from "../users-service";
+import { UserService } from "../user-service";
 import { AwsEnabledService } from "./aws-enabled-service";
 import {
   CloudFormationClient,
@@ -35,10 +35,11 @@ export class AwsAccessPointService {
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
-    private readonly releaseService: ReleaseService,
-    @inject("Database") private edgeDbClient: edgedb.Client,
-    private usersService: UsersService,
-    private auditLogService: AuditLogService,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject(UserService) private readonly userService: UserService,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
   public static getReleaseStackName(releaseKey: string): string {
@@ -120,7 +121,7 @@ export class AwsAccessPointService {
     // noting that these files will be S3 paths that
     const filesArray = await getAllFileRecords(
       this.edgeDbClient,
-      this.usersService,
+      this.userService,
       user,
       releaseKey
     );
@@ -211,7 +212,7 @@ export class AwsAccessPointService {
     // find all the files encompassed by this release as a flat array of S3 URLs
     const filesArray = await getAllFileRecords(
       this.edgeDbClient,
-      this.usersService,
+      this.userService,
       user,
       releaseKey
     );

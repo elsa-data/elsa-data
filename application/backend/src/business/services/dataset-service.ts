@@ -24,8 +24,8 @@ import {
 export class DatasetService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings,
-    private readonly auditLogService: AuditLogService
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(AuditLogService) private readonly auditLogService: AuditLogService
   ) {}
 
   /**
