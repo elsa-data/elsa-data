@@ -104,7 +104,7 @@ export async function insertTestData(dc: DependencyContainer) {
     TEST_SUBJECT_2_DISPLAY,
     TEST_SUBJECT_2_EMAIL,
     [],
-    [r1.id],
+    [r1.id, r5.id],
     [],
     false,
     false

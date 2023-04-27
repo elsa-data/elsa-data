@@ -519,28 +519,77 @@ export const releaseRoutes = async (
   fastify.post<{
     Body?: ReleasePresignRequestType;
     Params: { rid: string };
-  }>("/releases/:rid/tsv-manifest", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+  }>(
+    "/releases/:rid/tsv-manifest-archive",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseKey = request.params.rid;
+      const presignHeader = request.body?.presignHeader ?? [];
 
-    const manifest = await manifestService.getArchivedActiveTsvManifest(
-      presignedUrlService,
-      authenticatedUser,
-      releaseKey,
-      request.body?.presignHeader ?? []
-    );
+      const releaseKey = request.params.rid;
 
-    if (!manifest) {
-      reply.status(404).send();
-      return;
+      const manifest = await manifestService.getActiveTsvManifestAsArchive(
+        presignedUrlService,
+        authenticatedUser,
+        releaseKey,
+        presignHeader
+      );
+
+      if (!manifest) {
+        reply.status(404).send();
+        return;
+      }
+
+      reply.raw.writeHead(200, {
+        "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
+        "Content-Type": "application/octet-stream",
+      });
+
+      manifest.pipe(reply.raw);
     }
+  );
 
-    reply.raw.writeHead(200, {
-      "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
-      "Content-Type": "application/octet-stream",
-    });
+  fastify.post<{
+    Body?: ReleasePresignRequestType;
+    Params: { rid: string };
+  }>(
+    "/releases/:rid/tsv-manifest-plaintext",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    manifest.pipe(reply.raw);
-  });
+      const presignHeader = request.body?.presignHeader ?? [];
+      if (presignHeader.includes("objectStoreSigned")) {
+        // This would ideally be checked with an appropriate type for the request
+        // `Body`. But that'd involve defining a separate type almost identical
+        // to `ReleasePresignRequestType`, which is too repetitious for my taste.
+        reply.status(400).send();
+        return;
+      }
+
+      const releaseKey = request.params.rid;
+
+      const manifest = await manifestService.getActiveTsvManifestAsString(
+        presignedUrlService,
+        authenticatedUser,
+        releaseKey,
+        presignHeader
+      );
+
+      if (!manifest) {
+        reply.status(404).send();
+        return;
+      }
+
+      reply
+        .status(200)
+        .header(
+          "Content-Disposition",
+          `attachment; filename=manifest-${releaseKey}.tsv`
+        )
+        .header("Content-Type", "text/tab-separated-values")
+        .send(manifest);
+    }
+  );
 };
