@@ -5,8 +5,7 @@ import { LoggerOptions } from "pino";
 
 /**
  * The rich, well-typed settings for Elsa.
- * These somewhat duplicate the config values we get via "convict" - but I have my
- * doubts about convict and am retaining this as a little bridge for a bit.
+ * This should be removed and replaced with a passthrough of the Zod config types.
  */
 export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc

@@ -1,87 +1,21 @@
-import convict from "convict";
 import { parseMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
 import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
-import {
-  configDefinition,
-  configZodDefinition,
-  ElsaConfiguration,
-  loggerTransportTargetsArray,
-} from "./config-constants";
+import { configZodDefinition, ElsaConfiguration } from "./config-constants";
 import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
 import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 import jsonpath from "jsonpath";
 import _ from "lodash";
-import { z } from "zod";
 
 const env_prefix = "ELSA_DATA_CONFIG_";
 
-convict.addFormat(loggerTransportTargetsArray);
-
-// an array of user records designated in the config for extra permissions etc
-convict.addFormat({
-  name: "array",
-  validate: function (items: any[], schema) {
-    if (!Array.isArray(items)) {
-      throw new Error("Must be of type Array");
-    }
-
-    for (const child of items) {
-      convict(schema.children).load(child).validate();
-    }
-  },
-});
-
-// a TLS artifact that we fetch and possibly save to disk for use in TLS connections
-convict.addFormat({
-  name: "tls",
-  validate(val: any, schema: convict.SchemaObj) {
-    if (val) {
-      if (!val.startsWith("-----BEGIN"))
-        throw new Error("TLS must start with ASCII armor -----BEGIN");
-    }
-  },
-  coerce: function (val) {
-    if (val) return val.replaceAll("\\n", "\n");
-    return val;
-  },
-});
-
 /**
- * Process the raw config data - before it goes to convict - and strip out all "complex keys"
- * - those keys that have "[" or "]" or "." in them - which we want to instead interpret as an object
- * path.
- *
- * @param inputConfigs the JSON config files before we are passing on to Convict
- */
-function handleConfigPathsBeforeConvict(inputConfigs: any[]): {
-  pathProcessedConfigs: any[];
-  pathProcessedKeys: { [k: string]: any };
-} {
-  const outputConfigs: any[] = [];
-  const pathProcessedKeys: { [k: string]: any } = {};
-
-  for (const ic of inputConfigs) {
-    // copy the raw config before we mutate
-    const newStrippedConfig = { ...ic };
-
-    outputConfigs.push(newStrippedConfig);
-  }
-
-  return {
-    pathProcessedConfigs: outputConfigs,
-    pathProcessedKeys: pathProcessedKeys,
-  };
-}
-
-/**
- * Process the raw config JSON data - before it goes to convict - allowing us to have a feature
- * by which arrays can be grown or shrunk using a
- * "+key" or "-key" notation.
+ * Process/merge in a new configuration file - but with some special helper logic that allows array
+ * manipulation and JSONpath queries.
  *
  * @param startingConfig the starting configuration that we are looking to apply array options to
- * @param newConfig a new configuration that may or may not
+ * @param newConfig a new configuration that may or may not have special logic fields (at the top level)
  * @param arrayMarkers an array of "key names" that we want to enable this array functionality for (e.g. ["datasets", "admins"])
  */
 function mergeNewConfig(
@@ -89,13 +23,15 @@ function mergeNewConfig(
   newConfig: any,
   arrayMarkers: string[]
 ): any {
+  // start with the intention of returning back exactly what we started with
+  // we will now mutate this
   const returnConfig = _.cloneDeep(startingConfig);
 
-  // we don't want to accidentally refer to this
+  // we don't want to accidentally refer to this so null it out
   startingConfig = null;
 
   // we want to allow 'deletion' of config entries using a pretty loose logic where they can specify anything
-  // the looks like an id and we broadly search for it
+  // that looks like an id and we broadly search for it
   const idPresent = (possibleId: string, obj: any): boolean => {
     for (const [k, v] of Object.entries(obj)) {
       if (k === "uri" && v === possibleId) return true;
@@ -161,8 +97,6 @@ function mergeNewConfig(
     // if the key is just regular alphanumeric then we can let it be handled normally
     if (/^[A-Za-z0-9]*$/.test(key)) continue;
 
-    console.debug(`Processing complex key ${key}`);
-
     // find our what already exists according to this complex query
     const matching = jsonpath.query(returnConfig, key);
 
@@ -201,6 +135,8 @@ function mergeNewConfig(
     delete newConfig[key];
   }
 
+  // all the "special" fields have been removed from newConfig and we have applied their logic ourselves
+  // now we can just use the basis Lodash merge functionality for the rest of the newConfig
   return _.merge(returnConfig, newConfig);
 }
 
@@ -211,25 +147,17 @@ function mergeNewConfig(
  *
  * @param config
  */
-export async function getDirectConfig(
-  config: any
-): Promise<convict.Config<any>> {
-  const convictConfig = convict(configDefinition, {});
-
-  convictConfig.load(config);
-  // perform validation
-  convictConfig.validate({ allowed: "strict" });
-
-  return convictConfig;
+export async function getDirectConfig(config: any): Promise<ElsaConfiguration> {
+  return configZodDefinition.strict().parse(config);
 }
 
 /**
  * Given a meta configuration description (a string listing a sequence of config
  * providers), this loads all the relevant configs in order and returns them
- * merged and loaded into convict. Convict will do the handling of default values
- * and overrides via ENV variables.
+ * merged and loaded via Zod schema checking. Env variables will be late bound
+ * to be able to also set config values.
  *
- * @param meta
+ * @param meta a string of source of configuration information e.g "file(a) aws-secret(b)"
  */
 export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
   // the meta syntax tells us where to source configuration from and in what order
@@ -272,19 +200,23 @@ export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
 
   let configObject: ElsaConfiguration = {} as ElsaConfiguration;
 
-  // gradually merge each config in order into the config object
+  // one by one merge each config in order into the config object
   for (const initialRawConfig of rawConfigs) {
     configObject = mergeNewConfig(configObject, initialRawConfig, [
       "superAdmins",
       "datasets",
+      "dacs",
     ]);
   }
 
-  const trySetEnviromentVariableString = (env_suffix: string, path: string) => {
+  const trySetEnvironmentVariableString = (
+    env_suffix: string,
+    path: string
+  ) => {
     const v = process.env[`${env_prefix}${env_suffix}`];
     if (v) _.set(configObject, path, v);
   };
-  const trySetEnviromentVariableInteger = (
+  const trySetEnvironmentVariableInteger = (
     env_suffix: string,
     path: string
   ) => {
@@ -295,31 +227,40 @@ export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
   // TODO a mechanism that perhaps _parses_ env names - and works out the path itself..
   // (i.e. replace _ with . and capitalise! but better)
 
-  trySetEnviromentVariableString("SESSION_SECRET", "session.secret");
-  trySetEnviromentVariableString("SESSION_SALT", "session.salt");
-  trySetEnviromentVariableString(
+  trySetEnvironmentVariableString("SESSION_SECRET", "session.secret");
+  trySetEnvironmentVariableString("SESSION_SALT", "session.salt");
+  trySetEnvironmentVariableString(
     "AWS_SIGNING_ACCESS_KEY_ID",
     "aws.signingAccessKeyId"
   );
-  trySetEnviromentVariableString(
+  trySetEnvironmentVariableString(
     "AWS_SIGNING_SECRET_ACCESS_KEY",
     "aws.signingSecretAccessKey"
   );
-  trySetEnviromentVariableString("AWS_TEMP_BUCKET", "aws.tempBucket");
-  trySetEnviromentVariableString(
+  trySetEnvironmentVariableString("AWS_TEMP_BUCKET", "aws.tempBucket");
+  trySetEnvironmentVariableString(
     "CLOUDFLARE_SIGNING_ACCESS_KEY_ID",
     "cloudflare.signingAccessKeyId"
   );
-  trySetEnviromentVariableString(
+  trySetEnvironmentVariableString(
     "CLOUDFLARE_SIGNING_SECRET_ACCESS_KEY",
     "cloudflare.signingSecretAccessKey"
   );
-  trySetEnviromentVariableString("DEPLOYED_URL", "deployedUrl");
+  trySetEnvironmentVariableString("DEPLOYED_URL", "deployedUrl");
 
-  trySetEnviromentVariableInteger("PORT", "port");
+  trySetEnvironmentVariableInteger("PORT", "port");
+  trySetEnvironmentVariableString("HOST", "host");
 
-  // perform validation on the final config object
-  configZodDefinition.strict().parse(configObject);
+  trySetEnvironmentVariableString("LOGGER_LEVEL", "logger.level");
 
-  return configObject;
+  trySetEnvironmentVariableString("MAILER_OPTIONS", "mailer.options");
+  trySetEnvironmentVariableString("MAILER_DEFAULTS", "mailer.defaults");
+  trySetEnvironmentVariableString("MAILER_MODE", "mailer.mode");
+
+  trySetEnvironmentVariableInteger("HTSGET_MANIFEST_TTL", "htsget.manifestTtl");
+  trySetEnvironmentVariableString("HTSGET_URL", "htsget.url");
+
+  // perform validation on the final config object and return it transformed
+  // (the transform will do type coercion and setting defaults)
+  return configZodDefinition.strict().parse(configObject);
 }
