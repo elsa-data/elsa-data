@@ -1,4 +1,4 @@
-import { Issuer } from "openid-client";
+import { BaseClient, Issuer } from "openid-client";
 import { writeFile } from "fs/promises";
 import * as temp from "temp";
 import { ElsaSettings } from "./config/elsa-settings";
@@ -13,7 +13,6 @@ export async function bootstrapSettings(
   // constructed/discovered etc.
   // Settings might involve writing a cert file to disk and setting a corresponding env variable.
   // Settings might involve doing OIDC discovery and then using the returned value
-  const issuer = await Issuer.discover(config.oidc?.issuerUrl!);
 
   const rootCa: string | undefined = config.edgeDb?.tlsRootCa;
 
@@ -41,10 +40,12 @@ export async function bootstrapSettings(
 
   // we are prepared to default this to localhost
   let deployedUrl = `http://localhost:${config.port}`;
+  let isLocalhost = true;
 
   // but only if we are in dev and it is not set
   if (_.has(config, "deployedUrl")) {
     deployedUrl = _.get(config, "deployedUrl")!;
+    isLocalhost = false;
     if (!deployedUrl.startsWith("https://"))
       throw new Error("Deployed URL setting must be using HTTPS");
     if (deployedUrl.endsWith("/"))
@@ -53,6 +54,17 @@ export async function bootstrapSettings(
     if (!isDevelopment)
       throw new Error(
         "Only development launches can default to the use of localhost"
+      );
+  }
+
+  let issuer: Issuer | undefined = undefined;
+
+  if (_.has(config, "oidc")) {
+    issuer = await Issuer.discover(config.oidc?.issuerUrl!);
+  } else {
+    if (!isDevelopment || !isLocalhost)
+      throw new Error(
+        "Only localhost development launches can exist without setting up an OIDC issuer"
       );
   }
 
@@ -98,7 +110,9 @@ export async function bootstrapSettings(
     },
     oidcClientId: _.get(config, "oidc.clientId")!,
     oidcClientSecret: _.get(config, "oidc.clientSecret")!,
-    oidcIssuer: issuer,
+    // NOTE this can be undefined for dev localhost - in which case any OIDC code paths will fail
+    // but we expect that
+    oidcIssuer: issuer!,
     htsget: _.get(config, "htsget.url")
       ? {
           maxAge: _.get(config, "htsget.maxAge"),
