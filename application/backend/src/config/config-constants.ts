@@ -117,23 +117,27 @@ export const configZodDefinition = z.object({
         ),
     })
   ),
-  logger: z.object({
-    level: z
-      .string()
-      .describe(
-        "The logging level as per Pino (all the standard level strings + silent)"
-      ),
-    transportTargets: z
-      .array(
-        z
-          .object({
-            target: z.string(),
-          })
-          .passthrough()
-      )
-      .default([])
-      .describe("An array of Pino logger transport targets configurations"),
-  }),
+  logger: z
+    .object({
+      level: z
+        .string()
+        .describe(
+          "The logging level as per Pino (all the standard level strings + silent)"
+        ),
+      transportTargets: z
+        .array(
+          z
+            .object({
+              target: z.string(),
+            })
+            .passthrough()
+        )
+        .describe("An array of Pino logger transport targets configurations"),
+    })
+    .default({
+      level: "debug",
+      transportTargets: [],
+    }),
   ontoFhirUrl: z.optional(z.string()),
   // all production deployments will require this to be set - though the logic for this check is elsewhere
   deployedUrl: z.optional(
@@ -204,35 +208,37 @@ export const configZodDefinition = z.object({
   // TBD - flesh out this into different types based on DAC type
   // need to add in for example REMS botUser and botKey
   dacs: z.array(z.any()).default([]),
-  mailer: z.object({
-    mode: z
-      .enum(["None", "SES", "SMTP"])
-      .default("None")
-      .describe(
-        'Set the mode of the mail server, either "None", "SES" or "SMTP".' +
-          '"None" will not start the mail server, "SES" will use the SES API directly, and ' +
-          '"SMTP" will configure the server manually using the options below.'
-      ),
-    maxConnections: z
-      .optional(z.number().positive().int())
-      .describe("Optional max connections to use with SES"),
-    sendingRate: z
-      .optional(z.number().positive().int())
-      .describe("Optional number of messages to send when using SES"),
-    options: z
-      .optional(z.any())
-      .describe(
-        'Set this when using the "SMTP" mode to manually configuring the SMTP server. ' +
-          "These are passed to the nodemailer createTransport function using the options property: " +
-          "https://nodemailer.com/smtp/#general-options"
-      ),
-    defaults: z
-      .optional(z.any())
-      .describe(
-        "Set defaults that get merged into every message object. " +
-          "These are passed directly to the nodemailer createTransport."
-      ),
-  }),
+  // if present, a mailer is being configured - if not present, then the mailer does not start
+  mailer: z.optional(
+    z.object({
+      mode: z
+        .enum(["SES", "SMTP"])
+        .describe(
+          'Set the mode of the mail server, either "SES" or "SMTP".' +
+            '"SES" will use the SES API directly, and ' +
+            '"SMTP" will configure the server manually using the options below.'
+        ),
+      maxConnections: z
+        .optional(z.number().positive().int())
+        .describe("Optional max connections to use with SES"),
+      sendingRate: z
+        .optional(z.number().positive().int())
+        .describe("Optional number of messages to send when using SES"),
+      options: z
+        .optional(z.any())
+        .describe(
+          'Set this when using the "SMTP" mode to manually configuring the SMTP server. ' +
+            "These are passed to the nodemailer createTransport function using the options property: " +
+            "https://nodemailer.com/smtp/#general-options"
+        ),
+      defaults: z
+        .optional(z.any())
+        .describe(
+          "Set defaults that get merged into every message object. " +
+            "These are passed directly to the nodemailer createTransport."
+        ),
+    })
+  ),
   devTesting: z.optional(
     z.object({
       allowTestUsers: z
