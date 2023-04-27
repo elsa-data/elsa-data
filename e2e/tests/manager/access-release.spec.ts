@@ -10,10 +10,9 @@ test("Download AWS manifest ZIP", async ({ page }) => {
   await page.locator(`#button-view-${RELEASE_KEY}`).click();
   await page.getByText("Object Signing").click();
 
-  const [download] = await Promise.all([
-    page.waitForEvent("download"), // Wait for the download to start
-    await page.getByText("Download Zip").click(), // Click on the link that initiates the download
-  ]);
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByText("Download Zip").click();
+  const download = await downloadPromise;
 
   expect(download.suggestedFilename()).toBe(`manifest-${RELEASE_KEY}.zip`);
 });
