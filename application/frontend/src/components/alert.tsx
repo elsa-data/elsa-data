@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { Transition } from "@headlessui/react";
 
 export type AlertProps = {
@@ -9,6 +9,16 @@ export type AlertProps = {
  * An alert element.
  */
 export const Alert = ({ description }: AlertProps): JSX.Element => {
+  const alertRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    alertRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+  }, [alertRef]);
+
   const [dismissed, setDismissed] = useState(false);
 
   return (
@@ -21,6 +31,7 @@ export const Alert = ({ description }: AlertProps): JSX.Element => {
       leave="transition-opacity duration-150"
       leaveFrom="opacity-100"
       leaveTo="opacity-0"
+      ref={alertRef}
     >
       <div>
         <svg
