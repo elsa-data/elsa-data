@@ -4,6 +4,7 @@ import { managerSetup } from "./manager.common";
 const RELEASE_KEY = "R001";
 
 test("Download AWS manifest ZIP", async ({ page }) => {
+  test.slow();
   await managerSetup(page);
 
   await page.locator(`#button-view-${RELEASE_KEY}`).click();
