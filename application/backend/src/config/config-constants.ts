@@ -5,6 +5,60 @@ export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
 
 type Sensitive = string;
 
+const DacREMS = z.object({
+  type: z.literal("rems"),
+  id: z.string(),
+  description: z.string(),
+  url: z.string(),
+  botUser: z.string(),
+  botKey: z.string().brand<Sensitive>(),
+});
+
+const DacAustralianGenomicsRedcap = z.object({
+  type: z.literal("australian-genomics-redcap"),
+  id: z.string(),
+  description: z.string(),
+  username: z.string(),
+  password: z.string().brand<Sensitive>(),
+});
+
+const DacManual = z.object({
+  type: z.literal("manual"),
+  id: z.literal("manual"),
+});
+
+const MailerSES = z.object({
+  mode: z.literal("SES"),
+  maxConnections: z
+    .optional(z.number().positive().int())
+    .describe("Optional max connections to use with SES"),
+  sendingRate: z
+    .optional(z.number().positive().int())
+    .describe("Optional number of messages to send when using SES"),
+  defaults: z
+    .optional(z.any())
+    .describe(
+      "Set defaults that get merged into every message object. " +
+        "These are passed directly to the nodemailer createTransport."
+    ),
+});
+
+const MailerSMTP = z.object({
+  mode: z.literal("SMTP"),
+  options: z
+    .any()
+    .describe(
+      "These are passed to the nodemailer createTransport function using the options property: " +
+        "https://nodemailer.com/smtp/#general-options"
+    ),
+  defaults: z
+    .optional(z.any())
+    .describe(
+      "Set defaults that get merged into every message object. " +
+        "These are passed directly to the nodemailer createTransport."
+    ),
+});
+
 /**
  * The master schema definition for our configuration objects (i.e. JSON).
  */
@@ -154,14 +208,17 @@ export const configZodDefinition = z.object({
     .string()
     .default("R")
     .describe("The prefix appended on the releaseKey before the count number"),
-  host: z.string().ip().default("0.0.0.0").describe("The host to bind"),
+  host: z
+    .string()
+    .ip()
+    .default("0.0.0.0")
+    .describe("The host interface to bind to"),
   port: z.coerce
     .number()
     .positive()
     .int()
     .default(3000)
-    .describe("The port to bind"),
-  // TBD
+    .describe("The port to bind to"),
   datasets: z
     .array(
       z.object({
@@ -205,40 +262,17 @@ export const configZodDefinition = z.object({
     .describe(
       "A collection of users with super administration rights i.e. the ability to alter other user rights"
     ),
-  // TBD - flesh out this into different types based on DAC type
-  // need to add in for example REMS botUser and botKey
-  dacs: z.array(z.any()).default([]),
-  // if present, a mailer is being configured - if not present, then the mailer does not start
-  mailer: z.optional(
-    z.object({
-      mode: z
-        .enum(["SES", "SMTP"])
-        .describe(
-          'Set the mode of the mail server, either "SES" or "SMTP".' +
-            '"SES" will use the SES API directly, and ' +
-            '"SMTP" will configure the server manually using the options below.'
-        ),
-      maxConnections: z
-        .optional(z.number().positive().int())
-        .describe("Optional max connections to use with SES"),
-      sendingRate: z
-        .optional(z.number().positive().int())
-        .describe("Optional number of messages to send when using SES"),
-      options: z
-        .optional(z.any())
-        .describe(
-          'Set this when using the "SMTP" mode to manually configuring the SMTP server. ' +
-            "These are passed to the nodemailer createTransport function using the options property: " +
-            "https://nodemailer.com/smtp/#general-options"
-        ),
-      defaults: z
-        .optional(z.any())
-        .describe(
-          "Set defaults that get merged into every message object. " +
-            "These are passed directly to the nodemailer createTransport."
-        ),
-    })
-  ),
+  dacs: z
+    .array(
+      z.discriminatedUnion("type", [
+        DacREMS,
+        DacAustralianGenomicsRedcap,
+        DacManual,
+      ])
+    )
+    .default([]),
+  // if present, a mailer is being configured and if not present, then the mailer does not start
+  mailer: z.optional(z.discriminatedUnion("mode", [MailerSES, MailerSMTP])),
   devTesting: z.optional(
     z.object({
       allowTestUsers: z
