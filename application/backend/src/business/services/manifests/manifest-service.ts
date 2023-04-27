@@ -154,7 +154,7 @@ export class ManifestService {
       user,
       releaseKey,
       "E",
-      "Created TSV - Header fields: " + header.join(", "),
+      "Created TSV",
       now
     );
 
@@ -165,7 +165,8 @@ export class ManifestService {
         newAuditEventId,
         0,
         now,
-        new Date()
+        new Date(),
+        { header }
       );
       return tsv;
     } catch (e) {
@@ -177,7 +178,10 @@ export class ManifestService {
         8,
         now,
         new Date(),
-        { error: errorString }
+        {
+          error: errorString,
+          header,
+        }
       );
 
       throw e;
