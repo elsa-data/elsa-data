@@ -26,12 +26,10 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
     key: string,
     auditId: string
   ): Promise<string> {
-    await this.awsEnabledService.enabledGuard();
+    assert(this.settings.aws);
 
     const s3Client = new S3Client({});
     const awsRegion = await s3Client.config.region();
-
-    assert(this.settings.aws);
 
     // we use the S3 client credentials as a backup - but we actually will prefer to use the static credentials given to
     // us via settings (this is what allows us to extend the share out to 7 days - otherwise we are bound by the lifespan
