@@ -5,12 +5,14 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { GS_URI } from "./insert-test-data-gs";
+import { TEST_SUBJECT_3 } from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
 
 export async function insertRelease5() {
   return await e
     .insert(e.release.Release, {
+      lastUpdatedSubjectId: TEST_SUBJECT_3,
       applicationDacTitle: "A Working Release of Data on Google Storage",
       applicationDacDetails:
         "A release that has all working/matching files in Google Storage - so can do actual sharing",

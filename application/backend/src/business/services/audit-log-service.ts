@@ -137,7 +137,10 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, { releaseKey: releaseKey });
+    await touchRelease.run(executor, {
+      releaseKey: releaseKey,
+      subjectId: user.subjectId,
+    });
 
     return auditEvent.id;
   }

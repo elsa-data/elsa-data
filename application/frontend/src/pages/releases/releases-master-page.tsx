@@ -17,8 +17,8 @@ import {
   formatFromNowTime,
   Millisecond,
 } from "../../helpers/datetime-helper";
-
-const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
+import { useCookies } from "react-cookie";
+import { USER_SUBJECT_COOKIE_NAME } from "../../../../../../../../../mnt/Shared/Documents/elsa-data/application/common/elsa-constants";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -28,6 +28,9 @@ const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
  */
 export const ReleasesMasterPage: React.FC = () => {
   const REFRESH_JOB_STATUS_MS = 5000;
+  const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
+
+  const [cookies] = useCookies<any>([USER_SUBJECT_COOKIE_NAME]);
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
@@ -84,11 +87,14 @@ export const ReleasesMasterPage: React.FC = () => {
   const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as
     | string
     | undefined;
+  const lastUpdatedSubjectId = releaseQuery.data?.lastUpdatedUserSubjectId;
+
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
         {releaseQuery.isSuccess &&
-          differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME && (
+          differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&
+          lastUpdatedSubjectId !== cookies[USER_SUBJECT_COOKIE_NAME] && (
             <Alert
               description={`This release was last edited ${formatFromNowTime(
                 lastUpdated

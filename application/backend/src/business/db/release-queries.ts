@@ -1,17 +1,20 @@
 import e from "../../../dbschema/edgeql-js";
 
 /**
- * Set the `lastUpdated` field of a release (specified by a `releaseKey`) to the
- * current time.
+ * Set the `lastUpdated` fields of a release (specified by a `releaseKey`).
  */
 export const touchRelease = e.params(
   {
     releaseKey: e.str,
+    subjectId: e.str,
   },
   (params) =>
     e.update(e.release.Release, (r) => ({
       filter: e.op(r.releaseKey, "=", params.releaseKey),
-      set: { lastUpdated: e.datetime_current() },
+      set: {
+        lastUpdated: e.datetime_current(),
+        lastUpdatedSubjectId: params.subjectId,
+      },
     }))
 );
 

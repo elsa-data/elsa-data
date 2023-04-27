@@ -1,4 +1,3 @@
-import { Duration } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
@@ -8,7 +7,6 @@ import {
 } from "./test-data-helpers";
 import { TENG_URI } from "./insert-test-data-10g";
 import { TENC_URI } from "./insert-test-data-10c";
-import { random } from "lodash";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
@@ -18,7 +16,6 @@ import {
 } from "./insert-test-data-10f-simpsons";
 import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
-import * as MOCK_JSON from "./mock-json.json";
 import {
   TEST_SUBJECT_2,
   TEST_SUBJECT_2_DISPLAY,
@@ -35,6 +32,7 @@ export async function insertRelease1(dc: DependencyContainer) {
 
   return await e
     .insert(e.release.Release, {
+      lastUpdatedSubjectId: TEST_SUBJECT_3,
       applicationDacTitle: "A Study of Lots of Test Data",
       applicationDacIdentifier: makeIdentifierTuple(
         "https://rems.australiangenomics.org.au",
