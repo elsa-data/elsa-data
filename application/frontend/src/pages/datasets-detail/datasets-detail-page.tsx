@@ -28,7 +28,10 @@ export const DatasetsDetailPage: React.FC = () => {
 
   const { datasetUri: encodedDatasetUri } =
     useParams<DatasetsSpecificPageParams>();
-  const datasetUri = decodeURIComponent(encodedDatasetUri ?? "");
+  const datasetUri = decodeURIComponent(encodedDatasetUri ?? "").replaceAll(
+    "[dot]",
+    "."
+  );
 
   const datasetMutate = trpc.datasetRouter.updateDataset.useMutation({
     onSettled: () => {
@@ -76,7 +79,7 @@ export const DatasetsDetailPage: React.FC = () => {
                   "Artifact Count": data.totalArtifactCount,
                   "Artifact Filetypes":
                     fileTypes != ""
-                      ? fileTypes.trim().replaceAll(" ", "/")
+                      ? fileTypes.trim().replaceAll(" ", ", ")
                       : "-",
                   "Artifact Size": fileSize(data.totalArtifactSizeBytes ?? 0),
                   Configuration: configurationChip(data.isInConfig),

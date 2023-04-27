@@ -105,18 +105,18 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     "hover:border-purple-500"
                   )}
                 </li>
-                {uiAllowed.has(ALLOWED_DATASET_UPDATE) &&
-                  uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW) && (
-                    <li className="my-2 mr-6 md:my-0">
-                      {navLink(
-                        "/datasets",
-                        "Datasets",
-                        "text-green-500",
-                        "border-green-500",
-                        "hover:border-green-500"
-                      )}
-                    </li>
-                  )}
+                {(uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
+                  uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)) && (
+                  <li className="my-2 mr-6 md:my-0">
+                    {navLink(
+                      "/datasets",
+                      "Datasets",
+                      "text-green-500",
+                      "border-green-500",
+                      "hover:border-green-500"
+                    )}
+                  </li>
+                )}
                 {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
                   <li className="my-2 mr-6 md:my-0">
                     {navLink(
