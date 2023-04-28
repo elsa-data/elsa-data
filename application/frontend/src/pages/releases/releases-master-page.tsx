@@ -18,7 +18,7 @@ import {
   Millisecond,
 } from "../../helpers/datetime-helper";
 import { useCookies } from "react-cookie";
-import { USER_SUBJECT_COOKIE_NAME } from "../../../../../../../../../mnt/Shared/Documents/elsa-data/application/common/elsa-constants";
+import { USER_SUBJECT_COOKIE_NAME } from "@umccr/elsa-constants";
 
 /**
  * The master page layout performing actions/viewing data for a single
