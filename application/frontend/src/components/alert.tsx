@@ -1,8 +1,46 @@
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Transition } from "@headlessui/react";
+import classNames from "classnames";
 
 export type AlertProps = {
   description: ReactNode;
+};
+
+/**
+ * Check if the referenced element is in view.
+ * @param ref
+ */
+export const useIsInView = (ref: RefObject<HTMLElement>): boolean => {
+  const [isInView, setIsInView] = useState(false);
+
+  const onScroll = () => {
+    if (!ref.current) {
+      setIsInView(false);
+      return;
+    }
+    const top = ref.current.getBoundingClientRect().top;
+
+    // Set only once
+    if (!isInView) {
+      setIsInView(top + 100 >= 0 && top - 100 <= window.innerHeight);
+    }
+  };
+
+  // Call once at the start
+  useEffect(onScroll, []);
+
+  useEffect(() => {
+    document.addEventListener("scroll", onScroll, true);
+    return () => document.removeEventListener("scroll", onScroll, true);
+  }, []);
+
+  return isInView;
 };
 
 /**
@@ -10,6 +48,7 @@ export type AlertProps = {
  */
 export const Alert = ({ description }: AlertProps): JSX.Element => {
   const alertRef = useRef<HTMLDivElement>(null);
+  const isInView = useIsInView(alertRef);
 
   useEffect(() => {
     alertRef.current?.scrollIntoView({
@@ -23,7 +62,9 @@ export const Alert = ({ description }: AlertProps): JSX.Element => {
 
   return (
     <Transition
-      className="alert alert-warning shadow-lg"
+      className={classNames("alert alert-warning shadow-lg", {
+        "animate-pop": isInView,
+      })}
       show={!dismissed}
       enter="transition-opacity duration-75"
       enterFrom="opacity-0"
