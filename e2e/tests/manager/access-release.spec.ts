@@ -36,7 +36,7 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
       flag: "r",
     });
     expect(manifestData).toMatch(
-      /https:\/\/umccr-10f-data-dev.s3.ap-southeast-2.amazonaws.com\//i
+      /https:\/\/umccr-10f-data-dev\.s3\.ap-southeast-2\.amazonaws\.com\//i
     );
   });
 });
