@@ -1,18 +1,20 @@
-import { Issuer } from "openid-client";
+import { BaseClient, Issuer } from "openid-client";
 import { writeFile } from "fs/promises";
 import * as temp from "temp";
 import { ElsaSettings } from "./config/elsa-settings";
 import _ from "lodash";
+import { ElsaConfiguration } from "./config/config-constants";
 
-export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
+export async function bootstrapSettings(
+  config: ElsaConfiguration
+): Promise<ElsaSettings> {
   // we now have our 'config' - which is the plain text values from all our configuration sources..
   // however our 'settings' are more than that - the settings involve things that need to be
   // constructed/discovered etc.
   // Settings might involve writing a cert file to disk and setting a corresponding env variable.
   // Settings might involve doing OIDC discovery and then using the returned value
-  const issuer = await Issuer.discover(config.get("oidc.issuerUrl")!);
 
-  const rootCa: string | undefined = config.get("edgeDb.tlsRootCa");
+  const rootCa: string | undefined = config.edgeDb?.tlsRootCa;
 
   if (rootCa) {
     // edge db requires a TLS connection - and so we need to construct our own
@@ -28,7 +30,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
     //);
     // console.log(rootCa);
 
-    await writeFile(rootCaLocation, rootCa);
+    await writeFile(rootCaLocation, rootCa.replaceAll("\\n", "\n"));
 
     process.env["EDGEDB_TLS_CA_FILE"] = rootCaLocation;
   }
@@ -37,11 +39,13 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
   const isDevelopment = process.env["NODE_ENV"] === "development";
 
   // we are prepared to default this to localhost
-  let deployedUrl = `http://localhost:${config.get("port")}`;
+  let deployedUrl = `http://localhost:${config.port}`;
+  let isLocalhost = true;
 
   // but only if we are in dev and it is not set
-  if (config.get("deployedUrl")) {
-    deployedUrl = config.get("deployedUrl");
+  if (_.has(config, "deployedUrl")) {
+    deployedUrl = _.get(config, "deployedUrl")!;
+    isLocalhost = false;
     if (!deployedUrl.startsWith("https://"))
       throw new Error("Deployed URL setting must be using HTTPS");
     if (deployedUrl.endsWith("/"))
@@ -53,7 +57,18 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       );
   }
 
-  let loggerTransportTargets: any[] = config.get("logger.transportTargets");
+  let issuer: Issuer | undefined = undefined;
+
+  if (_.has(config, "oidc")) {
+    issuer = await Issuer.discover(config.oidc?.issuerUrl!);
+  } else {
+    if (!isDevelopment || !isLocalhost)
+      throw new Error(
+        "Only localhost development launches can exist without setting up an OIDC issuer"
+      );
+  }
+
+  let loggerTransportTargets: any[] = _.get(config, "logger.transportTargets");
 
   // grab the targets from our config - but default to a sensible default that just logs to stdout
   // (if someone wants no logs they can set the level to silent)
@@ -64,65 +79,70 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
       },
     ];
 
-  const logLevel = config.get("logger.level");
+  const logLevel = config.logger.level;
 
   if (logLevel) loggerTransportTargets.forEach((l) => (l.level ??= logLevel));
 
   // TODO fix this logic once we have a few more AWS settings and know what is required
   const hasAws =
-    config.has("aws.signingAccessKeyId") ||
-    config.has("aws.signingSecretAccessKey") ||
-    config.has("aws.tempBucket");
+    config.aws?.signingAccessKeyId ||
+    config.aws?.signingSecretAccessKey ||
+    config.aws?.tempBucket;
   const hasAwsSigning =
-    config.has("aws.signingAccessKeyId") &&
-    config.has("aws.signingSecretAccessKey");
+    _.get(config, "aws.signingAccessKeyId") &&
+    _.get(config, "aws.signingSecretAccessKey");
   const hasCloudflare =
-    config.has("cloudflare.signingAccessKeyId") &&
-    config.has("cloudflare.signingAccessKeyId");
+    _.get(config, "cloudflare.signingAccessKeyId") &&
+    _.get(config, "cloudflare.signingAccessKeyId");
 
   return {
     deployedUrl: deployedUrl,
     // this might eventually come from config but for the moment with only AWS is static
     serviceDiscoveryNamespace: "elsa-data",
-    host: config.get("host"),
-    port: config.get("port"),
+    host: _.get(config, "host"),
+    port: _.get(config, "port"),
     mailer: {
-      mode: config.get("mailer.mode"),
-      maxConnections: config.get("mailer.maxConnections"),
-      sendingRate: config.get("mailer.sendingRate"),
-      options: config.get("mailer.options"),
-      defaults: config.get("mailer.defaults"),
+      mode: _.get(config, "mailer.mode"),
+      maxConnections: _.get(config, "mailer.maxConnections"),
+      sendingRate: _.get(config, "mailer.sendingRate"),
+      options: _.get(config, "mailer.options"),
+      defaults: _.get(config, "mailer.defaults"),
     },
-    oidcClientId: config.get("oidc.clientId")!,
-    oidcClientSecret: config.get("oidc.clientSecret")!,
-    oidcIssuer: issuer,
-    htsget: config.get("htsget.url")
+    oidcClientId: _.get(config, "oidc.clientId")!,
+    oidcClientSecret: _.get(config, "oidc.clientSecret")!,
+    // NOTE this can be undefined for dev localhost - in which case any OIDC code paths will fail
+    // but we expect that
+    oidcIssuer: issuer!,
+    htsget: _.get(config, "htsget.url")
       ? {
-          maxAge: config.get("htsget.maxAge"),
-          url: new URL(config.get("htsget.url")),
+          maxAge: _.get(config, "htsget.maxAge"),
+          url: new URL(_.get(config, "htsget.url")),
         }
       : undefined,
     aws: hasAws
       ? {
           signingAccessKeyId: hasAwsSigning
-            ? config.get("aws.signingAccessKeyId")
+            ? _.get(config, "aws.signingAccessKeyId")
             : undefined,
           signingSecretAccessKey: hasAwsSigning
-            ? config.get("aws.signingSecretAccessKey")
+            ? _.get(config, "aws.signingSecretAccessKey")
             : undefined,
-          tempBucket: config.get("aws.tempBucket"),
+          tempBucket: _.get(config, "aws.tempBucket"),
         }
       : undefined,
     cloudflare: hasCloudflare
       ? {
-          signingAccessKeyId: config.get("cloudflare.signingAccessKeyId"),
-          signingSecretAccessKey: config.get("cloudflare.signingAccessKeyId"),
+          signingAccessKeyId: _.get(config, "cloudflare.signingAccessKeyId"),
+          signingSecretAccessKey: _.get(
+            config,
+            "cloudflare.signingAccessKeyId"
+          ),
         }
       : undefined,
-    sessionSecret: config.get("session.secret")!,
-    sessionSalt: config.get("session.salt")!,
-    remsBotKey: config.get("rems.botKey")!,
-    remsBotUser: config.get("rems.botUser")!,
+    sessionSecret: _.get(config, "session.secret")!,
+    sessionSalt: _.get(config, "session.salt")!,
+    remsBotKey: _.get(config, "rems.botKey")!,
+    remsBotUser: _.get(config, "rems.botUser")!,
     remsUrl: "https://hgpp-rems.dev.umccr.org",
     logger: {
       name: "elsa-data",
@@ -131,33 +151,33 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
         targets: loggerTransportTargets,
       },
     },
-    ontoFhirUrl: config.get("ontoFhirUrl"),
-    maxmindDbAssetPath: config.get("maxmindDbAssetPath"),
-    releaseKeyPrefix: config.get("releaseKeyPrefix"),
+    ontoFhirUrl: _.get(config, "ontoFhirUrl")!,
+    maxmindDbAssetPath: _.get(config, "maxmindDbAssetPath")!,
+    releaseKeyPrefix: _.get(config, "releaseKeyPrefix"),
     mondoSystem: {
-      uri: config.get("mondoSystem.uri"),
-      oid: config.get("mondoSystem.oid"),
+      uri: "http://purl.obolibrary.org/obo/mondo.owl",
+      oid: "2.16.840.1.113883.3.9216",
     },
     hgncGenesSystem: {
-      uri: config.get("hgncGenesSystem.uri"),
-      oid: config.get("hgncGenesSystem.oid"),
+      uri: "http://www.genenames.org",
+      oid: "2.16.840.1.113883.6.281",
     },
     hpoSystem: {
-      uri: config.get("hpoSystem.uri"),
-      nonPreferredUri: config.get("hpoSystem.nonPreferredUri"),
+      uri: "http://human-phenotype-ontology.org",
+      nonPreferredUri: "http://purl.obolibrary.org/obo/hp.owl",
     },
-    isoCountrySystemUri: config.get("isoCountrySystemUri"),
+    isoCountrySystemUri: "urn:iso:std:iso:3166",
     snomedSystem: {
-      uri: config.get("snomedSystem.uri"),
-      oid: config.get("snomedSystem.oid"),
+      uri: "http://snomed.info/sct",
+      oid: "2.16.840.1.113883.6.96",
     },
     rateLimit: {
       // for the moment we set up the rate limiting across the entire Elsa Data surface
       // (includes APIs and HTML/CSS fetches etc)
       global: true,
-      max: config.get("rateLimit.max"),
-      timeWindow: config.get("rateLimit.timeWindow"),
-      allowList: config.get("rateLimit.allowList"),
+      max: _.get(config, "rateLimit.max"),
+      timeWindow: _.get(config, "rateLimit.timeWindow"),
+      allowList: _.get(config, "rateLimit.allowList"),
     },
     devTesting: isDevelopment
       ? {
@@ -167,7 +187,7 @@ export async function bootstrapSettings(config: any): Promise<ElsaSettings> {
         }
       : undefined,
     // these are our special arrays that can be constructed with + and - definitions
-    datasets: (config.get("datasets") as any[]) ?? [],
-    superAdmins: (config.get("superAdmins") as any[]) ?? [],
+    datasets: (config.datasets as any[]) ?? [],
+    superAdmins: (config.superAdmins as any[]) ?? [],
   };
 }

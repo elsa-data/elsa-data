@@ -65,16 +65,19 @@ export async function getFromEnv(): Promise<{
       `There must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
     );
 
-  const convictConfig = await getMetaConfig(metaSources);
+  const config = await getMetaConfig(metaSources);
 
   return {
     sources: metaSources,
-    settings: await bootstrapSettings(convictConfig),
-    config: convictConfig.getProperties(),
+    settings: await bootstrapSettings(config),
+    config: config,
     // waiting for this and then we can just return the redacted JSON direct
     // https://github.com/mozilla/node-convict/pull/407
     // we are returning the redacted config just basically so we can do a log dump of its content
     // which we can't do here because we have a chicken/egg problem of constructing the logger first
-    redactedConfig: JSON.parse(convictConfig.toString()),
+
+    // TBD now we have removed convict - this redaction does not automatically happen
+    // need to write a serializer that takes into account the Sensitive zod
+    redactedConfig: JSON.parse(JSON.stringify(config)),
   };
 }
