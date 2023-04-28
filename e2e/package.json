@@ -13,5 +13,8 @@
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.28.0"
+  },
+  "dependencies": {
+    "node-7z": "^3.0.0"
   }
 }

@@ -111,6 +111,8 @@ jobs:
         working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit == 'true'
 
+      - uses: edgarrc/action-7z@v1
+
       - name: Setup E2E database state
         run: npm run test:blank
         working-directory: application/backend
