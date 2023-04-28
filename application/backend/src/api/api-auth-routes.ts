@@ -24,6 +24,9 @@ import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
+  if (!settings.oidcIssuer)
+    throw new Error("Cannot establish OIDC login without OIDC settings");
+
   return new settings.oidcIssuer.Client({
     client_id: settings.oidcClientId,
     client_secret: settings.oidcClientSecret,

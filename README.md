@@ -193,32 +193,3 @@ npm run backend
 Backend code is automatically monitored and will restart on any code changes.
 
 Browse to `localhost:3000`.
-
-## Meta configuration
-
-Elsa Data uses two environment variables to set up a _meta_ configuration
-system. The meta systems job is to specify where the real configuration data
-can be sourced and the order in which it should be sourced.
-
-### `ELSA_DATA_META_CONFIG_FOLDERS`
-
-A OS dependent (delimiter `;` or `:`) separated list of folders in which configuration files can be sourced.
-Folder names can be absolute paths or relative to the starting directory of
-the backend (i.e. the folder containing the backend `package.json`).
-
-An example of this for Mac might be
-
-`/Users/person/configs:./config`
-
-### `ELSA_DATA_META_CONFIG_SOURCES`
-
-A small mini language listing providers of configuration - for the moment
-see the actual source in `src/config/meta`. More instructions to follow.
-
-An example of this though is
-
-`file('base') file('dev-common') file('dev-localhost') file('datasets') osx-keychain('elsa-data')`
-
-## Links
-
-https://tkdodo.eu/blog/react-query-fa-qs

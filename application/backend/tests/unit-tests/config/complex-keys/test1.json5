@@ -1,0 +1,14 @@
+{
+  "aws.tempBucket": "replaced temp bucket",
+  superAdmins: [
+    {
+      sub: "http://test1",
+    },
+    {
+      sub: "http://test2",
+    },
+    {
+      sub: "http://test3",
+    },
+  ],
+}
