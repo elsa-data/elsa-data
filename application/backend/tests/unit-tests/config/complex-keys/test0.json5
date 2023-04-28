@@ -1,0 +1,6 @@
+{
+  aws: {
+    signingAccessKeyId: "signing string",
+    tempBucket: "a bucket",
+  },
+}

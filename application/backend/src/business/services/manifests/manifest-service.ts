@@ -104,12 +104,12 @@ export class ManifestService {
     );
   }
 
-  public async getArchivedActiveTsvManifest(
+  public async getActiveTsvManifestAsString(
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
     header: typeof ObjectStoreRecordKey[number][]
-  ): Promise<archiver.Archiver | null> {
+  ): Promise<string | null> {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
@@ -122,7 +122,7 @@ export class ManifestService {
 
     if (!isActivated) throw new Error("needs to be activated");
 
-    const createPresignedZip = async (auditId: string) => {
+    const createTsv = async (auditId: string) => {
       const manifest = await this.getActiveTsvManifest(
         presignedUrlService,
         releaseKey,
@@ -145,22 +145,7 @@ export class ManifestService {
       });
 
       const readableStream = Readable.from(manifest);
-      const buf = await streamConsumers.text(readableStream.pipe(stringifier));
-
-      const password = await this.releaseService.getPassword(user, releaseKey);
-
-      // create archive and specify method of encryption and password
-      let archive = archiver.create("zip-encrypted", {
-        zlib: { level: 8 },
-        encryptionMethod: "aes256",
-        password: password,
-      } as ArchiverOptions);
-
-      archive.append(buf, { name: "manifest.tsv" });
-
-      await archive.finalize();
-
-      return archive;
+      return await streamConsumers.text(readableStream.pipe(stringifier));
     };
 
     const now = new Date();
@@ -169,20 +154,21 @@ export class ManifestService {
       user,
       releaseKey,
       "E",
-      "Created Presigned Zip",
+      "Created TSV",
       now
     );
 
     try {
-      const archive = createPresignedZip(newAuditEventId);
+      const tsv = createTsv(newAuditEventId);
       await this.auditLogService.completeReleaseAuditEvent(
         this.edgeDbClient,
         newAuditEventId,
         0,
         now,
-        new Date()
+        new Date(),
+        { header }
       );
-      return archive;
+      return tsv;
     } catch (e) {
       const errorString = e instanceof Error ? e.message : String(e);
 
@@ -192,11 +178,46 @@ export class ManifestService {
         8,
         now,
         new Date(),
-        { error: errorString }
+        {
+          error: errorString,
+          header,
+        }
       );
 
       throw e;
     }
+  }
+
+  public async getActiveTsvManifestAsArchive(
+    presignedUrlService: PresignedUrlService,
+    user: AuthenticatedUser,
+    releaseKey: string,
+    header: typeof ObjectStoreRecordKey[number][]
+  ): Promise<archiver.Archiver | null> {
+    const buf = await this.getActiveTsvManifestAsString(
+      presignedUrlService,
+      user,
+      releaseKey,
+      header
+    );
+    if (buf === null) {
+      return buf;
+    }
+
+    const password = await this.releaseService.getPassword(user, releaseKey);
+
+    // create archive and specify method of encryption and password
+    let archive = archiver.create("zip-encrypted", {
+      zlib: { level: 8 },
+      encryptionMethod: "aes256",
+      password: password,
+    } as ArchiverOptions);
+
+    archive.append(buf, { name: "manifest.tsv" });
+
+    await archive.finalize();
+
+    return archive;
   }
 
   public async getActiveBucketKeyManifest(

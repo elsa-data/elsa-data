@@ -4,7 +4,7 @@ on: push
 
 jobs:
   test:
-    timeout-minutes: 30
+    timeout-minutes: 15
     runs-on: ubuntu-latest
 
     # run an EdgeDb in the background that will be connected to from our app

@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { Static, Type, TUnion, TLiteral } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
 /**
@@ -39,13 +39,14 @@ export const ObjectStoreRecordKey = [
   "md5",
 ] as const;
 
-export const FileRecordHeader = Type.Array(
-  Type.Union(
-    ObjectStoreRecordKey.map((header: typeof ObjectStoreRecordKey[number]) =>
-      Type.Literal(header)
-    )
-  )
-);
+const ObjectStoreRecordKeySchema: TLiteral<
+  typeof ObjectStoreRecordKey[number]
+>[] = ObjectStoreRecordKey.map((header) => Type.Literal(header));
+
+const FileRecordHeaderElementSchema: TUnion<typeof ObjectStoreRecordKeySchema> =
+  Type.Union(ObjectStoreRecordKeySchema);
+
+export const FileRecordHeader = Type.Array(FileRecordHeaderElementSchema);
 
 export const ReleasePresignRequestSchema = Type.Object({
   // id: Type.String(),

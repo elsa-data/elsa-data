@@ -1,60 +1,37 @@
-import convict from "convict";
 import { parseMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
 import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
-import {
-  configDefinition,
-  loggerTransportTargetsArray,
-} from "./config-constants";
+import { configZodDefinition, ElsaConfiguration } from "./config-constants";
 import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
 import { ProviderLinuxPass } from "./providers/provider-linux-pass";
+import jsonpath from "jsonpath";
+import _ from "lodash";
 
-convict.addFormat(loggerTransportTargetsArray);
-
-// an array of user records designated in the config for extra permissions etc
-convict.addFormat({
-  name: "array",
-  validate: function (items: any[], schema) {
-    if (!Array.isArray(items)) {
-      throw new Error("Must be of type Array");
-    }
-
-    for (const child of items) {
-      convict(schema.children).load(child).validate();
-    }
-  },
-});
-
-// a TLS artifact that we fetch and possibly save to disk for use in TLS connections
-convict.addFormat({
-  name: "tls",
-  validate(val: any, schema: convict.SchemaObj) {
-    if (val) {
-      if (!val.startsWith("-----BEGIN"))
-        throw new Error("TLS must start with ASCII armor -----BEGIN");
-    }
-  },
-  coerce: function (val) {
-    if (val) return val.replaceAll("\\n", "\n");
-    return val;
-  },
-});
+const env_prefix = "ELSA_DATA_CONFIG_";
 
 /**
- * Process the raw config JSON data - before it goes to convict - allowing us to have a feature
- * by which arrays can be grown or shrunk using a
- * "+key" or "-key" notation.
+ * Process/merge in a new configuration file - but with some special helper logic that allows array
+ * manipulation and JSONpath queries.
  *
- * @param rawConfigs the JSON config files as loaded directly from disk/store
+ * @param startingConfig the starting configuration that we are looking to apply array options to
+ * @param newConfig a new configuration that may or may not have special logic fields (at the top level)
  * @param arrayMarkers an array of "key names" that we want to enable this array functionality for (e.g. ["datasets", "admins"])
  */
-function handleConfigArraysBeforeConvict(
-  rawConfigs: any[],
+function mergeNewConfig(
+  startingConfig: any,
+  newConfig: any,
   arrayMarkers: string[]
-): { strippedConfigs: any[]; arrayProcessed: { [k: string]: any[] } } {
+): any {
+  // start with the intention of returning back exactly what we started with
+  // we will now mutate this
+  const returnConfig = _.cloneDeep(startingConfig);
+
+  // we don't want to accidentally refer to this so null it out
+  startingConfig = null;
+
   // we want to allow 'deletion' of config entries using a pretty loose logic where they can specify anything
-  // the looks like an id and we broadly search for it
+  // that looks like an id and we broadly search for it
   const idPresent = (possibleId: string, obj: any): boolean => {
     for (const [k, v] of Object.entries(obj)) {
       if (k === "uri" && v === possibleId) return true;
@@ -66,69 +43,101 @@ function handleConfigArraysBeforeConvict(
     return false;
   };
 
-  const strippedConfigs: any[] = [];
-  const arrayProcessed: { [k: string]: any[] } = {};
+  // our first step is we want to apply any of the "array modifier" keys we find in the new config
+  // these only are allowed as top-level keys
 
-  for (const rc of rawConfigs) {
-    // copy the raw config before we mutate
-    const newStrippedConfig = { ...rc };
+  for (const am of arrayMarkers) {
+    const addKey = `+${am}`;
+    const deleteKey = `-${am}`;
+    const replaceKey = am;
 
-    for (const am of arrayMarkers) {
-      // our starting point is always a blank array
-      if (!(am in arrayProcessed)) arrayProcessed[am] = [];
+    if (replaceKey in newConfig) {
+      // the presence of the key name directly means we are doing a straight "replace" - and hence can't be doing an add or delete
+      if (addKey in newConfig || deleteKey in newConfig) {
+        throw new Error(
+          `If a configuration has a key '${replaceKey}' to replace array content - it does not make any sense to also have a '${addKey}' or '${deleteKey}' key`
+        );
+      }
 
-      const addKey = `+${am}`;
-      const deleteKey = `-${am}`;
-      const replaceKey = am;
+      returnConfig[am] = newConfig[am];
 
-      if (replaceKey in newStrippedConfig) {
-        // the presence of the key name directly means we are doing a straight "replace" - and hence can't be doing an add or delete
-        if (addKey in newStrippedConfig || deleteKey in newStrippedConfig) {
-          throw new Error(
-            `If a configuration has a key '${replaceKey}' to replace array content - it does not make any sense to also have a '${addKey}' or '${deleteKey}' key`
+      delete newConfig[replaceKey];
+    } else {
+      // it may make sense to have BOTH a + and a - so we need to be cool with both appearing
+
+      if (addKey in newConfig) {
+        returnConfig[am].push(...newConfig[addKey]);
+
+        // strip out the +?? key as we have handled it and we don't want is handled by lodash merge
+        delete newConfig[addKey];
+      }
+
+      if (deleteKey in newConfig) {
+        for (const toDelete of newConfig[deleteKey]) {
+          const startLength = returnConfig[am].length;
+          returnConfig[am] = returnConfig[am].filter(
+            (v: any) => !idPresent(toDelete, v)
           );
-        }
-
-        arrayProcessed[am] = newStrippedConfig[am];
-
-        // this won't particularly matter - but set this to a nice safe [] for convict
-        newStrippedConfig[am] = [];
-      } else {
-        // it may make sense to have BOTH a + and a - so we need to be cool with both appearing
-
-        if (addKey in newStrippedConfig) {
-          arrayProcessed[am].push(...newStrippedConfig[addKey]);
-
-          // strip out the +?? key as we have handled it and we don't want to pass it on to convict (which won't understand it)
-          delete newStrippedConfig[addKey];
-        }
-
-        if (deleteKey in newStrippedConfig) {
-          for (const toDelete of newStrippedConfig[deleteKey]) {
-            const startLength = arrayProcessed[am].length;
-            arrayProcessed[am] = arrayProcessed[am].filter(
-              (v) => !idPresent(toDelete, v)
+          if (startLength === returnConfig[am].length) {
+            throw new Error(
+              `The configuration instruction ${deleteKey} of ${toDelete} did not do anything as no existing config had an entry with an id,uri or name of ${toDelete}`
             );
-            if (startLength === arrayProcessed[am].length) {
-              throw new Error(
-                `The configuration instruction ${deleteKey} of ${toDelete} did not do anything as no existing config had an entry with an id,uri or name of ${toDelete}`
-              );
-            }
           }
-
-          // strip out the -?? key as we have handled it and we don't want to pass it on to convict (which won't understand it)
-          delete newStrippedConfig[deleteKey];
         }
+
+        // strip out the -?? key as we have handled it and we don't want is handled by lodash merge
+        delete newConfig[deleteKey];
       }
     }
-
-    strippedConfigs.push(newStrippedConfig);
   }
 
-  return {
-    strippedConfigs: strippedConfigs,
-    arrayProcessed: arrayProcessed,
-  };
+  // our top-level keys can be complex JSON path expressions that resolve to a single value
+  // this lets us set password fields in arrays for instance
+  for (const [key, value] of Object.entries(newConfig)) {
+    // if the key is just regular alphanumeric then we can let it be handled normally
+    if (/^[A-Za-z0-9]*$/.test(key)) continue;
+
+    // find our what already exists according to this complex query
+    const matching = jsonpath.query(returnConfig, key);
+
+    // we do not want to use this mechanism for replacing multiple nodes
+    if (matching.length > 1)
+      throw new Error(
+        `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
+      );
+
+    if (matching.length === 0) {
+      // if the value is not already present - jsonpath apply can't really help us out because it only applies to existing objects
+      throw new Error(
+        `Configuration handling for complex key ->${key}<- can _currently_ only replace existing fields, not create them new - so you may need to add an empty field in an earlier configuration i.e a blank secret ""`
+      );
+    } else {
+      // if there are already values present matching this key - they cannot be objects or arrays
+      if (
+        !_.isString(matching[0]) &&
+        !_.isNumber(matching[0]) &&
+        !_.isNil(matching[0])
+      )
+        throw new Error(
+          `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
+        );
+
+      // the value we want to set cannot be anything but a string/number (we could probably check this earlier)
+      if (!_.isString(value) && !_.isNumber(value))
+        throw new Error(
+          `Configuration handling for complex key ->${key}<- resulted in a value to be set that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
+        );
+
+      // now that we have ensured they aren't getting up to anything funny - we apply the replacement of the single value
+      jsonpath.apply(returnConfig, key, (x) => value);
+    }
+
+    delete newConfig[key];
+  }
+
+  // all the "special" fields have been removed from newConfig and we have applied their logic ourselves
+  // now we can just use the basis Lodash merge functionality for the rest of the newConfig
+  return _.merge(returnConfig, newConfig);
 }
 
 /**
@@ -138,34 +147,24 @@ function handleConfigArraysBeforeConvict(
  *
  * @param config
  */
-export async function getDirectConfig(
-  config: any
-): Promise<convict.Config<any>> {
-  const convictConfig = convict(configDefinition, {});
-
-  convictConfig.load(config);
-  // perform validation
-  convictConfig.validate({ allowed: "strict" });
-
-  return convictConfig;
+export async function getDirectConfig(config: any): Promise<ElsaConfiguration> {
+  return configZodDefinition.strict().parse(config);
 }
 
 /**
  * Given a meta configuration description (a string listing a sequence of config
  * providers), this loads all the relevant configs in order and returns them
- * merged and loaded into convict. Convict will do the handling of default values
- * and overrides via ENV variables.
+ * merged and loaded via Zod schema checking. Env variables will be late bound
+ * to be able to also set config values.
  *
- * @param meta
+ * @param meta a string of source of configuration information e.g "file(a) aws-secret(b)"
  */
-export async function getMetaConfig(
-  meta: string
-): Promise<convict.Config<any>> {
-  // setup our configuration schema
-  const convictConfig = convict(configDefinition, {});
-
+export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
+  // the meta syntax tells us where to source configuration from and in what order
   const metaProviders = parseMeta(meta);
-  const foundRawConfigs = [];
+
+  // the raw config JSON as loaded from the sources
+  const rawConfigs = [];
 
   for (const mp of metaProviders) {
     let providerConfig;
@@ -196,29 +195,72 @@ export async function getMetaConfig(
           `unrecognised configuration provider ${mp.providerToken.value}`
         );
     }
-    foundRawConfigs.push(providerConfig);
+    rawConfigs.push(providerConfig);
   }
 
-  // ok here we do some hacky magic
-  // we want to support "array" elements in convict to have the ability to add or remove in different config files
-  // but convict will not support this - so we implement it ourselves as a phase before even getting to convict
+  let configObject: ElsaConfiguration = {} as ElsaConfiguration;
 
-  // preprocess to take all the array entries out of the configs
-  const { arrayProcessed, strippedConfigs } = handleConfigArraysBeforeConvict(
-    foundRawConfigs,
-    ["superAdmins", "datasets"]
+  // one by one merge each config in order into the config object
+  for (const initialRawConfig of rawConfigs) {
+    configObject = mergeNewConfig(configObject, initialRawConfig, [
+      "superAdmins",
+      "datasets",
+      "dacs",
+    ]);
+  }
+
+  const trySetEnvironmentVariableString = (
+    env_suffix: string,
+    path: string
+  ) => {
+    const v = process.env[`${env_prefix}${env_suffix}`];
+    if (v) _.set(configObject, path, v);
+  };
+  const trySetEnvironmentVariableInteger = (
+    env_suffix: string,
+    path: string
+  ) => {
+    const v = process.env[`${env_prefix}${env_suffix}`];
+    if (v) _.set(configObject, path, parseInt(v));
+  };
+
+  // TODO a mechanism that perhaps _parses_ env names - and works out the path itself..
+  // (i.e. replace _ with . and capitalise! but better)
+
+  trySetEnvironmentVariableString("SESSION_SECRET", "session.secret");
+  trySetEnvironmentVariableString("SESSION_SALT", "session.salt");
+  trySetEnvironmentVariableString(
+    "AWS_SIGNING_ACCESS_KEY_ID",
+    "aws.signingAccessKeyId"
   );
+  trySetEnvironmentVariableString(
+    "AWS_SIGNING_SECRET_ACCESS_KEY",
+    "aws.signingSecretAccessKey"
+  );
+  trySetEnvironmentVariableString("AWS_TEMP_BUCKET", "aws.tempBucket");
+  trySetEnvironmentVariableString(
+    "CLOUDFLARE_SIGNING_ACCESS_KEY_ID",
+    "cloudflare.signingAccessKeyId"
+  );
+  trySetEnvironmentVariableString(
+    "CLOUDFLARE_SIGNING_SECRET_ACCESS_KEY",
+    "cloudflare.signingSecretAccessKey"
+  );
+  trySetEnvironmentVariableString("DEPLOYED_URL", "deployedUrl");
 
-  // process in convict the configs without arrays
-  for (const sc of strippedConfigs) convictConfig.load(sc);
+  trySetEnvironmentVariableInteger("PORT", "port");
+  trySetEnvironmentVariableString("HOST", "host");
 
-  // add back into convict the arrays as we calculated them
-  convictConfig.set("datasets", arrayProcessed["datasets"] as never[]);
-  convictConfig.set("superAdmins", arrayProcessed["superAdmins"] as never[]);
+  trySetEnvironmentVariableString("LOGGER_LEVEL", "logger.level");
 
-  // perform validation
-  // the computed array content is still passed into convict here for validation
-  convictConfig.validate({ allowed: "strict" });
+  trySetEnvironmentVariableString("MAILER_OPTIONS", "mailer.options");
+  trySetEnvironmentVariableString("MAILER_DEFAULTS", "mailer.defaults");
+  trySetEnvironmentVariableString("MAILER_MODE", "mailer.mode");
 
-  return convictConfig;
+  trySetEnvironmentVariableInteger("HTSGET_MANIFEST_TTL", "htsget.manifestTtl");
+  trySetEnvironmentVariableString("HTSGET_URL", "htsget.url");
+
+  // perform validation on the final config object and return it transformed
+  // (the transform will do type coercion and setting defaults)
+  return configZodDefinition.strict().parse(configObject);
 }

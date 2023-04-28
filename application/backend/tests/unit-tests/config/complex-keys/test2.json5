@@ -1,0 +1,3 @@
+{
+  "$.superAdmins[?(@.sub=='http://test2')].sub": "replaced sub value for test2",
+}

@@ -1,4 +1,5 @@
 import { CSRFInputToken } from "../../../../components/csrf-token";
+import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 
@@ -7,32 +8,15 @@ type Props = {
   releaseData: ReleaseTypeLocal;
 };
 
-type TsvColumnCheckProps = {
-  field: string;
-};
-
-const TsvColumnCheck: React.FC<TsvColumnCheckProps> = ({ field }) => (
-  <div className="flex items-center gap-2">
-    <input
-      type="checkbox"
-      className="checkbox"
-      defaultChecked={true}
-      name="presignHeader"
-      id={`chx-${field}`}
-      value={field}
-    />
-    <label className="uppercase" htmlFor={`chx-${field}`}>
-      {field}
-    </label>
-  </div>
-);
-
 export const ObjectSigningForm: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
   return (
-    <form action={`/api/releases/${releaseKey}/tsv-manifest`} method="POST">
+    <form
+      action={`/api/releases/${releaseKey}/tsv-manifest-archive`}
+      method="POST"
+    >
       <CSRFInputToken />
       <div className="flex flex-col gap-6">
         <article className="prose">

@@ -10,7 +10,7 @@ export const DatasetLayout: React.FC = () => {
   const uiAllowed = useUiAllowed();
 
   if (
-    !uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
+    !uiAllowed.has(ALLOWED_DATASET_UPDATE) &&
     !uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)
   ) {
     return <Navigate to="/not-found" replace />;
