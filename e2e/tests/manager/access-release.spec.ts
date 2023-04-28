@@ -5,6 +5,7 @@ import Seven from "node-7z";
 
 const RELEASE_KEY = "R001";
 
+// A setup that logged the test as a manager in release `R001`
 test.beforeEach(async ({ page }) => {
   await managerSetup(page);
 });
@@ -27,8 +28,8 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
   const stream = Seven.extract(zipPath, dirPath, {
     password: "abcd",
   });
-  stream.on("data", (ex: { file: string } & Record<string, string>) => {
-    const extractedPath = `${dirPath}${ex.file}`;
+  stream.on("data", (sevenData: { file: string } & Record<string, string>) => {
+    const extractedPath = `${dirPath}${sevenData.file}`;
 
     const manifestData = fs.readFileSync(extractedPath, {
       encoding: "utf8",
@@ -41,12 +42,26 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
 });
 
 test("Download metadata manifest ZIP file", async ({ page }) => {
+  // Navigate and download file
   await page.locator(`#button-view-${RELEASE_KEY}`).click();
   await page.getByRole("tab", { name: "Manifest" }).click();
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByText("Download Zip").click();
+  await page.getByText("Download TSV").click();
   const download = await downloadPromise;
 
-  expect(download.suggestedFilename()).toBe(`manifest-${RELEASE_KEY}.zip`);
+  // Open the downloaded file
+  const suggestedFilename = download.suggestedFilename();
+  expect(suggestedFilename).toBe(`manifest-${RELEASE_KEY}.tsv`);
+
+  const readableStream = await download.createReadStream();
+  let data = "";
+  readableStream?.on("data", (chunk) => {
+    data += chunk;
+  });
+
+  // Reading the data from the stream
+  readableStream?.on("end", () => {
+    expect(data).toMatch(/s3:\/\/umccr-10f-data-dev\//i);
+  });
 });

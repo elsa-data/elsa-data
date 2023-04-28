@@ -12,7 +12,8 @@
   "author": "UMCCR",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.28.0"
+    "@playwright/test": "^1.28.0",
+    "@types/node-7z": "^2.1.5"
   },
   "dependencies": {
     "node-7z": "^3.0.0"
