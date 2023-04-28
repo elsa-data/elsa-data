@@ -70,6 +70,7 @@ const config: PlaywrightTestConfig = {
     env: {
       DEBUG: "pw:webserver",
       NODE_ENV: "development",
+      AWS_REGION: "ap-southeast-2",
       ELSA_DATA_VERSION: "e2e",
       ELSA_DATA_BUILT: "now",
       ELSA_DATA_REVISION: "abcd",
