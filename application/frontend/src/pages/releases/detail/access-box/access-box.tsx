@@ -30,7 +30,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
 
   // from the perspective of the researcher/user
   // NOTE if working correctly - the release data should never have config information for a mechanism
-  // that is not in the feature set (i.e if COPY_OUT is switched off - then dataSharingCopyOut should be undefed)
+  // that is not in the feature set (i.e if COPY_OUT is switched off - then dataSharingCopyOut should be undefined)
   // however, no harm in putting an extra guard here too
   const dataSharingObjectSigning = !!releaseData.dataSharingObjectSigning;
   const dataSharingCopyOut =

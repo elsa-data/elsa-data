@@ -6,12 +6,12 @@ export const LoginDevPage: React.FC = () => {
   const envRelay = useEnvRelay();
 
   return (
-    <div className="flex flex-col space-y-2">
-      <p className="prose">
+    <div className="prose flex flex-col space-y-2">
+      <p>
         The frontend was given the following settings via the backend
         environment.
-        <pre>{JSON.stringify(envRelay, null, 2)}</pre>
       </p>
+      <pre>{JSON.stringify(envRelay, null, 2)}</pre>
       <form action="/auth/login-bypass-1" method="POST" id="loginBypass1Form">
         <button className="btn-warning" type="submit">
           Log in (test user 1 - Administrator)

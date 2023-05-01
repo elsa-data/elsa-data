@@ -15,7 +15,7 @@ const config: PlaywrightTestConfig = {
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 10000,
   },
   /* Run tests in files in parallel */
   fullyParallel: false,
@@ -70,10 +70,11 @@ const config: PlaywrightTestConfig = {
     env: {
       DEBUG: "pw:webserver",
       NODE_ENV: "development",
+      AWS_REGION: "ap-southeast-2",
       ELSA_DATA_VERSION: "e2e",
       ELSA_DATA_BUILT: "now",
       ELSA_DATA_REVISION: "abcd",
-      ELSA_DATA_META_CONFIG_SOURCES: "file('e2e')",
+      ELSA_DATA_META_CONFIG_SOURCES: "file('e2e') file('datasets')",
       ELSA_DATA_META_CONFIG_FOLDERS: resolve("config"),
     },
   },

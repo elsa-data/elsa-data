@@ -11,6 +11,7 @@ import { RhChecks, RhCheckItem } from "../../../components/rh/rh-checks";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
 import Select from "react-select";
 import { trpc } from "../../../helpers/trpc";
+import { usePageSizer } from "../../../hooks/page-sizer";
 
 type Props = {
   showing: boolean;
@@ -39,7 +40,7 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
       label: string;
     }[]
   >([]);
-  const pageSize = 10;
+  const pageSize = usePageSizer();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
   const maxPage = Math.ceil(currentTotal / pageSize);
