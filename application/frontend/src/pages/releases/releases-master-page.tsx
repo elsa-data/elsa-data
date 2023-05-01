@@ -96,6 +96,7 @@ export const ReleasesMasterPage: React.FC = () => {
           differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&
           lastUpdatedSubjectId !== cookies[USER_SUBJECT_COOKIE_NAME] && (
             <Alert
+              key={`${lastUpdated} ${lastUpdatedSubjectId}`}
               description={`This release was last edited ${formatFromNowTime(
                 lastUpdated
               )}.`}

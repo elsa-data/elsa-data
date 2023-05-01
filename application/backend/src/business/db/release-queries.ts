@@ -1,24 +1,6 @@
 import e from "../../../dbschema/edgeql-js";
 
 /**
- * Set the `lastUpdated` fields of a release (specified by a `releaseKey`).
- */
-export const touchRelease = e.params(
-  {
-    releaseKey: e.str,
-    subjectId: e.str,
-  },
-  (params) =>
-    e.update(e.release.Release, (r) => ({
-      filter: e.op(r.releaseKey, "=", params.releaseKey),
-      set: {
-        lastUpdated: e.datetime_current(),
-        lastUpdatedSubjectId: params.subjectId,
-      },
-    }))
-);
-
-/**
  * Find the next release identifier based on release count.
  * @param prefix The prefix id before the release count.
  * @returns

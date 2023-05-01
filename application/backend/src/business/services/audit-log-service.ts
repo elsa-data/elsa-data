@@ -24,7 +24,6 @@ import {
   pageableAuditLogEntriesForSystemQuery,
 } from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { touchRelease } from "../db/release-queries";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
   getReleaseKeyFromReleaseAuditEvent,
@@ -32,6 +31,7 @@ import {
   insertSystemAuditEvent,
   insertUserAuditEvent,
   releaseGetBoundaryInfo,
+  releaseLastUpdatedReset,
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
@@ -137,9 +137,9 @@ export class AuditLogService {
       }))
       .run(executor);
 
-    await touchRelease.run(executor, {
+    await releaseLastUpdatedReset(executor, {
       releaseKey: releaseKey,
-      subjectId: user.subjectId,
+      lastUpdatedSubjectId: user.subjectId,
     });
 
     return auditEvent.id;

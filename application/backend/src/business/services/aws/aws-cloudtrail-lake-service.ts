@@ -13,9 +13,9 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
-import { touchRelease } from "../../db/release-queries";
 import { NotAuthorisedSyncDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
+  releaseLastUpdatedReset,
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
 } from "../../../../dbschema/queries";
@@ -216,9 +216,10 @@ export class AwsCloudTrailLakeService {
         fileUrl: s3Url,
       });
     }
-    await touchRelease.run(this.edgeDbClient, {
+
+    await releaseLastUpdatedReset(this.edgeDbClient, {
       releaseKey: releaseKey,
-      subjectId: user.subjectId,
+      lastUpdatedSubjectId: user.subjectId,
     });
   }
 
@@ -428,9 +429,10 @@ export class AwsCloudTrailLakeService {
       releaseKey,
       lastQueryTimestamp: endQueryDate,
     });
-    await touchRelease.run(this.edgeDbClient, {
+
+    await releaseLastUpdatedReset(this.edgeDbClient, {
       releaseKey: releaseKey,
-      subjectId: user.subjectId,
+      lastUpdatedSubjectId: user.subjectId,
     });
   }
 }
