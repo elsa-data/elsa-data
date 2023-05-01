@@ -27,13 +27,15 @@ import {
 } from "./insert-test-users";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../di-helpers";
+import { releaseGetSpecimenTreeAndFileArtifacts } from "../../dbschema/queries";
+import { transformDbManifestToMasterManifest } from "../business/services/manifests/manifest-master-helper";
 
 const RELEASE_KEY_1 = "R001";
 
 export async function insertRelease1(dc: DependencyContainer) {
   const { settings, logger, edgeDbClient } = getServices(dc);
 
-  return await e
+  const insertRelease1 = await e
     .insert(e.release.Release, {
       applicationDacTitle: "A Study of Lots of Test Data",
       applicationDacIdentifier: makeIdentifierTuple(
@@ -117,6 +119,7 @@ Ethics form XYZ.
       isAllowedReadData: false,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: false,
+      isAllowedS3Data: true,
       selectedSpecimens: e.set(
         // we fully select one trio
         findSpecimenQuery(BART_SPECIMEN),
@@ -138,6 +141,28 @@ Ethics form XYZ.
       dataEgressRecord: await makeSyntheticDataEgressRecord(),
     })
     .run(edgeDbClient);
+
+  // Activating r1 release (with proper manifest)
+  const m = await releaseGetSpecimenTreeAndFileArtifacts(edgeDbClient, {
+    releaseKey: RELEASE_KEY_1,
+  });
+  const masterManifest = await transformDbManifestToMasterManifest(m);
+
+  await e
+    .update(e.release.Release, (r) => ({
+      filter: e.op(r.releaseKey, "=", RELEASE_KEY_1),
+      set: {
+        activation: e.insert(e.release.Activation, {
+          activatedById: TEST_SUBJECT_2,
+          activatedByDisplayName: TEST_SUBJECT_2_DISPLAY,
+          manifest: e.json(masterManifest),
+          manifestEtag: "0123",
+        }),
+      },
+    }))
+    .run(edgeDbClient);
+
+  return insertRelease1;
 }
 
 const makeSyntheticDataEgressRecord = async () => {

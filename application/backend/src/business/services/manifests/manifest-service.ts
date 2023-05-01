@@ -92,7 +92,6 @@ export class ManifestService {
     auditId: string
   ): Promise<ManifestTsvBodyType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
-
     // TODO fix exceptions here
     if (!masterManifest) return null;
 

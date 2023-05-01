@@ -1,0 +1,36 @@
+{
+  datasets: [
+    {
+      name: "10G",
+      description: "UMCCR 10G",
+      uri: "urn:fdc:umccr.org:2022:dataset/10g",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10g-data-dev",
+      aws: {
+        eventDataStoreId: "327383f8-3273-3273-3273-327383f8fc43",
+      },
+    },
+    {
+      name: "10F",
+      description: "UMCCR 10F",
+      uri: "urn:fdc:umccr.org:2022:dataset/10f",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10f-data-dev",
+    },
+    {
+      name: "10C",
+      description: "UMCCR 10C",
+      uri: "urn:fdc:umccr.org:2022:dataset/10c",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://umccr-10c-data-dev",
+    },
+    // The following is intentionally commented out to show variety of test-data that is not included in config file.
+    // {
+    //   name: "10M",
+    //   description: "UMCCR 10M",
+    //   uri: "urn:fdc:umccr.org:2022:dataset/10m",
+    //   storageLocation: "aws-s3",
+    //   storageUriPrefix: "s3://umccr-10m-data-dev",
+    // },
+  ],
+}

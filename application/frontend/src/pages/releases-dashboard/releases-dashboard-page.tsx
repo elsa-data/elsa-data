@@ -151,6 +151,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                       </td>
                       <td className="text-right">
                         <button
+                          id={`button-view-${r.releaseKey}`}
                           className={classNames("btn-table-action-navigate")}
                           onClick={async () => {
                             navigate(`${r.releaseKey}/detail`);

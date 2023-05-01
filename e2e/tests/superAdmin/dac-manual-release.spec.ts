@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { superAdminSetup } from "./superAdmin.common";
+
+test.beforeEach(async ({ page }) => {
+  await superAdminSetup(page);
+});
 
 test("A release can be created manually which has selectable cases", async ({
   page,
@@ -23,7 +28,6 @@ test("A release can be created manually which has selectable cases", async ({
     .locator("#datasetUriSelector > div")
     .getByText("urn:fdc:umccr.org:2022:dataset/10c")
     .click();
-
   await page
     .locator("#datasetUriSelector > div")
     .getByText("urn:fdc:umccr.org:2022:dataset/10f")
