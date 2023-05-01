@@ -59,6 +59,7 @@ describe("Test CloudTrailLake Service", () => {
       lakeResponse: mockData,
       releaseKey: testReleaseKey,
       description: "Object accessed",
+      user: superAdminUser,
     });
 
     const deArr = await e

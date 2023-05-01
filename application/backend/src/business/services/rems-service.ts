@@ -142,6 +142,7 @@ export class RemsService {
       const newRelease = await e
         .insert(e.release.Release, {
           created: e.datetime_current(),
+          lastUpdatedSubjectId: user.subjectId,
           applicationDacIdentifier: e.tuple({
             system: this.settings.remsUrl,
             value: e.str(remsId.toString()),

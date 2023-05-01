@@ -220,6 +220,7 @@ export class RedcapImportApplicationService {
       const newRelease = await e
         .insert(e.release.Release, {
           created: e.datetime_current(),
+          lastUpdatedSubjectId: user.subjectId,
           applicationDacIdentifier: e.tuple({
             system: AG_REDCAP_URL,
             value: e.str(newApplication.daf_num),

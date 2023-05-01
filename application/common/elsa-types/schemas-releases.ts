@@ -8,6 +8,7 @@ export const ReleaseSummarySchema = Type.Object({
 
   // the date time of last change to anything in this release
   lastUpdatedDateTime: TypeDate,
+  lastUpdatedUserSubjectId: Type.String(),
 
   // details of the DAC this release was created from
   applicationDacIdentifierSystem: Type.String(),
@@ -58,6 +59,8 @@ export const ReleaseActivationSchema = Type.Object({
 
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
+  lastUpdatedDateTime: TypeDate,
+  lastUpdatedUserSubjectId: Type.String(),
 
   datasetUris: Type.Array(Type.String()),
 

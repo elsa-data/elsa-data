@@ -13,9 +13,9 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
-import { touchRelease } from "../../db/release-queries";
 import { NotAuthorisedSyncDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
+  releaseLastUpdatedReset,
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
 } from "../../../../dbschema/queries";
@@ -179,10 +179,12 @@ export class AwsCloudTrailLakeService {
     lakeResponse,
     releaseKey,
     description,
+    user,
   }: {
     lakeResponse: CloudTrailLakeResponseType[];
     description: string;
     releaseKey: string;
+    user: AuthenticatedUser;
   }) {
     for (const trailEvent of lakeResponse) {
       const s3Url = `s3://${trailEvent.bucketName}/${trailEvent.key}`;
@@ -214,7 +216,11 @@ export class AwsCloudTrailLakeService {
         fileUrl: s3Url,
       });
     }
-    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
+
+    await releaseLastUpdatedReset(this.edgeDbClient, {
+      releaseKey: releaseKey,
+      lastUpdatedSubjectId: user.subjectId,
+    });
   }
 
   /**
@@ -226,11 +232,13 @@ export class AwsCloudTrailLakeService {
     eventDataStoreId,
     releaseKey,
     recordDescription,
+    user,
   }: {
     sqlQueryStatement: string;
     eventDataStoreId: string;
     releaseKey: string;
     recordDescription: string;
+    user: AuthenticatedUser;
   }) {
     const queryId = await this.startCommandQueryCloudTrailLake(
       sqlQueryStatement
@@ -244,6 +252,7 @@ export class AwsCloudTrailLakeService {
       lakeResponse: s3CloudTrailLogs as CloudTrailLakeResponseType[],
       releaseKey: releaseKey,
       description: recordDescription,
+      user: user,
     });
   }
 
@@ -376,6 +385,7 @@ export class AwsCloudTrailLakeService {
             eventDataStoreId: edsi,
             recordDescription: "Accessed via presigned url.",
             releaseKey: releaseKey,
+            user: user,
           });
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
           const bucketNameMap = (
@@ -402,6 +412,7 @@ export class AwsCloudTrailLakeService {
               eventDataStoreId: edsi,
               recordDescription: "Accessed via S3 access point.",
               releaseKey: releaseKey,
+              user: user,
             });
           }
         } else {
@@ -418,6 +429,10 @@ export class AwsCloudTrailLakeService {
       releaseKey,
       lastQueryTimestamp: endQueryDate,
     });
-    await touchRelease.run(this.edgeDbClient, { releaseKey: releaseKey });
+
+    await releaseLastUpdatedReset(this.edgeDbClient, {
+      releaseKey: releaseKey,
+      lastUpdatedSubjectId: user.subjectId,
+    });
   }
 }

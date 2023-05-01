@@ -16,6 +16,9 @@ module release {
              default := datetime_current();
         };
 
+        # The most recent user which edited this release.
+        required property lastUpdatedSubjectId -> str;
+
         # the public "friendly" identifier for this release
         # we explicitly don't want to use the native EdgeDb "id" field for Releases
         #

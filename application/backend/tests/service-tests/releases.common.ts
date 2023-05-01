@@ -39,6 +39,7 @@ export async function beforeEachCommon(dc: DependencyContainer) {
   const testReleaseInsert = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
+      lastUpdatedSubjectId: "unknown",
       applicationDacIdentifier: { system: "", value: "XYZ" },
       applicationDacTitle: "A Study in Many Parts",
       applicationDacDetails:

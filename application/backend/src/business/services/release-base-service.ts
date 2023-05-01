@@ -144,6 +144,8 @@ export abstract class ReleaseBaseService {
 
     return {
       id: releaseInfo.id,
+      lastUpdatedDateTime: releaseInfo.lastUpdated,
+      lastUpdatedUserSubjectId: releaseInfo.lastUpdatedSubjectId,
       datasetUris: releaseInfo.datasetUris,
       applicationDacDetails: releaseInfo.applicationDacDetails!,
       applicationDacIdentifier: releaseInfo.applicationDacIdentifier.value,

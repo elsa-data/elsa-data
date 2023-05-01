@@ -5,6 +5,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
+import { TEST_SUBJECT_3 } from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -17,6 +18,7 @@ export const RELEASE2_APPLICATION_DAC_DETAILS =
 export async function insertRelease2() {
   return await e
     .insert(e.release.Release, {
+      lastUpdatedSubjectId: TEST_SUBJECT_3,
       applicationDacTitle: RELEASE2_APPLICATION_DAC_TITLE,
       applicationDacDetails: RELEASE2_APPLICATION_DAC_DETAILS,
       applicationDacIdentifier: makeSystemlessIdentifier("XYZ"),

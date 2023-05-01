@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Outlet, useOutletContext, useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Outlet, useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import {
-  axiosPostNullMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseQuery,
-} from "./queries";
+import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
 import { isUndefined } from "lodash";
 import { ReleaseTypeLocal } from "./shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../components/errors";
@@ -15,6 +11,14 @@ import { SkeletonOneDiv } from "../../components/skeleton-one";
 import { SkeletonTwoDiv } from "../../components/skeleton-two";
 import { ReleasesMasterContextType } from "./releases-types";
 import { trpc } from "../../helpers/trpc";
+import { Alert } from "../../components/alert";
+import {
+  differenceFromNow,
+  formatFromNowTime,
+  Millisecond,
+} from "../../helpers/datetime-helper";
+import { useCookies } from "react-cookie";
+import { USER_SUBJECT_COOKIE_NAME } from "@umccr/elsa-constants";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -24,6 +28,9 @@ import { trpc } from "../../helpers/trpc";
  */
 export const ReleasesMasterPage: React.FC = () => {
   const REFRESH_JOB_STATUS_MS = 5000;
+  const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
+
+  const [cookies] = useCookies<any>([USER_SUBJECT_COOKIE_NAME]);
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
@@ -77,9 +84,25 @@ export const ReleasesMasterPage: React.FC = () => {
     releaseData: releaseQuery.data!,
   };
 
+  const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as
+    | string
+    | undefined;
+  const lastUpdatedSubjectId = releaseQuery.data?.lastUpdatedUserSubjectId;
+
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
+        {releaseQuery.isSuccess &&
+          differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&
+          lastUpdatedSubjectId !== cookies[USER_SUBJECT_COOKIE_NAME] && (
+            <Alert
+              key={`${lastUpdated} ${lastUpdatedSubjectId}`}
+              description={`This release was last edited ${formatFromNowTime(
+                lastUpdated
+              )}.`}
+            />
+          )}
+
         <ReleasesBreadcrumbsDiv releaseKey={releaseKey} />
 
         {releaseQuery.isSuccess && releaseQuery.data.runningJob && (

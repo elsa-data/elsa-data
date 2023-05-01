@@ -4,6 +4,7 @@ import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
+import { TEST_SUBJECT_3 } from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -12,6 +13,7 @@ export async function insertRelease3() {
   // appear in any queries
   return await e
     .insert(e.release.Release, {
+      lastUpdatedSubjectId: TEST_SUBJECT_3,
       applicationDacTitle: "An Invisible Study",
       applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
       applicationDacDetails: "",

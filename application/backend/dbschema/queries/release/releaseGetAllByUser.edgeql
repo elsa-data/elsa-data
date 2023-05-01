@@ -28,6 +28,7 @@ select {
            {
               releaseKey,
               lastUpdated,
+              lastUpdatedSubjectId,
               datasetUris,
               applicationDacTitle,
               applicationDacIdentifier,

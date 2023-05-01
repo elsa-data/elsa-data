@@ -5,12 +5,14 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENG_URI } from "./insert-test-data-10g";
+import { TEST_SUBJECT_3 } from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
 
 export async function insertRelease4() {
   return await e
     .insert(e.release.Release, {
+      lastUpdatedSubjectId: TEST_SUBJECT_3,
       applicationDacTitle: "A Working Release of 10G Data",
       applicationDacDetails:
         "A release that has all working/matching files in S3 - so can do actual sharing",

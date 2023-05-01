@@ -69,6 +69,7 @@ export class ReleaseService extends ReleaseBaseService {
       data: allReleasesByUser.data.map((a) => ({
         releaseKey: a.releaseKey,
         lastUpdatedDateTime: a.lastUpdated,
+        lastUpdatedUserSubjectId: a.lastUpdatedSubjectId,
         datasetUris: a.datasetUris,
         applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
         applicationDacIdentifierValue: a.applicationDacIdentifier.value,
@@ -124,6 +125,7 @@ export class ReleaseService extends ReleaseBaseService {
 
     const releaseRow = await e
       .insert(e.release.Release, {
+        lastUpdatedSubjectId: user.subjectId,
         applicationDacTitle: release.releaseTitle,
         applicationDacIdentifier: e.tuple({
           system: this.settings.host,
