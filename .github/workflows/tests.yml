@@ -80,7 +80,7 @@ jobs:
       # esbuild should succeed and contain no warnings
       - name: esbuild check
         run: |
-          output=$(npx node esbuild 2>&1)
+          output=$(npx node bundle-build.js 2>&1)
           if [[ $? == 0 ]]; then
             echo "esbuild ran successfully"
           else
