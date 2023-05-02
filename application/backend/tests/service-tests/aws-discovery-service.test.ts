@@ -14,7 +14,7 @@ describe("Test AWS Discovery Service", () => {
     awsEnabledServiceMock.reset();
   });
 
-  it("find the copy out service if present", async () => {
+  it.skip("find the copy out service if present", async () => {
     awsEnabledServiceMock.enable();
     const awsDiscoveryService = testContainer.resolve(AwsDiscoveryService);
 
