@@ -82,6 +82,7 @@ jobs:
         run: |
           output=$(npx node bundle-build.js 2>&1)
           if [[ $? == 0 ]]; then
+            rm -r server
             echo "esbuild ran successfully"
           else
             echo "esbuild did not succeed"
