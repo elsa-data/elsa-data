@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Box } from "../../components/boxes";
 import { ReleaseSummaryType } from "@umccr/elsa-types";
@@ -12,28 +11,28 @@ import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { usePageSizer } from "../../hooks/page-sizer";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
+import { trpc } from "../../helpers/trpc";
 
 export const ReleasesDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const pageSize = usePageSizer();
-  // our internal state for which page we are on
-  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+  // our internal state for which page we are on
+  const pageSize = usePageSizer();
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const query = useQuery(
-    REACT_QUERY_RELEASE_KEYS.all,
-    async () => {
-      return await axios
-        .get<ReleaseSummaryType[]>(`/api/releases`)
-        .then((response) => {
-          handleTotalCountHeaders(response, setCurrentTotal);
-          return response.data;
-        });
+  const releaseQuery = trpc.releaseRouter.getAllRelease.useQuery(
+    {
+      page: currentPage,
     },
-    {}
+    {
+      keepPreviousData: true,
+      onSuccess: (res) => {
+        setCurrentTotal(res.total);
+      },
+    }
   );
+  const queryData = releaseQuery.data?.data;
 
   return (
     <>
@@ -41,15 +40,15 @@ export const ReleasesDashboardPage: React.FC = () => {
         heading="Releases"
         errorMessage={"Something went wrong fetching releases."}
       >
-        {query.isLoading && <IsLoadingDiv />}
-        {query.isSuccess && query.data && query.data.length === 0 && (
+        {releaseQuery.isLoading && <IsLoadingDiv />}
+        {releaseQuery.isSuccess && queryData?.length === 0 && (
           <>
             <p className="prose">
               This page normally shows any releases that you are involved in.
               Currently the system thinks you are not involved in any releases -
-              if this is wrong, please contact the project manager or CI/Manager
-              of your project and ask them to check that you are listed as a
-              participant of a release.
+              if this is wrong, pl ease contact the project manager or
+              CI/Manager of your project and ask them to check that you are
+              listed as a participant of a release.
             </p>
             <p className="prose">
               Until this is corrected there is very little functionality enabled
@@ -57,7 +56,7 @@ export const ReleasesDashboardPage: React.FC = () => {
             </p>
           </>
         )}
-        {query.isSuccess && query.data && query.data.length > 0 && (
+        {releaseQuery.isSuccess && queryData && queryData?.length > 0 && (
           <>
             <table className="table table-auto">
               <thead>
@@ -76,7 +75,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {query.data.map((r, idx) => {
+                {queryData.map((r, idx) => {
                   const jobBadgeContent = r.isRunningJobBadge
                     ? `${r.isRunningJobBadge} ${r.isRunningJobPercentDone}%`
                     : undefined;
@@ -127,9 +126,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                       <td className="hidden xl:table-cell">
                         <div className="flex flex-col space-y-1">
                           <div>
-                            {formatLocalDateTime(
-                              r.lastUpdatedDateTime as string
-                            )}
+                            {formatLocalDateTime(r.lastUpdatedDateTime)}
                           </div>
 
                           {r.isActivated && (
@@ -174,10 +171,10 @@ export const ReleasesDashboardPage: React.FC = () => {
             />
           </>
         )}
-        {query.isError && (
+        {releaseQuery.isError && (
           <EagerErrorBoundary
             message={"Something went wrong fetching releases."}
-            error={query.error}
+            error={releaseQuery.error}
             styling={"bg-red-100"}
           />
         )}

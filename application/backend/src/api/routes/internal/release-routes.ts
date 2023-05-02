@@ -44,23 +44,6 @@ export const releaseRoutes = async (
   );
   const manifestService = _opts.container.resolve(ManifestService);
 
-  fastify.get<{ Reply: ReleaseSummaryType[] }>(
-    "/releases",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const allForUser = await releaseService.getAll(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
-
-      sendPagedResult(reply, allForUser);
-    }
-  );
-
   fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
     "/releases/:rid",
     {},
