@@ -136,9 +136,16 @@ COPY --from=edgedb-builder /build/dbschema/migrations/ /a/dbschema/migrations/
 COPY --from=app-builder /build/backend/config/ /a/config/
 COPY --from=app-builder /build/backend/locales/ /a/locales/
 
-# bring in any node_modules incompatible with bundling
+# bring in any node_modules incompatible with bundling (including dependencies of these modules too)
 COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /a/node_modules/node-gyp-build/
 COPY --from=app-builder /build/backend/node_modules/sodium-native/ /a/node_modules/sodium-native/
+COPY --from=app-builder /build/backend/node_modules/jsonpath/ /a/node_modules/jsonpath/
+# these are recursive dependencies of jsonpath - that itself can't be bundled
+COPY --from=app-builder /build/backend/node_modules/static-eval/ /a/node_modules/static-eval/
+COPY --from=app-builder /build/backend/node_modules/escodegen/ /a/node_modules/escodegen/
+COPY --from=app-builder /build/backend/node_modules/esutils/ /a/node_modules/esutils/
+COPY --from=app-builder /build/backend/node_modules/esprima/ /a/node_modules/esprima/
+COPY --from=app-builder /build/backend/node_modules/underscore/ /a/node_modules/underscore/
 
 # the front end bundled up as per normal
 COPY --from=app-builder /build/backend/client/ /a/client/
