@@ -77,6 +77,19 @@ jobs:
         run: npx tsc --noEmit
         working-directory: application/backend
 
+      # esbuild should succeed and contain no warnings
+      - name: esbuild check
+        run: |
+          output=$(npx node esbuild 2>&1)
+          if [[ $? == 0 ]]; then
+            echo "esbuild ran successfully"
+          else
+            echo "esbuild did not succeed"
+            echo "${output}"
+            exit 1
+          fi
+        working-directory: application/backend
+
       # db tests run only in the backend and concentrate on validating edgeql queries
       - name: Run database tests
         run: npm run test:db
