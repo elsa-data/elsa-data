@@ -59,6 +59,9 @@ export const ReleaseActivationSchema = Type.Object({
 
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
+
+  roleInRelease: Type.String(),
+
   lastUpdatedDateTime: TypeDate,
   lastUpdatedUserSubjectId: Type.String(),
 

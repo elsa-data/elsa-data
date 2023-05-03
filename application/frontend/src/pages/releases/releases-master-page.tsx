@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Outlet, useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { REACT_QUERY_RELEASE_KEYS, specificReleaseQuery } from "./queries";
+import { makeReleaseTypeLocal } from "./queries";
 import { isUndefined } from "lodash";
 import { ReleaseTypeLocal } from "./shared-types";
 import { EagerErrorBoundary, ErrorState } from "../../components/errors";
@@ -31,7 +31,6 @@ export const ReleasesMasterPage: React.FC = () => {
   const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
   const [cookies] = useCookies<any>([USER_SUBJECT_COOKIE_NAME]);
-
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
   if (!releaseKey)
@@ -46,12 +45,16 @@ export const ReleasesMasterPage: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const releaseQuery = useQuery<ReleaseTypeLocal>({
-    queryKey: REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-    queryFn: specificReleaseQuery,
-    onError: (error: any) => setError({ error, isSuccess: false }),
-    onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
-  });
+  const releaseQuery = trpc.releaseRouter.getSpecificRelease.useQuery(
+    { releaseKey },
+    {
+      onError: (error: any) => setError({ error, isSuccess: false }),
+      onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
+    }
+  );
+  const localReleaseData = releaseQuery.data
+    ? makeReleaseTypeLocal(releaseQuery.data)
+    : null;
 
   const cancelMutate = trpc.releaseJob.cancel.useMutation({
     onSettled: () => queryClient.invalidateQueries(),
@@ -81,7 +84,7 @@ export const ReleasesMasterPage: React.FC = () => {
     releaseKey: releaseKey,
     // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
     // in that case we never actually use this masterOutletContext..
-    releaseData: releaseQuery.data!,
+    releaseData: localReleaseData ?? releaseQuery.data!,
   };
 
   const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as

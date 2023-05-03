@@ -24,12 +24,19 @@ export const InformationBox: React.FC<Props> = ({
   releaseData,
   releaseKey,
 }) => {
+  const isAllowMutateActivation = releaseData.roleInRelease == "Administrator";
+
   // a right aligned list of all our datasets and their visualisation colour/box
   const DatasetList = () => (
-    <ul className="text-right">
+    <ul className="text-left">
       {Array.from(releaseData.datasetMap.entries()).map(([uri, vis], index) => (
-        <li key={index} className="flex flex-row justify-end align-middle">
-          <span className="mr-6 font-mono">{uri}</span>
+        <li
+          key={index}
+          className={`flex flex-row align-middle ${
+            isAllowMutateActivation && "justify-end"
+          }`}
+        >
+          <span className="mx-4 font-mono">{uri}</span>
           <span className="h-6 w-6">{vis}</span>
         </li>
       ))}
@@ -88,13 +95,21 @@ export const InformationBox: React.FC<Props> = ({
           </div>
         )}
 
-        <div className="flex flex-col space-y-2">
-          <ActivateDeactivateButtonRow />
-        </div>
+        {isAllowMutateActivation ? (
+          <>
+            <div className="flex flex-col space-y-2">
+              <ActivateDeactivateButtonRow />
+            </div>
 
-        <div className="flex flex-col space-y-2">
-          <DatasetList />
-        </div>
+            <div className="flex flex-col space-y-2">
+              <DatasetList />
+            </div>
+          </>
+        ) : (
+          <div className="col-span-4 flex flex-col space-y-2">
+            <DatasetList />
+          </div>
+        )}
 
         <div className="collapse-arrow rounded-box collapse col-span-2 border border-base-300 bg-base-100">
           <input type="checkbox" />

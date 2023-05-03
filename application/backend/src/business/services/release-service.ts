@@ -104,7 +104,7 @@ export class ReleaseService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.getBase(releaseKey, userRole);
+    return await this.getBase(releaseKey, userRole);
   }
 
   /**

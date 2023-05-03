@@ -22,6 +22,14 @@ export const releaseRouter = router({
         calculateOffset(page, pageSize)
       );
     }),
+  getSpecificRelease: internalProcedure
+    .input(inputSingleReleaseKey)
+    .query(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey } = input;
+
+      return await ctx.releaseService.get(user, releaseKey);
+    }),
   getReleaseConsent: internalProcedure
     .input(inputSingleReleaseKey.merge(z.object({ nodeId: z.string() })))
     .query(async ({ input, ctx }) => {
