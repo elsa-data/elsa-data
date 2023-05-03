@@ -177,7 +177,8 @@ export const configZodDefinition = z.object({
         .string()
         .describe(
           "The logging level as per Pino (all the standard level strings + silent)"
-        ),
+        )
+        .default("debug"),
       transportTargets: z
         .array(
           z
@@ -186,7 +187,8 @@ export const configZodDefinition = z.object({
             })
             .passthrough()
         )
-        .describe("An array of Pino logger transport targets configurations"),
+        .describe("An array of Pino logger transport targets configurations")
+        .default([]),
     })
     .default({
       level: "debug",
