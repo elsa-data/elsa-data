@@ -3,6 +3,12 @@
   // but we want to get all the logs so level of debug
   logger: {
     level: "debug",
+    transportTargets: [
+      {
+        target: "pino-pretty",
+        options: { destination: 1, minimumLevel: "debug" },
+      },
+    ],
   },
   htsget: {
     url: "https://htsget.elsa.dev.umccr.org",
