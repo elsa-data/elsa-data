@@ -95,6 +95,7 @@ export const InformationBox: React.FC<Props> = ({
           </div>
         )}
 
+        {/* Hiding release-activation button if they are not authorised */}
         {isAllowMutateActivation ? (
           <>
             <div className="flex flex-col space-y-2">
