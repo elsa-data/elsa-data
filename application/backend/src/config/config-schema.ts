@@ -262,5 +262,10 @@ export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
 
   // perform validation on the final config object and return it transformed
   // (the transform will do type coercion and setting defaults)
-  return configZodDefinition.strict().parse(configObject);
+  try {
+    return configZodDefinition.strict().parse(configObject);
+  } catch (e) {
+    console.warn(`failed strict parsing: ${e}`);
+    return configZodDefinition.parse(configObject);
+  }
 }
