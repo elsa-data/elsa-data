@@ -46,9 +46,9 @@ export const ReleasesDashboardPage: React.FC = () => {
             <p className="prose">
               This page normally shows any releases that you are involved in.
               Currently the system thinks you are not involved in any releases -
-              if this is wrong, pl ease contact the project manager or
-              CI/Manager of your project and ask them to check that you are
-              listed as a participant of a release.
+              if this is wrong, please contact the project manager or CI/Manager
+              of your project and ask them to check that you are listed as a
+              participant of a release.
             </p>
             <p className="prose">
               Until this is corrected there is very little functionality enabled
