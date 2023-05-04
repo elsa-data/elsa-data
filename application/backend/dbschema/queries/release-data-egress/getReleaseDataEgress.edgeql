@@ -12,8 +12,8 @@ with
 
 select {
 
-  totalCount := count(allRelatedEgressRecords),
-  results := (
+  total := count(allRelatedEgressRecords),
+  data := (
       select allRelatedEgressRecords {
         auditId,
         occurredDateTime,

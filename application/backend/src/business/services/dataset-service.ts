@@ -16,8 +16,10 @@ import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
 import {
+  getAllDataset,
   getDatasetConsent,
-  getDatasetSummary,
+  getDatasetCasesByUri,
+  getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
 
 @injectable()
@@ -65,46 +67,35 @@ export class DatasetService {
   }
 
   /**
-   * Return a paged result of datasets in summary form.
+   * Return a paged result of datasets.
    *
    * @param user
-   * @param includeDeletedFile
    * @param limit
    * @param offset
    */
-  public async getSummary({
+  public async getAll({
     user,
-    includeDeletedFile,
     limit,
     offset,
   }: {
     user: AuthenticatedUser;
-    includeDeletedFile: boolean;
     limit: number;
     offset: number;
   }): Promise<PagedResult<DatasetLightType>> {
-    const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
+    const datasetSummaryQuery = await getAllDataset(this.edgeDbClient, {
       userDbId: user.dbId,
-      includeDeletedFile,
       limit,
       offset,
-      datasetUri: null,
     });
 
     return createPagedResult(
-      datasetSummaryQuery.results.map((r) => ({
+      datasetSummaryQuery.data.map((r) => ({
         uri: r.uri,
         description: r.description,
         updatedDateTime: r.updatedDateTime,
         isInConfig: r.isInConfig,
-        totalCaseCount: r.totalCaseCount,
-        totalPatientCount: r.totalPatientCount,
-        totalSpecimenCount: r.totalSpecimenCount,
-        totalArtifactCount: r.totalArtifactCount,
-        totalArtifactIncludes: r.artifactTypes.trim(),
-        totalArtifactSizeBytes: r.totalArtifactSizeBytes,
       })),
-      datasetSummaryQuery.totalCount
+      datasetSummaryQuery.total
     );
   }
 
@@ -117,37 +108,39 @@ export class DatasetService {
     datasetUri: string;
     includeDeletedFile: boolean;
   }): Promise<DatasetDeepType | null> {
-    const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
+    const datasetCasesQuery = await getDatasetCasesByUri(this.edgeDbClient, {
       userDbId: user.dbId,
-      includeDeletedFile,
-      limit: 1, // Only expect one value from single URI filter
-      offset: 0,
       datasetUri: datasetUri,
     });
+    const datasetStorageStatsQuery = await getDatasetStorageStatsByUri(
+      this.edgeDbClient,
+      {
+        userDbId: user.dbId,
+        datasetUri: datasetUri,
+        includeDeletedFile,
+      }
+    );
 
-    if (datasetSummaryQuery.results.length != 1) return null;
+    if (!datasetCasesQuery || !datasetStorageStatsQuery) return null;
 
-    const r = datasetSummaryQuery.results[0];
     return {
-      uri: r.uri,
-      description: r.description,
-      updatedDateTime: r.updatedDateTime,
-      isInConfig: r.isInConfig,
-      totalCaseCount: r.totalCaseCount,
-      totalPatientCount: r.totalPatientCount,
-      totalSpecimenCount: r.totalSpecimenCount,
-      totalArtifactCount: r.totalArtifactCount,
-      totalArtifactIncludes: r.artifactTypes.trim(),
-      totalArtifactSizeBytes: r.totalArtifactSizeBytes,
+      uri: datasetCasesQuery.uri,
+      description: datasetCasesQuery.description,
+      updatedDateTime: datasetCasesQuery.updatedDateTime,
+      isInConfig: datasetCasesQuery.isInConfig,
+      totalCaseCount: datasetCasesQuery.totalCaseCount,
+      totalPatientCount: datasetCasesQuery.totalPatientCount,
+      totalSpecimenCount: datasetCasesQuery.totalSpecimenCount,
+      cases: datasetCasesQuery.cases,
 
       // Artifact Type Count
-      bclCount: r.bclCount,
-      fastqCount: r.fastqCount,
-      vcfCount: r.vcfCount,
-      bamCount: r.bamCount,
-      cramCount: r.cramCount,
-
-      cases: r.cases,
+      totalArtifactCount: datasetStorageStatsQuery.totalArtifactCount,
+      totalArtifactSizeBytes: datasetStorageStatsQuery.totalArtifactSizeBytes,
+      bclCount: datasetStorageStatsQuery.bclCount,
+      fastqCount: datasetStorageStatsQuery.fastqCount,
+      vcfCount: datasetStorageStatsQuery.vcfCount,
+      bamCount: datasetStorageStatsQuery.bamCount,
+      cramCount: datasetStorageStatsQuery.cramCount,
     };
   }
 

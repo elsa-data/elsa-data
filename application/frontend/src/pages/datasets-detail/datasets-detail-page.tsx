@@ -106,7 +106,9 @@ export const DatasetsDetailPage: React.FC = () => {
                 </div>
               }
             >
-              <div>{data && <DatasetTable cases={data.cases} />}</div>
+              <div className="overflow-auto">
+                {data && <DatasetTable cases={data.cases} />}
+              </div>
             </Box>
             {/* <ConsentBox /> */}
           </>

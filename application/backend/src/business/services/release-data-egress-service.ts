@@ -82,8 +82,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
 
     return createPagedResult(
-      dataEgressSummaryResult.results,
-      dataEgressSummaryResult.totalCount
+      dataEgressSummaryResult.data,
+      dataEgressSummaryResult.total
     );
   }
 
@@ -104,9 +104,6 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       limit,
     });
 
-    return createPagedResult(
-      dataEgressQueryRes.results,
-      dataEgressQueryRes.totalCount
-    );
+    return createPagedResult(dataEgressQueryRes.data, dataEgressQueryRes.total);
   }
 }

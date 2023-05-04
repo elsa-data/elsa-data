@@ -28,11 +28,9 @@ beforeAll(async () => {
 beforeEach(async () => {
   ({ adminUser, notAllowedUser } = await beforeEachCommon(testContainer));
 });
-
 it("basic summary get all works", async () => {
-  const result = await datasetService.getSummary({
+  const result = await datasetService.getAll({
     user: adminUser,
-    includeDeletedFile: true,
     limit: 1000,
     offset: 0,
   });
@@ -44,38 +42,29 @@ it("basic summary get all works", async () => {
 });
 
 it("basic summary get all has correct summary values for family dataset", async () => {
-  const result = await datasetService.getSummary({
+  const result = await datasetService.get({
     user: adminUser,
     includeDeletedFile: true,
-    limit: 1000,
-    offset: 0,
+    datasetUri: TENG_URI,
   });
 
   expect(result).not.toBeNull();
-  assert(result && result.data);
+  assert(result);
 
-  expect(result.data.length).toBe(2);
+  expect(result.uri).toBe(TENG_URI);
+  expect(result.description).toBe("UMCCR 10G");
+  expect(result.totalArtifactCount).toBe(50);
 
-  sortBasedOnUri(result.data);
-  const family = result.data[1];
-
-  expect(family.uri).toBe(TENG_URI);
-  expect(family.description).toBe("UMCCR 10G");
-  expect(family.totalArtifactCount).toBe(50);
-
-  expect(family.totalArtifactIncludes.trim()).toBe("VCF BAM");
-
-  expect(family.totalArtifactSizeBytes).toBe(1097309374141);
-  expect(family.totalCaseCount).toBe(10);
-  expect(family.totalPatientCount).toBe(10);
-  expect(family.totalSpecimenCount).toBe(10);
+  expect(result.totalArtifactSizeBytes).toBe(1097309374141);
+  expect(result.totalCaseCount).toBe(10);
+  expect(result.totalPatientCount).toBe(10);
+  expect(result.totalSpecimenCount).toBe(10);
 });
 
 it("basic summary get all is sorted by dataset URI", async () => {
   {
-    const result = await datasetService.getSummary({
+    const result = await datasetService.getAll({
       user: adminUser,
-      includeDeletedFile: true,
       limit: 1000,
       offset: 0,
     });
@@ -91,9 +80,8 @@ it("basic summary get all is sorted by dataset URI", async () => {
   await insert10C();
 
   {
-    const result = await datasetService.getSummary({
+    const result = await datasetService.getAll({
       user: adminUser,
-      includeDeletedFile: true,
       limit: 1000,
       offset: 0,
     });
@@ -108,9 +96,8 @@ it("basic summary get all is sorted by dataset URI", async () => {
 });
 
 it("not allowed users cannot get dataset data", async () => {
-  const result = await datasetService.getSummary({
+  const result = await datasetService.getAll({
     user: notAllowedUser,
-    includeDeletedFile: true,
     limit: 1000,
     offset: 0,
   });

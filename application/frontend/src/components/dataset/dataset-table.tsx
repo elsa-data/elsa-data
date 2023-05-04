@@ -13,23 +13,7 @@ import { ToolTip } from "../tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 
-const columnProps = [
-  {
-    columnTitle: "",
-  },
-  {
-    columnTitle: "Description / URI",
-  },
-  {
-    columnTitle: "Last Modified",
-  },
-  {
-    columnTitle: "Artifacts",
-  },
-  {
-    columnTitle: "",
-  },
-];
+const columnHeaderArray = ["", "Description / URI", "Last Modified", ""];
 
 const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 const baseMessageDivClasses =
@@ -48,7 +32,6 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
   const datasetQuery = trpc.datasetRouter.getAllDataset.useQuery(
     {
       page: currentPage,
-      includeDeletedFile: includeDeletedFile,
     },
     {
       keepPreviousData: true,
@@ -73,8 +56,8 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
       <table className="table w-full table-auto">
         <thead>
           <tr>
-            {columnProps.map((props, idx) => (
-              <th key={idx}>{props.columnTitle}</th>
+            {columnHeaderArray.map((props, idx) => (
+              <th key={idx}>{props}</th>
             ))}
           </tr>
         </thead>
@@ -101,23 +84,6 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                   {row.updatedDateTime
                     ? formatLocalDateTime(String(row.updatedDateTime))
                     : ""}
-                </td>
-                <td>
-                  {row.totalArtifactCount > 0 && (
-                    <div>
-                      <div>
-                        {row.totalArtifactCount}{" "}
-                        {oxford(row.totalArtifactIncludes.split(" "))}
-                        {" (s)"}
-                      </div>
-                      <div>
-                        totalling{" "}
-                        <span className="font-bold">
-                          {fileSize(row.totalArtifactSizeBytes)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </td>
                 <td className="text-right">
                   <button
