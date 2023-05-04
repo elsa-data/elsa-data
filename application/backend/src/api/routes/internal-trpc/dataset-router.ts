@@ -17,14 +17,13 @@ const inputSingleDatasetUri = z.object({
  */
 export const datasetRouter = router({
   getAllDataset: internalProcedure
-    .input(inputPaginationParameter.merge(inputIncludeDeletedFile))
+    .input(inputPaginationParameter)
     .query(async ({ input, ctx }) => {
       const { user, pageSize } = ctx;
-      const { includeDeletedFile = false, page = 1 } = input;
+      const { page = 1 } = input;
 
-      return await ctx.datasetService.getSummary({
+      return await ctx.datasetService.getAll({
         user,
-        includeDeletedFile,
         limit: pageSize,
         offset: calculateOffset(page, pageSize),
       });

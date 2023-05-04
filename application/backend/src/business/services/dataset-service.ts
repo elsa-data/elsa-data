@@ -16,8 +16,9 @@ import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditLogService } from "./audit-log-service";
 import {
+  getAllDataset,
   getDatasetConsent,
-  getDatasetSummary,
+  getDatasetSummaryByUri,
 } from "../../../dbschema/queries";
 
 @injectable()
@@ -65,30 +66,25 @@ export class DatasetService {
   }
 
   /**
-   * Return a paged result of datasets in summary form.
+   * Return a paged result of datasets.
    *
    * @param user
-   * @param includeDeletedFile
    * @param limit
    * @param offset
    */
-  public async getSummary({
+  public async getAll({
     user,
-    includeDeletedFile,
     limit,
     offset,
   }: {
     user: AuthenticatedUser;
-    includeDeletedFile: boolean;
     limit: number;
     offset: number;
   }): Promise<PagedResult<DatasetLightType>> {
-    const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
+    const datasetSummaryQuery = await getAllDataset(this.edgeDbClient, {
       userDbId: user.dbId,
-      includeDeletedFile,
       limit,
       offset,
-      datasetUri: null,
     });
 
     return createPagedResult(
@@ -97,12 +93,6 @@ export class DatasetService {
         description: r.description,
         updatedDateTime: r.updatedDateTime,
         isInConfig: r.isInConfig,
-        totalCaseCount: r.totalCaseCount,
-        totalPatientCount: r.totalPatientCount,
-        totalSpecimenCount: r.totalSpecimenCount,
-        totalArtifactCount: r.totalArtifactCount,
-        totalArtifactIncludes: r.artifactTypes.trim(),
-        totalArtifactSizeBytes: r.totalArtifactSizeBytes,
       })),
       datasetSummaryQuery.totalCount
     );
@@ -117,37 +107,37 @@ export class DatasetService {
     datasetUri: string;
     includeDeletedFile: boolean;
   }): Promise<DatasetDeepType | null> {
-    const datasetSummaryQuery = await getDatasetSummary(this.edgeDbClient, {
-      userDbId: user.dbId,
-      includeDeletedFile,
-      limit: 1, // Only expect one value from single URI filter
-      offset: 0,
-      datasetUri: datasetUri,
-    });
+    const datasetSummaryQuery = await getDatasetSummaryByUri(
+      this.edgeDbClient,
+      {
+        userDbId: user.dbId,
+        includeDeletedFile,
+        datasetUri: datasetUri,
+      }
+    );
 
-    if (datasetSummaryQuery.results.length != 1) return null;
+    if (!datasetSummaryQuery) return null;
 
-    const r = datasetSummaryQuery.results[0];
     return {
-      uri: r.uri,
-      description: r.description,
-      updatedDateTime: r.updatedDateTime,
-      isInConfig: r.isInConfig,
-      totalCaseCount: r.totalCaseCount,
-      totalPatientCount: r.totalPatientCount,
-      totalSpecimenCount: r.totalSpecimenCount,
-      totalArtifactCount: r.totalArtifactCount,
-      totalArtifactIncludes: r.artifactTypes.trim(),
-      totalArtifactSizeBytes: r.totalArtifactSizeBytes,
+      uri: datasetSummaryQuery.uri,
+      description: datasetSummaryQuery.description,
+      updatedDateTime: datasetSummaryQuery.updatedDateTime,
+      isInConfig: datasetSummaryQuery.isInConfig,
+      totalCaseCount: datasetSummaryQuery.totalCaseCount,
+      totalPatientCount: datasetSummaryQuery.totalPatientCount,
+      totalSpecimenCount: datasetSummaryQuery.totalSpecimenCount,
+      totalArtifactCount: datasetSummaryQuery.totalArtifactCount,
+      totalArtifactIncludes: datasetSummaryQuery.artifactTypes.trim(),
+      totalArtifactSizeBytes: datasetSummaryQuery.totalArtifactSizeBytes,
 
       // Artifact Type Count
-      bclCount: r.bclCount,
-      fastqCount: r.fastqCount,
-      vcfCount: r.vcfCount,
-      bamCount: r.bamCount,
-      cramCount: r.cramCount,
+      bclCount: datasetSummaryQuery.bclCount,
+      fastqCount: datasetSummaryQuery.fastqCount,
+      vcfCount: datasetSummaryQuery.vcfCount,
+      bamCount: datasetSummaryQuery.bamCount,
+      cramCount: datasetSummaryQuery.cramCount,
 
-      cases: r.cases,
+      cases: datasetSummaryQuery.cases,
     };
   }
 
