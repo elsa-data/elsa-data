@@ -53,7 +53,7 @@ with
   fileCount := count(fileObjectJson),
 
 select {
-  results := assert_distinct((
+  data := assert_distinct((
     select (
       for jsonFile in fileObjectJson
       union (
@@ -87,5 +87,5 @@ select {
     limit
         <int16>$limit
   )),
-  totalCount := fileCount
+  total := fileCount
 }

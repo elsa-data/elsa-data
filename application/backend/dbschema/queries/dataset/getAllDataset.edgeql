@@ -19,7 +19,7 @@ with
   )
 
 select {
-  results := (
+  data := (
     select dataset {
       uri,
       description,
@@ -37,5 +37,5 @@ select {
     limit
         <int16>$limit
   ),
-  totalCount := count(dataset)
+  total := count(dataset)
 }

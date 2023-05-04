@@ -89,13 +89,13 @@ export class DatasetService {
     });
 
     return createPagedResult(
-      datasetSummaryQuery.results.map((r) => ({
+      datasetSummaryQuery.data.map((r) => ({
         uri: r.uri,
         description: r.description,
         updatedDateTime: r.updatedDateTime,
         isInConfig: r.isInConfig,
       })),
-      datasetSummaryQuery.totalCount
+      datasetSummaryQuery.total
     );
   }
 
