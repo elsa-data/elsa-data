@@ -30,9 +30,9 @@ export const REACT_QUERY_RELEASE_KEYS = {
   getReleaseId: (keys: readonly unknown[]) => keys[2],
 };
 
-export async function makeReleaseTypeLocal(
+export function makeReleaseTypeLocal(
   releaseData: ReleaseDetailType
-): Promise<ReleaseTypeLocal> {
+): ReleaseTypeLocal {
   // the release data comes with only terminology *codes* - so we need to lookup
   // the display terms for the UI
   //if (releaseData.applicationCoded.type === "DS") {

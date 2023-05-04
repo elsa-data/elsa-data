@@ -44,38 +44,6 @@ export const releaseRoutes = async (
   );
   const manifestService = _opts.container.resolve(ManifestService);
 
-  fastify.get<{ Reply: ReleaseSummaryType[] }>(
-    "/releases",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const allForUser = await releaseService.getAll(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
-
-      sendPagedResult(reply, allForUser);
-    }
-  );
-
-  fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      const release = await releaseService.get(authenticatedUser, releaseKey);
-
-      if (release) reply.send(release);
-      else reply.status(400).send();
-    }
-  );
-
   fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
     "/releases/:rid/cases",
     {},
