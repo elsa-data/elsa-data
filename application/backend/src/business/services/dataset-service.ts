@@ -18,7 +18,8 @@ import { AuditLogService } from "./audit-log-service";
 import {
   getAllDataset,
   getDatasetConsent,
-  getDatasetSummaryByUri,
+  getDatasetCasesByUri,
+  getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
 
 @injectable()
@@ -107,37 +108,39 @@ export class DatasetService {
     datasetUri: string;
     includeDeletedFile: boolean;
   }): Promise<DatasetDeepType | null> {
-    const datasetSummaryQuery = await getDatasetSummaryByUri(
+    const datasetCasesQuery = await getDatasetCasesByUri(this.edgeDbClient, {
+      userDbId: user.dbId,
+      datasetUri: datasetUri,
+    });
+    const datasetStorageStatsQuery = await getDatasetStorageStatsByUri(
       this.edgeDbClient,
       {
         userDbId: user.dbId,
-        includeDeletedFile,
         datasetUri: datasetUri,
+        includeDeletedFile,
       }
     );
 
-    if (!datasetSummaryQuery) return null;
+    if (!datasetCasesQuery || !datasetStorageStatsQuery) return null;
 
     return {
-      uri: datasetSummaryQuery.uri,
-      description: datasetSummaryQuery.description,
-      updatedDateTime: datasetSummaryQuery.updatedDateTime,
-      isInConfig: datasetSummaryQuery.isInConfig,
-      totalCaseCount: datasetSummaryQuery.totalCaseCount,
-      totalPatientCount: datasetSummaryQuery.totalPatientCount,
-      totalSpecimenCount: datasetSummaryQuery.totalSpecimenCount,
-      totalArtifactCount: datasetSummaryQuery.totalArtifactCount,
-      totalArtifactIncludes: datasetSummaryQuery.artifactTypes.trim(),
-      totalArtifactSizeBytes: datasetSummaryQuery.totalArtifactSizeBytes,
+      uri: datasetCasesQuery.uri,
+      description: datasetCasesQuery.description,
+      updatedDateTime: datasetCasesQuery.updatedDateTime,
+      isInConfig: datasetCasesQuery.isInConfig,
+      totalCaseCount: datasetCasesQuery.totalCaseCount,
+      totalPatientCount: datasetCasesQuery.totalPatientCount,
+      totalSpecimenCount: datasetCasesQuery.totalSpecimenCount,
+      cases: datasetCasesQuery.cases,
 
       // Artifact Type Count
-      bclCount: datasetSummaryQuery.bclCount,
-      fastqCount: datasetSummaryQuery.fastqCount,
-      vcfCount: datasetSummaryQuery.vcfCount,
-      bamCount: datasetSummaryQuery.bamCount,
-      cramCount: datasetSummaryQuery.cramCount,
-
-      cases: datasetSummaryQuery.cases,
+      totalArtifactCount: datasetStorageStatsQuery.totalArtifactCount,
+      totalArtifactSizeBytes: datasetStorageStatsQuery.totalArtifactSizeBytes,
+      bclCount: datasetStorageStatsQuery.bclCount,
+      fastqCount: datasetStorageStatsQuery.fastqCount,
+      vcfCount: datasetStorageStatsQuery.vcfCount,
+      bamCount: datasetStorageStatsQuery.bamCount,
+      cramCount: datasetStorageStatsQuery.cramCount,
     };
   }
 

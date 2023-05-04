@@ -109,48 +109,17 @@ with
     cramArtifact.craiFile.size,
   }),
 
-  # List all type of artifacts
-  artifactList := "",
-  artifactList:= (select artifactList ++ "BCL " if bclCount > 0 else  artifactList ++ "" ),
-  artifactList:= (select artifactList ++ "FASTQ " if fastqCount > 0 else  artifactList ++ "" ),
-  artifactList:= (select artifactList ++ "VCF " if vcfCount > 0 else  artifactList ++ "" ),
-  artifactList:= (select artifactList ++ "BAM " if bamCount > 0 else  artifactList ++ "" ),
-  artifactList:= (select artifactList ++ "CRAM " if cramCount > 0 else  artifactList ++ "" ),
-
 select assert_single((
-  select dataset::Dataset {
-    uri := .uri,
-    description := .description,
-    updatedDateTime := .updatedDateTime,
-    isInConfig := .isInConfig,
-
-    cases := (
-      select .cases { 
-        consent: { id },
-        externalIdentifiers,
-        patients: {
-          sexAtBirth,
-          consent : { id },
-          externalIdentifiers,
-        }
-      }
-    ),
-
-    totalCaseCount := count(.cases),
-    totalPatientCount := count(.cases.patients),
-    totalSpecimenCount := count(.cases.patients.specimens),
-
+  select {
     bclCount := bclCount,
     fastqCount := fastqCount,
     vcfCount := vcfCount,
     bamCount := bamCount,
     cramCount := cramCount,
 
-    artifactTypes := artifactList,
-    
     totalArtifactCount := totalArtifactCount,
     totalArtifactSizeBytes := totalArtifactSize,
   }
   filter
-  .uri = <str>$datasetUri
+    isAllowedQuery
 ))

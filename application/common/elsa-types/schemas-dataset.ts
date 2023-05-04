@@ -74,7 +74,6 @@ export const DatasetSchemaNesting = Type.Object({
   totalPatientCount: Type.Number(),
   totalSpecimenCount: Type.Number(),
   totalArtifactCount: Type.Number(),
-  totalArtifactIncludes: Type.String(),
   totalArtifactSizeBytes: Type.Number(),
 });
 

@@ -33,12 +33,13 @@ export const datasetRouter = router({
     .query(async ({ input, ctx }) => {
       const { user } = ctx;
       const { datasetUri, includeDeletedFile = false } = input;
-
-      return await ctx.datasetService.get({
+      const res = await ctx.datasetService.get({
         user,
         includeDeletedFile,
         datasetUri,
       });
+
+      return res;
     }),
   updateDataset: internalProcedure
     .input(inputSingleDatasetUri)
