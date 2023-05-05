@@ -37,29 +37,27 @@ export const SharingControlBox: React.FC<Props> = ({
   releaseData,
 }) => {
   const { features } = useEnvRelay();
-  const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // whenever we do a mutation of application coded data - our API returns the complete updated
-      // state of the *whole* release - and we can use that data to replace the stored react-query state
-      onSuccess: (result: ReleaseTypeLocal) => {
-        queryClient.setQueryData(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-          result
-        );
-      },
+      // this is not as efficient as our PATCH operation actually returns the new release data
+      // BUT we currently have BOTH trpc and react query so lets decide on one first
+      onSuccess: async (result: ReleaseTypeLocal) =>
+        utils.releaseRouter.getSpecificRelease.invalidate({
+          releaseKey: releaseKey,
+        }),
     }
   );
 
   const copyOutMutate = trpc.releaseJob.startCopyOut.useMutation({
     onSettled: async () =>
-      queryClient.invalidateQueries(
-        REACT_QUERY_RELEASE_KEYS.detail(releaseKey)
-      ),
+      utils.releaseRouter.getSpecificRelease.invalidate({
+        releaseKey: releaseKey,
+      }),
   });
 
   type SharingConfigurationAccordionProps = {
