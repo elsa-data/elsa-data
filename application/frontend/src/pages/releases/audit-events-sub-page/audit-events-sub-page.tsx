@@ -3,7 +3,7 @@ import { usePageSizer } from "../../../hooks/page-sizer";
 import { AuditEventTable } from "../../../components/audit-event/audit-event-table";
 import { useParams } from "react-router-dom";
 
-export const AuditLogSubPage = () => {
+export const AuditEventsSubPage = () => {
   const pageSize = usePageSizer();
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
@@ -14,6 +14,7 @@ export const AuditLogSubPage = () => {
         path="releases"
         id={releaseKey}
         filterMenu={false}
+        filterMenuInitial={["release"]}
         pageSize={pageSize}
       />
     </>

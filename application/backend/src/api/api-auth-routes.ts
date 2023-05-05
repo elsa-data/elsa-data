@@ -168,7 +168,11 @@ export const callbackRoutes = async (
     const authUser = await userService.upsertUserForLogin(
       idClaims.sub,
       idClaims.name,
-      idClaims.email
+      idClaims.email,
+      {
+        ip: request.ip,
+        hostname: request.hostname,
+      }
     );
 
     if (!authUser) {

@@ -6,8 +6,11 @@ export const AuditEventsPage = (): JSX.Element => {
   const pageSize = usePageSizer();
 
   return (
-    <div className="mt-2 flex flex-grow flex-row flex-wrap">
-      <AuditEventTable path="users" filterMenu={true} pageSize={pageSize} />
-    </div>
+    <AuditEventTable
+      path="users"
+      filterMenu={true}
+      filterMenuInitial={["user"]}
+      pageSize={pageSize}
+    />
   );
 };
