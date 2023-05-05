@@ -90,7 +90,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
       </table>
       {dataEgressQuery.isError && (
         <EagerErrorBoundary
-          message={"Something went wrong fetching audit logs."}
+          message={"Something went wrong fetching data egress"}
           error={dataEgressQuery.error}
           styling={"bg-red-100"}
         />
