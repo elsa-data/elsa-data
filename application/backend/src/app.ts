@@ -54,7 +54,14 @@ export class App {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
 
-    this.server = Fastify({ logger: logger, maxParamLength: 5000 });
+    this.server = Fastify({
+      logger: logger,
+      // needed for supporting TRPC queries (that can get very long!)
+      maxParamLength: 5000,
+      // consider if this should be a setting - but currently we are always deploying behind a load balancer
+      // that will act as a trusted proxy
+      trustProxy: true,
+    });
 
     // inject a copy of the Elsa settings and a custom child DI container into every Fastify request
     this.server.decorateRequest("settings", null);

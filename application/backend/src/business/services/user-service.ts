@@ -158,11 +158,13 @@ export class UserService {
    * @param subjectId
    * @param displayName
    * @param email
+   * @param auditDetails if present, JSON data that will be attached to the Login audit event (for IP etc)
    */
   public async upsertUserForLogin(
     subjectId: string,
     displayName: string,
-    email: string
+    email: string,
+    auditDetails: any = undefined
   ): Promise<AuthenticatedUser> {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
@@ -209,6 +211,7 @@ export class UserService {
         actionCategory: "E",
         actionDescription: "Login",
         outcome: 0,
+        details: auditDetails,
       });
 
       return await e

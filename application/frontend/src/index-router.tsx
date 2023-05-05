@@ -27,7 +27,7 @@ import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page
 import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
-import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
+import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit-events-sub-page";
 import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
@@ -94,13 +94,13 @@ export function createRouter(addBypassLoginPage: boolean) {
       children: <></>,
     },
     {
-      text: "Audit Log",
-      path: "audit-log",
-      element: <AuditLogSubPage />,
+      text: "Audit Events",
+      path: "audit-events",
+      element: <AuditEventsSubPage />,
       children: <></>,
     },
     {
-      path: "audit-log/:objectId",
+      path: "audit-events/:objectId",
       element: <AuditEventDetailedPage />,
       children: <></>,
     },

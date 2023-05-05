@@ -1,13 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { Box } from "../../components/boxes";
-import { ReleaseSummaryType } from "@umccr/elsa-types";
-import { REACT_QUERY_RELEASE_KEYS } from "../releases/queries";
 import { EagerErrorBoundary } from "../../components/errors";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { useNavigate } from "react-router-dom";
 import { BoxPaginator } from "../../components/box-paginator";
-import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { usePageSizer } from "../../hooks/page-sizer";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
