@@ -100,9 +100,11 @@ export function createRouter(addBypassLoginPage: boolean) {
       children: <></>,
     },
     {
+      /* disabled need to work out how this works with the top level audit event page.. we may not even need {
       path: "audit-events/:objectId",
       element: <AuditEventDetailedPage />,
       children: <></>,
+    }, */
     },
   ];
 
@@ -172,11 +174,14 @@ export function createRouter(addBypassLoginPage: boolean) {
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
 
-          <Route
+          <Route path={`audit-events`} element={<AuditEventsPage />} />
+
+          {/* disabled - need to know how this relates to audit events when we arrive from releases audit page?
+              as it turns out - very few audit entries have long details so we don't even need currently
+            <Route
             path={`audit-events/:objectId`}
             element={<AuditEventDetailedPage />}
-          />
-          <Route path={`audit-events`} element={<AuditEventsPage />} />
+          /> */}
         </Route>
 
         <Route path="*" element={<NoMatch />} />
