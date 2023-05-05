@@ -1,3 +1,4 @@
+import React from "react";
 import { CSRFInputToken } from "../../../../components/csrf-token";
 import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";

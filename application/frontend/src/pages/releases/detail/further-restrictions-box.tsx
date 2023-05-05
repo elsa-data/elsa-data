@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import {
@@ -9,10 +9,8 @@ import {
   RightDiv,
 } from "../../../components/rh/rh-structural";
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
-import {
-  axiosPatchOperationMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "../queries";
+import { axiosPatchOperationMutationFn } from "../queries";
+import { trpc } from "../../../helpers/trpc";
 
 type Props = {
   releaseKey: string;
@@ -23,21 +21,19 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
-  const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // whenever we do a mutation of application coded data - our API returns the complete updated
-      // state of the *whole* release - and we can use that data to replace the stored react-query state
-      onSuccess: (result: ReleaseTypeLocal) => {
-        queryClient.setQueryData(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-          result
-        );
-      },
+      onSuccess: (result: ReleaseTypeLocal) =>
+        // we need to cross over into TRPC world to invalidate its cache
+        // eventually we should move this PATCH to TRPC too
+        utils.releaseRouter.getSpecificRelease.invalidate({
+          releaseKey: releaseKey,
+        }),
     }
   );
 
