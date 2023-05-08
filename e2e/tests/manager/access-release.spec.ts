@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { managerSetup } from "./manager.common";
-import fs from "fs";
-import Seven from "node-7z";
+import * as fs from "fs";
+import * as Seven from "node-7z";
 
 const RELEASE_KEY = "R001";
 
@@ -62,6 +62,14 @@ test("Download metadata manifest ZIP file", async ({ page }) => {
 
   // Reading the data from the stream
   readableStream?.on("end", () => {
+    const splitLines = data.split("\n");
+
+    // Test if TSV is downloaded and contain S3 URI
     expect(data).toMatch(/s3:\/\/umccr-10f-data-dev\//i);
+
+    // Test if "ELROY" data exist, as only one of the trio is selected in this release
+    expect(splitLines[1]).toMatch(
+      "JETSONS\tELROY\tGM24631\t1\ts3\tumccr-10f-data-dev\tCHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz\ts3://umccr-10f-data-dev/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz\tVCF\t721970cb30906405d4045f702ca72376"
+    );
   });
 });
