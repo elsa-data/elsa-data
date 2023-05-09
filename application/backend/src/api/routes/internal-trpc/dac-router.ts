@@ -6,11 +6,9 @@ import { internalProcedure, router } from "../trpc-bootstrap";
  */
 export const dacRouter = router({
   // return all the instances of upstream DACS that we want to display in the UI
-  getDacInstances: internalProcedure
-    .input(z.void())
-    .query(async ({ input, ctx }) => {
-      const { user } = ctx;
+  getDacInstances: internalProcedure.query(async ({ input, ctx }) => {
+    const { user } = ctx;
 
-      return ctx.dacService.getInstances(user);
-    }),
+    return ctx.dacService.getInstances(user);
+  }),
 });

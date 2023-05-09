@@ -28,6 +28,13 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   },
   deployedUrl: "http://localhost:3000",
   serviceDiscoveryNamespace: "elsa-data",
+  dacs: [
+    {
+      id: "manual",
+      type: "manual",
+      description: "Manual",
+    },
+  ],
   datasets: [
     {
       name: "10G",
@@ -71,9 +78,6 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       ],
     },
   },
-  remsUrl: "https://hgpp-rems.dev.umccr.org",
-  remsBotKey: "a",
-  remsBotUser: "b",
   oidcClientId: "12345",
   oidcClientSecret: "abcd", // pragma: allowlist secret
   oidcIssuer: ciLogonIssuer,

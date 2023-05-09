@@ -34,11 +34,6 @@ export type ElsaSettings = {
 
   dacs: Dac[];
 
-  // to be removed - now in 'dacs'
-  remsUrl: string;
-  remsBotUser: string;
-  remsBotKey: string;
-
   logger: LoggerOptions;
 
   htsget?: {

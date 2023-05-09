@@ -16,7 +16,7 @@ export const DacDashboardPage: React.FC = () => {
   // the backend tells us all the DAC UI boxes we need to display
   // NOTE this query will fail if we do not have ALLOWED_CREATE_NEW_RELEASE - but this page
   // should never appear for people without that permission
-  const dacQuery = trpc.dac.getDacInstances.useQuery(undefined, {});
+  const dacQuery = trpc.dac.getDacInstances.useQuery();
 
   return (
     <>
