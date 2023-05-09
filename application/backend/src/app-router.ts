@@ -6,15 +6,17 @@ import { releaseDataEgressRouter } from "./api/routes/internal-trpc/release-data
 import { testRouter } from "./api/routes/internal-trpc/test-router";
 import { datasetRouter } from "./api/routes/internal-trpc/dataset-router";
 import { releaseRouter } from "./api/routes/internal-trpc/release-router";
+import { dacRouter } from "./api/routes/internal-trpc/dac-router";
 
 export const appRouter = router({
+  dac: dacRouter,
   datasetRouter: datasetRouter,
   releaseActivation: releaseActivationRouter,
   releaseJob: releaseJobRouter,
   releaseRouter: releaseRouter,
   releaseDataEgress: releaseDataEgressRouter,
-  user: userRouter,
   test: testRouter,
+  user: userRouter,
 });
 
 export type AppRouter = typeof appRouter;

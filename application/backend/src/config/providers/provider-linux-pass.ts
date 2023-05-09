@@ -45,6 +45,6 @@ export class ProviderLinuxPass extends ProviderBase {
       } catch (error) {}
     }
 
-    return ProviderBase.nestObject(values);
+    return values;
   }
 }

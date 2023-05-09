@@ -141,9 +141,10 @@ export async function bootstrapSettings(
       : undefined,
     sessionSecret: _.get(config, "session.secret")!,
     sessionSalt: _.get(config, "session.salt")!,
-    remsBotKey: _.get(config, "rems.botKey")!,
-    remsBotUser: _.get(config, "rems.botUser")!,
-    remsUrl: "https://hgpp-rems.dev.umccr.org",
+    dacs: _.get(config, "dacs"),
+    remsBotKey: "to be removed", // _.get(config, "rems.botKey")!,
+    remsBotUser: "to be removed", // _.get(config, "rems.botUser")!,
+    remsUrl: "to be removed", // "https://hgpp-rems.dev.umccr.org",
     logger: {
       name: "elsa-data",
       level: logLevel,
