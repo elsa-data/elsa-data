@@ -21,7 +21,7 @@ import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { DatasetService } from "../../business/services/dataset-service";
 import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
 import { ReleaseSelectionService } from "../../business/services/release-selection-service";
-import { DacService } from "../../business/services/dac-service";
+import { DacService } from "../../business/services/dacs/dac-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for

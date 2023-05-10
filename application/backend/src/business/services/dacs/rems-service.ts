@@ -1,17 +1,17 @@
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
-import { makeEmptyCodeArray } from "../../test-data/test-data-helpers";
+import e from "../../../../dbschema/edgeql-js";
+import { makeEmptyCodeArray } from "../../../test-data/test-data-helpers";
 import { inject, injectable } from "tsyringe";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { randomUUID } from "crypto";
-import { UserService } from "./user-service";
-import { AuthenticatedUser } from "../authenticated-user";
+import { UserService } from "../user-service";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { isEmpty } from "lodash";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
-import { getNextReleaseKey } from "../db/release-queries";
-import { ReleaseService } from "./release-service";
+import { getNextReleaseKey } from "../../db/release-queries";
+import { ReleaseService } from "../release-service";
 
 @injectable()
 export class RemsService {

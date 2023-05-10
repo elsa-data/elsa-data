@@ -1,10 +1,10 @@
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
-import { AuthenticatedUser } from "../authenticated-user";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { ReleaseService } from "./release-service";
-import { Dac } from "../../config/config-schema-dac";
+import { UserService } from "../user-service";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import { ReleaseService } from "../release-service";
+import { Dac } from "../../../config/config-schema-dac";
 import _ from "lodash";
 
 /**
