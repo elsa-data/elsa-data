@@ -4,7 +4,7 @@ import { Client } from "edgedb";
 import { beforeEachCommon } from "./releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../src/config/elsa-settings";
-import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";

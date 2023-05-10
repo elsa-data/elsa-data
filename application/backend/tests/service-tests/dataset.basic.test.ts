@@ -3,10 +3,13 @@ import assert from "assert";
 import { beforeEachCommon } from "./dataset.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { DatasetService } from "../../src/business/services/dataset-service";
-import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
-import { insert10C, TENC_URI } from "../../src/test-data/insert-test-data-10c";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
+import {
+  insert10C,
+  TENC_URI,
+} from "../../src/test-data/dataset/insert-test-data-10c";
 import { Client } from "edgedb";
-import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 
 let edgeDbClient: Client;
 let datasetService: DatasetService;
@@ -77,7 +80,7 @@ it("basic summary get all is sorted by dataset URI", async () => {
   }
 
   // insert the 10c dataset - which should alphabetically go to the start
-  await insert10C();
+  await insert10C(testContainer);
 
   {
     const result = await datasetService.getAll({

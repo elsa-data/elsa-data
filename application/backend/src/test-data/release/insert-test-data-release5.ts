@@ -1,22 +1,30 @@
-import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../../di-helpers";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
-} from "./test-data-helpers";
-import { TENG_URI } from "./insert-test-data-10g";
-import { TEST_SUBJECT_3 } from "./insert-test-users";
+} from "../util/test-data-helpers";
+import { InsertReleaseProps, insertRole } from "./helpers";
 
-const edgeDbClient = edgedb.createClient();
+export async function insertRelease5(
+  dc: DependencyContainer,
+  releaseProps: InsertReleaseProps
+) {
+  const { edgeDbClient } = getServices(dc);
+  const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
+    releaseProps;
 
-export async function insertRelease4() {
-  return await e
+  if (releaseAdministrator.length < 1)
+    throw new Error("Release has no Administrator");
+
+  const insertRelease5 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: TEST_SUBJECT_3,
-      applicationDacTitle: "A Working Release of 10G Data",
+      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      applicationDacTitle: "A Working Release of Data on Google Storage",
       applicationDacDetails:
-        "A release that has all working/matching files in S3 - so can do actual sharing",
-      applicationDacIdentifier: makeSystemlessIdentifier("2"),
+        "A release that has all working/matching files in Google Storage - so can do actual sharing",
+      applicationDacIdentifier: makeSystemlessIdentifier("GS"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "HMB",
         countriesInvolved: makeEmptyCodeArray(),
@@ -52,11 +60,11 @@ export async function insertRelease4() {
         e.release.DataSharingConfiguration,
         {}
       ),
-      datasetUris: e.array([TENG_URI]),
+      datasetUris: datasetUris,
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseKey: `R004`,
+      releaseKey: `R005`,
       releasePassword: "abcd", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       isAllowedReadData: true,
@@ -74,4 +82,22 @@ export async function insertRelease4() {
       ),
     })
     .run(edgeDbClient);
+
+  // Inserting user roles assign to this release
+  for (const user of releaseAdministrator) {
+    await insertRole(
+      insertRelease5.id,
+      user.email,
+      "Administrator",
+      edgeDbClient
+    );
+  }
+  for (const user of releaseManager) {
+    await insertRole(insertRelease5.id, user.email, "Manager", edgeDbClient);
+  }
+  for (const user of releaseMember) {
+    await insertRole(insertRelease5.id, user.email, "Member", edgeDbClient);
+  }
+
+  return insertRelease5;
 }

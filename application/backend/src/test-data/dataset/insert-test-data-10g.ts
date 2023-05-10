@@ -1,20 +1,20 @@
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import {
   createArtifacts,
   createFile,
   makeSystemlessIdentifierArray,
-} from "./test-data-helpers";
+} from "../util/test-data-helpers";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
 import { DependencyContainer } from "tsyringe";
-import { getServices } from "../di-helpers";
+import { getServices } from "../../di-helpers";
 
-export const GS_URI = "urn:fdc:umccr.org:2022:dataset/gs";
+export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
 
 /**
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
  * to test specific areas of data sharing.
  */
-export async function insertGs(dc: DependencyContainer) {
+export async function insert10G(dc: DependencyContainer): Promise<string> {
   const { settings, logger, edgeDbClient } = getServices(dc);
 
   const makeCase = async (
@@ -31,6 +31,68 @@ export async function insertGs(dc: DependencyContainer) {
     patientConsentJsons?: DuoLimitationCodedType[],
     specimenConsentJsons?: DuoLimitationCodedType[]
   ) => {
+    const s3Artifacts = await createArtifacts(
+      [],
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
+        bamSize,
+        bamEtag,
+        bamMd5
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
+        0
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+        vcfSize,
+        vcfEtag,
+        vcfMd5
+      ),
+      createFile(
+        `s3://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+        0
+      ),
+      []
+    );
+    const gsArtifacts = await createArtifacts(
+      [],
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.bam`,
+        bamSize,
+        undefined,
+        bamMd5
+      ),
+      createFile(`gs://10gbucket/${specimenId}/${specimenId}.bam.bai`, 0),
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
+        vcfSize,
+        undefined,
+        vcfMd5
+      ),
+      createFile(
+        `gs://10gbucket/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
+        0
+      ),
+      []
+    );
+    const r2Artifacts = await createArtifacts(
+      [],
+      undefined,
+      undefined,
+      createFile(
+        `r2://75cd1b191bb75176cc5418ad2878db39/umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`, // pragma: allowlist secret
+        vcfSize,
+        undefined,
+        vcfMd5
+      ),
+      createFile(
+        `r2://75cd1b191bb75176cc5418ad2878db39/umccr-10g-data-dev//${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`, // pragma: allowlist secret
+        0
+      ),
+      []
+    );
+
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
       patients: e.insert(e.dataset.DatasetPatient, {
@@ -62,40 +124,21 @@ export async function insertGs(dc: DependencyContainer) {
                   ),
                 })
               : undefined,
-          artifacts: await createArtifacts(
-            [],
-            createFile(
-              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
-              bamSize,
-              bamEtag,
-              bamMd5
-            ),
-            createFile(
-              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
-              0
-            ),
-            createFile(
-              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
-              vcfSize,
-              vcfEtag,
-              vcfMd5
-            ),
-            createFile(
-              `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-              0
-            ),
-            []
+          artifacts: e.op(
+            e.op(s3Artifacts, "union", gsArtifacts),
+            "union",
+            r2Artifacts
           ),
         }),
       }),
     });
   };
 
-  return await e
+  await e
     .insert(e.dataset.Dataset, {
-      uri: GS_URI,
-      externalIdentifiers: makeSystemlessIdentifierArray("GS"),
-      description: "A Dataset to test Google Storage",
+      uri: TENG_URI,
+      externalIdentifiers: makeSystemlessIdentifierArray("10G"),
+      description: "UMCCR 10G",
       cases: e.set(
         await makeCase(
           "SINGLETONCHARLES",
@@ -231,4 +274,6 @@ export async function insertGs(dc: DependencyContainer) {
       ),
     })
     .run(edgeDbClient);
+
+  return TENG_URI;
 }

@@ -1,46 +1,25 @@
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import {
   findSpecimenQuery,
   makeDoubleCodeArray,
   makeIdentifierTuple,
   makeSingleCodeArray,
-} from "./test-data-helpers";
-import { TENG_URI } from "./insert-test-data-10g";
-import { TENC_URI } from "./insert-test-data-10c";
+} from "../util/test-data-helpers";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../../di-helpers";
+import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../dbschema/queries";
+import { transformDbManifestToMasterManifest } from "../../business/services/manifests/manifest-master-helper";
+import { InsertReleaseProps, insertRole } from "./helpers";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
   MARGE_BAI_S3,
   MARGE_BAM_S3,
   MARGE_SPECIMEN,
-} from "./insert-test-data-10f-simpsons";
-import { ELROY_SPECIMEN } from "./insert-test-data-10f-jetsons";
-import { TENF_URI } from "./insert-test-data-10f-helpers";
-import {
-  TEST_SUBJECT_2,
-  TEST_SUBJECT_2_DISPLAY,
-  TEST_SUBJECT_3,
-  TEST_SUBJECT_3_DISPLAY,
-} from "./insert-test-users";
-import { DependencyContainer } from "tsyringe";
-import { getServices } from "../di-helpers";
-import { releaseGetSpecimenTreeAndFileArtifacts } from "../../dbschema/queries";
-import { transformDbManifestToMasterManifest } from "../business/services/manifests/manifest-master-helper";
+} from "../dataset/insert-test-data-10f-simpsons";
+import { ELROY_SPECIMEN } from "../dataset/insert-test-data-10f-jetsons";
 
-const RELEASE_KEY_1 = "R001";
-
-export async function insertRelease1(dc: DependencyContainer) {
-  const { settings, logger, edgeDbClient } = getServices(dc);
-
-  const insertRelease1 = await e
-    .insert(e.release.Release, {
-      lastUpdatedSubjectId: TEST_SUBJECT_3,
-      applicationDacTitle: "A Study of Lots of Test Data",
-      applicationDacIdentifier: makeIdentifierTuple(
-        "https://rems.australiangenomics.org.au",
-        "56"
-      ),
-      applicationDacDetails: `
+const applicationDetails = `
 #### Origin
 
 This is an application from REMS instance HGPP.
@@ -63,7 +42,30 @@ Ethics form XYZ.
 | a | b |
 | - | - |
 | 4 | 5 |
-`,
+`;
+
+const RELEASE_KEY_1 = "R001";
+
+export async function insertRelease1(
+  dc: DependencyContainer,
+  releaseProps: InsertReleaseProps
+) {
+  const { settings, logger, edgeDbClient } = getServices(dc);
+  const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
+    releaseProps;
+
+  if (releaseAdministrator.length < 1)
+    throw new Error("Release has no Administrator");
+
+  const insertRelease1 = await e
+    .insert(e.release.Release, {
+      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      applicationDacTitle: "A Study of Lots of Test Data",
+      applicationDacIdentifier: makeIdentifierTuple(
+        "https://rems.australiangenomics.org.au",
+        "56"
+      ),
+      applicationDacDetails: applicationDetails,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "DS",
         countriesInvolved: makeSingleCodeArray(
@@ -88,16 +90,16 @@ Ethics form XYZ.
       releaseKey: RELEASE_KEY_1,
       activation: e.insert(e.release.Activation, {
         activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
-        activatedById: TEST_SUBJECT_2,
-        activatedByDisplayName: TEST_SUBJECT_2_DISPLAY,
+        activatedById: releaseAdministrator[0].subject_id,
+        activatedByDisplayName: releaseAdministrator[0].name,
         manifest: e.json({}),
         manifestEtag: "123456",
       }),
       previouslyActivated: e.set(
         e.insert(e.release.Activation, {
           activatedAt: e.datetime(new Date(2022, 6, 7)),
-          activatedById: TEST_SUBJECT_3,
-          activatedByDisplayName: TEST_SUBJECT_3_DISPLAY,
+          activatedById: releaseAdministrator[0].subject_id,
+          activatedByDisplayName: releaseAdministrator[0].name,
           manifest: e.json({}),
           manifestEtag: "abcdef",
         })
@@ -110,7 +112,7 @@ Ethics form XYZ.
         copyOutEnabled: true,
       }),
       releasePassword: "abcd", // pragma: allowlist secret
-      datasetUris: e.array([TENG_URI, TENF_URI, TENC_URI]),
+      datasetUris: datasetUris,
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
@@ -145,14 +147,13 @@ Ethics form XYZ.
     releaseKey: RELEASE_KEY_1,
   });
   const masterManifest = await transformDbManifestToMasterManifest(m);
-
   await e
     .update(e.release.Release, (r) => ({
       filter: e.op(r.releaseKey, "=", RELEASE_KEY_1),
       set: {
         activation: e.insert(e.release.Activation, {
-          activatedById: TEST_SUBJECT_2,
-          activatedByDisplayName: TEST_SUBJECT_2_DISPLAY,
+          activatedById: releaseAdministrator[0].subject_id,
+          activatedByDisplayName: releaseAdministrator[0].name,
           manifest: e.json(masterManifest),
           manifestEtag: "0123",
         }),
@@ -160,10 +161,29 @@ Ethics form XYZ.
     }))
     .run(edgeDbClient);
 
+  // Inserting user roles assign to this release
+  for (const user of releaseAdministrator) {
+    await insertRole(
+      insertRelease1.id,
+      user.email,
+      "Administrator",
+      edgeDbClient
+    );
+  }
+  for (const user of releaseManager) {
+    await insertRole(insertRelease1.id, user.email, "Manager", edgeDbClient);
+  }
+  for (const user of releaseMember) {
+    await insertRole(insertRelease1.id, user.email, "Member", edgeDbClient);
+  }
+
   return insertRelease1;
 }
 
-const makeSyntheticDataEgressRecord = async () => {
+/**
+ * Helper Functions
+ */
+export const makeSyntheticDataEgressRecord = async () => {
   const makeDataEgressLog = async (fileUrl: string) => {
     return {
       auditId: "0f8e7694-d1eb-11ed-afa1-0242ac120002",

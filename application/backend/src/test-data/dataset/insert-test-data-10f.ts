@@ -1,16 +1,16 @@
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import {
   createArtifacts,
   createFile,
   makeSystemlessIdentifier,
   makeSystemlessIdentifierArray,
-} from "./test-data-helpers";
+} from "../util/test-data-helpers";
 import { makeSimpsonsTrio } from "./insert-test-data-10f-simpsons";
 import { makeTrio, TENF_URI } from "./insert-test-data-10f-helpers";
 import { makeJetsonsTrio } from "./insert-test-data-10f-jetsons";
 import { randomUUID } from "crypto";
 import { DependencyContainer } from "tsyringe";
-import { getServices } from "../di-helpers";
+import { getServices } from "../../di-helpers";
 
 // we haven't copied some of the other files up yet so we just point to nothing
 const blankFile = () =>
@@ -23,7 +23,7 @@ const blankFile = () =>
  * The 10F dataset is a subset of the 1000 genomes data with a combination of more complex
  * families.
  */
-export async function insert10F(dc: DependencyContainer) {
+export async function insert10F(dc: DependencyContainer): Promise<string> {
   const { edgeDbClient } = getServices(dc);
 
   const addPatient = async (
@@ -155,5 +155,5 @@ export async function insert10F(dc: DependencyContainer) {
   // we actually want a complex family with no father - so we delete this placeholder duck
   await deletePatient("UNKNOWNDUCK");
 
-  return tenf;
+  return TENF_URI;
 }

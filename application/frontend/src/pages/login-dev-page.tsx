@@ -13,18 +13,18 @@ export const LoginDevPage: React.FC = () => {
       </p>
       <pre>{JSON.stringify(envRelay, null, 2)}</pre>
       <form action="/auth/login-bypass-1" method="POST" id="loginBypass1Form">
-        <button className="btn-warning" type="submit">
-          Log in (test user 1 - Administrator)
+        <button className="btn-danger" type="submit">
+          Log in (test user 1 - SuperAdmin)
         </button>
       </form>
       <form action="/auth/login-bypass-2" method="POST" id="loginBypass2Form">
         <button className="btn-warning" type="submit">
-          Log in (test user 2 - Manager)
+          Log in (test user 2 - Administrator)
         </button>
       </form>
       <form action="/auth/login-bypass-3" method="POST" id="loginBypass3Form">
-        <button className="btn-danger" type="submit">
-          Log in (test user 3 - SuperAdmin)
+        <button className="btn-warning" type="submit">
+          Log in (test user 3 - Manager)
         </button>
       </form>
     </div>

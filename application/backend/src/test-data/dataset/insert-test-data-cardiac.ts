@@ -1,12 +1,12 @@
 import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import {
   File,
   createArtifacts,
   makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
-} from "./test-data-helpers";
+} from "../util/test-data-helpers";
 
 const client = edgedb.createClient();
 

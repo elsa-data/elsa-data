@@ -1,4 +1,4 @@
-import { createFile } from "./test-data-helpers";
+import { createFile } from "../util/test-data-helpers";
 import {
   makeTrio,
   CORIELL_CELL_SYSTEM,

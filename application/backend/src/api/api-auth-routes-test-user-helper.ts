@@ -16,13 +16,17 @@ import {
   TEST_SUBJECT_1,
   TEST_SUBJECT_1_DISPLAY,
   TEST_SUBJECT_1_EMAIL,
+} from "../test-data/user/insert-user1";
+import {
   TEST_SUBJECT_2,
   TEST_SUBJECT_2_DISPLAY,
   TEST_SUBJECT_2_EMAIL,
+} from "../test-data/user/insert-user2";
+import {
   TEST_SUBJECT_3,
   TEST_SUBJECT_3_DISPLAY,
   TEST_SUBJECT_3_EMAIL,
-} from "../test-data/insert-test-users";
+} from "../test-data/user/insert-user3";
 import {
   cookieForBackend,
   cookieForUI,
