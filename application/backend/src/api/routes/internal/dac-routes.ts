@@ -5,7 +5,7 @@ import {
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
-import { RemsService } from "../../../business/services/rems-service";
+import { RemsService } from "../../../business/services/dacs/rems-service";
 import { RedcapImportApplicationService } from "../../../business/services/australian-genomics/redcap-import-application-service";
 
 // TODO: FIX ALL OF THE SECURITY HERE - NEEDS DECISIONS ON AUTH / ROLES (WHO CAN DO THIS?)

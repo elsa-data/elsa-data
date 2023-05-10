@@ -1,31 +1,9 @@
 import { z } from "zod";
+import { Sensitive } from "./config-schema-sensitive";
+import { DacSchema } from "./config-schema-dac";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
-
-type Sensitive = string;
-
-const DacREMS = z.object({
-  type: z.literal("rems"),
-  id: z.string(),
-  description: z.string(),
-  url: z.string(),
-  botUser: z.string(),
-  botKey: z.string().brand<Sensitive>(),
-});
-
-const DacAustralianGenomicsRedcap = z.object({
-  type: z.literal("australian-genomics-redcap"),
-  id: z.string(),
-  description: z.string(),
-  username: z.string(),
-  password: z.string().brand<Sensitive>(),
-});
-
-const DacManual = z.object({
-  type: z.literal("manual"),
-  id: z.literal("manual"),
-});
 
 const MailerSES = z.object({
   mode: z.literal("SES"),
@@ -264,15 +242,13 @@ export const configZodDefinition = z.object({
     .describe(
       "A collection of users with super administration rights i.e. the ability to alter other user rights"
     ),
-  dacs: z
-    .array(
-      z.discriminatedUnion("type", [
-        DacREMS,
-        DacAustralianGenomicsRedcap,
-        DacManual,
-      ])
-    )
-    .default([]),
+  dacs: z.array(DacSchema).default([
+    {
+      id: "manual",
+      type: "manual",
+      description: "Manual",
+    },
+  ]),
   // if present, a mailer is being configured and if not present, then the mailer does not start
   mailer: z.optional(z.discriminatedUnion("mode", [MailerSES, MailerSMTP])),
   devTesting: z.optional(

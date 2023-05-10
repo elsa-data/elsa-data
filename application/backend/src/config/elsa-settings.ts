@@ -2,6 +2,7 @@ import { Issuer } from "openid-client";
 import { RateLimitPluginOptions } from "@fastify/rate-limit";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { LoggerOptions } from "pino";
+import { Dac } from "./config-schema-dac";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -31,9 +32,7 @@ export type ElsaSettings = {
   oidcClientId: string;
   oidcClientSecret: string;
 
-  remsUrl: string;
-  remsBotUser: string;
-  remsBotKey: string;
+  dacs: Dac[];
 
   logger: LoggerOptions;
 

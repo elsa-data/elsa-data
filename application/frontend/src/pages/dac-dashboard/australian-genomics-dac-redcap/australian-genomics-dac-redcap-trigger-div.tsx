@@ -104,7 +104,13 @@ async function onDropCallback<T extends File>(
     });
 }
 
-export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
+type Props = {
+  dacId: string;
+};
+
+export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
+  dacId,
+}) => {
   const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
   const [possibleApplications, setPossibleApplications] = useState<
     AustraliaGenomicsDacRedcap[]
@@ -133,10 +139,10 @@ export const AustralianGenomicsDacRedcapUploadDiv: React.FC = () => {
 
   return (
     <>
-      <div {...getRootProps()} className="flex flex-col items-center gap-6">
-        <div className="flex h-60 w-96 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-400 bg-gray-200 p-12 hover:bg-gray-100">
+      <div {...getRootProps()} className="flex flex-col items-start gap-6">
+        <div className="flex h-32 w-60 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-400 bg-gray-200 p-12 hover:bg-gray-100">
           <input {...getInputProps()} />
-          <FontAwesomeIcon icon={faUpload} className="p-5 text-6xl" />
+          <FontAwesomeIcon icon={faUpload} className="fa-2xl p-5" />
           <p className="text-center">Drop CSV file here or click to upload</p>
         </div>
       </div>
