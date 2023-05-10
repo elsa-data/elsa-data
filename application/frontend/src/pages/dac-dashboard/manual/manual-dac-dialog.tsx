@@ -115,7 +115,7 @@ export const ManualDacDialog: React.FC<Props> = ({
                 render={({ field: { onChange } }) => (
                   <>
                     <Select
-                      id="datasetUriSelector"
+                      id="datasetSelector"
                       placeholder="Datasets"
                       noOptionsMessage={() =>
                         "There are no datasets to select from"
