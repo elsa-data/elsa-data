@@ -36,6 +36,14 @@ const BLANK_DB_PROPS = [
   { id: "ZZ", uri: "urn:fdc:umccr.org:2022:dataset/zz" },
 ];
 
+/**
+ * Inserting a set of data in scenario 1
+ * It consist of inserting a couple of dataset linked to releases
+ *
+ * This scenario is used as part of E2E testing
+ *
+ * @param dc
+ */
 export async function insertScenario1(dc: DependencyContainer) {
   const { logger, edgeDbClient } = getServices(dc);
 

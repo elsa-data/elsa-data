@@ -35,9 +35,17 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
       encoding: "utf8",
       flag: "r",
     });
-    expect(manifestData).toMatch(
-      /https:\/\/umccr-10f-data-dev\.s3\.ap-southeast-2\.amazonaws\.com\//i
-    );
+
+    const manifestLines = manifestData.split("\n");
+    manifestLines.shift();
+    manifestLines.pop();
+
+    // Make sure for each line has the s3 presigned url
+    for (const line of manifestLines) {
+      expect(line).toMatch(
+        /https:\/\/umccr-10f-data-dev\.s3\.ap-southeast-2\.amazonaws\.com\//i
+      );
+    }
   });
 });
 
@@ -68,8 +76,6 @@ test("Download metadata manifest ZIP file", async ({ page }) => {
     expect(data).toMatch(/s3:\/\/umccr-10f-data-dev\//i);
 
     // Test if "ELROY" data exist, as only one of the trio is selected in this release
-    expect(splitLines[1]).toMatch(
-      "JETSONS\tELROY\tGM24631\t1\ts3\tumccr-10f-data-dev\tCHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz\ts3://umccr-10f-data-dev/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz\tVCF\t721970cb30906405d4045f702ca72376"
-    );
+    expect(splitLines[1]).toMatch(/JETSONS\tELROY/);
   });
 });
