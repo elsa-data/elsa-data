@@ -14,10 +14,7 @@ type Props = {
   cancelShowing: () => void;
 };
 
-export const ReleasesAddReleaseDialog: React.FC<Props> = ({
-  showing,
-  cancelShowing,
-}) => {
+export const RemsDacDialog: React.FC<Props> = ({ showing, cancelShowing }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 

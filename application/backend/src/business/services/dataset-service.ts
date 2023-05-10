@@ -67,6 +67,19 @@ export class DatasetService {
   }
 
   /**
+   * Return a dictionary of the datasets that are configured in this instance of Elsa
+   * and their corresponding name. This is functionality that is available to
+   * all users.
+   *
+   * @param user
+   */
+  public async getConfigured(user: AuthenticatedUser) {
+    return Object.fromEntries(
+      this.settings.datasets.map((a) => [a.uri, a.name])
+    );
+  }
+
+  /**
    * Return a paged result of datasets.
    *
    * @param user

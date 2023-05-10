@@ -4,14 +4,22 @@ import { createCtx } from "./create-ctx";
 import { useCookies } from "react-cookie";
 import {
   CSRF_TOKEN_COOKIE_NAME,
+  USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
+import _ from "lodash";
 
 export type LoggedInUser = {
+  // a displayable name for the logged-in user
   displayName: string;
+
+  // if present a displayable email for the logged-in user
   displayEmail?: string;
+
+  // the set of UI features that are enabled specifically based on this user permissions
+  allowedUi: Set<string>;
 };
 
 /**
@@ -22,9 +30,15 @@ export type LoggedInUser = {
  * @constructor
  */
 export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
-  const [cookies, _setCookie, removeCookie] = useCookies<any>();
+  const [cookies, _setCookie, removeCookie] = useCookies<any>([
+    CSRF_TOKEN_COOKIE_NAME,
+    USER_SUBJECT_COOKIE_NAME,
+    USER_NAME_COOKIE_NAME,
+    USER_EMAIL_COOKIE_NAME,
+    USER_ALLOWED_COOKIE_NAME,
+  ]);
 
-  // Removing Cookie when token is no longer valid when using Axios (by 403 Status Code Response).
+  // Removing Cookie when token is no longer valid when using Axios (by 401 Status Code Response).
   axios.interceptors.response.use(
     (res) => res,
     (err) => {
@@ -44,7 +58,7 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
 
   axios.interceptors.request.use(
     (config: AxiosRequestConfig) => {
-      // we want to send CSRF token with all our internal (Elsa api) requests
+      // we want to send CSRF token with all our internal API requests
       if (config.url && config.url.startsWith("/")) {
         if (config.headers) {
           config.headers["csrf-token"] = cookies[CSRF_TOKEN_COOKIE_NAME];
@@ -62,11 +76,18 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
   const isLoggedIn = cookies[USER_SUBJECT_COOKIE_NAME];
   const isLoggedInName = cookies[USER_NAME_COOKIE_NAME];
   const isLoggedInEmail = cookies[USER_EMAIL_COOKIE_NAME];
+  const allowedString = cookies[USER_ALLOWED_COOKIE_NAME];
+
+  // if no cookies or any empty value then our allowed is an empty set
+  const allowedSet = _.isEmpty(allowedString)
+    ? new Set<string>()
+    : new Set<string>(allowedString.split(","));
 
   const val = isLoggedIn
     ? {
         displayName: isLoggedInName,
         displayEmail: isLoggedInEmail,
+        allowedUi: allowedSet,
       }
     : null;
 

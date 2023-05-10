@@ -5,6 +5,7 @@ import { AuthenticatedUser } from "../authenticated-user";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { ReleaseService } from "./release-service";
 import { Dac } from "../../config/config-schema-dac";
+import _ from "lodash";
 
 /**
  * A service wrapping all our upstream Data Access Committee
@@ -25,13 +26,15 @@ export class DacService {
    *
    * @param user
    */
-  public async getInstances(user: AuthenticatedUser): Promise<Dac[]> {
+  public async getConfigured(user: AuthenticatedUser): Promise<Dac[]> {
     // TODO rather than use permission from cookie - make a db check here
     if (!user.isAllowedCreateRelease)
-      throw new Error(
-        "Only users who can create new releases can access information about the upstream DACs"
-      );
+      // NOTE we make the decision that anyone can call this API without error - but that
+      // the lack of permissions just means they get no information back
+      // the reason is that this method is called on startup by all users even if the
+      // data is not needed because they don't have permissions
+      return [];
 
-    return this.settings.dacs;
+    return _.cloneDeep(this.settings.dacs);
   }
 }

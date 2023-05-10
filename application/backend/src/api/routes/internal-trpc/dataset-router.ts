@@ -16,6 +16,11 @@ const inputSingleDatasetUri = z.object({
  * RPC for Datasets
  */
 export const datasetRouter = router({
+  getConfiguredDatasets: internalProcedure.query(async ({ input, ctx }) => {
+    const { user } = ctx;
+
+    return ctx.datasetService.getConfigured(user);
+  }),
   getAllDataset: internalProcedure
     .input(inputPaginationParameter)
     .query(async ({ input, ctx }) => {
