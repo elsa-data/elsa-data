@@ -209,6 +209,31 @@ export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
     ]);
   }
 
+  // generalise this - but for proper functioning of other aspects of the DAC service - we must ensure
+  // that these are unique within the instance
+  {
+    const idSet = new Set<string>();
+    for (const c of configObject.dacs || []) {
+      idSet.add(c.id);
+    }
+    if (idSet.size !== (configObject.dacs || []).length)
+      throw new Error(
+        "The 'id' field of the configuration 'dacs' array must be unique"
+      );
+  }
+
+  // similarly things will go horribly wrong if dataset uris are repeated
+  {
+    const uriSet = new Set<string>();
+    for (const c of configObject.datasets || []) {
+      uriSet.add(c.uri);
+    }
+    if (uriSet.size !== (configObject.datasets || []).length)
+      throw new Error(
+        "The 'uri' field of the configuration 'datasets' array must be unique"
+      );
+  }
+
   const trySetEnvironmentVariableString = (
     env_suffix: string,
     path: string

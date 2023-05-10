@@ -4,9 +4,10 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { Token } from "../meta/meta-lexer";
 import { ProviderBase } from "./provider-base";
+import json5 from "json5";
 
 /**
- * A provider that can get config from a specified AWS secret
+ * A provider that can get config from a specified AWS secret formatted in JSON5
  */
 export class ProviderAwsSecretsManager extends ProviderBase {
   private readonly secretId: string;
@@ -35,16 +36,6 @@ export class ProviderAwsSecretsManager extends ProviderBase {
       );
     }
 
-    // because we like to use the secrets manager UI - we record the values there
-    // as a flat object of Key/value pairs (with dots in the key name to show nesting).
-    // i.e. { "rems.bot": "bot" }
-    const flatSecretObject: any = JSON.parse(secretResult.SecretString);
-
-    // we can have some secrets values that are only for use elsewhere - but we don't want to
-    // trigger the 'unknown config key' of Convict - so we delete them here before passing them back
-    delete flatSecretObject["edgeDb.tlsKey"];
-    delete flatSecretObject["edgeDb.tlsCert"];
-
-    return ProviderBase.nestObject(flatSecretObject);
+    return json5.parse(secretResult.SecretString);
   }
 }

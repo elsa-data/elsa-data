@@ -1,17 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useRef, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { ReleaseManualType } from "@umccr/elsa-types";
 import { Controller, useForm } from "react-hook-form";
 import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
-import { EagerErrorBoundary, ErrorBoundary } from "../../../components/errors";
-import { RhChecks, RhCheckItem } from "../../../components/rh/rh-checks";
+import { ErrorBoundary } from "../../../components/errors";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
 import Select from "react-select";
-import { trpc } from "../../../helpers/trpc";
-import { usePageSizer } from "../../../hooks/page-sizer";
+import { useLoggedInUserConfigRelay } from "../../../providers/logged-in-user-config-relay-provider";
 
 type Props = {
   showing: boolean;
@@ -26,24 +24,14 @@ const Required: React.FC = () => {
   );
 };
 
-export const ReleasesManualEntryDialog: React.FC<Props> = ({
+export const ManualDacDialog: React.FC<Props> = ({
   showing,
   cancelShowing,
 }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Paginate dataset URIs
-  const [datasetUriOptions, setDatasetUriOptions] = useState<
-    {
-      value: string;
-      label: string;
-    }[]
-  >([]);
-  const pageSize = usePageSizer();
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
-  const maxPage = Math.ceil(currentTotal / pageSize);
+  const loggedInUserConfig = useLoggedInUserConfigRelay();
 
   const {
     control,
@@ -79,45 +67,12 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
     }
   );
 
-  const datasetQuery = trpc.datasetRouter.getAllDataset.useQuery(
-    {
-      page: currentPage,
-    },
-    {
-      keepPreviousData: true,
-      onSuccess: (res) => {
-        setCurrentTotal(res.total);
-
-        const datasetMenuOptions = res.data?.map((x) => ({
-          value: x.uri,
-          label: x.uri,
-        }));
-        if (datasetMenuOptions)
-          setDatasetUriOptions((prev) => [...prev, ...datasetMenuOptions]);
-      },
-    }
-  );
-
-  const isDatasetMenuLoading = datasetQuery.isLoading;
-  const fetchDatasetError = datasetQuery.error;
-  const isFetchDatasetError = datasetQuery.isError;
-
-  if (isFetchDatasetError) {
-    return (
-      <EagerErrorBoundary
-        message={"Something went wrong fetching datasets."}
-        error={fetchDatasetError}
-        styling={"bg-red-100"}
-      />
-    );
-  }
-
   return (
     <ErrorBoundary styling={"bg-red-100"}>
       <SelectDialogBase
         showing={showing}
         cancelShowing={cancelShowing}
-        title="Manually Create a Release"
+        title="Create Release Manually"
         buttons={
           <>
             <button
@@ -139,13 +94,6 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
         }
         content={
           <>
-            <div className="prose mt-2">
-              <p className="text-sm text-gray-500">
-                This form should only be used in the case where an application
-                for data could not be imported via an upstream DAC such as REMS
-                or REDCap.
-              </p>
-            </div>
             <div>
               <input
                 type="text"
@@ -167,14 +115,20 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
                 render={({ field: { onChange } }) => (
                   <>
                     <Select
-                      id="datasetUriSelector"
-                      placeholder="Dataset URIs"
+                      id="datasetSelector"
+                      placeholder="Datasets"
                       noOptionsMessage={() =>
                         "There are no datasets to select from"
                       }
-                      options={datasetUriOptions}
+                      options={
+                        loggedInUserConfig?.datasets
+                          ? Object.entries(loggedInUserConfig.datasets).map(
+                              (d) => ({ value: d[0], label: d[1] })
+                            )
+                          : []
+                      }
                       isMulti={true}
-                      isLoading={isDatasetMenuLoading}
+                      isLoading={!loggedInUserConfig}
                       isSearchable={false}
                       closeMenuOnSelect={false}
                       classNames={{
@@ -188,14 +142,6 @@ export const ReleasesManualEntryDialog: React.FC<Props> = ({
                         onChange(opts.map((opt) => opt.value))
                       }
                     />
-                    {currentPage < maxPage && (
-                      <div
-                        className="cursor-pointer text-xs text-gray-500 underline"
-                        onClick={() => setCurrentPage((p) => p + 1)}
-                      >
-                        Load more dataset URIs
-                      </div>
-                    )}
                   </>
                 )}
               />

@@ -12,6 +12,7 @@ import { ErrorBoundary } from "./components/errors";
 import { createRouter } from "./index-router";
 import { TRPCProvider } from "./providers/trpc-provider";
 import { isString } from "lodash";
+import { LoggedInUserConfigRelayProvider } from "./providers/logged-in-user-config-relay-provider";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -58,7 +59,10 @@ if (rootElement != null) {
           <CookiesProvider>
             <LoggedInUserProvider>
               <TRPCProvider>
-                <RouterProvider router={createRouter(de === "development")} />
+                {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
+                <LoggedInUserConfigRelayProvider>
+                  <RouterProvider router={createRouter(de === "development")} />
+                </LoggedInUserConfigRelayProvider>
               </TRPCProvider>
             </LoggedInUserProvider>
           </CookiesProvider>

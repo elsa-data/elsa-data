@@ -1,7 +1,7 @@
 {
   datasets: [
     {
-      name: "10G",
+      name: "UMCCR 10G",
       description: "UMCCR 10G",
       uri: "urn:fdc:umccr.org:2022:dataset/10g",
       storageLocation: "aws-s3",
@@ -11,14 +11,14 @@
       },
     },
     {
-      name: "10F",
+      name: "UMCCR 10F",
       description: "UMCCR 10F",
       uri: "urn:fdc:umccr.org:2022:dataset/10f",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10f-data-dev",
     },
     {
-      name: "10C",
+      name: "UMCCR 10C",
       description: "UMCCR 10C",
       uri: "urn:fdc:umccr.org:2022:dataset/10c",
       storageLocation: "aws-s3",

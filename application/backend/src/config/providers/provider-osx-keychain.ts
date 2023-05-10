@@ -61,6 +61,6 @@ export class ProviderOsxKeychain extends ProviderBase {
       values[k] = lookupStdout.trim();
     }
 
-    return ProviderBase.nestObject(values);
+    return values;
   }
 }

@@ -12,6 +12,10 @@ body {
   @apply card card-compact bg-base-100 shadow-lg;
 }
 
+.btn-standard-action-trigger-dialog {
+  @apply btn-accent btn-sm btn;
+}
+
 /* A button in a table column that just navigates somewhere */
 .btn-table-action-navigate {
   @apply btn-link btn-xs btn;

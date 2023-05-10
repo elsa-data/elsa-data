@@ -18,6 +18,36 @@
       },
     ],
   },
+  // the upstream data access committees that we want to be able to source new releases from
+  dacs: [
+    {
+      id: "manual",
+      type: "manual",
+      description: "Manual",
+    },
+    {
+      id: "rems-hgpp",
+      type: "rems",
+      description: "REMS HGPP (demo)",
+      url: "https://hgpp-rems.dev.umccr.org",
+      // the bot keys will be set via our relevant secret mechanism
+      botUser: "will-be-replaced",
+      botKey: "will-be-replaced",
+    },
+    {
+      id: "rems-fake",
+      type: "rems",
+      description: "REMS Fake (non-existent)",
+      url: "https://fake-rems.dev.umccr.org",
+      botUser: "not",
+      botKey: "arealkey",
+    },
+    {
+      id: "redcap-ag",
+      type: "redcap-australian-genomics-csv",
+      description: "Australian Genomics Redcap DAC",
+    },
+  ],
   aws: {
     // we have a permanent tmp bucket with a generous expiry lifespan shared for localhost dev
     tempBucket: "elsa-data-tmp",

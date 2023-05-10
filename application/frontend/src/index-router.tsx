@@ -12,7 +12,7 @@ import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { EagerErrorBoundary } from "./components/errors";
 import { AccountPage } from "./pages/account-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
-import { DacImportPage } from "./pages/dac-import/dac-import-page";
+import { DacDashboardPage } from "./pages/dac-dashboard/dac-dashboard-page";
 import { ReleasesDashboardPage } from "./pages/releases-dashboard/releases-dashboard-page";
 import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-sub-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
@@ -168,7 +168,7 @@ export function createRouter(addBypassLoginPage: boolean) {
           </Route>
 
           <Route path={`dac`} element={<DacLayout />}>
-            <Route index element={<DacImportPage />} />
+            <Route index element={<DacDashboardPage />} />
           </Route>
 
           <Route path={`account`} element={<AccountPage />} />

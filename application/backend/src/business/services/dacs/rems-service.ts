@@ -1,17 +1,17 @@
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
-import { makeEmptyCodeArray } from "../../test-data/test-data-helpers";
+import e from "../../../../dbschema/edgeql-js";
+import { makeEmptyCodeArray } from "../../../test-data/test-data-helpers";
 import { inject, injectable } from "tsyringe";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { randomUUID } from "crypto";
-import { UserService } from "./user-service";
-import { AuthenticatedUser } from "../authenticated-user";
+import { UserService } from "../user-service";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { isEmpty } from "lodash";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
-import { getNextReleaseKey } from "../db/release-queries";
-import { ReleaseService } from "./release-service";
+import { getNextReleaseKey } from "../../db/release-queries";
+import { ReleaseService } from "../release-service";
 
 @injectable()
 export class RemsService {
@@ -22,21 +22,32 @@ export class RemsService {
     @inject(ReleaseService) private readonly releaseService: ReleaseService
   ) {}
 
+  private async getRemsApplications(id: string) {
+    let applications: any[] = [];
+
+    for (const d of this.settings.dacs) {
+      if (d.id === id && d.type === "rems") {
+        applications = await axios
+          .get(`${d.url}/api/applications`, {
+            headers: {
+              accept: "application/json",
+              "x-rems-api-key": d.botKey,
+              "x-rems-user-id": d.botUser,
+            },
+          })
+          .then((a) => a.data);
+      }
+    }
+
+    return applications;
+  }
+
   public async detectNewReleases(
     user: AuthenticatedUser
   ): Promise<RemsApprovedApplicationType[]> {
     this.releaseService.checkIsAllowedViewReleases(user);
 
-    const appData = await axios.get(
-      `${this.settings.remsUrl}/api/applications`,
-      {
-        headers: {
-          accept: "application/json",
-          "x-rems-api-key": this.settings.remsBotKey,
-          "x-rems-user-id": this.settings.remsBotUser,
-        },
-      }
-    );
+    /*const appData = await this.getRemsApplications("rems-hgpp");
 
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers
@@ -52,12 +63,12 @@ export class RemsService {
         }))
         .applicationDacIdentifier.value.run(this.edgeDbClient)
     );
-
-    console.log(currentReleaseKeys);
+         console.log(currentReleaseKeys);
+    */
 
     const newReleases: RemsApprovedApplicationType[] = [];
 
-    for (const application of appData.data) {
+    /*for (const application of []) {
       if (application["application/state"] === "application.state/approved") {
         const applicant = application["application/applicant"];
         const remsId: number = application["application/id"];
@@ -68,7 +79,7 @@ export class RemsService {
         if (!isFinite(remsId)) continue;
 
         // if we've already turned this REMS application into a release - then skip
-        if (currentReleaseKeys.has(remsId.toString())) continue;
+        //if (currentReleaseKeys.has(remsId.toString())) continue;
 
         newReleases.push({
           // consider what date we want to actually put here...
@@ -80,7 +91,7 @@ export class RemsService {
           whoEmail: applicant?.email ?? "<no applicant email>",
         });
       }
-    }
+    } */
 
     return newReleases;
   }
@@ -94,7 +105,7 @@ export class RemsService {
 
     this.releaseService.checkIsAllowedCreateReleases(user);
 
-    const appData = await axios.get(
+    /*const appData = await axios.get(
       `${this.settings.remsUrl}/api/applications/${remsId}`,
       {
         headers: {
@@ -104,8 +115,10 @@ export class RemsService {
         },
       }
     );
+ */
+    const application: any = {}; //appData.data;
 
-    const application = appData.data;
+    const remsUrl = "https://rems";
 
     // TODO: some error checking here
 
@@ -144,7 +157,7 @@ export class RemsService {
           created: e.datetime_current(),
           lastUpdatedSubjectId: user.subjectId,
           applicationDacIdentifier: e.tuple({
-            system: this.settings.remsUrl,
+            system: remsUrl,
             value: e.str(remsId.toString()),
           }),
           applicationDacTitle:
@@ -152,7 +165,7 @@ export class RemsService {
           applicationDacDetails: `
 #### Source
 
-This application was sourced from ${this.settings.remsUrl} on ${format(
+This application was sourced from ${remsUrl} on ${format(
             new Date(),
             "dd/MM/yyyy"
           )}.
@@ -163,9 +176,7 @@ The identifier for this application in REMS is
 ${remsId.toString()}
 ~~~
 
-See the [original application](${
-            this.settings.remsUrl
-          }/application/${remsId}) ↪ in REMS (you may have to log in to REMS)                    
+See the [original application](${remsUrl}/application/${remsId}) ↪ in REMS (you may have to log in to REMS)                    
 
 #### Summary
 

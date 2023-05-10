@@ -1,6 +1,7 @@
 import { Token } from "../meta/meta-lexer";
 import { ProviderBase } from "./provider-base";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
+import json5 from "json5";
 
 /**
  * A provider that can get config from a specified GCP secret
@@ -33,13 +34,6 @@ export class ProviderGcpSecretsManager extends ProviderBase {
         ? new TextDecoder().decode(response.payload.data)
         : response.payload.data;
 
-    const flatSecretObject = JSON.parse(secretString);
-
-    // we can have some secrets values that are only for use elsewhere - but we don't want to
-    // trigger the 'unknown config key' of Convict - so we delete them here before passing them back
-    delete flatSecretObject["edgeDb.tlsKey"];
-    delete flatSecretObject["edgeDb.tlsCert"];
-
-    return ProviderBase.nestObject(flatSecretObject);
+    return json5.parse(secretString);
   }
 }
