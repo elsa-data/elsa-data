@@ -120,6 +120,7 @@ describe("edgedb audit entry tests", () => {
     const result = await getTruncatedAuditEventDetails(edgeDbClient, {
       auditEventDbId: auditEvent1.id,
       userDbId: user1.id,
+      orderField: ".id",
     });
 
     console.debug(result);
@@ -129,6 +130,7 @@ describe("edgedb audit entry tests", () => {
     const result = await getTruncatedAuditEventDetails(edgeDbClient, {
       auditEventDbId: auditEvent1.id,
       userDbId: user2.id,
+      orderField: ".id",
     });
 
     console.debug(result);
@@ -138,6 +140,7 @@ describe("edgedb audit entry tests", () => {
     const result = await getTruncatedAuditEventDetails(edgeDbClient, {
       auditEventDbId: releaseAuditEvent.id,
       userDbId: user1.id,
+      orderField: ".id",
     });
 
     console.debug(result);
@@ -147,6 +150,17 @@ describe("edgedb audit entry tests", () => {
     const result = await getTruncatedAuditEventDetails(edgeDbClient, {
       auditEventDbId: releaseAuditEvent.id,
       userDbId: user2.id,
+      orderField: ".id",
+    });
+
+    console.debug(result);
+  });
+
+  it("get all audit details returns nothing if user does not participate in the release the event is part of", async () => {
+    const result = await getTruncatedAuditEventDetails(edgeDbClient, {
+      userDbId: user1.id,
+      detailsMaxLength: 10,
+      orderField: ".occurredDateTime desc",
     });
 
     console.debug(result);
