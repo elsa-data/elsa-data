@@ -1,6 +1,6 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
-import { TEST_SUBJECT_3 } from "../src/test-data/insert-test-users";
+import { TEST_SUBJECT_3 } from "../src/test-data/user/insert-user3";
 
 export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
 

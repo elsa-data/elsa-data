@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -11,24 +11,30 @@ const edgeDbClient = edgedb.createClient();
  */
 export async function blankTestData(printDetailsToConsole: boolean = false) {
   // TODO: add a guard such that this can only execute on a local db
+  console.log("THE PROCESS ENV HERE IS: ", process.env.NODE_ENV);
 
-  if (printDetailsToConsole)
-    console.log(`Removing any existing data in test database`);
-
+  // Schema: pedigree
   const pedigreeDeleted = await e.delete(e.pedigree.Pedigree).run(edgeDbClient);
   const pedigreeRelationshipDeleted = await e
     .delete(e.pedigree.PedigreeRelationship)
     .run(edgeDbClient);
 
+  // Schema: job
   const jobsDeleted = await e.delete(e.job.Job).run(edgeDbClient);
 
+  // Schema: permission
   const usersDeleted = await e.delete(e.permission.User).run(edgeDbClient);
   const potentialUsersDeleted = await e
     .delete(e.permission.PotentialUser)
     .run(edgeDbClient);
 
+  // Schema: release
   const releasesDeleted = await e.delete(e.release.Release).run(edgeDbClient);
+  const dataEgressRecordDeleted = await e
+    .delete(e.release.DataEgressRecord)
+    .run(edgeDbClient);
 
+  // Schema: dataset
   const specimensDeleted = await e
     .delete(e.dataset.DatasetSpecimen)
     .run(edgeDbClient);
@@ -39,6 +45,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   const datasetsDeleted = await e.delete(e.dataset.Dataset).run(edgeDbClient);
   const consentDeleted = await e.delete(e.consent.Consent).run(edgeDbClient);
 
+  // Schema: lab
   const bclsDeleted = await e.delete(e.lab.ArtifactBcl).run(edgeDbClient);
   const fastqsDeleted = await e
     .delete(e.lab.ArtifactFastqPair)
@@ -53,25 +60,22 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     .delete(e.lab.SubmissionBatch)
     .run(edgeDbClient);
 
+  // Schema: storage
   const filesDeleted = await e.delete(e.storage.File).run(edgeDbClient);
 
+  // Schema: audit
   const releaseAuditDeleted = await e
     .delete(e.audit.ReleaseAuditEvent)
     .run(edgeDbClient);
-
   const userAuditDeleted = await e
     .delete(e.audit.UserAuditEvent)
     .run(edgeDbClient);
-
   const systemAuditDeleted = await e
     .delete(e.audit.SystemAuditEvent)
     .run(edgeDbClient);
 
-  const dataEgressRecordDeleted = await e
-    .delete(e.release.DataEgressRecord)
-    .run(edgeDbClient);
-
   if (printDetailsToConsole) {
+    console.log(`Removing any existing data in test database`);
     console.log(`  ${jobsDeleted.length} job(s)`);
     console.log(
       `  ${usersDeleted.length}/${potentialUsersDeleted.length} user(s)/potential user(s)`

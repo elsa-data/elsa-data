@@ -60,7 +60,7 @@
   },
   "+superAdmins": [
     {
-      sub: "http://subject3.com",
+      sub: "http://subject1.com",
     },
   ],
 }

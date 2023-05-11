@@ -3,8 +3,8 @@ import {
   File,
   IdentifierMap,
   makeDictionaryIdentifierArray,
-} from "./test-data-helpers";
-import e from "../../dbschema/edgeql-js";
+} from "../util/test-data-helpers";
+import e from "../../../dbschema/edgeql-js";
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
 
 export const TENF_URI = "urn:fdc:umccr.org:2022:dataset/10f";

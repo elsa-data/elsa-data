@@ -1,15 +1,24 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { blankTestData } from "../../src/test-data/blank-test-data";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
+import {
+  TEST_SUBJECT_3,
+  TEST_SUBJECT_3_DISPLAY,
+  TEST_SUBJECT_3_EMAIL,
+} from "../../src/test-data/user/insert-user3";
 import {
   insertRelease2,
   RELEASE2_APPLICATION_DAC_TITLE,
   RELEASE2_RELEASE_IDENTIFIER,
-} from "../../src/test-data/insert-test-data-release2";
-import { insertRelease4 } from "../../src/test-data/insert-test-data-release4";
-import { insertRelease3 } from "../../src/test-data/insert-test-data-release3";
+} from "../../src/test-data/release/insert-test-data-release2";
+import { insertRelease4 } from "../../src/test-data/release/insert-test-data-release4";
+import { insertRelease3 } from "../../src/test-data/release/insert-test-data-release3";
 import { UserService } from "../../src/business/services/user-service";
 import { releaseGetAllByUser } from "../../dbschema/queries";
+import { registerTypes } from "../test-dependency-injection.common";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
+
+const testContainer = registerTypes();
 
 describe("edgedb release queries tests", () => {
   let edgeDbClient: Client;
@@ -25,12 +34,25 @@ describe("edgedb release queries tests", () => {
   afterAll(() => {});
 
   beforeEach(async () => {
+    const releaseProps = {
+      releaseAdministrator: [
+        {
+          subject_id: TEST_SUBJECT_3,
+          email: TEST_SUBJECT_3_EMAIL,
+          name: TEST_SUBJECT_3_DISPLAY,
+        },
+      ],
+      releaseMember: [],
+      releaseManager: [],
+      datasetUris: [TENF_URI],
+    };
+
     await blankTestData();
     // release1 = await insertRelease1(); release 1 has a dependence on Settings (which we should fix) - so not
     // suitable at the raw db level
-    release2 = await insertRelease2();
-    release3 = await insertRelease3();
-    release4 = await insertRelease4();
+    release2 = await insertRelease2(testContainer, releaseProps);
+    release3 = await insertRelease3(testContainer, releaseProps);
+    release4 = await insertRelease4(testContainer, releaseProps);
   });
 
   async function createTestUser() {

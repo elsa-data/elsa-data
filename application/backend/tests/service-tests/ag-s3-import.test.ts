@@ -12,7 +12,7 @@ import {
   insertArtifactBamQuery,
 } from "../../src/business/db/lab-queries";
 import { fileByUrlQuery } from "../../src/business/db/storage-queries";
-import { blankTestData } from "../../src/test-data/blank-test-data";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
 import {
   S3_URL_PREFIX,
   MOCK_STORAGE_PREFIX_URL,

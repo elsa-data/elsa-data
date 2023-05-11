@@ -406,11 +406,14 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseKey = request.params.rid;
+      const presignHeaderArray = Array.isArray(request.body.presignHeader)
+        ? request.body.presignHeader
+        : [request.body.presignHeader];
 
       const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
         authenticatedUser,
         releaseKey,
-        request.body.presignHeader
+        presignHeaderArray
       );
 
       reply.header(
@@ -494,6 +497,9 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeaderArray = Array.isArray(presignHeader)
+        ? presignHeader
+        : [presignHeader];
 
       const releaseKey = request.params.rid;
 
@@ -501,7 +507,7 @@ export const releaseRoutes = async (
         presignedUrlService,
         authenticatedUser,
         releaseKey,
-        presignHeader
+        presignHeaderArray
       );
 
       if (!manifest) {
@@ -528,6 +534,10 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeaderArray = Array.isArray(presignHeader)
+        ? presignHeader
+        : [presignHeader];
+
       if (presignHeader.includes("objectStoreSigned")) {
         // This would ideally be checked with an appropriate type for the request
         // `Body`. But that'd involve defining a separate type almost identical
@@ -542,7 +552,7 @@ export const releaseRoutes = async (
         presignedUrlService,
         authenticatedUser,
         releaseKey,
-        presignHeader
+        presignHeaderArray
       );
 
       if (!manifest) {

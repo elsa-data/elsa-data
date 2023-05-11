@@ -1,6 +1,6 @@
 import * as edgedb from "edgedb";
+import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
 import e from "../../../../dbschema/edgeql-js";
-import { makeEmptyCodeArray } from "../../../test-data/test-data-helpers";
 import { inject, injectable } from "tsyringe";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";

@@ -1,6 +1,6 @@
 import { App } from "./app";
-import { insertTestData } from "./test-data/insert-test-data";
-import { blankTestData } from "./test-data/blank-test-data";
+import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
+import { blankTestData } from "./test-data/util/blank-test-data";
 import Bree from "bree";
 import { DependencyContainer } from "tsyringe";
 import path from "path";
@@ -38,9 +38,14 @@ export async function startWebServer(
     if (process.env.NODE_ENV === "development") {
       logger.info(`Resetting the database to contain scenario ${scenario}`);
 
-      await blankTestData();
       // TODO allow different scenarios to be inserted based on the value
-      await insertTestData(dc);
+      switch (scenario) {
+        case 1:
+          await insertScenario1(dc);
+          break;
+        default:
+          break;
+      }
     } else {
       // a simple guard to hopefully stop an accident in prod
       console.log(
