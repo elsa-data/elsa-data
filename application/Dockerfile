@@ -18,7 +18,7 @@ RUN echo '{ \
 #
 # Database builder to create all generated files that require the install database
 #
-FROM edgedb/edgedb:2.13 AS edgedb-builder
+FROM edgedb/edgedb:3.0-beta.1 AS edgedb-builder
 
 # bring in the compatible node binary
 COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
