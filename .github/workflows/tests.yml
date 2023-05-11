@@ -10,7 +10,7 @@ jobs:
     # run an EdgeDb in the background that will be connected to from our app
     services:
       edgedb:
-        image: edgedb/edgedb:2.7
+        image: edgedb/edgedb:3.0-beta.1
         env:
           EDGEDB_SERVER_SECURITY: insecure_dev_mode
         ports:
@@ -62,6 +62,7 @@ jobs:
       # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
+          cli-version: nightly
           server-dsn: ${{ env.EDGEDB_DSN }}
 
       # get our database schema correct
