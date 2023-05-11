@@ -8,6 +8,10 @@ import {
 import { TENF_URI } from "./insert-test-data-10f-helpers";
 import { TEST_SUBJECT_3, TEST_SUBJECT_3_DISPLAY } from "./insert-test-users";
 import { InsertReleaseProps, insertRole } from "./helpers";
+import { TENF_URI } from "./insert-test-data-10f-helpers";
+import { TEST_SUBJECT_3, TEST_SUBJECT_3_DISPLAY } from "./insert-test-users";
+
+const edgeDbClient = edgedb.createClient();
 
 const edgeDbClient = edgedb.createClient();
 
