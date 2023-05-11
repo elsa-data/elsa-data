@@ -19,6 +19,7 @@ import { insertRelease3 } from "../release/insert-test-data-release3";
 import { insertRelease4 } from "../release/insert-test-data-release4";
 import { insertRelease5 } from "../release/insert-test-data-release5";
 import { blankTestData } from "../util/blank-test-data";
+import { insertUser4 } from "../user/insert-user4";
 
 const BLANK_DB_PROPS = [
   { id: "10M", uri: "urn:fdc:umccr.org:2022:dataset/10m" },
@@ -54,6 +55,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   const superAdmin = await insertUser1(dc);
   const administrator = await insertUser2(dc);
   const manager = await insertUser3(dc);
+  const member = await insertUser4(dc);
 
   // Create datasets record
   const ten_g_uri = await insert10G(dc);
@@ -71,7 +73,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   const r1 = await insertRelease1(dc, {
     releaseAdministrator: [administrator],
     releaseManager: [manager],
-    releaseMember: [],
+    releaseMember: [member],
     datasetUris: [ten_g_uri, ten_f_uri, ten_c_uri],
   });
   const r2 = await insertRelease2(dc, {
@@ -95,7 +97,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   const r5 = await insertRelease5(dc, {
     releaseAdministrator: [administrator],
     releaseManager: [manager],
-    releaseMember: [],
+    releaseMember: [member],
     datasetUris: [ten_f_uri],
   });
 

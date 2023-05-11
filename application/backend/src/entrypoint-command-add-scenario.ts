@@ -14,7 +14,15 @@ export async function commandAddScenario(
   scenario: number
 ): Promise<number> {
   // TODO make multiple scenarios
-  if (scenario == 1) await insertScenario1(dc);
+
+  switch (scenario) {
+    case 1:
+      insertScenario1(dc);
+      break;
+
+    default:
+      break;
+  }
 
   return 0;
 }

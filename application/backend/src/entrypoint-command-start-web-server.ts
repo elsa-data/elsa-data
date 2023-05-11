@@ -39,7 +39,13 @@ export async function startWebServer(
       logger.info(`Resetting the database to contain scenario ${scenario}`);
 
       // TODO allow different scenarios to be inserted based on the value
-      if (scenario == 1) await insertScenario1(dc);
+      switch (scenario) {
+        case 1:
+          await insertScenario1(dc);
+          break;
+        default:
+          break;
+      }
     } else {
       // a simple guard to hopefully stop an accident in prod
       console.log(

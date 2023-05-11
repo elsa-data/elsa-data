@@ -27,6 +27,11 @@ export const LoginDevPage: React.FC = () => {
           Log in (test user 3 - Manager)
         </button>
       </form>
+      <form action="/auth/login-bypass-4" method="POST" id="loginBypass4Form">
+        <button className="btn-warning" type="submit">
+          Log in (test user 4 - Member)
+        </button>
+      </form>
     </div>
   );
 };
