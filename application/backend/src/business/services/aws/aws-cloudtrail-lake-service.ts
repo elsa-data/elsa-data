@@ -8,7 +8,7 @@ import {
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
 import { AwsEnabledService } from "./aws-enabled-service";
-import { AuditLogService } from "../audit-log-service";
+import { AuditEventService } from "../audit-event-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
@@ -52,7 +52,8 @@ export class AwsCloudTrailLakeService {
     private readonly cloudTrailClient: CloudTrailClient,
     @inject(AwsAccessPointService)
     private readonly awsAccessPointService: AwsAccessPointService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}

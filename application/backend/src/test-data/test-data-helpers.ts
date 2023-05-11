@@ -140,6 +140,10 @@ export async function createTestUser(
         actionCategory: "E",
         actionDescription: "Login",
         outcome: 0,
+        details: {
+          ip: "10.1.1.1",
+          browser: "Chrome",
+        },
       }),
     })
     .run(edgeDbClient);

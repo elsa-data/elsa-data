@@ -27,6 +27,7 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
   getReleaseKeyFromReleaseAuditEvent,
+  getTruncatedAuditEventDetails,
   insertReleaseAuditEvent,
   insertSystemAuditEvent,
   insertUserAuditEvent,
@@ -54,7 +55,7 @@ export type AuditEventAction = interfaces.audit.ActionType;
 export type AuditEventOutcome = 0 | 4 | 8 | 12;
 
 @injectable()
-export class AuditLogService {
+export class AuditEventService {
   private static readonly MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS = 10;
 
   constructor(
@@ -172,7 +173,8 @@ export class AuditLogService {
           outcome: outcome,
           details: details ? e.json(details) : e.json({}),
           occurredDuration:
-            diffSeconds > AuditLogService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+            diffSeconds >
+            AuditEventService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
@@ -303,7 +305,8 @@ export class AuditLogService {
           outcome: outcome,
           details: e.json(details),
           occurredDuration:
-            diffSeconds > AuditLogService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+            diffSeconds >
+            AuditEventService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
@@ -390,7 +393,8 @@ export class AuditLogService {
           outcome: outcome,
           details: details ? e.json(details) : e.json({}),
           occurredDuration:
-            diffSeconds > AuditLogService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
+            diffSeconds >
+            AuditEventService.MIN_AUDIT_LENGTH_FOR_DURATION_SECONDS
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
@@ -424,7 +428,7 @@ export class AuditLogService {
     ).run(executor);
 
     console.log(
-      `${AuditLogService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(
@@ -485,7 +489,7 @@ export class AuditLogService {
 
     const length = await count.run(executor);
     console.log(
-      `${AuditLogService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${length}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${length}, pageOfEntries=...`
     );
 
     return createPagedResult(
@@ -525,7 +529,7 @@ export class AuditLogService {
     ).run(executor);
 
     console.log(
-      `${AuditLogService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
     return createPagedResult(
@@ -553,8 +557,22 @@ export class AuditLogService {
     start: number,
     end: number
   ): Promise<AuditEventDetailsType | null> {
+    const entry = await getTruncatedAuditEventDetails(executor, {
+      auditEventDbId: id,
+      userDbId: user.dbId,
+      detailsMaxLength: end,
+    });
+
+    if (!entry) return null;
+
+    return {
+      objectId: entry.id,
+      details: entry.detailsAsPrettyString ?? undefined,
+      truncated: entry.detailsWereTruncated ?? undefined,
+    };
+
     // Find if "releaseKey" exist associated with this Id.
-    const rKey = (
+    /* const rKey = (
       await getReleaseKeyFromReleaseAuditEvent(executor, {
         releaseAuditEventId: id,
       })
@@ -571,7 +589,7 @@ export class AuditLogService {
         details: entry.detailsStr ?? undefined,
         truncated: entry.truncated,
       };
-    }
+    } */
   }
 
   public async getFullEntry(
@@ -861,7 +879,7 @@ export class AuditLogService {
   protected async auditPattern<R, T>(
     startAuditFn: (start: Date) => Promise<string>,
     completeAuditFn: (
-      this: AuditLogService,
+      this: AuditEventService,
       executor: Executor,
       auditEventId: string,
       outcome: AuditEventOutcome,

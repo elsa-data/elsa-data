@@ -5,7 +5,7 @@ import {
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
-import { TEST_SUBJECT_3 } from "./insert-test-users";
+import { TEST_SUBJECT_3, TEST_SUBJECT_3_DISPLAY } from "./insert-test-users";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -49,8 +49,8 @@ export async function insertRelease2() {
           actionCategory: "C",
           actionDescription: "Created Release",
           outcome: 0,
-          whoDisplayName: "Someone",
-          whoId: "a",
+          whoDisplayName: TEST_SUBJECT_3_DISPLAY,
+          whoId: TEST_SUBJECT_3,
           occurredDateTime: e.datetime_current(),
         })
       ),

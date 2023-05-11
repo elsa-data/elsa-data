@@ -2,7 +2,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import * as edgedb from "edgedb";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
-import { AuditLogService } from "../../src/business/services/audit-log-service";
+import { AuditEventService } from "../../src/business/services/audit-event-service";
 import { addSeconds } from "date-fns";
 
 let testReleaseKey: string;
@@ -10,7 +10,7 @@ let testReleaseKey: string;
 let allowedAdministratorUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
-let auditLogService: AuditLogService;
+let auditLogService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -24,7 +24,7 @@ beforeEach(async () => {
     edgeDbClient,
   } = await beforeEachCommon(testContainer));
 
-  auditLogService = testContainer.resolve(AuditLogService);
+  auditLogService = testContainer.resolve(AuditEventService);
 });
 
 /**

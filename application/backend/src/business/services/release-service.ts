@@ -19,7 +19,7 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import { releaseGetAllByUser } from "../../../dbschema/queries";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import {
   auditFailure,
   auditReleaseUpdateStart,
@@ -35,7 +35,8 @@ export class ReleaseService extends ReleaseBaseService {
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(UserService) userService: UserService
   ) {
     super(settings, edgeDbClient, features, userService);

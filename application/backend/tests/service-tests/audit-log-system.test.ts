@@ -1,12 +1,12 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { AuditLogService } from "../../src/business/services/audit-log-service";
+import { AuditEventService } from "../../src/business/services/audit-event-service";
 import * as edgedb from "edgedb";
 import { registerTypes } from "../test-dependency-injection.common";
 import { beforeEachCommon } from "./user.common";
 import { addSeconds } from "date-fns";
 
 let existingUser: AuthenticatedUser;
-let auditLogService: AuditLogService;
+let auditLogService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -14,7 +14,7 @@ const testContainer = registerTypes();
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  auditLogService = testContainer.resolve(AuditLogService);
+  auditLogService = testContainer.resolve(AuditEventService);
 });
 
 it("audit system instant", async () => {
