@@ -1,5 +1,5 @@
-import { insertTestData } from "./test-data/insert-test-data";
 import { DependencyContainer } from "tsyringe";
+import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
 
 export const ADD_SCENARIO_COMMAND = "add-scenario";
 
@@ -14,7 +14,15 @@ export async function commandAddScenario(
   scenario: number
 ): Promise<number> {
   // TODO make multiple scenarios
-  await insertTestData(dc);
+
+  switch (scenario) {
+    case 1:
+      insertScenario1(dc);
+      break;
+
+    default:
+      break;
+  }
 
   return 0;
 }

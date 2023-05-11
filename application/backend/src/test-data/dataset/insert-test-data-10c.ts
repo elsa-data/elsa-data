@@ -1,12 +1,11 @@
-import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../../di-helpers";
 import {
   createArtifacts,
   makeSystemlessIdentifierArray,
   createFile,
-} from "./test-data-helpers";
-
-const edgeDbClient = edgedb.createClient();
+} from "../util/test-data-helpers";
 
 export const TENC_URI = "urn:fdc:umccr.org:2022:dataset/10c";
 
@@ -19,7 +18,9 @@ export const TN_1_SPECIMEN_TUMOUR = "T908765";
 /**
  * The 10C dataset is cancer patients
  */
-export async function insert10C() {
+export async function insert10C(dc: DependencyContainer): Promise<string> {
+  const { edgeDbClient } = getServices(dc);
+
   const makeArtifacts = async (specimenId: string) => {
     return await createArtifacts(
       [],
@@ -99,4 +100,6 @@ export async function insert10C() {
       ),
     })
     .run(edgeDbClient);
+
+  return TENC_URI;
 }

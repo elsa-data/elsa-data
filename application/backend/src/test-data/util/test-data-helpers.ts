@@ -1,7 +1,7 @@
 import { createClient } from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import _ from "lodash";
-import { lab, storage } from "../../dbschema/interfaces";
+import { lab, storage } from "../../../dbschema/interfaces";
 
 const edgeDbClient = createClient();
 

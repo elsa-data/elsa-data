@@ -1,20 +1,23 @@
 import { createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
+import {
+  insert10G,
+  TENG_URI,
+} from "../../src/test-data/dataset/insert-test-data-10g";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import {
   findSpecimenQuery,
   makeSingleCodeArray,
-} from "../../src/test-data/test-data-helpers";
-import { insert10F } from "../../src/test-data/insert-test-data-10f";
-import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
+} from "../../src/test-data/util/test-data-helpers";
+import { insert10F } from "../../src/test-data/dataset/insert-test-data-10f";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
-} from "../../src/test-data/insert-test-data-10f-simpsons";
-import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
-import { insert10C } from "../../src/test-data/insert-test-data-10c";
+} from "../../src/test-data/dataset/insert-test-data-10f-simpsons";
+import { JUDY_SPECIMEN } from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
+import { insert10C } from "../../src/test-data/dataset/insert-test-data-10c";
 import { DependencyContainer } from "tsyringe";
 
 /**
@@ -34,7 +37,7 @@ export async function beforeEachCommon(dc: DependencyContainer) {
   await insert10F(dc);
   // note that we insert these in order to have some records that _aren't_ in involved in this release
   // ONLY 10G and 10F are actually in the release
-  await insert10C();
+  await insert10C(dc);
 
   const testReleaseInsert = await e
     .insert(e.release.Release, {

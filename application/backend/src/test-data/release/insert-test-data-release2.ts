@@ -1,11 +1,13 @@
-import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../../di-helpers";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "./test-data-helpers";
 import { TENF_URI } from "./insert-test-data-10f-helpers";
 import { TEST_SUBJECT_3, TEST_SUBJECT_3_DISPLAY } from "./insert-test-users";
+import { InsertReleaseProps, insertRole } from "./helpers";
 
 const edgeDbClient = edgedb.createClient();
 
@@ -15,10 +17,20 @@ export const RELEASE2_APPLICATION_DAC_TITLE =
 export const RELEASE2_APPLICATION_DAC_DETAILS =
   "Some other details from the DAC";
 
-export async function insertRelease2() {
-  return await e
+export async function insertRelease2(
+  dc: DependencyContainer,
+  releaseProps: InsertReleaseProps
+) {
+  const { edgeDbClient } = getServices(dc);
+  const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
+    releaseProps;
+
+  if (releaseAdministrator.length < 1)
+    throw new Error("Release has no Administrator");
+
+  const insertRelease2 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: TEST_SUBJECT_3,
+      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
       applicationDacTitle: RELEASE2_APPLICATION_DAC_TITLE,
       applicationDacDetails: RELEASE2_APPLICATION_DAC_DETAILS,
       applicationDacIdentifier: makeSystemlessIdentifier("XYZ"),
@@ -30,7 +42,7 @@ export async function insertRelease2() {
         studyIsNotCommercial: true,
         beaconQuery: {},
       }),
-      datasetUris: e.array([TENF_URI]),
+      datasetUris: datasetUris,
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
@@ -56,4 +68,22 @@ export async function insertRelease2() {
       ),
     })
     .run(edgeDbClient);
+
+  // Inserting user roles assign to this release
+  for (const user of releaseAdministrator) {
+    await insertRole(
+      insertRelease2.id,
+      user.email,
+      "Administrator",
+      edgeDbClient
+    );
+  }
+  for (const user of releaseManager) {
+    await insertRole(insertRelease2.id, user.email, "Manager", edgeDbClient);
+  }
+  for (const user of releaseMember) {
+    await insertRole(insertRelease2.id, user.email, "Member", edgeDbClient);
+  }
+
+  return insertRelease2;
 }

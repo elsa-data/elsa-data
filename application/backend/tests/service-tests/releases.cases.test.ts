@@ -16,16 +16,16 @@ import {
   HOMER_SPECIMEN,
   MARGE_SPECIMEN,
   SIMPSONS_CASE,
-} from "../../src/test-data/insert-test-data-10f-simpsons";
+} from "../../src/test-data/dataset/insert-test-data-10f-simpsons";
 import {
   ELROY_SPECIMEN,
   GEORGE_SPECIMEN,
   JETSONS_CASE,
   JUDY_SPECIMEN,
-} from "../../src/test-data/insert-test-data-10f-jetsons";
+} from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
 import { ReleaseSelectionService } from "../../src/business/services/release-selection-service";
 import { ReleaseSelectionDatasetMismatchError } from "../../src/business/exceptions/release-selection";
-import { TN_1_SPECIMEN_TUMOUR } from "../../src/test-data/insert-test-data-10c";
+import { TN_1_SPECIMEN_TUMOUR } from "../../src/test-data/dataset/insert-test-data-10c";
 
 let edgeDbClient: Client;
 let releaseSelectionService: ReleaseSelectionService;

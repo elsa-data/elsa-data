@@ -1,4 +1,4 @@
-import { createFile } from "./test-data-helpers";
+import { createFile } from "../util/test-data-helpers";
 import {
   CORIELL_CELL_SYSTEM,
   CORIELL_DNA_SYSTEM,
@@ -16,10 +16,10 @@ import {
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
 } from "@umccr/elsa-types";
-import { ElsaSettings } from "../config/elsa-settings";
+import { ElsaSettings } from "../../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 
-// we make these identifers as external consts so they can be used as insertion values
+// we make these identifiers as external const so they can be used as insertion values
 // but can also be in test suites for looking up know cases etc
 
 export const SIMPSONS_CASE = "SIMPSONS";

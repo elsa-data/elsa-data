@@ -1,19 +1,27 @@
-import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
+import { DependencyContainer } from "tsyringe";
+import { getServices } from "../../di-helpers";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
-} from "./test-data-helpers";
-import { TEST_SUBJECT_3 } from "./insert-test-users";
+} from "../util/test-data-helpers";
+import { InsertReleaseProps, insertRole } from "./helpers";
 
-const edgeDbClient = edgedb.createClient();
+export async function insertRelease3(
+  dc: DependencyContainer,
+  releaseProps: InsertReleaseProps
+) {
+  const { edgeDbClient } = getServices(dc);
+  const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
+    releaseProps;
 
-export async function insertRelease3() {
+  if (releaseAdministrator.length < 1)
+    throw new Error("Release has no Administrator");
   // r3 is a test release that no-one has any permissions into - so should not
   // appear in any queries
-  return await e
+  const insertRelease3 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: TEST_SUBJECT_3,
+      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
       applicationDacTitle: "An Invisible Study",
       applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
       applicationDacDetails: "",
@@ -69,4 +77,22 @@ export async function insertRelease3() {
       ),
     })
     .run(edgeDbClient);
+
+  // Inserting user roles assign to this release
+  for (const user of releaseAdministrator) {
+    await insertRole(
+      insertRelease3.id,
+      user.email,
+      "Administrator",
+      edgeDbClient
+    );
+  }
+  for (const user of releaseManager) {
+    await insertRole(insertRelease3.id, user.email, "Manager", edgeDbClient);
+  }
+  for (const user of releaseMember) {
+    await insertRole(insertRelease3.id, user.email, "Member", edgeDbClient);
+  }
+
+  return insertRelease3;
 }

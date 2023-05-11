@@ -8,10 +8,6 @@ test.beforeEach(async ({ page }) => {
 test("A release can be created manually which has selectable cases", async ({
   page,
 }) => {
-  test.slow();
-
-  await page.goto("./");
-
   await page.getByRole("listitem").filter({ hasText: "DAC" }).click();
   await page.getByRole("tab", { name: "Manual" }).click();
   await page.getByRole("button", { name: "Create Release Manually" }).click();
