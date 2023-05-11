@@ -46,7 +46,10 @@ const ObjectStoreRecordKeySchema: TLiteral<
 const FileRecordHeaderElementSchema: TUnion<typeof ObjectStoreRecordKeySchema> =
   Type.Union(ObjectStoreRecordKeySchema);
 
-export const FileRecordHeader = Type.Array(FileRecordHeaderElementSchema);
+export const FileRecordHeader = Type.Union([
+  Type.Array(FileRecordHeaderElementSchema),
+  FileRecordHeaderElementSchema,
+]);
 
 export const ReleasePresignRequestSchema = Type.Object({
   // id: Type.String(),

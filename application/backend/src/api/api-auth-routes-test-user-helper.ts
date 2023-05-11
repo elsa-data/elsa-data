@@ -38,7 +38,6 @@ import {
   createUserAllowedCookie,
 } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
-import { Logger } from "ajv";
 
 const ALL_TEST_SUBJECT = [
   {

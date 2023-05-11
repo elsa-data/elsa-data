@@ -60,7 +60,10 @@ export async function makeJetsonsTrio() {
     [],
     // Male	64 YR	Chinese
     // george jetson
-    { [PGP_SYSTEM]: GEORGE_PATIENT_PGP },
+    {
+      "": "ELROY_PAT",
+      [PGP_SYSTEM]: GEORGE_PATIENT_PGP,
+    },
     {
       [CORIELL_DNA_SYSTEM]: GEORGE_SPECIMEN,
       [CORIELL_CELL_SYSTEM]: "GM24694",
@@ -83,7 +86,10 @@ export async function makeJetsonsTrio() {
     [],
     // Female	63 YR	Chinese
     // Judy jetson
-    { [PGP_SYSTEM]: JUDY_PATIENT_PGP },
+    {
+      "": "ELROY_MAT",
+      [PGP_SYSTEM]: JUDY_PATIENT_PGP,
+    },
     {
       [CORIELL_DNA_SYSTEM]: JUDY_SPECIMEN,
       [CORIELL_CELL_SYSTEM]: "GM24694",

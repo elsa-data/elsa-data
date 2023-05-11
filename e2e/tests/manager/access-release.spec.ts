@@ -16,6 +16,9 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
   await page.locator(`#button-view-${RELEASE_KEY}`).click();
   await page.getByText("Object Signing").click();
 
+  // Select at least the objectStoreSigned
+  await page.locator("#chx-objectStoreSigned").check();
+
   const downloadPromise = page.waitForEvent("download");
   await page.getByText("Download Zip").click();
   const download = await downloadPromise;
@@ -36,23 +39,36 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
       flag: "r",
     });
 
-    const manifestLines = manifestData.split("\n");
-    manifestLines.shift();
-    manifestLines.pop();
+    const splitLines = manifestData.trim().split("\n");
+
+    const headerRow = splitLines.shift() ?? "";
+    const headerNames = headerRow.split("\t");
+
+    // Check the existence/non-existence of patient Ids
+    const objectSignedIndex = headerNames.indexOf("OBJECTSTORESIGNED");
+    const allSignedUrl = splitLines.map((each) => {
+      const column = each.split("\t");
+      return column[objectSignedIndex];
+    });
 
     // Make sure for each line has the s3 presigned url
-    for (const line of manifestLines) {
+    for (const line of allSignedUrl) {
       expect(line).toMatch(
-        /https:\/\/umccr-10f-data-dev\.s3\.ap-southeast-2\.amazonaws\.com\//i
+        /^https:\/\/umccr-10f-data-dev\.s3\.ap-southeast-2\.amazonaws\.com\//i
       );
     }
   });
 });
 
-test("Download metadata manifest ZIP file", async ({ page }) => {
+test("Download metadata manifest ZIP file and check for Patient Ids", async ({
+  page,
+}) => {
   // Navigate and download file
   await page.locator(`#button-view-${RELEASE_KEY}`).click();
   await page.getByRole("tab", { name: "Manifest" }).click();
+
+  // Select at least the patientId
+  await page.locator("#chx-patientId").check();
 
   const downloadPromise = page.waitForEvent("download");
   await page.getByText("Download TSV").click();
@@ -70,12 +86,23 @@ test("Download metadata manifest ZIP file", async ({ page }) => {
 
   // Reading the data from the stream
   readableStream?.on("end", () => {
-    const splitLines = data.split("\n");
+    const splitLines = data.trim().split("\n");
 
-    // Test if TSV is downloaded and contain S3 URI
-    expect(data).toMatch(/s3:\/\/umccr-10f-data-dev\//i);
+    const headerRow = splitLines.shift() ?? "";
+    const headerNames = headerRow.split("\t");
 
-    // Test if "ELROY" data exist, as only one of the trio is selected in this release
-    expect(splitLines[1]).toMatch(/JETSONS\tELROY/);
+    // Check the existence/non-existence of patient Ids
+    const patientIdIndex = headerNames.indexOf("PATIENTID");
+    const allPatientId = splitLines.map((each) => {
+      const column = each.split("\t");
+      return column[patientIdIndex];
+    });
+
+    // In the test-data scenario 1
+    // The first ID for all three trios are: ELROY, ELROY_PAT, ELROY_MAT
+    // The release will only include the "ELROY" patient only
+    expect(allPatientId.includes("ELROY")).toBe(true);
+    expect(allPatientId.includes("ELROY_PAT")).toBe(false);
+    expect(allPatientId.includes("ELROY_MAT")).toBe(false);
   });
 });
