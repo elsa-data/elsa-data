@@ -4,6 +4,8 @@ import * as temp from "temp";
 import { ElsaSettings } from "./config/elsa-settings";
 import _ from "lodash";
 import { ElsaConfiguration } from "./config/config-constants";
+import { locateHtmlDirectory } from "./app-helpers";
+import * as path from "path";
 
 export async function bootstrapSettings(
   config: ElsaConfiguration
@@ -33,6 +35,12 @@ export async function bootstrapSettings(
     await writeFile(rootCaLocation, rootCa.replaceAll("\\n", "\n"));
 
     process.env["EDGEDB_TLS_CA_FILE"] = rootCaLocation;
+  }
+
+  const logoPath = _.get(config, "branding.logoPath");
+  let logoUriRelative: string | undefined;
+  if (logoPath) {
+    logoUriRelative = `/branding/logo${path.extname(logoPath)}`;
   }
 
   // we are in dev *only* if it is made explicit
@@ -184,6 +192,11 @@ export async function bootstrapSettings(
           sourceFrontEndDirect: true,
         }
       : undefined,
+    branding: {
+      brandName: _.get(config, "branding.brandName"),
+      logoPath: logoPath,
+      logoUriRelative: logoUriRelative,
+    },
     // these are our special arrays that can be constructed with + and - definitions
     datasets: (config.datasets as any[]) ?? [],
     superAdmins: (config.superAdmins as any[]) ?? [],
