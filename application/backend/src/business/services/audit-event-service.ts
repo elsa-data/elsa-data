@@ -26,8 +26,7 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
-  getReleaseKeyFromReleaseAuditEvent,
-  getTruncatedAuditEventDetails,
+  auditEventGetSomeByUser,
   insertReleaseAuditEvent,
   insertSystemAuditEvent,
   insertUserAuditEvent,
@@ -557,39 +556,20 @@ export class AuditEventService {
     start: number,
     end: number
   ): Promise<AuditEventDetailsType | null> {
-    const entry = await getTruncatedAuditEventDetails(executor, {
-      auditEventDbId: id,
+    const entry = await auditEventGetSomeByUser(executor, {
       userDbId: user.dbId,
+      filterAuditEventDbId: id,
       detailsMaxLength: end,
     });
 
     if (!entry) return null;
+    if (!entry.data) return null;
 
     return {
-      objectId: entry.id,
-      details: entry.detailsAsPrettyString ?? undefined,
-      truncated: entry.detailsWereTruncated ?? undefined,
+      objectId: entry.data[0].id,
+      details: entry.data[0].detailsAsPrettyString ?? undefined,
+      truncated: entry.data[0].detailsWereTruncated ?? undefined,
     };
-
-    // Find if "releaseKey" exist associated with this Id.
-    /* const rKey = (
-      await getReleaseKeyFromReleaseAuditEvent(executor, {
-        releaseAuditEventId: id,
-      })
-    )?.releaseKey;
-
-    await this.checkIsAllowedViewAuditEvents(executor, user, rKey);
-
-    const entry = await auditLogDetailsForIdQuery(id, start, end).run(executor);
-    if (!entry) {
-      return null;
-    } else {
-      return {
-        objectId: entry.id,
-        details: entry.detailsStr ?? undefined,
-        truncated: entry.truncated,
-      };
-    } */
   }
 
   public async getFullEntry(

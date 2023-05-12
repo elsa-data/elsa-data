@@ -3,7 +3,7 @@ import e from "../../dbschema/edgeql-js";
 import { blankTestData } from "../../src/test-data/blank-test-data";
 import { insertRelease2 } from "../../src/test-data/insert-test-data-release2";
 import {
-  getTruncatedAuditEventDetails,
+  auditEventGetSomeByUser,
   insertSystemAuditEvent,
   insertUserAuditEvent,
 } from "../../dbschema/queries";
@@ -27,8 +27,8 @@ describe("edgedb audit entry tests", () => {
   let user3IsAdmin: { id: string };
   let release: { id: string };
   let releaseAuditEvent: { id: string };
-  let auditEvent1: { id: string };
-  let auditEvent2: { id: string };
+  let userViewAuditEvent: { id: string };
+  let systemAuditEvent: { id: string };
 
   beforeAll(async () => {
     edgeDbClient = createClient({});
@@ -82,11 +82,11 @@ describe("edgedb audit entry tests", () => {
       })
       .run(edgeDbClient);
 
-    auditEvent1 = await insertUserAuditEvent(edgeDbClient, {
+    userViewAuditEvent = await insertUserAuditEvent(edgeDbClient, {
       whoId: user1.id,
       whoDisplayName: SUBJECT_DISPLAY_NAME_1,
-      actionCategory: "C",
-      actionDescription: "Did something",
+      actionCategory: "R",
+      actionDescription: "Viewed something",
       details: {
         a: "a big long string",
         array: ["a", "b", "c"],
@@ -99,14 +99,14 @@ describe("edgedb audit entry tests", () => {
         set: {
           userAuditEvent: {
             "+=": e.select(e.audit.UserAuditEvent, (uae) => ({
-              filter: e.op(e.uuid(auditEvent1.id), "=", uae.id),
+              filter: e.op(e.uuid(userViewAuditEvent.id), "=", uae.id),
             })),
           },
         },
       }))
       .run(edgeDbClient);
 
-    auditEvent2 = await insertSystemAuditEvent(edgeDbClient, {
+    systemAuditEvent = await insertSystemAuditEvent(edgeDbClient, {
       actionCategory: "U",
       actionDescription: "Updated the system",
       details: {
@@ -116,53 +116,209 @@ describe("edgedb audit entry tests", () => {
     });
   });
 
-  it("get of truncated details returns content if user created the event", async () => {
-    const result = await getTruncatedAuditEventDetails(edgeDbClient, {
-      auditEventDbId: auditEvent1.id,
-      userDbId: user1.id,
-      orderField: ".id",
-    });
+  it("user audit events visible to those who made them", async () => {
+    {
+      // audit event 1 should be visible to user 1 because they created it
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        filterAuditEventDbId: userViewAuditEvent.id,
+        userDbId: user1.id,
+      });
 
-    console.debug(result);
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(userViewAuditEvent.id);
+      expect(result.data[0].actionCategory).toBe("R");
+      expect(result.data[0].actionDescription).toBe("Viewed something");
+      expect(result.data[0].outcome).toBe(0);
+      expect(result.data[0].detailsWereTruncated).toBe(false);
+      expect(result.data[0].isSystemAuditEvent).toBe(false);
+      expect(result.data[0].isReleaseAuditEvent).toBe(false);
+      expect(result.data[0].isUserAuditEvent).toBe(true);
+    }
+    {
+      // audit event 1 should NOT be visible to user 2 because they had nothing to do with it
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        filterAuditEventDbId: userViewAuditEvent.id,
+        userDbId: user2.id,
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(0);
+    }
+    {
+      // audit event 1 will be visible to user 3 because they have admin rights
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        filterAuditEventDbId: userViewAuditEvent.id,
+        userDbId: user3IsAdmin.id,
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(userViewAuditEvent.id);
+    }
   });
 
-  it("get of truncated details returns nothing if user did not create the event", async () => {
-    const result = await getTruncatedAuditEventDetails(edgeDbClient, {
-      auditEventDbId: auditEvent1.id,
-      userDbId: user2.id,
-      orderField: ".id",
-    });
-
-    console.debug(result);
+  it("release audit events available to those in the release", async () => {
+    {
+      // release audit event should be visible to user 1 because they are a participant in the release
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        filterAuditEventDbId: releaseAuditEvent.id,
+        userDbId: user1.id,
+      });
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].actionCategory).toBe("C");
+      expect(result.data[0].actionDescription).toBe("Created Release");
+      expect(result.data[0].outcome).toBe(0);
+    }
+    // release audit event should not be visible to user 2 because they are not a participant in the release
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        filterAuditEventDbId: releaseAuditEvent.id,
+        userDbId: user2.id,
+      });
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(0);
+    }
+    {
+      // release audit event should be visible to admins no matter what
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        filterAuditEventDbId: releaseAuditEvent.id,
+        userDbId: user3IsAdmin.id,
+      });
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].actionDescription).toBe("Created Release");
+    }
   });
 
-  it("get of audit details returns content if user participates in the release the event is part of", async () => {
-    const result = await getTruncatedAuditEventDetails(edgeDbClient, {
-      auditEventDbId: releaseAuditEvent.id,
-      userDbId: user1.id,
-      orderField: ".id",
-    });
+  it("all events available to be queried by an admin", async () => {
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        // by passing in no "filterTypes" we expect to get ALL types back
+      });
 
-    console.debug(result);
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(3);
+    }
   });
 
-  it("get of audit details returns nothing if user does not participate in the release the event is part of", async () => {
-    const result = await getTruncatedAuditEventDetails(edgeDbClient, {
-      auditEventDbId: releaseAuditEvent.id,
-      userDbId: user2.id,
-      orderField: ".id",
-    });
+  it("json details can be limited in return value", async () => {
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterAuditEventDbId: userViewAuditEvent.id,
+        detailsMaxLength: 8,
+      });
 
-    console.debug(result);
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].detailsWereTruncated).toBe(true);
+      expect(result.data[0].detailsAsPrettyString).toBe('{\n    "a');
+    }
   });
 
-  it("get all audit details returns nothing if user does not participate in the release the event is part of", async () => {
-    const result = await getTruncatedAuditEventDetails(edgeDbClient, {
-      userDbId: user1.id,
-      detailsMaxLength: 10,
-      orderField: ".occurredDateTime desc",
-    });
+  it("all events can be filtered by passing in filter types", async () => {
+    // user events
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterTypes: ["user"],
+      });
 
-    console.debug(result);
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(userViewAuditEvent.id);
+    }
+    // release events
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterTypes: ["release"],
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(releaseAuditEvent.id);
+    }
+    // system events
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterTypes: ["system"],
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(systemAuditEvent.id);
+    }
+    // mix of events
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterTypes: ["user", "system"],
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(2);
+    }
+  });
+
+  it("all events can be filtered by action category", async () => {
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterActionCategory: "R",
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(userViewAuditEvent.id);
+    }
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterActionCategory: "U",
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(systemAuditEvent.id);
+    }
+    // not expecting any Delete events
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterActionCategory: "D",
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(0);
+    }
+  });
+
+  it("all events can be filtered by case insensitive action description text matching", async () => {
+    // case-insensitive match of some part of our view event
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterActionDescriptionPattern: "%SOME%",
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(1);
+      expect(result.data[0].id).toBe(userViewAuditEvent.id);
+    }
+    // nothing will match this
+    {
+      const result = await auditEventGetSomeByUser(edgeDbClient, {
+        userDbId: user3IsAdmin.id,
+        filterActionDescriptionPattern: "%xxxxx%",
+      });
+
+      expect(result).toBeTruthy();
+      expect(result.total).toBe(0);
+    }
   });
 });
