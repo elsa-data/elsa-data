@@ -4,16 +4,8 @@ import { getServices } from "../../di-helpers";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
-} from "./test-data-helpers";
-import { TENF_URI } from "./insert-test-data-10f-helpers";
-import { TEST_SUBJECT_3, TEST_SUBJECT_3_DISPLAY } from "./insert-test-users";
+} from "../util/test-data-helpers";
 import { InsertReleaseProps, insertRole } from "./helpers";
-import { TENF_URI } from "./insert-test-data-10f-helpers";
-import { TEST_SUBJECT_3, TEST_SUBJECT_3_DISPLAY } from "./insert-test-users";
-
-const edgeDbClient = edgedb.createClient();
-
-const edgeDbClient = edgedb.createClient();
 
 export const RELEASE2_RELEASE_IDENTIFIER = "R002";
 export const RELEASE2_APPLICATION_DAC_TITLE =
@@ -65,8 +57,8 @@ export async function insertRelease2(
           actionCategory: "C",
           actionDescription: "Created Release",
           outcome: 0,
-          whoDisplayName: TEST_SUBJECT_3_DISPLAY,
-          whoId: TEST_SUBJECT_3,
+          whoDisplayName: releaseProps.releaseAdministrator[0].name,
+          whoId: releaseProps.releaseAdministrator[0].subject_id,
           occurredDateTime: e.datetime_current(),
         })
       ),

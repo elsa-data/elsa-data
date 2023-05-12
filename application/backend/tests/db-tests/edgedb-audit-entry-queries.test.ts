@@ -1,12 +1,19 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insertRelease2 } from "../../src/test-data/insert-test-data-release2";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
+import { insertRelease2 } from "../../src/test-data/release/insert-test-data-release2";
 import {
   auditEventGetSomeByUser,
   insertSystemAuditEvent,
   insertUserAuditEvent,
 } from "../../dbschema/queries";
+import { registerTypes } from "../test-dependency-injection.common";
+import {
+  TEST_SUBJECT_3,
+  TEST_SUBJECT_3_DISPLAY,
+  TEST_SUBJECT_3_EMAIL,
+} from "../../src/test-data/user/insert-user3";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 
 const SUBJECT_ID_1 = "subjectid1";
 const SUBJECT_DISPLAY_NAME_1 = "Subject 1";
@@ -19,6 +26,8 @@ const SUBJECT_EMAIL_2 = "subject@2.com";
 const SUBJECT_ID_3 = "subjectid3";
 const SUBJECT_DISPLAY_NAME_3 = "Subject 3";
 const SUBJECT_EMAIL_3 = "subject@3.com";
+
+const testContainer = registerTypes();
 
 describe("edgedb audit entry tests", () => {
   let edgeDbClient: Client;
@@ -39,8 +48,21 @@ describe("edgedb audit entry tests", () => {
   beforeEach(async () => {
     await blankTestData();
 
+    const releaseProps = {
+      releaseAdministrator: [
+        {
+          subject_id: TEST_SUBJECT_3,
+          email: TEST_SUBJECT_3_EMAIL,
+          name: TEST_SUBJECT_3_DISPLAY,
+        },
+      ],
+      releaseMember: [],
+      releaseManager: [],
+      datasetUris: [TENF_URI],
+    };
+
     // inserting this release creates a ReleaseAuditEntry for the creation of the release
-    release = await insertRelease2();
+    release = await insertRelease2(testContainer, releaseProps);
 
     releaseAuditEvent = (await e
       .assert_single(
