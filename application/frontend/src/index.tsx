@@ -13,6 +13,7 @@ import { createRouter } from "./index-router";
 import { TRPCProvider } from "./providers/trpc-provider";
 import { isString } from "lodash";
 import { LoggedInUserConfigRelayProvider } from "./providers/logged-in-user-config-relay-provider";
+import ShowAlert from "./providers/show-alert-provider";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -57,14 +58,18 @@ if (rootElement != null) {
         >
           {/* we use session cookies for auth and use this provider to make them easily available */}
           <CookiesProvider>
-            <LoggedInUserProvider>
-              <TRPCProvider>
-                {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
-                <LoggedInUserConfigRelayProvider>
-                  <RouterProvider router={createRouter(de === "development")} />
-                </LoggedInUserConfigRelayProvider>
-              </TRPCProvider>
-            </LoggedInUserProvider>
+            <ShowAlert>
+              <LoggedInUserProvider>
+                <TRPCProvider>
+                  {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
+                  <LoggedInUserConfigRelayProvider>
+                    <RouterProvider
+                      router={createRouter(de === "development")}
+                    />
+                  </LoggedInUserConfigRelayProvider>
+                </TRPCProvider>
+              </LoggedInUserProvider>
+            </ShowAlert>
           </CookiesProvider>
         </EnvRelayProvider>
       </ErrorBoundary>

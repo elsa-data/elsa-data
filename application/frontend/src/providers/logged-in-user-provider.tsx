@@ -10,6 +10,7 @@ import {
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import _ from "lodash";
+import { useShowAlert } from "./show-alert-provider";
 
 export type LoggedInUser = {
   // a displayable name for the logged-in user
@@ -22,6 +23,9 @@ export type LoggedInUser = {
   allowedUi: Set<string>;
 };
 
+type Props = {
+  children: React.ReactNode;
+};
 /**
  * The logged-in user provider is a context that tracks the logged-in user via
  * cookies.
@@ -37,6 +41,7 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
     USER_EMAIL_COOKIE_NAME,
     USER_ALLOWED_COOKIE_NAME,
   ]);
+  const { show } = useShowAlert();
 
   // Removing Cookie when token is no longer valid when using Axios (by 401 Status Code Response).
   axios.interceptors.response.use(
@@ -47,9 +52,10 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
         removeCookie(USER_SUBJECT_COOKIE_NAME);
 
         const errMessage = err?.response?.data?.detail;
-        if (errMessage) {
-          alert(errMessage);
-        }
+        show({
+          title: "Session Expired",
+          description: errMessage,
+        });
       }
 
       return Promise.reject(err);
@@ -95,7 +101,3 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
 };
 
 export const [useLoggedInUser, CtxProvider] = createCtx<LoggedInUser | null>();
-
-type Props = {
-  children: React.ReactNode;
-};

@@ -11,7 +11,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faX } from "@fortawesome/free-solid-svg-icons";
 
 export type AlertProps = {
+  icon: ReactNode;
   description: ReactNode;
+  additionalAlertClassName: string;
 };
 
 /**
@@ -48,7 +50,11 @@ export const useIsInView = (ref: RefObject<HTMLElement>): boolean => {
 /**
  * An alert element.
  */
-export const Alert = ({ description }: AlertProps): JSX.Element => {
+export const Alert = ({
+  icon,
+  description,
+  additionalAlertClassName,
+}: AlertProps): JSX.Element => {
   const alertRef = useRef<HTMLDivElement>(null);
   const isInView = useIsInView(alertRef);
 
@@ -64,7 +70,7 @@ export const Alert = ({ description }: AlertProps): JSX.Element => {
 
   return (
     <Transition
-      className={classNames("alert alert-warning shadow-lg", {
+      className={classNames("alert shadow-lg", additionalAlertClassName, {
         "animate-pop": isInView,
       })}
       show={!dismissed}
@@ -77,19 +83,7 @@ export const Alert = ({ description }: AlertProps): JSX.Element => {
       ref={alertRef}
     >
       <div>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 flex-shrink-0 stroke-current"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-          />
-        </svg>
+        {icon}
         <span>{description}</span>
       </div>
       <button
@@ -101,5 +95,24 @@ export const Alert = ({ description }: AlertProps): JSX.Element => {
         <FontAwesomeIcon icon={faX} />
       </button>
     </Transition>
+  );
+};
+
+// Icons
+export const TriangleExclamationIcon = (): JSX.Element => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-6 w-6 flex-shrink-0 stroke-current"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      />
+    </svg>
   );
 };

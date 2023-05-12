@@ -11,7 +11,7 @@ import { SkeletonOneDiv } from "../../components/skeleton-one";
 import { SkeletonTwoDiv } from "../../components/skeleton-two";
 import { ReleasesMasterContextType } from "./releases-types";
 import { trpc } from "../../helpers/trpc";
-import { Alert } from "../../components/alert";
+import { Alert, TriangleExclamationIcon } from "../../components/alert";
 import {
   differenceFromNow,
   formatFromNowTime,
@@ -100,6 +100,8 @@ export const ReleasesMasterPage: React.FC = () => {
           lastUpdatedSubjectId !== cookies[USER_SUBJECT_COOKIE_NAME] && (
             <Alert
               key={`${lastUpdated} ${lastUpdatedSubjectId}`}
+              icon={<TriangleExclamationIcon />}
+              additionalAlertClassName={"alert-warning"}
               description={`This release was last edited ${formatFromNowTime(
                 lastUpdated
               )}.`}
