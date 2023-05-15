@@ -6,6 +6,7 @@ import { trpc } from "../../helpers/trpc";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { BoxPaginator } from "../box-paginator";
 import { EagerErrorBoundary } from "../errors";
+import { Table } from "../tables";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },
@@ -44,8 +45,8 @@ export function DataEgressDetailedTable({
       <div className="mb-2	text-gray-500">
         A detailed events on every events egress from data storage.
       </div>
-      <table className="table-compact table w-full">
-        <thead>
+      <Table
+        tableHead={
           <tr>
             {COLUMN_TO_SHOW.map((header) => (
               <th className="!left-auto normal-case" key={header.key}>
@@ -53,34 +54,33 @@ export function DataEgressDetailedTable({
               </th>
             ))}
           </tr>
-        </thead>
-        <tbody>
-          {dataEgressQuery.isSuccess &&
-            data &&
-            data.map((row, rowIdx) => (
-              <tr key={`body-row-${rowIdx}`}>
-                {COLUMN_TO_SHOW.map((col, colIdx) => {
-                  const objKey = col.key;
-                  return (
-                    <td key={`body-row-${rowIdx}-col-${colIdx}`}>
-                      {objKey === "egressBytes" || objKey === "fileSize"
-                        ? fileSize(row[objKey] ?? 0)
-                        : objKey === "occurredDateTime"
-                        ? formatLocalDateTime(row[objKey])
-                        : objKey === "fileUrl" ||
-                          objKey === "description" ||
-                          objKey === "sourceIpAddress" ||
-                          objKey === "sourceLocation"
-                        ? row[objKey]
-                        : ""}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-        </tbody>
-      </table>
-
+        }
+        tableBody={
+          dataEgressQuery.isSuccess &&
+          data &&
+          data.map((row, rowIdx) => (
+            <tr key={`body-row-${rowIdx}`}>
+              {COLUMN_TO_SHOW.map((col, colIdx) => {
+                const objKey = col.key;
+                return (
+                  <td key={`body-row-${rowIdx}-col-${colIdx}`}>
+                    {objKey === "egressBytes" || objKey === "fileSize"
+                      ? fileSize(row[objKey] ?? 0)
+                      : objKey === "occurredDateTime"
+                      ? formatLocalDateTime(row[objKey])
+                      : objKey === "fileUrl" ||
+                        objKey === "description" ||
+                        objKey === "sourceIpAddress" ||
+                        objKey === "sourceLocation"
+                      ? row[objKey]
+                      : ""}
+                  </td>
+                );
+              })}
+            </tr>
+          ))
+        }
+      />
       {dataEgressQuery.isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching data egress"}

@@ -6,6 +6,7 @@ import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
+import { Table } from "../../../components/tables";
 
 type Props = {
   showing: boolean;
@@ -62,30 +63,31 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
               </ul>
             </p>
           </div>
-          <table className="mt-4 w-full table-auto text-sm">
-            <tbody>
-              {possibleApplications &&
-                possibleApplications.map((pa, paIndex) => (
-                  <tr>
-                    <td>
-                      <input
-                        type="radio"
-                        checked={selectedRowIndex === paIndex}
-                        onClick={() => {
-                          // clear any previous errors
-                          setLastError(undefined);
-                          // change the row index
-                          setSelectedRowIndex(paIndex);
-                        }}
-                      />
-                    </td>
-                    <td className="border p-2">{pa.application_date_hid}</td>
-                    <td className="border p-2">{pa.daf_applicant_name}</td>
-                    <td className="border p-2">{pa.daf_project_title}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <Table
+            additionalTableClassName="mt-4 text-sm"
+            tableBody={
+              possibleApplications &&
+              possibleApplications.map((pa, paIndex) => (
+                <tr>
+                  <td>
+                    <input
+                      type="radio"
+                      checked={selectedRowIndex === paIndex}
+                      onClick={() => {
+                        // clear any previous errors
+                        setLastError(undefined);
+                        // change the row index
+                        setSelectedRowIndex(paIndex);
+                      }}
+                    />
+                  </td>
+                  <td className="border p-2">{pa.application_date_hid}</td>
+                  <td className="border p-2">{pa.daf_applicant_name}</td>
+                  <td className="border p-2">{pa.daf_project_title}</td>
+                </tr>
+              ))
+            }
+          />
         </>
       }
       buttons={

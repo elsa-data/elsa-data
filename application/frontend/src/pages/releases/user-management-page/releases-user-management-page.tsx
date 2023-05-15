@@ -15,6 +15,7 @@ import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import axios from "axios";
 import { useReleasesMasterData } from "../releases-types";
 import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
+import { Table } from "../../../components/tables";
 
 /**
  * A page allowing the display/editing of users participating in a release.
@@ -157,17 +158,17 @@ export const ReleasesUserManagementPage: React.FC = () => {
               )}
             {releaseParticipantsQuery.data &&
               releaseParticipantsQuery.data.length > 0 && (
-                <table className="table w-full table-auto">
-                  <thead>
+                <Table
+                  tableHead={
                     <tr>
                       <th scope="col">Name</th>
                       <th>Role</th>
                       <th>Last Login</th>
                       <th></th>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {releaseParticipantsQuery.data.map((row, rowIndex) => {
+                  }
+                  tableBody={releaseParticipantsQuery.data.map(
+                    (row, rowIndex) => {
                       return (
                         <tr key={row.id}>
                           <td>
@@ -212,9 +213,9 @@ export const ReleasesUserManagementPage: React.FC = () => {
                           </td>
                         </tr>
                       );
-                    })}
-                  </tbody>
-                </table>
+                    }
+                  )}
+                />
               )}
           </Box>
         </>

@@ -33,7 +33,7 @@ export const InformationBox: React.FC<Props> = ({
         <li
           key={index}
           className={`flex flex-row align-middle ${
-            isAllowMutateActivation && "justify-end"
+            isAllowMutateActivation && "lg:justify-end"
           }`}
         >
           <span className="mx-4 font-mono">{uri}</span>
@@ -58,7 +58,7 @@ export const InformationBox: React.FC<Props> = ({
   const ActivateDeactivateButtonRow = () => (
     <div className="flex flex-row space-x-4">
       <button
-        className="btn-success btn-lg btn"
+        className="btn-success btn-lg btn grow"
         disabled={releaseIsActivated || mutationInProgress}
         onClick={() =>
           activateMutation.mutate(
@@ -70,7 +70,7 @@ export const InformationBox: React.FC<Props> = ({
         Activate Release
       </button>
       <button
-        className="btn-warning btn-lg btn"
+        className="btn-warning btn-lg btn grow"
         disabled={!releaseIsActivated || mutationInProgress}
         onClick={() =>
           deactivateMutation.mutate(
@@ -86,7 +86,7 @@ export const InformationBox: React.FC<Props> = ({
 
   return (
     <Box heading={releaseData.applicationDacTitle}>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 overflow-x-auto">
         {releaseIsActivated && (
           <div className="alert alert-success col-span-2 shadow-lg">
             <div>
@@ -98,16 +98,16 @@ export const InformationBox: React.FC<Props> = ({
         {/* Hiding release-activation button if they are not authorised */}
         {isAllowMutateActivation ? (
           <>
-            <div className="flex flex-col space-y-2">
+            <div className="col-span-2 flex flex-col space-y-2 lg:col-auto">
               <ActivateDeactivateButtonRow />
             </div>
 
-            <div className="flex flex-col space-y-2">
+            <div className="col-span-2 flex flex-col space-y-2 lg:col-auto">
               <DatasetList />
             </div>
           </>
         ) : (
-          <div className="col-span-4 flex flex-col space-y-2">
+          <div className="flex flex-col space-y-2">
             <DatasetList />
           </div>
         )}

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { ToolTip } from "../tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { Table } from "../tables";
 
 const columnHeaderArray = ["", "Description / URI", "Last Modified", ""];
 
@@ -53,55 +54,53 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
 
   return (
     <>
-      <table className="table w-full table-auto">
-        <thead>
+      <Table
+        tableHead={
           <tr>
             {columnHeaderArray.map((props, idx) => (
               <th key={idx}>{props}</th>
             ))}
           </tr>
-        </thead>
-        <tbody>
-          {data.map((row, rowIndex) => {
-            return (
-              <tr key={row.uri}>
-                <td className={classNames(baseColumnClasses, "text-left")}>
-                  {!row.isInConfig && (
-                    <ToolTip
-                      trigger={<FontAwesomeIcon icon={faTriangleExclamation} />}
-                      description={`Missing dataset configuration`}
-                    />
-                  )}
-                </td>
-                <td className="whitespace-normal break-words">
-                  <div className="font-bold"> {row.description}</div>
-                  <div className="flex flex-row space-x-2 text-sm">
-                    <p className="font-mono opacity-50">{row.uri}</p>
-                  </div>
-                </td>
+        }
+        tableBody={data.map((row, rowIndex) => {
+          return (
+            <tr key={row.uri}>
+              <td className={classNames(baseColumnClasses, "text-left")}>
+                {!row.isInConfig && (
+                  <ToolTip
+                    trigger={<FontAwesomeIcon icon={faTriangleExclamation} />}
+                    description={`Missing dataset configuration`}
+                  />
+                )}
+              </td>
+              <td className="whitespace-normal break-words">
+                <div className="font-bold"> {row.description}</div>
+                <div className="flex flex-row space-x-2 text-sm">
+                  <p className="font-mono opacity-50">{row.uri}</p>
+                </div>
+              </td>
 
-                <td className={classNames(baseColumnClasses, "text-left")}>
-                  {row.updatedDateTime
-                    ? formatLocalDateTime(String(row.updatedDateTime))
-                    : ""}
-                </td>
-                <td className="text-right">
-                  <button
-                    className={classNames("btn-table-action-navigate")}
-                    onClick={async () => {
-                      navigate(
-                        encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
-                      );
-                    }}
-                  >
-                    view
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              <td className={classNames(baseColumnClasses, "text-left")}>
+                {row.updatedDateTime
+                  ? formatLocalDateTime(String(row.updatedDateTime))
+                  : ""}
+              </td>
+              <td className="text-right">
+                <button
+                  className={classNames("btn-table-action-navigate")}
+                  onClick={async () => {
+                    navigate(
+                      encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
+                    );
+                  }}
+                >
+                  view
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      />
 
       {datasetQuery.isError && (
         <EagerErrorBoundary

@@ -6,6 +6,7 @@ import { BoxPaginator } from "../box-paginator";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
 import { trpc } from "../../helpers/trpc";
 import { usePageSizer } from "../../hooks/page-sizer";
+import { Table } from "../tables";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },
@@ -46,8 +47,8 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
         A summary of events of every data egress from the data storage based on
         file associated with the release.
       </div>
-      <table className="table-compact table w-full">
-        <thead>
+      <Table
+        tableHead={
           <tr>
             {COLUMN_TO_SHOW.map((header) => (
               <th className="!left-auto normal-case" key={header.key}>
@@ -55,39 +56,40 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
               </th>
             ))}
           </tr>
-        </thead>
-        <tbody>
-          {dataEgressQuery.isSuccess &&
-            data &&
-            data.map((row, rowIdx) => (
-              <tr key={`body-row-${rowIdx}`}>
-                {COLUMN_TO_SHOW.map((column, colIdx) => {
-                  const objKey = column.key;
-                  return (
-                    <td key={`body-row-${rowIdx}-col-${colIdx}`}>
-                      {objKey === "totalDataEgressInBytes" ||
-                      objKey === "fileSize" ? (
-                        fileSize(row[objKey])
-                      ) : objKey === "lastOccurredDateTime" &&
-                        row[objKey] != null ? (
-                        formatLocalDateTime(row[objKey] as string)
-                      ) : objKey === "fileUrl" ? (
-                        row[objKey]
-                      ) : objKey === "downloadStatus" ? (
-                        <DisplayDownloadStatus
-                          downloadedSize={row["totalDataEgressInBytes"]}
-                          fileSize={row["fileSize"]}
-                        />
-                      ) : (
-                        ""
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-        </tbody>
-      </table>
+        }
+        tableBody={
+          dataEgressQuery.isSuccess &&
+          data &&
+          data.map((row, rowIdx) => (
+            <tr key={`body-row-${rowIdx}`}>
+              {COLUMN_TO_SHOW.map((column, colIdx) => {
+                const objKey = column.key;
+                return (
+                  <td key={`body-row-${rowIdx}-col-${colIdx}`}>
+                    {objKey === "totalDataEgressInBytes" ||
+                    objKey === "fileSize" ? (
+                      fileSize(row[objKey])
+                    ) : objKey === "lastOccurredDateTime" &&
+                      row[objKey] != null ? (
+                      formatLocalDateTime(row[objKey] as string)
+                    ) : objKey === "fileUrl" ? (
+                      row[objKey]
+                    ) : objKey === "downloadStatus" ? (
+                      <DisplayDownloadStatus
+                        downloadedSize={row["totalDataEgressInBytes"]}
+                        fileSize={row["fileSize"]}
+                      />
+                    ) : (
+                      ""
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))
+        }
+      />
+
       {dataEgressQuery.isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching data egress"}

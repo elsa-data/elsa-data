@@ -17,6 +17,7 @@ import { isNil } from "lodash";
 import { useUiAllowed } from "../../hooks/ui-allowed";
 import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
 import { useQueryClient } from "@tanstack/react-query";
+import { Table } from "../../components/tables";
 
 type DatasetsSpecificPageParams = {
   datasetUri: string;
@@ -140,96 +141,92 @@ const DATASET_COLUMN = [
 ];
 const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
   return (
-    <table className="table w-full">
-      <thead>
+    <Table
+      tableHead={
         <tr>
           {DATASET_COLUMN.map((val, i) => (
             <th key={i}>{val.columnTitle}</th>
           ))}
         </tr>
-      </thead>
-      <tbody className="divide-y">
-        {cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
-          const exId = getFirstExternalIdentifierValue(
-            caseVal.externalIdentifiers ?? undefined
+      }
+      tableBody={cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
+        const exId = getFirstExternalIdentifierValue(
+          caseVal.externalIdentifiers ?? undefined
+        );
+        const patients = caseVal.patients;
+
+        return patients.map((patient, patientIdx) => {
+          const patientId = getFirstExternalIdentifierValue(
+            patient.externalIdentifiers ?? undefined
           );
-          const patients = caseVal.patients;
-
-          return patients.map((patient, patientIdx) => {
-            const patientId = getFirstExternalIdentifierValue(
-              patient.externalIdentifiers ?? undefined
-            );
-            return (
-              <tr key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
-                {DATASET_COLUMN.map(
-                  (col: Record<string, string>, colIdx: number) => {
-                    return (
-                      <React.Fragment
-                        key={`${caseIdx}-${patientIdx}-${colIdx}`}
-                      >
-                        {col.jsonKey == "caseId" ? (
-                          <>
-                            {patientIdx == 0 && (
-                              <td
-                                rowSpan={patients.length}
-                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                              >
-                                {exId}
-                              </td>
-                            )}
-                          </>
-                        ) : col.jsonKey == "caseConsentId" ? (
-                          <>
-                            {patientIdx == 0 && (
-                              <td
-                                rowSpan={patients.length}
-                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                              >
-                                {caseVal.consent?.id ? (
-                                  <ConsentSummary
-                                    consentId={caseVal.consent.id}
-                                  />
-                                ) : (
-                                  `-`
-                                )}
-                              </td>
-                            )}
-                          </>
-                        ) : col.jsonKey == "patientId" ? (
-                          <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                            <>
-                              {patient.sexAtBirth == "female" ? (
-                                <FontAwesomeIcon icon={faFemale} />
-                              ) : patient.sexAtBirth == "male" ? (
-                                <FontAwesomeIcon icon={faMale} />
+          return (
+            <tr key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
+              {DATASET_COLUMN.map(
+                (col: Record<string, string>, colIdx: number) => {
+                  return (
+                    <React.Fragment key={`${caseIdx}-${patientIdx}-${colIdx}`}>
+                      {col.jsonKey == "caseId" ? (
+                        <>
+                          {patientIdx == 0 && (
+                            <td
+                              rowSpan={patients.length}
+                              className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                            >
+                              {exId}
+                            </td>
+                          )}
+                        </>
+                      ) : col.jsonKey == "caseConsentId" ? (
+                        <>
+                          {patientIdx == 0 && (
+                            <td
+                              rowSpan={patients.length}
+                              className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                            >
+                              {caseVal.consent?.id ? (
+                                <ConsentSummary
+                                  consentId={caseVal.consent.id}
+                                />
                               ) : (
-                                <></>
+                                `-`
                               )}
-
-                              {` - ${patientId}`}
-                            </>
-                          </td>
-                        ) : col.jsonKey == "patientConsentId" ? (
-                          <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                            {patient.consent?.id ? (
-                              <ConsentSummary consentId={patient.consent.id} />
+                            </td>
+                          )}
+                        </>
+                      ) : col.jsonKey == "patientId" ? (
+                        <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          <>
+                            {patient.sexAtBirth == "female" ? (
+                              <FontAwesomeIcon icon={faFemale} />
+                            ) : patient.sexAtBirth == "male" ? (
+                              <FontAwesomeIcon icon={faMale} />
                             ) : (
-                              `-`
+                              <></>
                             )}
-                          </td>
-                        ) : (
-                          <td>{col.jsonKey}</td>
-                        )}
-                      </React.Fragment>
-                    );
-                  }
-                )}
-              </tr>
-            );
-          });
-        })}
-      </tbody>
-    </table>
+
+                            {` - ${patientId}`}
+                          </>
+                        </td>
+                      ) : col.jsonKey == "patientConsentId" ? (
+                        <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          {patient.consent?.id ? (
+                            <ConsentSummary consentId={patient.consent.id} />
+                          ) : (
+                            `-`
+                          )}
+                        </td>
+                      ) : (
+                        <td>{col.jsonKey}</td>
+                      )}
+                    </React.Fragment>
+                  );
+                }
+              )}
+            </tr>
+          );
+        });
+      })}
+    />
   );
 };
 

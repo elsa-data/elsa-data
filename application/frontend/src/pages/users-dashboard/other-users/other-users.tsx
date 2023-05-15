@@ -24,6 +24,7 @@ import {
   faUsersGear,
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
+import { Table } from "../../../components/tables";
 
 const permissionIconProperties: {
   key: UserPermissionType;
@@ -87,7 +88,7 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
     { keepPreviousData: true }
   );
 
-  const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
+  const baseColumnClasses = "py-4 font-medium text-gray-900";
 
   const createRows = (data: UserSummaryType[]) => {
     return data.map((row, rowIndex) => {
@@ -166,9 +167,8 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           rowsPerPage={pageSize}
           rowWord="other users"
         />
-        <table className="w-full table-fixed text-left text-sm text-gray-500">
-          <tbody>{dataQuery.isSuccess && createRows(dataQuery.data)}</tbody>
-        </table>
+        <Table tableBody={dataQuery.isSuccess && createRows(dataQuery.data)} />
+
         {dataQuery.isError && (
           <EagerErrorBoundary
             message={"Something went wrong fetching users."}

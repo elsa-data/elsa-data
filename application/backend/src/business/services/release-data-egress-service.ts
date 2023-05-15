@@ -82,7 +82,12 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
 
     return createPagedResult(
-      dataEgressSummaryResult.data,
+      dataEgressSummaryResult.data.map((v) => ({
+        fileUrl: v.fileUrl ?? "",
+        fileSize: v.fileSize ?? 0,
+        totalDataEgressInBytes: v.totalDataEgressInBytes ?? 0,
+        lastOccurredDateTime: v.lastOccurredDateTime,
+      })),
       dataEgressSummaryResult.total
     );
   }
