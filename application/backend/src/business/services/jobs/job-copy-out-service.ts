@@ -7,7 +7,7 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
-import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
+import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import {
   DescribeExecutionCommand,
@@ -39,7 +39,7 @@ export class JobCopyOutService extends JobService {
 
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
     @inject(ManifestService) private readonly manifestService: ManifestService,

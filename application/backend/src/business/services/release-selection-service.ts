@@ -22,7 +22,7 @@ import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { dataset } from "../../../dbschema/interfaces";
 import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import { Logger } from "pino";
 import {
   ReleaseSelectionDatasetMismatchError,
@@ -43,7 +43,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(UserService) userService: UserService
   ) {
     super(settings, edgeDbClient, features, userService);

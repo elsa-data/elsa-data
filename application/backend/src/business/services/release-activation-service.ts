@@ -6,7 +6,7 @@ import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import e from "../../../dbschema/edgeql-js";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import {
   ReleaseActivationPermissionError,
@@ -27,7 +27,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(UserService) userService: UserService
   ) {

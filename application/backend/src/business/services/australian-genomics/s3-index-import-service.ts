@@ -40,7 +40,7 @@ import {
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { AuditLogService } from "../audit-log-service";
+import { AuditEventService } from "../audit-event-service";
 import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
 
 /**
@@ -68,7 +68,8 @@ export class S3IndexApplicationService {
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject(DatasetService) private readonly datasetService: DatasetService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
   /**

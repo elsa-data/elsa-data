@@ -14,7 +14,7 @@ import {
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import {
   getAllDataset,
   getDatasetConsent,
@@ -27,7 +27,8 @@ export class DatasetService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
   /**

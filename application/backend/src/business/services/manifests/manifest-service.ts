@@ -20,14 +20,15 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
-import { AuditLogService } from "../audit-log-service";
+import { AuditEventService } from "../audit-event-service";
 
 @injectable()
 export class ManifestService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
   /**

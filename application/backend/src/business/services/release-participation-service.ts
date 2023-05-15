@@ -17,7 +17,7 @@ import {
   singleUserByEmailQuery,
 } from "../db/user-queries";
 import e from "../../../dbschema/edgeql-js";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -29,7 +29,8 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(UserService) userService: UserService
   ) {
     super(settings, edgeDbClient, features, userService);
