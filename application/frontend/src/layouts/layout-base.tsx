@@ -56,7 +56,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
         id="header"
         className="fixed top-0 z-10 w-full min-w-max bg-white shadow"
       >
-        <div className="container mx-auto w-full">
+        <div className="container mx-auto w-full px-2">
           <div className="mt-0 flex w-full flex-wrap items-center justify-between pt-3 pb-3 lg:pb-0">
             <div className="block pr-4 lg:hidden">
               <button
