@@ -107,7 +107,7 @@ export const InformationBox: React.FC<Props> = ({
             </div>
           </>
         ) : (
-          <div className="flex flex-col space-y-2">
+          <div className="col-span-2 flex flex-col space-y-2">
             <DatasetList />
           </div>
         )}

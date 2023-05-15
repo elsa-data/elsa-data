@@ -47,7 +47,11 @@ export default function ShowAlert(props: { children: React.ReactNode }) {
           </div>
         </div>
       )}
-      <div className={isShowing ? "pointer-events-none blur" : ""}>
+      <div
+        className={
+          isShowing ? "pointer-events-none blur backdrop-grayscale" : ""
+        }
+      >
         {props.children}
       </div>
     </CtxProvider>

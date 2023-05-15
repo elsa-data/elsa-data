@@ -148,9 +148,7 @@ export const CasesBox: React.FC<Props> = ({
       applyIsLockedStyle={releaseIsActivated}
       errorMessage={"Something went wrong fetching cases."}
     >
-      <div
-        className={classNames("flex flex-col", { sepia: releaseIsActivated })}
-      >
+      <div className={classNames("flex flex-col")}>
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
