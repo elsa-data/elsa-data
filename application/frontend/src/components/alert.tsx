@@ -70,9 +70,13 @@ export const Alert = ({
 
   return (
     <Transition
-      className={classNames("alert shadow-lg", additionalAlertClassName, {
-        "animate-pop": isInView,
-      })}
+      className={classNames(
+        "alert flex-row shadow-lg",
+        additionalAlertClassName,
+        {
+          "animate-pop": isInView,
+        }
+      )}
       show={!dismissed}
       enter="transition-opacity duration-75"
       enterFrom="opacity-0"
