@@ -40,6 +40,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       name: "10G",
       description: "UMCCR 10G",
       uri: "urn:fdc:umccr.org:2022:dataset/10g",
+      loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10g-data-dev",
       aws: {
@@ -50,6 +51,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       name: "10F",
       description: "UMCCR 10F",
       uri: "urn:fdc:umccr.org:2022:dataset/10f",
+      loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10f-data-dev",
     },
@@ -57,6 +59,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       name: "10C",
       description: "UMCCR 10C",
       uri: "urn:fdc:umccr.org:2022:dataset/10c",
+      loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10c-data-dev",
     },
