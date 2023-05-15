@@ -27,6 +27,6 @@ export const selectDatasetIdByDatasetUri = (datasetUri: string) =>
   e
     .select(e.dataset.Dataset, (d) => ({
       id: true,
-      filter: e.op(d.uri, "ilike", datasetUri),
+      filter: e.op(d.uri, "=", datasetUri),
     }))
     .assert_single();

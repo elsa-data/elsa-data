@@ -349,7 +349,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_1_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(MOCK_DATASET_URI, user);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -422,7 +422,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_2_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(MOCK_DATASET_URI, user);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -490,7 +490,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_3_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(MOCK_DATASET_URI, user);
 
     const expectedFileMarked = [
       `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
@@ -523,7 +523,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(MOCK_DATASET_URI, user);
 
     // FILE schema expected values
     const totalFileList = await e
@@ -568,7 +568,7 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(MOCK_DATASET_URI, user);
 
     const userAuditEvent = await e
       .select(e.audit.UserAuditEvent, (event) => ({
