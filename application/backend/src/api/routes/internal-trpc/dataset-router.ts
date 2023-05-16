@@ -52,9 +52,30 @@ export const datasetRouter = router({
       const { user } = ctx;
       const { datasetUri } = input;
 
-      // TODO: Support more import method accordingly
-      // TODO: Some error when datasetUri not found
-      await ctx.agS3IndexService.syncDbFromDatasetUri(datasetUri, user);
+      // just to work out which service we want to use we ask about the loader for this URI
+      // NOTE we can do all this work without worrying about the calling user because
+      // the list of datasets URIs is already publicly available
+      // and then the loading service will do their own permission checks
+      const loader = ctx.datasetService.getLoaderFromFromDatasetUri(datasetUri);
+
+      switch (loader) {
+        case "australian-genomics-directories":
+          await ctx.agS3IndexService.syncWithDatabaseFromDatasetUri(
+            datasetUri,
+            user,
+            loader
+          );
+          break;
+        case "australian-genomics-directories-demo":
+          await ctx.agS3IndexService.syncWithDatabaseFromDatasetUri(
+            datasetUri,
+            user,
+            loader
+          );
+          break;
+        default:
+          throw Error(`Unknown dataset or loader for URI ${datasetUri}`);
+      }
     }),
   getDatasetConsent: internalProcedure
     .input(

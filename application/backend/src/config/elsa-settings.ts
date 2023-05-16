@@ -3,6 +3,7 @@ import { RateLimitPluginOptions } from "@fastify/rate-limit";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { LoggerOptions } from "pino";
 import { Dac } from "./config-schema-dac";
+import { DatasetType } from "./config-schema-dataset";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -79,16 +80,8 @@ export type ElsaSettings = {
     sub: string;
   }[];
 
-  datasets: {
-    name: string;
-    uri: string;
-    description: string;
-    storageLocation: string;
-    storageUriPrefix: string;
-    aws?: {
-      eventDataStoreId?: string;
-    };
-  }[];
+  datasets: DatasetType[];
+
   // options to pass into the rate limiter
   rateLimit: RateLimitPluginOptions;
 

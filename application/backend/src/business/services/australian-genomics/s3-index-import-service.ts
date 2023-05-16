@@ -42,6 +42,10 @@ import { dataset } from "../../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
 import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
+import {
+  australianGenomicsDirectoriesDemoLoaderFor10G,
+  TENG_URI,
+} from "../../../test-data/dataset/insert-test-data-10g";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -156,19 +160,23 @@ export class S3IndexApplicationService {
     return studyIdGroup;
   }
 
-  async getS3ManifestObjectListByS3UrlPrefix(
-    s3UrlPrefix: string
+  /**
+   * From a list of objects stored in the backend for a dataset, reads all the manifest
+   * entries and decomposes them into objects.
+   *
+   * @param allObjects
+   * @param loadText
+   */
+  async getS3ManifestObjectListFromAllObjectList(
+    allObjects: S3ObjectMetadata[],
+    loadText: (url: string) => Promise<string>
   ): Promise<manifestDict> {
     const s3UrlManifestObj: manifestDict = {};
 
-    const s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
-    const manifestUriList = this.getManifestUriFromS3ObjectList(s3MetadataList);
+    const manifestUriList = this.getManifestUriFromS3ObjectList(allObjects);
 
     for (const manifestS3Url of manifestUriList) {
-      const manifestTsvContent = await readObjectToStringFromS3Url(
-        this.s3Client,
-        manifestS3Url
-      );
+      const manifestTsvContent = await loadText(manifestS3Url);
 
       const manifestObjContentList = <manifestType[]>(
         this.convertTsvToJson(manifestTsvContent)
@@ -696,14 +704,25 @@ export class S3IndexApplicationService {
   }
 
   /**
-   * Sync database.
+   * Synchronise database records for a dataset against the files/information
+   * available from the relevant backend. For instance, for a dataset with files in
+   * S3 this will read the directories in S3 and look for new or updated objects.
    *
-   * @param datasetUri s3 URI prefix to sync the files
-   * @param user
+   * @param datasetUri the URI that defines the dataset in the configuration
+   * @param user the user forcing the synchronisation
+   * @param loaderType one of the loader types this service supports
    */
-  async syncDbFromDatasetUri(datasetUri: string, user: AuthenticatedUser) {
+  public async syncWithDatabaseFromDatasetUri(
+    datasetUri: string,
+    user: AuthenticatedUser,
+    loaderType:
+      | "australian-genomics-directories"
+      | "australian-genomics-directories-demo"
+  ) {
+    // triggering a sync is limited to certain users
     this.checkIsImportDatasetAllowed(user, datasetUri);
 
+    // TODO this should upset db dataset records to allow us to bootstrap datasets from config
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
     )?.id;
@@ -716,19 +735,66 @@ export class S3IndexApplicationService {
       return;
     }
 
-    const s3UrlPrefix =
-      this.datasetService.getStorageUriPrefixFromFromDatasetUri(datasetUri);
-    if (!s3UrlPrefix) {
-      console.warn("No Storage Dataset URI found.");
-      return;
+    let s3MetadataList: S3ObjectMetadata[];
+    let s3ManifestTypeObjectDict: manifestDict;
+
+    switch (loaderType) {
+      case "australian-genomics-directories":
+        const s3UrlPrefix =
+          this.datasetService.getStorageUriPrefixFromFromDatasetUri(datasetUri);
+
+        if (!s3UrlPrefix) {
+          console.warn("No Storage Dataset URI found.");
+          return;
+        }
+
+        // Searching match prefix with data in S3 store bucket
+        s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
+
+        // Grab all s3ManifestType object from all manifest files in s3
+        s3ManifestTypeObjectDict =
+          await this.getS3ManifestObjectListFromAllObjectList(
+            s3MetadataList,
+            (url: string) => {
+              return readObjectToStringFromS3Url(this.s3Client, url);
+            }
+          );
+        break;
+      case "australian-genomics-directories-demo":
+        const fakeS3UrlPrefix =
+          await this.datasetService.getDemonstrationStoragePrefixFromDatasetUri(
+            datasetUri
+          );
+
+        if (!fakeS3UrlPrefix) {
+          console.warn("No demonstration storage prefix");
+          return;
+        }
+
+        if (datasetUri === TENG_URI) {
+          const phases = await australianGenomicsDirectoriesDemoLoaderFor10G(
+            fakeS3UrlPrefix
+          );
+
+          s3MetadataList = phases[1].files;
+
+          s3ManifestTypeObjectDict =
+            await this.getS3ManifestObjectListFromAllObjectList(
+              s3MetadataList,
+              async (url: string) => {
+                if (!(url in phases[1].fileContent))
+                  throw new Error(
+                    `Demo dataset loader missing manifest content at ${url}`
+                  );
+
+                return phases[1].fileContent[url];
+              }
+            );
+        } else throw Error("AG demo loader used with unknown dataset URI");
+        break;
+      default:
+        throw new Error("Unknown loader type");
     }
-
-    // Searching match prefix with data in S3 store bucket
-    const s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
-
-    // Grab all s3ManifestType object from all manifest files in s3
-    const s3ManifestTypeObjectDict =
-      await this.getS3ManifestObjectListByS3UrlPrefix(s3UrlPrefix);
 
     // Grab all s3ManifestType object from current edgedb
     const dbs3ManifestTypeObjectDict =

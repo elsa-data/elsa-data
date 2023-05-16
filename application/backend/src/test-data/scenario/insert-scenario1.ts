@@ -3,11 +3,19 @@ import { DependencyContainer } from "tsyringe";
 import { insertSystemAuditEvent } from "../../../dbschema/queries";
 import { getServices } from "../../di-helpers";
 
-import { insert10G } from "../dataset/insert-test-data-10g";
+import {
+  insert10G,
+  TENG_DESCRIPTION,
+  TENG_URI,
+} from "../dataset/insert-test-data-10g";
 import { insert10F } from "../dataset/insert-test-data-10f";
 import { insert10C } from "../dataset/insert-test-data-10c";
 import { insertGs } from "../dataset/insert-test-data-gs";
-import { insertBlankDataset } from "../util/test-data-helpers";
+import {
+  insertBlankDataset,
+  makeEmptyIdentifierArray,
+  makeSystemlessIdentifierArray,
+} from "../util/test-data-helpers";
 
 import { insertUser1 } from "../user/insert-user1";
 import { insertUser2 } from "../user/insert-user2";
@@ -20,6 +28,10 @@ import { insertRelease4 } from "../release/insert-test-data-release4";
 import { insertRelease5 } from "../release/insert-test-data-release5";
 import { blankTestData } from "../util/blank-test-data";
 import { insertUser4 } from "../user/insert-user4";
+import { DatasetService } from "../../business/services/dataset-service";
+import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
+import { UserService } from "../../business/services/user-service";
+import { insertUser5 } from "../user/insert-user5";
 
 const BLANK_DB_PROPS = [
   { id: "10M", uri: "urn:fdc:umccr.org:2022:dataset/10m" },
@@ -39,7 +51,8 @@ const BLANK_DB_PROPS = [
 
 /**
  * Inserting a set of data in scenario 1
- * It consist of inserting a couple of dataset linked to releases
+
+ * It consists of inserting a couple of dataset linked to releases
  *
  * This scenario is used as part of E2E testing
  *
@@ -56,13 +69,39 @@ export async function insertScenario1(dc: DependencyContainer) {
   const administrator = await insertUser2(dc);
   const manager = await insertUser3(dc);
   const member = await insertUser4(dc);
+  const datasetAdministrator = await insertUser5(dc);
+
+  const userService = dc.resolve(UserService);
+
+  const datasetAdministratorUser = await userService.getBySubjectId(
+    datasetAdministrator.subject_id
+  );
+
+  if (!datasetAdministratorUser)
+    throw new Error("Basic scenario users are missing");
 
   // Create datasets record
-  const ten_g_uri = await insert10G(dc);
+  const s3IndexService = dc.resolve(S3IndexApplicationService);
+
+  // this shouldn't be necessary - the synchronise service should upset this from the config files
+  await e
+    .insert(e.dataset.Dataset, {
+      uri: TENG_URI,
+      externalIdentifiers: makeSystemlessIdentifierArray("10G"),
+      description: TENG_DESCRIPTION,
+      cases: e.set(),
+    })
+    .run(edgeDbClient);
+
+  await s3IndexService.syncWithDatabaseFromDatasetUri(
+    TENG_URI,
+    datasetAdministratorUser,
+    "australian-genomics-directories-demo"
+  );
+
   const ten_f_uri = await insert10F(dc);
   const ten_c_uri = await insert10C(dc);
   const gs_uri = await insertGs(dc);
-  // await insertCARDIAC();
 
   // Some blank DB records inserted to see how it looks like
   for (const dbProp of BLANK_DB_PROPS) {
@@ -74,7 +113,7 @@ export async function insertScenario1(dc: DependencyContainer) {
     releaseAdministrator: [administrator],
     releaseManager: [manager],
     releaseMember: [member],
-    datasetUris: [ten_g_uri, ten_f_uri, ten_c_uri],
+    datasetUris: [TENG_URI, ten_f_uri, ten_c_uri],
   });
   const r2 = await insertRelease2(dc, {
     releaseAdministrator: [administrator],
@@ -92,7 +131,7 @@ export async function insertScenario1(dc: DependencyContainer) {
     releaseAdministrator: [administrator],
     releaseManager: [],
     releaseMember: [],
-    datasetUris: [ten_f_uri],
+    datasetUris: [TENG_URI],
   });
   const r5 = await insertRelease5(dc, {
     releaseAdministrator: [administrator],

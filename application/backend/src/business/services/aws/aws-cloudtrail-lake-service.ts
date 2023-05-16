@@ -71,7 +71,10 @@ export class AwsCloudTrailLakeService {
   ): Promise<string[] | undefined> {
     const eventDataStoreIdArr: string[] = [];
     for (const dataset of this.settings.datasets) {
-      if (datasetUris.includes(dataset.uri)) {
+      if (
+        datasetUris.includes(dataset.uri) &&
+        dataset.loader === "australian-genomics-directories"
+      ) {
         const id = dataset.aws?.eventDataStoreId;
 
         if (id) eventDataStoreIdArr.push(id);

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Sensitive } from "./config-schema-sensitive";
 import { DacSchema } from "./config-schema-dac";
+import { DatasetSchema } from "./config-schema-dataset";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
@@ -200,33 +201,10 @@ export const configZodDefinition = z.object({
     .default(3000)
     .describe("The port to bind to"),
   datasets: z
-    .array(
-      z.object({
-        name: z.string().describe("Name of the dataset"),
-        uri: z.string().describe("A URI unique for the particular dataset."),
-        description: z.string().describe("A brief description of the dataset."),
-        storageLocation: z
-          .string()
-          .describe("The location where data are stored. Options: 'aws-s3'"),
-        storageUriPrefix: z
-          .string()
-          .describe(
-            "The storage URI prefix leading to data and manifests. e.g. 's3://agha-gdr-store-2.0/Cardiac/'"
-          ),
-        aws: z.optional(
-          z.object({
-            eventDataStoreId: z
-              .string()
-              .describe(
-                "An AWS CloudTrail lake client data store Id for tracking data egress. E.g. '327383f8-3273-3273-3273-327383f8fc43'"
-              ),
-          })
-        ),
-      })
-    )
+    .array(DatasetSchema)
     .default([])
     .describe(
-      "A collection datasets configurations that will are registered in Elsa Data"
+      "An array defining the datasets which are shareable from this instance"
     ),
   superAdmins: z
     .array(

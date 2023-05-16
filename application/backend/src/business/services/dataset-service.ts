@@ -41,7 +41,34 @@ export class DatasetService {
   ): string | null {
     for (const d of this.settings.datasets) {
       if (d.uri === datasetUri) {
-        return d.storageUriPrefix;
+        if (d.loader === "australian-genomics-directories")
+          return d.storageUriPrefix;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the loader that is used for this configured dataset
+   * @param datasetUri
+   * @returns
+   */
+  public getLoaderFromFromDatasetUri(datasetUri: string): string | null {
+    for (const d of this.settings.datasets) {
+      if (d.uri === datasetUri) {
+        return d.loader;
+      }
+    }
+
+    return null;
+  }
+
+  public getDemonstrationStoragePrefixFromDatasetUri(datasetUri: string) {
+    for (const d of this.settings.datasets) {
+      if (d.uri === datasetUri) {
+        if (d.loader === "australian-genomics-directories-demo")
+          return d.demonstrationStoragePrefix;
       }
     }
 
