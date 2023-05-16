@@ -41,7 +41,7 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
       )}
       <div
         className={classNames("card-body", {
-          "sepia-[.3]": applyIsLockedStyle,
+          "sepia-[.2]": applyIsLockedStyle,
           grayscale: applyIsDisabledStyle,
         })}
       >

@@ -51,7 +51,7 @@ export const ReleasesBreadcrumbsDiv: React.FC<{ releaseKey: string }> = (
         {finalSiblingItems && (
           <li>
             <div className="flex items-center">
-              <HiChevronRight className="mr-2" />
+              <HiChevronRight className="mr-2 min-w-fit" />
 
               <div tabIndex={0} className="flex flex-wrap">
                 {finalSiblingItems.map((f, i) => (
