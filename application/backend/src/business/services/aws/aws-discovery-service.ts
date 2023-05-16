@@ -18,12 +18,12 @@ import {
 @injectable()
 export class AwsDiscoveryService {
   constructor(
-    @inject("ServiceDiscoveryClient")
-    private readonly serviceDiscoveryClient: ServiceDiscoveryClient,
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
+    @inject(ServiceDiscoveryClient)
+    private readonly serviceDiscoveryClient: ServiceDiscoveryClient
   ) {
     logger.debug(
       "Created AwsDiscoveryService instance - expecting this to only happen once"
@@ -44,23 +44,32 @@ export class AwsDiscoveryService {
       const key = "stateMachineArn";
       const service = "ElsaDataCopyOut";
 
-      const command = new DiscoverInstancesCommand({
-        NamespaceName: this.settings.serviceDiscoveryNamespace,
-        ServiceName: service,
-      });
+      try {
+        const command = new DiscoverInstancesCommand({
+          NamespaceName: this.settings.serviceDiscoveryNamespace,
+          ServiceName: service,
+        });
 
-      // note unlike what the documentation implies - if the service is not present
-      // this call just returns an empty set of instances - not an error
-      const response = await this.serviceDiscoveryClient.send(command);
+        // note unlike what the documentation implies - if the service is not present
+        // this call just returns an empty set of instances - not an error
+        const response = await this.serviceDiscoveryClient.send(command);
 
-      this.copyOutStepsRunSuccessfully = true;
+        this.copyOutStepsRunSuccessfully = true;
 
-      for (const i of response.Instances || []) {
-        if (i.Attributes && key in i.Attributes) {
-          this.copyOutStepsArn = i.Attributes[key];
-          // shouldn't be more than one - take the first anyhow
-          break;
+        for (const i of response.Instances || []) {
+          if (i.Attributes && key in i.Attributes) {
+            this.copyOutStepsArn = i.Attributes[key];
+            // shouldn't be more than one - take the first anyhow
+            break;
+          }
         }
+      } catch (e) {
+        this.copyOutStepsArn = null;
+
+        this.logger.error(
+          e,
+          "Performing CloudMap discovery for locateCopyOutStepsArn()"
+        );
       }
     }
 
@@ -81,23 +90,32 @@ export class AwsDiscoveryService {
       const key = "lambdaArn";
       const service = "ElsaDataBeacon";
 
-      const command = new DiscoverInstancesCommand({
-        NamespaceName: this.settings.serviceDiscoveryNamespace,
-        ServiceName: service,
-      });
+      try {
+        const command = new DiscoverInstancesCommand({
+          NamespaceName: this.settings.serviceDiscoveryNamespace,
+          ServiceName: service,
+        });
 
-      // note unlike what the documentation implies - if the service is not present
-      // this call just returns an empty set of instances - not an error
-      const response = await this.serviceDiscoveryClient.send(command);
+        // note unlike what the documentation implies - if the service is not present
+        // this call just returns an empty set of instances - not an error
+        const response = await this.serviceDiscoveryClient.send(command);
 
-      this.beaconLambdaRunSuccessfully = true;
+        this.beaconLambdaRunSuccessfully = true;
 
-      for (const i of response.Instances || []) {
-        if (i.Attributes && key in i.Attributes) {
-          this.beaconLambdaArn = i.Attributes[key];
-          // shouldn't be more than one - take the first anyhow
-          break;
+        for (const i of response.Instances || []) {
+          if (i.Attributes && key in i.Attributes) {
+            this.beaconLambdaArn = i.Attributes[key];
+            // shouldn't be more than one - take the first anyhow
+            break;
+          }
         }
+      } catch (e) {
+        this.beaconLambdaArn = null;
+
+        this.logger.error(
+          e,
+          "Performing CloudMap discovery for locateBeaconLambdaArn()"
+        );
       }
     }
 
