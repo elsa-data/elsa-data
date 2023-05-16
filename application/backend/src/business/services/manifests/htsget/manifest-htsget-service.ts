@@ -20,7 +20,7 @@ import { inject, injectable } from "tsyringe";
 import { ElsaSettings } from "../../../../config/elsa-settings";
 import { Logger } from "pino";
 import { CloudStorage } from "../../cloud-storage-service";
-import { AuditLogService } from "../../audit-log-service";
+import { AuditEventService } from "../../audit-event-service";
 import { ManifestService } from "../manifest-service";
 import { AwsS3Service } from "../../aws/aws-s3-service";
 
@@ -35,7 +35,7 @@ export abstract class ManifestHtsgetService {
     private readonly edgeDbClient: edgedb.Client,
     private readonly logger: Logger,
     private readonly cloudStorage: CloudStorage,
-    private readonly auditLogService: AuditLogService,
+    private readonly auditLogService: AuditEventService,
     private readonly manifestService: ManifestService
   ) {}
 
@@ -167,7 +167,7 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Logger") logger: Logger,
     @inject(AwsS3Service) awsS3Service: AwsS3Service,
-    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ManifestService) manifestService: ManifestService
   ) {
     super(

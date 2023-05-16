@@ -6,7 +6,7 @@ import {
   sendUncheckedPagedResult,
 } from "../../api-internal-routes";
 import * as edgedb from "edgedb";
-import { AuditLogService } from "../../../business/services/audit-log-service";
+import { AuditEventService } from "../../../business/services/audit-event-service";
 import { AwsCloudTrailLakeService } from "../../../business/services/aws/aws-cloudtrail-lake-service";
 import { DatasetService } from "../../../business/services/dataset-service";
 import * as interfaces from "../../../../dbschema/interfaces";
@@ -36,7 +36,7 @@ export const auditEventRoutes = async (
   const datasetService =
     _opts.container.resolve<DatasetService>(DatasetService);
   const auditLogService =
-    _opts.container.resolve<AuditLogService>(AuditLogService);
+    _opts.container.resolve<AuditEventService>(AuditEventService);
   const awsCloudTrailLakeService = _opts.container.resolve(
     AwsCloudTrailLakeService
   );

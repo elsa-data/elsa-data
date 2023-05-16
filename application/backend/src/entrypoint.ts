@@ -29,7 +29,7 @@ import {
 } from "./entrypoint-command-delete-datasets";
 import { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
-import { AuditLogService } from "./business/services/audit-log-service";
+import { AuditEventService } from "./business/services/audit-event-service";
 import { ReleaseActivationService } from "./business/services/release-activation-service";
 import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
 import { getFeaturesEnabled } from "./features";
@@ -114,7 +114,7 @@ function printHelpText() {
   // then we should find out now rather than failing later
   logger.info(
     `Sample DI resolve of AuditLogService gave us ${typeof dc.resolve(
-      AuditLogService
+      AuditEventService
     )}`
   );
   logger.info(

@@ -5,6 +5,9 @@ import { EagerErrorBoundary } from "../errors";
 import React from "react";
 import classNames from "classnames";
 import { useNavigate } from "react-router-dom";
+import { faSnowflake } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IsLoadingDivIcon } from "../is-loading-div";
 
 /**
  * Maximum character length of details rendered in log box.
@@ -55,24 +58,35 @@ export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
   //           </button>
   // AT THE MOMENT - NO AUDIT ENTRIES WOULD EVER BE TRUNCATED SO NOT MUCH POINT YET
 
-  return detailsQuery.isSuccess && detailsQuery.data?.details ? (
-    <div className="whitespace-pre-wrap font-mono text-xs">
-      {detailsQuery.data.details}
-      {detailsQuery.data.truncated ? (
-        <div className="whitespace-pre-wrap pl-8 pt-2 font-bold italic text-gray-400">
-          ...
-        </div>
-      ) : (
-        <></>
-      )}
-    </div>
-  ) : detailsQuery.isError ? (
-    <EagerErrorBoundary
-      message={"Something went wrong displaying audit event details."}
-      error={detailsQuery.error}
-      styling={"bg-red-100"}
-    />
-  ) : (
-    <></>
-  );
+  if (detailsQuery.isLoading)
+    return (
+      <div>
+        <IsLoadingDivIcon size="1x" />
+      </div>
+    );
+
+  if (detailsQuery.isSuccess && detailsQuery.data?.details)
+    return (
+      <div className="whitespace-pre-wrap font-mono text-xs">
+        {detailsQuery.data.details}
+        {detailsQuery.data.truncated ? (
+          <div className="whitespace-pre-wrap pl-8 pt-2 font-bold italic text-gray-400">
+            ...
+          </div>
+        ) : (
+          <></>
+        )}
+      </div>
+    );
+
+  if (detailsQuery.isError)
+    return (
+      <EagerErrorBoundary
+        message={"Something went wrong displaying audit event details."}
+        error={detailsQuery.error}
+        styling={"bg-red-100"}
+      />
+    );
+
+  return <></>;
 };

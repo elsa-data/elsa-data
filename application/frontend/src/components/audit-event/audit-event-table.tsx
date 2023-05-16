@@ -41,6 +41,7 @@ import { DetailsRow } from "./details-row";
 import { FilterMenu } from "./filter-menu";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
+import { IsLoadingDiv } from "../is-loading-div";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -148,7 +149,7 @@ export const AuditEventTable = ({
     manualSorting: true,
   });
 
-  // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
+  // TODO Search and filtering functionality, refresh button, download audit log button
   return (
     <Box
       heading={
@@ -170,6 +171,7 @@ export const AuditEventTable = ({
       errorMessage={"Something went wrong fetching audit events"}
     >
       <div className="flex flex-col">
+        {dataQueries.isLoading && <IsLoadingDiv />}
         {error.isSuccess ? (
           <Table
             tableHead={table.getHeaderGroups().map((headerGroup) => (

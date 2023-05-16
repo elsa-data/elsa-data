@@ -3,7 +3,7 @@ import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
-import { AuditLogService } from "../../src/business/services/audit-log-service";
+import { AuditEventService } from "../../src/business/services/audit-event-service";
 import { ReleaseDataEgressService } from "../../src/business/services/release-data-egress-service";
 
 let testReleaseKey: string;
@@ -11,7 +11,7 @@ let testReleaseKey: string;
 let allowedAdministratorUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
-let auditLogService: AuditLogService;
+let auditLogService: AuditEventService;
 let releaseDataEgressService: ReleaseDataEgressService;
 let edgeDbClient: edgedb.Client;
 

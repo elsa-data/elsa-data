@@ -4,7 +4,7 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import { createPagedResult } from "../../api/helpers/pagination-helpers";
 
 import {
@@ -27,7 +27,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject("Features") features: ReadonlySet<string>,
     @inject(AwsCloudTrailLakeService)
     private readonly awsCloudTrailLakeService: AwsCloudTrailLakeService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(UserService) userService: UserService
   ) {
     super(settings, edgeDbClient, features, userService);

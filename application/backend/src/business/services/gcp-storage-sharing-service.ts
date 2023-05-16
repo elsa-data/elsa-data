@@ -3,7 +3,7 @@ import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import { Storage } from "@google-cloud/storage";
 import { getAllFileRecords } from "./_release-file-list-helper";
 import pLimit, { Limit } from "p-limit";
@@ -20,7 +20,8 @@ export class GcpStorageSharingService {
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(GcpEnabledService)
     private readonly gcpEnabledService: GcpEnabledService
   ) {

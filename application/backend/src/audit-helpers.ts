@@ -1,15 +1,15 @@
 import {
-  AuditLogService,
+  AuditEventService,
   OUTCOME_SERIOUS_FAILURE,
   OUTCOME_SUCCESS,
-} from "./business/services/audit-log-service";
+} from "./business/services/audit-event-service";
 import { Client, Executor } from "edgedb";
 import { AuthenticatedUser } from "./business/authenticated-user";
 import { Transaction } from "edgedb/dist/transaction";
 import { audit } from "../dbschema/interfaces";
 
 async function auditReleaseGenericStart(
-  service: AuditLogService,
+  service: AuditEventService,
   executor: Executor,
   user: AuthenticatedUser,
   releaseKey: string,
@@ -43,7 +43,7 @@ async function auditReleaseGenericStart(
  * @param actionDescription
  */
 export async function auditReleaseUpdateStart(
-  service: AuditLogService,
+  service: AuditEventService,
   executor: Executor,
   user: AuthenticatedUser,
   releaseKey: string,
@@ -70,7 +70,7 @@ export async function auditReleaseUpdateStart(
  * @param actionDescription
  */
 export async function auditReleaseExecuteStart(
-  service: AuditLogService,
+  service: AuditEventService,
   executor: Executor,
   user: AuthenticatedUser,
   releaseKey: string,
@@ -97,7 +97,7 @@ export async function auditReleaseExecuteStart(
  * @param error
  */
 export async function auditFailure(
-  service: AuditLogService,
+  service: AuditEventService,
   executor: Executor,
   auditEventId: string,
   startTime: Date,
@@ -116,7 +116,7 @@ export async function auditFailure(
 }
 
 export async function auditSuccess(
-  service: AuditLogService,
+  service: AuditEventService,
   executor: Executor,
   auditEventId: string,
   startTime: Date,

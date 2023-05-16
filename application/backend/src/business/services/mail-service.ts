@@ -4,7 +4,7 @@ import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
 import Mail from "nodemailer/lib/mailer";
 import { Logger } from "pino";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import * as edgedb from "edgedb";
 
 @injectable()
@@ -16,7 +16,8 @@ export class MailService {
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("SESClient") private readonly ses: aws.SES,
     @inject("Logger") private readonly logger: Logger,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
   /**

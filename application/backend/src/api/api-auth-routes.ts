@@ -14,7 +14,7 @@ import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { generators } from "openid-client";
-import { AuditLogService } from "../business/services/audit-log-service";
+import { AuditEventService } from "../business/services/audit-event-service";
 import {
   cookieForBackend,
   cookieForUI,
@@ -54,7 +54,7 @@ export const apiAuthRoutes = async (
   const { logger, edgeDbClient, settings } = getServices(opts.container);
 
   const userService = opts.container.resolve(UserService);
-  const auditLogService = opts.container.resolve(AuditLogService);
+  const auditLogService = opts.container.resolve(AuditEventService);
 
   const client = createClient(settings, opts.redirectUri);
 

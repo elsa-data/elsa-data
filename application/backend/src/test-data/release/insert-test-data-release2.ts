@@ -57,8 +57,8 @@ export async function insertRelease2(
           actionCategory: "C",
           actionDescription: "Created Release",
           outcome: 0,
-          whoDisplayName: "Someone",
-          whoId: "a",
+          whoDisplayName: releaseProps.releaseAdministrator[0].name,
+          whoId: releaseProps.releaseAdministrator[0].subject_id,
           occurredDateTime: e.datetime_current(),
         })
       ),
