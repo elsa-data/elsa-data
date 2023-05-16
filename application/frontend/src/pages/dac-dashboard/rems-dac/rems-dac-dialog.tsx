@@ -8,6 +8,7 @@ import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../../../components/errors";
+import { Table } from "../../../components/tables";
 
 type Props = {
   showing: boolean;
@@ -116,29 +117,30 @@ export const RemsDacDialog: React.FC<Props> = ({ showing, cancelShowing }) => {
                 </ul>
               </p>
             </div>
-            <table className="mt-4 w-full table-auto text-sm">
-              <tbody>
-                {newReleases &&
-                  newReleases
-                    .sort((a, b) => a.when.localeCompare(b.when))
-                    .map((nr) => (
-                      <tr>
-                        <td>
-                          <input
-                            type="radio"
-                            value={nr.remsId}
-                            {...register("newId", {
-                              required: false,
-                            })}
-                          />
-                        </td>
-                        <td className="border p-2">{nr.when}</td>
-                        <td className="border p-2">{nr.whoDisplay}</td>
-                        <td className="border p-2">{nr.description}</td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
+            <Table
+              additionalTableClassName="mt-4 text-sm"
+              tableBody={
+                newReleases &&
+                newReleases
+                  .sort((a, b) => a.when.localeCompare(b.when))
+                  .map((nr) => (
+                    <tr>
+                      <td>
+                        <input
+                          type="radio"
+                          value={nr.remsId}
+                          {...register("newId", {
+                            required: false,
+                          })}
+                        />
+                      </td>
+                      <td className="border p-2">{nr.when}</td>
+                      <td className="border p-2">{nr.whoDisplay}</td>
+                      <td className="border p-2">{nr.description}</td>
+                    </tr>
+                  ))
+              }
+            />
           </>
         }
         errorMessage={lastMutateError}

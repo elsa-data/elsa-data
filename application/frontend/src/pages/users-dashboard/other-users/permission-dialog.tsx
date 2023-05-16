@@ -7,12 +7,17 @@ import {
   ErrorState,
 } from "../../../components/errors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { trpc } from "../../../helpers/trpc";
-import { faSpinner, faUserGear } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faSpinner,
+  faUserGear,
+} from "@fortawesome/free-solid-svg-icons";
 import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { useQueryClient } from "@tanstack/react-query";
+import _ from "lodash";
+import { Alert } from "../../../components/alert";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -86,14 +91,11 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
   // Some boolean values for component to show or not
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isEditingMode, setIsEditingMode] = useState<boolean>(false);
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const isInputDisable = !isEditingAllowed || !isEditingMode;
 
   // A function when dialog is closed
   const cancelButtonRef = useRef(null);
   const cancelButton = () => {
     setIsDialogOpen(false);
-    setIsSuccess(false);
     setIsEditingMode(false);
   };
 
@@ -120,7 +122,6 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
       },
       onError: (error: any) => setError({ error, isSuccess: false }),
       onSuccess: () => {
-        setIsSuccess(true);
         setError({ error: null, isSuccess: true });
       },
     }
@@ -146,11 +147,14 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
           title="User Configuration"
           buttons={
             <>
-              {!isInputDisable && (
+              {isEditingAllowed && (
                 <>
                   <button
                     type="button"
-                    disabled={isLoadingMutatePermission}
+                    disabled={
+                      isLoadingMutatePermission ||
+                      _.isEqual(input, convertUserPropToPermissionState(user))
+                    }
                     className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
                     onClick={onSave}
                   >
@@ -161,7 +165,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                   </button>
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                     onClick={cancelButton}
                     ref={cancelButtonRef}
                   >
@@ -203,18 +207,6 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                 <div className="card rounded-box flex-grow ">
                   <div className="mt-8 mb-2 flex">
                     <h3 className="font-semibold">User Permission</h3>
-
-                    {isEditingAllowed && (
-                      <button
-                        className="btn-outline btn-xs btn-circle btn ml-2"
-                        onClick={() => {
-                          setIsSuccess(false);
-                          setIsEditingMode((p) => !p);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faPenToSquare} />
-                      </button>
-                    )}
                   </div>
 
                   {!isEditingAllowed && (
@@ -222,11 +214,14 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                       You are only allowed to view this section.
                     </div>
                   )}
-                  {isSuccess && (
-                    // For temporary, user need to re-logged in order to get latest permission in their UI.
-                    <div className="w-full bg-green-200 py-2 text-center text-xs">
-                      {`Permissions changed successfully.`}
-                    </div>
+                  {changeUserPermissionMutate.isSuccess && (
+                    <Alert
+                      description={"Permissions changed successfully."}
+                      icon={<FontAwesomeIcon icon={faCheck} />}
+                      additionalAlertClassName={
+                        "alert-success bg-green-200 text-xs py-1"
+                      }
+                    />
                   )}
 
                   {!error.isSuccess && (
@@ -241,15 +236,15 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
 
                   {permissionOptionProperties.map((o, index) => {
                     const disabledClassName =
-                      (o.disabled || isInputDisable) && "!text-gray-500";
+                      (o.disabled || !isEditingAllowed) && "!text-gray-500";
 
                     return (
                       <label
                         key={index}
-                        className={`my-2 flex content-center items-center pl-2 text-gray-800 ${disabledClassName}`}
+                        className={`my-2 flex content-center items-center pl-2 text-left text-gray-800 ${disabledClassName}`}
                       >
                         <input
-                          disabled={o.disabled || isInputDisable}
+                          disabled={o.disabled || !isEditingAllowed}
                           className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
                           type="checkbox"
                           value={o.key}

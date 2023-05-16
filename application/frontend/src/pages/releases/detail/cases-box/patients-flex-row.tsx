@@ -97,6 +97,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
       "items-center",
       "lg:flex-row",
       "lg:justify-between",
+      "min-w-fit",
     ];
 
     // the select/unselect operation can be a bit complex on the backend - so we want to give visual feedback
@@ -164,9 +165,9 @@ export const PatientsFlexRow: React.FC<Props> = ({
   // TODO: possibly chose the number of grid columns based on the number of patients
 
   return (
-    <div className="grid grid-flow-row-dense grid-cols-3 gap-2">
+    <div className="grid min-w-max grid-flow-row-dense grid-cols-3 gap-2">
       {patients.map((pat, index) => (
-        <div key={index}>{patientDiv(pat)}</div>
+        <React.Fragment key={index}>{patientDiv(pat)}</React.Fragment>
       ))}
     </div>
   );

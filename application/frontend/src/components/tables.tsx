@@ -1,18 +1,29 @@
 import { ReactNode } from "react";
 
 export type TableProps = {
-  tableHead: ReactNode;
-  tableBody: ReactNode;
+  additionalTableClassName?: string;
+  tableHead?: ReactNode;
+  tableBody?: ReactNode;
 };
 
 /**
  * Wrapper around a `table` element.
  */
-export const Table = ({ tableHead, tableBody }: TableProps): JSX.Element => {
+export const Table = ({
+  additionalTableClassName,
+  tableHead,
+  tableBody,
+}: TableProps): JSX.Element => {
   return (
-    <table className="table table-auto">
-      <thead>{tableHead}</thead>
-      <tbody>{tableBody}</tbody>
-    </table>
+    <div className={`overflow-x-auto`}>
+      <table
+        className={`table w-full table-auto whitespace-nowrap ${
+          additionalTableClassName ?? ""
+        }`}
+      >
+        {tableHead && <thead>{tableHead}</thead>}
+        {tableBody && <tbody>{tableBody}</tbody>}
+      </table>
+    </div>
   );
 };

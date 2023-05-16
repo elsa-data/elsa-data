@@ -2,6 +2,7 @@ import React from "react";
 import { createCtx } from "./create-ctx";
 import { Dac } from "../../../backend/src/config/config-schema-dac";
 import { trpc } from "../helpers/trpc";
+import { useLoggedInUser } from "./logged-in-user-provider";
 
 export type LoggedInUserConfigRelay = {
   // the set of datasets currently available from the instance
@@ -23,18 +24,22 @@ export type LoggedInUserConfigRelay = {
 export const LoggedInUserConfigRelayProvider: React.FC<Props> = (
   props: Props
 ) => {
+  const loggedInUser = useLoggedInUser();
+
   const datasetsQuery = trpc.datasetRouter.getConfiguredDatasets.useQuery(
     undefined,
     {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: false,
+      enabled: !!loggedInUser,
     }
   );
   const dacQuery = trpc.dac.getConfiguredDacs.useQuery(undefined, {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     retry: false,
+    enabled: !!loggedInUser,
   });
 
   const val = {

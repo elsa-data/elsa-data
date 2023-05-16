@@ -82,7 +82,9 @@ textarea {
 /*
  * Without this, tailwind would add `z-index: 11` to any element matching this
  * selector.
+ * Same goes to position, where it was set to sticky.
  */
 .table th:first-child {
   z-index: 0 !important;
+  position: static;
 }

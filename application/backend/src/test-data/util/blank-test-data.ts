@@ -11,7 +11,6 @@ const edgeDbClient = edgedb.createClient();
  */
 export async function blankTestData(printDetailsToConsole: boolean = false) {
   // TODO: add a guard such that this can only execute on a local db
-  console.log("THE PROCESS ENV HERE IS: ", process.env.NODE_ENV);
 
   // Schema: pedigree
   const pedigreeDeleted = await e.delete(e.pedigree.Pedigree).run(edgeDbClient);
