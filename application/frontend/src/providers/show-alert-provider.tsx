@@ -28,32 +28,31 @@ export default function ShowAlert(props: { children: React.ReactNode }) {
   return (
     <CtxProvider value={{ show: handleIsShowing }}>
       {isShowing && (
-        <div className="absolute z-20 flex w-full justify-center">
-          <div className="container alert mt-4 shadow-2xl">
-            <div>
+        <>
+          <div
+            className={`pointer-events-none absolute z-20 h-full w-full backdrop-blur	`}
+          />
+          <div className="absolute z-[21] flex w-full justify-center">
+            <div className="container alert mt-4 shadow-2xl">
               <div>
-                <h3 className="font-bold">{alertProps.title}</h3>
-                <div className="text-xs">{alertProps.description}</div>
+                <div>
+                  <h3 className="font-bold">{alertProps.title}</h3>
+                  <div className="text-xs">{alertProps.description}</div>
+                </div>
+              </div>
+              <div className="flex-none">
+                <button
+                  onClick={() => setIsShowing(false)}
+                  className="btn-sm btn"
+                >
+                  OK
+                </button>
               </div>
             </div>
-            <div className="flex-none">
-              <button
-                onClick={() => setIsShowing(false)}
-                className="btn-sm btn"
-              >
-                OK
-              </button>
-            </div>
           </div>
-        </div>
+        </>
       )}
-      <div
-        className={
-          isShowing ? "pointer-events-none blur backdrop-grayscale" : ""
-        }
-      >
-        {props.children}
-      </div>
+      {props.children}
     </CtxProvider>
   );
 }
