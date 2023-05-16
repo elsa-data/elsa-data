@@ -252,6 +252,10 @@ export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
   // TODO a mechanism that perhaps _parses_ env names - and works out the path itself..
   // (i.e. replace _ with . and capitalise! but better)
 
+  trySetEnvironmentVariableString(
+    "SERVICE_DISCOVERY_NAMESPACE",
+    "serviceDiscoveryNamespace"
+  );
   trySetEnvironmentVariableString("SESSION_SECRET", "session.secret");
   trySetEnvironmentVariableString("SESSION_SALT", "session.salt");
   trySetEnvironmentVariableString(
