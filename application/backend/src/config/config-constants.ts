@@ -111,6 +111,11 @@ export const configZodDefinition = z.object({
         .describe(
           "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day"
         ),
+      serviceDiscoveryNamespace: z
+        .optional(z.string())
+        .describe(
+          "The name of the CloudMap namespace which will be used for dynamic service discovery"
+        ),
     })
   ),
   cloudflare: z.optional(

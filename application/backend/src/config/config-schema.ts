@@ -264,6 +264,10 @@ export async function getMetaConfig(meta: string): Promise<ElsaConfiguration> {
   );
   trySetEnvironmentVariableString("AWS_TEMP_BUCKET", "aws.tempBucket");
   trySetEnvironmentVariableString(
+    "AWS_SERVICE_DISCOVERY_NAMESPACE",
+    "aws.serviceDiscoveryNamespace"
+  );
+  trySetEnvironmentVariableString(
     "CLOUDFLARE_SIGNING_ACCESS_KEY_ID",
     "cloudflare.signingAccessKeyId"
   );

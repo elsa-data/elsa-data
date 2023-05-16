@@ -97,8 +97,8 @@ export async function bootstrapSettings(
 
   return {
     deployedUrl: deployedUrl,
-    // this might eventually come from config but for the moment with only AWS is static
-    serviceDiscoveryNamespace: "elsa-data",
+    serviceDiscoveryNamespace:
+      _.get(config, "aws.serviceDiscoveryNamespace") ?? "elsa-data",
     host: _.get(config, "host"),
     port: _.get(config, "port"),
     mailer: {
