@@ -9,7 +9,7 @@ body {
 
 /* Major cards as displayed down the page */
 .card-major {
-  @apply card card-compact bg-base-100 shadow-lg;
+  @apply card card-compact static bg-base-100 shadow-lg;
 }
 
 .btn-standard-action-trigger-dialog {
