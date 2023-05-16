@@ -18,11 +18,11 @@ import {
 @injectable()
 export class AwsDiscoveryService {
   constructor(
-    @inject("Logger") private readonly logger: Logger,
-    @inject("Settings") private readonly settings: ElsaSettings,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService,
-    @inject(ServiceDiscoveryClient)
+    @inject("Logger") private readonly logger: Logger,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("ServiceDiscoveryClient")
     private readonly serviceDiscoveryClient: ServiceDiscoveryClient
   ) {
     logger.debug(

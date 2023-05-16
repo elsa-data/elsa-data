@@ -53,6 +53,11 @@ export const configZodDefinition = z.object({
         .brand<Sensitive>(),
     })
   ),
+  serviceDiscoveryNamespace: z
+    .optional(z.string())
+    .describe(
+      "The name of the root artifact used for dynamic service discovery - this will differ for each deployment environment. For AWS - it refers to a CloudMap namespace"
+    ),
   oidc: z.optional(
     z.object({
       issuerUrl: z.string().describe("The URL of the OIDC issuer for authn"),
@@ -110,11 +115,6 @@ export const configZodDefinition = z.object({
         .optional(z.string())
         .describe(
           "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day"
-        ),
-      serviceDiscoveryNamespace: z
-        .optional(z.string())
-        .describe(
-          "The name of the CloudMap namespace which will be used for dynamic service discovery"
         ),
     })
   ),
