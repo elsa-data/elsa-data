@@ -53,7 +53,6 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
 
         const errMessage = err?.response?.data?.detail;
         show({
-          title: "Session Expired",
           description: errMessage,
         });
       }

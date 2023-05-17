@@ -14,6 +14,7 @@ export type AlertProps = {
   icon: ReactNode;
   description: ReactNode;
   additionalAlertClassName: string;
+  closeCallback?: () => void;
 };
 
 /**
@@ -54,6 +55,7 @@ export const Alert = ({
   icon,
   description,
   additionalAlertClassName,
+  closeCallback,
 }: AlertProps): JSX.Element => {
   const alertRef = useRef<HTMLDivElement>(null);
   const isInView = useIsInView(alertRef);
@@ -94,6 +96,7 @@ export const Alert = ({
         className="btn-ghost btn-sm btn"
         onClick={() => {
           setDismissed(true);
+          if (closeCallback) closeCallback();
         }}
       >
         <FontAwesomeIcon icon={faX} />
