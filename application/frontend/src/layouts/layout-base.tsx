@@ -100,9 +100,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   {navLink(
                     "/releases",
                     "Releases",
-                    "text-purple-500",
-                    "border-purple-500",
-                    "hover:border-purple-500"
+                    "text-primary",
+                    "border-primary",
+                    "hover:border-primary-focus"
                   )}
                 </li>
                 {(uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
@@ -111,9 +111,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     {navLink(
                       "/datasets",
                       "Datasets",
-                      "text-green-500",
-                      "border-green-500",
-                      "hover:border-green-500"
+                      "text-primary",
+                      "border-primary",
+                      "hover:border-primary-focus"
                     )}
                   </li>
                 )}
@@ -122,9 +122,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                     {navLink(
                       "/dac",
                       "DAC",
-                      "text-yellow-500",
-                      "border-yellow-500",
-                      "hover:border-yellow-500"
+                      "text-primary",
+                      "border-primary",
+                      "hover:border-primary-focus"
                     )}
                   </li>
                 )}
@@ -132,18 +132,18 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   {navLink(
                     "/users",
                     "Users",
-                    "text-rose-500",
-                    "border-rose-500",
-                    "hover:border-rose-500"
+                    "text-primary",
+                    "border-primary",
+                    "hover:border-primary-focus"
                   )}
                 </li>
                 <li className="my-2 mr-6 md:my-0">
                   {navLink(
                     "/audit-events",
                     "Audit Events",
-                    "text-rose-500",
-                    "border-rose-500",
-                    "hover:border-rose-500"
+                    "text-primary",
+                    "border-primary",
+                    "hover:border-primary-focus"
                   )}
                 </li>
               </ul>
@@ -153,9 +153,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   {navLink(
                     "/login",
                     "Login",
-                    "text-gray-500",
-                    "border-gray-500",
-                    "hover:border-gray-500"
+                    "text-neutral-content",
+                    "border-neutral",
+                    "hover:border-neutral-focus"
                   )}
                 </li>
               </ul>

@@ -46,7 +46,7 @@ export const FilterMenu = ({
           trigger={
             <label className="flex grow content-center items-center pl-2 text-gray-800">
               <input
-                className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                className="checkbox-accent checkbox mr-2 h-3 w-3 cursor-pointer rounded-sm"
                 type="checkbox"
                 checked={includeEvents.includes("release")}
                 onChange={() => updateIncludeEvents("release")}
@@ -63,7 +63,7 @@ export const FilterMenu = ({
           trigger={
             <label className="flex grow content-center items-center pl-2 text-gray-800">
               <input
-                className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                className="checkbox-accent checkbox mr-2 h-3 w-3 cursor-pointer rounded-sm"
                 type="checkbox"
                 checked={includeEvents.includes("user")}
                 onChange={() => updateIncludeEvents("user")}
@@ -81,7 +81,7 @@ export const FilterMenu = ({
             trigger={
               <label className="flex grow content-center items-center pl-2 text-gray-800">
                 <input
-                  className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                  className="checkbox-accent checkbox mr-2 h-3 w-3 cursor-pointer rounded-sm"
                   type="checkbox"
                   checked={includeEvents.includes("system")}
                   onChange={() => updateIncludeEvents("system")}
@@ -100,7 +100,7 @@ export const FilterMenu = ({
             trigger={
               <label className="flex grow content-center items-center pl-2 text-gray-800">
                 <input
-                  className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                  className="checkbox-accent checkbox mr-2 h-3 w-3 cursor-pointer rounded-sm"
                   type="checkbox"
                   checked={includeEvents.includes("all")}
                   onChange={() => updateIncludeEvents("all")}
