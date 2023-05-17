@@ -54,16 +54,10 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
       ALLOWED_OVERALL_ADMIN_VIEW
     ),
   };
-  const isEditingAllowed = uiAllowed.has(ALLOWED_CHANGE_USER_PERMISSION);
 
   const Heading = () => (
     <div className="flex">
       <div>Basic Info</div>
-      {isEditingAllowed && (
-        <div className="ml-2">
-          <PermissionDialog user={userObject} />
-        </div>
-      )}
     </div>
   );
 
@@ -83,14 +77,25 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
           <p>{cookies[USER_SUBJECT_COOKIE_NAME]}</p>
         </div>
         <div className="divider divider-vertical sm:divider-horizontal" />
-        <div className="card rounded-box grid flex-grow">
-          <h3 className="font-medium">Permission Granted for your account</h3>
+        <div className="card rounded-box flex-grow">
+          <div className="flex">
+            <h3 className="font-medium">Permissions</h3>
+            <div>
+              <PermissionDialog user={userObject} />
+            </div>
+          </div>
           <ul className="list-inside list-disc">
-            {Array.from(uiAllowed.values()).map((v) => (
-              <li className="mt-2" key={v}>
-                {decodeAllowedDescription(v)}
+            {uiAllowed.size !== 0 ? (
+              Array.from(uiAllowed.values()).map((v) => (
+                <li className="mt-2" key={v}>
+                  {decodeAllowedDescription(v)}
+                </li>
+              ))
+            ) : (
+              <li className="mt-2" key={"no permissions"}>
+                No specific permissions.
               </li>
-            ))}
+            )}
           </ul>
         </div>
       </div>

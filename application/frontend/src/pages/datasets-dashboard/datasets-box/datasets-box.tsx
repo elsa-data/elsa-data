@@ -18,7 +18,7 @@ export const DatasetsBox: React.FC = () => {
             onClick={() => setIncludeDeletedFile((p) => !p)}
           >
             <input
-              className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+              className="checkbox-accent checkbox mr-2 h-3 w-3 cursor-pointer rounded-sm"
               type="checkbox"
               checked={includeDeletedFile}
               onChange={() => setIncludeDeletedFile((p) => !p)}

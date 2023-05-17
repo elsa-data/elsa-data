@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
+import {
+  UserPermissionType,
+  UserSummaryType,
+} from "@umccr/elsa-types/schemas-users";
 import { ALLOWED_CHANGE_USER_PERMISSION } from "@umccr/elsa-constants";
 import {
   EagerErrorBoundary,
@@ -18,6 +21,7 @@ import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { useQueryClient } from "@tanstack/react-query";
 import _ from "lodash";
 import { Alert } from "../../../components/alert";
+import classNames from "classnames";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -81,6 +85,7 @@ type UserProps = {
   isAllowedRefreshDatasetIndex: boolean;
   isAllowedOverallAdministratorView: boolean;
 };
+
 export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
   const queryClient = useQueryClient();
 
@@ -135,10 +140,10 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
   return (
     <>
       <button
-        className="btn-outline btn-xs btn-circle btn"
+        className="btn-table-action-navigate btn"
         onClick={() => setIsDialogOpen((p) => !p)}
       >
-        <FontAwesomeIcon icon={faUserGear} />
+        edit
       </button>
       <ErrorBoundary styling={"bg-red-100"}>
         <SelectDialogBase
@@ -245,7 +250,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                       >
                         <input
                           disabled={o.disabled || !isEditingAllowed}
-                          className="mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                          className="checkbox checkbox-sm mr-2 h-3 w-3 cursor-pointer rounded-sm"
                           type="checkbox"
                           value={o.key}
                           checked={input[o.key] == true}

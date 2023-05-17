@@ -90,21 +90,27 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
 
   const baseColumnClasses = "py-4 font-medium text-gray-900";
 
+  const createHeaders = () => {
+    return (
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col" className="hidden xl:table-cell">
+          Email
+        </th>
+        <th scope="col" className="hidden xl:table-cell">
+          Last Logged In
+        </th>
+        <th scope="col" className="hidden text-right xl:table-cell">
+          Permissions
+        </th>
+      </tr>
+    );
+  };
+
   const createRows = (data: UserSummaryType[]) => {
     return data.map((row, rowIndex) => {
       return (
         <tr key={rowIndex} className="border-b pl-2 pr-2">
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "w-12",
-              "text-right",
-              "pr-4"
-            )}
-          >
-            <PermissionDialog user={row} />
-          </td>
-
           <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
             {row.displayName}
           </td>
@@ -114,7 +120,8 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "text-left",
               "pl-4",
-              "w-auto"
+              "w-auto",
+              "font-normal"
             )}
           >
             {row.email}
@@ -123,9 +130,22 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           <td
             className={classNames(
               baseColumnClasses,
+              "w-40",
               "text-left",
+              "pr-4",
+              "font-normal"
+            )}
+          >
+            {formatLocalDateTime(row.lastLogin as string | undefined)}
+          </td>
+
+          <td
+            className={classNames(
+              baseColumnClasses,
+              "text-right",
               "pl-4",
-              "w-auto"
+              "w-auto",
+              "font-normal"
             )}
           >
             {permissionIconProperties.map((prop) => (
@@ -137,17 +157,7 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
                 )}
               </React.Fragment>
             ))}
-          </td>
-
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "w-40",
-              "text-right",
-              "pr-4"
-            )}
-          >
-            {formatLocalDateTime(row.lastLogin as string | undefined)}
+            <PermissionDialog user={row} />
           </td>
         </tr>
       );
@@ -160,6 +170,11 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
       errorMessage={"Something went wrong fetching users."}
     >
       <div className="flex flex-col">
+        <Table
+          tableHead={createHeaders()}
+          tableBody={dataQuery.isSuccess && createRows(dataQuery.data)}
+        />
+
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
@@ -167,8 +182,6 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           rowsPerPage={pageSize}
           rowWord="other users"
         />
-        <Table tableBody={dataQuery.isSuccess && createRows(dataQuery.data)} />
-
         {dataQuery.isError && (
           <EagerErrorBoundary
             message={"Something went wrong fetching users."}

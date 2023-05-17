@@ -42,8 +42,8 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
                   "cursor-pointer px-4 py-2 text-sm uppercase outline-0 ring-0",
                   "translate-x-2 transform border-l-2 font-bold",
                   {
-                    "border-blue-500": selected,
-                    "border-slate-200 transition duration-200 ease-in-out hover:border-blue-300":
+                    "border-secondary": selected,
+                    "border-slate-200 transition duration-200 ease-in-out hover:border-secondary-focus":
                       !selected,
                   }
                 )
