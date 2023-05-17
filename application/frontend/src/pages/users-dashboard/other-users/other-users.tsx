@@ -120,7 +120,8 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "text-left",
               "pl-4",
-              "w-auto"
+              "w-auto",
+              "font-normal"
             )}
           >
             {row.email}
@@ -131,7 +132,8 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "w-40",
               "text-left",
-              "pr-4"
+              "pr-4",
+              "font-normal"
             )}
           >
             {formatLocalDateTime(row.lastLogin as string | undefined)}
@@ -142,7 +144,8 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "text-right",
               "pl-4",
-              "w-auto"
+              "w-auto",
+              "font-normal"
             )}
           >
             {permissionIconProperties.map((prop) => (

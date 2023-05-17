@@ -112,6 +112,22 @@ export const InformationBox: React.FC<Props> = ({
           </div>
         )}
 
+        <div className="collapse-arrow rounded-box collapse col-span-2 border border-base-300 bg-base-100">
+          <input type="checkbox" />
+
+          <div className="collapse-compact collapse-title">
+            See details of application
+          </div>
+          <div className="collapse-content">
+            {releaseData.applicationDacDetails && (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                className="prose"
+                children={releaseData.applicationDacDetails}
+              />
+            )}
+          </div>
+        </div>
         {error && (
           <EagerErrorBoundary
             message="Something went wrong while (de)activating the release."
