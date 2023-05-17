@@ -28,7 +28,6 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
             const body = await res?.json();
             const message = body.length > 0 ? body[0]?.error?.message : "";
             show({
-              title: "Session Expired",
               description: message,
             });
           }
