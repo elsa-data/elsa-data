@@ -5,10 +5,10 @@ import { inject, injectable } from "tsyringe";
 import {
   awsListObjects,
   readObjectToStringFromS3Url,
-  S3ObjectMetadata,
+  S3ObjectMetadataType,
 } from "../aws/aws-helper";
 import {
-  ArtifactType,
+  ArtifactEnum,
   bamArtifactStudyIdAndFileIdByDatasetIdQuery,
   cramArtifactStudyIdAndFileIdByDatasetIdQuery,
   fastqArtifactStudyIdAndFileIdByDatasetIdQuery,
@@ -50,21 +50,18 @@ import {
 /**
  * Manifest Type as what current AG manifest data will look like
  */
-export type manifestType = {
-  checksum: string;
-  agha_study_id: string;
-  filename: string;
-};
-export type s3ManifestType = {
+
+export type ManifestType = {
   checksum: string;
   agha_study_id_array: string[];
   s3Url: string;
 };
-export type s3IndividualManifestType = s3ManifestType & {
-  agha_study_id: string;
-};
-export type artifactType = { sampleIdsArray: string[] } & File;
-export type manifestDict = Record<string, s3ManifestType>;
+export type MergedManifestMetadataType = ManifestType & S3ObjectMetadataType;
+// export type s3IndividualManifestType = ManifestType & {
+//   agha_study_id: string;
+// };
+export type LabArtifactType = { sampleIdsArray: string[] } & File;
+export type S3ManifestDictType = Record<string, ManifestType>;
 
 @injectable()
 export class S3IndexApplicationService {
@@ -100,7 +97,7 @@ export class S3IndexApplicationService {
    */
   async getS3ObjectListFromUriPrefix(
     s3UrlPrefix: string
-  ): Promise<S3ObjectMetadata[]> {
+  ): Promise<S3ObjectMetadataType[]> {
     return await awsListObjects(this.s3Client, s3UrlPrefix);
   }
 
@@ -108,7 +105,9 @@ export class S3IndexApplicationService {
    * @param s3ListMetadata
    * @returns A list of manifest string
    */
-  getManifestUriFromS3ObjectList(s3ListMetadata: S3ObjectMetadata[]): string[] {
+  getManifestUriFromS3ObjectList(
+    s3ListMetadata: S3ObjectMetadataType[]
+  ): string[] {
     const manifestKeys: string[] = [];
     for (const s3Metadata of s3ListMetadata) {
       if (s3Metadata.s3Url.endsWith("manifest.txt")) {
@@ -140,21 +139,55 @@ export class S3IndexApplicationService {
   }
 
   /**
+   * Merging metadata gotten from the manifest file uploaded (study_id, md5) with the metadata gotten from AWS (s3Url, size, eTag).
+   * @param S3ObjectMetadataTypeList A list of S3 object metadata
+   * @param manifestList A list of parsed manifest file uploaded in the bucket.
+   * @returns A merge between parameters.
+   */
+  mergeObjectMetadata(
+    manifestList: ManifestType[],
+    s3ObjectMetadataTypeList: S3ObjectMetadataType[]
+  ): MergedManifestMetadataType[] {
+    const result: MergedManifestMetadataType[] = [];
+
+    const s3MetadataDict: Record<string, S3ObjectMetadataType> = {};
+    for (const s3Metadata of s3ObjectMetadataTypeList) {
+      s3MetadataDict[s3Metadata.s3Url] = s3Metadata;
+    }
+    for (const manifestRecord of manifestList) {
+      const s3Url = manifestRecord.s3Url;
+
+      if (!s3MetadataDict[s3Url]) {
+        console.log(`No File found (${s3Url})`);
+        continue;
+      }
+      result.push({
+        ...s3MetadataDict[s3Url],
+        ...manifestRecord,
+      });
+    }
+
+    return result;
+  }
+
+  /**
    * To group manifest object list based on study Id
    * @param manifestContentList Manifest Type list
    * @returns An object where key is studyId and value is a list of manifest type
    */
   groupManifestByStudyId(
-    manifestContentList: s3IndividualManifestType[]
-  ): Record<string, s3IndividualManifestType[]> {
-    const studyIdGroup: Record<string, s3IndividualManifestType[]> = {};
+    manifestContentList: ManifestType[]
+  ): Record<string, ManifestType[]> {
+    const studyIdGroup: Record<string, ManifestType[]> = {};
     for (const manifestObject of manifestContentList) {
-      const studyId = manifestObject.agha_study_id;
+      const studyIdArray = manifestObject.agha_study_id_array;
 
-      if (studyIdGroup[studyId] && Array.isArray(studyIdGroup[studyId])) {
-        studyIdGroup[studyId].push(manifestObject);
-      } else {
-        studyIdGroup[studyId] = [manifestObject];
+      for (const studyId of studyIdArray) {
+        if (studyIdGroup[studyId] && Array.isArray(studyIdGroup[studyId])) {
+          studyIdGroup[studyId].push(manifestObject);
+        } else {
+          studyIdGroup[studyId] = [manifestObject];
+        }
       }
     }
     return studyIdGroup;
@@ -168,19 +201,23 @@ export class S3IndexApplicationService {
    * @param loadText
    */
   async getS3ManifestObjectListFromAllObjectList(
-    allObjects: S3ObjectMetadata[],
+    allObjects: S3ObjectMetadataType[],
     loadText: (url: string) => Promise<string>
-  ): Promise<manifestDict> {
-    const s3UrlManifestObj: manifestDict = {};
+  ): Promise<S3ManifestDictType> {
+    const s3UrlManifestObj: S3ManifestDictType = {};
 
     const manifestUriList = this.getManifestUriFromS3ObjectList(allObjects);
 
     for (const manifestS3Url of manifestUriList) {
       const manifestTsvContent = await loadText(manifestS3Url);
 
-      const manifestObjContentList = <manifestType[]>(
-        this.convertTsvToJson(manifestTsvContent)
-      );
+      const manifestObjContentList = <
+        {
+          checksum: string;
+          agha_study_id: string;
+          filename: string;
+        }[]
+      >this.convertTsvToJson(manifestTsvContent);
 
       // The manifest will contain a filename only, but for the purpose of uniqueness and how we stored in db.
       // We would append the filename with the s3 Url prefix.
@@ -205,29 +242,29 @@ export class S3IndexApplicationService {
    * To group file in their artifact type and filename.
    * The function will determine artifact type by
    * @param fileRecordListedInManifest
-   * @returns A nested json of artifactType AND filenameId
-   * E.g. From {FASTQ : { A00001 : [File1, File2] } }
+   * @returns A nested json of LabArtifactType AND filenameId
+   * E.g. From {FASTQ : { HCT_HAM_L002 : [File1, File2] } }
    */
   groupManifestFileByArtifactTypeAndFilename(
-    fileRecordListedInManifest: artifactType[]
-  ): Record<string, Record<string, artifactType[]>> {
-    const groupFiletype: Record<string, Record<string, artifactType[]>> = {};
+    fileRecordListedInManifest: LabArtifactType[]
+  ): Record<string, Record<string, LabArtifactType[]>> {
+    const groupFiletype: Record<string, Record<string, LabArtifactType[]>> = {};
 
     /**
      * A helper function to fill the above variable
      */
     function addOrCreateNewArtifactGroup(
-      artifactType: string,
+      LabArtifactType: string,
       filenameId: string,
-      manifestObj: artifactType
+      manifestObj: LabArtifactType
     ) {
-      if (!groupFiletype[artifactType]) {
-        groupFiletype[artifactType] = {};
+      if (!groupFiletype[LabArtifactType]) {
+        groupFiletype[LabArtifactType] = {};
       }
-      if (groupFiletype[artifactType][filenameId]) {
-        groupFiletype[artifactType][filenameId].push(manifestObj);
+      if (groupFiletype[LabArtifactType][filenameId]) {
+        groupFiletype[LabArtifactType][filenameId].push(manifestObj);
       } else {
-        groupFiletype[artifactType][filenameId] = [manifestObj];
+        groupFiletype[LabArtifactType][filenameId] = [manifestObj];
       }
     }
 
@@ -239,22 +276,22 @@ export class S3IndexApplicationService {
       if (filename.endsWith(".fastq") || filename.endsWith(".fq")) {
         const filenameId = filename.replaceAll(/_R1|_R2|.R1|.R2/g, "");
         addOrCreateNewArtifactGroup(
-          ArtifactType.FASTQ,
+          ArtifactEnum.FASTQ,
           filenameId,
           manifestObj
         );
 
         // BAM Artifact
       } else if (filename.endsWith(".bam") || filename.endsWith(".bai")) {
-        addOrCreateNewArtifactGroup(ArtifactType.BAM, filename, manifestObj);
+        addOrCreateNewArtifactGroup(ArtifactEnum.BAM, filename, manifestObj);
 
         // VCF Artifact
       } else if (filename.endsWith(".vcf") || filename.endsWith(".tbi")) {
-        addOrCreateNewArtifactGroup(ArtifactType.VCF, filename, manifestObj);
+        addOrCreateNewArtifactGroup(ArtifactEnum.VCF, filename, manifestObj);
 
         // CRAM Artifact
       } else if (filename.endsWith(".cram") || filename.endsWith(".crai")) {
-        addOrCreateNewArtifactGroup(ArtifactType.CRAM, filename, manifestObj);
+        addOrCreateNewArtifactGroup(ArtifactEnum.CRAM, filename, manifestObj);
       } else {
         console.log(`No matching Artifact Type (${filename})`);
       }
@@ -307,19 +344,19 @@ export class S3IndexApplicationService {
 
   /**
    * Inserting new artifacts to records
-   * @param artifactTypeRecord A File grouped of artifact type and studyId .
-   * E.g. {FASTQ : { A00001 : [File1, File2] } }
+   * @param artifactTypeRecord A File grouped of artifact type and filenameId (filename exclude any lanes) .
+   * E.g. {FASTQ : { HCT_HAM_L002 : [File1, File2] } }
    * @returns
    */
   insertNewArtifactListQuery(
-    artifactTypeRecord: Record<string, Record<string, artifactType[]>>
+    artifactTypeRecord: Record<string, Record<string, LabArtifactType[]>>
   ) {
     /**
      * Sorting url function to identify which is forward/reversed/indexed file
      * Index 0 is Forward file or base file
-     * Index 1 if Reverse file or index file
+     * Index 1 is Reverse file or index file
      */
-    const sortArtifactRec = (artifactSet: artifactType[]) =>
+    const sortArtifactRec = (artifactSet: LabArtifactType[]) =>
       artifactSet.sort((a, b) =>
         a.url.toLowerCase() > b.url.toLowerCase() ? 1 : -1
       );
@@ -327,8 +364,8 @@ export class S3IndexApplicationService {
     // Inserting to a SubmissionBatch
     const artifactArray: any[] = [];
 
-    for (const artifactType in artifactTypeRecord) {
-      const fileRecByFilenameId = artifactTypeRecord[artifactType];
+    for (const LabArtifactType in artifactTypeRecord) {
+      const fileRecByFilenameId = artifactTypeRecord[LabArtifactType];
 
       for (const filenameId in fileRecByFilenameId) {
         const fileSet = sortArtifactRec(fileRecByFilenameId[filenameId]);
@@ -340,11 +377,11 @@ export class S3IndexApplicationService {
           continue;
         }
 
-        if (artifactType == ArtifactType.FASTQ) {
+        if (LabArtifactType == ArtifactEnum.FASTQ) {
           artifactArray.push(
             insertArtifactFastqPairQuery(fileSet[0], fileSet[1])
           );
-        } else if (artifactType == ArtifactType.VCF) {
+        } else if (LabArtifactType == ArtifactEnum.VCF) {
           artifactArray.push(
             insertArtifactVcfQuery(
               fileSet[0],
@@ -352,9 +389,9 @@ export class S3IndexApplicationService {
               fileSet[0].sampleIdsArray
             )
           );
-        } else if (artifactType == ArtifactType.BAM) {
+        } else if (LabArtifactType == ArtifactEnum.BAM) {
           artifactArray.push(insertArtifactBamQuery(fileSet[0], fileSet[1]));
-        } else if (artifactType == ArtifactType.CRAM) {
+        } else if (LabArtifactType == ArtifactEnum.CRAM) {
           artifactArray.push(insertArtifactCramQuery(fileSet[0], fileSet[1]));
         }
       }
@@ -363,17 +400,17 @@ export class S3IndexApplicationService {
   }
   /**
    * Convert manifest record to a File record as file Db is stored as file record.
-   * @param manifestRecordList A list of s3ManifestType record
-   * @param s3MetadataList An S3ObjectMetadata list for the particular manifest. (This will populate the size value)
+   * @param manifestRecordList A list of ManifestType record
+   * @param s3MetadataList An S3ObjectMetadataType list for the particular manifest. (This will populate the size value)
    * @returns
    */
   converts3ManifestTypeToArtifactTypeRecord(
-    manifestRecordList: s3IndividualManifestType[],
-    s3MetadataList: S3ObjectMetadata[]
-  ): artifactType[] {
-    const result: artifactType[] = [];
+    manifestRecordList: ManifestType[],
+    s3MetadataList: S3ObjectMetadataType[]
+  ): LabArtifactType[] {
+    const result: LabArtifactType[] = [];
 
-    const s3MetadataDict: Record<string, S3ObjectMetadata> = {};
+    const s3MetadataDict: Record<string, S3ObjectMetadataType> = {};
     for (const s3Metadata of s3MetadataList) {
       s3MetadataDict[s3Metadata.s3Url] = s3Metadata;
     }
@@ -510,8 +547,8 @@ export class S3IndexApplicationService {
 
   async getDbManifestObjectListByDatasetId(
     datasetId: string
-  ): Promise<manifestDict> {
-    const s3UrlManifestObj: manifestDict = {};
+  ): Promise<S3ManifestDictType> {
+    const s3UrlManifestObj: S3ManifestDictType = {};
 
     const artifactList = [];
 
@@ -546,7 +583,7 @@ export class S3IndexApplicationService {
     );
     artifactList.push(...vcfArtifact);
 
-    // Turning artifact records to s3ManifestType object
+    // Turning artifact records to ManifestType object
     for (const artifact of artifactList) {
       // Multiple studyId is expected at this point.
       const externalIdentifiersArray = artifact.studyIdList;
@@ -582,17 +619,16 @@ export class S3IndexApplicationService {
    * @returns
    */
   diffManifestAlphaAndManifestBeta(
-    manifestAlpha: manifestDict,
-    manifestBeta: manifestDict
-  ): s3IndividualManifestType[] {
-    const result: s3IndividualManifestType[] = [];
+    manifestAlpha: S3ManifestDictType,
+    manifestBeta: S3ManifestDictType
+  ): ManifestType[] {
+    const result: ManifestType[] = [];
 
-    const insertRes = (manifest: s3ManifestType, studyId: string) => {
+    const insertRes = (manifest: ManifestType, studyId: string) => {
       result.push({
         checksum: manifest.checksum,
         s3Url: manifest.s3Url,
         agha_study_id_array: manifest.agha_study_id_array,
-        agha_study_id: studyId,
       });
     };
 
@@ -624,13 +660,13 @@ export class S3IndexApplicationService {
    *
    * @param newManifest
    * @param oldManifest
-   * @returns The new manifestType that needs to be corrected
+   * @returns The new ManifestType that needs to be corrected
    */
   checkDiffChecksumRecordBetweenManifestDict(
-    newManifest: manifestDict,
-    oldManifest: manifestDict
-  ): s3IndividualManifestType[] {
-    const result: s3IndividualManifestType[] = [];
+    newManifest: S3ManifestDictType,
+    oldManifest: S3ManifestDictType
+  ): ManifestType[] {
+    const result: ManifestType[] = [];
     for (const key in newManifest) {
       const newVal = newManifest[key];
       const oldVal = oldManifest[key];
@@ -642,7 +678,6 @@ export class S3IndexApplicationService {
       // Check if alpha exist in Beta
       if (newVal["checksum"] != oldVal["checksum"]) {
         result.push({
-          agha_study_id: newVal.agha_study_id_array.join(","),
           agha_study_id_array: newVal.agha_study_id_array,
           checksum: newVal.checksum,
           s3Url: newVal.s3Url,
@@ -735,8 +770,8 @@ export class S3IndexApplicationService {
       return;
     }
 
-    let s3MetadataList: S3ObjectMetadata[];
-    let s3ManifestTypeObjectDict: manifestDict;
+    let s3MetadataList: S3ObjectMetadataType[];
+    let s3ManifestTypeObjectDict: S3ManifestDictType;
 
     switch (loaderType) {
       case "australian-genomics-directories":
@@ -751,7 +786,7 @@ export class S3IndexApplicationService {
         // Searching match prefix with data in S3 store bucket
         s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
 
-        // Grab all s3ManifestType object from all manifest files in s3
+        // Grab all ManifestType object from all manifest files in s3
         s3ManifestTypeObjectDict =
           await this.getS3ManifestObjectListFromAllObjectList(
             s3MetadataList,
@@ -762,7 +797,7 @@ export class S3IndexApplicationService {
         break;
       case "australian-genomics-directories-demo":
         const fakeS3UrlPrefix =
-          await this.datasetService.getDemonstrationStoragePrefixFromDatasetUri(
+          this.datasetService.getDemonstrationStoragePrefixFromDatasetUri(
             datasetUri
           );
 
@@ -796,7 +831,7 @@ export class S3IndexApplicationService {
         throw new Error("Unknown loader type");
     }
 
-    // Grab all s3ManifestType object from current edgedb
+    // Grab all ManifestType object from current edgedb
     const dbs3ManifestTypeObjectDict =
       await this.getDbManifestObjectListByDatasetId(datasetId);
 
@@ -843,7 +878,8 @@ export class S3IndexApplicationService {
       for (const studyId of listOfStudyIds) {
         const manifestRecord = groupedMissingRecByStudyId[studyId];
 
-        // Convert to artifactType containing FILE record (storage::File schema).
+        // Convert to LabArtifactType containing FILE record (storage::File schema).
+        // It will combine S3 Manifest data (study_id, md5) with S3 Object Metadata (etag, size)
         const artifactList = this.converts3ManifestTypeToArtifactTypeRecord(
           manifestRecord,
           s3MetadataList

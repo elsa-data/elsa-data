@@ -1,6 +1,6 @@
 import {
   S3IndexApplicationService,
-  artifactType,
+  LabArtifactType,
 } from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
@@ -8,7 +8,7 @@ import e from "../../dbschema/edgeql-js";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   File,
-  ArtifactType,
+  ArtifactEnum,
   insertArtifactBamQuery,
 } from "../../src/business/db/lab-queries";
 import { fileByUrlQuery } from "../../src/business/db/storage-queries";
@@ -123,7 +123,7 @@ describe("AWS s3 client", () => {
       agService.groupManifestFileByArtifactTypeAndFilename(convertArtifactType);
 
     expect(
-      groupArtifactContent[ArtifactType.FASTQ][
+      groupArtifactContent[ArtifactEnum.FASTQ][
         `${S3_URL_PREFIX}/FILE_L001.fastq`
       ]
     ).toEqual(
@@ -133,7 +133,7 @@ describe("AWS s3 client", () => {
       }))
     );
     expect(
-      groupArtifactContent[ArtifactType.BAM][`${S3_URL_PREFIX}/A0000001.bam`]
+      groupArtifactContent[ArtifactEnum.BAM][`${S3_URL_PREFIX}/A0000001.bam`]
     ).toEqual(
       MOCK_BAM_FILE_SET.map((f) => ({
         ...f,
@@ -141,7 +141,7 @@ describe("AWS s3 client", () => {
       }))
     );
     expect(
-      groupArtifactContent[ArtifactType.VCF][
+      groupArtifactContent[ArtifactEnum.VCF][
         `${S3_URL_PREFIX}/19W001062.individual.norm.vcf`
       ]
     ).toEqual(
@@ -229,7 +229,7 @@ describe("AWS s3 client", () => {
 
   it("Test insertNewArtifact", async () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
-    const dataToInsert: Record<string, Record<string, artifactType[]>> = {
+    const dataToInsert: Record<string, Record<string, LabArtifactType[]>> = {
       FASTQ: {
         FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
           ...f,

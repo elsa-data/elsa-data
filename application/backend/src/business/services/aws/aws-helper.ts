@@ -12,7 +12,7 @@ import { Readable } from "stream";
  * @param s3KeyPrefix
  * @returns
  */
-export type S3ObjectMetadata = {
+export type S3ObjectMetadataType = {
   s3Url: string;
   eTag: string;
   size: number;
@@ -20,12 +20,12 @@ export type S3ObjectMetadata = {
 export async function awsListObjects(
   s3Client: S3Client,
   s3UrlPrefix: string
-): Promise<S3ObjectMetadata[]> {
+): Promise<S3ObjectMetadataType[]> {
   const stripS3Protocol = s3UrlPrefix.replaceAll(/s3:\/\//gi, "");
   const bucketName = stripS3Protocol.split("/")[0];
   const keyPrefix = stripS3Protocol.replaceAll(`${bucketName}/`, "");
 
-  let s3ObjectList: S3ObjectMetadata[] = [];
+  let s3ObjectList: S3ObjectMetadataType[] = [];
   let continuationToken: string | undefined = undefined;
 
   do {
