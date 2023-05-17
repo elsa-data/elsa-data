@@ -174,6 +174,19 @@ When using a service account, you must create a key file as described
 You must set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the
 `path/to/the/key.json`.
 
+#### Branding
+
+A logo and brand name can be added to Elsa to indicate what organisation is running the instance. Branding is configured using the configuration subsystem described [here](./docs/deployment/configuration.md). An example JSON5 snippet to add a logo and brand name is as follows:
+
+```json
+"branding": {
+  "brandName": "UMCCR",
+  "logoPath": "/path/to/umccr-logo.png"
+}
+```
+
+If deploying Elsa as a Docker image, the JSON5 file which contains this configuration can be baked into the image as shown [here](https://github.com/umccr/elsa-data-aws-deploy/blob/6c108c0d35b3d5151ffba8fff3500dcf11c87d79/artifacts/elsa-data-application-deployment-ag-prod-docker-image/Dockerfile#L10). The logo would need to be included in the image similarly.
+
 ### Run Locally
 
 The Elsa frontend is located in `application/frontend` and the backend in `application/backend`.

@@ -287,8 +287,6 @@ export class App {
             return "&lt;";
           case ">":
             return "&gt;";
-          case "\\":
-            return "&#92;";
           default:
             return c;
         }
