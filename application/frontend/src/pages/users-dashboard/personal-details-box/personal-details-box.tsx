@@ -54,7 +54,6 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
       ALLOWED_OVERALL_ADMIN_VIEW
     ),
   };
-  const isEditingAllowed = uiAllowed.has(ALLOWED_CHANGE_USER_PERMISSION);
 
   const Heading = () => (
     <div className="flex">
@@ -81,11 +80,9 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
         <div className="card rounded-box flex-grow">
           <div className="flex">
             <h3 className="font-medium">Permissions</h3>
-            {isEditingAllowed && (
-              <div>
-                <PermissionDialog user={userObject} />
-              </div>
-            )}
+            <div>
+              <PermissionDialog user={userObject} />
+            </div>
           </div>
           <ul className="list-inside list-disc">
             {uiAllowed.size !== 0 ? (
