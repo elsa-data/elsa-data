@@ -42,6 +42,9 @@ if (rootElement != null) {
     for (const f of rootElement.dataset.features.split(" ")) {
       if (f.trim().length > 0) fea.add(f.trim());
     }
+  const documentTitle = rootElement.dataset.documentTitle;
+  const brandName = rootElement.dataset.brandName;
+  const brandLogoUriRelative = rootElement.dataset.brandLogoUriRelative;
 
   root.render(
     <React.StrictMode>
@@ -55,6 +58,9 @@ if (rootElement != null) {
           deployedEnvironment={de}
           terminologyFhirUrl={tfu}
           features={fea}
+          documentTitle={documentTitle}
+          brandName={brandName}
+          brandLogoUriRelative={brandLogoUriRelative}
         >
           {/* we use session cookies for auth and use this provider to make them easily available */}
           <CookiesProvider>

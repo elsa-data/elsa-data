@@ -96,4 +96,10 @@ export type ElsaSettings = {
 
     allowTestRoutes: boolean;
   };
+
+  branding?: {
+    brandName?: string;
+    logoPath?: string;
+    logoUriRelative?: string;
+  };
 };
