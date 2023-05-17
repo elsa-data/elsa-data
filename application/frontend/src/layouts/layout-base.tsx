@@ -10,6 +10,7 @@ import {
   ALLOWED_DATASET_UPDATE,
   ALLOWED_OVERALL_ADMIN_VIEW,
 } from "@umccr/elsa-constants";
+import { useEnvRelay } from "../providers/env-relay-provider";
 
 type Props = {};
 
@@ -49,6 +50,8 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
 
   const uiAllowed = useUiAllowed();
 
+  const envRelay = useEnvRelay();
+
   return (
     <>
       {/* NAV START */}
@@ -57,8 +60,8 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
         className="fixed top-0 z-10 w-full min-w-max bg-white shadow"
       >
         <div className="container mx-auto w-full px-2">
-          <div className="mt-0 flex w-full flex-wrap items-center justify-between pt-3 pb-3 lg:pb-0">
-            <div className="block pr-4 lg:hidden">
+          <div className="mt-0 w-full items-center justify-between pt-3 pb-3 lg:pb-0">
+            <div className="block flex w-full justify-between lg:hidden">
               <button
                 onClick={() => setIsMenuBarOpen((prev: boolean) => !prev)}
                 id="nav-toggle"
@@ -73,101 +76,132 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
                 </svg>
               </button>
+              <div className="flex items-center justify-between gap-x-2 md:pl-0 lg:hidden">
+                <a
+                  className="text-base font-bold text-gray-900 no-underline hover:no-underline xl:text-xl"
+                  href="/"
+                >
+                  {envRelay.documentTitle}
+                </a>
+                {envRelay.brandLogoUriRelative && (
+                  <img
+                    className="max-h-10"
+                    src={envRelay.brandLogoUriRelative}
+                    alt={`${envRelay.brandName ?? ""} logo`.trim()}
+                  />
+                )}
+              </div>
+              {loggedInUser && (
+                <div className="my-1.5">
+                  <LayoutBaseHeaderUser user={loggedInUser} />
+                </div>
+              )}
             </div>
 
-            <div className="pl-2 md:pl-0">
+            <div className="hidden w-full items-center justify-between md:pl-0 lg:flex">
               <a
                 className="text-base font-bold text-gray-900 no-underline hover:no-underline xl:text-xl"
                 href="/"
               >
-                Elsa Data
+                {envRelay.documentTitle}
               </a>
-            </div>
-            <div className="relative float-right flex">
-              {loggedInUser && <LayoutBaseHeaderUser user={loggedInUser} />}
+              {envRelay.brandLogoUriRelative && (
+                <img
+                  className="max-h-10"
+                  src={envRelay.brandLogoUriRelative}
+                  alt={`${envRelay.brandName ?? ""} logo`.trim()}
+                />
+              )}
             </div>
           </div>
 
-          <div
-            className={`mt-2 w-full flex-grow bg-white lg:mt-0 lg:flex lg:w-auto lg:items-center ${
-              isMenuBarOpen ? "" : "hidden"
-            }`}
-            id="nav-content"
-          >
-            {loggedInUser ? (
-              <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
-                    "/releases",
-                    "Releases",
-                    "text-primary",
-                    "border-primary",
-                    "hover:border-primary-focus"
-                  )}
-                </li>
-                {(uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
-                  uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)) && (
+          <div className="flex w-full justify-between">
+            <div
+              className={`mt-2 bg-white lg:mt-0 lg:inline-block ${
+                isMenuBarOpen ? "" : "hidden"
+              }`}
+              id="nav-content"
+            >
+              {loggedInUser ? (
+                <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
                   <li className="my-2 mr-6 md:my-0">
                     {navLink(
-                      "/datasets",
-                      "Datasets",
+                      "/releases",
+                      "Releases",
                       "text-primary",
                       "border-primary",
                       "hover:border-primary-focus"
                     )}
                   </li>
-                )}
-                {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
+                  {(uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
+                    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)) && (
+                    <li className="my-2 mr-6 md:my-0">
+                      {navLink(
+                        "/datasets",
+                        "Datasets",
+                        "text-primary",
+                        "border-primary",
+                        "hover:border-primary-focus"
+                      )}
+                    </li>
+                  )}
+                  {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
+                    <li className="my-2 mr-6 md:my-0">
+                      {navLink(
+                        "/dac",
+                        "DAC",
+                        "text-primary",
+                        "border-primary",
+                        "hover:border-primary-focus"
+                      )}
+                    </li>
+                  )}
                   <li className="my-2 mr-6 md:my-0">
                     {navLink(
-                      "/dac",
-                      "DAC",
+                      "/users",
+                      "Users",
                       "text-primary",
                       "border-primary",
                       "hover:border-primary-focus"
                     )}
                   </li>
-                )}
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
-                    "/users",
-                    "Users",
-                    "text-primary",
-                    "border-primary",
-                    "hover:border-primary-focus"
-                  )}
-                </li>
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
-                    "/audit-events",
-                    "Audit Events",
-                    "text-primary",
-                    "border-primary",
-                    "hover:border-primary-focus"
-                  )}
-                </li>
-              </ul>
-            ) : (
-              <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">
-                <li className="my-2 mr-6 md:my-0">
-                  {navLink(
-                    "/login",
-                    "Login",
-                    "text-neutral-content",
-                    "border-neutral",
-                    "hover:border-neutral-focus"
-                  )}
-                </li>
-              </ul>
-            )}
+                  <li className="my-2 mr-6 md:my-0">
+                    {navLink(
+                      "/audit-events",
+                      "Audit Events",
+                      "text-primary",
+                      "border-primary",
+                      "hover:border-primary-focus"
+                    )}
+                  </li>
+                </ul>
+              ) : (
+                <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">
+                  <li className="my-2 mr-6 md:my-0">
+                    {navLink(
+                      "/login",
+                      "Login",
+                      "text-neutral-content",
+                      "border-neutral",
+                      "hover:border-neutral-focus"
+                    )}
+                  </li>
+                </ul>
+              )}
 
-            {/*<div className="relative pull-right pl-4 pr-4 md:pr-0">
-              <input
-                type="search"
-                placeholder="Search"
-                className="w-full bg-gray-100 text-sm text-gray-800 transition border focus:outline-none focus:border-gray-700 rounded py-1 px-2 pl-10 appearance-none leading-normal"
-              />
-            </div> */}
+              {/*<div className="relative pull-right pl-4 pr-4 md:pr-0">
+                <input
+                  type="search"
+                  placeholder="Search"
+                  className="w-full bg-gray-100 text-sm text-gray-800 transition border focus:outline-none focus:border-gray-700 rounded py-1 px-2 pl-10 appearance-none leading-normal"
+                />
+              </div> */}
+            </div>
+            {loggedInUser && (
+              <div className="my-1.5 hidden lg:inline-block">
+                <LayoutBaseHeaderUser user={loggedInUser} />
+              </div>
+            )}
           </div>
         </div>
       </nav>

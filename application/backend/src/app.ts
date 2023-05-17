@@ -24,6 +24,8 @@ import { Context } from "./api/routes/trpc-bootstrap";
 import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 import { trpcRoutes } from "./api/api-trpc-routes";
 import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import * as fs from "fs";
+import * as mime from "mime-types";
 
 export class App {
   public readonly server: FastifyInstance;
@@ -227,6 +229,16 @@ export class App {
       }
     );
 
+    const logoUriRelative = this.settings.branding?.logoUriRelative;
+    const logoPath = this.settings.branding?.logoPath;
+    if (logoUriRelative && logoPath) {
+      await this.server.get(logoUriRelative, async (_, reply) => {
+        const mimeType = mime.lookup(logoPath);
+        if (mimeType === false) return reply.status(500);
+        return reply.type(mimeType).send(fs.createReadStream(logoPath));
+      });
+    }
+
     this.server.get("*", async (request, reply) => {
       const requestPath = request.url;
 
@@ -264,14 +276,29 @@ export class App {
   private buildIndexHtmlTemplateData(): IndexHtmlTemplateData {
     let dataAttributes = "";
 
-    const addAttribute = (k: string, v: string) => {
-      if (!v)
-        throw new Error(
-          `The index.html generator must have access to a valid value to set for ${k}`
-        );
-
-      dataAttributes = dataAttributes + `\t\t${k}="${v}"\n`;
+    const escapeHtml = (unsafe: string) => {
+      return unsafe.replace(/[<>&'"]/g, function (c) {
+        switch (c) {
+          case '"':
+            return "&quot;";
+          case "&":
+            return "&amp;";
+          case "<":
+            return "&lt;";
+          case ">":
+            return "&gt;";
+          default:
+            return c;
+        }
+      });
     };
+
+    const addAttribute = (k: string, v: string) => {
+      dataAttributes = dataAttributes + `\t\t${k}="${escapeHtml(v)}"\n`;
+    };
+
+    const brandName = this.settings.branding?.brandName;
+    const documentTitle = brandName ? `Elsa Data – ${brandName}` : "Elsa Data";
 
     // these are env variables set in the solution deployment stack - probably via Cloud Formation parameters but also
     // locally they can be set just by shell env variables
@@ -287,15 +314,22 @@ export class App {
     );
     addAttribute(
       "data-terminology-fhir-url",
-      this.settings.ontoFhirUrl || "undefined"
+      this.settings.ontoFhirUrl ?? "undefined"
     );
     if (this.features.size > 0)
       addAttribute(
         "data-features",
         Array.from(this.features.values()).join(" ")
       );
+    addAttribute("data-document-title", documentTitle ?? "");
+    addAttribute("data-brand-name", this.settings.branding?.brandName ?? "");
+    addAttribute(
+      "data-brand-logo-uri-relative",
+      this.settings.branding?.logoUriRelative ?? ""
+    );
 
     return {
+      document_title: documentTitle,
       data_attributes: dataAttributes,
     };
   }
