@@ -235,7 +235,10 @@ export class App {
       await this.server.get(logoUriRelative, async (_, reply) => {
         const mimeType = mime.lookup(logoPath);
         if (mimeType === false) return reply.status(500);
-        return reply.type(mimeType).send(fs.createReadStream(logoPath));
+        return reply
+          .type(mimeType)
+          .header("Cache-Control", "public, max-age=3600, immutable")
+          .send(fs.createReadStream(logoPath));
       });
     }
 
