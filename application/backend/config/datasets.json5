@@ -6,7 +6,8 @@
       description: "A cohort of singleton germline read and variant data",
       loader: "australian-genomics-directories-demo",
       demonstrationStoragePrefix: "s3://agha-gdr-demo-store/10G/",
-      demonstrationSpecimenIdentifierRegex: "^.*(HGddddd).*$",
+      demonstrationSpecimenIdentifierRegex: "^.*(HG\\d\\d\\d\\d\\d).*$",
+      demonstrationCaseIdentifierRegex: "^.*(FAM\\d+).*$",
     },
     {
       uri: "urn:fdc:umccr.org:2022:dataset/10f",
@@ -14,7 +15,8 @@
       description: "A cohort of germline familial read and variant data",
       loader: "australian-genomics-directories-demo",
       demonstrationStoragePrefix: "s3://agha-gdr-demo-store/10F/",
-      demonstrationSpecimenIdentifierRegex: "^.*(HGddddd).*$",
+      demonstrationSpecimenIdentifierRegex: "^.*(HG\\d\\d\\d\\d\\d).*$",
+      demonstrationCaseIdentifierRegex: "^.*(FAM\\d+).*$",
     },
     {
       uri: "urn:fdc:umccr.org:2022:dataset/10c",
@@ -22,7 +24,8 @@
       description: "A cohort of mixed germline/somatic read and variant data",
       loader: "australian-genomics-directories-demo",
       demonstrationStoragePrefix: "s3://agha-gdr-demo-store/10C/",
-      demonstrationSpecimenIdentifierRegex: "^.*(HGddddd).*$",
+      demonstrationSpecimenIdentifierRegex: "^.*(HG\\d\\d\\d\\d\\d).*$",
+      demonstrationCaseIdentifierRegex: "^.*(FAM\\d+).*$",
     },
     // The following is intentionally commented out to show variety of test-data that is not included in config file.
     // {

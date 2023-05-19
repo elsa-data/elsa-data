@@ -21,6 +21,7 @@ import {
   getDatasetCasesByUri,
   getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
+import { DatasetType } from "../../config/config-schema-dataset";
 
 @injectable()
 export class DatasetService {
@@ -30,6 +31,15 @@ export class DatasetService {
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService
   ) {}
+
+  /**
+   * This give all configuration given from the datasetUri
+   * @param datasetUri
+   * @returns
+   */
+  public getDatasetConfiguration(datasetUri: string): DatasetType | undefined {
+    return this.settings.datasets.find((o) => o.uri == datasetUri);
+  }
 
   /**
    * Get Storage URI Prefix from dataset URI

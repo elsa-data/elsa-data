@@ -20,22 +20,27 @@ import {
   vcfArtifactStudyIdAndFileIdByDatasetIdQuery,
 } from "../../db/lab-queries";
 import { fileByFileIdQuery, fileByUrlQuery } from "../../db/storage-queries";
+import { getMd5FromChecksumsArray } from "../../db/helper";
+import { groupBy, isEqual } from "lodash";
 import {
-  getMd5FromChecksumsArray,
-  makeSystemlessIdentifierArray,
-} from "../../db/helper";
-import { isNil } from "lodash";
-import {
-  insertPedigreeByDatasetCaseIdQuery,
-  selectPedigreeByDatasetCaseIdQuery,
+  linkPedigreeWithDatasetCase,
+  selectPedigreeByDatasetCaseIdAndDatasetUri,
   updatePedigreeMaternalRelationshipQuery,
   updatePedigreePaternalRelationshipQuery,
   updatePedigreeProbandAndDatasetPatientQuery,
 } from "../../db/pedigree-queries";
 import {
-  selectDatasetCaseByExternalIdentifiersQuery,
+  selectDatasetCaseByExternalIdAndDatasetUriQuery,
   selectDatasetIdByDatasetUri,
-  selectDatasetPatientByExternalIdentifiersQuery,
+  selectDatasetPatientByExternalIdAndDatasetUriQuery,
+  selectDatasetSpecimenByExternalIdAndDatasetUriQuery,
+  linkNewArtifactWithDatasetSpecimen,
+  insertNewDatasetSpecimen,
+  linkDatasetPatientWithDatasetSpecimen,
+  insertNewDatasetPatient,
+  linkDatasetCaseWithDatasetPatient,
+  insertNewDatasetCase,
+  linkDatasetWithDatasetCase,
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
@@ -46,6 +51,7 @@ import {
   australianGenomicsDirectoriesDemoLoaderFor10G,
   TENG_URI,
 } from "../../../test-data/dataset/insert-test-data-10g";
+import { DatasetType } from "../../../config/config-schema-dataset";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -57,9 +63,15 @@ export type ManifestType = {
   s3Url: string;
 };
 export type MergedManifestMetadataType = ManifestType & S3ObjectMetadataType;
-// export type s3IndividualManifestType = ManifestType & {
-//   agha_study_id: string;
-// };
+
+export type FileGroupType = {
+  filetype: ArtifactEnum;
+  filenameId: String;
+  specimenId: string;
+  patientIdArray: string[];
+  file: MergedManifestMetadataType[];
+};
+
 export type LabArtifactType = { sampleIdsArray: string[] } & File;
 export type S3ManifestDictType = Record<string, ManifestType>;
 
@@ -171,29 +183,6 @@ export class S3IndexApplicationService {
   }
 
   /**
-   * To group manifest object list based on study Id
-   * @param manifestContentList Manifest Type list
-   * @returns An object where key is studyId and value is a list of manifest type
-   */
-  groupManifestByStudyId(
-    manifestContentList: ManifestType[]
-  ): Record<string, ManifestType[]> {
-    const studyIdGroup: Record<string, ManifestType[]> = {};
-    for (const manifestObject of manifestContentList) {
-      const studyIdArray = manifestObject.agha_study_id_array;
-
-      for (const studyId of studyIdArray) {
-        if (studyIdGroup[studyId] && Array.isArray(studyIdGroup[studyId])) {
-          studyIdGroup[studyId].push(manifestObject);
-        } else {
-          studyIdGroup[studyId] = [manifestObject];
-        }
-      }
-    }
-    return studyIdGroup;
-  }
-
-  /**
    * From a list of objects stored in the backend for a dataset, reads all the manifest
    * entries and decomposes them into objects.
    *
@@ -239,64 +228,79 @@ export class S3IndexApplicationService {
   }
 
   /**
-   * To group file in their artifact type and filename.
-   * The function will determine artifact type by
-   * @param fileRecordListedInManifest
-   * @returns A nested json of LabArtifactType AND filenameId
-   * E.g. From {FASTQ : { HCT_HAM_L002 : [File1, File2] } }
+   * Grouping manifest files based on filetype
+   * @param manifestArray
+   * @returns FileGroupType
+   * e.g.
+   * {
+   *   filetype: ArtifactEnum.FASTQ,
+   *   specimenId: "0W0001",
+   *   patientIdArray: ["A001"],
+   *   file: [manifest1, manifest2]
+   * }
+   *
    */
-  groupManifestFileByArtifactTypeAndFilename(
-    fileRecordListedInManifest: LabArtifactType[]
-  ): Record<string, Record<string, LabArtifactType[]>> {
-    const groupFiletype: Record<string, Record<string, LabArtifactType[]>> = {};
+  filetypeGrouping({
+    manifestArray,
+    regexSpecimenId,
+  }: {
+    manifestArray: MergedManifestMetadataType[];
+    regexSpecimenId?: string;
+  }): FileGroupType[] {
+    const result: FileGroupType[] = [];
 
-    /**
-     * A helper function to fill the above variable
-     */
-    function addOrCreateNewArtifactGroup(
-      LabArtifactType: string,
-      filenameId: string,
-      manifestObj: LabArtifactType
-    ) {
-      if (!groupFiletype[LabArtifactType]) {
-        groupFiletype[LabArtifactType] = {};
+    const groupedByFilenameId: Record<string, MergedManifestMetadataType[]> =
+      groupBy(manifestArray, (manifest: MergedManifestMetadataType) => {
+        const filename = manifest.s3Url.replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
+        const filenameId =
+          filename.endsWith(".fastq") || filename.endsWith(".fq")
+            ? filename.replaceAll(/_R1|_R2|.R1|.R2/g, "")
+            : filename;
+
+        return filenameId;
+      });
+
+    for (const filenameId in groupedByFilenameId) {
+      const manifestGroupedArray = groupedByFilenameId[filenameId];
+
+      const filetype =
+        filenameId.endsWith(".fastq") || filenameId.endsWith(".fq")
+          ? ArtifactEnum.FASTQ
+          : filenameId.endsWith(".bam") || filenameId.endsWith(".bai")
+          ? ArtifactEnum.BAM
+          : filenameId.endsWith(".vcf") || filenameId.endsWith(".tbi")
+          ? ArtifactEnum.VCF
+          : filenameId.endsWith(".cram") || filenameId.endsWith(".crai")
+          ? ArtifactEnum.CRAM
+          : undefined;
+
+      // The context of agha_study_id is actually the patient Id
+      const patientIdArray = manifestGroupedArray[0].agha_study_id_array;
+
+      // Will find specimenId based on regex (if provided) from the filename
+      // If regex not provided, will use patientId instead
+
+      let specimenId = patientIdArray.join(",");
+      if (regexSpecimenId) {
+        const reMatchSpecimenId = filenameId.match(regexSpecimenId);
+        if (reMatchSpecimenId) specimenId = reMatchSpecimenId[1];
       }
-      if (groupFiletype[LabArtifactType][filenameId]) {
-        groupFiletype[LabArtifactType][filenameId].push(manifestObj);
-      } else {
-        groupFiletype[LabArtifactType][filenameId] = [manifestObj];
+
+      if (!filetype) {
+        console.warn("No matching Artifact Type");
+        continue;
       }
+
+      result.push({
+        filetype,
+        filenameId,
+        specimenId,
+        patientIdArray,
+        file: manifestGroupedArray,
+      });
     }
 
-    for (const manifestObj of fileRecordListedInManifest) {
-      // Removing compressed extension for pairing purposes
-      const filename = manifestObj.url.replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
-
-      // FASTQ Artifact
-      if (filename.endsWith(".fastq") || filename.endsWith(".fq")) {
-        const filenameId = filename.replaceAll(/_R1|_R2|.R1|.R2/g, "");
-        addOrCreateNewArtifactGroup(
-          ArtifactEnum.FASTQ,
-          filenameId,
-          manifestObj
-        );
-
-        // BAM Artifact
-      } else if (filename.endsWith(".bam") || filename.endsWith(".bai")) {
-        addOrCreateNewArtifactGroup(ArtifactEnum.BAM, filename, manifestObj);
-
-        // VCF Artifact
-      } else if (filename.endsWith(".vcf") || filename.endsWith(".tbi")) {
-        addOrCreateNewArtifactGroup(ArtifactEnum.VCF, filename, manifestObj);
-
-        // CRAM Artifact
-      } else if (filename.endsWith(".cram") || filename.endsWith(".crai")) {
-        addOrCreateNewArtifactGroup(ArtifactEnum.CRAM, filename, manifestObj);
-      } else {
-        console.log(`No matching Artifact Type (${filename})`);
-      }
-    }
-    return groupFiletype;
+    return result;
   }
 
   /**
@@ -343,61 +347,61 @@ export class S3IndexApplicationService {
   }
 
   /**
-   * Inserting new artifacts to records
-   * @param artifactTypeRecord A File grouped of artifact type and filenameId (filename exclude any lanes) .
-   * E.g. {FASTQ : { HCT_HAM_L002 : [File1, File2] } }
-   * @returns
+   * Will create an insert artifact based on the grouped manifest details
+   * (Each filetypes have different artifact Type)
+   * @param groupManifest
    */
-  insertNewArtifactListQuery(
-    artifactTypeRecord: Record<string, Record<string, LabArtifactType[]>>
-  ) {
+  insertArtifact(groupManifest: FileGroupType) {
     /**
      * Sorting url function to identify which is forward/reversed/indexed file
      * Index 0 is Forward file or base file
      * Index 1 is Reverse file or index file
      */
-    const sortArtifactRec = (artifactSet: LabArtifactType[]) =>
+    const sortManifestFile = (artifactSet: MergedManifestMetadataType[]) =>
       artifactSet.sort((a, b) =>
-        a.url.toLowerCase() > b.url.toLowerCase() ? 1 : -1
+        a.s3Url.toLowerCase() > b.s3Url.toLowerCase() ? 1 : -1
       );
+    const manifestSet = sortManifestFile(groupManifest.file);
+    const baseFile = this.convertManifestToStorageFileType(manifestSet[0]);
+    const indexFile = this.convertManifestToStorageFileType(manifestSet[1]);
 
-    // Inserting to a SubmissionBatch
-    const artifactArray: any[] = [];
-
-    for (const LabArtifactType in artifactTypeRecord) {
-      const fileRecByFilenameId = artifactTypeRecord[LabArtifactType];
-
-      for (const filenameId in fileRecByFilenameId) {
-        const fileSet = sortArtifactRec(fileRecByFilenameId[filenameId]);
-
-        if (fileSet.length != 2) {
-          console.log(
-            `"${filenameId}" has no matching pair. Skipping automatic update... `
-          );
-          continue;
-        }
-
-        if (LabArtifactType == ArtifactEnum.FASTQ) {
-          artifactArray.push(
-            insertArtifactFastqPairQuery(fileSet[0], fileSet[1])
-          );
-        } else if (LabArtifactType == ArtifactEnum.VCF) {
-          artifactArray.push(
-            insertArtifactVcfQuery(
-              fileSet[0],
-              fileSet[1],
-              fileSet[0].sampleIdsArray
-            )
-          );
-        } else if (LabArtifactType == ArtifactEnum.BAM) {
-          artifactArray.push(insertArtifactBamQuery(fileSet[0], fileSet[1]));
-        } else if (LabArtifactType == ArtifactEnum.CRAM) {
-          artifactArray.push(insertArtifactCramQuery(fileSet[0], fileSet[1]));
-        }
-      }
+    if (groupManifest.filetype == ArtifactEnum.FASTQ) {
+      return insertArtifactFastqPairQuery(baseFile, indexFile);
+    } else if (groupManifest.filetype == ArtifactEnum.VCF) {
+      return insertArtifactVcfQuery(
+        baseFile,
+        indexFile,
+        groupManifest.patientIdArray
+      );
+    } else if (groupManifest.filetype == ArtifactEnum.BAM) {
+      return insertArtifactBamQuery(baseFile, indexFile);
+    } else if (groupManifest.filetype == ArtifactEnum.CRAM) {
+      return insertArtifactCramQuery(baseFile, indexFile);
     }
-    return artifactArray;
+    return undefined;
   }
+
+  /**
+   * Convert the merged manifest to artifacts format
+   * @param manifest
+   * @returns
+   */
+  convertManifestToStorageFileType(
+    manifest: MergedManifestMetadataType
+  ): LabArtifactType {
+    return {
+      url: manifest.s3Url,
+      size: manifest.size,
+      checksums: [
+        {
+          type: "MD5",
+          value: manifest.checksum,
+        },
+      ],
+      sampleIdsArray: manifest.agha_study_id_array,
+    };
+  }
+
   /**
    * Convert manifest record to a File record as file Db is stored as file record.
    * @param manifestRecordList A list of ManifestType record
@@ -436,113 +440,6 @@ export class S3IndexApplicationService {
     }
 
     return result;
-  }
-
-  async updateDatasetPatient(
-    datasetPatientUUID: string,
-    insertArtifactListQuery: any
-  ) {
-    const updateDataPatientQuery = e.update(
-      e.dataset.DatasetSpecimen,
-      (specimen: { patient: { id: any } }) => ({
-        set: {
-          artifacts: {
-            "+=": e.set(...insertArtifactListQuery),
-          },
-        },
-        filter: e.op(specimen.patient.id, "=", e.uuid(datasetPatientUUID)),
-      })
-    );
-    await updateDataPatientQuery.run(this.edgeDbClient);
-  }
-
-  async getDatasetPatientByStudyId(studyId: string) {
-    const findDPQuery = selectDatasetPatientByExternalIdentifiersQuery(studyId);
-
-    const datasetPatientIdArray = await findDPQuery.run(this.edgeDbClient);
-    return datasetPatientIdArray[0]?.id;
-  }
-
-  async getDatasetCaseByCaseId(caseId: string) {
-    const findDCQuery = selectDatasetCaseByExternalIdentifiersQuery(caseId);
-    const datasetCaseIdArray = await findDCQuery.run(this.edgeDbClient);
-    return datasetCaseIdArray[0]?.id;
-  }
-
-  async getPedigreeByDatasetCaseId(
-    datasetCaseId: string
-  ): Promise<string | null> {
-    const pedigreeObjId = await selectPedigreeByDatasetCaseIdQuery(
-      datasetCaseId
-    ).run(this.edgeDbClient);
-
-    let pedigreeUUID: string | null;
-    if (!pedigreeObjId) {
-      pedigreeUUID = null;
-    } else {
-      pedigreeUUID = pedigreeObjId.id;
-    }
-
-    return pedigreeUUID;
-  }
-
-  async insertNewDatasetCase({
-    datasetCaseId,
-    datasetUUID,
-  }: {
-    datasetCaseId: string;
-    datasetUUID: string;
-  }) {
-    const insertPedigreeQuery = e.insert(e.pedigree.Pedigree, {});
-    const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
-      externalIdentifiers: makeSystemlessIdentifierArray(datasetCaseId),
-      pedigree: insertPedigreeQuery,
-    });
-
-    const linkDatasetQuery = e.update(e.dataset.Dataset, (dataset: any) => ({
-      set: {
-        cases: {
-          "+=": insertDatasetCaseQuery,
-        },
-      },
-      filter: e.op(dataset.id, "=", e.uuid(datasetUUID)),
-    }));
-    await linkDatasetQuery.run(this.edgeDbClient);
-  }
-
-  async insertNewDatasetPatientByDatasetCaseId({
-    datasetCaseId,
-    patientId,
-  }: {
-    datasetCaseId: string;
-    patientId: string;
-  }) {
-    let sexAtBirth: dataset.SexAtBirthType | null = patientId.endsWith("_pat")
-      ? "male"
-      : patientId.endsWith("_mat")
-      ? "female"
-      : null;
-
-    const insertDatasetSpecimenQuery = e.insert(e.dataset.DatasetSpecimen, {});
-    const insertDatasetPatientQuery = e.insert(e.dataset.DatasetPatient, {
-      sexAtBirth: sexAtBirth,
-      externalIdentifiers: makeSystemlessIdentifierArray(patientId),
-      specimens: e.set(insertDatasetSpecimenQuery),
-    });
-
-    const linkDatasetCaseQuery = e.update(e.dataset.DatasetCase, (dc) => ({
-      set: {
-        patients: {
-          "+=": insertDatasetPatientQuery,
-        },
-      },
-      filter: e.op(
-        dc.externalIdentifiers,
-        "=",
-        makeSystemlessIdentifierArray(datasetCaseId)
-      ),
-    }));
-    await linkDatasetCaseQuery.run(this.edgeDbClient);
   }
 
   async getDbManifestObjectListByDatasetId(
@@ -624,33 +521,22 @@ export class S3IndexApplicationService {
   ): ManifestType[] {
     const result: ManifestType[] = [];
 
-    const insertRes = (manifest: ManifestType, studyId: string) => {
-      result.push({
-        checksum: manifest.checksum,
-        s3Url: manifest.s3Url,
-        agha_study_id_array: manifest.agha_study_id_array,
-      });
-    };
-
     for (const key in manifestAlpha) {
       const valueAlpha = manifestAlpha[key];
       const valueBeta = manifestBeta[key];
 
       // Check if alpha exist in Beta
       if (!valueBeta) {
-        valueAlpha.agha_study_id_array.map((SID) => {
-          insertRes(valueAlpha, SID);
-        });
+        result.push(valueAlpha);
         continue;
       }
 
-      // Check if studyId in Alpha does not exist in Beta
+      // Check if studyId in Alpha are the different
       const studyIdAlpha = valueAlpha["agha_study_id_array"];
       const studyIdBeta = valueBeta["agha_study_id_array"];
-      for (const studyId of studyIdAlpha) {
-        if (!studyIdBeta.includes(studyId)) {
-          insertRes(valueAlpha, studyId);
-        }
+      if (!isEqual(studyIdAlpha, studyIdBeta)) {
+        result.push(valueAlpha);
+        continue;
       }
     }
     return result;
@@ -688,6 +574,7 @@ export class S3IndexApplicationService {
   }
 
   async linkPedigreeRelationship(
+    datasetUri: string,
     pedigreeList: {
       probandId: string;
       patientId: string;
@@ -697,40 +584,43 @@ export class S3IndexApplicationService {
     for (const pedigree of pedigreeList) {
       const { probandId, patientId, datasetCaseId } = pedigree;
 
-      // Find existing pedigree has exist
-      let pedigreeUUID = await this.getPedigreeByDatasetCaseId(datasetCaseId);
+      // SelectOrInsert pedigree
+      let pedigreeUUID = (
+        await selectPedigreeByDatasetCaseIdAndDatasetUri({
+          datasetUri,
+          datasetCaseId,
+        }).run(this.edgeDbClient)
+      )?.id;
 
       if (!pedigreeUUID) {
-        // Ideally it empty pedigree should be initiated above.
-        // This will catch incase old implementation did not create pedigree.
+        pedigreeUUID = (
+          await e.insert(e.pedigree.Pedigree, {}).run(this.edgeDbClient)
+        ).id;
 
-        await insertPedigreeByDatasetCaseIdQuery(datasetCaseId).run(
-          this.edgeDbClient
-        );
-
-        // Will run this one more time
-        pedigreeUUID = await this.getPedigreeByDatasetCaseId(datasetCaseId);
-
-        if (!pedigreeUUID) {
-          console.warn(`Cannot create Pedigree ${datasetCaseId}. Skipping ...`);
-          continue;
-        }
+        await linkPedigreeWithDatasetCase({
+          datasetCaseId,
+          datasetUri,
+          pedigreeUUID,
+        }).run(this.edgeDbClient);
       }
 
       if (patientId.toLowerCase().endsWith("_mat")) {
         await updatePedigreeMaternalRelationshipQuery({
+          datasetUri,
           pedigreeUUID: pedigreeUUID,
           probandId: probandId,
           maternalId: patientId,
         }).run(this.edgeDbClient);
       } else if (patientId.toLowerCase().endsWith("_pat")) {
         await updatePedigreePaternalRelationshipQuery({
+          datasetUri,
           pedigreeUUID: pedigreeUUID,
           probandId: probandId,
           paternalId: patientId,
         }).run(this.edgeDbClient);
       } else {
         await updatePedigreeProbandAndDatasetPatientQuery({
+          datasetUri,
           probandId: patientId,
           pedigreeUUID: pedigreeUUID,
         }).run(this.edgeDbClient);
@@ -772,6 +662,8 @@ export class S3IndexApplicationService {
 
     let s3MetadataList: S3ObjectMetadataType[];
     let s3ManifestTypeObjectDict: S3ManifestDictType;
+    let datasetSpecimenIdRe: string | undefined = undefined;
+    let datasetCaseIdRe: string | undefined = undefined;
 
     switch (loaderType) {
       case "australian-genomics-directories":
@@ -794,6 +686,17 @@ export class S3IndexApplicationService {
               return readObjectToStringFromS3Url(this.s3Client, url);
             }
           );
+        const datasetConfig: any =
+          this.datasetService.getDatasetConfiguration(datasetUri);
+        if (datasetConfig) {
+          if (datasetConfig.specimenIdentifierRegex) {
+            datasetSpecimenIdRe = datasetConfig.specimenIdentifierRegex;
+          }
+          if (datasetConfig.caseIdentifierRegex) {
+            datasetCaseIdRe = datasetConfig.caseIdentifierRegex;
+          }
+        }
+
         break;
       case "australian-genomics-directories-demo":
         const fakeS3UrlPrefix =
@@ -825,6 +728,18 @@ export class S3IndexApplicationService {
                 return phases[1].fileContent[url];
               }
             );
+
+          const datasetConfig: any =
+            this.datasetService.getDatasetConfiguration(datasetUri);
+          if (datasetConfig) {
+            if (datasetConfig.demonstrationSpecimenIdentifierRegex) {
+              datasetSpecimenIdRe =
+                datasetConfig.demonstrationSpecimenIdentifierRegex;
+            }
+            if (datasetConfig.demonstrationCaseIdentifierRegex) {
+              datasetCaseIdRe = datasetConfig.demonstrationCaseIdentifierRegex;
+            }
+          }
         } else throw Error("AG demo loader used with unknown dataset URI");
         break;
       default:
@@ -870,92 +785,170 @@ export class S3IndexApplicationService {
 
     // Insert missing files to DB
     if (missingFileFromDb.length) {
-      const groupedMissingRecByStudyId =
-        this.groupManifestByStudyId(missingFileFromDb);
+      /**
+       * Artifact live recursively under Dataset as follows.
+       * Dataset -> DatasetCase -> DatasetPatient -> DatasetSpecimen -> Artifact
+       * With this there are 4 cases which artifact can be inserted appropriately
+       *
+       * 1. Artifact only - Exist: DatasetCase, DatasetPatient, DatasetSpecimen
+       * 2. Artifact, DatasetSpecimen -  Exist: DatasetCase, DatasetPatient
+       * 3. Artifact, DatasetSpecimen, DatasetPatient - Exist: DatasetCase
+       * 4. Artifact, DatasetSpecimen, DatasetPatient, DatasetCase - Exist: None
+       *
+       */
 
+      // Combine S3 Manifest metadata (study_id, md5) with S3 Object Metadata (etag, size)
+      const fullManifest = this.mergeObjectMetadata(
+        missingFileFromDb,
+        s3MetadataList
+      );
+
+      //  Inserting a new artifact required a complete file set (e.g. you can't insert a BAM without BAI)
+      //  For this reason all files need to be grouped based on filetype before the insertion process.
+      const groupedManifestByFiletype = this.filetypeGrouping({
+        manifestArray: fullManifest,
+        regexSpecimenId: datasetSpecimenIdRe,
+      });
+
+      // A patientId link array that will be used for linking new patient record
       const patientIdAndDataCaseIdLinkingArray = [];
-      const listOfStudyIds = Object.keys(groupedMissingRecByStudyId);
-      for (const studyId of listOfStudyIds) {
-        const manifestRecord = groupedMissingRecByStudyId[studyId];
 
-        // Convert to LabArtifactType containing FILE record (storage::File schema).
-        // It will combine S3 Manifest data (study_id, md5) with S3 Object Metadata (etag, size)
-        const artifactList = this.converts3ManifestTypeToArtifactTypeRecord(
-          manifestRecord,
-          s3MetadataList
+      for (const index in groupedManifestByFiletype) {
+        // Parsing for easy access
+        const patientIdArray = groupedManifestByFiletype[index].patientIdArray;
+        const specimenId = groupedManifestByFiletype[index].specimenId;
+        const filenameId = groupedManifestByFiletype[index].filenameId;
+
+        // Artifact insertion query
+        const artifactInsertionQuery = this.insertArtifact(
+          groupedManifestByFiletype[index]
         );
+        if (!artifactInsertionQuery) {
+          console.error("Invalid artifact Type!");
+          continue;
+        }
 
-        // Group file for further processing
-        const groupArtifactType =
-          this.groupManifestFileByArtifactTypeAndFilename(artifactList);
+        /**
+         * (1) Only insert Artifact in the existence of datasetSpecimen
+         */
+        let datasetSpecimenUUID = (
+          await selectDatasetSpecimenByExternalIdAndDatasetUriQuery(
+            specimenId,
+            datasetUri
+          ).run(this.edgeDbClient)
+        )?.id;
 
-        // Insert Artifact
-        const insertArtifactListQuery =
-          this.insertNewArtifactListQuery(groupArtifactType);
+        if (datasetSpecimenUUID) {
+          await linkNewArtifactWithDatasetSpecimen(
+            datasetSpecimenUUID,
+            artifactInsertionQuery
+          ).run(this.edgeDbClient);
 
-        let datasetPatientUUID = await this.getDatasetPatientByStudyId(studyId);
+          // Done and can proceed to the next one.
+          continue;
+        }
 
-        if (!datasetPatientUUID) {
-          // Group Families to a single DatasetCase
-          // Temporarily will be using FAMXXX id if exist in filename else probandId will be used.
-          // Assumption:
-          //  - Proband studyId will be 1:1 relationship with the familyId included in filename.
-          //  - All files with the same Proband studyId will have the same familyId included in filenames.
+        /**
+         * (2) Insert: Artifact, datasetSpecimen
+         */
+        datasetSpecimenUUID = (
+          await insertNewDatasetSpecimen({
+            exId: specimenId,
+            insertArtifactQuery: artifactInsertionQuery,
+          }).run(this.edgeDbClient)
+        ).id;
 
-          const probandId = studyId.split("_")[0];
+        // Splitting patientId individually so each patient has its own record
+        for (const patientId of patientIdArray) {
+          let datasetPatientUUID = (
+            await selectDatasetPatientByExternalIdAndDatasetUriQuery({
+              exId: patientId,
+              datasetUri,
+            }).run(this.edgeDbClient)
+          )?.id;
+          if (datasetPatientUUID) {
+            await linkDatasetPatientWithDatasetSpecimen({
+              datasetPatientUUID,
+              datasetSpecimenUUID: datasetSpecimenUUID,
+            }).run(this.edgeDbClient);
 
-          const famRe = /(FAM\d+)/gi;
-          const s3Url = manifestRecord[0].s3Url;
-          const famReMatch: string[] | null = s3Url.match(famRe);
-          const familyId = famReMatch ? famReMatch[0] : null;
+            // Done for this patientId, moving to next one to make sure each patient has a link to their specimen
+            continue;
+          }
 
-          const datasetCaseId = familyId ? familyId : probandId;
+          /**
+           * (3) Insert: Artifact, datasetSpecimen, DatasetPatient
+           */
+          const sexAtBirth: dataset.SexAtBirthType | null = patientId.endsWith(
+            "_pat"
+          )
+            ? "male"
+            : patientId.endsWith("_mat")
+            ? "female"
+            : null;
+
+          datasetPatientUUID = (
+            await insertNewDatasetPatient({
+              exId: patientId,
+              sexAtBirth,
+              datasetSpecimenUUID,
+            }).run(this.edgeDbClient)
+          )?.id;
 
           // Grouping and passing this array for the pedigree relationship below.
+          const probandId = patientId.split("_")[0];
+          let datasetCaseId = patientIdArray.join(",");
+          if (datasetCaseIdRe) {
+            const reMatchCaseId = filenameId.match(datasetCaseIdRe);
+            if (reMatchCaseId) datasetCaseId = reMatchCaseId[1];
+          }
           patientIdAndDataCaseIdLinkingArray.push({
             probandId: probandId,
             datasetCaseId: datasetCaseId,
-            patientId: studyId,
+            patientId: patientId,
           });
 
-          let datasetCaseUUID = await this.getDatasetCaseByCaseId(
-            datasetCaseId
-          );
-          if (!datasetCaseUUID) {
-            await this.insertNewDatasetCase({
-              datasetUUID: datasetId,
-              datasetCaseId: datasetCaseId,
-            });
+          let datasetCaseUUID = (
+            await selectDatasetCaseByExternalIdAndDatasetUriQuery({
+              exId: datasetCaseId,
+              datasetUri,
+            }).run(this.edgeDbClient)
+          )?.id;
 
-            datasetCaseUUID = await this.getDatasetCaseByCaseId(datasetCaseId);
-            if (isNil(datasetCaseUUID)) {
-              console.error(
-                `Unable to insert a new DatasetCase (${datasetCaseId})`
-              );
-              continue;
-            }
-          }
+          if (datasetCaseUUID) {
+            await linkDatasetCaseWithDatasetPatient({
+              datasetCaseUUID,
+              datasetPatientUUID,
+            }).run(this.edgeDbClient);
 
-          await this.insertNewDatasetPatientByDatasetCaseId({
-            datasetCaseId: datasetCaseId,
-            patientId: studyId,
-          });
-          datasetPatientUUID = await this.getDatasetPatientByStudyId(studyId);
-          if (isNil(datasetPatientUUID)) {
-            console.error(`Unable to insert a new DatasetPatient (${studyId})`);
+            // Continue to to the next patientId, to make brand new patient has a link to their cases
             continue;
           }
-        }
 
-        await this.updateDatasetPatient(
-          datasetPatientUUID,
-          insertArtifactListQuery
-        );
+          /**
+           * (4) Insert: Artifact, datasetSpecimen, DatasetPatient, DatasetCase
+           */
+          // New datasetCase
+          datasetCaseUUID = (
+            await insertNewDatasetCase({
+              exId: datasetCaseId,
+              datasetPatientUUID,
+            }).run(this.edgeDbClient)
+          ).id;
+
+          await linkDatasetWithDatasetCase({
+            datasetCaseUUID,
+            datasetUri,
+          }).run(this.edgeDbClient);
+        }
       }
 
       // Handling pedigree Linking
       // At this stage, all dataset::DatasetPatient record should already exist
-      await this.linkPedigreeRelationship(patientIdAndDataCaseIdLinkingArray);
+      await this.linkPedigreeRelationship(
+        datasetUri,
+        patientIdAndDataCaseIdLinkingArray
+      );
     }
 
     const now = new Date();

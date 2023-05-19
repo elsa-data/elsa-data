@@ -93,7 +93,6 @@ module dataset {
         multi link specimens -> DatasetSpecimen {
             on source delete delete target;
             on target delete allow;
-            constraint exclusive;
         }
     }
 

@@ -22,6 +22,13 @@ export const DatasetAustralianGenomicsDirectoriesSchema = z.object({
     z
       .string()
       .describe(
+        "If present a regex capture group that will state the case identifier from a given filename"
+      )
+  ),
+  caseIdentifierRegex: z.optional(
+    z
+      .string()
+      .describe(
         "If present a regex capture group that will state the specimen identifier from a given filename"
       )
   ),
@@ -59,6 +66,13 @@ export const DatasetAustralianGenomicsDirectoriesDemoSchema = z.object({
       .string()
       .describe(
         "If present a regex capture group that will state the specimen identifier from a given filename"
+      )
+  ),
+  demonstrationCaseIdentifierRegex: z.optional(
+    z
+      .string()
+      .describe(
+        "If present a regex capture group that will state the case identifier from a given filename"
       )
   ),
 });
