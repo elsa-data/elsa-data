@@ -99,46 +99,46 @@ export async function insertScenario1(dc: DependencyContainer) {
     "australian-genomics-directories-demo"
   );
 
-  // const ten_f_uri = await insert10F(dc);
-  // const ten_c_uri = await insert10C(dc);
-  // const gs_uri = await insertGs(dc);
+  const ten_f_uri = await insert10F(dc);
+  const ten_c_uri = await insert10C(dc);
+  const gs_uri = await insertGs(dc);
 
-  // // Some blank DB records inserted to see how it looks like
-  // for (const dbProp of BLANK_DB_PROPS) {
-  //   await insertBlankDataset(dbProp.id, dbProp.uri);
-  // }
+  // Some blank DB records inserted to see how it looks like
+  for (const dbProp of BLANK_DB_PROPS) {
+    await insertBlankDataset(dbProp.id, dbProp.uri);
+  }
 
   // Create mock releases
   const r1 = await insertRelease1(dc, {
     releaseAdministrator: [administrator],
     releaseManager: [manager],
     releaseMember: [member],
-    datasetUris: [TENG_URI],
+    datasetUris: [TENG_URI, ten_f_uri, ten_c_uri],
   });
-  // const r2 = await insertRelease2(dc, {
-  //   releaseAdministrator: [administrator],
-  //   releaseManager: [],
-  //   releaseMember: [],
-  //   datasetUris: [ten_f_uri],
-  // });
-  // const r3 = await insertRelease3(dc, {
-  //   releaseAdministrator: [administrator],
-  //   releaseManager: [],
-  //   releaseMember: [],
-  //   datasetUris: [ten_f_uri],
-  // });
+  const r2 = await insertRelease2(dc, {
+    releaseAdministrator: [administrator],
+    releaseManager: [],
+    releaseMember: [],
+    datasetUris: [ten_f_uri],
+  });
+  const r3 = await insertRelease3(dc, {
+    releaseAdministrator: [administrator],
+    releaseManager: [],
+    releaseMember: [],
+    datasetUris: [ten_f_uri],
+  });
   const r4 = await insertRelease4(dc, {
     releaseAdministrator: [administrator],
     releaseManager: [],
     releaseMember: [],
     datasetUris: [TENG_URI],
   });
-  // const r5 = await insertRelease5(dc, {
-  //   releaseAdministrator: [administrator],
-  //   releaseManager: [manager],
-  //   releaseMember: [member],
-  //   datasetUris: [ten_f_uri],
-  // });
+  const r5 = await insertRelease5(dc, {
+    releaseAdministrator: [administrator],
+    releaseManager: [manager],
+    releaseMember: [member],
+    datasetUris: [ten_f_uri],
+  });
 
   logger.debug(
     `insertTestData: Number of object artifacts present = ${await e
