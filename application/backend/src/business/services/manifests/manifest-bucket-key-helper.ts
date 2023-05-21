@@ -73,10 +73,10 @@ export async function transformMasterManifestToBucketKeyManifest(
       ) => {
         return {
           caseId: collapseExternalIds(
-            specimenWithArtifacts.case_?.externalIdentifiers
+            specimenWithArtifacts.case_[0].externalIdentifiers
           ),
           patientId: collapseExternalIds(
-            specimenWithArtifacts.patient?.externalIdentifiers
+            specimenWithArtifacts.patient[0].externalIdentifiers
           ),
           specimenId: collapseExternalIds(
             specimenWithArtifacts.externalIdentifiers

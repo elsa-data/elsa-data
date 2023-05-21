@@ -177,8 +177,8 @@ export async function createReleaseFileList(
   const entries: ManifestBucketKeyObjectType[] = [];
 
   for (const f of filesResult) {
-    const caseId = collapseExternalIds(f.case_?.externalIdentifiers);
-    const patientId = collapseExternalIds(f.patient?.externalIdentifiers);
+    const caseId = collapseExternalIds(f.case_[0].externalIdentifiers);
+    const patientId = collapseExternalIds(f.patient[0].externalIdentifiers);
     const specimenId = collapseExternalIds(f.externalIdentifiers);
 
     for (const fa of f.artifacts) {
