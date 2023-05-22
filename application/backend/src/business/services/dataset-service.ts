@@ -135,6 +135,9 @@ export class DatasetService {
         description: r.description,
         updatedDateTime: r.updatedDateTime,
         isInConfig: r.isInConfig,
+        totalCaseCount: r.totalCaseCount,
+        totalPatientCount: r.totalPatientCount,
+        totalSpecimenCount: r.totalSpecimenCount,
       })),
       datasetSummaryQuery.total
     );
