@@ -88,22 +88,17 @@ export const DatasetTable: React.FC = ({}) => {
               </td>
 
               {/* Count Cases/Patients/Specimen */}
-              <td
-                className={classNames(
-                  baseColumnClasses,
-                  "text-left",
-                  "flex",
-                  "flex-wrap"
-                )}
-              >
-                <div className="inline-block whitespace-pre">
-                  {`Cases (${row.totalCaseCount}), `}
-                </div>
-                <div className="inline-block whitespace-pre">
-                  {`Patients (${row.totalPatientCount}), `}
-                </div>
-                <div className="inline-block whitespace-pre">
-                  {`Specimens (${row.totalSpecimenCount})`}
+              <td className={classNames(baseColumnClasses, "text-left")}>
+                <div className="flex flex-wrap">
+                  <div className="inline-block whitespace-pre">
+                    {`Cases (${row.totalCaseCount}), `}
+                  </div>
+                  <div className="inline-block whitespace-pre">
+                    {`Patients (${row.totalPatientCount}), `}
+                  </div>
+                  <div className="inline-block whitespace-pre">
+                    {`Specimens (${row.totalSpecimenCount})`}
+                  </div>
                 </div>
               </td>
 
