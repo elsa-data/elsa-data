@@ -17,7 +17,7 @@ export const Table = ({
   return (
     <div className={`overflow-x-auto`}>
       <table
-        className={`table w-full table-auto whitespace-nowrap ${
+        className={`table w-full table-auto whitespace-normal break-all	${
           additionalTableClassName ?? ""
         }`}
       >
