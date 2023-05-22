@@ -33,7 +33,7 @@ import {
   selectDatasetCaseByExternalIdAndDatasetUriQuery,
   selectDatasetIdByDatasetUri,
   selectDatasetPatientByExternalIdAndDatasetUriQuery,
-  selectDatasetSpecimenByExternalIdAndDatasetUriQuery,
+  selectDatasetSpecimen,
   linkNewArtifactWithDatasetSpecimen,
   insertNewDatasetSpecimen,
   linkDatasetPatientWithDatasetSpecimen,
@@ -788,7 +788,7 @@ export class S3IndexApplicationService {
       /**
        * Artifact live recursively under Dataset as follows.
        * Dataset -> DatasetCase -> DatasetPatient -> DatasetSpecimen -> Artifact
-       * With this there are 4 cases which artifact can be inserted appropriately
+       * So there are 4 cases which artifact can be inserted appropriately
        *
        * 1. Artifact only - Exist: DatasetCase, DatasetPatient, DatasetSpecimen
        * 2. Artifact, DatasetSpecimen -  Exist: DatasetCase, DatasetPatient
@@ -803,7 +803,7 @@ export class S3IndexApplicationService {
         s3MetadataList
       );
 
-      //  Inserting a new artifact required a complete file set (e.g. you can't insert a BAM without BAI)
+      //  Inserting a new artifact must be in a complete file set (e.g. you can't insert a BAM without BAI)
       //  For this reason all files need to be grouped based on filetype before the insertion process.
       const groupedManifestByFiletype = this.filetypeGrouping({
         manifestArray: fullManifest,
@@ -828,44 +828,47 @@ export class S3IndexApplicationService {
           continue;
         }
 
-        /**
-         * (1) Only insert Artifact in the existence of datasetSpecimen
-         */
-        let datasetSpecimenUUID = (
-          await selectDatasetSpecimenByExternalIdAndDatasetUriQuery(
-            specimenId,
-            datasetUri
-          ).run(this.edgeDbClient)
-        )?.id;
-
-        if (datasetSpecimenUUID) {
-          await linkNewArtifactWithDatasetSpecimen(
-            datasetSpecimenUUID,
-            artifactInsertionQuery
-          ).run(this.edgeDbClient);
-
-          // Done and can proceed to the next one.
-          continue;
-        }
-
-        /**
-         * (2) Insert: Artifact, datasetSpecimen
-         */
-        datasetSpecimenUUID = (
-          await insertNewDatasetSpecimen({
-            exId: specimenId,
-            insertArtifactQuery: artifactInsertionQuery,
-          }).run(this.edgeDbClient)
-        ).id;
-
         // Splitting patientId individually so each patient has its own record
+        // Since DatasetPatient -> DatasetSpecimen is an exclusive constraint, each DatasetSpecimen must be unique to its patient
         for (const patientId of patientIdArray) {
+          /**
+           * (1) Only insert Artifact in the existence of datasetSpecimen
+           */
+          let datasetSpecimenUUID = (
+            await selectDatasetSpecimen({
+              exId: specimenId,
+              patientId,
+              datasetUri,
+            }).run(this.edgeDbClient)
+          )?.id;
+
+          if (datasetSpecimenUUID) {
+            await linkNewArtifactWithDatasetSpecimen(
+              datasetSpecimenUUID,
+              artifactInsertionQuery
+            ).run(this.edgeDbClient);
+
+            // Done and can proceed to the next one.
+            continue;
+          }
+
+          /**
+           * (2) Insert: Artifact, datasetSpecimen
+           */
+          datasetSpecimenUUID = (
+            await insertNewDatasetSpecimen({
+              exId: specimenId,
+              insertArtifactQuery: artifactInsertionQuery,
+            }).run(this.edgeDbClient)
+          ).id;
+
           let datasetPatientUUID = (
             await selectDatasetPatientByExternalIdAndDatasetUriQuery({
               exId: patientId,
               datasetUri,
             }).run(this.edgeDbClient)
           )?.id;
+
           if (datasetPatientUUID) {
             await linkDatasetPatientWithDatasetSpecimen({
               datasetPatientUUID,
@@ -893,7 +896,7 @@ export class S3IndexApplicationService {
               sexAtBirth,
               datasetSpecimenUUID,
             }).run(this.edgeDbClient)
-          )?.id;
+          ).id;
 
           // Grouping and passing this array for the pedigree relationship below.
           const probandId = patientId.split("_")[0];

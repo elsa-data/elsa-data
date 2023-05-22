@@ -326,8 +326,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     if (actualNode.datasetPatient)
       if (!datasetIdToUriMap.has(actualNode.datasetPatient.id)) return [];
 
-    if (actualNode.datasetSpecimen.length > 0)
-      if (!datasetIdToUriMap.has(actualNode.datasetSpecimen[0].id)) return [];
+    if (actualNode.datasetSpecimen)
+      if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
 
     return actualNode.consent.statements.map(
       (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType

@@ -1,6 +1,5 @@
 import {
   S3IndexApplicationService,
-  LabArtifactType,
   FileGroupType,
 } from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client } from "@aws-sdk/client-s3";

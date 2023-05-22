@@ -23,15 +23,28 @@ export const selectDatasetPatientByExternalIdAndDatasetUriQuery = ({
     ),
   }));
 
-export const selectDatasetSpecimenByExternalIdAndDatasetUriQuery = (
-  exId: string,
-  datasetUri: string
-) =>
+export const selectDatasetSpecimen = ({
+  exId,
+  datasetUri,
+  patientId,
+}: {
+  exId: string;
+  datasetUri: string;
+  patientId: string;
+}) =>
   e.select(e.dataset.DatasetSpecimen, (ds) => ({
     filter_single: e.op(
-      e.op(ds.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId)),
+      e.op(
+        e.op(ds.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId)),
+        "and",
+        e.op(ds.dataset.uri, "=", datasetUri)
+      ),
       "and",
-      e.op(ds.dataset.uri, "=", datasetUri)
+      e.op(
+        ds.patient.externalIdentifiers,
+        "=",
+        makeSystemlessIdentifierArray(patientId)
+      )
     ),
   }));
 export const selectDatasetCaseByExternalIdAndDatasetUriQuery = ({

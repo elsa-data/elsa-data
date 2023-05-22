@@ -34,10 +34,10 @@ async function manifestBodyElements(
     signedFileArtifacts.map(async (a) => ({
       ...a,
       caseId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.case_[0].externalIdentifiers
+        datasetSpecimen.case_.externalIdentifiers
       ),
       patientId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.patient[0].externalIdentifiers
+        datasetSpecimen.patient.externalIdentifiers
       ),
       specimenId: getFirstSystemSortedExternalIdentifierValue(
         datasetSpecimen.externalIdentifiers
