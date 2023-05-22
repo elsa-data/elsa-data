@@ -25,6 +25,9 @@ select {
       description,
       updatedDateTime,
       isInConfig,
+      totalCaseCount := count(.cases),
+      totalPatientCount := count(.cases.patients),
+      totalSpecimenCount := count(.cases.patients.specimens),
     }
     order by
         .isInConfig desc 

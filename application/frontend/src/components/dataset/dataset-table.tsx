@@ -14,15 +14,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../tables";
 
-const columnHeaderArray = ["", "Description / URI", "Last Modified", ""];
+const columnHeaderArray = [
+  "",
+  "Description / URI",
+  "Count",
+  "Last Modified",
+  "",
+];
 
 const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 const baseMessageDivClasses =
   "min-h-[10em] w-full flex items-center justify-center";
 
-export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
-  includeDeletedFile,
-}) => {
+export const DatasetTable: React.FC = ({}) => {
   const navigate = useNavigate();
 
   // Pagination Variables
@@ -65,6 +69,7 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
         tableBody={data.map((row, rowIndex) => {
           return (
             <tr key={row.uri}>
+              {/* Is not in Config Icon */}
               <td className={classNames(baseColumnClasses, "text-left")}>
                 {!row.isInConfig && (
                   <ToolTip
@@ -73,6 +78,8 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                   />
                 )}
               </td>
+
+              {/* Dataset Description / URI */}
               <td className="whitespace-normal break-words">
                 <div className="font-bold"> {row.description}</div>
                 <div className="flex flex-row space-x-2 text-sm">
@@ -80,11 +87,34 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                 </div>
               </td>
 
+              {/* Count Cases/Patients/Specimen */}
+              <td
+                className={classNames(
+                  baseColumnClasses,
+                  "text-left",
+                  "flex",
+                  "flex-wrap"
+                )}
+              >
+                <div className="inline-block whitespace-pre">
+                  {`Cases (${row.totalCaseCount}), `}
+                </div>
+                <div className="inline-block whitespace-pre">
+                  {`Patients (${row.totalPatientCount}), `}
+                </div>
+                <div className="inline-block whitespace-pre">
+                  {`Specimens (${row.totalSpecimenCount})`}
+                </div>
+              </td>
+
+              {/* Last Modified */}
               <td className={classNames(baseColumnClasses, "text-left")}>
                 {row.updatedDateTime
                   ? formatLocalDateTime(String(row.updatedDateTime))
                   : ""}
               </td>
+
+              {/* VIEW (more details) button */}
               <td className="text-right">
                 <button
                   className={classNames("btn-table-action-navigate")}

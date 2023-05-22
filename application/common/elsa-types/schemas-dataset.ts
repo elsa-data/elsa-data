@@ -58,6 +58,9 @@ export const DatasetSchemaLight = Type.Object({
   description: Type.String(),
   updatedDateTime: TypeDate,
   isInConfig: Type.Boolean(),
+  totalCaseCount: Type.Number(),
+  totalPatientCount: Type.Number(),
+  totalSpecimenCount: Type.Number(),
 });
 
 export const DatasetArtifactCount = Type.Object({
@@ -70,9 +73,6 @@ export const DatasetArtifactCount = Type.Object({
 
 export const DatasetSchemaNesting = Type.Object({
   cases: Type.Array(DatasetCaseSchema),
-  totalCaseCount: Type.Number(),
-  totalPatientCount: Type.Number(),
-  totalSpecimenCount: Type.Number(),
   totalArtifactCount: Type.Number(),
   totalArtifactSizeBytes: Type.Number(),
 });
