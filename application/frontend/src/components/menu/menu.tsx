@@ -13,20 +13,18 @@ export const Menu: React.FC<PropsWithChildren<MenuProps>> = ({
 }): JSX.Element => {
   return (
     <HeadlessUIMenu as="div" className="relative inline-block text-left">
-      <div>
-        <HeadlessUIMenu.Button
-          className={classNames(
-            "inline-flex w-full justify-center",
-            "rounded-md border border-gray-300",
-            "bg-white px-2 py-1",
-            "text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50",
-            "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-          )}
-        >
-          {heading}
-          <BiChevronDown className="-mr-1 ml-2 h-3 w-3" aria-hidden="true" />
-        </HeadlessUIMenu.Button>
-      </div>
+      <HeadlessUIMenu.Button
+        className={classNames(
+          "inline-flex w-full justify-center",
+          "rounded-md border border-gray-300",
+          "bg-white px-2 py-1",
+          "text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50",
+          "focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+        )}
+      >
+        {heading}
+        <BiChevronDown className="-mr-1 ml-2 h-3 w-3" aria-hidden="true" />
+      </HeadlessUIMenu.Button>
 
       <Transition
         as={Fragment}

@@ -134,7 +134,6 @@ export class DatasetService {
     offset: number;
   }): Promise<PagedResult<DatasetLightType>> {
     const datasetSummaryQuery = await getAllDataset(this.edgeDbClient, {
-      userDbId: user.dbId,
       limit,
       offset,
     });
