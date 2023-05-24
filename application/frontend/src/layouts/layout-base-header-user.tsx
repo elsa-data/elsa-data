@@ -15,7 +15,7 @@ export const LayoutBaseHeaderUser: React.FC<Props> = ({ user }) => {
     <Menu
       heading={
         <>
-          {user.displayName}
+          <span className="whitespace-nowrap">{user.displayName}</span>
           {user.displayEmail && (
             <span className="ml-2 font-mono">{user.displayEmail}</span>
           )}

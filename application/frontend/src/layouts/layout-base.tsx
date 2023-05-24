@@ -115,7 +115,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
             </div>
           </div>
 
-          <div className="flex w-full justify-between">
+          <div className="flex w-full flex-row justify-between">
             <div
               className={`mt-2 w-full bg-white lg:mt-0 lg:inline-block ${
                 isMenuBarOpen ? "" : "hidden"
@@ -123,7 +123,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
               id="nav-content"
             >
               {loggedInUser ? (
-                <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
+                <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:space-x-12 lg:pb-0">
                   <li className="my-2 md:my-0">
                     {navLink(
                       "/releases",
@@ -133,18 +133,15 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                       "hover:border-primary-focus"
                     )}
                   </li>
-                  {(uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
-                    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)) && (
-                    <li className="my-2 md:my-0">
-                      {navLink(
-                        "/datasets",
-                        "Datasets",
-                        "text-primary",
-                        "border-primary",
-                        "hover:border-primary-focus"
-                      )}
-                    </li>
-                  )}
+                  <li className="my-2 md:my-0">
+                    {navLink(
+                      "/datasets",
+                      "Datasets",
+                      "text-primary",
+                      "border-primary",
+                      "hover:border-primary-focus"
+                    )}
+                  </li>
                   {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
                     <li className="my-2 md:my-0">
                       {navLink(
