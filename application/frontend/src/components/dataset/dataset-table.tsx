@@ -13,14 +13,11 @@ import { ToolTip } from "../tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../tables";
-
-const columnHeaderArray = [
-  "",
-  "Description / URI",
-  "Count",
-  "Last Modified",
-  "",
-];
+import {
+  ALLOWED_DATASET_UPDATE,
+  ALLOWED_OVERALL_ADMIN_VIEW,
+} from "@umccr/elsa-constants";
+import { useUiAllowed } from "../../hooks/ui-allowed";
 
 const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 const baseMessageDivClasses =
@@ -28,6 +25,10 @@ const baseMessageDivClasses =
 
 export const DatasetTable: React.FC = ({}) => {
   const navigate = useNavigate();
+  const uiAllowed = useUiAllowed();
+  const allowDatasetView =
+    uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
+    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW);
 
   // Pagination Variables
   const pageSize = usePageSizer();
@@ -61,9 +62,14 @@ export const DatasetTable: React.FC = ({}) => {
       <Table
         tableHead={
           <tr>
-            {columnHeaderArray.map((props, idx) => (
-              <th key={idx}>{props}</th>
-            ))}
+            {["", "Description / URI", "Count", "Last Modified"].map(
+              (props, idx) => (
+                <th key={idx}>{props}</th>
+              )
+            )}
+
+            {/* Placeholder for the VIEW button (defined below) */}
+            {allowDatasetView && <th />}
           </tr>
         }
         tableBody={data.map((row, rowIndex) => {
@@ -110,18 +116,21 @@ export const DatasetTable: React.FC = ({}) => {
               </td>
 
               {/* VIEW (more details) button */}
-              <td className="text-right">
-                <button
-                  className={classNames("btn-table-action-navigate")}
-                  onClick={async () => {
-                    navigate(
-                      encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
-                    );
-                  }}
-                >
-                  view
-                </button>
-              </td>
+
+              {allowDatasetView && (
+                <td className="text-right">
+                  <button
+                    className={classNames("btn-table-action-navigate")}
+                    onClick={async () => {
+                      navigate(
+                        encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
+                      );
+                    }}
+                  >
+                    view
+                  </button>
+                </td>
+              )}
             </tr>
           );
         })}

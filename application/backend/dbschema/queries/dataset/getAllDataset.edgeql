@@ -2,20 +2,8 @@
 
 with
 
-  userPermission := (
-    select permission::User
-    filter .id = <uuid>$userDbId
-  ),
-
-  isAllowedQuery := (
-    userPermission.isAllowedRefreshDatasetIndex 
-      or 
-    userPermission.isAllowedOverallAdministratorView
-  ),
-
   dataset := (
     select dataset::Dataset
-    filter isAllowedQuery
   )
 
 select {
