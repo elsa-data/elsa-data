@@ -13,8 +13,8 @@ export const AuditEventsSubPage = () => {
       <AuditEventTable
         path="releases"
         id={releaseKey}
-        filterMenu={false}
-        filterMenuInitial={["release"]}
+        filterElements={false}
+        filterElementsInitial={["release"]}
         pageSize={pageSize}
       />
     </>

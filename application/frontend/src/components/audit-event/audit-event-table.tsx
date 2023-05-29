@@ -38,10 +38,10 @@ import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
 import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
-import { FilterMenu } from "./filter-menu";
+import { FilterElements } from "./filter-elements";
 import { NavigateFunction, useNavigate } from "react-router-dom";
-import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 import { IsLoadingDiv } from "../is-loading-div";
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -71,12 +71,12 @@ type AuditEventTableProps = {
   /**
    * Whether to include the filter menu
    */
-  filterMenu: boolean;
+  filterElements: boolean;
 
   /**
    * Initial state of selected items in filter
    */
-  filterMenuInitial: AuditEventUserFilterType[];
+  filterElementsInitial: AuditEventUserFilterType[];
 };
 
 /**
@@ -86,8 +86,8 @@ export const AuditEventTable = ({
   path,
   id,
   pageSize,
-  filterMenu,
-  filterMenuInitial,
+  filterElements,
+  filterElementsInitial,
 }: AuditEventTableProps): JSX.Element => {
   const navigate = useNavigate();
 
@@ -103,8 +103,9 @@ export const AuditEventTable = ({
     isSuccess: true,
   });
 
-  const [includeEvents, setIncludeEvents] =
-    useState<AuditEventUserFilterType[]>(filterMenuInitial);
+  const [includeEvents, setIncludeEvents] = useState<
+    AuditEventUserFilterType[]
+  >(filterElementsInitial);
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
@@ -149,15 +150,23 @@ export const AuditEventTable = ({
     manualSorting: true,
   });
 
+  if (dataQueries.isFetching) return <IsLoadingDiv />;
+
   // TODO Search and filtering functionality, refresh button, download audit log button
   return (
     <Box
       heading={
         <div className="flex grow items-center justify-between">
           <div>Audit Events</div>
-          {filterMenu && (
+        </div>
+      }
+      errorMessage={"Something went wrong fetching audit events"}
+    >
+      <>
+        <div className="flex grow justify-end">
+          {filterElements && (
             <div className="ml-2 flex content-center items-center">
-              <FilterMenu
+              <FilterElements
                 includeEvents={includeEvents}
                 setIncludeEvents={setIncludeEvents}
                 setCurrentPage={setCurrentPage}
@@ -167,99 +176,99 @@ export const AuditEventTable = ({
             </div>
           )}
         </div>
-      }
-      errorMessage={"Something went wrong fetching audit events"}
-    >
-      <div className="flex flex-col">
-        {dataQueries.isLoading && <IsLoadingDiv />}
-        {error.isSuccess ? (
-          <Table
-            tableHead={table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    onClick={
-                      header.id === "hasDetails"
-                        ? table.getToggleAllRowsExpandedHandler()
-                        : () => {}
-                    }
-                    scope="col"
-                    className={
-                      !header.column.columnDef.meta?.headerStyling
-                        ? "whitespace-nowrap"
-                        : header.column.columnDef.meta?.headerStyling
-                    }
-                  >
-                    {header.isPlaceholder ? undefined : (
-                      <AuditEventTableHeader header={header} />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-            tableBody={table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <tr
-                  key={row.id}
-                  onClick={() =>
-                    row.getCanExpand() &&
-                    row.getValue("hasDetails") &&
-                    row.toggleExpanded()
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
+        <div className="flex flex-col">
+          {error.isSuccess ? (
+            <Table
+              tableHead={table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      onClick={
+                        header.id === "hasDetails"
+                          ? table.getToggleAllRowsExpandedHandler()
+                          : () => {}
+                      }
+                      scope="col"
                       className={
-                        !cell.column.columnDef.meta?.cellStyling
+                        !header.column.columnDef.meta?.headerStyling
                           ? "whitespace-nowrap"
-                          : cell.column.columnDef.meta?.cellStyling
+                          : header.column.columnDef.meta?.headerStyling
                       }
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                      {header.isPlaceholder ? undefined : (
+                        <AuditEventTableHeader header={header} />
                       )}
-                    </td>
+                    </th>
                   ))}
                 </tr>
-                {row.getIsExpanded() &&
-                  (row.getValue("hasDetails") as boolean) && (
-                    <tr key={row.original.objectId}>
-                      {/* skip our expand/unexpand column */}
-                      <td>&nbsp;</td>
-                      {/* expanded content now into the rest of the columns */}
+              ))}
+              tableBody={table.getRowModel().rows.map((row) => (
+                <Fragment key={row.id}>
+                  <tr
+                    key={row.id}
+                    onClick={() =>
+                      row.getCanExpand() &&
+                      row.getValue("hasDetails") &&
+                      row.toggleExpanded()
+                    }
+                  >
+                    {row.getVisibleCells().map((cell, i, row) => (
                       <td
-                        key={row.original.objectId}
-                        colSpan={row.getVisibleCells().length - 1}
+                        key={cell.id}
+                        className={classNames(
+                          cell.column.columnDef.meta?.cellStyling,
+                          {
+                            "whitespace-nowrap":
+                              !cell.column.columnDef.meta?.cellStyling,
+                            "text-left": i + 1 !== row.length,
+                          }
+                        )}
                       >
-                        <DetailsRow objectId={row.original.objectId} />
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </td>
-                    </tr>
-                  )}
-              </Fragment>
-            ))}
+                    ))}
+                  </tr>
+                  {row.getIsExpanded() &&
+                    (row.getValue("hasDetails") as boolean) && (
+                      <tr key={row.original.objectId}>
+                        {/* skip our expand/unexpand column */}
+                        <td>&nbsp;</td>
+                        {/* expanded content now into the rest of the columns */}
+                        <td
+                          key={row.original.objectId}
+                          colSpan={row.getVisibleCells().length - 1}
+                        >
+                          <DetailsRow objectId={row.original.objectId} />
+                        </td>
+                      </tr>
+                    )}
+                </Fragment>
+              ))}
+            />
+          ) : (
+            <EagerErrorBoundary
+              message={"Could not display audit events table"}
+              error={error.error}
+              styling={"bg-red-100"}
+            />
+          )}
+          <BoxPaginator
+            currentPage={currentPage}
+            setPage={(n) => {
+              table.reset();
+              setUpdateData(true);
+              setCurrentPage(n);
+            }}
+            rowCount={currentTotal}
+            rowsPerPage={pageSize}
+            rowWord="audit events"
           />
-        ) : (
-          <EagerErrorBoundary
-            message={"Could not display audit events table"}
-            error={error.error}
-            styling={"bg-red-100"}
-          />
-        )}
-        <BoxPaginator
-          currentPage={currentPage}
-          setPage={(n) => {
-            table.reset();
-            setUpdateData(true);
-            setCurrentPage(n);
-          }}
-          rowCount={currentTotal}
-          rowsPerPage={pageSize}
-          rowWord="audit events"
-        />
-      </div>
+        </div>
+      </>
     </Box>
   );
 };

@@ -8,8 +8,8 @@ export const AuditEventsPage = (): JSX.Element => {
   return (
     <AuditEventTable
       path="users"
-      filterMenu={true}
-      filterMenuInitial={["user"]}
+      filterElements={true}
+      filterElementsInitial={["user"]}
       pageSize={pageSize}
     />
   );
