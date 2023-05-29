@@ -1,8 +1,6 @@
 import { RouteValidation } from "@umccr/elsa-types";
 import React, { Dispatch, SetStateAction } from "react";
 import { ToolTip } from "../tooltip";
-import { useUiAllowed } from "../../hooks/ui-allowed";
-import { ALLOWED_OVERALL_ADMIN_VIEW } from "@umccr/elsa-constants";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 export type FilterElementsProps = {
@@ -11,6 +9,7 @@ export type FilterElementsProps = {
   setCurrentPage: Dispatch<SetStateAction<number>>;
   setCurrentTotal: Dispatch<SetStateAction<number>>;
   setUpdateData: Dispatch<SetStateAction<boolean>>;
+  showAdminView: boolean;
 };
 
 /**
@@ -22,20 +21,21 @@ export const FilterElements = ({
   setCurrentPage,
   setCurrentTotal,
   setUpdateData,
+  showAdminView,
 }: FilterElementsProps): JSX.Element => {
-  const updateIncludeEvents = (checkbox: AuditEventUserFilterType) => {
-    if (includeEvents.includes(checkbox)) {
-      setIncludeEvents(includeEvents.filter((value) => value !== checkbox));
+  const updateIncludeEvents = (checkbox: AuditEventUserFilterType[]) => {
+    if (checkbox.every((value) => includeEvents.includes(value))) {
+      setIncludeEvents(
+        includeEvents.filter((value) => !checkbox.includes(value))
+      );
     } else {
-      setIncludeEvents([...includeEvents, checkbox]);
+      setIncludeEvents([...includeEvents, ...checkbox]);
     }
 
     setCurrentPage(1);
     setCurrentTotal(1);
     setUpdateData(true);
   };
-
-  const allowed = useUiAllowed();
 
   return (
     <>
@@ -46,7 +46,7 @@ export const FilterElements = ({
               className="checkbox-accent checkbox checkbox-xs mr-2 cursor-pointer"
               type="checkbox"
               checked={includeEvents.includes("release")}
-              onChange={() => updateIncludeEvents("release")}
+              onChange={() => updateIncludeEvents(["release"])}
             />
             <div className="text-xs">Release audit events</div>
           </label>
@@ -61,7 +61,7 @@ export const FilterElements = ({
               className="checkbox-accent checkbox checkbox-xs mr-2 cursor-pointer"
               type="checkbox"
               checked={includeEvents.includes("user")}
-              onChange={() => updateIncludeEvents("user")}
+              onChange={() => updateIncludeEvents(["user"])}
             />
             <div className="text-xs">User audit events</div>
           </label>
@@ -69,24 +69,7 @@ export const FilterElements = ({
         applyCSS={"font-normal flex content-center items-center grow"}
         description="Show non-release events"
       />
-      {allowed.has(ALLOWED_OVERALL_ADMIN_VIEW) && (
-        <ToolTip
-          trigger={
-            <label className="flex grow content-center items-center rounded-sm pl-2">
-              <input
-                className="checkbox-accent checkbox checkbox-xs mr-2 cursor-pointer"
-                type="checkbox"
-                checked={includeEvents.includes("system")}
-                onChange={() => updateIncludeEvents("system")}
-              />
-              <div className="text-xs">System audit events</div>
-            </label>
-          }
-          applyCSS={"font-normal flex content-center items-center grow"}
-          description="Show system level events not tied to a user"
-        />
-      )}
-      {allowed.has(ALLOWED_OVERALL_ADMIN_VIEW) && (
+      {showAdminView && (
         <div className="flex">
           <div className="divider divider-horizontal"></div>
           <ToolTip
@@ -95,14 +78,19 @@ export const FilterElements = ({
                 <input
                   className="toggle-accent toggle toggle-xs mr-2 cursor-pointer"
                   type="checkbox"
-                  checked={includeEvents.includes("all")}
-                  onChange={() => updateIncludeEvents("all")}
+                  checked={
+                    includeEvents.includes("system") &&
+                    includeEvents.includes("all")
+                  }
+                  onChange={() => {
+                    updateIncludeEvents(["all", "system"]);
+                  }}
                 />
-                <div className="text-xs">All audit events</div>
+                <div className="text-xs">Admin view</div>
               </label>
             }
             applyCSS={"font-normal flex content-center items-center grow"}
-            description="Include all users' events"
+            description="Show an admin view of the table which includes all users' events"
           />
         </div>
       )}

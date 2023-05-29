@@ -69,14 +69,19 @@ type AuditEventTableProps = {
   pageSize: number;
 
   /**
-   * Whether to include the filter menu
+   * Whether to include the filter menu.
    */
   filterElements: boolean;
 
   /**
-   * Initial state of selected items in filter
+   * Initial state of selected items in filter.
    */
   filterElementsInitial: AuditEventUserFilterType[];
+
+  /**
+   * Whether to include a toggle for an admin view of the table.
+   */
+  showAdminView: boolean;
 };
 
 /**
@@ -88,6 +93,7 @@ export const AuditEventTable = ({
   pageSize,
   filterElements,
   filterElementsInitial,
+  showAdminView,
 }: AuditEventTableProps): JSX.Element => {
   const navigate = useNavigate();
 
@@ -172,6 +178,7 @@ export const AuditEventTable = ({
                 setCurrentPage={setCurrentPage}
                 setCurrentTotal={setCurrentTotal}
                 setUpdateData={setUpdateData}
+                showAdminView={showAdminView}
               />
             </div>
           )}
