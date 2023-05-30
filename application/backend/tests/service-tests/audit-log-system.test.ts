@@ -21,24 +21,30 @@ it("audit system instant", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startSystemAuditEvent(
-    edgeDbClient,
     "E",
     "Email",
-    start
+    start,
+    edgeDbClient
   );
 
   await auditLogService.completeSystemAuditEvent(
-    edgeDbClient,
     aeId,
     0,
     start,
     new Date(),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(edgeDbClient, 1000, 0);
+  const events = await auditLogService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
   expect(auditEvent).toBeDefined();
@@ -53,14 +59,20 @@ it("audit system instant", async () => {
 
 it("audit system instant with create function", async () => {
   const aeId = await auditLogService.createSystemAuditEvent(
-    edgeDbClient,
     "E",
     "Email",
     { message: "Message" },
-    8
+    8,
+    edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(edgeDbClient, 1000, 0);
+  const events = await auditLogService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
   expect(auditEvent).toBeDefined();
@@ -77,24 +89,30 @@ it("audit system duration", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startSystemAuditEvent(
-    edgeDbClient,
     "E",
     "Login",
-    start
+    start,
+    edgeDbClient
   );
 
   await auditLogService.completeSystemAuditEvent(
-    edgeDbClient,
     aeId,
     0,
     start,
     addSeconds(start, 96),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(edgeDbClient, 1000, 0);
+  const events = await auditLogService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
   expect(auditEvent).toBeDefined();

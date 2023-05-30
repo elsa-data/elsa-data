@@ -128,12 +128,12 @@ export class JobCopyOutService extends JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Copy Out",
-        new Date()
+        new Date(),
+        tx
       );
 
       const manifest = await this.manifestService.getActiveBucketKeyManifest(
@@ -324,12 +324,15 @@ export class JobCopyOutService extends JobService {
       );
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         copyOutJob.auditEntry.id,
         OUTCOME_SUCCESS,
         copyOutJob.started,
         new Date(),
-        { jobId: jobId, awsExecutionArn: copyOutJob.awsExecutionArn }
+        {
+          jobId: jobId,
+          awsExecutionArn: copyOutJob.awsExecutionArn,
+        },
+        tx
       );
 
       await this.updateCurrentJob(tx, jobId, {

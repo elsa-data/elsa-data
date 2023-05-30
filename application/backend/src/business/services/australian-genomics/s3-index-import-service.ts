@@ -30,17 +30,17 @@ import {
   updatePedigreeProbandAndDatasetPatientQuery,
 } from "../../db/pedigree-queries";
 import {
+  insertNewDatasetCase,
+  insertNewDatasetPatient,
+  insertNewDatasetSpecimen,
+  linkDatasetCaseWithDatasetPatient,
+  linkDatasetPatientWithDatasetSpecimen,
+  linkDatasetWithDatasetCase,
+  linkNewArtifactWithDatasetSpecimen,
   selectDatasetCaseByExternalIdAndDatasetUriQuery,
   selectDatasetIdByDatasetUri,
   selectDatasetPatientByExternalIdAndDatasetUriQuery,
   selectDatasetSpecimen,
-  linkNewArtifactWithDatasetSpecimen,
-  insertNewDatasetSpecimen,
-  linkDatasetPatientWithDatasetSpecimen,
-  insertNewDatasetPatient,
-  linkDatasetCaseWithDatasetPatient,
-  insertNewDatasetCase,
-  linkDatasetWithDatasetCase,
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
@@ -51,7 +51,6 @@ import {
   australianGenomicsDirectoriesDemoLoaderFor10G,
   TENG_URI,
 } from "../../../test-data/dataset/insert-test-data-10g";
-import { DatasetType } from "../../../config/config-schema-dataset";
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -87,9 +86,8 @@ export class S3IndexApplicationService {
 
   /**
    * Auth check
-   * @param executor the EdgeDb execution context (either client or transaction)
    * @param user
-   * @param releaseKey
+   * @param datasetUri
    * @returns
    */
   private checkIsImportDatasetAllowed(
@@ -152,8 +150,8 @@ export class S3IndexApplicationService {
 
   /**
    * Merging metadata gotten from the manifest file uploaded (study_id, md5) with the metadata gotten from AWS (s3Url, size, eTag).
-   * @param S3ObjectMetadataTypeList A list of S3 object metadata
    * @param manifestList A list of parsed manifest file uploaded in the bucket.
+   * @param s3ObjectMetadataTypeList
    * @returns A merge between parameters.
    */
   mergeObjectMetadata(
@@ -230,6 +228,7 @@ export class S3IndexApplicationService {
   /**
    * Grouping manifest files based on filetype
    * @param manifestArray
+   * @param regexSpecimenId
    * @returns FileGroupType
    * e.g.
    * {
@@ -252,12 +251,10 @@ export class S3IndexApplicationService {
     const groupedByFilenameId: Record<string, MergedManifestMetadataType[]> =
       groupBy(manifestArray, (manifest: MergedManifestMetadataType) => {
         const filename = manifest.s3Url.replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
-        const filenameId =
-          filename.endsWith(".fastq") || filename.endsWith(".fq")
-            ? filename.replaceAll(/_R1|_R2|.R1|.R2/g, "")
-            : filename;
 
-        return filenameId;
+        return filename.endsWith(".fastq") || filename.endsWith(".fq")
+          ? filename.replaceAll(/_R1|_R2|.R1|.R2/g, "")
+          : filename;
       });
 
     for (const filenameId in groupedByFilenameId) {
@@ -536,7 +533,6 @@ export class S3IndexApplicationService {
       const studyIdBeta = valueBeta["agha_study_id_array"];
       if (!isEqual(studyIdAlpha, studyIdBeta)) {
         result.push(valueAlpha);
-        continue;
       }
     }
     return result;
@@ -959,10 +955,10 @@ export class S3IndexApplicationService {
     await this.datasetService.updateDatasetCurrentTimestamp(datasetId, now);
 
     await this.auditLogService.insertSyncDatasetAuditEvent(
-      this.edgeDbClient,
       user,
       datasetUri,
-      now
+      now,
+      this.edgeDbClient
     );
   }
 }

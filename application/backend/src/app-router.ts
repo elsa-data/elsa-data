@@ -7,9 +7,11 @@ import { testRouter } from "./api/routes/internal-trpc/test-router";
 import { datasetRouter } from "./api/routes/internal-trpc/dataset-router";
 import { releaseRouter } from "./api/routes/internal-trpc/release-router";
 import { dacRouter } from "./api/routes/internal-trpc/dac-router";
+import { auditEventRouter } from "./api/routes/internal-trpc/audit-event-router";
 
 export const appRouter = router({
   dac: dacRouter,
+  auditEventRouter: auditEventRouter,
   datasetRouter: datasetRouter,
   releaseActivation: releaseActivationRouter,
   releaseJob: releaseJobRouter,

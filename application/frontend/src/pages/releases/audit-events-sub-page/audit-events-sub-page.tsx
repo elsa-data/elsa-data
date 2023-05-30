@@ -10,17 +10,21 @@ export const AuditEventsSubPage = () => {
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
+  if (!releaseKey)
+    throw new Error(
+      `The component AuditEventsSubPage cannot be rendered outside a route with a releaseKey param`
+    );
+
   const allowed = useUiAllowed();
 
   return (
     <>
       <AuditEventTable
-        path="releases"
-        id={releaseKey}
         filterElements={false}
         filterElementsInitial={["release"]}
         pageSize={pageSize}
         showAdminView={allowed.has(ALLOWED_OVERALL_ADMIN_VIEW)}
+        type={{ releaseKey }}
       />
     </>
   );

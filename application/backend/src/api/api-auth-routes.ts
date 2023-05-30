@@ -85,13 +85,15 @@ export const apiAuthRoutes = async (
 
     if (dbUser !== undefined) {
       auditLogService.createUserAuditEvent(
-        edgeDbClient,
         dbUser.id,
         dbUser.subjectId,
         dbUser.displayName,
         "E",
         "Logout",
-        auditDetails
+        auditDetails,
+        0,
+        new Date(),
+        edgeDbClient
       );
     }
     // delete all the backend session cookies

@@ -21,32 +21,35 @@ it("audit user instant", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startUserAuditEvent(
-    edgeDbClient,
     existingUser.subjectId,
     existingUser.displayName,
     existingUser.dbId,
     "E",
     "Login",
-    start
+    start,
+    edgeDbClient
   );
 
   await auditLogService.completeUserAuditEvent(
-    edgeDbClient,
     aeId,
     0,
     start,
     new Date(),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
   const events = await auditLogService.getUserEntries(
-    edgeDbClient,
     ["user"],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -64,22 +67,26 @@ it("audit user instant", async () => {
 
 it("audit user instant with create function", async () => {
   const aeId = await auditLogService.createUserAuditEvent(
-    edgeDbClient,
     existingUser.dbId,
     existingUser.subjectId,
     existingUser.displayName,
     "E",
     "Login",
     { message: "Message" },
-    8
+    8,
+    new Date(),
+    edgeDbClient
   );
 
   const events = await auditLogService.getUserEntries(
-    edgeDbClient,
     ["user"],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -99,32 +106,35 @@ it("audit user duration", async () => {
   const start = new Date();
 
   const aeId = await auditLogService.startUserAuditEvent(
-    edgeDbClient,
     existingUser.subjectId,
     existingUser.displayName,
     existingUser.dbId,
     "E",
     "Login",
-    start
+    start,
+    edgeDbClient
   );
 
   await auditLogService.completeUserAuditEvent(
-    edgeDbClient,
     aeId,
     0,
     start,
     addSeconds(start, 96),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
   const events = await auditLogService.getUserEntries(
-    edgeDbClient,
     ["user"],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -143,11 +153,14 @@ it("audit user duration", async () => {
 
 it("get entries with no filter", async () => {
   const events = await auditLogService.getUserEntries(
-    edgeDbClient,
     [],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
   expect(events).toEqual({ data: [], total: 0 });
 });

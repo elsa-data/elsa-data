@@ -3,10 +3,8 @@ import {
   OUTCOME_SERIOUS_FAILURE,
   OUTCOME_SUCCESS,
 } from "./business/services/audit-event-service";
-import { Client, Executor } from "edgedb";
+import { Executor } from "edgedb";
 import { AuthenticatedUser } from "./business/authenticated-user";
-import { Transaction } from "edgedb/dist/transaction";
-import { audit } from "../dbschema/interfaces";
 
 async function auditReleaseGenericStart(
   service: AuditEventService,
@@ -18,12 +16,12 @@ async function auditReleaseGenericStart(
 ) {
   const now = new Date();
   const newAuditEventId = await service.startReleaseAuditEvent(
-    executor,
     user,
     releaseKey,
     "U",
     actionDescription,
-    now
+    now,
+    executor
   );
 
   return {
@@ -106,12 +104,12 @@ export async function auditFailure(
   const errorString = error instanceof Error ? error.message : String(error);
 
   await service.completeReleaseAuditEvent(
-    executor,
     auditEventId,
     OUTCOME_SERIOUS_FAILURE,
     startTime,
     new Date(),
-    { error: errorString }
+    { error: errorString },
+    executor
   );
 }
 
@@ -123,11 +121,11 @@ export async function auditSuccess(
   details?: any
 ) {
   await service.completeReleaseAuditEvent(
-    executor,
     auditEventId,
     OUTCOME_SUCCESS,
     startTime,
     new Date(),
-    details
+    details,
+    executor
   );
 }

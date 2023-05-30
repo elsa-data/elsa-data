@@ -67,12 +67,12 @@ export class JobCloudFormationDeleteService extends JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Delete S3 Access Point",
-        new Date()
+        new Date(),
+        tx
       );
 
       // we have *no* state information passed to us from previous install jobs.. all we
@@ -236,12 +236,15 @@ export class JobCloudFormationDeleteService extends JobService {
         );
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         cloudFormationDeleteJob.auditEntry.id,
         OUTCOME_SUCCESS,
         cloudFormationDeleteJob.started,
         new Date(),
-        { jobId: jobId, awsStackId: cloudFormationDeleteJob.awsStackId }
+        {
+          jobId: jobId,
+          awsStackId: cloudFormationDeleteJob.awsStackId,
+        },
+        tx
       );
 
       await e

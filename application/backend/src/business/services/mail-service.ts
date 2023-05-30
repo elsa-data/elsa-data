@@ -54,10 +54,14 @@ export class MailService {
    */
   public async sendMail(mail: Mail.Options): Promise<any> {
     await this.auditLogService.createSystemAuditEvent(
-      this.edgeDbClient,
       "E",
       "Email sent",
-      { from: mail.from, to: mail.to }
+      {
+        from: mail.from,
+        to: mail.to,
+      },
+      0,
+      this.edgeDbClient
     );
     return await this.transporter?.sendMail(mail);
   }

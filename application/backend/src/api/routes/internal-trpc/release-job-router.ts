@@ -1,16 +1,13 @@
 import { internalProcedure, router } from "../trpc-bootstrap";
 import { z } from "zod";
-import {
-  inputReleaseKey,
-  inputReleaseKeySingleParameter,
-} from "./input-schemas-common";
+import { inputReleaseKey, inputReleaseKeySingle } from "./input-schemas-common";
 
 /**
  * RPC for release jobs
  */
 export const releaseJobRouter = router({
   startCohortConstruction: internalProcedure
-    .input(inputReleaseKeySingleParameter)
+    .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       await ctx.jobService.startSelectJob(ctx.user, input.releaseKey);
     }),
@@ -38,7 +35,7 @@ export const releaseJobRouter = router({
       );
     }),
   startAccessPointUninstall: internalProcedure
-    .input(inputReleaseKeySingleParameter)
+    .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(
         ctx.user,
@@ -60,7 +57,7 @@ export const releaseJobRouter = router({
       );
     }),
   cancel: internalProcedure
-    .input(inputReleaseKeySingleParameter)
+    .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       await ctx.jobService.cancelInProgressSelectJob(
         ctx.user,

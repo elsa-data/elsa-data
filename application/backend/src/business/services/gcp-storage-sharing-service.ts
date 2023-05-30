@@ -145,12 +145,12 @@ export class GcpStorageSharingService {
 
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-      this.edgeDbClient,
       user,
       releaseKey,
       "E",
       "Modified GCP object ACLs for release",
-      now
+      now,
+      this.edgeDbClient
     );
 
     const allFiles = await getAllFileRecords(
@@ -175,24 +175,24 @@ export class GcpStorageSharingService {
       const errorString = e instanceof Error ? e.message : String(e);
 
       await this.auditLogService.completeReleaseAuditEvent(
-        this.edgeDbClient,
         newAuditEventId,
         8,
         now,
         new Date(),
-        { error: errorString }
+        { error: errorString },
+        this.edgeDbClient
       );
 
       throw e;
     }
 
     await this.auditLogService.completeReleaseAuditEvent(
-      this.edgeDbClient,
       newAuditEventId,
       0,
       now,
       new Date(),
-      { numUrls: numberOfFilesModified }
+      { numUrls: numberOfFilesModified },
+      this.edgeDbClient
     );
 
     return numberOfFilesModified;

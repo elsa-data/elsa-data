@@ -11,8 +11,7 @@ import {
   AuditEventType,
   RouteValidation,
 } from "@umccr/elsa-types";
-import axios from "axios";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { UseQueryResult } from "@tanstack/react-query";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
 import {
@@ -36,11 +35,11 @@ import { ToolTip } from "../tooltip";
 import { BiChevronDown, BiChevronRight, BiChevronUp } from "react-icons/bi";
 import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
-import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
 import { FilterElements } from "./filter-elements";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { IsLoadingDiv } from "../is-loading-div";
+import { trpc } from "../../helpers/trpc";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 declare module "@tanstack/table-core" {
@@ -52,17 +51,15 @@ declare module "@tanstack/table-core" {
 }
 
 /**
+ * The type of audit event table to render based on whether
+ * the table is in the release page or the audit events page.
+ */
+export type Type = "AuditEvent" | { releaseKey: string };
+
+/**
  * Props for audit event table.
  */
 type AuditEventTableProps = {
-  /**
-   * The api path to use when displaying the audit entry table.
-   */
-  path?: string;
-  /**
-   * The id of the component in the path.
-   */
-  id?: string;
   /**
    * Maximum number of items to show in the table.
    */
@@ -82,18 +79,22 @@ type AuditEventTableProps = {
    * Whether to include a toggle for an admin view of the table.
    */
   showAdminView: boolean;
+
+  /**
+   * The type of audit event table to use.
+   */
+  type: Type;
 };
 
 /**
  * The main audit event table component.
  */
 export const AuditEventTable = ({
-  path,
-  id,
   pageSize,
   filterElements,
   filterElementsInitial,
   showAdminView,
+  type,
 }: AuditEventTableProps): JSX.Element => {
   const navigate = useNavigate();
 
@@ -115,7 +116,7 @@ export const AuditEventTable = ({
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
-    path === undefined || id === undefined ? "" : `/${path}/${id}`,
+    type,
     includeEvents,
     setCurrentTotal,
     setData,
@@ -285,7 +286,7 @@ export const AuditEventTable = ({
  */
 export const useAuditEventQuery = (
   currentPage: number,
-  path: string,
+  type: Type,
   orderByProperty: string,
   orderAscending: boolean,
   includeEvents: AuditEventUserFilterType[],
@@ -293,45 +294,36 @@ export const useAuditEventQuery = (
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
 ) => {
-  return useQuery(
-    [
-      `${path}-audit-event`,
-      currentPage,
-      orderByProperty,
-      orderAscending,
-      includeEvents,
-    ],
-    async () => {
-      let filter = includeEvents
-        .map((include) => `filter=${include}`)
-        .join("&");
-      if (filter !== "") {
-        filter = `&${filter}`;
-      }
-
-      return await axios
-        .get<AuditEventType[]>(
-          `/api${path}/audit-event?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}${filter}`
-        )
-        .then((response) => {
-          handleTotalCountHeaders(response, setCurrentTotal);
-
-          return response.data;
-        });
+  const query = {
+    page: currentPage,
+    orderByProperty: orderByProperty,
+    orderAscending: orderAscending,
+  };
+  const options = {
+    enabled: false,
+    keepPreviousData: true,
+    onSuccess: (data: any) => {
+      setCurrentTotal(data.total);
+      setData((data.data as AuditEventType[]) ?? []);
+      setError({ error: null, isSuccess: data.data !== undefined });
     },
-    {
-      keepPreviousData: true,
-      enabled: false,
-      onSuccess: (data) => {
-        setData(data ?? []);
-        setError({ error: null, isSuccess: data !== undefined });
-      },
-      onError: (error) => {
-        setData([]);
-        setError({ error, isSuccess: false });
-      },
-    }
-  );
+    onError: (error: any) => {
+      setData([]);
+      setError({ error, isSuccess: false });
+    },
+  };
+
+  if (type === "AuditEvent") {
+    return trpc.auditEventRouter.getAuditEvent.useQuery(
+      { ...query, filter: includeEvents },
+      options
+    );
+  } else {
+    return trpc.auditEventRouter.getReleaseAuditEvent.useQuery(
+      { ...query, releaseKey: type.releaseKey },
+      options
+    );
+  }
 };
 
 /**
@@ -339,7 +331,7 @@ export const useAuditEventQuery = (
  */
 export const useAllAuditEventQueries = (
   currentPage: number,
-  path: string,
+  type: Type,
   includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
@@ -351,7 +343,7 @@ export const useAllAuditEventQueries = (
   ) => {
     return useAuditEventQuery(
       currentPage,
-      path,
+      type,
       occurredDateTime,
       orderAscending,
       includeEvents,
