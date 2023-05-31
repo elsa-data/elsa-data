@@ -6,7 +6,7 @@ import { beforeEachCommon } from "./user.common";
 import { addSeconds } from "date-fns";
 
 let existingUser: AuthenticatedUser;
-let auditLogService: AuditEventService;
+let auditEventService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -14,20 +14,20 @@ const testContainer = registerTypes();
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  auditLogService = testContainer.resolve(AuditEventService);
+  auditEventService = testContainer.resolve(AuditEventService);
 });
 
 it("audit system instant", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startSystemAuditEvent(
+  const aeId = await auditEventService.startSystemAuditEvent(
     "E",
     "Email",
     start,
     edgeDbClient
   );
 
-  await auditLogService.completeSystemAuditEvent(
+  await auditEventService.completeSystemAuditEvent(
     aeId,
     0,
     start,
@@ -38,7 +38,7 @@ it("audit system instant", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(
+  const events = await auditEventService.getSystemEntries(
     1000,
     0,
     "occurredDateTime",
@@ -58,7 +58,7 @@ it("audit system instant", async () => {
 });
 
 it("audit system instant with create function", async () => {
-  const aeId = await auditLogService.createSystemAuditEvent(
+  const aeId = await auditEventService.createSystemAuditEvent(
     "E",
     "Email",
     { message: "Message" },
@@ -66,7 +66,7 @@ it("audit system instant with create function", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(
+  const events = await auditEventService.getSystemEntries(
     1000,
     0,
     "occurredDateTime",
@@ -88,14 +88,14 @@ it("audit system instant with create function", async () => {
 it("audit system duration", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startSystemAuditEvent(
+  const aeId = await auditEventService.startSystemAuditEvent(
     "E",
     "Login",
     start,
     edgeDbClient
   );
 
-  await auditLogService.completeSystemAuditEvent(
+  await auditEventService.completeSystemAuditEvent(
     aeId,
     0,
     start,
@@ -106,7 +106,7 @@ it("audit system duration", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(
+  const events = await auditEventService.getSystemEntries(
     1000,
     0,
     "occurredDateTime",

@@ -6,7 +6,7 @@ import { beforeEachCommon } from "./user.common";
 import { addSeconds } from "date-fns";
 
 let existingUser: AuthenticatedUser;
-let auditLogService: AuditEventService;
+let auditEventService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -14,13 +14,13 @@ const testContainer = registerTypes();
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  auditLogService = testContainer.resolve(AuditEventService);
+  auditEventService = testContainer.resolve(AuditEventService);
 });
 
 it("audit user instant", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startUserAuditEvent(
+  const aeId = await auditEventService.startUserAuditEvent(
     existingUser.subjectId,
     existingUser.displayName,
     existingUser.dbId,
@@ -30,7 +30,7 @@ it("audit user instant", async () => {
     edgeDbClient
   );
 
-  await auditLogService.completeUserAuditEvent(
+  await auditEventService.completeUserAuditEvent(
     aeId,
     0,
     start,
@@ -41,7 +41,7 @@ it("audit user instant", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
+  const events = await auditEventService.getUserEntries(
     ["user"],
     existingUser,
     1000,
@@ -66,7 +66,7 @@ it("audit user instant", async () => {
 });
 
 it("audit user instant with create function", async () => {
-  const aeId = await auditLogService.createUserAuditEvent(
+  const aeId = await auditEventService.createUserAuditEvent(
     existingUser.dbId,
     existingUser.subjectId,
     existingUser.displayName,
@@ -78,7 +78,7 @@ it("audit user instant with create function", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
+  const events = await auditEventService.getUserEntries(
     ["user"],
     existingUser,
     1000,
@@ -105,7 +105,7 @@ it("audit user instant with create function", async () => {
 it("audit user duration", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startUserAuditEvent(
+  const aeId = await auditEventService.startUserAuditEvent(
     existingUser.subjectId,
     existingUser.displayName,
     existingUser.dbId,
@@ -115,7 +115,7 @@ it("audit user duration", async () => {
     edgeDbClient
   );
 
-  await auditLogService.completeUserAuditEvent(
+  await auditEventService.completeUserAuditEvent(
     aeId,
     0,
     start,
@@ -126,7 +126,7 @@ it("audit user duration", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
+  const events = await auditEventService.getUserEntries(
     ["user"],
     existingUser,
     1000,
@@ -152,7 +152,7 @@ it("audit user duration", async () => {
 });
 
 it("get entries with no filter", async () => {
-  const events = await auditLogService.getUserEntries(
+  const events = await auditEventService.getUserEntries(
     [],
     existingUser,
     1000,
@@ -162,5 +162,5 @@ it("get entries with no filter", async () => {
     false,
     edgeDbClient
   );
-  expect(events).toEqual({ data: [], total: 0 });
+  expect(events).toEqual(null);
 });

@@ -10,7 +10,7 @@ let testReleaseKey: string;
 let allowedAdministratorUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
-let auditLogService: AuditEventService;
+let auditEventService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -24,7 +24,7 @@ beforeEach(async () => {
     edgeDbClient,
   } = await beforeEachCommon(testContainer));
 
-  auditLogService = testContainer.resolve(AuditEventService);
+  auditEventService = testContainer.resolve(AuditEventService);
 });
 
 /**
@@ -33,7 +33,7 @@ beforeEach(async () => {
 it("audit release stuff instant", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startReleaseAuditEvent(
+  const aeId = await auditEventService.startReleaseAuditEvent(
     allowedManagerUser,
     testReleaseKey,
     "C",
@@ -42,7 +42,7 @@ it("audit release stuff instant", async () => {
     edgeDbClient
   );
 
-  await auditLogService.completeReleaseAuditEvent(
+  await auditEventService.completeReleaseAuditEvent(
     aeId,
     0,
     start,
@@ -53,7 +53,7 @@ it("audit release stuff instant", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getReleaseEntries(
+  const events = await auditEventService.getReleaseEntries(
     allowedManagerUser,
     testReleaseKey,
     1000,
@@ -69,7 +69,7 @@ it("audit release stuff instant", async () => {
 it("audit release stuff duration", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startReleaseAuditEvent(
+  const aeId = await auditEventService.startReleaseAuditEvent(
     allowedManagerUser,
     testReleaseKey,
     "C",
@@ -78,7 +78,7 @@ it("audit release stuff duration", async () => {
     edgeDbClient
   );
 
-  await auditLogService.completeReleaseAuditEvent(
+  await auditEventService.completeReleaseAuditEvent(
     aeId,
     0,
     start,
@@ -89,7 +89,7 @@ it("audit release stuff duration", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getReleaseEntries(
+  const events = await auditEventService.getReleaseEntries(
     allowedManagerUser,
     testReleaseKey,
     1000,
@@ -105,7 +105,7 @@ it("audit release stuff duration", async () => {
 it("audit release stuff duration", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startReleaseAuditEvent(
+  const aeId = await auditEventService.startReleaseAuditEvent(
     allowedManagerUser,
     testReleaseKey,
     "C",
@@ -114,7 +114,7 @@ it("audit release stuff duration", async () => {
     edgeDbClient
   );
 
-  await auditLogService.completeReleaseAuditEvent(
+  await auditEventService.completeReleaseAuditEvent(
     aeId,
     0,
     start,
@@ -125,7 +125,7 @@ it("audit release stuff duration", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getReleaseEntries(
+  const events = await auditEventService.getReleaseEntries(
     allowedManagerUser,
     testReleaseKey,
     1000,
@@ -141,7 +141,7 @@ it("audit release stuff duration", async () => {
 it("get entries with release filter", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startReleaseAuditEvent(
+  const aeId = await auditEventService.startReleaseAuditEvent(
     allowedManagerUser,
     testReleaseKey,
     "C",
@@ -150,7 +150,7 @@ it("get entries with release filter", async () => {
     edgeDbClient
   );
 
-  await auditLogService.completeReleaseAuditEvent(
+  await auditEventService.completeReleaseAuditEvent(
     aeId,
     0,
     start,
@@ -161,7 +161,7 @@ it("get entries with release filter", async () => {
     edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
+  const events = await auditEventService.getUserEntries(
     ["release"],
     allowedManagerUser,
     1000,
