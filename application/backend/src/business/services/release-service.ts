@@ -32,7 +32,7 @@ import {
   insertPotentialOrReal,
   splitUserEmails,
 } from "./_dac-user-helper";
-import {AuditEventTimedService} from "./audit-event-timed-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -44,10 +44,17 @@ export class ReleaseService extends ReleaseBaseService {
     @inject(AuditEventService)
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
-      auditEventTimedService: AuditEventTimedService,
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService, auditEventService, auditEventTimedService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   /**

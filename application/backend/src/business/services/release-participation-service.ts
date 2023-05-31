@@ -18,7 +18,7 @@ import {
 } from "../db/user-queries";
 import e from "../../../dbschema/edgeql-js";
 import { AuditEventService } from "./audit-event-service";
-import {AuditEventTimedService} from "./audit-event-timed-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -32,10 +32,17 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     @inject("Features") features: ReadonlySet<string>,
     @inject(AuditEventService) auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
-      auditEventTimedService: AuditEventTimedService,
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService, auditEventService, auditEventTimedService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   public async getParticipants(user: AuthenticatedUser, releaseKey: string) {

@@ -14,7 +14,7 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
-import {AuditEventTimedService} from "./audit-event-timed-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -31,10 +31,17 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject(AuditEventService)
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
-      auditEventTimedService: AuditEventTimedService,
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService, auditEventService, auditEventTimedService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {

@@ -30,7 +30,7 @@ import {
 } from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 import { releaseGetSpecimenToDataSetCrossLinks } from "../../../dbschema/queries";
-import {AuditEventTimedService} from "./audit-event-timed-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 /**
  * The release selection service handles CRUD operations on the list of items
@@ -47,10 +47,17 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     @inject(AuditEventService)
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
-      auditEventTimedService: AuditEventTimedService,
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService, auditEventService, auditEventTimedService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   /**
