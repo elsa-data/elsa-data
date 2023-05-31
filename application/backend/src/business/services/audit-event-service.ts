@@ -200,7 +200,7 @@ export class AuditEventService {
    * @param releaseKey
    * @param actionCategory
    * @param actionDescription
-   * @param details??
+   * @param details
    * @param outcome
    * @param occurredDateTime
    * @param executor the EdgeDb execution context (either client or transaction)
