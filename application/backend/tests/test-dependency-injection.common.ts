@@ -27,6 +27,7 @@ import { S3 } from "../src/business/services/cloud-storage-service";
 import { S3ManifestHtsgetService } from "../src/business/services/manifests/htsget/manifest-htsget-service";
 import { STSClient } from "@aws-sdk/client-sts";
 import { SFNClient } from "@aws-sdk/client-sfn";
+import {AuditEventTimedService} from "../src/business/services/audit-event-timed-service";
 
 export function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
@@ -107,6 +108,11 @@ export function registerTypes() {
   testContainer.registerSingleton(CloudflarePresignedUrlService);
   testContainer.registerSingleton(ManifestService);
   testContainer.registerSingleton(PresignedUrlService);
+
+  testContainer.registerSingleton<AuditEventTimedService>(
+    "ReleaseAuditTimedService",
+    AuditEventTimedService
+  );
 
   testContainer.registerSingleton<S3ManifestHtsgetService>(
     S3,
