@@ -126,6 +126,11 @@ export class AuditEventService {
 
     await this.updateRelease(releaseKey, auditEvent, executor, user);
 
+    await releaseLastUpdatedReset(executor, {
+      releaseKey: releaseKey,
+      lastUpdatedSubjectId: user.subjectId,
+    });
+
     return auditEvent.id;
   }
 
@@ -149,11 +154,6 @@ export class AuditEventService {
         },
       }))
       .run(executor);
-
-    await releaseLastUpdatedReset(executor, {
-      releaseKey: releaseKey,
-      lastUpdatedSubjectId: user.subjectId,
-    });
   }
 
   /**
@@ -196,9 +196,8 @@ export class AuditEventService {
   /**
    * Create a UserAuditEvent in one go.
    *
-   * @param userId
-   * @param whoId
-   * @param whoDisplayName
+   * @param user
+   * @param releaseKey
    * @param actionCategory
    * @param actionDescription
    * @param details??
@@ -702,7 +701,6 @@ export class AuditEventService {
   public async insertViewedReleaseAuditEvent(
     user: AuthenticatedUser,
     releaseKey: string,
-    dataset: string,
     executor: Executor = this.edgeDbClient
   ) {
     return await this.createReleaseAuditEvent(

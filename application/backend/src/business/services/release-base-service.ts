@@ -39,15 +39,19 @@ export abstract class ReleaseBaseService {
     protected readonly auditEventTimedService: AuditEventTimedService
   ) {}
 
-  public createReleaseViewAuditEvent(
+  public async createReleaseViewAuditEvent(
     user: AuthenticatedUser,
     releaseKey: string
-  ): void {
-    this.auditEventTimedService.createTimedAuditEvent(
-      releaseKey,
-      VIEW_AUDIT_EVENT_TIME,
-      (start) => {
-        this.auditEventService.createReleaseAuditEvent();
+  ): Promise<void> {
+    await this.auditEventTimedService.createTimedAuditEvent(
+      `${releaseKey}${user.subjectId}`,
+      this.VIEW_AUDIT_EVENT_TIME,
+      async (start) => {
+        return await this.auditEventService.insertViewedReleaseAuditEvent(
+          user,
+          releaseKey,
+          this.edgeDbClient
+        );
       }
     );
   }
