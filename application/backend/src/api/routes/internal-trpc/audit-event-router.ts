@@ -1,12 +1,9 @@
-import { z } from "zod";
-import { internalProcedure, router } from "../trpc-bootstrap";
-import {
-  inputPaginationParameter,
-  inputReleaseKeySingle,
-} from "./input-schemas-common";
-import { audit } from "../../../../dbschema/interfaces";
+import {z} from "zod";
+import {internalProcedure, router} from "../trpc-bootstrap";
+import {inputPaginationParameter, inputReleaseKeySingle,} from "./input-schemas-common";
 import _ from "lodash";
-import AuditEvent = audit.AuditEvent;
+import * as interfaces from "../../../../dbschema/interfaces";
+import AuditEvent = interfaces.audit.AuditEvent;
 
 /**
  * An object for the audit event filter type.
