@@ -194,7 +194,7 @@ export class AuditEventService {
   }
 
   /**
-   * Create a UserAuditEvent in one go.
+   * Create a ReleaseAuditEvent in one go.
    *
    * @param user
    * @param releaseKey
