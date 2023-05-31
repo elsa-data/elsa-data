@@ -124,6 +124,17 @@ export class AuditEventService {
       }),
     });
 
+    await this.updateRelease(releaseKey, auditEvent, executor, user);
+
+    return auditEvent.id;
+  }
+
+  private async updateRelease(
+    releaseKey: string,
+    auditEvent: { id: string },
+    executor: Executor,
+    user: AuthenticatedUser
+  ) {
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
     await e
@@ -143,8 +154,6 @@ export class AuditEventService {
       releaseKey: releaseKey,
       lastUpdatedSubjectId: user.subjectId,
     });
-
-    return auditEvent.id;
   }
 
   /**
@@ -182,6 +191,44 @@ export class AuditEventService {
         },
       }))
       .run(executor);
+  }
+
+  /**
+   * Create a UserAuditEvent in one go.
+   *
+   * @param userId
+   * @param whoId
+   * @param whoDisplayName
+   * @param actionCategory
+   * @param actionDescription
+   * @param details??
+   * @param outcome
+   * @param occurredDateTime
+   * @param executor the EdgeDb execution context (either client or transaction)
+   */
+  public async createReleaseAuditEvent(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionCategory: ActionType,
+    actionDescription: string,
+    details?: any,
+    outcome: number = 0,
+    occurredDateTime: Date = new Date(),
+    executor: Executor = this.edgeDbClient
+  ): Promise<string> {
+    const auditEvent = await insertReleaseAuditEvent(executor, {
+      whoId: user.subjectId,
+      whoDisplayName: user.displayName,
+      occurredDateTime,
+      actionCategory,
+      actionDescription,
+      outcome,
+      details,
+    });
+
+    await this.updateRelease(releaseKey, auditEvent, executor, user);
+
+    return auditEvent.id;
   }
 
   /**
@@ -642,6 +689,27 @@ export class AuditEventService {
       user.displayName,
       "C",
       `Add dataset: ${dataset}`,
+      undefined,
+      0,
+      new Date(),
+      executor
+    );
+  }
+
+  /**
+   * Add audit event a release is viewed.
+   */
+  public async insertViewedReleaseAuditEvent(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    dataset: string,
+    executor: Executor = this.edgeDbClient
+  ) {
+    return await this.createReleaseAuditEvent(
+      user,
+      releaseKey,
+      "R",
+      `Viewed release: ${releaseKey}`,
       undefined,
       0,
       new Date(),
