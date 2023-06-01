@@ -1,5 +1,6 @@
 import { injectable } from "tsyringe";
 import { setTimeout } from "timers/promises";
+import { milliseconds } from "date-fns";
 
 @injectable()
 export class AuditEventTimedService {
@@ -18,8 +19,8 @@ export class AuditEventTimedService {
    */
   public async createTimedAuditEvent(
     key: string,
-    delay: number,
-    startAuditEventFn: (start: Date) => Promise<string>,
+    delay: Duration,
+    startAuditEventFn: (start: Date) => Promise<string | null>,
     completeAuditEventFn?: (auditEventId: string, end: Date) => Promise<void>
   ): Promise<string | null> {
     if (!this.awaitingAuditEvents.has(key)) {
@@ -29,11 +30,11 @@ export class AuditEventTimedService {
       const auditEventId = await startAuditEventFn(auditEventStart);
 
       const timedComplete = async () => {
-        await setTimeout(delay);
+        await setTimeout(milliseconds(delay));
 
         this.awaitingAuditEvents.delete(key);
 
-        if (completeAuditEventFn) {
+        if (completeAuditEventFn && auditEventId !== null) {
           await completeAuditEventFn(auditEventId, new Date());
         }
       };

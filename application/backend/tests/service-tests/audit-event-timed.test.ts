@@ -20,7 +20,7 @@ it("create timed audit event", async () => {
 
   const id = await auditEventTimedService.createTimedAuditEvent(
     "key",
-    1000,
+    { seconds: 1 },
     startFn,
     endFn
   );
@@ -29,7 +29,7 @@ it("create timed audit event", async () => {
 
   const id_null = await auditEventTimedService.createTimedAuditEvent(
     "key",
-    1000,
+    { seconds: 1 },
     startFn,
     endFn
   );

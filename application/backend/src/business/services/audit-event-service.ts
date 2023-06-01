@@ -3,7 +3,7 @@ import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { differenceInSeconds } from "date-fns";
+import { differenceInSeconds, sub } from "date-fns";
 import {
   AuditEventDetailsType,
   AuditEventFullType,
@@ -25,6 +25,7 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
+  auditEventGetMostRecent,
   auditEventGetSomeByUser,
   insertReleaseAuditEvent,
   insertSystemAuditEvent,
@@ -696,23 +697,36 @@ export class AuditEventService {
   }
 
   /**
-   * Add audit event a release is viewed.
+   * Add audit event a release is viewed. Checks the database to make sure a recent
+   * audit event does not already exist.
    */
   public async insertViewedReleaseAuditEvent(
     user: AuthenticatedUser,
     releaseKey: string,
+    delay: Duration,
+    occuredDateTime: Date,
     executor: Executor = this.edgeDbClient
-  ) {
-    return await this.createReleaseAuditEvent(
-      user,
+  ): Promise<string | null> {
+    let recentAuditEvents = await auditEventGetMostRecent(executor, {
+      whoId: user.subjectId,
+      since: sub(occuredDateTime, delay),
       releaseKey,
-      "R",
-      `Viewed release: ${releaseKey}`,
-      undefined,
-      0,
-      new Date(),
-      executor
-    );
+    });
+
+    if (recentAuditEvents.length === 0) {
+      return await this.createReleaseAuditEvent(
+        user,
+        releaseKey,
+        "R",
+        `Viewed release: ${releaseKey}`,
+        undefined,
+        0,
+        occuredDateTime,
+        executor
+      );
+    }
+
+    return null;
   }
 
   /**

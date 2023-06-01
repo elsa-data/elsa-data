@@ -25,10 +25,7 @@ type CodeArrayFields = "diseases" | "countries" | "type";
  * common functionality here and have multiple services.
  */
 export abstract class ReleaseBaseService {
-  /**
-   * 30 minutes.
-   */
-  private readonly VIEW_AUDIT_EVENT_TIME = 1800000;
+  private readonly VIEW_AUDIT_EVENT_TIME: Duration = { minutes: 30 };
 
   protected constructor(
     protected readonly settings: ElsaSettings,
@@ -50,6 +47,8 @@ export abstract class ReleaseBaseService {
         return await this.auditEventService.insertViewedReleaseAuditEvent(
           user,
           releaseKey,
+          this.VIEW_AUDIT_EVENT_TIME,
+          start,
           this.edgeDbClient
         );
       }
