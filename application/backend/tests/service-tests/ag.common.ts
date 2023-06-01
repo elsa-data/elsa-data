@@ -1,4 +1,5 @@
 import { storage } from "../../dbschema/interfaces";
+import { MergedManifestMetadataType } from "../../src/business/services/australian-genomics/s3-index-import-service";
 
 /**
  * Will declare some mock test data here
@@ -51,6 +52,14 @@ export const MOCK_FILE_RECORD_TEMPLATE = {
       value: "RANDOMCHECKSUM",
     },
   ],
+};
+
+export const MOCK_MERGED_MANIFEST_TEMPLATE = {
+  s3Url: "s3://bucket/some/random/filename",
+  agha_study_id_array: [],
+  checksum: "md5md5md5",
+  size: 10,
+  eTag: "eTageTageTag",
 };
 
 // Mock data 1 - A pair of fastq pair
@@ -175,41 +184,32 @@ export const MOCK_4_CARDIAC_MANIFEST =
  * FILE set mock data
  */
 
-export const MOCK_FASTQ_FORWARD_FILE_RECORD = {
-  ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
+export const MOCK_FASTQ_FORWARD_MERGE_MANIFEST: MergedManifestMetadataType = {
+  ...MOCK_MERGED_MANIFEST_TEMPLATE,
+  s3Url: `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
 };
-export const MOCK_FASTQ_REVERSE_FILE_RECORD = {
-  ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `${S3_URL_PREFIX}/FILE_L001_R2.fastq.gz`,
-};
-
-export const MOCK_FASTQ_PAIR_FILE_SET = [
-  MOCK_FASTQ_FORWARD_FILE_RECORD,
-  MOCK_FASTQ_REVERSE_FILE_RECORD,
-];
-
-export const MOCK_BAM_FILE_RECORD = {
-  ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `${S3_URL_PREFIX}/A0000001.bam`,
-};
-export const MOCK_BAI_FILE_RECORD = {
-  ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `${S3_URL_PREFIX}/A0000001.bam.bai`,
+export const MOCK_FASTQ_REVERSE_MERGE_MANIFEST: MergedManifestMetadataType = {
+  ...MOCK_MERGED_MANIFEST_TEMPLATE,
+  s3Url: `${S3_URL_PREFIX}/FILE_L001_R2.fastq.gz`,
 };
 
-export const MOCK_BAM_FILE_SET = [MOCK_BAM_FILE_RECORD, MOCK_BAI_FILE_RECORD];
-
-export const MOCK_VCF_FILE_RECORD = {
-  ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `${S3_URL_PREFIX}/19W001062.individual.norm.vcf.gz`,
+export const MOCK_BAM_MERGE_MANIFEST: MergedManifestMetadataType = {
+  ...MOCK_MERGED_MANIFEST_TEMPLATE,
+  s3Url: `${S3_URL_PREFIX}/A0000001.bam`,
 };
-export const MOCK_TBI_FILE_RECORD = {
-  ...MOCK_FILE_RECORD_TEMPLATE,
-  url: `${S3_URL_PREFIX}/19W001062.individual.norm.vcf.gz.tbi`,
+export const MOCK_BAI_MERGE_MANIFEST: MergedManifestMetadataType = {
+  ...MOCK_MERGED_MANIFEST_TEMPLATE,
+  s3Url: `${S3_URL_PREFIX}/A0000001.bam.bai`,
 };
 
-export const MOCK_VCF_FILE_SET = [MOCK_VCF_FILE_RECORD, MOCK_TBI_FILE_RECORD];
+export const MOCK_VCF_MERGE_MANIFEST: MergedManifestMetadataType = {
+  ...MOCK_MERGED_MANIFEST_TEMPLATE,
+  s3Url: `${S3_URL_PREFIX}/19W001062.individual.norm.vcf.gz`,
+};
+export const MOCK_TBI_MERGE_MANIFEST: MergedManifestMetadataType = {
+  ...MOCK_MERGED_MANIFEST_TEMPLATE,
+  s3Url: `${S3_URL_PREFIX}/19W001062.individual.norm.vcf.gz.tbi`,
+};
 
 // S3 client
 export const MOCK_S3_LIST_BUCKET_CLIENT = {

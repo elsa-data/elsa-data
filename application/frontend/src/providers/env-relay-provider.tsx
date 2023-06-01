@@ -34,6 +34,10 @@ export type EnvRelay = {
    * any AWS UI when running in an environment that does not have AWS credentials.
    */
   features: ReadonlySet<string>;
+
+  documentTitle: string | undefined;
+  brandName: string | undefined;
+  brandLogoUriRelative: string | undefined;
 };
 
 /**

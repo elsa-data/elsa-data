@@ -13,17 +13,22 @@ import { ToolTip } from "../tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../tables";
-
-const columnHeaderArray = ["", "Description / URI", "Last Modified", ""];
+import {
+  ALLOWED_DATASET_UPDATE,
+  ALLOWED_OVERALL_ADMIN_VIEW,
+} from "@umccr/elsa-constants";
+import { useUiAllowed } from "../../hooks/ui-allowed";
 
 const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 const baseMessageDivClasses =
   "min-h-[10em] w-full flex items-center justify-center";
 
-export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
-  includeDeletedFile,
-}) => {
+export const DatasetTable: React.FC = ({}) => {
   const navigate = useNavigate();
+  const uiAllowed = useUiAllowed();
+  const allowDatasetView =
+    uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
+    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW);
 
   // Pagination Variables
   const pageSize = usePageSizer();
@@ -57,14 +62,20 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
       <Table
         tableHead={
           <tr>
-            {columnHeaderArray.map((props, idx) => (
-              <th key={idx}>{props}</th>
-            ))}
+            {["", "Description / URI", "Count", "Last Modified"].map(
+              (props, idx) => (
+                <th key={idx}>{props}</th>
+              )
+            )}
+
+            {/* Placeholder for the VIEW button (defined below) */}
+            {allowDatasetView && <th />}
           </tr>
         }
         tableBody={data.map((row, rowIndex) => {
           return (
             <tr key={row.uri}>
+              {/* Is not in Config Icon */}
               <td className={classNames(baseColumnClasses, "text-left")}>
                 {!row.isInConfig && (
                   <ToolTip
@@ -73,6 +84,8 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                   />
                 )}
               </td>
+
+              {/* Dataset Description / URI */}
               <td className="whitespace-normal break-words">
                 <div className="font-bold"> {row.description}</div>
                 <div className="flex flex-row space-x-2 text-sm">
@@ -80,23 +93,44 @@ export const DatasetTable: React.FC<{ includeDeletedFile: boolean }> = ({
                 </div>
               </td>
 
+              {/* Count Cases/Patients/Specimen */}
+              <td className={classNames(baseColumnClasses, "text-left")}>
+                <div className="flex flex-wrap">
+                  <div className="inline-block whitespace-pre">
+                    {`Cases (${row.totalCaseCount}), `}
+                  </div>
+                  <div className="inline-block whitespace-pre">
+                    {`Patients (${row.totalPatientCount}), `}
+                  </div>
+                  <div className="inline-block whitespace-pre">
+                    {`Specimens (${row.totalSpecimenCount})`}
+                  </div>
+                </div>
+              </td>
+
+              {/* Last Modified */}
               <td className={classNames(baseColumnClasses, "text-left")}>
                 {row.updatedDateTime
                   ? formatLocalDateTime(String(row.updatedDateTime))
                   : ""}
               </td>
-              <td className="text-right">
-                <button
-                  className={classNames("btn-table-action-navigate")}
-                  onClick={async () => {
-                    navigate(
-                      encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
-                    );
-                  }}
-                >
-                  view
-                </button>
-              </td>
+
+              {/* VIEW (more details) button */}
+
+              {allowDatasetView && (
+                <td className="text-right">
+                  <button
+                    className={classNames("btn-table-action-navigate")}
+                    onClick={async () => {
+                      navigate(
+                        encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
+                      );
+                    }}
+                  >
+                    view
+                  </button>
+                </td>
+              )}
             </tr>
           );
         })}

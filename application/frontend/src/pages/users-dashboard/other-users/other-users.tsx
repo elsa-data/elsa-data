@@ -93,14 +93,16 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   const createHeaders = () => {
     return (
       <tr>
-        <th scope="col">Name</th>
-        <th scope="col" className="hidden xl:table-cell">
+        <th scope="col" className="table-cell">
+          Name
+        </th>
+        <th scope="col" className="table-cell">
           Email
         </th>
-        <th scope="col" className="hidden xl:table-cell">
+        <th scope="col" className="table-cell">
           Last Logged In
         </th>
-        <th scope="col" className="hidden text-right xl:table-cell">
+        <th scope="col" className="table-cell text-right">
           Permissions
         </th>
       </tr>

@@ -27,6 +27,11 @@ import {
 } from "../../audit-helpers";
 import { Logger } from "pino";
 import { jobAsBadgeLabel } from "./jobs/job-helpers";
+import {
+  checkValidApplicationUser,
+  insertPotentialOrReal,
+  splitUserEmails,
+} from "./_dac-user-helper";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -120,6 +125,12 @@ export class ReleaseService extends ReleaseBaseService {
   ): Promise<string> {
     this.checkIsAllowedCreateReleases(user);
 
+    const otherResearchers = splitUserEmails(release.applicantEmailAddresses);
+
+    otherResearchers.forEach((r) =>
+      checkValidApplicationUser(r, "collaborator")
+    );
+
     const releaseKey = await getNextReleaseKey(
       this.settings.releaseKeyPrefix
     ).run(this.edgeDbClient);
@@ -175,13 +186,20 @@ ${release.applicantEmailAddresses}
       })
       .run(this.edgeDbClient);
 
-    await UserService.addUserToReleaseWithRole(
-      this.edgeDbClient,
+    for (const r of otherResearchers) {
+      await insertPotentialOrReal(
+        this.edgeDbClient,
+        r,
+        r.role,
+        releaseRow.id,
+        releaseKey
+      );
+    }
+
+    await this.userService.registerRoleInRelease(
+      user,
       releaseRow.id,
-      user.dbId,
-      "Administrator",
-      user.subjectId,
-      user.displayName
+      "Administrator"
     );
 
     return releaseKey;

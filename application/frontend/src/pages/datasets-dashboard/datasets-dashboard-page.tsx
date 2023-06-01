@@ -1,11 +1,16 @@
 import React from "react";
-import { DatasetsBox } from "./datasets-box/datasets-box";
-import { usePageSizer } from "../../hooks/page-sizer";
+import { Box } from "../../components/boxes";
+import { DatasetTable } from "../../components/dataset/dataset-table";
 
 export const DatasetsDashboardPage: React.FC = () => {
   return (
     <>
-      <DatasetsBox />
+      <Box
+        heading="Datasets"
+        errorMessage={"Something went wrong fetching datasets."}
+      >
+        <DatasetTable />
+      </Box>
     </>
   );
 };

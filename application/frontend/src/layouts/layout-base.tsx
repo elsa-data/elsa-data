@@ -34,7 +34,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
     const whenInactive = `text-gray-500 border-white ${hoverClass} ${always}`;
 
     return (
-      <div className="my-2 mr-6 md:my-0">
+      <div className="my-2  md:my-0">
         <NavLink
           to={to}
           className={({ isActive }) => (isActive ? whenActive : whenInactive)}
@@ -115,16 +115,16 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
             </div>
           </div>
 
-          <div className="flex w-full justify-between">
+          <div className="flex w-full flex-row justify-between">
             <div
-              className={`mt-2 bg-white lg:mt-0 lg:inline-block ${
+              className={`mt-2 w-full bg-white lg:mt-0 lg:inline-block ${
                 isMenuBarOpen ? "" : "hidden"
               }`}
               id="nav-content"
             >
               {loggedInUser ? (
-                <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:pb-0">
-                  <li className="my-2 mr-6 md:my-0">
+                <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:space-x-12 lg:pb-0">
+                  <li className="my-2 md:my-0">
                     {navLink(
                       "/releases",
                       "Releases",
@@ -133,20 +133,17 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                       "hover:border-primary-focus"
                     )}
                   </li>
-                  {(uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
-                    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)) && (
-                    <li className="my-2 mr-6 md:my-0">
-                      {navLink(
-                        "/datasets",
-                        "Datasets",
-                        "text-primary",
-                        "border-primary",
-                        "hover:border-primary-focus"
-                      )}
-                    </li>
-                  )}
+                  <li className="my-2 md:my-0">
+                    {navLink(
+                      "/datasets",
+                      "Datasets",
+                      "text-primary",
+                      "border-primary",
+                      "hover:border-primary-focus"
+                    )}
+                  </li>
                   {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
-                    <li className="my-2 mr-6 md:my-0">
+                    <li className="my-2 md:my-0">
                       {navLink(
                         "/dac",
                         "DAC",
@@ -156,7 +153,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                       )}
                     </li>
                   )}
-                  <li className="my-2 mr-6 md:my-0">
+                  <li className="my-2 md:my-0">
                     {navLink(
                       "/users",
                       "Users",
@@ -165,7 +162,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                       "hover:border-primary-focus"
                     )}
                   </li>
-                  <li className="my-2 mr-6 md:my-0">
+                  <li className="my-2 md:my-0">
                     {navLink(
                       "/audit-events",
                       "Audit Events",
@@ -177,7 +174,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 </ul>
               ) : (
                 <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">
-                  <li className="my-2 mr-6 md:my-0">
+                  <li className="my-2 md:my-0">
                     {navLink(
                       "/login",
                       "Login",

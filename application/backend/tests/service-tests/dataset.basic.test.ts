@@ -97,13 +97,3 @@ it("basic summary get all is sorted by dataset URI", async () => {
     expect(result.data[2].uri).toBe(TENG_URI);
   }
 });
-
-it("not allowed users cannot get dataset data", async () => {
-  const result = await datasetService.getAll({
-    user: notAllowedUser,
-    limit: 1000,
-    offset: 0,
-  });
-
-  expect(result.data?.length).toBe(0);
-});

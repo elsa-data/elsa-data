@@ -21,6 +21,7 @@ import {
   getDatasetCasesByUri,
   getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
+import { DatasetType } from "../../config/config-schema-dataset";
 
 @injectable()
 export class DatasetService {
@@ -30,6 +31,15 @@ export class DatasetService {
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService
   ) {}
+
+  /**
+   * This give all configuration given from the datasetUri
+   * @param datasetUri
+   * @returns
+   */
+  public getDatasetConfiguration(datasetUri: string): DatasetType | undefined {
+    return this.settings.datasets.find((o) => o.uri == datasetUri);
+  }
 
   /**
    * Get Storage URI Prefix from dataset URI
@@ -124,7 +134,6 @@ export class DatasetService {
     offset: number;
   }): Promise<PagedResult<DatasetLightType>> {
     const datasetSummaryQuery = await getAllDataset(this.edgeDbClient, {
-      userDbId: user.dbId,
       limit,
       offset,
     });
@@ -135,6 +144,9 @@ export class DatasetService {
         description: r.description,
         updatedDateTime: r.updatedDateTime,
         isInConfig: r.isInConfig,
+        totalCaseCount: r.totalCaseCount,
+        totalPatientCount: r.totalPatientCount,
+        totalSpecimenCount: r.totalSpecimenCount,
       })),
       datasetSummaryQuery.total
     );

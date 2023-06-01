@@ -58,7 +58,7 @@ export const DatasetsDetailPage: React.FC = () => {
       </div>
     );
 
-  // Some ArtifactType COUNT
+  // Some ArtifactEnum COUNT
   let fileTypes = "";
   if (data.bclCount) fileTypes += `BCL(${data.bclCount}) `;
   if (data.fastqCount) fileTypes += `FASTQ(${data.fastqCount}) `;

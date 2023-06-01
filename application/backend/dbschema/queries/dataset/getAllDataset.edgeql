@@ -2,20 +2,8 @@
 
 with
 
-  userPermission := (
-    select permission::User
-    filter .id = <uuid>$userDbId
-  ),
-
-  isAllowedQuery := (
-    userPermission.isAllowedRefreshDatasetIndex 
-      or 
-    userPermission.isAllowedOverallAdministratorView
-  ),
-
   dataset := (
     select dataset::Dataset
-    filter isAllowedQuery
   )
 
 select {
@@ -25,6 +13,9 @@ select {
       description,
       updatedDateTime,
       isInConfig,
+      totalCaseCount := count(.cases),
+      totalPatientCount := count(.cases.patients),
+      totalSpecimenCount := count(.cases.patients.specimens),
     }
     order by
         .isInConfig desc 
