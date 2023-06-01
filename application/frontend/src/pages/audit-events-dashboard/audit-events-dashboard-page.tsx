@@ -11,11 +11,11 @@ export const AuditEventsPage = (): JSX.Element => {
 
   return (
     <AuditEventTable
-      path="users"
       filterElements={true}
       filterElementsInitial={["user"]}
       pageSize={pageSize}
       showAdminView={allowed.has(ALLOWED_OVERALL_ADMIN_VIEW)}
+      type="AuditEvent"
     />
   );
 };

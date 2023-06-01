@@ -17,8 +17,8 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import {
   getAllDataset,
-  getDatasetConsent,
   getDatasetCasesByUri,
+  getDatasetConsent,
   getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
 import { DatasetType } from "../../config/config-schema-dataset";
@@ -211,7 +211,7 @@ export class DatasetService {
     limit: number,
     offset: number
   ): Promise<any | null> {
-    const pageCases = await e
+    return await e
       .select(e.dataset.DatasetCase, (dsc) => ({
         ...e.dataset.DatasetCase["*"],
         externalIdentifiers: true,
@@ -226,8 +226,6 @@ export class DatasetService {
         offset: e.int32(offset),
       }))
       .run(this.edgeDbClient);
-
-    return pageCases;
   }
 
   /**
@@ -265,9 +263,9 @@ export class DatasetService {
 
       if (user !== undefined) {
         await this.auditLogService.insertAddDatasetAuditEvent(
-          tx,
           user,
-          datasetUri
+          datasetUri,
+          tx
         );
       }
 
@@ -313,9 +311,9 @@ export class DatasetService {
 
       if (user !== undefined) {
         await this.auditLogService.insertDeleteDatasetAuditEvent(
-          tx,
           user,
-          datasetUri
+          datasetUri,
+          tx
         );
       }
 

@@ -16,6 +16,7 @@ import {
 import etag from "etag";
 import { Logger } from "pino";
 import { ManifestService } from "./manifests/manifest-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -28,11 +29,20 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService,
+    auditEventService: AuditEventService,
+    @inject("ReleaseAuditTimedService")
+    auditEventTimedService: AuditEventTimedService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   /**
@@ -50,7 +60,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.auditLogService.transactionalUpdateInReleaseAuditPattern(
+    return this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Activated Release",
@@ -126,7 +136,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.auditLogService.transactionalUpdateInReleaseAuditPattern(
+    return this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Deactivated release",

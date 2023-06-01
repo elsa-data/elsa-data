@@ -10,6 +10,8 @@ import {
   ReleaseViewError,
 } from "../exceptions/release-authorisation";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { AuditEventService } from "./audit-event-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -23,12 +25,35 @@ type CodeArrayFields = "diseases" | "countries" | "type";
  * common functionality here and have multiple services.
  */
 export abstract class ReleaseBaseService {
+  private readonly VIEW_AUDIT_EVENT_TIME: Duration = { minutes: 30 };
+
   protected constructor(
     protected readonly settings: ElsaSettings,
     protected readonly edgeDbClient: edgedb.Client,
     protected readonly features: ReadonlySet<string>,
-    protected readonly userService: UserService
+    protected readonly userService: UserService,
+    protected readonly auditEventService: AuditEventService,
+    protected readonly auditEventTimedService: AuditEventTimedService
   ) {}
+
+  public async createReleaseViewAuditEvent(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ): Promise<void> {
+    await this.auditEventTimedService.createTimedAuditEvent(
+      `${releaseKey}${user.subjectId}`,
+      this.VIEW_AUDIT_EVENT_TIME,
+      async (start) => {
+        return await this.auditEventService.insertViewedReleaseAuditEvent(
+          user,
+          releaseKey,
+          this.VIEW_AUDIT_EVENT_TIME,
+          start,
+          this.edgeDbClient
+        );
+      }
+    );
+  }
 
   /**
    * This is to check if user has a special create release permission granted by an admin.

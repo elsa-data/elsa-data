@@ -1,5 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
-import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
+import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import assert from "assert";
 
 export const ManifestBucketKeyObjectSchema = Type.Object({

@@ -6,7 +6,7 @@ import { beforeEachCommon } from "./user.common";
 import { addSeconds } from "date-fns";
 
 let existingUser: AuthenticatedUser;
-let auditLogService: AuditEventService;
+let auditEventService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -14,31 +14,37 @@ const testContainer = registerTypes();
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  auditLogService = testContainer.resolve(AuditEventService);
+  auditEventService = testContainer.resolve(AuditEventService);
 });
 
 it("audit system instant", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startSystemAuditEvent(
-    edgeDbClient,
+  const aeId = await auditEventService.startSystemAuditEvent(
     "E",
     "Email",
-    start
+    start,
+    edgeDbClient
   );
 
-  await auditLogService.completeSystemAuditEvent(
-    edgeDbClient,
+  await auditEventService.completeSystemAuditEvent(
     aeId,
     0,
     start,
     new Date(),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(edgeDbClient, 1000, 0);
+  const events = await auditEventService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
   expect(auditEvent).toBeDefined();
@@ -52,15 +58,21 @@ it("audit system instant", async () => {
 });
 
 it("audit system instant with create function", async () => {
-  const aeId = await auditLogService.createSystemAuditEvent(
-    edgeDbClient,
+  const aeId = await auditEventService.createSystemAuditEvent(
     "E",
     "Email",
     { message: "Message" },
-    8
+    8,
+    edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(edgeDbClient, 1000, 0);
+  const events = await auditEventService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
   expect(auditEvent).toBeDefined();
@@ -76,25 +88,31 @@ it("audit system instant with create function", async () => {
 it("audit system duration", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startSystemAuditEvent(
-    edgeDbClient,
+  const aeId = await auditEventService.startSystemAuditEvent(
     "E",
     "Login",
-    start
+    start,
+    edgeDbClient
   );
 
-  await auditLogService.completeSystemAuditEvent(
-    edgeDbClient,
+  await auditEventService.completeSystemAuditEvent(
     aeId,
     0,
     start,
     addSeconds(start, 96),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
-  const events = await auditLogService.getSystemEntries(edgeDbClient, 1000, 0);
+  const events = await auditEventService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
   expect(auditEvent).toBeDefined();

@@ -25,6 +25,7 @@ import { GcpStorageSharingService } from "./business/services/gcp-storage-sharin
 import { S3 } from "./business/services/cloud-storage-service";
 import { ManifestService } from "./business/services/manifests/manifest-service";
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
+import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
 
 /**
  * Bootstrap the DI with some basic services that are
@@ -114,6 +115,11 @@ export function bootstrapDependencyInjection() {
   dc.registerSingleton(CloudflarePresignedUrlService);
   dc.registerSingleton(ManifestService);
   dc.registerSingleton(PresignedUrlService);
+
+  dc.registerSingleton<AuditEventTimedService>(
+    "ReleaseAuditTimedService",
+    AuditEventTimedService
+  );
 
   dc.registerSingleton<S3ManifestHtsgetService>(S3, S3ManifestHtsgetService);
 

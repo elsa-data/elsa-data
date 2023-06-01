@@ -134,12 +134,12 @@ export class JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Ran Dynamic Consent",
-        new Date()
+        new Date(),
+        tx
       );
 
       // create a new select job entry
@@ -435,12 +435,12 @@ export class JobService {
       }
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         selectJob.auditEntry.id,
         isCancellation ? 4 : 0,
         selectJob.started,
         new Date(),
-        { jobId: jobId }
+        { jobId: jobId },
+        tx
       );
 
       await e

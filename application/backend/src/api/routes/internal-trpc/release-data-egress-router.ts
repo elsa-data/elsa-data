@@ -1,7 +1,7 @@
 import { calculateOffset, internalProcedure, router } from "../trpc-bootstrap";
 import {
   inputPaginationParameter,
-  inputReleaseKeySingleParameter,
+  inputReleaseKeySingle,
 } from "./input-schemas-common";
 
 /**
@@ -9,7 +9,7 @@ import {
  */
 export const releaseDataEgressRouter = router({
   syncDataEgress: internalProcedure
-    .input(inputReleaseKeySingleParameter)
+    .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
       const { releaseKey } = input;
@@ -19,7 +19,7 @@ export const releaseDataEgressRouter = router({
       );
     }),
   dataEgressSummary: internalProcedure
-    .input(inputPaginationParameter.merge(inputReleaseKeySingleParameter))
+    .input(inputPaginationParameter.merge(inputReleaseKeySingle))
     .query(async ({ input, ctx }) => {
       const { user, pageSize, res: reply } = ctx;
       const { releaseKey, page = 1 } = input;
@@ -32,7 +32,7 @@ export const releaseDataEgressRouter = router({
       );
     }),
   dataEgressRecords: internalProcedure
-    .input(inputPaginationParameter.merge(inputReleaseKeySingleParameter))
+    .input(inputPaginationParameter.merge(inputReleaseKeySingle))
     .query(async ({ input, ctx }) => {
       const { user, pageSize, res: reply } = ctx;
       const { releaseKey, page = 1 } = input;

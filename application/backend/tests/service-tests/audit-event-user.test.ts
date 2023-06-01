@@ -6,7 +6,7 @@ import { beforeEachCommon } from "./user.common";
 import { addSeconds } from "date-fns";
 
 let existingUser: AuthenticatedUser;
-let auditLogService: AuditEventService;
+let auditEventService: AuditEventService;
 let edgeDbClient: edgedb.Client;
 
 const testContainer = registerTypes();
@@ -14,39 +14,42 @@ const testContainer = registerTypes();
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  auditLogService = testContainer.resolve(AuditEventService);
+  auditEventService = testContainer.resolve(AuditEventService);
 });
 
 it("audit user instant", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startUserAuditEvent(
-    edgeDbClient,
+  const aeId = await auditEventService.startUserAuditEvent(
     existingUser.subjectId,
     existingUser.displayName,
     existingUser.dbId,
     "E",
     "Login",
-    start
+    start,
+    edgeDbClient
   );
 
-  await auditLogService.completeUserAuditEvent(
-    edgeDbClient,
+  await auditEventService.completeUserAuditEvent(
     aeId,
     0,
     start,
     new Date(),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
-    edgeDbClient,
+  const events = await auditEventService.getUserEntries(
     ["user"],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -63,23 +66,27 @@ it("audit user instant", async () => {
 });
 
 it("audit user instant with create function", async () => {
-  const aeId = await auditLogService.createUserAuditEvent(
-    edgeDbClient,
+  const aeId = await auditEventService.createUserAuditEvent(
     existingUser.dbId,
     existingUser.subjectId,
     existingUser.displayName,
     "E",
     "Login",
     { message: "Message" },
-    8
+    8,
+    new Date(),
+    edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
-    edgeDbClient,
+  const events = await auditEventService.getUserEntries(
     ["user"],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -98,33 +105,36 @@ it("audit user instant with create function", async () => {
 it("audit user duration", async () => {
   const start = new Date();
 
-  const aeId = await auditLogService.startUserAuditEvent(
-    edgeDbClient,
+  const aeId = await auditEventService.startUserAuditEvent(
     existingUser.subjectId,
     existingUser.displayName,
     existingUser.dbId,
     "E",
     "Login",
-    start
+    start,
+    edgeDbClient
   );
 
-  await auditLogService.completeUserAuditEvent(
-    edgeDbClient,
+  await auditEventService.completeUserAuditEvent(
     aeId,
     0,
     start,
     addSeconds(start, 96),
     {
       message: "Message",
-    }
+    },
+    edgeDbClient
   );
 
-  const events = await auditLogService.getUserEntries(
-    edgeDbClient,
+  const events = await auditEventService.getUserEntries(
     ["user"],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -142,12 +152,15 @@ it("audit user duration", async () => {
 });
 
 it("get entries with no filter", async () => {
-  const events = await auditLogService.getUserEntries(
-    edgeDbClient,
+  const events = await auditEventService.getUserEntries(
     [],
     existingUser,
     1000,
-    0
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
   );
-  expect(events).toEqual({ data: [], total: 0 });
+  expect(events).toEqual(null);
 });

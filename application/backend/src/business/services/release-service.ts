@@ -32,6 +32,7 @@ import {
   insertPotentialOrReal,
   splitUserEmails,
 } from "./_dac-user-helper";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -41,10 +42,19 @@ export class ReleaseService extends ReleaseBaseService {
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService,
+    auditEventService: AuditEventService,
+    @inject("ReleaseAuditTimedService")
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   /**
@@ -109,6 +119,8 @@ export class ReleaseService extends ReleaseBaseService {
       user,
       releaseKey
     );
+
+    await this.createReleaseViewAuditEvent(user, releaseKey);
 
     return await this.getBase(releaseKey, userRole);
   }
@@ -466,7 +478,7 @@ ${release.applicantEmailAddresses}
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-      this.auditLogService,
+      this.auditEventService,
       this.edgeDbClient,
       user,
       releaseKey,
@@ -517,7 +529,7 @@ ${release.applicantEmailAddresses}
           .run(tx);
 
         await auditSuccess(
-          this.auditLogService,
+          this.auditEventService,
           tx,
           auditEventId,
           auditEventStart,
@@ -532,7 +544,7 @@ ${release.applicantEmailAddresses}
       return await this.getBase(releaseKey, userRole);
     } catch (e) {
       await auditFailure(
-        this.auditLogService,
+        this.auditEventService,
         this.edgeDbClient,
         auditEventId,
         auditEventStart,
@@ -574,7 +586,7 @@ ${release.applicantEmailAddresses}
     );
 
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-      this.auditLogService,
+      this.auditEventService,
       this.edgeDbClient,
       user,
       releaseKey,
@@ -667,7 +679,7 @@ ${release.applicantEmailAddresses}
           .run(tx);
 
         await auditSuccess(
-          this.auditLogService,
+          this.auditEventService,
           tx,
           auditEventId,
           auditEventStart,
@@ -681,7 +693,7 @@ ${release.applicantEmailAddresses}
       return await this.getBase(releaseKey, userRole);
     } catch (e) {
       await auditFailure(
-        this.auditLogService,
+        this.auditEventService,
         this.edgeDbClient,
         auditEventId,
         auditEventStart,

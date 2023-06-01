@@ -1,15 +1,11 @@
-import React, { useState, PropsWithChildren } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 import { ErrorBoundary } from "../components/errors";
 import { LayoutBaseFooter } from "./layout-base-footer";
 import { useUiAllowed } from "../hooks/ui-allowed";
-import {
-  ALLOWED_CREATE_NEW_RELEASE,
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
-} from "@umccr/elsa-constants";
+import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";
 import { useEnvRelay } from "../providers/env-relay-provider";
 
 type Props = {};
@@ -173,14 +169,14 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   </li>
                 </ul>
               ) : (
-                <ul className="list-reset flex-1 items-center px-4 md:px-0 lg:flex">
+                <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:space-x-12 lg:pb-0">
                   <li className="my-2 md:my-0">
                     {navLink(
                       "/login",
                       "Login",
-                      "text-neutral-content",
-                      "border-neutral",
-                      "hover:border-neutral-focus"
+                      "text-primary",
+                      "border-primary",
+                      "hover:border-primary-focus"
                     )}
                   </li>
                 </ul>

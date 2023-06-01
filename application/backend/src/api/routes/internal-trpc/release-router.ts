@@ -1,10 +1,9 @@
 import { z } from "zod";
 import { calculateOffset, internalProcedure, router } from "../trpc-bootstrap";
-import { inputPaginationParameter } from "./input-schemas-common";
-
-const inputSingleReleaseKey = z.object({
-  releaseKey: z.string(),
-});
+import {
+  inputPaginationParameter,
+  inputReleaseKeySingle,
+} from "./input-schemas-common";
 
 /**
  * RPC for release
@@ -23,7 +22,7 @@ export const releaseRouter = router({
       );
     }),
   getSpecificRelease: internalProcedure
-    .input(inputSingleReleaseKey)
+    .input(inputReleaseKeySingle)
     .query(async ({ input, ctx }) => {
       const { user } = ctx;
       const { releaseKey } = input;
@@ -31,7 +30,7 @@ export const releaseRouter = router({
       return await ctx.releaseService.get(user, releaseKey);
     }),
   getReleaseConsent: internalProcedure
-    .input(inputSingleReleaseKey.merge(z.object({ nodeId: z.string() })))
+    .input(inputReleaseKeySingle.merge(z.object({ nodeId: z.string() })))
     .query(async ({ input, ctx }) => {
       const { user } = ctx;
       const { releaseKey, nodeId } = input;

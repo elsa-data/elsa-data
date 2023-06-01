@@ -18,6 +18,7 @@ import {
 } from "../db/user-queries";
 import e from "../../../dbschema/edgeql-js";
 import { AuditEventService } from "./audit-event-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -29,11 +30,19 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
-    @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService,
+    @inject(AuditEventService) auditEventService: AuditEventService,
+    @inject("ReleaseAuditTimedService")
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   public async getParticipants(user: AuthenticatedUser, releaseKey: string) {
@@ -74,7 +83,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return await this.auditLogService.transactionalUpdateInReleaseAuditPattern(
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Add Participant",
@@ -158,7 +167,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       releaseKey
     );
 
-    await this.auditLogService.transactionalUpdateInReleaseAuditPattern(
+    await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Remove Participant",

@@ -54,7 +54,7 @@ export abstract class ManifestHtsgetService {
 
   async publishHtsgetManifestAuditFn(
     releaseKey: string,
-    completeAuditFn: (executor: Executor, details: any) => Promise<void>
+    completeAuditFn: (details: any, executor: Executor) => Promise<void>
   ): Promise<ManifestHtsgetResponseType> {
     const activated = await releaseIsActivated(this.edgeDbClient, {
       releaseKey,
@@ -135,7 +135,7 @@ export abstract class ManifestHtsgetService {
       maxAge: timeDifference,
     };
 
-    await completeAuditFn(this.edgeDbClient, output);
+    await completeAuditFn(output, this.edgeDbClient);
 
     this.logger.debug(`htsget manifest with output: ${JSON.stringify(output)}`);
 
