@@ -62,9 +62,6 @@ export type ElsaSettings = {
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
 
-  // maxmind database for IP Geo lookup
-  maxmindDbAssetPath: string;
-
   // prefix for releaseKey
   releaseKeyPrefix: string;
 

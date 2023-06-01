@@ -34,9 +34,7 @@
     "test:unit": "jest --forceExit --detectOpenHandles --runInBand --config jest.unit-tests.config.js",
     "test:integration": "jest --forceExit --detectOpenHandles --runInBand --config jest.integration-tests.config.js",
     "//postinstall": "Give us the ability to locally patch packages after install",
-    "postinstall": "patch-package",
-    "//updateMaxmindDb": "Update MaxMind Database for City IP lookup. This will download maxmind database to /asset/maxmind/db/GeoLite2-City.mmdb. Please set maxmind key to 'MAXMIND_KEY' as environment variable.",
-    "updateMaxmindDb": "rm -rf asset/maxmind/db && mkdir -p asset/maxmind/db && cd asset/maxmind/db && curl \"https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${MAXMIND_KEY}&suffix=tar.gz\" --output GeoLite2-City.tar.gz && tar -xvf GeoLite2-City.tar.gz && find . -name \"*GeoLite2-City.mmdb\" -print0 | xargs -0 -I {} mv {} . "
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "3.299.0",

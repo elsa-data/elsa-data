@@ -5,6 +5,7 @@ import { DatasetSchema } from "./config-schema-dataset";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
+export const MAXMIND_SOURCE_ENVIRONMENT_VAR = `ELSA_DATA_META_MAXMIND_DB_SOURCE`;
 
 const MailerSES = z.object({
   mode: z.literal("SES"),
@@ -187,9 +188,6 @@ export const configZodDefinition = z.object({
         "The externally accessible Url for the deployed location of Elsa Data"
       )
   ),
-  maxmindDbAssetPath: z
-    .optional(z.string())
-    .describe("The path to the Maxmind city database"),
   releaseKeyPrefix: z
     .string()
     .default("R")

@@ -158,7 +158,6 @@ export async function bootstrapSettings(
       },
     },
     ontoFhirUrl: _.get(config, "ontoFhirUrl")!,
-    maxmindDbAssetPath: _.get(config, "maxmindDbAssetPath")!,
     releaseKeyPrefix: _.get(config, "releaseKeyPrefix"),
     mondoSystem: {
       uri: "http://purl.obolibrary.org/obo/mondo.owl",
