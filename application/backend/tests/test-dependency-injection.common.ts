@@ -1,7 +1,4 @@
 import * as tsyringe from "tsyringe";
-import { S3Client } from "@aws-sdk/client-s3";
-import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import * as edgedb from "edgedb";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { createTestElsaSettings } from "./test-elsa-settings.common";
@@ -12,8 +9,6 @@ import {
 } from "../src/business/services/presigned-url-service";
 import { GcpPresignedUrlService } from "../src/business/services/gcp-presigned-url-service";
 import { CloudflarePresignedUrlService } from "../src/business/services/cloudflare-presigned-url-service";
-import { SESClient } from "@aws-sdk/client-ses";
-import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
 import { AwsPresignedUrlService } from "../src/business/services/aws/aws-presigned-url-service";
 import { AwsDiscoveryService } from "../src/business/services/aws/aws-discovery-service";
 import { AwsEnabledService } from "../src/business/services/aws/aws-enabled-service";
@@ -25,9 +20,8 @@ import { GcpStorageSharingService } from "../src/business/services/gcp-storage-s
 import { ManifestService } from "../src/business/services/manifests/manifest-service";
 import { S3 } from "../src/business/services/cloud-storage-service";
 import { S3ManifestHtsgetService } from "../src/business/services/manifests/htsget/manifest-htsget-service";
-import { STSClient } from "@aws-sdk/client-sts";
-import { SFNClient } from "@aws-sdk/client-sfn";
 import { AuditEventTimedService } from "../src/business/services/audit-event-timed-service";
+import { bootstrapDependencyInjectionAwsClients } from "../src/bootstrap-dependency-injection-aws-clients";
 
 export function registerTypes() {
   // TO *REALLY* USE CHILD CONTAINERS WE'D NEED TO TEACH FASTIFY TO DO THE SAME SO FOR THE MOMENT
@@ -38,39 +32,11 @@ export function registerTypes() {
   // we want an independent setup each call to this in testing (unlike in real code)
   testContainer.reset();
 
-  const awsClientConfig = {};
-
   testContainer.register<edgedb.Client>("Database", {
     useFactory: () => edgedb.createClient(),
   });
 
-  testContainer.register<S3Client>("S3Client", {
-    useFactory: () => new S3Client(awsClientConfig),
-  });
-
-  testContainer.register<CloudTrailClient>("CloudTrailClient", {
-    useFactory: () => new CloudTrailClient(awsClientConfig),
-  });
-
-  testContainer.register<CloudFormationClient>("CloudFormationClient", {
-    useFactory: () => new CloudFormationClient(awsClientConfig),
-  });
-
-  testContainer.register<SESClient>("SESClient", {
-    useFactory: () => new SESClient(awsClientConfig),
-  });
-
-  testContainer.register<ServiceDiscoveryClient>("ServiceDiscoveryClient", {
-    useFactory: () => new ServiceDiscoveryClient(awsClientConfig),
-  });
-
-  testContainer.register<STSClient>("STSClient", {
-    useFactory: () => new STSClient(awsClientConfig),
-  });
-
-  testContainer.register<SFNClient>("SFNClient", {
-    useFactory: () => new SFNClient({}),
-  });
+  bootstrapDependencyInjectionAwsClients(testContainer);
 
   testContainer.register<ElsaSettings>("Settings", {
     useFactory: createTestElsaSettings,

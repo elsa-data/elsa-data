@@ -1,14 +1,9 @@
 import {
-  FEATURE_DATA_SHARING_AWS_ACCESS_POINT,
-  FEATURE_DATA_SHARING_COPY_OUT,
-  FEATURE_DATA_SHARING_GCP_IAM,
-  FEATURE_DATA_SHARING_HTSGET,
+  FEATURE_RELEASE_COHORT_CONSTRUCTOR,
+  FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
 import { ElsaSettings } from "./config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
-import { AwsEnabledService } from "./business/services/aws/aws-enabled-service";
-import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
-import { GcpEnabledService } from "./business/services/gcp-enabled-service";
 
 /**
  * Determine on startup which features are enabled in this Elsa Data instance.
@@ -25,7 +20,19 @@ export async function getFeaturesEnabled(
 ): Promise<Set<string>> {
   const featuresEnabled = new Set<string>();
 
+  if (settings.feature) {
+    if (settings.feature.enableCohortConstructor)
+      featuresEnabled.add(FEATURE_RELEASE_COHORT_CONSTRUCTOR);
+
+    if (settings.feature.enableDataEgressViewer)
+      featuresEnabled.add(FEATURE_RELEASE_DATA_EGRESS_VIEWER);
+  }
+
   // we want to do our feature discovery in a container context that goes away afterwards
+  /*
+  WE HAVE PIVOTED TO DOING SHARER DISCOVERY VIA AN EXPLICIT CONFIGURATION
+  'sharer'. All of this discovery is performed on each login by a user.
+
   const childContainer = container.createChildContainer();
 
   if (await childContainer.resolve(AwsEnabledService).isEnabled()) {
@@ -43,7 +50,7 @@ export async function getFeaturesEnabled(
     featuresEnabled.add(FEATURE_DATA_SHARING_GCP_IAM);
   }
 
-  childContainer.dispose();
+  childContainer.dispose(); */
 
   return featuresEnabled;
 }

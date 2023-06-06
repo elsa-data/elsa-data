@@ -6,6 +6,8 @@ import { SharerSchema } from "./config-schema-sharer";
 import { MailerSchema } from "./config-schema-mailer";
 import { BrandingSchema } from "./config-schema-branding";
 import { OidcSchema } from "./config-schema-oidc";
+import { HttpHostingSchema } from "./config-schema-http-hosting";
+import { FeatureSchema } from "./config-schema-feature";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
@@ -20,24 +22,20 @@ export const configZodDefinition = z.object({
     .describe(
       "The name of the root artifact used for dynamic service discovery - this will differ for each deployment environment. For AWS - it refers to a CloudMap namespace"
     ),
-  oidc: z.optional(OidcSchema),
-  session: z.optional(
-    z.object({
-      secret: z
-        .string()
-        .describe(
-          "A long string secret that is used as part of the session encryption"
-        )
-        .brand<Sensitive>(),
-      salt: z
-        .string()
-        .length(16)
-        .describe(
-          "A 16 character salt that is used as part of the session encryption"
-        )
-        .brand<Sensitive>(),
-    })
+  // all production deployments will require this to be set - though the logic for this check is elsewhere
+  deployedUrl: z.optional(
+    z
+      .string()
+      .describe(
+        "The externally accessible Url for the deployed location of Elsa Data"
+      )
   ),
+  httpHosting: HttpHostingSchema,
+  oidc: z.optional(OidcSchema),
+  feature: z.optional(FeatureSchema).default({
+    enableCohortConstructor: true,
+    enableDataEgressViewer: true,
+  }),
   aws: z.optional(
     z.object({
       tempBucket: z
@@ -61,27 +59,6 @@ export const configZodDefinition = z.object({
           "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs"
         )
         .brand<Sensitive>(),
-    })
-  ),
-  // the rate limiting options are basically a pass through to the Fastify rate limit plugin
-  // for the moment we have picked only a subset of the full configuration items
-  rateLimit: z.optional(
-    z.object({
-      allowList: z
-        .optional(z.array(z.string()))
-        .describe(
-          "The IP addresses of any clients allowed to bypass rate limiting"
-        ),
-      max: z
-        .optional(z.number().int())
-        .describe(
-          "The maximum number of API calls allowed from a single IP in the time window"
-        ),
-      timeWindow: z
-        .optional(z.number().int())
-        .describe(
-          "The number of milliseconds in the time window in which rate limit events are measured"
-        ),
     })
   ),
   logger: z
@@ -108,14 +85,6 @@ export const configZodDefinition = z.object({
       transportTargets: [],
     }),
   ontoFhirUrl: z.optional(z.string()),
-  // all production deployments will require this to be set - though the logic for this check is elsewhere
-  deployedUrl: z.optional(
-    z
-      .string()
-      .describe(
-        "The externally accessible Url for the deployed location of Elsa Data"
-      )
-  ),
   maxmindDbAssetPath: z
     .optional(z.string())
     .describe("The path to the Maxmind city database"),
@@ -123,17 +92,6 @@ export const configZodDefinition = z.object({
     .string()
     .default("R")
     .describe("The prefix appended on the releaseKey before the count number"),
-  host: z
-    .string()
-    .ip()
-    .default("0.0.0.0")
-    .describe("The host interface to bind to"),
-  port: z.coerce
-    .number()
-    .positive()
-    .int()
-    .default(3000)
-    .describe("The port to bind to"),
   datasets: z
     .array(DatasetSchema)
     .default([])

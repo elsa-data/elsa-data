@@ -152,7 +152,7 @@ export class ReleaseService extends ReleaseBaseService {
         lastUpdatedSubjectId: user.subjectId,
         applicationDacTitle: release.releaseTitle,
         applicationDacIdentifier: e.tuple({
-          system: this.settings.host,
+          system: this.settings.httpHosting.host,
           value: releaseKey,
         }),
         applicationDacDetails: `

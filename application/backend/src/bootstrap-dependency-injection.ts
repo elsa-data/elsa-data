@@ -27,6 +27,7 @@ import { ManifestService } from "./business/services/manifests/manifest-service"
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
 import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
+import { bootstrapDependencyInjectionAwsClients } from "./bootstrap-dependency-injection-aws-clients";
 
 /**
  * Bootstrap the DI with some basic services that are
@@ -53,48 +54,7 @@ export function bootstrapDependencyInjection() {
     ),
   });
 
-  // whilst it is possible to create these AWS clients close to where they are needed - it then becomes
-  // hard to manage any global configuration (not that we have any global config though yet!)
-  // so anyhow - the preferred mechanism for sourcing a AWS service client is by registering
-  // it here and DI it
-
-  // the assumption here is that AWS_REGION is set by our environment and hence does not need to be
-  // provided here
-  // in all deployed AWS this is true
-  // for local dev we should set AWS_REGION explicitly when setting shell credentials (aws-vault etc)
-  const awsClientConfig = {};
-
-  dc.register<S3Client>("S3Client", {
-    useFactory: () => new S3Client(awsClientConfig),
-  });
-
-  dc.register<CloudTrailClient>("CloudTrailClient", {
-    useFactory: () => new CloudTrailClient(awsClientConfig),
-  });
-
-  dc.register<CloudFormationClient>("CloudFormationClient", {
-    useFactory: () => new CloudFormationClient(awsClientConfig),
-  });
-
-  dc.register<SES>("SESClient", {
-    useFactory: () => new SES(awsClientConfig),
-  });
-
-  dc.register<ServiceDiscoveryClient>("ServiceDiscoveryClient", {
-    useFactory: () => new ServiceDiscoveryClient(awsClientConfig),
-  });
-
-  dc.register<SecretsManagerClient>("SecretsManagerClient", {
-    useFactory: () => new SecretsManagerClient(awsClientConfig),
-  });
-
-  dc.register<SFNClient>("SFNClient", {
-    useFactory: () => new SFNClient(awsClientConfig),
-  });
-
-  dc.register<STSClient>("STSClient", {
-    useFactory: () => new STSClient(awsClientConfig),
-  });
+  bootstrapDependencyInjectionAwsClients(dc);
 
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
     useClass: AwsPresignedUrlService,

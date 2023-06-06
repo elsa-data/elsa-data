@@ -1,14 +1,13 @@
 import { Issuer } from "openid-client";
-import { RateLimitPluginOptions } from "@fastify/rate-limit";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { LoggerOptions } from "pino";
 import { DacType } from "./config-schema-dac";
 import { DatasetType } from "./config-schema-dataset";
 import { SharerType } from "./config-schema-sharer";
-import { ElsaConfigurationType } from "./config-schema";
 import { MailerType } from "./config-schema-mailer";
 import { BrandingType } from "./config-schema-branding";
 import { OidcType } from "./config-schema-oidc";
+import { HttpHostingType } from "./config-schema-http-hosting";
+import { FeatureType } from "./config-schema-feature";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -18,16 +17,16 @@ export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
-  host: string;
-  port: number;
-
   // the namespace in which we should be doing service discovery for dynamic services
   serviceDiscoveryNamespace: string;
 
-  sessionSecret: string;
-  sessionSalt: string;
+  // the settings for our web server (cookies, ports etc)
+  httpHosting: HttpHostingType;
 
   oidc?: Omit<OidcType, "issuerUrl"> & { issuer?: Issuer };
+
+  // selectively switch on/off functionality
+  feature?: FeatureType;
 
   // details that are required if running in AWS
   aws?: {
@@ -85,9 +84,6 @@ export type ElsaSettings = {
   datasets: DatasetType[];
 
   sharers: SharerType[];
-
-  // options to pass into the rate limiter
-  rateLimit: RateLimitPluginOptions;
 
   mailer?: MailerType;
 

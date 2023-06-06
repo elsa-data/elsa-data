@@ -79,7 +79,10 @@ export async function startWebServer(
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down
-    await server.listen({ port: settings.port, host: settings.host });
+    await server.listen({
+      port: settings.httpHosting.port,
+      host: settings.httpHosting.host,
+    });
 
     // we don't want to fall out the end of the 'start-server' command until we have been signalled
     // to shut down
@@ -221,7 +224,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
     server,
   });
 
-  await server.listen(settings.port);
+  await server.listen(settings.httpHosting.port);
 
   let count = 0;
   while (!successQuery) {

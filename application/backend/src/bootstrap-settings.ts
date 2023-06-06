@@ -46,27 +46,6 @@ export async function bootstrapSettings(
   // Settings might involve writing a cert file to disk and setting a corresponding env variable.
   // Settings might involve doing OIDC discovery and then using the returned value
 
-  /*const rootCa: string | undefined = config.edgeDb?.tlsRootCa;
-
-  if (rootCa) {
-    // edge db requires a TLS connection - and so we need to construct our own
-    // TLS keys/ca. Here just the CA is needed by the client - but it must be
-    // as a file on disk
-    const rootCaLocation = temp.path();
-
-    // We do not yet have a logger available at this point in the bootstrapper
-    // So only enable this console logging if debugging the CA config
-    // (in general this mechanism has been working well since initial implementation)
-    //console.log(
-    //  `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`
-    //);
-    // console.log(rootCa);
-
-    await writeFile(rootCaLocation, rootCa.replaceAll("\\n", "\n"));
-
-    process.env["EDGEDB_TLS_CA_FILE"] = rootCaLocation;
-  } */
-
   const logoPath = _.get(config, "branding.logoPath");
   let logoUriRelative: string | undefined;
   if (logoPath) {
@@ -77,10 +56,10 @@ export async function bootstrapSettings(
   const isDevelopment = process.env["NODE_ENV"] === "development";
 
   // we are prepared to default this to localhost
-  let deployedUrl = `http://localhost:${config.port}`;
+  let deployedUrl = `http://localhost:${config.httpHosting.port}`;
   let isLocalhost = true;
 
-  // but only if we are in dev and it is not set
+  // but only if we are in dev and deployedUrl is not set in the config itself
   if (_.has(config, "deployedUrl")) {
     deployedUrl = _.get(config, "deployedUrl")!;
     isLocalhost = false;
@@ -135,13 +114,13 @@ export async function bootstrapSettings(
     deployedUrl: deployedUrl,
     serviceDiscoveryNamespace:
       _.get(config, "serviceDiscoveryNamespace") ?? "elsa-data",
-    host: _.get(config, "host"),
-    port: _.get(config, "port"),
+    httpHosting: _.get(config, "httpHosting"),
     mailer: config.mailer ? _.get(config, "mailer") : undefined,
     oidc: await oidcConfigurationToSettings(
       isDevelopment || isLocalhost,
       config.oidc
     ),
+    feature: _.get(config, "feature"),
     aws: hasAws
       ? {
           tempBucket: _.get(config, "aws.tempBucket"),
@@ -156,8 +135,6 @@ export async function bootstrapSettings(
           ),
         }
       : undefined,
-    sessionSecret: _.get(config, "session.secret")!,
-    sessionSalt: _.get(config, "session.salt")!,
     dacs: _.get(config, "dacs"),
     sharers: sharers,
     logger: {
@@ -186,14 +163,6 @@ export async function bootstrapSettings(
     snomedSystem: {
       uri: "http://snomed.info/sct",
       oid: "2.16.840.1.113883.6.96",
-    },
-    rateLimit: {
-      // for the moment we set up the rate limiting across the entire Elsa Data surface
-      // (includes APIs and HTML/CSS fetches etc)
-      global: true,
-      max: _.get(config, "rateLimit.max"),
-      timeWindow: _.get(config, "rateLimit.timeWindow"),
-      allowList: _.get(config, "rateLimit.allowList"),
     },
     devTesting: isDevelopment
       ? {

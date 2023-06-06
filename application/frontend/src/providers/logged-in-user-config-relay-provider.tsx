@@ -4,13 +4,14 @@ import { DacType } from "../../../backend/src/config/config-schema-dac";
 import { trpc } from "../helpers/trpc";
 import { useLoggedInUser } from "./logged-in-user-provider";
 import { SharerType } from "../../../backend/src/config/config-schema-sharer";
+import { SharerWithStatusType } from "../../../backend/src/business/services/sharer-service";
 
 export type LoggedInUserConfigRelay = {
   // the set of datasets currently available from the instance
   datasets: Record<string, string>;
 
   // the set of sharers currently available from the instance
-  sharers: SharerType[];
+  sharers: SharerWithStatusType[];
 
   // the set of DACS currently available from the instance (or [] if this user cannot create releases)
   dacs: DacType[];
@@ -25,9 +26,9 @@ export type LoggedInUserConfigRelay = {
  * @param props
  * @constructor
  */
-export const LoggedInUserConfigRelayProvider: React.FC<Props> = (
-  props: Props
-) => {
+export const LoggedInUserConfigRelayProvider: React.FC<{
+  children: React.ReactNode;
+}> = (props) => {
   const loggedInUser = useLoggedInUser();
 
   const qSettings = {
@@ -60,7 +61,3 @@ export const LoggedInUserConfigRelayProvider: React.FC<Props> = (
 
 export const [useLoggedInUserConfigRelay, CtxProvider] =
   createCtx<LoggedInUserConfigRelay | null>();
-
-type Props = {
-  children: React.ReactNode;
-};

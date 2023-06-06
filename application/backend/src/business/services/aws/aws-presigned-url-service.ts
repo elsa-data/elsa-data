@@ -8,8 +8,29 @@ import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { IPresignedUrlProvider } from "../presigned-url-service";
-import assert from "assert";
 import { AwsDiscoveryService } from "./aws-discovery-service";
+import { SharerObjectSigningType } from "../../../config/config-schema-sharer";
+
+export function getObjectSigningSetting(
+  settings: ElsaSettings
+): SharerObjectSigningType | undefined {
+  // the typescript is not clever enough to work out the resolution of the discriminated union
+  // to our object-signing type - so we need to typecast
+  const objectSigningSettings = settings.sharers.filter(
+    (s) => s.type === "object-signing"
+  ) as SharerObjectSigningType[];
+
+  if (objectSigningSettings.length < 1) {
+    return undefined;
+  }
+
+  if (objectSigningSettings.length > 1)
+    throw new Error(
+      "For the moment we have only enabled the logic for a single object-signing sharer"
+    );
+
+  return objectSigningSettings[0];
+}
 
 @injectable()
 export class AwsPresignedUrlService implements IPresignedUrlProvider {
@@ -29,29 +50,37 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
     key: string,
     auditId: string
   ): Promise<string> {
-    assert(this.settings.aws);
+    const objectSigningSettings = getObjectSigningSetting(this.settings);
+
+    if (!objectSigningSettings)
+      throw new Error(
+        "AWS Object Signing is unavailable without an equivalent sharer defined in the settings"
+      );
+
+    // we use a special external object signing service which is how we can get signed URLS extending
+    // out to 7 days (otherwise we would be limited to < hour)
+    const objectSigning =
+      await this.awsDiscoveryService.locateObjectSigningPair();
+
+    if (!objectSigning)
+      throw new Error(
+        "AWS Object Signing is unavailable because the service does not look like it has been installed"
+      );
 
     const s3Client = new S3Client({});
     const awsRegion = await s3Client.config.region();
 
-    // we use the S3 client credentials as a backup - but we actually will prefer to use the static credentials given to
-    // us via our registered object signing service
-    // (this is what allows us to extend the share out to 7 days - otherwise we are bound by the lifespan
-    // of the running AWS credentials which will normally be hours not days)
-    const objectSigning =
-      await this.awsDiscoveryService.locateObjectSigningPair();
-
-    const awsCredentials = objectSigning
-      ? {
-          sessionToken: undefined,
-          accessKeyId: objectSigning[0],
-          secretAccessKey: objectSigning[1],
-        }
-      : s3Client.config.credentials;
+    const awsCredentials = {
+      sessionToken: undefined,
+      accessKeyId: objectSigning[0],
+      secretAccessKey: objectSigning[1],
+    };
 
     const s3ObjectUrl = parseUrl(
       `https://${bucket}.s3.${awsRegion}.amazonaws.com/${key}`
     );
+
+    // inject extra query parameters that can help us detecting these GET usage in CloudTrail
     s3ObjectUrl.query = {
       "x-releaseKey": releaseKey,
       "x-auditId": auditId,
@@ -65,8 +94,7 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
 
     return formatUrl(
       await presigner.presign(new HttpRequest(s3ObjectUrl), {
-        // TODO get this setting from the sharer config
-        expiresIn: 60 * 60 * 24 * 7, // 7 days
+        expiresIn: objectSigningSettings.maxAgeInSeconds,
       })
     );
   }

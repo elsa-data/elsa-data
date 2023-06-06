@@ -1,12 +1,15 @@
 {
-  // the security of our localhost dev cookies is not so important - for the real deployments
-  // we need to get these secrets from a real secret source
-  session: {
-    secret: "This is a long string that will encrypt our session cookies but only for localhost", // pragma: allowlist secret
-    salt: "Also a string 16",
-  },
-  rateLimit: {
-    allowList: ["127.0.0.1", "::1"],
+  httpHosting: {
+    // the security of our localhost dev cookies is not so important - for the real deployments
+    // we need to get these secrets from a real secret source
+    session: {
+      secret: "This is a long string that will encrypt our session cookies but only for localhost", // pragma: allowlist secret
+      salt: "Also a string 16",
+    },
+    // for localhost deployment there is no point in rate limiting ourselves
+    rateLimit: {
+      allowList: ["127.0.0.1", "::1"],
+    },
   },
   // for localhost development we would like pretty printing and debug level of detail
   logger: {

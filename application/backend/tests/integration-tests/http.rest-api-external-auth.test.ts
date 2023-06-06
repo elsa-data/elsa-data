@@ -2,7 +2,7 @@ import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
 import { registerTypes } from "../test-dependency-injection.common";
 import { getServices } from "../../src/di-helpers";
-import { FEATURE_DATA_SHARING_COPY_OUT } from "@umccr/elsa-constants";
+import { FEATURE_RELEASE_COHORT_CONSTRUCTOR } from "@umccr/elsa-constants";
 
 describe("http integration tests", () => {
   let server: FastifyInstance;
@@ -14,7 +14,7 @@ describe("http integration tests", () => {
       testContainer,
       settings,
       logger,
-      new Set<string>([FEATURE_DATA_SHARING_COPY_OUT])
+      new Set<string>([FEATURE_RELEASE_COHORT_CONSTRUCTOR])
     );
     server = await app.setupServer();
     await server.ready();
