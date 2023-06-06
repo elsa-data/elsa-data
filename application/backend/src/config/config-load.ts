@@ -117,16 +117,6 @@ export async function getMetaConfig(
     "SERVICE_DISCOVERY_NAMESPACE",
     "serviceDiscoveryNamespace"
   );
-  trySetEnvironmentVariableString("SESSION_SECRET", "session.secret");
-  trySetEnvironmentVariableString("SESSION_SALT", "session.salt");
-  trySetEnvironmentVariableString(
-    "AWS_SIGNING_ACCESS_KEY_ID",
-    "aws.signingAccessKeyId"
-  );
-  trySetEnvironmentVariableString(
-    "AWS_SIGNING_SECRET_ACCESS_KEY",
-    "aws.signingSecretAccessKey"
-  );
   trySetEnvironmentVariableString("AWS_TEMP_BUCKET", "aws.tempBucket");
   trySetEnvironmentVariableString(
     "CLOUDFLARE_SIGNING_ACCESS_KEY_ID",
@@ -138,17 +128,22 @@ export async function getMetaConfig(
   );
   trySetEnvironmentVariableString("DEPLOYED_URL", "deployedUrl");
 
-  trySetEnvironmentVariableInteger("PORT", "port");
-  trySetEnvironmentVariableString("HOST", "host");
+  trySetEnvironmentVariableString(
+    "HTTP_HOSTING_SESSION_SECRET",
+    "httpHosting.session.secret"
+  );
+  trySetEnvironmentVariableString(
+    "HTTP_HOSTING_SESSION_SALT",
+    "httpHosting.session.salt"
+  );
+  trySetEnvironmentVariableInteger("HTTP_HOSTING_PORT", "httpHosting.port");
+  trySetEnvironmentVariableString("HTTP_HOSTING_HOST", "httpHosting.host");
 
   trySetEnvironmentVariableString("LOGGER_LEVEL", "logger.level");
 
   trySetEnvironmentVariableString("MAILER_OPTIONS", "mailer.options");
   trySetEnvironmentVariableString("MAILER_DEFAULTS", "mailer.defaults");
   trySetEnvironmentVariableString("MAILER_MODE", "mailer.mode");
-
-  trySetEnvironmentVariableInteger("HTSGET_MANIFEST_TTL", "htsget.manifestTtl");
-  trySetEnvironmentVariableString("HTSGET_URL", "htsget.url");
 
   // perform validation on the final config object and return it transformed
   // (the transform will do type coercion and setting defaults)
