@@ -194,11 +194,11 @@ When an audit trail leave behind an IP address, we have include a mechanism to l
 To get the MaxMind Geo-City location database, you are required to be authenticated to download the database (the lite version is free). There are 2 ways to download the MaxMind Db.
 
 1. Manually
-1. Click on `MY ACCOUNT` (:bust_in_silhouette:) > `MY ACCOUNT` > `DOWNLOAD DATABASES`
-1. Download the `.mmdb` for the Geo City version (e.g. when using the lite version it is `GeoLite2 City`).
-1. License Keys
-1. Setup and retrieve the License Keys from the `MY_ACCOUNT` (:bust_in_silhouette:).
-1. Use this url `https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key={LICENSE_KEYS}&suffix=tar.gz` to download the `GZIP` file.
+   1. Click on `MY ACCOUNT` (:bust_in_silhouette:) > `MY ACCOUNT` > `DOWNLOAD DATABASES`
+   2. Download the `.mmdb` for the Geo City version (e.g. when using the lite version it is `GeoLite2 City`).
+2. License Keys
+   1. Setup and retrieve the License Keys from the `MY_ACCOUNT` (:bust_in_silhouette:).
+   2. Substitute the key into the following URL `https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key={LICENSE_KEYS}&suffix=tar.gz` and paste the URL to your browser address box (or you can do it via `curl`) to download the `GZIP` file.
 
 The downloaded file will be in GZIP file, you could verify the downloaded file with the SHA256 provided. This database will be updated regularly to provide the most accurate location, at the time of writing this, MaxMind will update this database twice a week.
 
@@ -208,7 +208,7 @@ The maxMindDb is configured using the configuration subsystem described [here](.
 
 ```json
 "ipLookup": {
-  "maxMindDbPath": "/GeoLite2-City.mmdb",
+  "maxMindDbPath": "path/to/Geo-City.mmdb",
 }
 ```
 

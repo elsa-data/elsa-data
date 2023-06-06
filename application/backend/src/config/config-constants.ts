@@ -243,7 +243,7 @@ export const configZodDefinition = z.object({
   ),
   ipLookup: z.optional(
     z.object({
-      maxMindDb: z.optional(
+      maxMindDbPath: z.optional(
         z
           .string()
           .describe(
