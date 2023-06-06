@@ -54,7 +54,7 @@
     "react-select": "^5.7.0",
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "3.0.1",
-    "vite": "^3.2.4",
+    "vite": "^3.2.7",
     "vite-plugin-svgr": "^2.2.2"
   },
   "devDependencies": {
