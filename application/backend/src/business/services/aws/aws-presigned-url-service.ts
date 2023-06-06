@@ -9,6 +9,7 @@ import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { IPresignedUrlProvider } from "../presigned-url-service";
 import assert from "assert";
+import { AwsDiscoveryService } from "./aws-discovery-service";
 
 @injectable()
 export class AwsPresignedUrlService implements IPresignedUrlProvider {
@@ -17,7 +18,9 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
   constructor(
     @inject("Settings") private settings: ElsaSettings,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
+    @inject(AwsDiscoveryService)
+    private readonly awsDiscoveryService: AwsDiscoveryService
   ) {}
 
   public async presign(
@@ -32,17 +35,19 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
     const awsRegion = await s3Client.config.region();
 
     // we use the S3 client credentials as a backup - but we actually will prefer to use the static credentials given to
-    // us via settings (this is what allows us to extend the share out to 7 days - otherwise we are bound by the lifespan
+    // us via our registered object signing service
+    // (this is what allows us to extend the share out to 7 days - otherwise we are bound by the lifespan
     // of the running AWS credentials which will normally be hours not days)
-    const awsCredentials =
-      this.settings.aws.signingAccessKeyId &&
-      this.settings.aws.signingSecretAccessKey
-        ? {
-            sessionToken: undefined,
-            accessKeyId: this.settings.aws.signingAccessKeyId,
-            secretAccessKey: this.settings.aws.signingSecretAccessKey,
-          }
-        : s3Client.config.credentials;
+    const objectSigning =
+      await this.awsDiscoveryService.locateObjectSigningPair();
+
+    const awsCredentials = objectSigning
+      ? {
+          sessionToken: undefined,
+          accessKeyId: objectSigning[0],
+          secretAccessKey: objectSigning[1],
+        }
+      : s3Client.config.credentials;
 
     const s3ObjectUrl = parseUrl(
       `https://${bucket}.s3.${awsRegion}.amazonaws.com/${key}`
@@ -60,6 +65,7 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
 
     return formatUrl(
       await presigner.presign(new HttpRequest(s3ObjectUrl), {
+        // TODO get this setting from the sharer config
         expiresIn: 60 * 60 * 24 * 7, // 7 days
       })
     );

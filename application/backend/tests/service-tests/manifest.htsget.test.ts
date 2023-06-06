@@ -252,7 +252,7 @@ it("test publish htsget manifest htsget not enabled", async () => {
   testContainerNoHtsget.register<ElsaSettings>("Settings", {
     useFactory: () => {
       let settings = createTestElsaSettings();
-      settings.htsget = undefined;
+      settings.sharers = [];
 
       return settings;
     },

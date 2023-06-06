@@ -4,7 +4,7 @@ import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { ReleaseService } from "../release-service";
-import { Dac } from "../../../config/config-schema-dac";
+import { DacType } from "../../../config/config-schema-dac";
 import _ from "lodash";
 
 /**
@@ -26,7 +26,7 @@ export class DacService {
    *
    * @param user
    */
-  public async getConfigured(user: AuthenticatedUser): Promise<Dac[]> {
+  public async getConfigured(user: AuthenticatedUser): Promise<DacType[]> {
     // TODO rather than use permission from cookie - make a db check here
     if (!user.isAllowedCreateRelease)
       // NOTE we make the decision that anyone can call this API without error - but that

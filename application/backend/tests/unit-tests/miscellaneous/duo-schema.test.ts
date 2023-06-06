@@ -103,7 +103,7 @@ describe("DUO types and serialisation", () => {
   it("JSON schema testing of mutated Typescript DUO instances", async () => {
     const limitationValidate = ajv.compile(DuoLimitationSchema);
 
-    // we will cause this previous working example to fail changing the code from GRU to DS
+    // we will cause this previous notWorking example to fail changing the code from GRU to DS
     // (where DS instances MUST have a disease property)
     (gruExample as any).code = "DUO:0000007";
 

@@ -43,4 +43,4 @@ export const DacSchema = z.discriminatedUnion("type", [
   DacManualSchema,
 ]);
 
-export type Dac = z.infer<typeof DacSchema>;
+export type DacType = z.infer<typeof DacSchema>;

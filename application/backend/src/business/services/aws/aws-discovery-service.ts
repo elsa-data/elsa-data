@@ -6,6 +6,27 @@ import {
   DiscoverInstancesCommand,
   ServiceDiscoveryClient,
 } from "@aws-sdk/client-servicediscovery";
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from "@aws-sdk/client-secrets-manager";
+import { differenceInHours, differenceInMinutes, subHours } from "date-fns";
+
+/**
+ * A type representing cached lookups we are making to discovery.
+ */
+type CachedLookup = {
+  readonly serviceName: string;
+
+  readonly attributeName: string;
+  readonly attributeSecretName: string | undefined;
+
+  lastAnyAttempt?: Date;
+  lastSuccessfulAttempt?: Date;
+
+  value?: string;
+  secretValue?: string;
+};
 
 /**
  * The discovery service will be a common pattern for how Elsa discovers
@@ -23,102 +44,166 @@ export class AwsDiscoveryService {
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("ServiceDiscoveryClient")
-    private readonly serviceDiscoveryClient: ServiceDiscoveryClient
+    private readonly serviceDiscoveryClient: ServiceDiscoveryClient,
+    @inject("SecretsManagerClient")
+    private readonly secretsManagerClient: SecretsManagerClient
   ) {
     logger.debug(
       "Created AwsDiscoveryService instance - expecting this to only happen once"
     );
   }
 
-  private copyOutStepsRunSuccessfully = false;
-  private copyOutStepsArn: string | null = null;
+  private copyOutResult: CachedLookup = {
+    serviceName: "ElsaDataCopyOut",
+    attributeName: "stateMachineArn",
+    attributeSecretName: undefined,
+  };
 
   /**
    * Discover the ARN for the Copy Out steps function if it is present in our AWS
-   * setup, or else return null. Aggressively caches the value.
+   * setup, or else return undefined. Caches the value.
    */
-  public async locateCopyOutStepsArn(): Promise<string | null> {
+  public async locateCopyOutStepsArn(): Promise<string | undefined> {
     await this.awsEnabledService.enabledGuard();
 
-    if (!this.copyOutStepsRunSuccessfully) {
-      const key = "stateMachineArn";
-      const service = "ElsaDataCopyOut";
+    if (await this.discoverAttributeValueWithCaching(this.copyOutResult))
+      return this.copyOutResult.value;
 
-      try {
-        const command = new DiscoverInstancesCommand({
-          NamespaceName: this.settings.serviceDiscoveryNamespace,
-          ServiceName: service,
-        });
-
-        // note unlike what the documentation implies - if the service is not present
-        // this call just returns an empty set of instances - not an error
-        const response = await this.serviceDiscoveryClient.send(command);
-
-        this.copyOutStepsRunSuccessfully = true;
-
-        for (const i of response.Instances || []) {
-          if (i.Attributes && key in i.Attributes) {
-            this.copyOutStepsArn = i.Attributes[key];
-            // shouldn't be more than one - take the first anyhow
-            break;
-          }
-        }
-      } catch (e) {
-        this.copyOutStepsArn = null;
-
-        this.logger.error(
-          e,
-          "Performing CloudMap discovery for locateCopyOutStepsArn()"
-        );
-      }
-    }
-
-    return this.copyOutStepsArn;
+    return undefined;
   }
 
-  private beaconLambdaRunSuccessfully = false;
-  private beaconLambdaArn: string | null = null;
+  private objectSigningResult: CachedLookup = {
+    serviceName: "ElsaDataObjectSigning",
+    attributeName: "s3AccessKey",
+    attributeSecretName: "s3AccessKeySecretName", // pragma: allowlist secret
+  };
+
+  /**
+   * Discover the IAM user and secret key for Object Signing if it is present
+   * in our AWS setup, or else return undefined. Caches the value.
+   */
+  public async locateObjectSigningPair(): Promise<
+    [string, string] | undefined
+  > {
+    await this.awsEnabledService.enabledGuard();
+
+    if (
+      await this.discoverAttributeValueWithCaching(this.objectSigningResult)
+    ) {
+      return [
+        this.objectSigningResult.value!,
+        this.objectSigningResult.secretValue!,
+      ];
+    }
+    return undefined;
+  }
+
+  private beaconLambdaResult: CachedLookup = {
+    serviceName: "ElsaDataBeacon",
+    attributeName: "lambdaArn",
+    attributeSecretName: undefined,
+  };
 
   /**
    * Discover the ARN for the Beacon lambda if it is present in our AWS
-   * setup, or else return null. Aggressively caches the value.
+   * setup, or else return undefined. Caches the value.
    */
-  public async locateBeaconLambdaArn(): Promise<string | null> {
+  public async locateBeaconLambdaArn(): Promise<string | undefined> {
     await this.awsEnabledService.enabledGuard();
 
-    if (!this.beaconLambdaRunSuccessfully) {
-      const key = "lambdaArn";
-      const service = "ElsaDataBeacon";
+    if (await this.discoverAttributeValueWithCaching(this.beaconLambdaResult))
+      return this.beaconLambdaResult.value;
 
-      try {
-        const command = new DiscoverInstancesCommand({
-          NamespaceName: this.settings.serviceDiscoveryNamespace,
-          ServiceName: service,
-        });
+    return undefined;
+  }
 
-        // note unlike what the documentation implies - if the service is not present
-        // this call just returns an empty set of instances - not an error
-        const response = await this.serviceDiscoveryClient.send(command);
+  /**
+   * Using a special cache data structure, performs rate limited service discovery
+   * of attributes and secrets from cloudmap.
+   * Return true if the passed in "cl" data structure now has valid values, and false if
+   * it does not (i.e. if the lookup was unsuccessful).
+   *
+   * @param cl
+   * @returns true if successful lookup (or successful cache lookup), false otherwise
+   * @private
+   */
+  private async discoverAttributeValueWithCaching(cl: CachedLookup) {
+    // if we have made a successful attempt in the past hour we do not attempt again - the cached value will do
+    if (cl.lastSuccessfulAttempt)
+      if (differenceInHours(new Date(), cl.lastSuccessfulAttempt) <= 1)
+        return true;
 
-        this.beaconLambdaRunSuccessfully = true;
+    // if we have made any attempt in the last minute we skip doing anything...
+    // secrets manager costs per API call and we definitely don't want to busy loop
+    // the implication of this check is that we were _unsuccessful_ in a previous call - this is
+    // going to return false again
+    if (cl.lastAnyAttempt)
+      if (differenceInMinutes(new Date(), cl.lastAnyAttempt) <= 1) return false;
 
-        for (const i of response.Instances || []) {
-          if (i.Attributes && key in i.Attributes) {
-            this.beaconLambdaArn = i.Attributes[key];
-            // shouldn't be more than one - take the first anyhow
-            break;
+    cl.lastAnyAttempt = new Date();
+
+    try {
+      // discover instances has a API quotes in the 1000s per second - so we don't really
+      // worry too much about calling this a lot in the case where there is no service registered..
+      // if successful however - we make sure we
+      // cache the successful return value
+      const command = new DiscoverInstancesCommand({
+        NamespaceName: this.settings.serviceDiscoveryNamespace,
+        ServiceName: cl.serviceName,
+      });
+
+      // note unlike what the documentation implies - if the service is not present
+      // this call just returns an empty set of instances - not an error
+      const response = await this.serviceDiscoveryClient.send(command);
+
+      let v1;
+      let v2;
+
+      for (const i of response.Instances || []) {
+        if (i.Attributes) {
+          if (cl.attributeName in i.Attributes) {
+            v1 = i.Attributes[cl.attributeName];
+          }
+
+          if (cl.attributeSecretName) {
+            if (cl.attributeSecretName in i.Attributes) {
+              v2 = i.Attributes[cl.attributeSecretName];
+            }
           }
         }
-      } catch (e) {
-        this.beaconLambdaArn = null;
-
-        this.logger.error(
-          e,
-          "Performing CloudMap discovery for locateBeaconLambdaArn()"
-        );
       }
+
+      if (!v1) throw new Error(`No attribute ${cl.attributeName}`);
+
+      if (cl.attributeSecretName && !v2)
+        throw new Error(`No attribute ${cl.attributeSecretName}`);
+
+      if (cl.attributeSecretName) {
+        // we want to look up the secret value
+        const secretResult = await this.secretsManagerClient.send(
+          new GetSecretValueCommand({
+            SecretId: v2,
+          })
+        );
+
+        if (secretResult.SecretString) v2 = secretResult.SecretString;
+        else
+          throw new Error(`Discovery secret ${v2} did not have string content`);
+      }
+
+      cl.value = v1;
+      cl.secretValue = v2;
+
+      cl.lastSuccessfulAttempt = new Date();
+
+      return true;
+    } catch (e) {
+      this.logger.error(
+        e,
+        `Performing CloudMap discovery in ${cl.serviceName}`
+      );
     }
 
-    return this.beaconLambdaArn;
+    return false;
   }
 }

@@ -84,7 +84,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
           releaseKey
         );
 
-        // once this is working well we can probably drop this to debug
+        // once this is notWorking well we can probably drop this to debug
         this.logger.info(m, "created release master manifest");
 
         // collect some basic info that _might_ be useful in an audit log

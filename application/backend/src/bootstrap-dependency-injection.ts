@@ -26,6 +26,7 @@ import { S3 } from "./business/services/cloud-storage-service";
 import { ManifestService } from "./business/services/manifests/manifest-service";
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
+import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 
 /**
  * Bootstrap the DI with some basic services that are
@@ -81,6 +82,10 @@ export function bootstrapDependencyInjection() {
 
   dc.register<ServiceDiscoveryClient>("ServiceDiscoveryClient", {
     useFactory: () => new ServiceDiscoveryClient(awsClientConfig),
+  });
+
+  dc.register<SecretsManagerClient>("SecretsManagerClient", {
+    useFactory: () => new SecretsManagerClient(awsClientConfig),
   });
 
   dc.register<SFNClient>("SFNClient", {

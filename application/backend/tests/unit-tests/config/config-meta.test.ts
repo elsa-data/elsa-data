@@ -1,5 +1,5 @@
-import { getMetaConfig } from "../../../src/config/config-schema";
-import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-constants";
+import { getMetaConfig } from "../../../src/config/config-load";
+import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-schema";
 
 // TODO: because this actually instantiates the providers, all providers mentioned here need to work in test
 // TODO: we still need to set up the test infrastructure so that AWS tests will work (using fake AWS??)

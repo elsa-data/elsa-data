@@ -28,8 +28,6 @@ export async function getFeaturesEnabled(
   // we want to do our feature discovery in a container context that goes away afterwards
   const childContainer = container.createChildContainer();
 
-  if (settings.htsget) featuresEnabled.add(FEATURE_DATA_SHARING_HTSGET);
-
   if (await childContainer.resolve(AwsEnabledService).isEnabled()) {
     featuresEnabled.add(FEATURE_DATA_SHARING_AWS_ACCESS_POINT);
 

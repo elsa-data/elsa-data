@@ -7,7 +7,7 @@ import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
-import { getDirectConfig } from "../src/config/config-schema";
+import { getDirectConfig } from "../src/config/config-load";
 import pino, { Logger } from "pino";
 import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
 import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";

@@ -139,13 +139,13 @@ export const DuoModifierSchema = Type.Union(
       projects: Type.Array(Type.String()),
     }),
   ],
-  // this doesn't seem to be working - I can't use a Type.Ref to this anyhow
+  // this doesn't seem to be notWorking - I can't use a Type.Ref to this anyhow
   {
     $id: "DuoModifier",
   }
 );
 
-// we should get $ref working so that the definition of the array of modifiers is only declared once
+// we should get $ref notWorking so that the definition of the array of modifiers is only declared once
 // export const ModifierArrayReference = Type.Array(Type.Ref(DuoModifierSchema));
 
 export const DuoGeneralResearchUseSchema = Type.Object({

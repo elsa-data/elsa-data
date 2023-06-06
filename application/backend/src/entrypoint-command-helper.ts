@@ -1,7 +1,7 @@
 import { ElsaSettings } from "./config/elsa-settings";
-import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-constants";
+import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-schema";
 import { bootstrapSettings } from "./bootstrap-settings";
-import { getMetaConfig } from "./config/config-schema";
+import { getMetaConfig } from "./config/config-load";
 
 export type EntrypointCommandHelper = {
   command: string;

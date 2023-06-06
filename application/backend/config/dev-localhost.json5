@@ -55,9 +55,6 @@
   mailer: {
     mode: "SES",
   },
-  htsget: {
-    url: "https://htsget.elsa.dev.umccr.org",
-  },
   "+superAdmins": [
     {
       sub: "http://subject1.com",

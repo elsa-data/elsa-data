@@ -35,7 +35,7 @@ export async function transformDbManifestToMasterManifest(
   // we need to prune the manifest of all files that we should not be giving out access to
   // (according to our includeReadData etc)
 
-  // NOTE: we are currently working around an EdgeDb generate issue which insists that artifact
+  // NOTE: we are currently notWorking around an EdgeDb generate issue which insists that artifact
   // fields like bamFile are mandatory when clearly the query makes them optional
 
   // downstream we should always be checking these ("if (a.bamFile)") - so once the generator typing

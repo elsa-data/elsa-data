@@ -19,13 +19,15 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   //      more sophisticated
   port: 3000,
   host: "127.0.0.1",
-  mailer: {
-    mode: "None",
-  },
-  htsget: {
-    maxAge: 86400,
-    url: new URL("https://htsget.elsa.dev.umccr.org"),
-  },
+  mailer: undefined,
+  sharers: [
+    {
+      id: "htsget-umccr",
+      type: "htsget",
+      maxAge: 86400,
+      url: "https://htsget.elsa.dev.umccr.org",
+    },
+  ],
   deployedUrl: "http://localhost:3000",
   serviceDiscoveryNamespace: "elsa-data",
   dacs: [
