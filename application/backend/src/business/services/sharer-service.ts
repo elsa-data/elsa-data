@@ -3,7 +3,7 @@ import { inject, injectable } from "tsyringe";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import { SharerType } from "../../config/config-schema-sharer";
-import { IAwsDiscoveryService } from "./aws/aws-discovery-service";
+import { AwsDiscoveryService } from "./aws/aws-discovery-service";
 import { AwsEnabledService } from "./aws/aws-enabled-service";
 
 export type SharerWithStatusType = SharerType & {
@@ -17,8 +17,8 @@ export class SharerService {
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService,
-    @inject("IAwsDiscoveryService")
-    private readonly awsDiscoveryService: IAwsDiscoveryService,
+    @inject(AwsDiscoveryService)
+    private readonly awsDiscoveryService: AwsDiscoveryService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService
   ) {}

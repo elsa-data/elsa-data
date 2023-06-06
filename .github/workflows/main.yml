@@ -43,4 +43,4 @@ jobs:
 
       #- name: Generate EdgeDb types
       #  run: npm run edgetypes
-      #  working-directory: application/backend
+      #  notWorking-directory: application/backend
