@@ -370,7 +370,7 @@ export class AwsCloudTrailLakeService {
         this.maxmindLookup = await maxmind.open<CityResponse>(maxMindDbPath);
       } catch (error) {
         this.logger.warn(
-          "No maxmind db is configured and therefore will not perform IP city lookup."
+          `The configured MaxMind Database (${maxMindDbPath}) does not contain a readable MaxMind Database, therefore, it will not perform IP lookup.`
         );
       }
     }

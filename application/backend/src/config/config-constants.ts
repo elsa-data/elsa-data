@@ -243,13 +243,11 @@ export const configZodDefinition = z.object({
   ),
   ipLookup: z.optional(
     z.object({
-      maxMindDbPath: z.optional(
-        z
-          .string()
-          .describe(
-            "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
-          )
-      ),
+      maxMindDbPath: z
+        .string()
+        .describe(
+          "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
+        ),
     })
   ),
   branding: z.optional(

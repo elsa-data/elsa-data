@@ -204,7 +204,7 @@ The downloaded file will be in GZIP file, you could verify the downloaded file w
 
 Extract this data (to obtain the `.mmdb` file) and include this file as part of the deployment.
 
-The maxMindDb is configured using the configuration subsystem described [here](./docs/deployment/configuration.md). An example JSON5 snippet to add a logo and brand name is as follows:
+The MaxMind Database path is configured using the configuration subsystem described [here](./docs/deployment/configuration.md). An example JSON5 snippet to add the MaxMind database path is as follows:
 
 ```json
 "ipLookup": {
