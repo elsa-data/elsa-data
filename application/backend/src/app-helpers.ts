@@ -27,7 +27,7 @@ export function locateHtmlDirectory(allowFilesDirectFromSource: boolean) {
 
   if (!existsSync(staticFilesPath)) {
     if (allowFilesDirectFromSource) {
-      // ONLY IN DEVELOPMENT try looking for the build folder directly in our notWorking frontend dev area
+      // ONLY IN DEVELOPMENT try looking for the build folder directly in our working frontend dev area
       staticFilesPath = resolve("..", "frontend", "build");
     }
   }

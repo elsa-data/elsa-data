@@ -24,7 +24,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     {
       id: "htsget-umccr",
       type: "htsget",
-      maxAge: 86400,
+      maxAgeInSeconds: 86400,
       url: "https://htsget.elsa.dev.umccr.org",
     },
   ],

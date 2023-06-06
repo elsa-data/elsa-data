@@ -56,7 +56,7 @@ export async function bootstrapSettings(
 
     // We do not yet have a logger available at this point in the bootstrapper
     // So only enable this console logging if debugging the CA config
-    // (in general this mechanism has been notWorking well since initial implementation)
+    // (in general this mechanism has been working well since initial implementation)
     //console.log(
     //  `Discovered TLS Root CA configuration so constructing CA on disk at ${rootCaLocation} and setting path in environment variable EDGEDB_TLS_CA_FILE`
     //);
