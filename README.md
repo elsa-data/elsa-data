@@ -187,6 +187,33 @@ A logo and brand name can be added to Elsa to indicate what organisation is runn
 
 If deploying Elsa as a Docker image, the JSON5 file which contains this configuration can be baked into the image as shown [here](https://github.com/umccr/elsa-data-aws-deploy/blob/6c108c0d35b3d5151ffba8fff3500dcf11c87d79/artifacts/elsa-data-application-deployment-ag-prod-docker-image/Dockerfile#L10). The logo would need to be included in the image similarly.
 
+#### IP Lookup (MaxMind)
+
+When an audit trail leave behind an IP address, we have include a mechanism to lookup the IP address to a real world location. This mechanism requires a [MaxMind Database](https://www.maxmind.com/en/home) which will lookup to its corresponding city and country. If the Database is not included at the deployment the lookup field in the Elsa's database will return empty (-).
+
+To get the MaxMind Geo-City location database, you are required to be authenticated to download the database (the lite version is free). There are 2 ways to download the MaxMind Db.
+
+1. Manually
+1. Click on `MY ACCOUNT` (:bust_in_silhouette:) > `MY ACCOUNT` > `DOWNLOAD DATABASES`
+1. Download the `.mmdb` for the Geo City version (e.g. when using the lite version it is `GeoLite2 City`).
+1. License Keys
+1. Setup and retrieve the License Keys from the `MY_ACCOUNT` (:bust_in_silhouette:).
+1. Use this url `https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key={LICENSE_KEYS}&suffix=tar.gz` to download the `GZIP` file.
+
+The downloaded file will be in GZIP file, you could verify the downloaded file with the SHA256 provided. This database will be updated regularly to provide the most accurate location, at the time of writing this, MaxMind will update this database twice a week.
+
+Extract this data (to obtain the `.mmdb` file) and include this file as part of the deployment.
+
+The maxMindDb is configured using the configuration subsystem described [here](./docs/deployment/configuration.md). An example JSON5 snippet to add a logo and brand name is as follows:
+
+```json
+"ipLookup": {
+  "maxMindDbPath": "/GeoLite2-City.mmdb",
+}
+```
+
+If deploying Elsa as a Docker image, the JSON5 file which contains this configuration can be baked into the image as shown [here](https://github.com/umccr/elsa-data-aws-deploy/blob/6c108c0d35b3d5151ffba8fff3500dcf11c87d79/artifacts/elsa-data-application-deployment-ag-prod-docker-image/Dockerfile#L10). The `.mmdb` would need to be included in the image similarly.
+
 ### Run Locally
 
 The Elsa frontend is located in `application/frontend` and the backend in `application/backend`.

@@ -19,7 +19,6 @@ import {
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
 } from "../../../../dbschema/queries";
-import { MAXMIND_SOURCE_ENVIRONMENT_VAR } from "../../../config/config-constants";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -365,15 +364,15 @@ export class AwsCloudTrailLakeService {
     const endQueryDateISO = endQueryDate.toISOString();
 
     // Try initiate maxmind reader if available
-    const maxmind_path =
-      process.env[MAXMIND_SOURCE_ENVIRONMENT_VAR] ??
-      "/assets/maxmind/GeoLite2-City.mmdb";
-    try {
-      this.maxmindLookup = await maxmind.open<CityResponse>(maxmind_path);
-    } catch (error) {
-      this.logger.warn(
-        "No maxmind db is configured and therefore will not perform IP city lookup."
-      );
+    const maxMindDbPath = this.settings.ipLookup?.maxMindDbPath;
+    if (maxMindDbPath) {
+      try {
+        this.maxmindLookup = await maxmind.open<CityResponse>(maxMindDbPath);
+      } catch (error) {
+        this.logger.warn(
+          "No maxmind db is configured and therefore will not perform IP city lookup."
+        );
+      }
     }
 
     for (const edsi of eventDataStoreIds) {

@@ -5,7 +5,6 @@ import { DatasetSchema } from "./config-schema-dataset";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
-export const MAXMIND_SOURCE_ENVIRONMENT_VAR = `ELSA_DATA_META_MAXMIND_DB_SOURCE`;
 
 const MailerSES = z.object({
   mode: z.literal("SES"),
@@ -240,6 +239,17 @@ export const configZodDefinition = z.object({
           "If test users should be allowed, including various techniques used to adjust user sessions"
         ),
       allowTestRoutes: z.boolean().describe("If test routes should be added"),
+    })
+  ),
+  ipLookup: z.optional(
+    z.object({
+      maxMindDb: z.optional(
+        z
+          .string()
+          .describe(
+            "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
+          )
+      ),
     })
   ),
   branding: z.optional(

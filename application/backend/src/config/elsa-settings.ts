@@ -93,7 +93,9 @@ export type ElsaSettings = {
 
     allowTestRoutes: boolean;
   };
-
+  ipLookup?: {
+    maxMindDbPath?: string;
+  };
   branding?: {
     brandName?: string;
     logoPath?: string;
