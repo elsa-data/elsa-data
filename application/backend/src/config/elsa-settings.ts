@@ -89,5 +89,4 @@ export type ElsaSettings = {
   ipLookup?: {
     maxMindDbPath?: string;
   };
-
 };
