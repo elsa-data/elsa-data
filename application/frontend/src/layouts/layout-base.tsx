@@ -2,7 +2,7 @@ import React, { PropsWithChildren, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
-import { ErrorBoundary } from "../components/errors";
+import {ErrorBoundary, OfflineAlert} from "../components/errors";
 import { LayoutBaseFooter } from "./layout-base-footer";
 import { useUiAllowed } from "../hooks/ui-allowed";
 import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";
@@ -202,7 +202,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
 
       <div className="container mx-auto w-full grow px-2 pt-10 lg:pt-20">
         <div className="mt-8 mb-8 w-full leading-normal text-gray-800">
-          <ErrorBoundary rethrowError={(_: any) => false}>
+          <ErrorBoundary renderCommonErrors={true}>
             <div className="flex flex-col space-y-4">
               <Outlet />
             </div>

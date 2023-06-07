@@ -47,6 +47,13 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
         A summary of events of every data egress from the data storage based on
         file associated with the release.
       </div>
+
+      {dataEgressQuery.isError && (
+        <EagerErrorBoundary
+          error={dataEgressQuery.error}
+        />
+      )}
+
       <Table
         tableHead={
           <tr>
@@ -90,13 +97,6 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
         }
       />
 
-      {dataEgressQuery.isError && (
-        <EagerErrorBoundary
-          message={"Something went wrong fetching data egress"}
-          error={dataEgressQuery.error}
-          styling={"bg-red-100"}
-        />
-      )}
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}

@@ -152,7 +152,7 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           >
             {permissionIconProperties.map((prop) => (
               <React.Fragment key={prop.key}>
-                {row[prop.key] == true && (
+                {row[prop.key] && (
                   <span key={prop.key} className="mx-1" title={prop.title}>
                     {prop.icon}
                   </span>
@@ -169,9 +169,14 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   return (
     <Box
       heading="Other Users"
-      errorMessage={"Something went wrong fetching users."}
     >
       <div className="flex flex-col">
+        {dataQuery.isError && (
+          <EagerErrorBoundary
+            error={dataQuery.error}
+          />
+        )}
+
         <Table
           tableHead={createHeaders()}
           tableBody={dataQuery.isSuccess && createRows(dataQuery.data)}
@@ -184,13 +189,6 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           rowsPerPage={pageSize}
           rowWord="other users"
         />
-        {dataQuery.isError && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching users."}
-            error={dataQuery.error}
-            styling={"bg-red-100"}
-          />
-        )}
       </div>
     </Box>
   );

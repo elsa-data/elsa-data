@@ -102,8 +102,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
             <div className="grid grid-cols-3 gap-6">
               {lastMutateError && (
                 <EagerErrorBoundary
-                  message={lastMutateError}
-                  styling={"bg-red-100"}
+                  error={new Error(lastMutateError)}
                 />
               )}
               <RhRadios label={"Consent Defaults"}>

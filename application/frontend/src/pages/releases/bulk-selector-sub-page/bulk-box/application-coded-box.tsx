@@ -177,7 +177,6 @@ export const ApplicationCodedBox: React.FC<Props> = ({
             {releasePatchMutate.isError && (
               <EagerErrorBoundary
                 error={releasePatchMutate.error}
-                styling={"bg-red-100"}
               />
             )}
             <RhChecks label={"Assertions"}>

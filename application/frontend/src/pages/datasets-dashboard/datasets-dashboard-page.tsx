@@ -7,7 +7,6 @@ export const DatasetsDashboardPage: React.FC = () => {
     <>
       <Box
         heading="Datasets"
-        errorMessage={"Something went wrong fetching datasets."}
       >
         <DatasetTable />
       </Box>

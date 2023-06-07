@@ -69,9 +69,7 @@ export const DataEgressSummaryBox = ({
     <Box heading={<BoxHeader />}>
       {syncReleaseEgressMutate.isError && (
         <EagerErrorBoundary
-          message={"Something went wrong mutating user's permissions."}
           error={syncReleaseEgressMutate.error}
-          styling={"bg-red-100"}
         />
       )}
       {isSuccessShow && (

@@ -146,7 +146,6 @@ export const CasesBox: React.FC<Props> = ({
     <Box
       heading="Cases"
       applyIsLockedStyle={releaseIsActivated}
-      errorMessage={"Something went wrong fetching cases."}
     >
       <div className={classNames("flex flex-col")}>
         <BoxPaginator
@@ -159,6 +158,13 @@ export const CasesBox: React.FC<Props> = ({
           onSearchTextChange={onSearchTextChange}
           isLoading={isLoading}
         />
+
+        {dataQuery.isError && (
+          <EagerErrorBoundary
+            error={dataQuery.error}
+          />
+        )}
+
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
         )}
@@ -282,13 +288,6 @@ export const CasesBox: React.FC<Props> = ({
               />
             </div>
           </>
-        )}
-        {dataQuery.isError && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching cases."}
-            error={dataQuery.error}
-            styling={"bg-red-100"}
-          />
         )}
       </div>
       <div id="popup-root" />

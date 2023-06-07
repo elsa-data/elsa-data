@@ -134,6 +134,12 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
 
   return (
     <div className="space-y-4">
+      {!error.isSuccess && (
+        <EagerErrorBoundary
+          error={error.error}
+        />
+      )}
+
       {error.isSuccess && (
         <>
           {duos.map(function (resolvedDuo: ResolvedDuo, duoIdx: number) {
@@ -181,13 +187,6 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
             );
           })}
         </>
-      )}
-      {!error.isSuccess && (
-        <EagerErrorBoundary
-          message={"Something went wrong resolving duos."}
-          error={error.error}
-          styling={"bg-red-100"}
-        />
       )}
     </div>
   );

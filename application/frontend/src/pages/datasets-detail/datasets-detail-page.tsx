@@ -69,6 +69,17 @@ export const DatasetsDetailPage: React.FC = () => {
   return (
     <div className="mt-2 flex flex-grow flex-row flex-wrap space-y-4">
       <>
+        {datasetQuery.isError && (
+          <EagerErrorBoundary
+            error={datasetQuery.error}
+          />
+        )}
+        {datasetMutate.isError && !datasetQuery.isError && (
+          <EagerErrorBoundary
+            error={datasetMutate.error}
+          />
+        )}
+
         {data && (
           <>
             <Box heading="Summary">
@@ -113,20 +124,6 @@ export const DatasetsDetailPage: React.FC = () => {
             </Box>
             {/* <ConsentBox /> */}
           </>
-        )}
-        {datasetQuery.isError && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching datasets."}
-            error={datasetQuery.error}
-            styling={"bg-red-100"}
-          />
-        )}
-        {datasetMutate.isError && (
-          <EagerErrorBoundary
-            message={"Something went wrong updating datasets."}
-            error={datasetMutate.error}
-            styling={"bg-red-100"}
-          />
         )}
       </>
     </div>

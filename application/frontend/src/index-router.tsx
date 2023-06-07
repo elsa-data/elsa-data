@@ -38,7 +38,7 @@ export function createRouter(addBypassLoginPage: boolean) {
 
     return (
       <EagerErrorBoundary
-        message={
+        error={
           <div>
             <p>
               No React router match for <code>{location.pathname}</code>

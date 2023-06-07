@@ -59,8 +59,7 @@ export const VirtualCohortBox: React.FC<Props> = ({ releaseKey }) => {
             <div className="flex grid-cols-5 flex-col">
               {lastMutateError && (
                 <EagerErrorBoundary
-                  message={lastMutateError}
-                  styling={"bg-red-100"}
+                  error={new Error(lastMutateError)}
                 />
               )}
             </div>

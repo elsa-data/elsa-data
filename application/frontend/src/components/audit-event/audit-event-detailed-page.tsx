@@ -42,12 +42,7 @@ export const AuditEventDetailedPage = (): JSX.Element => {
   if (!objectId) {
     return (
       <EagerErrorBoundary
-        message={
-          <div>
-            Error: this component should not be rendered outside a route with a{" "}
-            <code>objectId</code> param
-          </div>
-        }
+        error={new Error(`this component should not be rendered outside a route with an objectId parameter`)}
       />
     );
   }
@@ -55,18 +50,15 @@ export const AuditEventDetailedPage = (): JSX.Element => {
   return (
     <Box
       heading={`Audit event for ${objectId}`}
-      errorMessage={"Something went wrong showing audit event."}
     >
       <div className="mt-2 flex flex-grow flex-row flex-wrap overflow-auto">
-        {query.isSuccess && (
-          <AuditEventDetailedBox data={query.data ?? undefined} />
-        )}
         {query.isError && (
           <EagerErrorBoundary
-            message={"Something went wrong fetching audit events."}
             error={query.error}
-            styling={"bg-red-100"}
           />
+        )}
+        {query.isSuccess && (
+          <AuditEventDetailedBox data={query.data ?? undefined} />
         )}
       </div>
     </Box>
