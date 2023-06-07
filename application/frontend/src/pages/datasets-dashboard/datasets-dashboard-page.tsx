@@ -5,9 +5,7 @@ import { DatasetTable } from "../../components/dataset/dataset-table";
 export const DatasetsDashboardPage: React.FC = () => {
   return (
     <>
-      <Box
-        heading="Datasets"
-      >
+      <Box heading="Datasets">
         <DatasetTable />
       </Box>
     </>

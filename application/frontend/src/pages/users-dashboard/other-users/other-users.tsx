@@ -167,15 +167,9 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   };
 
   return (
-    <Box
-      heading="Other Users"
-    >
+    <Box heading="Other Users">
       <div className="flex flex-col">
-        {dataQuery.isError && (
-          <EagerErrorBoundary
-            error={dataQuery.error}
-          />
-        )}
+        {dataQuery.isError && <EagerErrorBoundary error={dataQuery.error} />}
 
         <Table
           tableHead={createHeaders()}

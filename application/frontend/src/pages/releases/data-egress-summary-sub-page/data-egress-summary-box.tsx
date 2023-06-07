@@ -68,9 +68,7 @@ export const DataEgressSummaryBox = ({
   return (
     <Box heading={<BoxHeader />}>
       {syncReleaseEgressMutate.isError && (
-        <EagerErrorBoundary
-          error={syncReleaseEgressMutate.error}
-        />
+        <EagerErrorBoundary error={syncReleaseEgressMutate.error} />
       )}
       {isSuccessShow && (
         <div className="alert alert-success flex w-full justify-between shadow-lg">

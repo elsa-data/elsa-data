@@ -87,11 +87,7 @@ export const InformationBox: React.FC<Props> = ({
   return (
     <Box heading={releaseData.applicationDacTitle}>
       <div className="grid grid-cols-2 gap-4 overflow-x-auto">
-        {error && (
-          <EagerErrorBoundary
-            error={error}
-          />
-        )}
+        {error && <EagerErrorBoundary error={error} />}
 
         {releaseIsActivated && (
           <div className="alert alert-success col-span-2 shadow-lg">

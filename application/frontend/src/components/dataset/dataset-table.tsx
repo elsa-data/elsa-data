@@ -60,9 +60,7 @@ export const DatasetTable: React.FC = ({}) => {
   return (
     <>
       {datasetQuery.isError && (
-        <EagerErrorBoundary
-          error={datasetQuery.error}
-        />
+        <EagerErrorBoundary error={datasetQuery.error} />
       )}
 
       <Table

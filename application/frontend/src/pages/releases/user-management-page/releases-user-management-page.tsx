@@ -148,11 +148,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
         </form>
       </Box>
 
-      {!error.isSuccess && (
-        <EagerErrorBoundary
-          error={error.error}
-        />
-      )}
+      {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
 
       {releaseParticipantsQuery.isSuccess && (
         <>

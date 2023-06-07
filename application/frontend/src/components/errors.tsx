@@ -1,4 +1,4 @@
-import React, {Component, isValidElement, ReactNode} from "react";
+import React, { Component, isValidElement, ReactNode } from "react";
 import {
   Base7807Error,
   Base7807Response,
@@ -6,7 +6,7 @@ import {
 } from "@umccr/elsa-types/error-types";
 import axios from "axios";
 import { TRPCClientError } from "@trpc/client";
-import {Alert, CircleExclamationIcon} from "./alert";
+import { Alert, CircleExclamationIcon } from "./alert";
 
 export type ErrorDisplayProps = {
   children?: ReactNode;
@@ -59,7 +59,8 @@ export const isAuthenticationError = (error: any): boolean => {
   return (
     (error instanceof Base7807Error && error.status == 403) ||
     (axios.isAxiosError(error) && error.code === "403") ||
-    (error instanceof TRPCClientError && error?.shape?.data?.httpStatus === "403")
+    (error instanceof TRPCClientError &&
+      error?.shape?.data?.httpStatus === "403")
   );
 };
 
@@ -72,7 +73,9 @@ export const Format7807Error = ({
   return (
     <div>
       <h3 className="font-bold">{error.title}</h3>
-      <div className="text-xs">{error.status}: {error.detail}</div>
+      <div className="text-xs">
+        {error.status}: {error.detail}
+      </div>
     </div>
   );
 };
@@ -112,7 +115,9 @@ export const ErrorFormatterDetail = ({
       }
 
       return (
-        <span>{error.code ? `${error.code}: ${error.message}` : `${error.message}`}</span>
+        <span>
+          {error.code ? `${error.code}: ${error.message}` : `${error.message}`}
+        </span>
       );
     }
 
@@ -124,15 +129,11 @@ export const ErrorFormatterDetail = ({
       return error;
     }
 
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "toString" in error
-    ) {
+    if (typeof error === "object" && error !== null && "toString" in error) {
       return <span>{error.toString()}</span>;
     }
 
-    if (typeof error === 'string' || error instanceof String) {
+    if (typeof error === "string" || error instanceof String) {
       return <span>{error}</span>;
     }
   }
@@ -143,17 +144,22 @@ export const ErrorFormatterDetail = ({
 /**
  * An alert when there is no connection.
  */
-export const OfflineAlert = ({ errorCondition, children, renderCommonErrors = false }: ErrorFormatterProps): JSX.Element => {
-  return <>
-    {renderCommonErrors && <div className="py-2">
-        <ErrorBox>
-        You are offline, check your connection.
-        </ErrorBox>
-      </div>
-    }
-    {!errorCondition && children}
-  </>;
-}
+export const OfflineAlert = ({
+  errorCondition,
+  children,
+  renderCommonErrors = false,
+}: ErrorFormatterProps): JSX.Element => {
+  return (
+    <>
+      {renderCommonErrors && (
+        <div className="py-2">
+          <ErrorBox>You are offline, check your connection.</ErrorBox>
+        </div>
+      )}
+      {!errorCondition && children}
+    </>
+  );
+};
 
 /**
  * Format an error using a condition.
@@ -166,9 +172,7 @@ export const ErrorFormatter = ({
 }: ErrorFormatterProps): JSX.Element => {
   // If there is no error, proceed with normal rendering.
   if (!errorCondition) {
-    return <>
-      {children}
-    </>;
+    return <>{children}</>;
   }
 
   // Only render common errors if the error formatter also enabled the renderCommonErrors property.
@@ -187,7 +191,11 @@ export const ErrorFormatter = ({
     return (
       <div className="py-2">
         <ErrorBox>
-          {error ? <ErrorFormatterDetail error={error}/> : <span>An error has occurred.</span>}
+          {error ? (
+            <ErrorFormatterDetail error={error} />
+          ) : (
+            <span>An error has occurred.</span>
+          )}
         </ErrorBox>
       </div>
     );
@@ -232,30 +240,39 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidMount() {
-    window.addEventListener('offline', this.handleNetworkChange);
-    window.addEventListener('online', this.handleNetworkChange);
+    window.addEventListener("offline", this.handleNetworkChange);
+    window.addEventListener("online", this.handleNetworkChange);
   }
 
   componentWillUnmount() {
-    window.removeEventListener('offline', this.handleNetworkChange);
-    window.removeEventListener('online', this.handleNetworkChange);
+    window.removeEventListener("offline", this.handleNetworkChange);
+    window.removeEventListener("online", this.handleNetworkChange);
   }
 
   handleNetworkChange = () => {
     this.setState({ isOnline: navigator.onLine });
-  }
+  };
 
   constructor(props: ErrorDisplayProps) {
     super(props);
-    this.state = { error: undefined, displayError: false, isOnline: navigator.onLine };
+    this.state = {
+      error: undefined,
+      displayError: false,
+      isOnline: navigator.onLine,
+    };
   }
 
   render() {
     // If not online, show an alert if also rendering common errors.
     if (!this.state.isOnline) {
-      return <OfflineAlert renderCommonErrors={this.props.renderCommonErrors} errorCondition={this.state.displayError}>
-        {this.props.children}
-      </OfflineAlert>;
+      return (
+        <OfflineAlert
+          renderCommonErrors={this.props.renderCommonErrors}
+          errorCondition={this.state.displayError}
+        >
+          {this.props.children}
+        </OfflineAlert>
+      );
     }
 
     return (

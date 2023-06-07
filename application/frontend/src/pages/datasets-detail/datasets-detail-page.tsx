@@ -70,14 +70,10 @@ export const DatasetsDetailPage: React.FC = () => {
     <div className="mt-2 flex flex-grow flex-row flex-wrap space-y-4">
       <>
         {datasetQuery.isError && (
-          <EagerErrorBoundary
-            error={datasetQuery.error}
-          />
+          <EagerErrorBoundary error={datasetQuery.error} />
         )}
         {datasetMutate.isError && !datasetQuery.isError && (
-          <EagerErrorBoundary
-            error={datasetMutate.error}
-          />
+          <EagerErrorBoundary error={datasetMutate.error} />
         )}
 
         {data && (

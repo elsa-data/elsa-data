@@ -2,7 +2,7 @@ import React, { PropsWithChildren, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
-import {ErrorBoundary, OfflineAlert} from "../components/errors";
+import { ErrorBoundary, OfflineAlert } from "../components/errors";
 import { LayoutBaseFooter } from "./layout-base-footer";
 import { useUiAllowed } from "../hooks/ui-allowed";
 import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";

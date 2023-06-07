@@ -49,9 +49,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
       </div>
 
       {dataEgressQuery.isError && (
-        <EagerErrorBoundary
-          error={dataEgressQuery.error}
-        />
+        <EagerErrorBoundary error={dataEgressQuery.error} />
       )}
 
       <Table

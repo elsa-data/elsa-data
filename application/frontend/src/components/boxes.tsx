@@ -43,9 +43,7 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
         })}
       >
         <h2 className="card-title">{heading}</h2>
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        <ErrorBoundary>{children}</ErrorBoundary>
       </div>
     </div>
   );

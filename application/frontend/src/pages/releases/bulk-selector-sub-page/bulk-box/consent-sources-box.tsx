@@ -101,9 +101,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
           <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
             <div className="grid grid-cols-3 gap-6">
               {lastMutateError && (
-                <EagerErrorBoundary
-                  error={new Error(lastMutateError)}
-                />
+                <EagerErrorBoundary error={new Error(lastMutateError)} />
               )}
               <RhRadios label={"Consent Defaults"}>
                 {typeRadio("Absent consent information = Consent", "YES")}

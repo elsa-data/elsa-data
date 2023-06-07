@@ -33,13 +33,9 @@ export const ReleasesDashboardPage: React.FC = () => {
 
   return (
     <>
-      <Box
-        heading="Releases"
-      >
+      <Box heading="Releases">
         {releaseQuery.isError && (
-          <EagerErrorBoundary
-            error={releaseQuery.error}
-          />
+          <EagerErrorBoundary error={releaseQuery.error} />
         )}
 
         {releaseQuery.isLoading && <IsLoadingDiv />}

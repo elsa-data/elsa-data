@@ -1,6 +1,6 @@
 import React, { Fragment, MutableRefObject, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import {EagerErrorBoundary, OfflineAlert} from "./errors";
+import { EagerErrorBoundary, OfflineAlert } from "./errors";
 import { AiOutlineClose } from "react-icons/ai";
 
 type Props = {
@@ -58,9 +58,7 @@ export const SelectDialogBase: React.FC<Props> = ({
               <Dialog.Panel className="relative mx-4 transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
                 {errorMessage && (
                   <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <EagerErrorBoundary
-                      error={new Error(errorMessage)}
-                    />
+                    <EagerErrorBoundary error={new Error(errorMessage)} />
                   </div>
                 )}
 

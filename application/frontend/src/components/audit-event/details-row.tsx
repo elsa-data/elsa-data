@@ -80,11 +80,7 @@ export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
     );
 
   if (detailsQuery.isError)
-    return (
-      <EagerErrorBoundary
-        error={detailsQuery.error}
-      />
-    );
+    return <EagerErrorBoundary error={detailsQuery.error} />;
 
   return <></>;
 };

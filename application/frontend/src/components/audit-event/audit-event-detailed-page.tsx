@@ -42,21 +42,19 @@ export const AuditEventDetailedPage = (): JSX.Element => {
   if (!objectId) {
     return (
       <EagerErrorBoundary
-        error={new Error(`this component should not be rendered outside a route with an objectId parameter`)}
+        error={
+          new Error(
+            `this component should not be rendered outside a route with an objectId parameter`
+          )
+        }
       />
     );
   }
 
   return (
-    <Box
-      heading={`Audit event for ${objectId}`}
-    >
+    <Box heading={`Audit event for ${objectId}`}>
       <div className="mt-2 flex flex-grow flex-row flex-wrap overflow-auto">
-        {query.isError && (
-          <EagerErrorBoundary
-            error={query.error}
-          />
-        )}
+        {query.isError && <EagerErrorBoundary error={query.error} />}
         {query.isSuccess && (
           <AuditEventDetailedBox data={query.data ?? undefined} />
         )}

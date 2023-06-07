@@ -47,9 +47,7 @@ export function DataEgressDetailedTable({
       </div>
 
       {dataEgressQuery.isError && (
-        <EagerErrorBoundary
-          error={dataEgressQuery.error}
-        />
+        <EagerErrorBoundary error={dataEgressQuery.error} />
       )}
 
       <Table

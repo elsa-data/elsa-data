@@ -51,11 +51,7 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
 
   return (
     <form>
-      {isErrorState(status) && (
-        <EagerErrorBoundary
-          error={status.error}
-        />
-      )}
+      {isErrorState(status) && <EagerErrorBoundary error={status.error} />}
 
       <div className="flex flex-col gap-6">
         <label className="prose block">

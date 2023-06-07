@@ -95,11 +95,7 @@ export const ReleasesMasterPage: React.FC = () => {
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
-        {!error.isSuccess && (
-          <EagerErrorBoundary
-            error={error.error}
-          />
-        )}
+        {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
 
         {releaseQuery.isSuccess &&
           differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&

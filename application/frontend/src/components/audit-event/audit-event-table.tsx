@@ -25,7 +25,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import {Base7807Error, Base7807Response} from "@umccr/elsa-types";
+import { Base7807Error, Base7807Response } from "@umccr/elsa-types";
 import {
   formatDuration,
   formatFromNowTime,
@@ -258,9 +258,7 @@ export const AuditEventTable = ({
               ))}
             />
           ) : (
-            <EagerErrorBoundary
-              error={error.error}
-            />
+            <EagerErrorBoundary error={error.error} />
           )}
           <BoxPaginator
             currentPage={currentPage}

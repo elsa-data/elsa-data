@@ -69,11 +69,7 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
           <div className="space-y-6 bg-white px-4 py-5 sm:p-6">
             <div className="grid grid-cols-3 gap-6">
               <div className="col-span-3 flex flex-col gap-6">
-                {!error.isSuccess && (
-                  <EagerErrorBoundary
-                    error={error.error}
-                  />
-                )}
+                {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
 
                 <div className="flex flex-row space-x-1">
                   <button

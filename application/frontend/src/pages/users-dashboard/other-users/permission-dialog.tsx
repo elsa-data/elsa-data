@@ -215,9 +215,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                   </div>
 
                   {!error.isSuccess && (
-                    <EagerErrorBoundary
-                      error={error.error}
-                    />
+                    <EagerErrorBoundary error={error.error} />
                   )}
 
                   {!isEditingAllowed && (

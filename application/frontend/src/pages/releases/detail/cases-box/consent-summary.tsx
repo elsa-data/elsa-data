@@ -134,11 +134,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
 
   return (
     <div className="space-y-4">
-      {!error.isSuccess && (
-        <EagerErrorBoundary
-          error={error.error}
-        />
-      )}
+      {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
 
       {error.isSuccess && (
         <>

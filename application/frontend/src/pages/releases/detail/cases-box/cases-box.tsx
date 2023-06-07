@@ -143,10 +143,7 @@ export const CasesBox: React.FC<Props> = ({
     "min-h-[10em] w-full flex items-center justify-center";
 
   return (
-    <Box
-      heading="Cases"
-      applyIsLockedStyle={releaseIsActivated}
-    >
+    <Box heading="Cases" applyIsLockedStyle={releaseIsActivated}>
       <div className={classNames("flex flex-col")}>
         <BoxPaginator
           currentPage={currentPage}
@@ -159,11 +156,7 @@ export const CasesBox: React.FC<Props> = ({
           isLoading={isLoading}
         />
 
-        {dataQuery.isError && (
-          <EagerErrorBoundary
-            error={dataQuery.error}
-          />
-        )}
+        {dataQuery.isError && <EagerErrorBoundary error={dataQuery.error} />}
 
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
