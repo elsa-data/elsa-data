@@ -8,7 +8,6 @@ import { sleep } from "edgedb/dist/utils";
 import { DatasetService } from "./business/services/dataset-service";
 import { getServices } from "./di-helpers";
 import { MailService } from "./business/services/mail-service";
-import { downloadMaxmindDb } from "./app-helpers";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
@@ -54,16 +53,6 @@ export async function startWebServer(
 
       return 1;
     }
-  }
-
-  // Download MaxMind Db if key is provided
-  const MAXMIND_KEY = process.env.MAXMIND_KEY;
-  if (MAXMIND_KEY) {
-    await downloadMaxmindDb({
-      dbPath: "asset/maxmind/db",
-      maxmindKey: MAXMIND_KEY,
-    });
-    logger.info("MaxMind DB loaded");
   }
 
   // Insert datasets from config
