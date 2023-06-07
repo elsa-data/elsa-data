@@ -70,7 +70,7 @@ if (rootElement != null) {
                   {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
                   <LoggedInUserConfigRelayProvider>
                     <RouterProvider
-                      router={createRouter(de === "development")}
+                      router={createRouter(de === "development", fea)}
                     />
                   </LoggedInUserConfigRelayProvider>
                 </TRPCProvider>

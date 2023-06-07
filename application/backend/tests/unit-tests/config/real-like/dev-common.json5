@@ -4,5 +4,7 @@
       sub: "http://cilogon.org/serverB/users/123356",
     },
   ],
-  port: 8001,
+  httpHosting: {
+    port: 8001,
+  },
 }

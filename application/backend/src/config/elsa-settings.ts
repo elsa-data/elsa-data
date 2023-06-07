@@ -1,9 +1,13 @@
 import { Issuer } from "openid-client";
-import { RateLimitPluginOptions } from "@fastify/rate-limit";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { LoggerOptions } from "pino";
-import { Dac } from "./config-schema-dac";
+import { DacType } from "./config-schema-dac";
 import { DatasetType } from "./config-schema-dataset";
+import { SharerType } from "./config-schema-sharer";
+import { MailerType } from "./config-schema-mailer";
+import { BrandingType } from "./config-schema-branding";
+import { OidcType } from "./config-schema-oidc";
+import { HttpHostingType } from "./config-schema-http-hosting";
+import { FeatureType } from "./config-schema-feature";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -13,42 +17,20 @@ export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
-  host: string;
-  port: number;
-  mailer: {
-    mode: "None" | "SES" | "SMTP";
-    maxConnections?: number | undefined;
-    sendingRate?: number | undefined;
-    options?: SMTPTransport.Options | string;
-    defaults?: any;
-  };
-
   // the namespace in which we should be doing service discovery for dynamic services
   serviceDiscoveryNamespace: string;
 
-  sessionSecret: string;
-  sessionSalt: string;
+  // the settings for our web server (cookies, ports etc)
+  httpHosting: HttpHostingType;
 
-  oidcIssuer: Issuer;
-  oidcClientId: string;
-  oidcClientSecret: string;
+  oidc?: Omit<OidcType, "issuerUrl"> & { issuer?: Issuer };
 
-  dacs: Dac[];
+  // selectively switch on/off functionality
+  feature?: FeatureType;
 
-  logger: LoggerOptions;
-
-  htsget?: {
-    maxAge: number;
-    url: URL;
-  };
-
-  // optional details to allow sharing of objects in AWS
+  // details that are required if running in AWS
   aws?: {
-    // if using AWS then temp bucket is required
     tempBucket: string;
-    // it is possible to use AWS but not necessarily use signing
-    signingAccessKeyId?: string;
-    signingSecretAccessKey?: string;
   };
 
   // optional signing details to allow sharing of objects in CloudFlare R2
@@ -61,9 +43,6 @@ export type ElsaSettings = {
 
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
-
-  // maxmind database for IP Geo lookup
-  maxmindDbAssetPath: string;
 
   // prefix for releaseKey
   releaseKeyPrefix: string;
@@ -80,11 +59,6 @@ export type ElsaSettings = {
     sub: string;
   }[];
 
-  datasets: DatasetType[];
-
-  // options to pass into the rate limiter
-  rateLimit: RateLimitPluginOptions;
-
   // dev/testing settings that can be specified as long as the NODE_ENV is development
   // if NODE_ENV is production then this the presence of any configuration leading to this
   // will fail to launch
@@ -97,9 +71,22 @@ export type ElsaSettings = {
     allowTestRoutes: boolean;
   };
 
-  branding?: {
-    brandName?: string;
-    logoPath?: string;
-    logoUriRelative?: string;
+  // pass through directly from configuration - eventually we want to pass everything through
+  // directly and essentially remove ElsaSettings as a type
+
+  dacs: DacType[];
+
+  logger: LoggerOptions;
+
+  datasets: DatasetType[];
+
+  sharers: SharerType[];
+
+  mailer?: MailerType;
+
+  branding?: BrandingType & { logoUriRelative?: string };
+
+  ipLookup?: {
+    maxMindDbPath?: string;
   };
 };

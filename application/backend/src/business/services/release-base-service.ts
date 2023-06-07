@@ -12,6 +12,7 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { SharerHtsgetType } from "../../config/config-schema-sharer";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -119,9 +120,13 @@ export abstract class ReleaseBaseService {
    * @param property
    */
   public configForFeature(property: "isAllowedHtsget"): any | undefined {
-    return this.settings.htsget !== undefined
-      ? { url: this.settings.htsget.url }
-      : undefined;
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "htsget"
+    ) as SharerHtsgetType[];
+
+    if (h.length === 1) return new URL(h[0].url);
+
+    return undefined;
   }
 
   /**

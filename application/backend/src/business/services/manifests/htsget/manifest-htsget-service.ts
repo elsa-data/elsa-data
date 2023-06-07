@@ -23,6 +23,28 @@ import { CloudStorage } from "../../cloud-storage-service";
 import { AuditEventService } from "../../audit-event-service";
 import { ManifestService } from "../manifest-service";
 import { AwsS3Service } from "../../aws/aws-s3-service";
+import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
+
+export function getHtsgetSetting(
+  settings: ElsaSettings
+): SharerHtsgetType | undefined {
+  // the typescript is not clever enough to work out the resolution of the discriminated union
+  // to our htsget type - so we need to typecast
+  const htsgetSettings: SharerHtsgetType[] = settings.sharers.filter(
+    (s) => s.type === "htsget"
+  ) as SharerHtsgetType[];
+
+  if (htsgetSettings.length < 1) {
+    return undefined;
+  }
+
+  if (htsgetSettings.length > 1)
+    throw new Error(
+      "For the moment we have only enabled the logic for a single htsget sharer"
+    );
+
+  return htsgetSettings[0];
+}
 
 /**
  * A manifest service for htsget.
@@ -70,9 +92,11 @@ export abstract class ManifestHtsgetService {
       throw new ManifestHtsgetNotAllowed();
     }
 
-    if (this.settings.htsget === undefined || this.settings.aws === undefined) {
-      throw new ManifestHtsgetEndpointNotEnabled();
-    }
+    if (!this.settings.aws) throw new ManifestHtsgetEndpointNotEnabled();
+
+    const htsgetSettings = getHtsgetSetting(this.settings);
+
+    if (!htsgetSettings) throw new ManifestHtsgetEndpointNotEnabled();
 
     const manifestKey = `${ManifestHtsgetService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`;
 
@@ -92,7 +116,7 @@ export abstract class ManifestHtsgetService {
       if (head.lastModified !== undefined) {
         const addMaxAge = addSeconds(
           head.lastModified,
-          this.settings.htsget.maxAge
+          htsgetSettings.maxAgeInSeconds
         );
         timeDifference = differenceInSeconds(addMaxAge, new Date());
       }
@@ -105,7 +129,10 @@ export abstract class ManifestHtsgetService {
       }
     }
 
-    if (timeDifference <= 0 || timeDifference > this.settings.htsget.maxAge) {
+    if (
+      timeDifference <= 0 ||
+      timeDifference > htsgetSettings.maxAgeInSeconds
+    ) {
       const manifest = await this.getActiveHtsgetManifest(releaseKey);
 
       if (manifest === null) {
@@ -124,7 +151,7 @@ export abstract class ManifestHtsgetService {
         JSON.stringify(manifest)
       );
 
-      timeDifference = this.settings.htsget.maxAge;
+      timeDifference = htsgetSettings.maxAgeInSeconds;
     }
 
     const output = {

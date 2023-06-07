@@ -8,7 +8,6 @@ import { sleep } from "edgedb/dist/utils";
 import { DatasetService } from "./business/services/dataset-service";
 import { getServices } from "./di-helpers";
 import { MailService } from "./business/services/mail-service";
-import { downloadMaxmindDb } from "./app-helpers";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
@@ -56,16 +55,6 @@ export async function startWebServer(
     }
   }
 
-  // Download MaxMind Db if key is provided
-  const MAXMIND_KEY = process.env.MAXMIND_KEY;
-  if (MAXMIND_KEY) {
-    await downloadMaxmindDb({
-      dbPath: "asset/maxmind/db",
-      maxmindKey: MAXMIND_KEY,
-    });
-    logger.info("MaxMind DB loaded");
-  }
-
   // Insert datasets from config
   const datasetService = dc.resolve(DatasetService);
   await datasetService.configureDataset(settings.datasets);
@@ -79,7 +68,10 @@ export async function startWebServer(
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down
-    await server.listen({ port: settings.port, host: settings.host });
+    await server.listen({
+      port: settings.httpHosting.port,
+      host: settings.httpHosting.host,
+    });
 
     // we don't want to fall out the end of the 'start-server' command until we have been signalled
     // to shut down
@@ -221,7 +213,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
     server,
   });
 
-  await server.listen(settings.port);
+  await server.listen(settings.httpHosting.port);
 
   let count = 0;
   while (!successQuery) {

@@ -31,43 +31,20 @@ import { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
 import { AuditEventService } from "./business/services/audit-event-service";
 import { ReleaseActivationService } from "./business/services/release-activation-service";
-import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
 import { getFeaturesEnabled } from "./features";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
 
-// global settings for DI
-const dc = bootstrapDependencyInjection();
-
-/**
- * Help text for the commands that can be executed
- */
-function printHelpText() {
-  console.log(`${WEB_SERVER_COMMAND} - launch Elsa Data web server and wait`);
-  console.log(
-    `${WEB_SERVER_WITH_SCENARIO_COMMAND} <scenario 1|2...> - launch Elsa Data web server and always blank/insert the given scenario on start up`
-  );
-  console.log(`${DB_BLANK_COMMAND}`);
-  // TODO implement some guards on destructive operations
-  //      console.log(`${DB_BLANK_COMMAND} [hostname] - delete all data from the database, requires hostname to be specified if in production`);
-  console.log(`${DB_MIGRATE_COMMAND} - migrate database schema`);
-  console.log(
-    `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
-  );
-  // TODO implement some guards on destructive operations
-  // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
-}
-
 /**
  * Elsa Data entrypoint - process command line arguments performing operations - the main one which is
- * to start an Elsa Data web server (but can also do db migrations etc)
+ * to start an Elsa Data web server. Other commands are more on-off things like "do db migration" etc)
  */
 (async () => {
   // now we are async - we can perform setup operations that themselves need to be async
   // settings and config are mainly of interest only to the web server - but it is possible some other
-  // operations might need to use services so we get all the setup out of the way here
-  const { settings, config, redactedConfig, sources } = await getFromEnv();
+  // operations might need to use services - so we get all the setup out of the way here
+  const { sources, settings, rawConfig, redactedConfig } = await getFromEnv();
 
   const logger = pino(settings.logger);
 
@@ -82,6 +59,9 @@ function printHelpText() {
     redactedConfig,
     `Configuration (redacted) was sourced from "${sources}"`
   );
+
+  // global settings for DI
+  const dc = bootstrapDependencyInjection(rawConfig.devTesting?.mockAwsCloud);
 
   dc.afterResolution(
     "Database",
@@ -124,7 +104,7 @@ function printHelpText() {
   );
   logger.info(
     `Sample DI resolve of AwsDiscoveryService gave us ${typeof dc.resolve(
-      AwsDiscoveryService
+      "IAwsDiscoveryService"
     )}`
   );
 
@@ -150,7 +130,7 @@ function printHelpText() {
 
       case WEB_SERVER_COMMAND:
         todo.push(async () => waitForDatabaseReady(dc));
-        todo.push(async () => startJobQueue(config));
+        todo.push(async () => startJobQueue(rawConfig));
         todo.push(async () => startWebServer(dc, null));
         break;
 
@@ -161,7 +141,7 @@ function printHelpText() {
           );
 
         todo.push(async () => waitForDatabaseReady(dc));
-        todo.push(async () => startJobQueue(config));
+        todo.push(async () => startJobQueue(rawConfig));
         todo.push(async () => startWebServer(dc, parseInt(c.args[0])));
         break;
 
@@ -196,7 +176,7 @@ function printHelpText() {
   // if no commands were specified - then our default behaviour is to pretend they asked us todo start-web-server
   if (todo.length === 0) {
     await waitForDatabaseReady(dc);
-    await startJobQueue(config);
+    await startJobQueue(rawConfig);
     await startWebServer(dc, null);
   } else {
     for (const t of todo) {
@@ -212,3 +192,22 @@ function printHelpText() {
   // TODO think about how we can report back the success or otherwise of the set of commands we ran
   process.exit(0);
 })();
+
+/**
+ * Help text for the commands that can be executed
+ */
+function printHelpText() {
+  console.log(`${WEB_SERVER_COMMAND} - launch Elsa Data web server and wait`);
+  console.log(
+    `${WEB_SERVER_WITH_SCENARIO_COMMAND} <scenario 1|2...> - launch Elsa Data web server and always blank/insert the given scenario on start up`
+  );
+  console.log(`${DB_BLANK_COMMAND}`);
+  // TODO implement some guards on destructive operations
+  //      console.log(`${DB_BLANK_COMMAND} [hostname] - delete all data from the database, requires hostname to be specified if in production`);
+  console.log(`${DB_MIGRATE_COMMAND} - migrate database schema`);
+  console.log(
+    `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
+  );
+  // TODO implement some guards on destructive operations
+  // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
+}
