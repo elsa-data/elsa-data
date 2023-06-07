@@ -59,6 +59,19 @@ export const Alert = ({
 }: AlertProps): JSX.Element => {
   const alertRef = useRef<HTMLDivElement>(null);
   const isInView = useIsInView(alertRef);
+  const [animate, setAnimate] = useState(true);
+
+  useEffect(() => {
+    if (isInView) {
+      // I don't know if there is a better way to do this. The animation should appear once
+      // and not stop before it has finished.
+      const timeoutId = setTimeout(() => {
+        setAnimate(false);
+      }, 250);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isInView]);
 
   useEffect(() => {
     alertRef.current?.scrollIntoView({
@@ -76,7 +89,7 @@ export const Alert = ({
         "alert flex-row shadow-lg",
         additionalAlertClassName,
         {
-          "animate-pop": isInView,
+          "animate-pop": isInView && animate,
         }
       )}
       show={!dismissed}
