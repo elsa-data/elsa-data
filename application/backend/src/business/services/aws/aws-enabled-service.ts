@@ -2,12 +2,17 @@ import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import { inject, injectable } from "tsyringe";
 import { Logger } from "pino";
 
+export interface IAwsEnabledService {
+  isEnabled(): Promise<boolean>;
+  enabledGuard(): void;
+}
+
 /**
  * The AWS enabled service detects that are enough permissions to use
  * AWS.
  */
 @injectable()
-export class AwsEnabledService {
+export class AwsEnabledService implements IAwsEnabledService {
   private enabled?: boolean;
 
   constructor(

@@ -8,7 +8,7 @@ import { Hash } from "@aws-sdk/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { IPresignedUrlProvider } from "../presigned-url-service";
-import { AwsDiscoveryService } from "./aws-discovery-service";
+import { IAwsDiscoveryService } from "./aws-discovery-service";
 import { SharerObjectSigningType } from "../../../config/config-schema-sharer";
 
 export function getObjectSigningSetting(
@@ -40,8 +40,8 @@ export class AwsPresignedUrlService implements IPresignedUrlProvider {
     @inject("Settings") private settings: ElsaSettings,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService,
-    @inject(AwsDiscoveryService)
-    private readonly awsDiscoveryService: AwsDiscoveryService
+    @inject("IAwsDiscoveryService")
+    private readonly awsDiscoveryService: IAwsDiscoveryService
   ) {}
 
   public async presign(

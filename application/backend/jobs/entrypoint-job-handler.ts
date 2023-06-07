@@ -15,13 +15,15 @@ import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-se
 import { differenceInHours, minTime } from "date-fns";
 import { getFeaturesEnabled } from "../src/features";
 
-// global settings for DI
-const dc = bootstrapDependencyInjection();
-
 (async () => {
-  const settings = await bootstrapSettings(
-    await getDirectConfig(breeWorkerData.job.worker.workerData)
+  const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
+
+  // global settings for DI
+  const dc = bootstrapDependencyInjection(
+    rawConfig.devTesting?.mockAwsDiscoveryService
   );
+
+  const settings = await bootstrapSettings(rawConfig);
 
   // we create a logger that always has a field telling us that the context was the
   // job handler - allows us to separate out job logs in CloudWatch

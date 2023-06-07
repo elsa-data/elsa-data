@@ -1,5 +1,4 @@
 import { inject, injectable } from "tsyringe";
-import { AwsEnabledService } from "./aws-enabled-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { Logger } from "pino";
 import {
@@ -11,6 +10,12 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 import { differenceInHours, differenceInMinutes, subHours } from "date-fns";
+
+export type IAwsDiscoveryService = {
+  locateCopyOutStepsArn(): Promise<string | undefined>;
+  locateObjectSigningPair(): Promise<[string, string] | undefined>;
+  locateBeaconLambdaArn(): Promise<string | undefined>;
+};
 
 /**
  * A type representing cached lookups we are making to discovery.
@@ -37,10 +42,8 @@ type CachedLookup = {
  * once other deployment environments exist.
  */
 @injectable()
-export class AwsDiscoveryService {
+export class AwsDiscoveryService implements IAwsDiscoveryService {
   constructor(
-    @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService,
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("ServiceDiscoveryClient")
@@ -64,8 +67,6 @@ export class AwsDiscoveryService {
    * setup, or else return undefined. Caches the value.
    */
   public async locateCopyOutStepsArn(): Promise<string | undefined> {
-    await this.awsEnabledService.enabledGuard();
-
     if (await this.discoverAttributeValueWithCaching(this.copyOutResult))
       return this.copyOutResult.value;
 
@@ -85,8 +86,6 @@ export class AwsDiscoveryService {
   public async locateObjectSigningPair(): Promise<
     [string, string] | undefined
   > {
-    await this.awsEnabledService.enabledGuard();
-
     if (
       await this.discoverAttributeValueWithCaching(this.objectSigningResult)
     ) {
@@ -109,8 +108,6 @@ export class AwsDiscoveryService {
    * setup, or else return undefined. Caches the value.
    */
   public async locateBeaconLambdaArn(): Promise<string | undefined> {
-    await this.awsEnabledService.enabledGuard();
-
     if (await this.discoverAttributeValueWithCaching(this.beaconLambdaResult))
       return this.beaconLambdaResult.value;
 

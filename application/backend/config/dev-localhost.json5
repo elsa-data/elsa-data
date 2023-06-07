@@ -1,4 +1,12 @@
 {
+  // these need to be sourced from dev specific secret source (i.e. a mac keychain) which
+  // should then overwrite these empty values
+  // in the absence of setting these elsewhere - at least the system will start up - albeit with login problems!
+  oidc: {
+    issuerUrl: "https://test.cilogon.org",
+    clientId: "aclientid",
+    clientSecret: "abc",
+  },
   httpHosting: {
     // the security of our localhost dev cookies is not so important - for the real deployments
     // we need to get these secrets from a real secret source
@@ -63,4 +71,9 @@
       sub: "http://subject1.com",
     },
   ],
+  devTesting: {
+    allowTestUsers: true,
+    allowTestRoutes: true,
+    mockAwsDiscoveryService: true,
+  },
 }
