@@ -1,6 +1,9 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
 import { TEST_SUBJECT_3 } from "../src/test-data/user/insert-user3";
+import { BRAND } from "zod";
+import { BrandingType } from "../src/config/config-schema-branding";
+import { Sensitive } from "../src/config/config-schema-sensitive";
 
 export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
 
@@ -17,17 +20,25 @@ const ciLogonIssuer = new Issuer({
 export const createTestElsaSettings: () => ElsaSettings = () => ({
   // TODO these settings have just been thrown in - and may need to be refined as testing gets
   //      more sophisticated
-  port: 3000,
-  host: "127.0.0.1",
-  mailer: {
-    mode: "None",
-  },
-  htsget: {
-    maxAge: 86400,
-    url: new URL("https://htsget.elsa.dev.umccr.org"),
-  },
   deployedUrl: "http://localhost:3000",
   serviceDiscoveryNamespace: "elsa-data",
+  httpHosting: {
+    port: 3000,
+    host: "127.0.0.1",
+    session: {
+      salt: "0123456789012345" as any, // pragma: allowlist secret
+      secret: "XYZ Is the Text That is A certain length" as any, // pragma: allowlist secret
+    },
+  },
+  mailer: undefined,
+  sharers: [
+    {
+      id: "htsget-umccr",
+      type: "htsget",
+      maxAgeInSeconds: 86400,
+      url: "https://htsget.elsa.dev.umccr.org",
+    },
+  ],
   dacs: [
     {
       id: "manual",
@@ -81,11 +92,11 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       ],
     },
   },
-  oidcClientId: "12345",
-  oidcClientSecret: "abcd", // pragma: allowlist secret
-  oidcIssuer: ciLogonIssuer,
-  sessionSalt: "0123456789012345", // pragma: allowlist secret
-  sessionSecret: "XYZ Is the Text That is A certain length", // pragma: allowlist secret
+  oidc: {
+    issuer: ciLogonIssuer,
+    clientId: "12345",
+    clientSecret: "abcd" as any, // pragma: allowlist secret
+  },
   ontoFhirUrl: "https://onto.example.com/fhir",
   mondoSystem: {
     uri: "",
@@ -109,7 +120,6 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     signingAccessKeyId: "B", // pragma: allowlist secret
     tempBucket: "a-temp-bucket",
   },
-  rateLimit: {},
   devTesting: {
     sourceFrontEndDirect: false,
     allowTestRoutes: true,

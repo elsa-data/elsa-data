@@ -1,22 +1,35 @@
 {
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
-  session: {
-    secret: "CI is something that is good but this secret really doesn't need to be secret", // pragma: allowlist secret
-    salt: "Also a string 16",
-  },
-  rateLimit: {
-    allowList: ["127.0.0.1", "::1"],
+  httpHosting: {
+    session: {
+      secret: "CI is something that is good but this secret really doesn't need to be secret", // pragma: allowlist secret
+      salt: "Also a string 16",
+    },
+    rateLimit: {
+      allowList: ["127.0.0.1", "::1"],
+    },
   },
   oidc: {
     issuerUrl: "https://test.cilogon.org",
     clientId: "cilogon:/client_id/53eda5a561fa1d514dbdc94202b5bf9f",
     clientSecret: "notavalidsecert", // pragma: allowlist secret
   },
-  htsget: {
-    url: "https://htsget.elsa.dev.umccr.org",
-  },
-  aws: {
-    signingSecretAccessKey: "notavalidsecert", //pragma: allowlist secret
-    signingAccessKeyId: "notavalidsecert", //pragma: allowlist secret
+  sharers: [
+    {
+      id: "o",
+      type: "object-signing",
+      maxAgeInSeconds: 600,
+    },
+    {
+      id: "h",
+      type: "htsget",
+      url: "https://htsget.elsa.dev.umccr.org",
+      maxAgeInSeconds: 600,
+    },
+  ],
+  devTesting: {
+    allowTestUsers: true,
+    allowTestRoutes: true,
+    mockAwsCloud: true,
   },
 }

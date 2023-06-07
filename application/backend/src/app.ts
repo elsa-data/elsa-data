@@ -132,7 +132,10 @@ export class App {
       // set rate limits across the entire app surface - including APIs and HTML
       // NOTE: this rate limit is also applied in the NotFound handler
       // NOTE: we may need to consider moving this only to the /api section
-      await this.server.register(fastifyRateLimit, this.settings.rateLimit);
+      await this.server.register(
+        fastifyRateLimit,
+        this.settings.httpHosting.rateLimit
+      );
     }
 
     this.server.setErrorHandler(ErrorHandler);

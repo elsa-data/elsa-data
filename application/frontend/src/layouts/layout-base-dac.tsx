@@ -3,7 +3,7 @@ import { Navigate, Outlet, useOutletContext } from "react-router-dom";
 import { useUiAllowed } from "../hooks/ui-allowed";
 import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";
 import { trpc } from "../helpers/trpc";
-import { Dac } from "../../../backend/src/config/config-schema-dac";
+import { DacType } from "../../../backend/src/config/config-schema-dac";
 
 export const DacLayout: React.FC = () => {
   const uiAllowed = useUiAllowed();
@@ -20,5 +20,5 @@ export const DacLayout: React.FC = () => {
  * case a list of DACs configured for this installation.
  */
 export function useConfiguredDacs() {
-  return useOutletContext<Dac[]>();
+  return useOutletContext<DacType[]>();
 }

@@ -1,0 +1,19 @@
+{
+  sharers: [
+    {
+      id: "signing",
+      type: "object-signing",
+      maxAgeInSeconds: 600,
+    },
+    {
+      id: "co",
+      type: "copy-out",
+    },
+    {
+      id: "umccr-htsget",
+      type: "htsget",
+      url: "https://htsget.elsa.dev.umccr.org",
+      maxAgeInSeconds: 600,
+    },
+  ],
+}

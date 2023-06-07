@@ -17,7 +17,7 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
-import { AwsDiscoveryService } from "../aws/aws-discovery-service";
+import { IAwsDiscoveryService } from "../aws/aws-discovery-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,
@@ -43,8 +43,8 @@ export class JobCopyOutService extends JobService {
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
-    @inject(AwsDiscoveryService)
-    private readonly awsDiscoveryService: AwsDiscoveryService,
+    @inject("IAwsDiscoveryService")
+    private readonly awsDiscoveryService: IAwsDiscoveryService,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("SFNClient") private readonly sfnClient: SFNClient
