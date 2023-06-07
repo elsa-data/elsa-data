@@ -187,9 +187,6 @@ export const configZodDefinition = z.object({
         "The externally accessible Url for the deployed location of Elsa Data"
       )
   ),
-  maxmindDbAssetPath: z
-    .optional(z.string())
-    .describe("The path to the Maxmind city database"),
   releaseKeyPrefix: z
     .string()
     .default("R")
@@ -242,6 +239,15 @@ export const configZodDefinition = z.object({
           "If test users should be allowed, including various techniques used to adjust user sessions"
         ),
       allowTestRoutes: z.boolean().describe("If test routes should be added"),
+    })
+  ),
+  ipLookup: z.optional(
+    z.object({
+      maxMindDbPath: z
+        .string()
+        .describe(
+          "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
+        ),
     })
   ),
   branding: z.optional(

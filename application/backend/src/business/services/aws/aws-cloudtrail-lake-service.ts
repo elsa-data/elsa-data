@@ -364,14 +364,15 @@ export class AwsCloudTrailLakeService {
     const endQueryDateISO = endQueryDate.toISOString();
 
     // Try initiate maxmind reader if available
-    try {
-      this.maxmindLookup = await maxmind.open<CityResponse>(
-        `${this.settings.maxmindDbAssetPath}/GeoLite2-City.mmdb`
-      );
-    } catch (error) {
-      this.logger.warn(
-        "No maxmind db is configured and therefore will not perform IP city lookup."
-      );
+    const maxMindDbPath = this.settings.ipLookup?.maxMindDbPath;
+    if (maxMindDbPath) {
+      try {
+        this.maxmindLookup = await maxmind.open<CityResponse>(maxMindDbPath);
+      } catch (error) {
+        this.logger.warn(
+          `The configured MaxMind Database (${maxMindDbPath}) does not contain a readable MaxMind Database, therefore, it will not perform IP lookup.`
+        );
+      }
     }
 
     for (const edsi of eventDataStoreIds) {
