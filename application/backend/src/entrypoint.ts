@@ -61,9 +61,7 @@ bootstrapGlobalSynchronous();
   );
 
   // global settings for DI
-  const dc = bootstrapDependencyInjection(
-    rawConfig.devTesting?.mockAwsDiscoveryService
-  );
+  const dc = bootstrapDependencyInjection(rawConfig.devTesting?.mockAwsCloud);
 
   dc.afterResolution(
     "Database",

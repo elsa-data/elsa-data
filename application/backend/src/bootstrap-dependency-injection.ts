@@ -33,7 +33,7 @@ export function bootstrapDependencyInjection(mockAws: boolean = false) {
     ),
   });
 
-  bootstrapDependencyInjectionAwsClients(dc);
+  bootstrapDependencyInjectionAwsClients(dc, mockAws);
   bootstrapDependencyInjectionSingletonServices(dc, mockAws);
 
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {

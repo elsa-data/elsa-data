@@ -67,6 +67,7 @@ export async function getMetaConfig(
       "superAdmins",
       "datasets",
       "dacs",
+      "sharers",
     ]);
   }
 

@@ -23,7 +23,7 @@ export function registerTypes() {
     useFactory: () => edgedb.createClient(),
   });
 
-  bootstrapDependencyInjectionAwsClients(testContainer);
+  bootstrapDependencyInjectionAwsClients(testContainer, false);
 
   testContainer.register<ElsaSettings>("Settings", {
     useFactory: createTestElsaSettings,

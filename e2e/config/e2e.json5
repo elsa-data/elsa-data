@@ -30,6 +30,6 @@
   devTesting: {
     allowTestUsers: true,
     allowTestRoutes: true,
-    mockAwsDiscoveryService: true,
+    mockAwsCloud: true,
   },
 }

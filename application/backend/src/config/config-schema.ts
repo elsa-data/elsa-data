@@ -135,10 +135,10 @@ export const configZodDefinition = z.object({
           "If test users should be allowed, including various techniques used to adjust user sessions"
         ),
       allowTestRoutes: z.boolean().describe("If test routes should be added"),
-      mockAwsDiscoveryService: z
+      mockAwsCloud: z
         .boolean()
         .describe(
-          "If we should replace the AWS Discovery service with one that always returns mock values"
+          "If we should replace the AWS cloud clients with ones that always returns mock values"
         ),
     })
   ),

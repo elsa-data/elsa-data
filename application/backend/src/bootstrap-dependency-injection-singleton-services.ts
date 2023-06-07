@@ -14,7 +14,6 @@ import { PresignedUrlService } from "./business/services/presigned-url-service";
 import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { S3 } from "./business/services/cloud-storage-service";
-import { MockAwsDiscoveryService } from "./business/services/aws/mock-aws-discovery-service";
 
 /**
  * Register singleton instances of all services that should be singleton.
@@ -37,11 +36,8 @@ export function bootstrapDependencyInjectionSingletonServices(
   dc.registerSingleton(ManifestService);
   dc.registerSingleton(PresignedUrlService);
 
-  if (mockAws) {
-    dc.registerSingleton("IAwsDiscoveryService", MockAwsDiscoveryService);
-  } else {
-    dc.registerSingleton("IAwsDiscoveryService", AwsDiscoveryService);
-  }
+  dc.registerSingleton(AwsDiscoveryService);
+  dc.registerSingleton("IAwsDiscoveryService", AwsDiscoveryService);
 
   dc.registerSingleton<AuditEventTimedService>(
     "ReleaseAuditTimedService",
