@@ -23,7 +23,7 @@ export async function insertRelease5(
       lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
       applicationDacTitle: "A Working Release of Data on Google Storage",
       applicationDacDetails:
-        "A release that has all notWorking/matching files in Google Storage - so can do actual sharing",
+        "A release that has all working/matching files in Google Storage - so can do actual sharing",
       applicationDacIdentifier: makeSystemlessIdentifier("GS"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "HMB",

@@ -138,7 +138,7 @@ export const ReleaseDetailSchema = Type.Object({
     })
   ),
 
-  // once we get @role link properties notWorking we should enable this
+  // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),
 });
 

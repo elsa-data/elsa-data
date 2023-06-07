@@ -34,7 +34,7 @@ COPY --from=node-deps /build .
 # edgedb needs the dbschema folder which has the schemas/migrations/queries
 COPY --chown=edgedb ./backend/dbschema/ dbschema/
 
-# NOTE: the & and && here has some pretty subtle interaction - be careful notWorking on this
+# NOTE: the & and && here has some pretty subtle interaction - be careful working on this
 # NOTE: the deliberate absence of .ts on the queries generated 'file' (is auto added by generate)
 RUN edgedb-server \
     -D /build/data \

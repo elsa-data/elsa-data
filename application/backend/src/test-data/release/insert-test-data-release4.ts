@@ -23,7 +23,7 @@ export async function insertRelease4(
       lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
       applicationDacTitle: "A Working Release of 10G Data",
       applicationDacDetails:
-        "A release that has all notWorking/matching files in S3 - so can do actual sharing",
+        "A release that has all working/matching files in S3 - so can do actual sharing",
       applicationDacIdentifier: makeSystemlessIdentifier("2"),
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "HMB",
