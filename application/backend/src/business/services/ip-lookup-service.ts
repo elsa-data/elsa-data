@@ -3,9 +3,10 @@ import { inject, injectable } from "tsyringe";
 import { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
 
-type LocationType = {
+export type LocationType = {
   country?: string;
   city?: string;
+  region?: string;
 };
 
 @injectable()
@@ -35,10 +36,13 @@ export class IPLookupService {
   public getLocationByIp(ipAddress: string): LocationType | undefined {
     if (this.maxMindReader) {
       const ipInfo = this.maxMindReader.get(ipAddress);
+
       const city = ipInfo?.city?.names.en;
       const country = ipInfo?.country?.names.en;
+      const region = ipInfo?.country?.iso_code;
+
       if (city || country) {
-        return { country, city };
+        return { country, city, region };
       }
     }
   }

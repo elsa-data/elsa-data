@@ -197,13 +197,9 @@ export class AwsCloudTrailLakeService {
       const utcDate = new Date(`${trailEvent.eventTime} UTC`);
 
       // Find location based on IP
-      let loc = "-";
       const location = this.ipLookupService.getLocationByIp(
         trailEvent.sourceIPAddress
       );
-      if (location?.city || location?.country) {
-        loc = `${location?.city}, ${location?.country}`;
-      }
 
       await updateReleaseDataEgress(this.edgeDbClient, {
         releaseKey,
@@ -212,7 +208,7 @@ export class AwsCloudTrailLakeService {
 
         occurredDateTime: utcDate,
         sourceIpAddress: trailEvent.sourceIPAddress,
-        sourceLocation: loc,
+        sourceLocation: location,
 
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
         fileUrl: s3Url,

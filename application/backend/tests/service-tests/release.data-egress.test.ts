@@ -52,7 +52,11 @@ it("audit data access log", async () => {
             occurredDateTime: e.datetime(new Date()),
             description: "Accessed via pre-signed URL",
             sourceIpAddress: "123.123.123.123",
-            sourceLocation: "Melbourne, Australia",
+            sourceLocation: {
+              city: "Melbourne",
+              country: "Australia",
+              region: "AU",
+            },
             egressBytes: 10188721080,
             fileUrl: fileUrl,
             fileSize: 30,

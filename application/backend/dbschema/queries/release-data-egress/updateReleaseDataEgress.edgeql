@@ -11,7 +11,7 @@ set {
       description := <str>$description,
 
       sourceIpAddress := <str>$sourceIpAddress,
-      sourceLocation := <str>$sourceLocation,
+      sourceLocation := <optional json>$sourceLocation,
       egressBytes := <int64>$egressBytes,
 
       fileUrl := <str>$fileUrl,

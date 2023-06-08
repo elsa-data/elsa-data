@@ -15,6 +15,7 @@ import {
 import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { LocationType } from "./ip-lookup-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -120,6 +121,12 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       limit,
     });
 
-    return createPagedResult(dataEgressQueryRes.data, dataEgressQueryRes.total);
+    return createPagedResult(
+      dataEgressQueryRes.data.map((a) => ({
+        ...a,
+        sourceLocation: a.sourceLocation as LocationType,
+      })),
+      dataEgressQueryRes.total
+    );
   }
 }

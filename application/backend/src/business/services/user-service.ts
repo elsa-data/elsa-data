@@ -20,6 +20,7 @@ import {
 } from "../db/audit-log-queries";
 import { NotAuthorisedModifyUserManagement } from "../exceptions/user";
 import { userGetAllByUser } from "../../../dbschema/queries";
+import { IPLookupService, LocationType } from "./ip-lookup-service";
 
 // possibly can somehow get this from the schemas files?
 export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
@@ -30,11 +31,18 @@ export type ChangeablePermission = {
   isAllowedOverallAdministratorView: boolean;
 };
 
+export type LoginDetailType = {
+  hostname: string;
+  ip: string;
+  ipLocation?: LocationType;
+};
+
 @injectable()
 export class UserService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") private readonly settings: ElsaSettings
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
   ) {}
 
   /**
@@ -164,7 +172,7 @@ export class UserService {
     subjectId: string,
     displayName: string,
     email: string,
-    auditDetails: any = undefined
+    auditDetails?: LoginDetailType
   ): Promise<AuthenticatedUser> {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
@@ -202,6 +210,12 @@ export class UserService {
         });
       } else {
         releasesToAdd = e.cast(e.uuid, e.set());
+      }
+
+      const ipAddress = auditDetails?.ip;
+      if (ipAddress) {
+        auditDetails["ipLocation"] =
+          this.ipLookupService.getLocationByIp(ipAddress);
       }
 
       const userAuditEvent = e.insert(e.audit.UserAuditEvent, {
