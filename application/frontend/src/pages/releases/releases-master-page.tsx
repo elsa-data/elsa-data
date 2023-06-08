@@ -95,6 +95,8 @@ export const ReleasesMasterPage: React.FC = () => {
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
+        {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
+
         {releaseQuery.isSuccess &&
           differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&
           lastUpdatedSubjectId !== cookies[USER_SUBJECT_COOKIE_NAME] && (
@@ -158,14 +160,6 @@ export const ReleasesMasterPage: React.FC = () => {
 
         {releaseQuery.isSuccess && !releaseQuery.data.runningJob && (
           <Outlet context={masterOutletContext} />
-        )}
-
-        {!error.isSuccess && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching release data."}
-            error={error.error}
-            styling={"bg-red-100"}
-          />
         )}
       </>
     </div>

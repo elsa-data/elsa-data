@@ -51,7 +51,7 @@ export function createRouter(
 
     return (
       <EagerErrorBoundary
-        message={
+        error={
           <div>
             <p>
               No React router match for <code>{location.pathname}</code>

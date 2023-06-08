@@ -25,6 +25,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { Base7807Error, Base7807Response } from "@umccr/elsa-types";
 import {
   formatDuration,
   formatFromNowTime,
@@ -167,7 +168,6 @@ export const AuditEventTable = ({
           <div>Audit Events</div>
         </div>
       }
-      errorMessage={"Something went wrong fetching audit events"}
     >
       <>
         <div className="flex grow justify-end">
@@ -258,11 +258,7 @@ export const AuditEventTable = ({
               ))}
             />
           ) : (
-            <EagerErrorBoundary
-              message={"Could not display audit events table"}
-              error={error.error}
-              styling={"bg-red-100"}
-            />
+            <EagerErrorBoundary error={error.error} />
           )}
           <BoxPaginator
             currentPage={currentPage}
