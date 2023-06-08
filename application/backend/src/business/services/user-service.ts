@@ -32,7 +32,6 @@ export type ChangeablePermission = {
 };
 
 export type LoginDetailType = {
-  hostname: string;
   ip: string;
   ipLocation?: LocationType;
 };

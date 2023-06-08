@@ -173,7 +173,6 @@ export const callbackRoutes = async (
       idClaims.email,
       {
         ip: request.ip,
-        hostname: request.hostname,
       }
     );
 

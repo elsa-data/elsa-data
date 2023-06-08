@@ -133,7 +133,6 @@ const addTestUserRoute = (
       email,
       {
         ip: "192.19.192.192", // An example of US IP location
-        hostname: request.hostname,
       }
     );
 
