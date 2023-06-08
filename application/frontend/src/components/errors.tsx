@@ -264,7 +264,7 @@ export class ErrorBoundary extends Component<
 
   render() {
     // If not online, show an alert if also rendering common errors.
-    if (!this.state.isOnline) {
+    if (!this.state.isOnline && this.props.renderCommonErrors) {
       return (
         <OfflineAlert
           renderCommonErrors={this.props.renderCommonErrors}
