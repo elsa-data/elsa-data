@@ -12,13 +12,13 @@ import { AuditEventService } from "../audit-event-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
-import maxmind, { CityResponse, Reader } from "maxmind";
 import { NotAuthorisedSyncDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
   releaseLastUpdatedReset,
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
 } from "../../../../dbschema/queries";
+import { IPLookupService } from "../ip-lookup-service";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -55,9 +55,9 @@ export class AwsCloudTrailLakeService {
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
   ) {}
-  private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
     const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
@@ -198,13 +198,11 @@ export class AwsCloudTrailLakeService {
 
       // Find location based on IP
       let loc = "-";
-      if (this.maxmindLookup) {
-        const ipInfo = this.maxmindLookup.get(trailEvent.sourceIPAddress);
-        const city = ipInfo?.city?.names.en;
-        const country = ipInfo?.country?.names.en;
-        if (city || country) {
-          loc = `${ipInfo?.city?.names.en}, ${ipInfo?.country?.names.en}`;
-        }
+      const location = this.ipLookupService.getLocationByIp(
+        trailEvent.sourceIPAddress
+      );
+      if (location?.city || location?.country) {
+        loc = `${location?.city}, ${location?.country}`;
       }
 
       await updateReleaseDataEgress(this.edgeDbClient, {
@@ -362,18 +360,6 @@ export class AwsCloudTrailLakeService {
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
     const endQueryDate = new Date();
     const endQueryDateISO = endQueryDate.toISOString();
-
-    // Try initiate maxmind reader if available
-    const maxMindDbPath = this.settings.ipLookup?.maxMindDbPath;
-    if (maxMindDbPath) {
-      try {
-        this.maxmindLookup = await maxmind.open<CityResponse>(maxMindDbPath);
-      } catch (error) {
-        this.logger.warn(
-          `The configured MaxMind Database (${maxMindDbPath}) does not contain a readable MaxMind Database, therefore, it will not perform IP lookup.`
-        );
-      }
-    }
 
     for (const edsi of eventDataStoreIds) {
       for (const method of Object.keys(CloudTrailQueryType)) {

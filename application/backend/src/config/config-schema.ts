@@ -127,15 +127,15 @@ export const configZodDefinition = z.object({
     ),
   // if present, a mailer is being configured and if not present, then the mailer does not start
   mailer: z.optional(MailerSchema),
-  ipLookup: z.optional(
-    z.object({
-      maxMindDbPath: z
+  ipLookup: z.object({
+    maxMindDbPath: z.optional(
+      z
         .string()
         .describe(
           "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
-        ),
-    })
-  ),
+        )
+    ),
+  }),
   devTesting: z.optional(
     z.object({
       allowTestUsers: z

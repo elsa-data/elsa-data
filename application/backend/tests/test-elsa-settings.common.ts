@@ -115,6 +115,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     uri: "",
     oid: "",
   },
+  ipLookup: { maxMindDbPath: "config/GeoLite2-City.mmdb" },
   aws: {
     signingSecretAccessKey: "A", // pragma: allowlist secret
     signingAccessKeyId: "B", // pragma: allowlist secret
