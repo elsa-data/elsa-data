@@ -85,9 +85,6 @@ export const configZodDefinition = z.object({
       transportTargets: [],
     }),
   ontoFhirUrl: z.optional(z.string()),
-  maxmindDbAssetPath: z
-    .optional(z.string())
-    .describe("The path to the Maxmind city database"),
   releaseKeyPrefix: z
     .string()
     .default("R")
@@ -127,15 +124,15 @@ export const configZodDefinition = z.object({
     ),
   // if present, a mailer is being configured and if not present, then the mailer does not start
   mailer: z.optional(MailerSchema),
-  ipLookup: z.object({
-    maxMindDbPath: z.optional(
-      z
+  ipLookup: z.optional(
+    z.object({
+      maxMindDbPath: z
         .string()
         .describe(
           "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
-        )
-    ),
-  }),
+        ),
+    })
+  ),
   devTesting: z.optional(
     z.object({
       allowTestUsers: z
