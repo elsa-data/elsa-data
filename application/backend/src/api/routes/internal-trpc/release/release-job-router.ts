@@ -1,6 +1,9 @@
-import { internalProcedure, router } from "../trpc-bootstrap";
+import { internalProcedure, router } from "../../trpc-bootstrap";
 import { z } from "zod";
-import { inputReleaseKey, inputReleaseKeySingle } from "./input-schemas-common";
+import {
+  inputReleaseKey,
+  inputReleaseKeySingle,
+} from "../input-schemas-common";
 
 /**
  * RPC for release jobs

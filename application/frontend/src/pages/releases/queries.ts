@@ -79,14 +79,4 @@ export async function specificReleaseQuery(context: QueryFunctionContext) {
   return await makeReleaseTypeLocal(releaseData);
 }
 
-export async function specificReleaseParticipantsQuery(
-  context: QueryFunctionContext
-) {
-  const rid = REACT_QUERY_RELEASE_KEYS.getReleaseId(context.queryKey);
-
-  return await axios
-    .get<ReleaseParticipantType[]>(`/api/releases/${rid}/participants`)
-    .then((response) => response.data);
-}
-
 export async function specificReleaseCodingUpdate() {}

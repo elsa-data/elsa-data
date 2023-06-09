@@ -247,6 +247,16 @@ export type ReleaseParticipantAddType = Static<
   typeof ReleaseParticipantAddSchema
 >;
 
+/**
+ * An enum type for participant roles in the release
+ */
+export const releaseParticipantRole = [
+  "Administrator",
+  "Manager",
+  "Member",
+] as const;
+export type ReleaseParticipantRoleType = typeof releaseParticipantRole[number];
+
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 
 export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;

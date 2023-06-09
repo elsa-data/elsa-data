@@ -1,41 +1,26 @@
 import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import {
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseParticipantsQuery,
-} from "../queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
 import { Box } from "../../../components/boxes";
-import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
-import { ReleaseParticipantType } from "@umccr/elsa-types";
+import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import axios from "axios";
 import { useReleasesMasterData } from "../releases-types";
-import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 import { Table } from "../../../components/tables";
+import { trpc } from "../../../helpers/trpc";
+import { REACT_QUERY_RELEASE_KEYS } from "../queries";
+
+function checkEmail(email: string) {
+  return /\S+@\S+\.\S+/.test(email);
+}
 
 /**
  * A page allowing the display/editing of users participating in a release.
  */
 export const ReleasesUserManagementPage: React.FC = () => {
-  const { releaseKey, releaseData } = useReleasesMasterData();
-
-  const [error, setError] = useState<ErrorState>({
-    error: null,
-    isSuccess: true,
-  });
-
-  const releaseParticipantsQuery = useQuery<ReleaseParticipantType[]>({
-    queryKey: REACT_QUERY_RELEASE_KEYS.participant(releaseKey),
-    queryFn: specificReleaseParticipantsQuery,
-    onError: (error: any) => setError({ error, isSuccess: false }),
-    onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
-  });
-
   const queryClient = useQueryClient();
+  const { releaseKey } = useReleasesMasterData();
 
   const afterMutateForceRefresh = () => {
     return queryClient.invalidateQueries(
@@ -43,35 +28,40 @@ export const ReleasesUserManagementPage: React.FC = () => {
     );
   };
 
-  const addUserMutate = useMutation(
-    (c: {
-      newUserEmail: string;
-      newUserRole: "Manager" | "Member" | "Administrator";
-    }) =>
-      axios.post<void>(`/api/releases/${releaseKey}/participants`, {
-        email: c.newUserEmail,
-        role: c.newUserRole,
-      }),
-    { onSuccess: afterMutateForceRefresh }
-  );
+  const releaseParticipantsQuery =
+    trpc.releaseParticipant.getParticipants.useQuery({ releaseKey });
 
-  const removeUserMutate = useMutation(
-    (participantId: string) =>
-      axios.delete<void>(
-        `/api/releases/${releaseKey}/participants/${participantId}`
-      ),
-    { onSuccess: afterMutateForceRefresh }
-  );
+  const addParticipantMutate =
+    trpc.releaseParticipant.addParticipant.useMutation({
+      onSuccess: afterMutateForceRefresh,
+    });
+
+  const removeParticipantMutate =
+    trpc.releaseParticipant.removeParticipant.useMutation({
+      onSuccess: afterMutateForceRefresh,
+    });
 
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserRole, setNewUserRole] = useState<
-    "Member" | "Manager" | "Administrator"
-  >("Member");
+  const [newUserRole, setNewUserRole] =
+    useState<ReleaseParticipantRoleType>("Member");
+  const isValidEmail = newUserEmail == "" || checkEmail(newUserEmail);
 
   const isAddButtonDisabled =
-    addUserMutate.isLoading ||
-    removeUserMutate.isLoading ||
-    newUserEmail.trim().length == 0;
+    addParticipantMutate.isLoading ||
+    removeParticipantMutate.isLoading ||
+    newUserEmail.trim().length == 0 ||
+    !isValidEmail;
+
+  const isError =
+    releaseParticipantsQuery.isError ||
+    addParticipantMutate.isError ||
+    removeParticipantMutate.isError;
+
+  const error = releaseParticipantsQuery.error
+    ? releaseParticipantsQuery.error
+    : addParticipantMutate.error
+    ? addParticipantMutate.error
+    : removeParticipantMutate.error;
 
   const ourRadio = (text: string, checked: boolean, onChange: () => void) => (
     <div className="form-control items-start">
@@ -107,17 +97,30 @@ export const ReleasesUserManagementPage: React.FC = () => {
             level that is one below your own current level in the release. (TO
             BE IMPLEMENTED)
           </p>
-          <div className="form-control">
+          <div className="form-control mb-3">
             <label className="label">
               <span className="label-text">User Email</span>
             </label>
             <input
-              type="text"
-              placeholder="email@address"
-              className="input-bordered input-accent input input-sm w-full"
+              type="email"
+              placeholder="user@email.com"
+              className={classNames(
+                `input-bordered input-accent input input-sm w-full`,
+                {
+                  "input-error": !isValidEmail,
+                  "input-accent": isValidEmail,
+                }
+              )}
               value={newUserEmail}
               onChange={(e) => setNewUserEmail(e.target.value)}
             />
+            {!isValidEmail && (
+              <label className="label">
+                <span className="label-text-alt text-red-400">
+                  Email invalid
+                </span>
+              </label>
+            )}
           </div>
           {ourRadio("Member", newUserRole === "Member", () =>
             setNewUserRole("Member")
@@ -135,10 +138,11 @@ export const ReleasesUserManagementPage: React.FC = () => {
               className={classNames("btn", {
                 "btn-disabled": isAddButtonDisabled,
               })}
-              onClick={async () => {
-                addUserMutate.mutate({
-                  newUserEmail: newUserEmail,
-                  newUserRole: newUserRole,
+              onClick={() => {
+                addParticipantMutate.mutate({
+                  releaseKey,
+                  email: newUserEmail,
+                  role: newUserRole,
                 });
               }}
             >
@@ -199,12 +203,15 @@ export const ReleasesUserManagementPage: React.FC = () => {
                                   "btn-table-action-danger",
                                   {
                                     "btn-disabled":
-                                      addUserMutate.isLoading ||
-                                      removeUserMutate.isLoading,
+                                      addParticipantMutate.isLoading ||
+                                      removeParticipantMutate.isLoading,
                                   }
                                 )}
-                                onClick={async () => {
-                                  removeUserMutate.mutate(row.id);
+                                onClick={() => {
+                                  removeParticipantMutate.mutate({
+                                    releaseKey,
+                                    participantUuid: row.id,
+                                  });
                                 }}
                               >
                                 remove
@@ -220,10 +227,10 @@ export const ReleasesUserManagementPage: React.FC = () => {
           </Box>
         </>
       )}
-      {!error.isSuccess && (
+      {isError && (
         <EagerErrorBoundary
           message={"Something went wrong fetching release participant data."}
-          error={error.error}
+          error={error}
           styling={"bg-error-content"}
         />
       )}

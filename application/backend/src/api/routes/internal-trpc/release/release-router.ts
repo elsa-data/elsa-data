@@ -1,9 +1,13 @@
 import { z } from "zod";
-import { calculateOffset, internalProcedure, router } from "../trpc-bootstrap";
+import {
+  calculateOffset,
+  internalProcedure,
+  router,
+} from "../../trpc-bootstrap";
 import {
   inputPaginationParameter,
   inputReleaseKeySingle,
-} from "./input-schemas-common";
+} from "../input-schemas-common";
 
 /**
  * RPC for release
