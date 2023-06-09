@@ -59,7 +59,7 @@ export const RemsDacDialog: React.FC<Props> = ({ showing, cancelShowing }) => {
   }, [showing]);
 
   return (
-    <ErrorBoundary styling={"bg-red-100"}>
+    <ErrorBoundary>
       <SelectDialogBase
         showing={showing}
         cancelShowing={cancelShowing}

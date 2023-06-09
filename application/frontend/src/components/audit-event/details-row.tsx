@@ -80,13 +80,7 @@ export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
     );
 
   if (detailsQuery.isError)
-    return (
-      <EagerErrorBoundary
-        message={"Something went wrong displaying audit event details."}
-        error={detailsQuery.error}
-        styling={"bg-red-100"}
-      />
-    );
+    return <EagerErrorBoundary error={detailsQuery.error} />;
 
   return <></>;
 };

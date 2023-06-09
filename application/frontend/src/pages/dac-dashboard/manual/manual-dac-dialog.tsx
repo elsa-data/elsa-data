@@ -68,7 +68,7 @@ export const ManualDacDialog: React.FC<Props> = ({
   );
 
   return (
-    <ErrorBoundary styling={"bg-red-100"}>
+    <ErrorBoundary>
       <SelectDialogBase
         showing={showing}
         cancelShowing={cancelShowing}

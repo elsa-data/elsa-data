@@ -4,7 +4,7 @@ import { InformationBox } from "./information-box";
 import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { useReleasesMasterData } from "../releases-types";
-import { SharingControlBox } from "./sharing-control-box/sharing-control-box";
+import { SharerControlBox } from "./sharer-control-box/sharer-control-box";
 import { AccessBox } from "./access-box/access-box";
 
 /**
@@ -36,7 +36,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
       )}
 
       {releaseData.permissionEditSelections && (
-        <SharingControlBox releaseKey={releaseKey} releaseData={releaseData} />
+        <SharerControlBox releaseKey={releaseKey} releaseData={releaseData} />
       )}
 
       {releaseData.permissionAccessData && (

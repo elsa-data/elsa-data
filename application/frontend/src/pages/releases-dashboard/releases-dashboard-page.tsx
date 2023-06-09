@@ -33,11 +33,13 @@ export const ReleasesDashboardPage: React.FC = () => {
 
   return (
     <>
-      <Box
-        heading="Releases"
-        errorMessage={"Something went wrong fetching releases."}
-      >
+      <Box heading="Releases">
+        {releaseQuery.isError && (
+          <EagerErrorBoundary error={releaseQuery.error} />
+        )}
+
         {releaseQuery.isLoading && <IsLoadingDiv />}
+
         {releaseQuery.isSuccess && queryData?.length === 0 && (
           <>
             <p className="prose">
@@ -159,13 +161,6 @@ export const ReleasesDashboardPage: React.FC = () => {
               rowWord="releases"
             />
           </>
-        )}
-        {releaseQuery.isError && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching releases."}
-            error={releaseQuery.error}
-            styling={"bg-red-100"}
-          />
         )}
       </Box>
     </>

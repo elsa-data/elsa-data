@@ -31,14 +31,27 @@ import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit
 import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
+import {
+  FEATURE_RELEASE_COHORT_CONSTRUCTOR,
+  FEATURE_RELEASE_DATA_EGRESS_VIEWER,
+} from "@umccr/elsa-constants";
 
-export function createRouter(addBypassLoginPage: boolean) {
+/**
+ * Create the complete set of routes for the application.
+ *
+ * @param addBypassLoginPage if true, adds in a page that allows direct login as test users
+ * @param features the set of features to enable in the UI
+ */
+export function createRouter(
+  addBypassLoginPage: boolean,
+  features: Set<string>
+) {
   const NoMatch = () => {
     let location = useLocation();
 
     return (
       <EagerErrorBoundary
-        message={
+        error={
           <div>
             <p>
               No React router match for <code>{location.pathname}</code>
@@ -68,45 +81,44 @@ export function createRouter(addBypassLoginPage: boolean) {
     return <Outlet />;
   };
 
-  const releaseChildren = [
-    {
-      text: "Detail",
-      path: "detail",
-      element: <ReleasesDetailSubPage />,
-      children: <></>,
-    },
-    {
+  const releaseChildren = [];
+
+  releaseChildren.push({
+    text: "Detail",
+    path: "detail",
+    element: <ReleasesDetailSubPage />,
+    children: <></>,
+  });
+
+  if (features.has(FEATURE_RELEASE_COHORT_CONSTRUCTOR))
+    releaseChildren.push({
       text: "Cohort Constructor",
       path: "cohort-constructor",
       element: <BulkSelectorSubPage />,
       children: <></>,
-    },
-    {
-      text: "User Management",
-      path: "user-management",
-      element: <ReleasesUserManagementPage />,
-      children: <></>,
-    },
-    {
+    });
+
+  releaseChildren.push({
+    text: "User Management",
+    path: "user-management",
+    element: <ReleasesUserManagementPage />,
+    children: <></>,
+  });
+
+  if (features.has(FEATURE_RELEASE_DATA_EGRESS_VIEWER))
+    releaseChildren.push({
       text: "Data Egress Summary",
       path: "data-egress-summary",
       element: <DataEgressSummarySubPage />,
       children: <></>,
-    },
-    {
-      text: "Audit Events",
-      path: "audit-events",
-      element: <AuditEventsSubPage />,
-      children: <></>,
-    },
-    {
-      /* disabled need to work out how this works with the top level audit event page.. we may not even need {
-      path: "audit-events/:objectId",
-      element: <AuditEventDetailedPage />,
-      children: <></>,
-    }, */
-    },
-  ];
+    });
+
+  releaseChildren.push({
+    text: "Audit Events",
+    path: "audit-events",
+    element: <AuditEventsSubPage />,
+    children: <></>,
+  });
 
   return createBrowserRouter(
     createRoutesFromElements(

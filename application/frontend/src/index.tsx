@@ -49,7 +49,7 @@ if (rootElement != null) {
   root.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
-      <ErrorBoundary rethrowError={(_: any) => false}>
+      <ErrorBoundary>
         {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
         <EnvRelayProvider
           version={ver}
@@ -70,7 +70,7 @@ if (rootElement != null) {
                   {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
                   <LoggedInUserConfigRelayProvider>
                     <RouterProvider
-                      router={createRouter(de === "development")}
+                      router={createRouter(de === "development", fea)}
                     />
                   </LoggedInUserConfigRelayProvider>
                 </TRPCProvider>

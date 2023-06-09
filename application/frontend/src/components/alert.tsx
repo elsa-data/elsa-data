@@ -59,6 +59,19 @@ export const Alert = ({
 }: AlertProps): JSX.Element => {
   const alertRef = useRef<HTMLDivElement>(null);
   const isInView = useIsInView(alertRef);
+  const [animate, setAnimate] = useState(true);
+
+  useEffect(() => {
+    if (isInView) {
+      // I don't know if there is a better way to do this. The animation should appear once
+      // and not stop before it has finished.
+      const timeoutId = setTimeout(() => {
+        setAnimate(false);
+      }, 250);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isInView]);
 
   useEffect(() => {
     alertRef.current?.scrollIntoView({
@@ -76,7 +89,7 @@ export const Alert = ({
         "alert flex-row shadow-lg",
         additionalAlertClassName,
         {
-          "animate-pop": isInView,
+          "animate-pop": isInView && animate,
         }
       )}
       show={!dismissed}
@@ -105,7 +118,9 @@ export const Alert = ({
   );
 };
 
-// Icons
+/**
+ * Warning icon.
+ */
 export const TriangleExclamationIcon = (): JSX.Element => {
   return (
     <svg
@@ -119,6 +134,27 @@ export const TriangleExclamationIcon = (): JSX.Element => {
         strokeLinejoin="round"
         strokeWidth="2"
         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+      />
+    </svg>
+  );
+};
+
+/**
+ * Error icon.
+ */
+export const CircleExclamationIcon = (): JSX.Element => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-6 w-6 shrink-0 stroke-current"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>
   );

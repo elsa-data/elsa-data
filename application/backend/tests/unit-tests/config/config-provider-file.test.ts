@@ -1,5 +1,5 @@
 import { ProviderFile } from "../../../src/config/providers/provider-file";
-import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-constants";
+import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-schema";
 import { promises as fs } from "fs";
 import * as path from "path";
 

@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../../shared-types";
 import {
@@ -8,35 +8,30 @@ import {
   RhSection,
   RightDiv,
 } from "../../../../components/rh/rh-structural";
-import {
-  RhCheckItem,
-  RhChecks,
-  RhChecksDetail,
-} from "../../../../components/rh/rh-checks";
-import {
-  axiosPatchOperationMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "../../queries";
+import { RhChecks } from "../../../../components/rh/rh-checks";
+import { axiosPatchOperationMutationFn } from "../../queries";
 import { trpc } from "../../../../helpers/trpc";
-import ReactMarkdown from "react-markdown";
-import { useEnvRelay } from "../../../../providers/env-relay-provider";
-import {
-  FEATURE_DATA_SHARING_AWS_ACCESS_POINT,
-  FEATURE_DATA_SHARING_COPY_OUT,
-  FEATURE_DATA_SHARING_GCP_IAM,
-  FEATURE_DATA_SHARING_HTSGET,
-} from "@umccr/elsa-constants";
+import { isDiscriminate } from "@umccr/elsa-constants";
+import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
 
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
-export const SharingControlBox: React.FC<Props> = ({
+/**
+ * The control panel for data owner that allows enabling/triggering
+ * different sharers.
+ *
+ * @param releaseKey
+ * @param releaseData
+ * @constructor
+ */
+export const SharerControlBox: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
-  const { features } = useEnvRelay();
+  const { sharers } = useLoggedInUserConfigRelay()!;
   const utils = trpc.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
@@ -69,6 +64,7 @@ export const SharingControlBox: React.FC<Props> = ({
       | "/dataSharingConfiguration/awsAccessPointEnabled"
       | "/dataSharingConfiguration/gcpStorageIamEnabled";
     current: boolean;
+    notWorkingReason: string | undefined;
   };
   const SharingConfigurationAccordion: React.FC<
     PropsWithChildren<SharingConfigurationAccordionProps>
@@ -84,6 +80,18 @@ export const SharingControlBox: React.FC<Props> = ({
       )}
     >
       <div className="collapse-title text-xl font-medium">
+        {props.notWorkingReason && (
+          <div className="alert alert-error mb-3">
+            <div className="flex flex-col items-start">
+              <p className="text-sm">{props.notWorkingReason}</p>
+              <p className="text-xs">
+                Whilst this method can be enabled - it will not function as an
+                actual sharing mechanism until the underlying configuration
+                problem is fixed.
+              </p>
+            </div>
+          </div>
+        )}
         <div className={classNames("form-control", "items-start", "space-x-2")}>
           <label className="label cursor-pointer">
             <input
@@ -105,17 +113,29 @@ export const SharingControlBox: React.FC<Props> = ({
           </label>
         </div>
       </div>
-      <div className="collapse-content flex flex-row">{props.children}</div>
+      <div className="collapse-content flex flex-col items-stretch">
+        {props.children}
+      </div>
     </div>
   );
 
-  // NOTE the "enabled" fields are whether the custodian has checked the checkbox..
-  // but there is also underlying "feature" fields that mean we should not show the UI at all
+  // the settings come from the backend on login and tell us what is fundamentally enabled
+  // in the system
+  const objectSigningSetting = sharers.find(
+    isDiscriminate("type", "object-signing")
+  );
+  const copyOutSetting = sharers.find(isDiscriminate("type", "copy-out"));
+  const htsgetSetting = sharers.find(isDiscriminate("type", "htsget"));
+  const awsAccessPointSetting = sharers.find(
+    isDiscriminate("type", "aws-access-point")
+  );
+
+  // the "enabled" fields are whether the custodian has checked the checkbox..
   const objectSigningEnabled = !!releaseData.dataSharingObjectSigning;
   const copyOutEnabled = !!releaseData.dataSharingCopyOut;
   const htsgetEnabled = !!releaseData.dataSharingHtsget;
   const awsAccessPointEnabled = !!releaseData.dataSharingAwsAccessPoint;
-  const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
+  // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
 
   return (
     <Box heading="Data Sharing Control">
@@ -129,37 +149,30 @@ export const SharingControlBox: React.FC<Props> = ({
         />
         <RightDiv>
           <RhChecks label="Researcher Access Via">
-            <SharingConfigurationAccordion
-              path="/dataSharingConfiguration/objectSigningEnabled"
-              label="Object Signing"
-              current={objectSigningEnabled}
-            >
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Signing Expiry in Hours</span>
-                </label>
-                <input
-                  type="text"
-                  className="input-bordered input w-full"
-                  defaultValue={releaseData.dataSharingObjectSigning?.expiryHours.toString()}
-                  onBlur={(e) =>
-                    releasePatchMutate.mutate({
-                      op: "replace",
-                      path: "/dataSharingConfiguration/objectSigningExpiryHours",
-                      value: parseInt(e.target.value),
-                    })
-                  }
-                />
-              </div>
-            </SharingConfigurationAccordion>
+            {objectSigningSetting && (
+              <SharingConfigurationAccordion
+                path="/dataSharingConfiguration/objectSigningEnabled"
+                label="Object Signing"
+                current={objectSigningEnabled}
+                notWorkingReason={objectSigningSetting.notWorkingReason}
+              >
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Signing Expiry in Hours</span>
+                  </label>
+                  <label>{objectSigningSetting.maxAgeInSeconds / 60}</label>
+                </div>
+              </SharingConfigurationAccordion>
+            )}
 
-            {features.has(FEATURE_DATA_SHARING_COPY_OUT) && (
+            {copyOutSetting && (
               <SharingConfigurationAccordion
                 path="/dataSharingConfiguration/copyOutEnabled"
                 label="Copy Out"
                 current={copyOutEnabled}
+                notWorkingReason={copyOutSetting.notWorkingReason}
               >
-                <div className="form-control flex-grow self-end">
+                <div className="form-control flex-grow lg:w-3/4">
                   <label className="label">
                     <span className="label-text">Destination for Copy Out</span>
                   </label>
@@ -171,8 +184,7 @@ export const SharingControlBox: React.FC<Props> = ({
                     }
                   />
                 </div>
-                <div className="divider divider-horizontal"></div>
-                <div className="form-control flex-grow self-end">
+                <div className="form-control flex-grow lg:w-3/4">
                   <label className="label">
                     <span className="label-text">Start a Background Copy</span>
                     <span className="label-text-alt">
@@ -190,7 +202,10 @@ export const SharingControlBox: React.FC<Props> = ({
                           "",
                       });
                     }}
-                    disabled={copyOutMutate.isLoading}
+                    disabled={
+                      copyOutMutate.isLoading ||
+                      !!copyOutSetting.notWorkingReason
+                    }
                   >
                     Copy Out
                   </button>
@@ -198,22 +213,24 @@ export const SharingControlBox: React.FC<Props> = ({
               </SharingConfigurationAccordion>
             )}
 
-            {features.has(FEATURE_DATA_SHARING_HTSGET) && (
+            {htsgetSetting && (
               <SharingConfigurationAccordion
                 path="/dataSharingConfiguration/htsgetEnabled"
                 label="Htsget"
                 current={htsgetEnabled}
+                notWorkingReason={htsgetSetting.notWorkingReason}
               >
                 <p>Some text about htsget</p>
                 <pre>{releaseData.dataSharingHtsget?.url}</pre>
               </SharingConfigurationAccordion>
             )}
 
-            {features.has(FEATURE_DATA_SHARING_AWS_ACCESS_POINT) && (
+            {awsAccessPointSetting && (
               <SharingConfigurationAccordion
                 path="/dataSharingConfiguration/awsAccessPointEnabled"
                 label="AWS Access Point"
                 current={awsAccessPointEnabled}
+                notWorkingReason={awsAccessPointSetting.notWorkingReason}
               >
                 <div className="form-control flex-grow self-end">
                   <label className="label">
@@ -250,7 +267,7 @@ export const SharingControlBox: React.FC<Props> = ({
               </SharingConfigurationAccordion>
             )}
 
-            {features.has(FEATURE_DATA_SHARING_GCP_IAM) && (
+            {/*{features.has(FEATURE_DATA_SHARING_GCP_IAM) && (
               <SharingConfigurationAccordion
                 path="/dataSharingConfiguration/gcpStorageIamEnabled"
                 label="GCP Storage IAM"
@@ -281,7 +298,7 @@ export const SharingControlBox: React.FC<Props> = ({
                   </button>
                 </div>
               </SharingConfigurationAccordion>
-            )}
+            )} */}
           </RhChecks>
         </RightDiv>
       </RhSection>

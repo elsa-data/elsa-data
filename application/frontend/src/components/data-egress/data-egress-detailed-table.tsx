@@ -45,6 +45,11 @@ export function DataEgressDetailedTable({
       <div className="mb-2	text-gray-500">
         A detailed events on every events egress from data storage.
       </div>
+
+      {dataEgressQuery.isError && (
+        <EagerErrorBoundary error={dataEgressQuery.error} />
+      )}
+
       <Table
         tableHead={
           <tr>
@@ -81,13 +86,6 @@ export function DataEgressDetailedTable({
           ))
         }
       />
-      {dataEgressQuery.isError && (
-        <EagerErrorBoundary
-          message={"Something went wrong fetching data egress"}
-          error={dataEgressQuery.error}
-          styling={"bg-red-100"}
-        />
-      )}
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}

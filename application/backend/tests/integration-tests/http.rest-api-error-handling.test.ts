@@ -3,7 +3,7 @@ import { FastifyInstance } from "fastify";
 import { Base7807Response } from "@umccr/elsa-types/error-types";
 import { registerTypes } from "../test-dependency-injection.common";
 import { getServices } from "../../src/di-helpers";
-import { FEATURE_DATA_SHARING_COPY_OUT } from "@umccr/elsa-constants";
+import { FEATURE_RELEASE_COHORT_CONSTRUCTOR } from "@umccr/elsa-constants";
 
 describe("http API error handling tests", () => {
   let server: FastifyInstance;
@@ -15,7 +15,7 @@ describe("http API error handling tests", () => {
       testContainer,
       settings,
       logger,
-      new Set<string>([FEATURE_DATA_SHARING_COPY_OUT])
+      new Set<string>([FEATURE_RELEASE_COHORT_CONSTRUCTOR])
     );
     server = await app.setupServer();
     await server.ready();

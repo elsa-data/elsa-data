@@ -51,6 +51,8 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
 
   return (
     <form>
+      {isErrorState(status) && <EagerErrorBoundary error={status.error} />}
+
       <div className="flex flex-col gap-6">
         <label className="prose block">
           The functionality from the perspective of the data holder.
@@ -87,13 +89,6 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
           </button>
         </div>
       </div>
-      {isErrorState(status) && (
-        <EagerErrorBoundary
-          message="Something went wrong fetching release data."
-          error={status.error}
-          styling="mt-5 shadow sm:rounded-md bg-red-100"
-        />
-      )}
       {status === "working" && (
         <div className="mt-5 bg-yellow-200 p-5 text-yellow-700 shadow sm:rounded-md">
           Working...

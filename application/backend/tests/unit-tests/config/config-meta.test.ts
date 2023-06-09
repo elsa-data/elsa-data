@@ -1,5 +1,5 @@
-import { getMetaConfig } from "../../../src/config/config-schema";
-import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-constants";
+import { getMetaConfig } from "../../../src/config/config-load";
+import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-schema";
 
 // TODO: because this actually instantiates the providers, all providers mentioned here need to work in test
 // TODO: we still need to set up the test infrastructure so that AWS tests will work (using fake AWS??)
@@ -10,7 +10,7 @@ it("basic parsing of meta syntax", async () => {
 
   const config = await getMetaConfig("file('base') file('dev-localhost')");
 
-  expect(config).toHaveProperty("port", 8000);
+  expect(config).toHaveProperty("httpHosting.port", 8000);
   expect(config).toHaveProperty("ontoFhirUrl", "https://server.com/fhir");
 });
 
@@ -23,7 +23,7 @@ it("basic parsing with right most providers overriding", async () => {
   );
 
   // here the dev-common overrides the port as set in base
-  expect(config).toHaveProperty("port", 8001);
+  expect(config).toHaveProperty("httpHosting.port", 8001);
 });
 
 it("plus minus operations for arrays", async () => {
@@ -32,7 +32,7 @@ it("plus minus operations for arrays", async () => {
 
   // with just the single file we have two datasets
   {
-    const config = await getMetaConfig("file('datasets')");
+    const config = await getMetaConfig("file('datasets') file('base')");
 
     expect(config).toHaveProperty("datasets");
 
@@ -50,7 +50,9 @@ it("plus minus operations for arrays", async () => {
 
   // with the add-delete config added - we add two and remove 1
   {
-    const config = await getMetaConfig("file('datasets') file('add-delete')");
+    const config = await getMetaConfig(
+      "file('datasets') file('add-delete') file('base')"
+    );
 
     expect(config).toHaveProperty("datasets");
 
@@ -98,14 +100,14 @@ it("complex key with path expression works", async () => {
 it("basic parsing but with env variable override", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
     "./tests/unit-tests/config/real-like";
-  process.env["ELSA_DATA_CONFIG_PORT"] = "9999";
+  process.env["ELSA_DATA_CONFIG_HTTP_HOSTING_PORT"] = "9999";
 
   const config = await getMetaConfig(
     "file('base') file('dev-common') file('dev-localhost') file('datasets')"
   );
 
   // here the explicit env variables overrides any file content
-  expect(config).toHaveProperty("port", 9999);
+  expect(config).toHaveProperty("httpHosting.port", 9999);
 });
 
 it("parser error with double left bracket", async () => {

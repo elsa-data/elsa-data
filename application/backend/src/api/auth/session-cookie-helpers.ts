@@ -16,8 +16,8 @@ export function getSecureSessionOptions(
   settings: ElsaSettings
 ): SecureSessionPluginOptions {
   return {
-    secret: settings.sessionSecret,
-    salt: settings.sessionSalt,
+    secret: settings.httpHosting.session.secret,
+    salt: settings.httpHosting.session.salt,
     cookieName: SECURE_COOKIE_NAME,
     cookie: {
       // use across the entire site

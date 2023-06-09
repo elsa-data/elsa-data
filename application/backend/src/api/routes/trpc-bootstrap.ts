@@ -23,6 +23,7 @@ import { S3IndexApplicationService } from "../../business/services/australian-ge
 import { ReleaseSelectionService } from "../../business/services/release-selection-service";
 import { DacService } from "../../business/services/dacs/dac-service";
 import { AuditEventService } from "../../business/services/audit-event-service";
+import { SharerService } from "../../business/services/sharer-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -148,6 +149,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
+      sharerService: ctx.container.resolve(SharerService),
       req: ctx.req,
       res: ctx.res,
       ...ctx,

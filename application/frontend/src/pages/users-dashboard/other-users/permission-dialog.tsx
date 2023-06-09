@@ -145,7 +145,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
       >
         edit
       </button>
-      <ErrorBoundary styling={"bg-red-100"}>
+      <ErrorBoundary>
         <SelectDialogBase
           showing={isDialogOpen}
           cancelShowing={cancelButton}
@@ -214,6 +214,10 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                     <h3 className="font-semibold">User Permission</h3>
                   </div>
 
+                  {!error.isSuccess && (
+                    <EagerErrorBoundary error={error.error} />
+                  )}
+
                   {!isEditingAllowed && (
                     <div className="w-full bg-amber-100 py-2 text-center text-xs">
                       You are only allowed to view this section.
@@ -226,16 +230,6 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                       additionalAlertClassName={
                         "alert-success bg-green-200 text-xs py-1"
                       }
-                    />
-                  )}
-
-                  {!error.isSuccess && (
-                    <EagerErrorBoundary
-                      message={
-                        "Something went wrong mutating user's permissions."
-                      }
-                      error={error.error}
-                      styling={"bg-red-100"}
                     />
                   )}
 
@@ -253,7 +247,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
                           className="checkbox checkbox-sm mr-2 h-3 w-3 cursor-pointer rounded-sm"
                           type="checkbox"
                           value={o.key}
-                          checked={input[o.key] == true}
+                          checked={input[o.key]}
                           onChange={() => {
                             const newChange: Record<string, boolean> = {};
                             newChange[o.key] = !input[o.key];
