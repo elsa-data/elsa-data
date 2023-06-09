@@ -7,6 +7,7 @@ import { usePageSizer } from "../../hooks/page-sizer";
 import { BoxPaginator } from "../box-paginator";
 import { EagerErrorBoundary } from "../errors";
 import { Table } from "../tables";
+import { Flags } from "../flags";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },
@@ -69,16 +70,29 @@ export function DataEgressDetailedTable({
                 const objKey = col.key;
                 return (
                   <td key={`body-row-${rowIdx}-col-${colIdx}`}>
-                    {objKey === "egressBytes" || objKey === "fileSize"
-                      ? fileSize(row[objKey] ?? 0)
-                      : objKey === "occurredDateTime"
-                      ? formatLocalDateTime(row[objKey])
-                      : objKey === "fileUrl" ||
+                    {(() => {
+                      if (objKey === "egressBytes" || objKey === "fileSize") {
+                        return <>{fileSize(row[objKey] ?? 0)}</>;
+                      } else if (objKey === "occurredDateTime") {
+                        return <>{formatLocalDateTime(row[objKey])}</>;
+                      } else if (objKey === "sourceLocation") {
+                        const { city, country, region } = row.sourceLocation;
+                        return (
+                          <>
+                            {`${city ?? "-"}, ${country ?? "-"} `}
+                            {region && <Flags regions={[region]} />}
+                          </>
+                        );
+                      } else if (
+                        objKey === "fileUrl" ||
                         objKey === "description" ||
-                        objKey === "sourceIpAddress" ||
-                        objKey === "sourceLocation"
-                      ? row[objKey]
-                      : ""}
+                        objKey === "sourceIpAddress"
+                      ) {
+                        return <>{row[objKey] ?? ""}</>;
+                      } else {
+                        return "";
+                      }
+                    })()}
                   </td>
                 );
               })}

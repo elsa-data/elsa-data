@@ -14,6 +14,8 @@ import { PresignedUrlService } from "./business/services/presigned-url-service";
 import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { S3 } from "./business/services/cloud-storage-service";
+import { IPLookupService } from "./business/services/ip-lookup-service";
+import { MailService } from "./business/services/mail-service";
 
 /**
  * Register singleton instances of all services that should be singleton.
@@ -24,20 +26,24 @@ export function bootstrapDependencyInjectionSingletonServices(
 ) {
   // we register our singletons this way as this is the only way to prevent them being registered
   // in the global container namespace (we DON'T use the @singleton decorator)
+  dc.registerSingleton(AwsAccessPointService);
+  dc.registerSingleton(AwsCloudTrailLakeService);
   dc.registerSingleton(AwsEnabledService);
   dc.registerSingleton(AwsPresignedUrlService);
   dc.registerSingleton(AwsS3Service);
-  dc.registerSingleton(AwsAccessPointService);
-  dc.registerSingleton(AwsCloudTrailLakeService);
+  dc.registerSingleton(AwsDiscoveryService);
+  dc.registerSingleton("IAwsDiscoveryService", AwsDiscoveryService);
+
   dc.registerSingleton(GcpEnabledService);
   dc.registerSingleton(GcpStorageSharingService);
   dc.registerSingleton(GcpPresignedUrlService);
+
   dc.registerSingleton(CloudflarePresignedUrlService);
+
   dc.registerSingleton(ManifestService);
   dc.registerSingleton(PresignedUrlService);
-
-  dc.registerSingleton(AwsDiscoveryService);
-  dc.registerSingleton("IAwsDiscoveryService", AwsDiscoveryService);
+  dc.registerSingleton(IPLookupService);
+  dc.registerSingleton(MailService);
 
   dc.registerSingleton<AuditEventTimedService>(
     "ReleaseAuditTimedService",

@@ -223,12 +223,12 @@ module release {
 
         # Additional release details
         property auditId -> str;
-        required property occurredDateTime -> datetime;
         property description -> str;
+        required property occurredDateTime -> datetime;
 
         # Details of accessor
         property sourceIpAddress -> str;
-        property sourceLocation -> str;
+        property sourceLocation -> json;
         property egressBytes -> int64;
 
         # Details of data the object

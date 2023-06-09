@@ -130,7 +130,10 @@ const addTestUserRoute = (
     const authUser = await userService.upsertUserForLogin(
       subjectId,
       name,
-      email
+      email,
+      {
+        ip: "192.19.192.192", // An example of US IP location
+      }
     );
 
     logger.warn(

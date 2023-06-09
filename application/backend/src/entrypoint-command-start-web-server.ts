@@ -13,6 +13,7 @@ import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
 import { constants, exists } from "fs";
 import { access } from "fs/promises";
+import { IPLookupService } from "./business/services/ip-lookup-service";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -65,6 +66,9 @@ export async function startWebServer(
 
   const mailService = dc.resolve(MailService);
   mailService.setup();
+
+  const ipLookupService = dc.resolve(IPLookupService);
+  await ipLookupService.setup();
 
   try {
     // this waits until the server has started up - but does not wait for the server to close down

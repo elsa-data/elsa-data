@@ -85,9 +85,6 @@ export const configZodDefinition = z.object({
       transportTargets: [],
     }),
   ontoFhirUrl: z.optional(z.string()),
-  maxmindDbAssetPath: z
-    .optional(z.string())
-    .describe("The path to the Maxmind city database"),
   releaseKeyPrefix: z
     .string()
     .default("R")

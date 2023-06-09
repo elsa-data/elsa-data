@@ -170,9 +170,11 @@ export async function bootstrapSettings(
           sourceFrontEndDirect: true,
         }
       : undefined,
-    ipLookup: {
-      maxMindDbPath: _.get(config, "ipLookup.maxMindDbPath"),
-    },
+    ipLookup: _.get(config, "ipLookup.maxMindDbPath")
+      ? {
+          maxMindDbPath: _.get(config, "ipLookup.maxMindDbPath"),
+        }
+      : undefined,
     branding: {
       brandName: _.get(config, "branding.brandName"),
       logoPath: logoPath,
