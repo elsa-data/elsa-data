@@ -51,6 +51,13 @@ import {
   australianGenomicsDirectoriesDemoLoaderFor10G,
   TENG_URI,
 } from "../../../test-data/dataset/insert-test-data-10g";
+import phenopackets from "../../../generated/phenopackets";
+import { Logger } from "pino";
+
+type PhenopacketIndividiual =
+  phenopackets.org.phenopackets.schema.v2.IPhenopacket;
+type PhenopacketFamily = phenopackets.org.phenopackets.schema.v2.IFamily;
+type PhenopacketCohort = phenopackets.org.phenopackets.schema.v2.ICohort;
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -64,8 +71,15 @@ export type ManifestType = {
 export type MergedManifestMetadataType = ManifestType & S3ObjectMetadataType;
 
 export type FileGroupType = {
-  filetype: ArtifactEnum;
-  filenameId: String;
+  // we allow phenopacket files - even though we don't support them yet as artifacts in the dataset
+  // instead we use them to guide the dataset construction
+  // for the types of phenopackets see https://phenopacket-schema.readthedocs.io/en/latest/toplevel.html
+  filetype:
+    | ArtifactEnum
+    | "PHENOPACKET_INDIVIDUAL"
+    | "PHENOPACKET_FAMILY"
+    | "PHENOPACKET_COHORT";
+  filenameId: string;
   specimenId: string;
   patientIdArray: string[];
   file: MergedManifestMetadataType[];
@@ -79,6 +93,7 @@ export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Logger") private readonly logger: Logger,
     @inject(DatasetService) private readonly datasetService: DatasetService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService
@@ -269,6 +284,12 @@ export class S3IndexApplicationService {
           ? ArtifactEnum.VCF
           : filenameId.endsWith(".cram") || filenameId.endsWith(".crai")
           ? ArtifactEnum.CRAM
+          : filenameId.endsWith(".phenopacket.json")
+          ? "PHENOPACKET_INDIVIDUAL"
+          : filenameId.endsWith(".family.json")
+          ? "PHENOPACKET_FAMILY"
+          : filenameId.endsWith(".cohort.json")
+          ? "PHENOPACKET_COHORT"
           : undefined;
 
       // The context of agha_study_id is actually the patient Id
@@ -284,7 +305,7 @@ export class S3IndexApplicationService {
       }
 
       if (!filetype) {
-        console.warn("No matching Artifact Type");
+        this.logger.warn("No matching Artifact Type");
         continue;
       }
 
@@ -359,23 +380,45 @@ export class S3IndexApplicationService {
         a.s3Url.toLowerCase() > b.s3Url.toLowerCase() ? 1 : -1
       );
     const manifestSet = sortManifestFile(groupManifest.file);
+
     const baseFile = this.convertManifestToStorageFileType(manifestSet[0]);
+
+    // as our only file types that are individual file - and also incidentally doesn't get inserted into the dataset -
+    // we do some seperate logic for phenopackets
+    if (
+      groupManifest.filetype === "PHENOPACKET_INDIVIDUAL" ||
+      groupManifest.filetype === "PHENOPACKET_FAMILY" ||
+      groupManifest.filetype === "PHENOPACKET_COHORT"
+    ) {
+      return undefined;
+    }
+
+    if (manifestSet.length <= 1) {
+      throw new Error(
+        `Dataset import encountered only a single file with base ${groupManifest.filenameId} - but all our files should come in as pairs`
+      );
+    }
+
     const indexFile = this.convertManifestToStorageFileType(manifestSet[1]);
 
-    if (groupManifest.filetype == ArtifactEnum.FASTQ) {
-      return insertArtifactFastqPairQuery(baseFile, indexFile);
-    } else if (groupManifest.filetype == ArtifactEnum.VCF) {
-      return insertArtifactVcfQuery(
-        baseFile,
-        indexFile,
-        groupManifest.patientIdArray
-      );
-    } else if (groupManifest.filetype == ArtifactEnum.BAM) {
-      return insertArtifactBamQuery(baseFile, indexFile);
-    } else if (groupManifest.filetype == ArtifactEnum.CRAM) {
-      return insertArtifactCramQuery(baseFile, indexFile);
+    switch (groupManifest.filetype) {
+      case ArtifactEnum.FASTQ:
+        return insertArtifactFastqPairQuery(baseFile, indexFile);
+      case ArtifactEnum.VCF:
+        return insertArtifactVcfQuery(
+          baseFile,
+          indexFile,
+          groupManifest.patientIdArray
+        );
+      case ArtifactEnum.BAM:
+        return insertArtifactBamQuery(baseFile, indexFile);
+      case ArtifactEnum.CRAM:
+        return insertArtifactCramQuery(baseFile, indexFile);
+      default:
+        throw new Error(
+          `Attempt to insert artifact of unknown type ${groupManifest.filetype}`
+        );
     }
-    return undefined;
   }
 
   /**
@@ -809,18 +852,39 @@ export class S3IndexApplicationService {
       // A patientId link array that will be used for linking new patient record
       const patientIdAndDataCaseIdLinkingArray = [];
 
-      for (const index in groupedManifestByFiletype) {
+      for (const groupedManifest of groupedManifestByFiletype) {
         // Parsing for easy access
-        const patientIdArray = groupedManifestByFiletype[index].patientIdArray;
-        const specimenId = groupedManifestByFiletype[index].specimenId;
-        const filenameId = groupedManifestByFiletype[index].filenameId;
+        const patientIdArray = groupedManifest.patientIdArray;
+        const specimenId = groupedManifest.specimenId;
+        const filenameId = groupedManifest.filenameId;
 
-        // Artifact insertion query
-        const artifactInsertionQuery = this.insertArtifact(
-          groupedManifestByFiletype[index]
-        );
+        if (groupedManifest.filetype === "PHENOPACKET_INDIVIDUAL") {
+          // we can load the content of the phenopacket and use it to inform other aspects
+          const phenopacketString = await readObjectToStringFromS3Url(
+            this.s3Client,
+            groupedManifest.filenameId
+          );
+          const phenopacket: PhenopacketIndividiual =
+            JSON.parse(phenopacketString);
+
+          this.logger.info(
+            `Found individual phenopacket stating ${patientIdArray} has sex ${phenopacket?.subject?.sex}`
+          );
+
+          continue;
+        } else if (groupedManifest.filetype === "PHENOPACKET_FAMILY") {
+          throw new Error("Phenopacket family is not yet supported");
+        } else if (groupedManifest.filetype === "PHENOPACKET_COHORT") {
+          throw new Error("Phenopacket cohort is not yet supported");
+        }
+
+        // get the edgedb query to insert this
+        const artifactInsertionQuery = this.insertArtifact(groupedManifest);
+
         if (!artifactInsertionQuery) {
-          console.error("Invalid artifact Type!");
+          console.error(
+            `File base ${groupedManifest.filenameId} was not of a type for insertion as an artifact so it has been skipped`
+          );
           continue;
         }
 
@@ -944,10 +1008,10 @@ export class S3IndexApplicationService {
 
       // Handling pedigree Linking
       // At this stage, all dataset::DatasetPatient record should already exist
-      await this.linkPedigreeRelationship(
-        datasetUri,
-        patientIdAndDataCaseIdLinkingArray
-      );
+      //await this.linkPedigreeRelationship(
+      //  datasetUri,
+      //  patientIdAndDataCaseIdLinkingArray
+      //);
     }
 
     const now = new Date();
