@@ -1,9 +1,12 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { ReleaseDetailType } from "@umccr/elsa-types";
+import {
+  ReleaseDetailType,
+  ReleaseParticipantRoleType,
+} from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
 import { getReleaseInfo } from "./helpers";
-import { ReleaseRoleStrings, UserService } from "./user-service";
+import { UserService } from "./user-service";
 import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
 import {
   ReleaseCreateError,
@@ -106,7 +109,7 @@ export abstract class ReleaseBaseService {
     if (!boundaryInfo) throw new ReleaseViewError(releaseKey);
 
     return {
-      userRole: role as ReleaseRoleStrings,
+      userRole: role as ReleaseParticipantRoleType,
       isActivated: !!boundaryInfo.activation,
       isRunningJob: !!boundaryInfo.runningJob,
     };
@@ -142,7 +145,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseKey: string,
-    userRole: ReleaseRoleStrings
+    userRole: ReleaseParticipantRoleType
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
