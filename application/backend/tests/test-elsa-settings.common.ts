@@ -1,6 +1,7 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
 import { TEST_SUBJECT_3 } from "../src/test-data/user/insert-user3";
+import { MM_URI } from "../src/test-data/dataset/insert-test-data-mm";
 
 export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
 
@@ -62,6 +63,14 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10c-data-dev",
+    },
+    {
+      uri: MM_URI,
+      name: "UMCCR MM",
+      description: "A mini mitochondrial",
+      loader: "australian-genomics-directories",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://elsa-data-test-datasets/MM",
     },
   ],
   superAdmins: [
