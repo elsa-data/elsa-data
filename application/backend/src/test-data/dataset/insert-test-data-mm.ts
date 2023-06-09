@@ -11,9 +11,10 @@ import {
   ServiceOutputTypes,
   StorageClass,
 } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
 import { promises as fs } from "fs";
 import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
+import { createHash } from "crypto";
+import { Readable } from "stream";
 
 export const MM_URI = "urn:fdc:umccr.org:2022:dataset/mm";
 
@@ -35,17 +36,46 @@ export async function insertMM(dc: DependencyContainer): Promise<string> {
   return MM_URI;
 }
 
-const { readdir } = require("fs").promises;
+type FileEntryWithContent = {
+  fileSystemPath: string;
 
-const getFileList = async (dirName: string) => {
-  let files: string[] = [];
-  const items = await readdir(dirName, { withFileTypes: true });
+  size: number;
+
+  etag: string;
+
+  content: Buffer;
+};
+
+/**
+ * Recursively build a return array containing the *complete*
+ * content of the given directory - including file content
+ * and checksums of content.
+ *
+ * @param dirName the root folder path (should be absolute probably)
+ */
+const getFileEntriesWithContent = async (
+  dirName: string
+): Promise<FileEntryWithContent[]> => {
+  let files: FileEntryWithContent[] = [];
+
+  const items = await fs.readdir(dirName, { withFileTypes: true });
 
   for (const item of items) {
+    const fullItemPath = `${dirName}/${item.name}`;
+
     if (item.isDirectory()) {
-      files = [...files, ...(await getFileList(`${dirName}/${item.name}`))];
+      files = [...files, ...(await getFileEntriesWithContent(fullItemPath))];
     } else {
-      files.push(`${dirName}/${item.name}`);
+      const content = await fs.readFile(fullItemPath, {});
+
+      let hash = createHash("md5").update(content).digest("hex");
+
+      files.push({
+        fileSystemPath: `${dirName}/${item.name}`,
+        size: content.length,
+        etag: hash,
+        content: content,
+      });
     }
   }
 
@@ -57,11 +87,13 @@ export async function addMocksForFileSystem(
   mockBucket: string,
   fileRoot: string
 ) {
-  const filesAll = await getFileList(fileRoot);
+  const filesAll = await getFileEntriesWithContent(fileRoot);
 
   const fileAsKey = (f: string) => {
     return "MM/" + f.slice(fileRoot.length + 1);
   };
+
+  s3MockClient.onAnyCommand().rejects("All calls to S3 need to be mocked");
 
   s3MockClient
     .on(ListObjectsV2Command, {
@@ -71,31 +103,28 @@ export async function addMocksForFileSystem(
       ContinuationToken: undefined,
       NextContinuationToken: undefined,
       Contents: filesAll.map((f) => ({
-        Key: fileAsKey(f),
+        Key: fileAsKey(f.fileSystemPath),
         LastModified: new Date(),
-        ETag: "abcd",
-        // ChecksumAlgorithm?: (ChecksumAlgorithm | string)[];
-        Size: 123,
+        ETag: f.etag,
+        Size: f.size,
         StorageClass: ObjectStorageClass.STANDARD,
       })),
     });
 
   for (const f of filesAll) {
-    const data = await fs.readFile(f, "binary");
-
     const rStream = new Readable();
 
-    rStream.push(data);
+    rStream.push(f.content);
     rStream.push(null);
 
     s3MockClient
       .on(GetObjectCommand, {
         Bucket: mockBucket,
-        Key: fileAsKey(f),
+        Key: fileAsKey(f.fileSystemPath),
       })
       .resolves({
         Body: sdkStreamMixin(rStream),
-        ETag: "abcd",
+        ETag: f.etag,
         StorageClass: StorageClass.STANDARD,
       });
   }
