@@ -1008,10 +1008,10 @@ export class S3IndexApplicationService {
 
       // Handling pedigree Linking
       // At this stage, all dataset::DatasetPatient record should already exist
-      //await this.linkPedigreeRelationship(
-      //  datasetUri,
-      //  patientIdAndDataCaseIdLinkingArray
-      //);
+      await this.linkPedigreeRelationship(
+        datasetUri,
+        patientIdAndDataCaseIdLinkingArray
+      );
     }
 
     const now = new Date();
