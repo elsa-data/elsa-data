@@ -1,0 +1,12 @@
+{
+  "id": "c435cf0e-b6a5-45ef-adac-cc5f88fa6d08",
+  "subject": {
+    "id": "MM0001",
+    "sex": "MALE"
+  },
+  "metaData": {
+    "created": "2023-06-08T10:41:00Z",
+    "createdBy": "sample generator",
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}

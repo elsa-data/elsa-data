@@ -1,0 +1,12 @@
+{
+  "id": "c6587649-c6af-472e-9394-913813b547a4",
+  "subject": {
+    "id": "MM0002",
+    "sex": "FEMALE"
+  },
+  "metaData": {
+    "created": "2023-06-08T10:41:00Z",
+    "createdBy": "sample generator",
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}
