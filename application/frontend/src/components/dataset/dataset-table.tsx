@@ -59,6 +59,10 @@ export const DatasetTable: React.FC = ({}) => {
 
   return (
     <>
+      {datasetQuery.isError && (
+        <EagerErrorBoundary error={datasetQuery.error} />
+      )}
+
       <Table
         tableHead={
           <tr>
@@ -136,13 +140,6 @@ export const DatasetTable: React.FC = ({}) => {
         })}
       />
 
-      {datasetQuery.isError && (
-        <EagerErrorBoundary
-          message={"Something went wrong fetching datasets."}
-          error={datasetQuery.error}
-          styling={"bg-red-100"}
-        />
-      )}
       <BoxPaginator
         currentPage={currentPage}
         setPage={setCurrentPage}

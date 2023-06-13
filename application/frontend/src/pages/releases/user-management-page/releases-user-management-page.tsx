@@ -160,6 +160,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
         </div>
       </Box>
 
+      {isError && <EagerErrorBoundary error={error} />}
+
       {releaseParticipantsQuery.isSuccess && (
         <>
           <Box heading="User List">
@@ -250,13 +252,6 @@ export const ReleasesUserManagementPage: React.FC = () => {
               )}
           </Box>
         </>
-      )}
-      {isError && (
-        <EagerErrorBoundary
-          message={"Something went wrong fetching release participant data."}
-          error={error}
-          styling={"bg-error-content"}
-        />
       )}
     </>
   );
