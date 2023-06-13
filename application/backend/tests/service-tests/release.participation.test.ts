@@ -6,6 +6,7 @@ import { ReleaseService } from "../../src/business/services/release-service";
 import { Client } from "edgedb";
 import { ReleaseParticipationService } from "../../src/business/services/release-participation-service";
 import _ from "lodash";
+import { ReleaseParticipationPermissionError } from "../../src/business/exceptions/release-participation";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
@@ -13,6 +14,7 @@ let releaseParticipationService: ReleaseParticipationService;
 let testReleaseKey: string;
 
 let superAdminUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let allowedMemberUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
@@ -31,6 +33,7 @@ beforeEach(async () => {
   ({
     testReleaseKey,
     superAdminUser,
+    allowedAdministratorUser,
     allowedManagerUser,
     allowedMemberUser,
     notAllowedUser,
@@ -154,19 +157,19 @@ it("real users and potential users can both have their roles altered", async () 
 it("real users and potential users can be removed", async () => {
   // add a potential user with Member role
   const newMemberDbId = await releaseParticipationService.addParticipant(
-    superAdminUser,
+    allowedAdministratorUser,
     testReleaseKey,
     "test@example.com",
     "Member"
   );
 
   await releaseParticipationService.removeParticipant(
-    superAdminUser,
+    allowedAdministratorUser,
     testReleaseKey,
     allowedMemberUser.dbId
   );
   await releaseParticipationService.removeParticipant(
-    superAdminUser,
+    allowedAdministratorUser,
     testReleaseKey,
     newMemberDbId
   );
@@ -187,4 +190,56 @@ it("real users and potential users can be removed", async () => {
   }
 });
 
-// TODO: should a user be able to alter themselves?
+it("lower roles cannot remove/modify higher participant role", async () => {
+  {
+    // Throw error when member try to remove/modify manager
+    await expect(async () => {
+      await releaseParticipationService.removeParticipant(
+        allowedMemberUser,
+        testReleaseKey,
+        allowedManagerUser.dbId
+      );
+    }).rejects.toThrow(ReleaseParticipationPermissionError);
+    await expect(async () => {
+      await releaseParticipationService.addParticipant(
+        allowedMemberUser,
+        testReleaseKey,
+        "admin@elsa.org",
+        "Manager"
+      );
+    }).rejects.toThrow(ReleaseParticipationPermissionError);
+  }
+
+  {
+    // Throw error when manager try to remove/modify manager
+    await expect(async () => {
+      await releaseParticipationService.removeParticipant(
+        allowedManagerUser,
+        testReleaseKey,
+        allowedAdministratorUser.dbId
+      );
+    }).rejects.toThrow(ReleaseParticipationPermissionError);
+    await expect(async () => {
+      await releaseParticipationService.addParticipant(
+        allowedManagerUser,
+        testReleaseKey,
+        "admin@elsa.org",
+        "Administrator"
+      );
+    }).rejects.toThrow(ReleaseParticipationPermissionError);
+  }
+});
+
+it("cannot modify its own participant role in the release", async () => {
+  {
+    // Throw error when member try to remove/modify manager
+    await expect(async () => {
+      await releaseParticipationService.addParticipant(
+        allowedAdministratorUser,
+        testReleaseKey,
+        allowedAdministratorUser.email,
+        "Manager"
+      );
+    }).rejects.toThrow(ReleaseParticipationPermissionError);
+  }
+});

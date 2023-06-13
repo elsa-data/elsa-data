@@ -17,7 +17,8 @@ function checkEmail(email: string) {
  * A page allowing the display/editing of users participating in a release.
  */
 export const ReleasesUserManagementPage: React.FC = () => {
-  const { releaseKey } = useReleasesMasterData();
+  const { releaseKey, releaseData } = useReleasesMasterData();
+
   const utils = trpc.useContext();
 
   const afterMutateForceRefresh = () => {
@@ -76,7 +77,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
 
   return (
     <>
-      <Box heading="Add/Update User In This Release">
+      <Box heading="Invite New User In This Release">
         <div className="flex w-full flex-col sm:flex-row">
           <div className="card prose rounded-box grid flex-grow prose-p:space-y-2 sm:w-1/2">
             <p>
@@ -99,12 +100,16 @@ export const ReleasesUserManagementPage: React.FC = () => {
           <div className="card rounded-box flex-grow justify-between">
             <div>
               <div className="form-control mb-2">
-                <label className="label">
+                <label className="label flex-col items-start space-y-2">
                   <span className="label-text">User Email</span>
+                  <span className="label-text-alt text-xs text-slate-500">
+                    Email must be their organisation's email that is used to
+                    login in to Elsa (via CILogon)
+                  </span>
                 </label>
                 <input
                   type="email"
-                  placeholder="user@email.com"
+                  placeholder="user@organisation.org"
                   className={classNames(
                     `input-bordered input-accent input input-sm w-full`,
                     {
@@ -200,25 +205,41 @@ export const ReleasesUserManagementPage: React.FC = () => {
                               : ""}
                           </td>
                           <td className="text-right">
-                            {row.canBeRemoved && (
-                              <button
-                                className={classNames(
-                                  "btn-table-action-danger",
-                                  {
-                                    "btn-disabled":
-                                      addParticipantMutate.isLoading ||
-                                      removeParticipantMutate.isLoading,
-                                  }
-                                )}
-                                onClick={() => {
-                                  removeParticipantMutate.mutate({
-                                    releaseKey,
-                                    participantUuid: row.id,
-                                  });
-                                }}
-                              >
-                                remove
-                              </button>
+                            {row.roleChangeOption && (
+                              <>
+                                <button
+                                  className={classNames(
+                                    "btn-table-action-navigate",
+                                    {
+                                      "btn-disabled":
+                                        addParticipantMutate.isLoading ||
+                                        removeParticipantMutate.isLoading,
+                                    }
+                                  )}
+                                  onClick={() => {}}
+                                >
+                                  edit
+                                </button>
+                                <span className="opacity-50">{`|`}</span>
+                                <button
+                                  className={classNames(
+                                    "btn-table-action-danger",
+                                    {
+                                      "btn-disabled":
+                                        addParticipantMutate.isLoading ||
+                                        removeParticipantMutate.isLoading,
+                                    }
+                                  )}
+                                  onClick={() => {
+                                    removeParticipantMutate.mutate({
+                                      releaseKey,
+                                      participantUuid: row.id,
+                                    });
+                                  }}
+                                >
+                                  remove
+                                </button>
+                              </>
                             )}
                           </td>
                         </tr>

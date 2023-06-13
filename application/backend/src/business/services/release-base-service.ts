@@ -40,6 +40,37 @@ export abstract class ReleaseBaseService {
     protected readonly auditEventTimedService: AuditEventTimedService
   ) {}
 
+  /**
+   * Some user role are allowed to change other users role for its release participants.
+   * Eventually this must be guarded so that they can't change/make permission to a higher hierarchy.
+   * This function will spit out the available options that this user could assigned/alter to other participant.
+   * e.g. A manager cannot a member to an administrator (as it is higher than its own role)
+   *
+   * @param currentUserRole The authenticated user role
+   * @returns The options where this user could alter
+   */
+  protected getParticipantRoleOption(
+    currentUserRole: ReleaseParticipantRoleType
+  ): ReleaseParticipantRoleType[] | null {
+    switch (currentUserRole) {
+      case "Administrator": {
+        return ["Administrator", "Manager", "Member"];
+      }
+
+      case "Manager": {
+        return ["Manager", "Member"];
+      }
+
+      case "Member": {
+        // A member should not have the options to alter anything
+        return null;
+      }
+
+      default:
+        return null;
+    }
+  }
+
   public async createReleaseViewAuditEvent(
     user: AuthenticatedUser,
     releaseKey: string
@@ -215,6 +246,11 @@ export abstract class ReleaseBaseService {
       // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
+
+      // A list of roles allowed to modify other user's role depending of this auth user
+      // e.g. A manager cannot modify Administrator role.
+      rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
+
       // administrators can code/edit the release information
       permissionEditSelections: userRole === "Administrator",
       permissionEditApplicationCoded: userRole === "Administrator",

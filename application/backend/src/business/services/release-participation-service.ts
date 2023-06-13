@@ -8,10 +8,14 @@ import {
   releaseParticipantAddPotentialUser,
   releaseParticipantAddUser,
   releaseParticipantGetAll,
+  releaseParticipantGetUser,
   releaseParticipantRemovePotentialUser,
   releaseParticipantRemoveUser,
 } from "../../../dbschema/queries";
-import { ReleaseParticipationPermissionError } from "../exceptions/release-participation";
+import {
+  ReleaseParticipationPermissionError,
+  ReleaseParticipationUuidNotFoundError,
+} from "../exceptions/release-participation";
 import {
   singlePotentialUserByEmailQuery,
   singleUserByEmailQuery,
@@ -19,6 +23,7 @@ import {
 import e from "../../../dbschema/edgeql-js";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -55,8 +60,24 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     // to see the details of everyone in the release (it's hard to imagine a research
     // collaboration where actual data collaborators are not allowed to see each others email?)
 
-    return await releaseParticipantGetAll(this.edgeDbClient, {
+    const allParticipants = await releaseParticipantGetAll(this.edgeDbClient, {
       releaseKey: releaseKey,
+    });
+
+    const roleOptionFromThisUser = this.getParticipantRoleOption(userRole);
+
+    return allParticipants.map((p) => {
+      const isAllowedChangeThisParticipant =
+        roleOptionFromThisUser?.includes(
+          p.role as ReleaseParticipantRoleType
+        ) && p.id !== user.dbId;
+
+      return {
+        ...p,
+        roleChangeOption: isAllowedChangeThisParticipant
+          ? roleOptionFromThisUser
+          : null,
+      };
     });
   }
 
@@ -76,7 +97,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string,
     newUserEmail: string,
-    newUserRole: string
+    newUserRole: ReleaseParticipantRoleType
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
@@ -88,13 +109,19 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       releaseKey,
       "Add Participant",
       async () => {
-        // right to add participants must be limited to Administrator and Manager
-        if (userRole !== "Administrator" && userRole !== "Manager") {
+        // User must have the right to add/modify release participants role
+        const roleAllowed = this.getParticipantRoleOption(userRole);
+        const isAllowedToModifyNewRole = roleAllowed?.includes(newUserRole);
+
+        // User shouldn't able to change their own role
+        const isOwnUser = user.email === newUserEmail;
+
+        if (!isAllowedToModifyNewRole || isOwnUser) {
           throw new ReleaseParticipationPermissionError(releaseKey);
         }
       },
       async (tx, a) => {
-        // a datastructure we pass to the next stage AND which we put into the Audit log details
+        // a data structure we pass to the next stage AND which we put into the Audit log details
         const auditLogDetail = (id: string) => ({
           email: newUserEmail,
           role: newUserRole,
@@ -166,14 +193,30 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       user,
       releaseKey
     );
-
+    // We need to get the participant Role (to check if it is <= than the authenticated user role)
+    const participantReleaseInfo = await releaseParticipantGetUser(
+      this.edgeDbClient,
+      {
+        participantUuid: participantUuid,
+        releaseKey: releaseKey,
+      }
+    );
+    const participantRole =
+      participantReleaseInfo?.role as ReleaseParticipantRoleType;
+    if (!participantRole) {
+      throw new ReleaseParticipationUuidNotFoundError(
+        releaseKey,
+        participantUuid
+      );
+    }
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Remove Participant",
       async () => {
-        // deleting participants must be limited to Administrator and Managers
-        if (userRole !== "Administrator" && userRole !== "Manager") {
+        const roleAllowed = this.getParticipantRoleOption(userRole);
+
+        if (!roleAllowed?.includes(participantRole)) {
           throw new ReleaseParticipationPermissionError(releaseKey);
         }
       },
@@ -181,12 +224,6 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         // NOTE: we use the normal EdgeDb semantics to say that doing a "-=" where the unliked item IS NOT PRESENT
         // IS NOT AN ERROR i.e. deleting someone from a release who is not in the release
         // WE COULD DECIDE TO DO THIS DIFFERENTLY (?)
-
-        // we are actually pretty loose here on checking the participant and release existence.. but I can't
-        // think of any way it affects things
-        // if the participantUuid is invalid - then nothing happens
-        // if the participantUuid is not actually in *this* release - then nothing happens
-        // the releaseUuid *is* tested so we know the instigator exists and has some permissions
 
         const userRemoved = await releaseParticipantRemoveUser(tx, {
           userUuid: participantUuid,

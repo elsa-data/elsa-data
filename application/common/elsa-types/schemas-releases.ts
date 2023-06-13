@@ -89,6 +89,12 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
 
+  // Permission for the current user that allowed to edit other user's role within the release.
+  rolesAllowedToAlterParticipant: Type.Union([
+    Type.Array(StringUnion(["Administrator", "Manager", "Member"])),
+    Type.Null(),
+  ]),
+
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),
 

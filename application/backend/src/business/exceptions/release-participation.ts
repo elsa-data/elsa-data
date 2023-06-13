@@ -9,3 +9,13 @@ export class ReleaseParticipationPermissionError extends Base7807Error {
     );
   }
 }
+
+export class ReleaseParticipationUuidNotFoundError extends Base7807Error {
+  constructor(releaseKey: string, participantUuid: string) {
+    super(
+      "The no participant UUID found in this release",
+      400,
+      `The release with id '${releaseKey}' do not have participant UUID '${participantUuid}'`
+    );
+  }
+}
