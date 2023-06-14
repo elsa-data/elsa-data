@@ -1,6 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
-import { StringUnion, TypeDate } from "./typebox-helpers";
+import { StringUnion, TypeDate, Nullable } from "./typebox-helpers";
 
 export const ReleaseSummarySchema = Type.Object({
   // the primary public identifier for this release
@@ -28,6 +28,12 @@ export const ReleaseSummarySchema = Type.Object({
 });
 
 export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
+
+/**
+ * An enum type for participant roles in the release
+ */
+export const releaseParticipantRole = ["Administrator", "Manager", "Member"];
+export type ReleaseParticipantRoleType = typeof releaseParticipantRole[number];
 
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
@@ -90,10 +96,9 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedR2Data: Type.Boolean(),
 
   // Permission for the current user that allowed to edit other user's role within the release.
-  rolesAllowedToAlterParticipant: Type.Union([
-    Type.Array(StringUnion(["Administrator", "Manager", "Member"])),
-    Type.Null(),
-  ]),
+  rolesAllowedToAlterParticipant: Nullable(
+    Type.Array(StringUnion(releaseParticipantRole))
+  ),
 
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),
@@ -223,21 +228,22 @@ export type ReleaseManualType = Static<typeof ReleaseManualSchema>;
  * user interface.
  */
 export const ReleaseParticipantSchema = Type.Object({
-  // the internal identifier for this user
+  // the internal identifier (UUID) for this user
   id: Type.String(),
-  // the email address of this user
   email: Type.String(),
   // the role of this user in this release
-  role: Type.String(),
-  displayName: Type.String(),
-  subjectId: Type.Optional(Type.String()),
+  role: Nullable(StringUnion(releaseParticipantRole)),
+  displayName: Nullable(Type.String()),
+  subjectId: Nullable(Type.String()),
   // the last login datetime or null if this user has never logged in
-  lastLogin: Type.Optional(TypeDate),
+  lastLogin: Type.Optional(Nullable(TypeDate)),
+
   // is true if the person making the call has enough permissions to alter this particular record
   // this is the start of a pattern for how per release permissions can be relayed to the UI
-  // but is still WIP
   canBeRemoved: Type.Boolean(),
   canBeRoleAltered: Type.Boolean(),
+  // The role options for that participant from the logged in user
+  roleAlterOptions: Nullable(Type.Array(StringUnion(releaseParticipantRole))),
 });
 export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
 
@@ -252,16 +258,6 @@ export const ReleaseParticipantAddSchema = Type.Object({
 export type ReleaseParticipantAddType = Static<
   typeof ReleaseParticipantAddSchema
 >;
-
-/**
- * An enum type for participant roles in the release
- */
-export const releaseParticipantRole = [
-  "Administrator",
-  "Manager",
-  "Member",
-] as const;
-export type ReleaseParticipantRoleType = typeof releaseParticipantRole[number];
 
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 

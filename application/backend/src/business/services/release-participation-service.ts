@@ -23,7 +23,10 @@ import {
 import e from "../../../dbschema/edgeql-js";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
-import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
+import {
+  ReleaseParticipantRoleType,
+  ReleaseParticipantType,
+} from "@umccr/elsa-types";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -50,7 +53,10 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     );
   }
 
-  public async getParticipants(user: AuthenticatedUser, releaseKey: string) {
+  public async getParticipants(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ): Promise<ReleaseParticipantType[]> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
@@ -67,6 +73,8 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     const roleOptionFromThisUser = this.getParticipantRoleOption(userRole);
 
     return allParticipants.map((p) => {
+      // Checking whether this participant role can be changed by the auth user
+      // Also they can't change their own roles in the release
       const isAllowedChangeThisParticipant =
         roleOptionFromThisUser?.includes(
           p.role as ReleaseParticipantRoleType
@@ -74,7 +82,9 @@ export class ReleaseParticipationService extends ReleaseBaseService {
 
       return {
         ...p,
-        roleChangeOption: isAllowedChangeThisParticipant
+        canBeRemoved: !!isAllowedChangeThisParticipant,
+        canBeRoleAltered: !!isAllowedChangeThisParticipant,
+        roleAlterOptions: isAllowedChangeThisParticipant
           ? roleOptionFromThisUser
           : null,
       };

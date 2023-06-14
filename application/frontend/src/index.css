@@ -18,12 +18,12 @@ body {
 
 /* A button in a table column that just navigates somewhere */
 .btn-table-action-navigate {
-  @apply btn-link btn-xs btn;
+  @apply btn-link btn-xs btn no-underline;
 }
 
 /* A button in a table column that does something destructive */
 .btn-table-action-danger {
-  @apply btn-ghost btn-xs btn text-error;
+  @apply btn-link btn-xs btn text-error no-underline;
 }
 
 /* legacy */

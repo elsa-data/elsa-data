@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
+import { EagerErrorBoundary } from "../../../components/errors";
 import { Box } from "../../../components/boxes";
-import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
+import {
+  ReleaseParticipantRoleType,
+  ReleaseParticipantType,
+} from "@umccr/elsa-types";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { useReleasesMasterData } from "../releases-types";
 import { Table } from "../../../components/tables";
 import { trpc } from "../../../helpers/trpc";
+import { EditParticipantRoleDialog } from "./edit-participant-role-dialog";
 
 function checkEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email);
@@ -43,11 +47,10 @@ export const ReleasesUserManagementPage: React.FC = () => {
     useState<ReleaseParticipantRoleType>("Member");
   const isValidEmail = newUserEmail == "" || checkEmail(newUserEmail);
 
+  const isMutationLoading =
+    addParticipantMutate.isLoading || removeParticipantMutate.isLoading;
   const isAddButtonDisabled =
-    addParticipantMutate.isLoading ||
-    removeParticipantMutate.isLoading ||
-    newUserEmail.trim().length == 0 ||
-    !isValidEmail;
+    isMutationLoading || newUserEmail.trim().length == 0 || !isValidEmail;
 
   const isError =
     releaseParticipantsQuery.isError ||
@@ -170,6 +173,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
               releaseParticipantsQuery.data.length === 0 && (
                 <p>There are no participants for this release</p>
               )}
+
             {releaseParticipantsQuery.data &&
               releaseParticipantsQuery.data.length > 0 && (
                 <Table
@@ -182,67 +186,74 @@ export const ReleasesUserManagementPage: React.FC = () => {
                     </tr>
                   }
                   tableBody={releaseParticipantsQuery.data.map(
-                    (row, rowIndex) => {
+                    (row: ReleaseParticipantType) => {
+                      const {
+                        id: participantUuid,
+                        email,
+                        displayName,
+                        role: currentRole,
+                        subjectId,
+                        lastLogin,
+                        canBeRemoved,
+                        canBeRoleAltered,
+                      } = row;
+
                       return (
-                        <tr key={row.id}>
+                        <tr>
                           <td>
                             <div>
                               <div
                                 className="font-bold"
-                                title={row.subjectId || undefined}
+                                title={subjectId || undefined}
                               >
-                                {row.displayName}
+                                {displayName}
                               </div>
-                              {row.email !== row.displayName && (
+                              {email !== displayName && (
                                 <div className="text-sm opacity-50">
-                                  {row.email}
+                                  {email}
                                 </div>
                               )}
                             </div>
                           </td>
-                          <td>{row.role}</td>
                           <td>
-                            {row.lastLogin
-                              ? formatLocalDateTime(row.lastLogin as string)
+                            <div>{currentRole}</div>
+                          </td>
+                          <td>
+                            {lastLogin
+                              ? formatLocalDateTime(lastLogin as string)
                               : ""}
                           </td>
                           <td className="text-right">
-                            {row.roleChangeOption && (
-                              <>
-                                <button
-                                  className={classNames(
-                                    "btn-table-action-navigate",
-                                    {
-                                      "btn-disabled":
-                                        addParticipantMutate.isLoading ||
-                                        removeParticipantMutate.isLoading,
-                                    }
-                                  )}
-                                  onClick={() => {}}
-                                >
-                                  edit
-                                </button>
-                                <span className="opacity-50">{`|`}</span>
-                                <button
-                                  className={classNames(
-                                    "btn-table-action-danger",
-                                    {
-                                      "btn-disabled":
-                                        addParticipantMutate.isLoading ||
-                                        removeParticipantMutate.isLoading,
-                                    }
-                                  )}
-                                  onClick={() => {
-                                    removeParticipantMutate.mutate({
-                                      releaseKey,
-                                      participantUuid: row.id,
-                                    });
-                                  }}
-                                >
-                                  remove
-                                </button>
-                              </>
-                            )}
+                            <>
+                              {currentRole && canBeRoleAltered && (
+                                <EditParticipantRoleDialog
+                                  releaseKey={releaseKey}
+                                  releaseParticipant={row}
+                                />
+                              )}
+
+                              {canBeRemoved && (
+                                <>
+                                  <span className="opacity-50">{`|`}</span>
+                                  <button
+                                    className={classNames(
+                                      "btn-table-action-danger",
+                                      {
+                                        "btn-disabled": isMutationLoading,
+                                      }
+                                    )}
+                                    onClick={() => {
+                                      removeParticipantMutate.mutate({
+                                        releaseKey,
+                                        participantUuid: participantUuid,
+                                      });
+                                    }}
+                                  >
+                                    remove
+                                  </button>
+                                </>
+                              )}
+                            </>
                           </td>
                         </tr>
                       );
