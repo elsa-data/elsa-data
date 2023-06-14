@@ -24,7 +24,9 @@ function checkEmail(email: string) {
 export const ReleasesUserManagementPage: React.FC = () => {
   const { releaseKey, releaseData } = useReleasesMasterData();
 
-  const { rolesAllowedToAlterParticipant } = releaseData;
+  const authorisedInviteRoles = releaseData.rolesAllowedToAlterParticipant as
+    | ReleaseParticipantRoleType[]
+    | null;
 
   const utils = trpc.useContext();
 
@@ -86,93 +88,85 @@ export const ReleasesUserManagementPage: React.FC = () => {
   return (
     <>
       {isError && <EagerErrorBoundary error={error} />}
-      {rolesAllowedToAlterParticipant &&
-        rolesAllowedToAlterParticipant.length > 0 && (
-          <Box heading="Invite New User In This Release">
-            <div className="flex w-full flex-col sm:flex-row">
-              <div className="card prose rounded-box grid flex-grow prose-p:space-y-2 sm:w-1/2">
-                <p>
-                  New users can be invited into a release by entering their
-                  email here. Until they log in for the first time the system
-                  will only know their email address (after that, it will be
-                  able to refer to them by name).
-                </p>
-                <p>
-                  To modify existing users, you can use the edit button to
-                  altered their permission for this release.
-                </p>
-                <p>
-                  It is only possible to add/update a user in this release with
-                  a level that is one below your own current level in the
-                  release.
-                </p>
-              </div>
-              <div className="divider divider-vertical sm:divider-horizontal" />
-              <div className="card rounded-box flex-grow justify-between">
-                <div>
-                  <div className="form-control mb-2">
-                    <label className="label flex-col items-start space-y-2">
-                      <span className="label-text">User Email</span>
-                      <span className="label-text-alt text-xs text-slate-500">
-                        Email must be their organisation's email that is used to
-                        login in to Elsa (via CILogon)
+      {authorisedInviteRoles && authorisedInviteRoles.length > 0 && (
+        <Box heading="Invite New User In This Release">
+          <div className="flex w-full flex-col sm:flex-row">
+            <div className="card prose rounded-box grid flex-grow prose-p:space-y-2 sm:w-1/2">
+              <p>
+                New users can be invited into a release by entering their email
+                here. Until they log in for the first time the system will only
+                know their email address (after that, it will be able to refer
+                to them by name).
+              </p>
+              <p>
+                To modify existing users, you can use the edit button to altered
+                their permission for this release.
+              </p>
+              <p>
+                It is only possible to add/update a user in this release with a
+                level that is one below your own current level in the release.
+              </p>
+            </div>
+            <div className="divider divider-vertical sm:divider-horizontal" />
+            <div className="card rounded-box flex-grow justify-between">
+              <div>
+                <div className="form-control mb-2">
+                  <label className="label flex-col items-start space-y-2">
+                    <span className="label-text">User Email</span>
+                    <span className="label-text-alt text-xs text-slate-500">
+                      Email must be their organisation's email that is used to
+                      login in to Elsa (via CILogon)
+                    </span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="user@organisation.org"
+                    className={classNames(
+                      `input-bordered input-accent input input-sm w-full`,
+                      {
+                        "input-error": !isValidEmail,
+                        "input-accent": isValidEmail,
+                      }
+                    )}
+                    value={newUserEmail}
+                    onChange={(e) => setNewUserEmail(e.target.value)}
+                  />
+                  {!isValidEmail && (
+                    <label className="label">
+                      <span className="label-text-alt text-red-400">
+                        Invalid email
                       </span>
                     </label>
-                    <input
-                      type="email"
-                      placeholder="user@organisation.org"
-                      className={classNames(
-                        `input-bordered input-accent input input-sm w-full`,
-                        {
-                          "input-error": !isValidEmail,
-                          "input-accent": isValidEmail,
-                        }
-                      )}
-                      value={newUserEmail}
-                      onChange={(e) => setNewUserEmail(e.target.value)}
-                    />
-                    {!isValidEmail && (
-                      <label className="label">
-                        <span className="label-text-alt text-red-400">
-                          Invalid email
-                        </span>
-                      </label>
-                    )}
-                  </div>
-                  {ourRadio("Member", newUserRole === "Member", () =>
-                    setNewUserRole("Member")
-                  )}
-                  {ourRadio("Manager", newUserRole === "Manager", () =>
-                    setNewUserRole("Manager")
-                  )}
-                  {ourRadio(
-                    "Administrator",
-                    newUserRole === "Administrator",
-                    () => setNewUserRole("Administrator")
                   )}
                 </div>
-                <div className="form-control my-2 max-w-full">
-                  <button
-                    type="button"
-                    disabled={isAddButtonDisabled}
-                    className={classNames("btn", {
-                      "btn-disabled": isAddButtonDisabled,
-                    })}
-                    onClick={() => {
-                      addParticipantMutate.mutate({
-                        releaseKey,
-                        email: newUserEmail,
-                        role: newUserRole,
-                      });
-                    }}
-                  >
-                    Add
-                  </button>
-                </div>
+                {authorisedInviteRoles.map((r, idx) => (
+                  <React.Fragment key={idx}>
+                    {ourRadio(r, newUserRole === r, () => setNewUserRole(r))}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="form-control my-2 max-w-full">
+                <button
+                  type="button"
+                  disabled={isAddButtonDisabled}
+                  className={classNames("btn", {
+                    "btn-disabled": isAddButtonDisabled,
+                  })}
+                  onClick={() => {
+                    addParticipantMutate.mutate({
+                      releaseKey,
+                      email: newUserEmail,
+                      role: newUserRole,
+                    });
+                  }}
+                >
+                  Add
+                </button>
               </div>
             </div>
-          </Box>
-        )}
+          </div>
+        </Box>
+      )}
 
       <>
         <Box heading="User List">
