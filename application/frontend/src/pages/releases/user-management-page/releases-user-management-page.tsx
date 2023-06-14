@@ -56,7 +56,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const participantDataList = releaseParticipantsQuery.data?.data;
 
   const addParticipantMutate =
-    trpc.releaseParticipant.addOrInsertParticipant.useMutation({
+    trpc.releaseParticipant.addOrEditParticipant.useMutation({
       onSuccess: afterMutateForceRefresh,
     });
 
@@ -109,7 +109,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
       {authorisedInviteRoles && authorisedInviteRoles.length > 0 && (
         <Box heading="Invite Participants">
           <div className="flex w-full flex-col sm:flex-row">
-            <div className="card rounded-box grid flex-grow space-y-6 text-justify sm:w-1/2">
+            <div className="rounded-box flex-grow space-y-6 text-justify sm:w-1/2">
               <p>
                 New participants can be invited into this release by entering
                 their organisation email here. Until they log in for the first

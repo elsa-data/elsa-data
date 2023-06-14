@@ -78,7 +78,7 @@ it("all the participants in a release are correctly returned", async () => {
 });
 
 it("adding a user who doesn't yet exist makes a potential user who is returned with no last login", async () => {
-  await releaseParticipationService.addOrInsertParticipant(
+  await releaseParticipationService.addOrEditParticipant(
     superAdminUser,
     testReleaseKey,
     "test@example.com",
@@ -107,7 +107,7 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
 
 it("real users and potential users can both have their roles altered", async () => {
   // add a potential user with Member role
-  await releaseParticipationService.addOrInsertParticipant(
+  await releaseParticipationService.addOrEditParticipant(
     superAdminUser,
     testReleaseKey,
     "test@example.com",
@@ -131,7 +131,7 @@ it("real users and potential users can both have their roles altered", async () 
   }
 
   // upgrade our real user member to Manager
-  await releaseParticipationService.addOrInsertParticipant(
+  await releaseParticipationService.addOrEditParticipant(
     superAdminUser,
     testReleaseKey,
     "subject4@elsa.net",
@@ -139,7 +139,7 @@ it("real users and potential users can both have their roles altered", async () 
   );
 
   // upgrade our potential user to a Manager as well
-  await releaseParticipationService.addOrInsertParticipant(
+  await releaseParticipationService.addOrEditParticipant(
     superAdminUser,
     testReleaseKey,
     "test@example.com",
@@ -167,13 +167,12 @@ it("real users and potential users can both have their roles altered", async () 
 
 it("real users and potential users can be removed", async () => {
   // add a potential user with Member role
-  const newMemberDbId =
-    await releaseParticipationService.addOrInsertParticipant(
-      allowedAdministratorUser,
-      testReleaseKey,
-      "test@example.com",
-      "Member"
-    );
+  const newMemberDbId = await releaseParticipationService.addOrEditParticipant(
+    allowedAdministratorUser,
+    testReleaseKey,
+    "test@example.com",
+    "Member"
+  );
 
   await releaseParticipationService.removeParticipant(
     allowedAdministratorUser,
@@ -217,7 +216,7 @@ it("lower roles cannot remove/modify higher participant role", async () => {
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
     await expect(async () => {
-      await releaseParticipationService.addOrInsertParticipant(
+      await releaseParticipationService.addOrEditParticipant(
         allowedMemberUser,
         testReleaseKey,
         "admin@elsa.org",
@@ -236,7 +235,7 @@ it("lower roles cannot remove/modify higher participant role", async () => {
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
     await expect(async () => {
-      await releaseParticipationService.addOrInsertParticipant(
+      await releaseParticipationService.addOrEditParticipant(
         allowedManagerUser,
         testReleaseKey,
         "admin@elsa.org",
@@ -250,7 +249,7 @@ it("cannot modify its own participant role in the release", async () => {
   {
     // Throw error when member try to remove/modify manager
     await expect(async () => {
-      await releaseParticipationService.addOrInsertParticipant(
+      await releaseParticipationService.addOrEditParticipant(
         allowedAdministratorUser,
         testReleaseKey,
         allowedAdministratorUser.email,

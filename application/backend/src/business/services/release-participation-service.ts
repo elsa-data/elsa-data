@@ -114,7 +114,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
    * @param newUserEmail the email address of the user to add
    * @param newUserRole the role the user should have in the release
    */
-  public async addOrInsertParticipant(
+  public async addOrEditParticipant(
     user: AuthenticatedUser,
     releaseKey: string,
     newUserEmail: string,
