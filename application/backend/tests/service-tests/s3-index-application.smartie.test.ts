@@ -1,7 +1,7 @@
 import {
   addMocksForFileSystem,
-  MM_URI,
-} from "../../src/test-data/dataset/insert-test-data-mm";
+  SMARTIE_URI,
+} from "../../src/test-data/dataset/insert-test-data-smartie";
 import { join } from "node:path";
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client } from "@aws-sdk/client-s3";
@@ -44,8 +44,8 @@ describe("Test our MM dataset loaded via an S3 mocking layer", () => {
     const datasetService = testContainer.resolve(DatasetService);
 
     const datasetUuid = await datasetService.selectOrInsertDataset({
-      datasetUri: MM_URI,
-      datasetName: "MM",
+      datasetUri: SMARTIE_URI,
+      datasetName: "Smartie",
       datasetDescription: "A test flagship",
     });
 
@@ -53,7 +53,7 @@ describe("Test our MM dataset loaded via an S3 mocking layer", () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
 
     await agService.syncWithDatabaseFromDatasetUri(
-      MM_URI,
+      SMARTIE_URI,
       user,
       "australian-genomics-directories"
     );

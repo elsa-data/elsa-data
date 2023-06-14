@@ -16,24 +16,24 @@ import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
 import { createHash } from "crypto";
 import { Readable } from "stream";
 
-export const MM_URI = "urn:fdc:umccr.org:2022:dataset/mm";
+export const SMARTIE_URI = "urn:example:elsa-data-demo-dataset-smartie";
 
 /**
- * The MM dataset is mini mitochondrial data
+ * The Smartie dataset is mini and mitochondrial data
  */
-export async function insertMM(dc: DependencyContainer): Promise<string> {
+export async function insertSmartie(dc: DependencyContainer): Promise<string> {
   const { edgeDbClient } = getServices(dc);
 
   const tenc = await e
     .insert(e.dataset.Dataset, {
-      uri: MM_URI,
-      externalIdentifiers: makeSystemlessIdentifierArray("MM"),
-      description: "MM",
+      uri: SMARTIE_URI,
+      externalIdentifiers: makeSystemlessIdentifierArray("Smartie"),
+      description: "Smartie",
       cases: e.set(),
     })
     .run(edgeDbClient);
 
-  return MM_URI;
+  return SMARTIE_URI;
 }
 
 type FileEntryWithContent = {
@@ -90,7 +90,7 @@ export async function addMocksForFileSystem(
   const filesAll = await getFileEntriesWithContent(fileRoot);
 
   const fileAsKey = (f: string) => {
-    return "MM/" + f.slice(fileRoot.length + 1);
+    return "Smartie/" + f.slice(fileRoot.length + 1);
   };
 
   s3MockClient.onAnyCommand().rejects("All calls to S3 need to be mocked");
