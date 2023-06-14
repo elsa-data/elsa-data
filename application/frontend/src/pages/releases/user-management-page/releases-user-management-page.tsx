@@ -56,7 +56,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const participantDataList = releaseParticipantsQuery.data?.data;
 
   const addParticipantMutate =
-    trpc.releaseParticipant.addParticipant.useMutation({
+    trpc.releaseParticipant.addOrInsertParticipant.useMutation({
       onSuccess: afterMutateForceRefresh,
     });
 
@@ -109,7 +109,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
       {authorisedInviteRoles && authorisedInviteRoles.length > 0 && (
         <Box heading="Invite Participants">
           <div className="flex w-full flex-col sm:flex-row">
-            <div className="card prose rounded-box grid flex-grow prose-p:space-y-2 sm:w-1/2">
+            <div className="card rounded-box grid flex-grow space-y-6 text-justify sm:w-1/2">
               <p>
                 New participants can be invited into this release by entering
                 their organisation email here. Until they log in for the first
@@ -118,17 +118,19 @@ export const ReleasesUserManagementPage: React.FC = () => {
               </p>
               <p>
                 To modify existing users, you can use the edit button to altered
-                their permission for this release.
+                their permission for this release. Alternatively, you could
+                reinvite them with the new role. You will not able to update
+                your own role.
               </p>
               <p>
-                It is only possible to add/update a user in this release with a
-                level that is one below your own current level in the release.
+                It is only possible to add/update a user in this release with
+                the same level or below your own current level in the release.
               </p>
             </div>
             <div className="divider divider-vertical sm:divider-horizontal" />
             <div className="card rounded-box flex-grow justify-between">
               <div>
-                <div className="form-control mb-2">
+                <div className="form-control mb-4">
                   <label className="label flex-col items-start space-y-2">
                     <span className="label-text">User Email</span>
                     <span className="label-text-alt text-xs text-slate-500">

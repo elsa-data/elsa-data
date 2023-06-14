@@ -33,7 +33,7 @@ export const releaseParticipantRouter = router({
         calculateOffset(page, pageSize)
       );
     }),
-  addParticipant: internalProcedure
+  addOrInsertParticipant: internalProcedure
     .input(
       z.object({
         releaseKey: inputReleaseKey,
@@ -45,7 +45,7 @@ export const releaseParticipantRouter = router({
       const { user } = ctx;
       const { releaseKey, email, role } = input;
 
-      return ctx.releaseParticipantService.addParticipant(
+      return ctx.releaseParticipantService.addOrInsertParticipant(
         user,
         releaseKey,
         email,

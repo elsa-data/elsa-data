@@ -35,12 +35,13 @@ export const EditParticipantRoleDialog: React.FC<
   );
 
   // Mutating the participant role
-  const participantMutate = trpc.releaseParticipant.addParticipant.useMutation({
-    onSuccess: () => {
-      utils.releaseParticipant.getParticipants.invalidate();
-      setIsDialogOpen(false);
-    },
-  });
+  const participantMutate =
+    trpc.releaseParticipant.addOrInsertParticipant.useMutation({
+      onSuccess: () => {
+        utils.releaseParticipant.getParticipants.invalidate();
+        setIsDialogOpen(false);
+      },
+    });
 
   // Parsing for easy access
   const isLoading = participantMutate.isLoading;
