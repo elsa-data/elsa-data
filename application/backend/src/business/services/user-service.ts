@@ -18,7 +18,7 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import { NotAuthorisedModifyUserManagement } from "../exceptions/user";
+import { NotAuthorisedEditUserManagement } from "../exceptions/user";
 import { userGetAllByUser } from "../../../dbschema/queries";
 import { IPLookupService, LocationType } from "./ip-lookup-service";
 import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
@@ -129,7 +129,7 @@ export class UserService {
     permission: ChangeablePermission
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
-      throw new NotAuthorisedModifyUserManagement();
+      throw new NotAuthorisedEditUserManagement();
 
     await e
       .update(e.permission.User, (u) => ({

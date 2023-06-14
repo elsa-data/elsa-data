@@ -12,12 +12,12 @@ export class NotAuthorisedViewUserManagement extends Base7807Error {
   }
 }
 
-export class NotAuthorisedModifyUserManagement extends Base7807Error {
+export class NotAuthorisedEditUserManagement extends Base7807Error {
   constructor() {
     super(
-      "Unauthorised attempt to modify user permission.",
+      "Unauthorised attempt to edit user permission.",
       403,
-      `User do not have a role to modify user permission.`
+      `User do not have a role to edit user permission.`
     );
   }
 }

@@ -247,8 +247,8 @@ export abstract class ReleaseBaseService {
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
 
-      // A list of roles allowed to modify other user's role depending of this auth user
-      // e.g. A manager cannot modify Administrator role.
+      // A list of roles allowed to edit other user's role depending of this auth user
+      // e.g. A manager cannot edit Administrator role.
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
       // administrators can code/edit the release information

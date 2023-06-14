@@ -109,14 +109,14 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       releaseKey,
       "Add Participant",
       async () => {
-        // User must have the right to add/modify release participants role
+        // User must have the right to add/edit release participants role
         const roleAllowed = this.getParticipantRoleOption(userRole);
-        const isAllowedToModifyNewRole = roleAllowed?.includes(newUserRole);
+        const isAllowedToEditNewRole = roleAllowed?.includes(newUserRole);
 
         // User shouldn't able to change their own role
         const isOwnUser = user.email === newUserEmail;
 
-        if (!isAllowedToModifyNewRole || isOwnUser) {
+        if (!isAllowedToEditNewRole || isOwnUser) {
           throw new ReleaseParticipationPermissionError(releaseKey);
         }
       },
