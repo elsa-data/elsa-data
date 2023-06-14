@@ -39,3 +39,5 @@ select
     subjectId := [is permission::User].subjectId,
     lastLogin := [is permission::User].lastLoginDateTime
   }
+order by
+  .role

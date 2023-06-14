@@ -12,6 +12,7 @@ import { useReleasesMasterData } from "../releases-types";
 import { Table } from "../../../components/tables";
 import { trpc } from "../../../helpers/trpc";
 import { EditParticipantRoleDialog } from "./edit-participant-role-dialog";
+import ConfirmDialog from "../../../components/confirmation-dialog";
 
 function checkEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email);
@@ -47,10 +48,12 @@ export const ReleasesUserManagementPage: React.FC = () => {
     useState<ReleaseParticipantRoleType>("Member");
   const isValidEmail = newUserEmail == "" || checkEmail(newUserEmail);
 
-  const isMutationLoading =
-    addParticipantMutate.isLoading || removeParticipantMutate.isLoading;
+  const isLoading =
+    addParticipantMutate.isLoading ||
+    removeParticipantMutate.isLoading ||
+    releaseParticipantsQuery.isLoading;
   const isAddButtonDisabled =
-    isMutationLoading || newUserEmail.trim().length == 0 || !isValidEmail;
+    isLoading || newUserEmail.trim().length == 0 || !isValidEmail;
 
   const isError =
     releaseParticipantsQuery.isError ||
@@ -80,6 +83,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
 
   return (
     <>
+      {isError && <EagerErrorBoundary error={error} />}
+
       <Box heading="Invite New User In This Release">
         <div className="flex w-full flex-col sm:flex-row">
           <div className="card prose rounded-box grid flex-grow prose-p:space-y-2 sm:w-1/2">
@@ -90,13 +95,12 @@ export const ReleasesUserManagementPage: React.FC = () => {
               them by name).
             </p>
             <p>
-              Existing users can have their permissions altered by entering
-              their email and setting their new permission level.
+              To modify existing users, you can use the edit button to altered
+              their permission for this release.
             </p>
             <p>
               It is only possible to add/update a user in this release with a
-              level that is one below your own current level in the release. (TO
-              BE IMPLEMENTED)
+              level that is one below your own current level in the release.
             </p>
           </div>
           <div className="divider divider-vertical sm:divider-horizontal" />
@@ -163,107 +167,101 @@ export const ReleasesUserManagementPage: React.FC = () => {
         </div>
       </Box>
 
-      {isError && <EagerErrorBoundary error={error} />}
+      <>
+        <Box heading="User List">
+          {isLoading ? (
+            <IsLoadingDiv />
+          ) : releaseParticipantsQuery.data &&
+            releaseParticipantsQuery.data.length > 0 ? (
+            <Table
+              tableHead={
+                <tr>
+                  <th scope="col">Name</th>
+                  <th>Role</th>
+                  <th>Last Login</th>
+                  <th></th>
+                </tr>
+              }
+              tableBody={releaseParticipantsQuery.data.map(
+                (row: ReleaseParticipantType) => {
+                  const {
+                    id: participantUuid,
+                    email,
+                    displayName,
+                    role: currentRole,
+                    subjectId,
+                    lastLogin,
+                    canBeRemoved,
+                    canBeRoleAltered,
+                  } = row;
 
-      {releaseParticipantsQuery.isSuccess && (
-        <>
-          <Box heading="User List">
-            {releaseParticipantsQuery.isLoading && <IsLoadingDiv />}
-            {releaseParticipantsQuery.data &&
-              releaseParticipantsQuery.data.length === 0 && (
-                <p>There are no participants for this release</p>
-              )}
+                  return (
+                    <tr key={participantUuid}>
+                      <td>
+                        <div>
+                          <div
+                            className="font-bold"
+                            title={subjectId || undefined}
+                          >
+                            {displayName}
+                          </div>
+                          {email !== displayName && (
+                            <div className="text-sm opacity-50">{email}</div>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div>{currentRole}</div>
+                      </td>
+                      <td>
+                        {lastLogin
+                          ? formatLocalDateTime(lastLogin as string)
+                          : ""}
+                      </td>
+                      <td className="text-right">
+                        <>
+                          {currentRole && canBeRoleAltered && (
+                            <EditParticipantRoleDialog
+                              releaseKey={releaseKey}
+                              releaseParticipant={row}
+                            />
+                          )}
 
-            {releaseParticipantsQuery.data &&
-              releaseParticipantsQuery.data.length > 0 && (
-                <Table
-                  tableHead={
-                    <tr>
-                      <th scope="col">Name</th>
-                      <th>Role</th>
-                      <th>Last Login</th>
-                      <th></th>
-                    </tr>
-                  }
-                  tableBody={releaseParticipantsQuery.data.map(
-                    (row: ReleaseParticipantType) => {
-                      const {
-                        id: participantUuid,
-                        email,
-                        displayName,
-                        role: currentRole,
-                        subjectId,
-                        lastLogin,
-                        canBeRemoved,
-                        canBeRoleAltered,
-                      } = row;
-
-                      return (
-                        <tr>
-                          <td>
-                            <div>
-                              <div
-                                className="font-bold"
-                                title={subjectId || undefined}
-                              >
-                                {displayName}
-                              </div>
-                              {email !== displayName && (
-                                <div className="text-sm opacity-50">
-                                  {email}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td>
-                            <div>{currentRole}</div>
-                          </td>
-                          <td>
-                            {lastLogin
-                              ? formatLocalDateTime(lastLogin as string)
-                              : ""}
-                          </td>
-                          <td className="text-right">
+                          {canBeRemoved && (
                             <>
-                              {currentRole && canBeRoleAltered && (
-                                <EditParticipantRoleDialog
-                                  releaseKey={releaseKey}
-                                  releaseParticipant={row}
-                                />
-                              )}
-
-                              {canBeRemoved && (
-                                <>
-                                  <span className="opacity-50">{`|`}</span>
-                                  <button
-                                    className={classNames(
-                                      "btn-table-action-danger",
-                                      {
-                                        "btn-disabled": isMutationLoading,
-                                      }
-                                    )}
-                                    onClick={() => {
-                                      removeParticipantMutate.mutate({
-                                        releaseKey,
-                                        participantUuid: participantUuid,
-                                      });
-                                    }}
-                                  >
-                                    remove
-                                  </button>
-                                </>
-                              )}
+                              <span className="opacity-50">{`|`}</span>
+                              <ConfirmDialog
+                                openButtonLabel={`remove`}
+                                openButtonClassName={classNames(
+                                  "btn-table-action-danger",
+                                  {
+                                    "btn-disabled": isLoading,
+                                  }
+                                )}
+                                onConfirmButtonLabel={"Remove"}
+                                dialogTitle={`Remove Participant Confirmation`}
+                                dialogContent={`Are you sure you want to remove "${email}" from this release?`}
+                                onConfirm={() => {
+                                  removeParticipantMutate.mutate({
+                                    releaseKey,
+                                    participantUuid: participantUuid,
+                                  });
+                                }}
+                              />
                             </>
-                          </td>
-                        </tr>
-                      );
-                    }
-                  )}
-                />
+                          )}
+                        </>
+                      </td>
+                    </tr>
+                  );
+                }
               )}
-          </Box>
-        </>
-      )}
+            />
+          ) : (
+            <p>There are no participants for this release</p>
+          )}
+        </Box>
+      </>
     </>
   );
 };

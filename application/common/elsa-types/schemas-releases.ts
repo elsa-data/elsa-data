@@ -32,8 +32,14 @@ export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
 /**
  * An enum type for participant roles in the release
  */
-export const releaseParticipantRole = ["Administrator", "Manager", "Member"];
-export type ReleaseParticipantRoleType = typeof releaseParticipantRole[number];
+export const ReleaseParticipantRole = ["Administrator", "Manager", "Member"];
+export const ReleaseParticipantRoleConst = [
+  "Administrator",
+  "Manager",
+  "Member",
+] as const;
+export type ReleaseParticipantRoleType =
+  typeof ReleaseParticipantRoleConst[number];
 
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
@@ -97,7 +103,7 @@ export const ReleaseDetailSchema = Type.Object({
 
   // Permission for the current user that allowed to edit other user's role within the release.
   rolesAllowedToAlterParticipant: Nullable(
-    Type.Array(StringUnion(releaseParticipantRole))
+    Type.Array(StringUnion(ReleaseParticipantRole))
   ),
 
   // if present, means that this release has been activated for data sharing
@@ -232,7 +238,7 @@ export const ReleaseParticipantSchema = Type.Object({
   id: Type.String(),
   email: Type.String(),
   // the role of this user in this release
-  role: Nullable(StringUnion(releaseParticipantRole)),
+  role: Nullable(StringUnion(ReleaseParticipantRole)),
   displayName: Nullable(Type.String()),
   subjectId: Nullable(Type.String()),
   // the last login datetime or null if this user has never logged in
@@ -243,7 +249,7 @@ export const ReleaseParticipantSchema = Type.Object({
   canBeRemoved: Type.Boolean(),
   canBeRoleAltered: Type.Boolean(),
   // The role options for that participant from the logged in user
-  roleAlterOptions: Nullable(Type.Array(StringUnion(releaseParticipantRole))),
+  roleAlterOptions: Nullable(Type.Array(StringUnion(ReleaseParticipantRole))),
 });
 export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
 

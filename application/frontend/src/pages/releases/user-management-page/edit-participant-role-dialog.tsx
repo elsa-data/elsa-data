@@ -31,7 +31,7 @@ export const EditParticipantRoleDialog: React.FC<
 
   // New Role data
   const [newRole, setNewRole] = useState<ReleaseParticipantRoleType | null>(
-    role
+    role as ReleaseParticipantRoleType
   );
 
   // Mutating the participant role
