@@ -37,7 +37,7 @@ describe("Test our MM dataset loaded via an S3 mocking layer", () => {
     await addMocksForFileSystem(
       s3Client,
       "elsa-data-test-datasets",
-      join(__dirname, "..", "..", "datasets", "MM")
+      join(__dirname, "..", "..", "datasets", "Smartie")
     );
 
     // register the dataset in the database
