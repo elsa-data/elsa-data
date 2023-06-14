@@ -1,6 +1,11 @@
-import { internalProcedure, router } from "../../trpc-bootstrap";
+import {
+  calculateOffset,
+  internalProcedure,
+  router,
+} from "../../trpc-bootstrap";
 import { z } from "zod";
 import {
+  inputPaginationParameter,
   inputReleaseKey,
   inputReleaseKeySingle,
 } from "../input-schemas-common";
@@ -16,14 +21,16 @@ import {
 
 export const releaseParticipantRouter = router({
   getParticipants: internalProcedure
-    .input(inputReleaseKeySingle)
+    .input(inputPaginationParameter.merge(inputReleaseKeySingle))
     .query(async ({ input, ctx }) => {
-      const { user } = ctx;
-      const { releaseKey } = input;
+      const { user, pageSize, res: reply } = ctx;
+      const { releaseKey, page = 1 } = input;
 
       return await ctx.releaseParticipantService.getParticipants(
         user,
-        releaseKey
+        releaseKey,
+        pageSize,
+        calculateOffset(page, pageSize)
       );
     }),
   addParticipant: internalProcedure

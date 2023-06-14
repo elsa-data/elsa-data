@@ -27,6 +27,10 @@ import {
   ReleaseParticipantRoleType,
   ReleaseParticipantType,
 } from "@umccr/elsa-types";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -55,8 +59,10 @@ export class ReleaseParticipationService extends ReleaseBaseService {
 
   public async getParticipants(
     user: AuthenticatedUser,
-    releaseKey: string
-  ): Promise<ReleaseParticipantType[]> {
+    releaseKey: string,
+    limit: number,
+    offset: number
+  ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
@@ -67,28 +73,33 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     // collaboration where actual data collaborators are not allowed to see each others email?)
 
     const allParticipants = await releaseParticipantGetAll(this.edgeDbClient, {
-      releaseKey: releaseKey,
+      releaseKey,
+      offset,
+      limit,
     });
 
     const roleOptionFromThisUser = this.getParticipantRoleOption(userRole);
 
-    return allParticipants.map((p) => {
-      // Checking whether this participant role can be changed by the auth user
-      // Also they can't change their own roles in the release
-      const isAllowedChangeThisParticipant =
-        roleOptionFromThisUser?.includes(
-          p.role as ReleaseParticipantRoleType
-        ) && p.id !== user.dbId;
+    return createPagedResult(
+      allParticipants.data.map((p) => {
+        // Checking whether this participant role can be changed by the auth user
+        // Also they can't change their own roles in the release
+        const isAllowedChangeThisParticipant =
+          roleOptionFromThisUser?.includes(
+            p.role as ReleaseParticipantRoleType
+          ) && p.id !== user.dbId;
 
-      return {
-        ...p,
-        canBeRemoved: !!isAllowedChangeThisParticipant,
-        canBeRoleAltered: !!isAllowedChangeThisParticipant,
-        roleAlterOptions: isAllowedChangeThisParticipant
-          ? roleOptionFromThisUser
-          : null,
-      };
-    });
+        return {
+          ...p,
+          canBeRemoved: !!isAllowedChangeThisParticipant,
+          canBeRoleAltered: !!isAllowedChangeThisParticipant,
+          roleAlterOptions: isAllowedChangeThisParticipant
+            ? roleOptionFromThisUser
+            : null,
+        };
+      }),
+      allParticipants.total
+    );
   }
 
   /**

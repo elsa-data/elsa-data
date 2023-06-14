@@ -17,7 +17,8 @@ with
       displayName,
       lastLoginDateTime,
       releaseParticipant: { @role } filter .releaseKey = <str>$releaseKey
-    } filter .releaseParticipant.releaseKey =  <str>$releaseKey),
+    } 
+    filter .releaseParticipant.releaseKey =  <str>$releaseKey),
 
   # potential users have been mentioned for a release but have not yet logged in
   pu := (
@@ -26,18 +27,28 @@ with
       email,
       displayName,
       futureReleaseParticipant: { @role } filter .releaseKey = <str>$releaseKey
-    } filter .futureReleaseParticipant.releaseKey =  <str>$releaseKey)
+    } 
+    filter .futureReleaseParticipant.releaseKey =  <str>$releaseKey),
 
-select
-  # merge the users and potential users into a single set
-  (u union pu) {
-    id,
-    email,
-    displayName,
-    role := assert_single([is permission::User].releaseParticipant@role) ??
-            assert_single([is permission::PotentialUser].futureReleaseParticipant@role),
-    subjectId := [is permission::User].subjectId,
-    lastLogin := [is permission::User].lastLoginDateTime
-  }
-order by
-  .role
+  participants := (u union pu)
+
+select {
+  total := count(participants),
+  data := (
+      select (participants) {
+        id,
+        email,
+        displayName,
+        role := assert_single([is permission::User].releaseParticipant@role) ??
+                assert_single([is permission::PotentialUser].futureReleaseParticipant@role),
+        subjectId := [is permission::User].subjectId,
+        lastLogin := [is permission::User].lastLoginDateTime
+      }
+      order by
+        .role
+      offset
+        <int16>$offset
+      limit
+        <int16>$limit
+  )
+}
