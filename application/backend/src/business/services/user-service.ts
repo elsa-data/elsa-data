@@ -18,12 +18,10 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import { NotAuthorisedModifyUserManagement } from "../exceptions/user";
+import { NotAuthorisedEditUserManagement } from "../exceptions/user";
 import { userGetAllByUser } from "../../../dbschema/queries";
 import { IPLookupService, LocationType } from "./ip-lookup-service";
-
-// possibly can somehow get this from the schemas files?
-export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
+import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -131,7 +129,7 @@ export class UserService {
     permission: ChangeablePermission
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
-      throw new NotAuthorisedModifyUserManagement();
+      throw new NotAuthorisedEditUserManagement();
 
     await e
       .update(e.permission.User, (u) => ({
@@ -276,7 +274,7 @@ export class UserService {
   public async registerRoleInRelease(
     user: AuthenticatedUser,
     releaseUuid: string,
-    role: ReleaseRoleStrings
+    role: ReleaseParticipantRoleType
   ) {
     await UserService.addUserToReleaseWithRole(
       this.edgeDbClient,
@@ -341,7 +339,7 @@ export class UserService {
   public async roleInRelease(
     user: AuthenticatedUser,
     releaseKey: string
-  ): Promise<ReleaseRoleStrings | null> {
+  ): Promise<ReleaseParticipantRoleType | null> {
     // TODO: check that releaseKey is a valid UUID structure
     // given this is a boundary check function for our routes - we need to protect against being
     // sent release ids that are invalid entirely (as edgedb sends a wierd uuid() error msg)
@@ -365,7 +363,7 @@ export class UserService {
       ) {
         return userWithMatchingReleases[0].releaseParticipant[0][
           "@role"
-        ] as ReleaseRoleStrings;
+        ] as ReleaseParticipantRoleType;
       }
     }
 

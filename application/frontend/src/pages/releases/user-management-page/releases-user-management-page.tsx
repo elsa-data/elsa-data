@@ -1,21 +1,24 @@
 import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
-import {
-  REACT_QUERY_RELEASE_KEYS,
-  specificReleaseParticipantsQuery,
-} from "../queries";
-import { EagerErrorBoundary, ErrorState } from "../../../components/errors";
+import { EagerErrorBoundary } from "../../../components/errors";
 import { Box } from "../../../components/boxes";
-import { ReleasesBreadcrumbsDiv } from "../releases-breadcrumbs-div";
-import { ReleaseParticipantType } from "@umccr/elsa-types";
+import {
+  ReleaseParticipantRoleType,
+  ReleaseParticipantType,
+} from "@umccr/elsa-types";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import axios from "axios";
 import { useReleasesMasterData } from "../releases-types";
-import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 import { Table } from "../../../components/tables";
+import { trpc } from "../../../helpers/trpc";
+import { EditParticipantRoleDialog } from "./edit-participant-role-dialog";
+import ConfirmDialog from "../../../components/confirmation-dialog";
+import { usePageSizer } from "../../../hooks/page-sizer";
+import { BoxPaginator } from "../../../components/box-paginator";
+
+function checkEmail(email: string) {
+  return /\S+@\S+\.\S+/.test(email);
+}
 
 /**
  * A page allowing the display/editing of users participating in a release.
@@ -23,55 +26,69 @@ import { Table } from "../../../components/tables";
 export const ReleasesUserManagementPage: React.FC = () => {
   const { releaseKey, releaseData } = useReleasesMasterData();
 
-  const [error, setError] = useState<ErrorState>({
-    error: null,
-    isSuccess: true,
-  });
+  // Pagination Variables
+  const pageSize = usePageSizer();
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const releaseParticipantsQuery = useQuery<ReleaseParticipantType[]>({
-    queryKey: REACT_QUERY_RELEASE_KEYS.participant(releaseKey),
-    queryFn: specificReleaseParticipantsQuery,
-    onError: (error: any) => setError({ error, isSuccess: false }),
-    onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
-  });
+  const authorisedInviteRoles = releaseData.rolesAllowedToAlterParticipant as
+    | ReleaseParticipantRoleType[]
+    | null;
 
-  const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
   const afterMutateForceRefresh = () => {
-    return queryClient.invalidateQueries(
-      REACT_QUERY_RELEASE_KEYS.participant(releaseKey)
-    );
+    utils.releaseParticipant.getParticipants.invalidate();
+    setNewUserEmail("");
+    setNewUserRole("Member");
   };
 
-  const addUserMutate = useMutation(
-    (c: {
-      newUserEmail: string;
-      newUserRole: "Manager" | "Member" | "Administrator";
-    }) =>
-      axios.post<void>(`/api/releases/${releaseKey}/participants`, {
-        email: c.newUserEmail,
-        role: c.newUserRole,
-      }),
-    { onSuccess: afterMutateForceRefresh }
-  );
+  const releaseParticipantsQuery =
+    trpc.releaseParticipant.getParticipants.useQuery(
+      {
+        releaseKey,
+        page: currentPage,
+      },
+      {
+        onSuccess: (res) => {
+          setCurrentTotal(res.total);
+        },
+      }
+    );
+  const participantDataList = releaseParticipantsQuery.data?.data;
 
-  const removeUserMutate = useMutation(
-    (participantId: string) =>
-      axios.delete<void>(
-        `/api/releases/${releaseKey}/participants/${participantId}`
-      ),
-    { onSuccess: afterMutateForceRefresh }
-  );
+  const addParticipantMutate =
+    trpc.releaseParticipant.addParticipant.useMutation({
+      onSuccess: afterMutateForceRefresh,
+    });
+
+  const removeParticipantMutate =
+    trpc.releaseParticipant.removeParticipant.useMutation({
+      onSuccess: afterMutateForceRefresh,
+    });
 
   const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserRole, setNewUserRole] = useState<
-    "Member" | "Manager" | "Administrator"
-  >("Member");
+  const [newUserRole, setNewUserRole] =
+    useState<ReleaseParticipantRoleType>("Member");
+  const isValidEmail = newUserEmail == "" || checkEmail(newUserEmail);
 
+  const isLoading =
+    addParticipantMutate.isLoading ||
+    removeParticipantMutate.isLoading ||
+    releaseParticipantsQuery.isLoading;
   const isAddButtonDisabled =
-    addUserMutate.isLoading ||
-    removeUserMutate.isLoading ||
-    newUserEmail.trim().length == 0;
+    isLoading || newUserEmail.trim().length == 0 || !isValidEmail;
+
+  const isError =
+    releaseParticipantsQuery.isError ||
+    addParticipantMutate.isError ||
+    removeParticipantMutate.isError;
+
+  const error = releaseParticipantsQuery.error
+    ? releaseParticipantsQuery.error
+    : addParticipantMutate.error
+    ? addParticipantMutate.error
+    : removeParticipantMutate.error;
 
   const ourRadio = (text: string, checked: boolean, onChange: () => void) => (
     <div className="form-control items-start">
@@ -90,138 +107,190 @@ export const ReleasesUserManagementPage: React.FC = () => {
 
   return (
     <>
-      <Box heading="Add/Update User In This Release">
-        <form className="prose-xs prose max-w-2xl">
-          <p>
-            New users can be invited into a release by entering their email
-            here. Until they log in for the first time the system will only know
-            their email address (after that, it will be able to refer to them by
-            name).
-          </p>
-          <p>
-            Existing users can have their permissions altered by entering their
-            email and setting their new permission level.
-          </p>
-          <p>
-            It is only possible to add/update a user in this release with a
-            level that is one below your own current level in the release. (TO
-            BE IMPLEMENTED)
-          </p>
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">User Email</span>
-            </label>
-            <input
-              type="text"
-              placeholder="email@address"
-              className="input-bordered input-accent input input-sm w-full"
-              value={newUserEmail}
-              onChange={(e) => setNewUserEmail(e.target.value)}
-            />
-          </div>
-          {ourRadio("Member", newUserRole === "Member", () =>
-            setNewUserRole("Member")
-          )}
-          {ourRadio("Manager", newUserRole === "Manager", () =>
-            setNewUserRole("Manager")
-          )}
-          {ourRadio("Administrator", newUserRole === "Administrator", () =>
-            setNewUserRole("Administrator")
-          )}
-          <div className="form-control max-w-xs">
-            <button
-              type="button"
-              disabled={isAddButtonDisabled}
-              className={classNames("btn", {
-                "btn-disabled": isAddButtonDisabled,
-              })}
-              onClick={async () => {
-                addUserMutate.mutate({
-                  newUserEmail: newUserEmail,
-                  newUserRole: newUserRole,
-                });
-              }}
-            >
-              Add / Update
-            </button>
-          </div>
-        </form>
-      </Box>
-
-      {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
-
-      {releaseParticipantsQuery.isSuccess && (
-        <>
-          <Box heading="User List">
-            {releaseParticipantsQuery.isLoading && <IsLoadingDiv />}
-            {releaseParticipantsQuery.data &&
-              releaseParticipantsQuery.data.length === 0 && (
-                <p>There are no participants for this release</p>
-              )}
-            {releaseParticipantsQuery.data &&
-              releaseParticipantsQuery.data.length > 0 && (
-                <Table
-                  tableHead={
-                    <tr>
-                      <th scope="col">Name</th>
-                      <th>Role</th>
-                      <th>Last Login</th>
-                      <th></th>
-                    </tr>
-                  }
-                  tableBody={releaseParticipantsQuery.data.map(
-                    (row, rowIndex) => {
-                      return (
-                        <tr key={row.id}>
-                          <td>
-                            <div>
-                              <div
-                                className="font-bold"
-                                title={row.subjectId || undefined}
-                              >
-                                {row.displayName}
-                              </div>
-                              {row.email !== row.displayName && (
-                                <div className="text-sm opacity-50">
-                                  {row.email}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td>{row.role}</td>
-                          <td>
-                            {row.lastLogin
-                              ? formatLocalDateTime(row.lastLogin as string)
-                              : ""}
-                          </td>
-                          <td className="text-right">
-                            {row.canBeRemoved && (
-                              <button
-                                className={classNames(
-                                  "btn-table-action-danger",
-                                  {
-                                    "btn-disabled":
-                                      addUserMutate.isLoading ||
-                                      removeUserMutate.isLoading,
-                                  }
-                                )}
-                                onClick={async () => {
-                                  removeUserMutate.mutate(row.id);
-                                }}
-                              >
-                                remove
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    }
+      {isError && <EagerErrorBoundary error={error} />}
+      {authorisedInviteRoles && authorisedInviteRoles.length > 0 && (
+        <Box heading="Invite Participants">
+          <div className="flex w-full flex-col sm:flex-row">
+            <div className="rounded-box flex-grow space-y-6 text-justify sm:w-1/2">
+              <p>
+                New participants can be invited into this release by entering
+                their organisation email here. Until they log in for the first
+                time the system will only know their email address (after that,
+                it will be able to refer to them by name).
+              </p>
+              <p>
+                To modify existing users, you can use the edit button to altered
+                their permission for this release. You will not able to update
+                your own role.
+              </p>
+              <p>
+                It is only possible to add/update a user in this release with
+                the same level or below your own current level in the release.
+              </p>
+            </div>
+            <div className="divider divider-vertical sm:divider-horizontal" />
+            <div className="card rounded-box flex-grow justify-between">
+              <div>
+                <div className="form-control mb-4">
+                  <label className="label flex-col items-start space-y-2">
+                    <span className="label-text">User Email</span>
+                    <span className="label-text-alt text-xs text-slate-500">
+                      Email must be their organisation's email that is used to
+                      login in to Elsa (via CILogon)
+                    </span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="user@organisation.org"
+                    className={classNames(
+                      `input-bordered input-accent input input-sm w-full`,
+                      {
+                        "input-error": !isValidEmail,
+                        "input-accent": isValidEmail,
+                      }
+                    )}
+                    value={newUserEmail}
+                    onChange={(e) => setNewUserEmail(e.target.value)}
+                  />
+                  {!isValidEmail && (
+                    <label className="label">
+                      <span className="label-text-alt text-red-400">
+                        Invalid email
+                      </span>
+                    </label>
                   )}
-                />
-              )}
-          </Box>
-        </>
+                </div>
+                {authorisedInviteRoles.map((r, idx) => (
+                  <React.Fragment key={idx}>
+                    {ourRadio(r, newUserRole === r, () => setNewUserRole(r))}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="form-control my-2 max-w-full">
+                <button
+                  type="button"
+                  disabled={isAddButtonDisabled}
+                  className={classNames("btn", {
+                    "btn-disabled": isAddButtonDisabled,
+                  })}
+                  onClick={() => {
+                    addParticipantMutate.mutate({
+                      releaseKey,
+                      email: newUserEmail,
+                      role: newUserRole,
+                    });
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </Box>
       )}
+
+      <>
+        <Box heading="User List">
+          {isLoading ? (
+            <IsLoadingDiv />
+          ) : participantDataList && participantDataList.length > 0 ? (
+            <>
+              <Table
+                tableHead={
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th>Role</th>
+                    <th>Last Login</th>
+                    <th></th>
+                  </tr>
+                }
+                tableBody={participantDataList.map(
+                  (row: ReleaseParticipantType, idx) => {
+                    const {
+                      role,
+                      email,
+                      displayName,
+                      subjectId,
+                      lastLogin,
+                      canBeRemoved,
+                      canBeRoleAltered,
+                    } = row;
+
+                    return (
+                      <tr key={idx}>
+                        <td>
+                          <div>
+                            <div
+                              className="font-bold"
+                              title={subjectId || undefined}
+                            >
+                              {displayName}
+                            </div>
+                            {email !== displayName && (
+                              <div className="text-sm opacity-50">{email}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <div>{role}</div>
+                        </td>
+                        <td>
+                          {lastLogin
+                            ? formatLocalDateTime(lastLogin as string)
+                            : ""}
+                        </td>
+                        <td className="text-right">
+                          <>
+                            {role && canBeRoleAltered && (
+                              <EditParticipantRoleDialog
+                                releaseKey={releaseKey}
+                                releaseParticipant={row}
+                              />
+                            )}
+
+                            {canBeRemoved && (
+                              <>
+                                <span className="opacity-50">{`|`}</span>
+                                <ConfirmDialog
+                                  openButtonLabel={`remove`}
+                                  openButtonClassName={classNames(
+                                    "btn-table-action-danger",
+                                    {
+                                      "btn-disabled": isLoading,
+                                    }
+                                  )}
+                                  onConfirmButtonLabel={"Remove"}
+                                  dialogTitle={`Remove Participant Confirmation`}
+                                  dialogContent={`Are you sure you want to remove "${email}" from this release?`}
+                                  onConfirm={() => {
+                                    removeParticipantMutate.mutate({
+                                      releaseKey,
+                                      email: email,
+                                    });
+                                  }}
+                                />
+                              </>
+                            )}
+                          </>
+                        </td>
+                      </tr>
+                    );
+                  }
+                )}
+              />
+              <BoxPaginator
+                currentPage={currentPage}
+                setPage={(n) => setCurrentPage(n)}
+                rowCount={currentTotal}
+                rowsPerPage={pageSize}
+                rowWord="Participants"
+              />
+            </>
+          ) : (
+            <p>There are no participants for this release</p>
+          )}
+        </Box>
+      </>
     </>
   );
 };

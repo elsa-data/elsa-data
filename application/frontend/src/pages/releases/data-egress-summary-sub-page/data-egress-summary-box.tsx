@@ -52,11 +52,11 @@ export const DataEgressSummaryBox = ({
         </span>
 
         {/* Toggle to view as summary */}
-        <label className="label cursor-pointer">
+        <label className="label cursor-pointer !py-0">
           <span className="label-text mr-2">Summary View</span>
           <input
             type="checkbox"
-            className="checkbox checkbox-sm"
+            className="checkbox checkbox-xs"
             checked={isSummaryView}
             onChange={() => setIsSummaryView((p) => !p)}
           />

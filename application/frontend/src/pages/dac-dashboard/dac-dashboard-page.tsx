@@ -22,19 +22,30 @@ export const DacDashboardPage: React.FC = () => {
     <>
       <Box heading="DAC">
         <VerticalTabs tabHeadings={userConfig.dacs.map((a) => a.description)}>
-          {userConfig.dacs.map((a) => {
+          {userConfig.dacs.map((a, idx) => {
             switch (a.type) {
               case "rems":
-                return <RemsDacTriggerDiv dacId={a.id} dacRemsUrl={a.url} />;
+                return (
+                  <RemsDacTriggerDiv
+                    key={idx}
+                    dacId={a.id}
+                    dacRemsUrl={a.url}
+                  />
+                );
 
               case "manual":
-                return <ManualDacTriggerDiv dacId={a.id} />;
+                return <ManualDacTriggerDiv key={idx} dacId={a.id} />;
 
               case "redcap-australian-genomics-csv":
               case "redcap-australian-genomics-demo-csv":
-                return <AustralianGenomicsDacRedcapTriggerDiv dacId={a.id} />;
+                return (
+                  <AustralianGenomicsDacRedcapTriggerDiv
+                    key={idx}
+                    dacId={a.id}
+                  />
+                );
               default:
-                return <div>Unknown DAC type {(a as any).type}</div>;
+                return <div key={idx}>Unknown DAC type {(a as any).type}</div>;
             }
           })}
         </VerticalTabs>

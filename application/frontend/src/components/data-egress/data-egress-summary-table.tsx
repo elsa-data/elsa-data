@@ -100,7 +100,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
         setPage={(n) => setCurrentPage(n)}
         rowCount={currentTotal}
         rowsPerPage={pageSize}
-        rowWord="dataEgress"
+        rowWord="Egress Summary Records"
       />
     </>
   );

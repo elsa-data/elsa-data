@@ -1,5 +1,5 @@
-import { internalProcedure, router } from "../trpc-bootstrap";
-import { inputReleaseKeySingle } from "./input-schemas-common";
+import { internalProcedure, router } from "../../trpc-bootstrap";
+import { inputReleaseKeySingle } from "../input-schemas-common";
 
 /**
  * RPC for release activation
