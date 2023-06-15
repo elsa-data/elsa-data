@@ -33,8 +33,6 @@ export async function addMocksForFileSystem(
     return `${mockKey}/` + f.slice(fileRoot.length + 1);
   };
 
-  s3MockClient.onAnyCommand().rejects("All calls to S3 need to be mocked");
-
   s3MockClient
     .on(ListObjectsV2Command, {
       Bucket: mockBucket,

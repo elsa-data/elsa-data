@@ -19,7 +19,9 @@ import { getFeaturesEnabled } from "../src/features";
   const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
 
   // global settings for DI
-  const dc = bootstrapDependencyInjection(rawConfig.devTesting?.mockAwsCloud);
+  const dc = await bootstrapDependencyInjection(
+    rawConfig.devTesting?.mockAwsCloud
+  );
 
   const settings = await bootstrapSettings(rawConfig);
 

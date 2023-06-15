@@ -1,13 +1,23 @@
 {
   datasets: [
     {
+      uri: "urn:example:elsa-data-demo-dataset-smartie",
+      name: "Smartie",
+      description: "Smartie",
+      loader: "australian-genomics-directories",
+      storageLocation: "aws-s3",
+      // this URI needs to match the constants defined in insert-test-data-smartie
+      storageUriPrefix: "s3://elsa-data-demo-datasets/Smartie",
+    },
+    {
       uri: "urn:fdc:umccr.org:2022:dataset/10g",
       name: "UMCCR 10G",
       description: "A cohort of singleton germline read and variant data",
-      loader: "australian-genomics-directories-demo",
-      demonstrationStoragePrefix: "s3://agha-gdr-demo-store/10G/",
-      demonstrationSpecimenIdentifierRegex: "^.*(HG\\d\\d\\d\\d\\d).*$",
-      demonstrationCaseIdentifierRegex: "^.*(FAM\\d+).*$",
+      loader: "australian-genomics-directories",
+      storageLocation: "aws-s3",
+      storageUriPrefix: "s3://agha-gdr-demo-store/10G",
+      specimenIdentifierRegex: "^.*(HG\\d\\d\\d\\d\\d).*$",
+      caseIdentifierRegex: "^.*(FAM\\d+).*$",
     },
     {
       uri: "urn:fdc:umccr.org:2022:dataset/10f",

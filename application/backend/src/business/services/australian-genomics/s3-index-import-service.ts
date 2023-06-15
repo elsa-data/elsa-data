@@ -49,7 +49,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
 import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
 import {
-  australianGenomicsDirectoriesDemoLoaderFor10G,
+  australianGenomicsDirectoryStructureFor10G,
   TENG_URI,
 } from "../../../test-data/dataset/insert-test-data-10g";
 import phenopackets from "../../../generated/phenopackets";
