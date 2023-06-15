@@ -1,7 +1,12 @@
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
 import { TEST_SUBJECT_3 } from "../src/test-data/user/insert-user3";
-import { MM_URI } from "../src/test-data/dataset/insert-test-data-mm";
+import {
+  SMARTIE_DESCRIPTION,
+  SMARTIE_FAKE_S3_PREFIX,
+  SMARTIE_NAME,
+  SMARTIE_URI,
+} from "../src/test-data/dataset/insert-test-data-smartie";
 import { BRAND } from "zod";
 import { BrandingType } from "../src/config/config-schema-branding";
 import { Sensitive } from "../src/config/config-schema-sensitive";
@@ -76,12 +81,12 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       storageUriPrefix: "s3://umccr-10c-data-dev",
     },
     {
-      uri: MM_URI,
-      name: "UMCCR MM",
-      description: "A mini mitochondrial",
+      uri: SMARTIE_URI,
+      name: SMARTIE_NAME,
+      description: SMARTIE_DESCRIPTION,
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
-      storageUriPrefix: "s3://elsa-data-test-datasets/MM",
+      storageUriPrefix: SMARTIE_FAKE_S3_PREFIX,
     },
   ],
   superAdmins: [

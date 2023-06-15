@@ -7,6 +7,10 @@ import {
 import { DuoLimitationCodedType } from "@umccr/elsa-types";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
+import {
+  AustralianGenomicsDirectoryStructure,
+  AustralianGenomicsDirectoryStructureObject,
+} from "../aws-mock/add-s3-mocks-for-in-memory";
 
 export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
 
@@ -154,37 +158,17 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
   return TENG_URI;
 }
 
-type AustralianGenomicsDirectoryStructureObject = {
-  s3Url: string;
-  eTag: string;
-  size: number;
-};
-
-type AustralianGenomicsDirectoryStructure = {
-  files: AustralianGenomicsDirectoryStructureObject[];
-  fileContent: {
-    [f: string]: string;
-  };
-};
-
 /**
  * Creates a fake directory structure - according to the Australian Genomics data loader rules -
  * that wraps a directory holding the 10G dataset.
  *
  * In order to simulate dataset 'updates' - it returns two "Directory Structures" - the first
  * of the array representing an 'initial' state - and the second representing a 'follow up'
- * state.
- *
- * @param demonstrationStoragePrefix An plausible cloud bucket prefix that will be the fake root of our dataset. Slash terminated. e.g. s3://out-bucket/10G/
+ * state. If you just want to install the full dataset then you can just use the second result.
  */
-export async function australianGenomicsDirectoriesDemoLoaderFor10G(
-  demonstrationStoragePrefix: string
-): Promise<AustralianGenomicsDirectoryStructure[]> {
-  if (!demonstrationStoragePrefix.endsWith("/"))
-    throw new Error(
-      "The demonstrationStoragePrefix of our demonstration datasets must end in a slash"
-    );
-
+export async function australianGenomicsDirectoryStructureFor10G(): Promise<
+  AustralianGenomicsDirectoryStructure[]
+> {
   // NOTE we artificially introduce the data arriving in two phases.. i.e. as if they have been
   //      submitted in two separate submission batches from the labs
   // Phase2 contains all the files from phase1 (i.e. it is meant to be representing a bucket that is being
@@ -226,44 +210,31 @@ export async function australianGenomicsDirectoriesDemoLoaderFor10G(
     folder: string,
     case_: MasterRareDiseaseCase
   ): string => {
-    // Does not work for singleton cases as it can't establish the pedigrees implied
-    //const sexSuffix =
-    //  case_.patientSexAtBirth === "male"
-    //    ? "_pat"
-    //   : case_.patientSexAtBirth === "female"
-    //    ? "_mat"
-    //    : "";
-
     const bamName = `${case_.specimenId}.bam`;
     const baiName = `${case_.specimenId}.bam.bai`;
     const vcfName = `${case_.specimenId}.individual.norm.vep.vcf.gz`;
     const tbiName = `${case_.specimenId}.individual.norm.vep.vcf.gz.tbi`;
 
-    const bamUrl = `${demonstrationStoragePrefix}${folder}/${bamName}`;
-    const baiUrl = `${demonstrationStoragePrefix}${folder}/${baiName}`;
-    const vcfUrl = `${demonstrationStoragePrefix}${folder}/${vcfName}`;
-    const tbiUrl = `${demonstrationStoragePrefix}${folder}/${tbiName}`;
-
     files.push({
-      s3Url: bamUrl,
-      eTag: `${case_.bamEtag}`,
+      path: `${folder}/${bamName}`,
+      etag: `${case_.bamEtag}`,
       size: case_.bamSize,
     });
     files.push({
-      s3Url: baiUrl,
+      path: `${folder}/${baiName}`,
       // TBD introduce size and etag for indexes
-      eTag: `0000000000000000000000000000000000`,
+      etag: `0000000000000000000000000000000000`,
       size: 128,
     });
     files.push({
-      s3Url: vcfUrl,
-      eTag: `${case_.vcfEtag}`,
+      path: `${folder}/${vcfName}`,
+      etag: `${case_.vcfEtag}`,
       size: case_.vcfSize,
     });
     files.push({
-      s3Url: tbiUrl,
+      path: `${folder}/${tbiName}`,
       // TBD introduce size and etag for indexes
-      eTag: `0000000000000000000000000000000000`,
+      etag: `0000000000000000000000000000000000`,
       size: 78,
     });
 
@@ -291,29 +262,29 @@ export async function australianGenomicsDirectoriesDemoLoaderFor10G(
   }
 
   // we need to make records (and content) for the manifests
-  const manifest1Url = `${demonstrationStoragePrefix}${phase1DirPrefix}/manifest.txt`;
-  const manifest2Url = `${demonstrationStoragePrefix}${phase2DirPrefix}/manifest.txt`;
+  const manifest1Path = `${phase1DirPrefix}/manifest.txt`;
+  const manifest2Path = `${phase2DirPrefix}/manifest.txt`;
 
   phase1Dirs.files.push({
-    s3Url: manifest1Url,
-    eTag: `0000000000000000000000000000000000`,
+    path: manifest1Path,
+    etag: `0000000000000000000000000000000000`,
     size: phase1Manifest.length,
   });
-  phase1Dirs.fileContent[manifest1Url] = phase1Manifest;
+  phase1Dirs.fileContent[manifest1Path] = phase1Manifest;
 
   // NOTING of course that the phase 2 has BOTH manifests - phase 2 is not a single folder - it is both folders
   phase2Dirs.files.push({
-    s3Url: manifest1Url,
-    eTag: `0000000000000000000000000000000000`,
+    path: manifest1Path,
+    etag: `0000000000000000000000000000000000`,
     size: phase1Manifest.length,
   });
   phase2Dirs.files.push({
-    s3Url: manifest2Url,
-    eTag: `0000000000000000000000000000000000`,
+    path: manifest2Path,
+    etag: `0000000000000000000000000000000000`,
     size: phase2Manifest.length,
   });
-  phase2Dirs.fileContent[manifest1Url] = phase1Manifest;
-  phase2Dirs.fileContent[manifest2Url] = phase2Manifest;
+  phase2Dirs.fileContent[manifest1Path] = phase1Manifest;
+  phase2Dirs.fileContent[manifest2Path] = phase2Manifest;
 
   return [phase1Dirs, phase2Dirs];
 }

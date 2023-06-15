@@ -12,7 +12,7 @@ import { bootstrapDependencyInjectionSingletonServices } from "./bootstrap-depen
  * Bootstrap the DI with some basic services that are
  * available across the entire application.
  */
-export function bootstrapDependencyInjection(mockAws: boolean = false) {
+export async function bootstrapDependencyInjection(mockAws: boolean = false) {
   // this should be the ONLY point where we use the global tsyringe container -
   // all subsequent dcs should be passed into us - never using the global "container"
   // (that is why we call it "dc" throughout so we can do easy searches for places
@@ -33,7 +33,8 @@ export function bootstrapDependencyInjection(mockAws: boolean = false) {
     ),
   });
 
-  bootstrapDependencyInjectionAwsClients(dc, mockAws);
+  await bootstrapDependencyInjectionAwsClients(dc, mockAws);
+
   bootstrapDependencyInjectionSingletonServices(dc, mockAws);
 
   dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {

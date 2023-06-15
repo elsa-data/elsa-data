@@ -32,6 +32,11 @@ import { DatasetService } from "../../business/services/dataset-service";
 import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
 import { UserService } from "../../business/services/user-service";
 import { insertUser5 } from "../user/insert-user5";
+import {
+  SMARTIE_DESCRIPTION,
+  SMARTIE_URI,
+} from "../dataset/insert-test-data-smartie";
+import { addMocksForInMemory } from "../aws-mock/add-s3-mocks-for-in-memory";
 
 const BLANK_DB_PROPS = [
   { id: "10M", uri: "urn:fdc:umccr.org:2022:dataset/10m" },
@@ -83,21 +88,43 @@ export async function insertScenario1(dc: DependencyContainer) {
   // Create datasets record
   const s3IndexService = dc.resolve(S3IndexApplicationService);
 
-  // this shouldn't be necessary - the synchronise service should upset this from the config files
-  await e
-    .insert(e.dataset.Dataset, {
-      uri: TENG_URI,
-      externalIdentifiers: makeSystemlessIdentifierArray("10G"),
-      description: TENG_DESCRIPTION,
-      cases: e.set(),
-    })
-    .run(edgeDbClient);
+  // the Smartie dataset is a super tiny dataset that actually exists in the filesystem
+  // but we proxy it to pretend it exists in a mocked AWS bucket
+  {
+    // this shouldn't be necessary - the synchronise service should upset this from the config files
+    await e
+      .insert(e.dataset.Dataset, {
+        uri: SMARTIE_URI,
+        externalIdentifiers: makeSystemlessIdentifierArray("Smartie"),
+        description: SMARTIE_DESCRIPTION,
+        cases: e.set(),
+      })
+      .run(edgeDbClient);
 
-  await s3IndexService.syncWithDatabaseFromDatasetUri(
-    TENG_URI,
-    datasetAdministratorUser,
-    "australian-genomics-directories-demo"
-  );
+    await s3IndexService.syncWithDatabaseFromDatasetUri(
+      SMARTIE_URI,
+      datasetAdministratorUser,
+      "australian-genomics-directories"
+    );
+  }
+
+  {
+    // this shouldn't be necessary - the synchronise service should upset this from the config files
+    await e
+      .insert(e.dataset.Dataset, {
+        uri: TENG_URI,
+        externalIdentifiers: makeSystemlessIdentifierArray("10G"),
+        description: TENG_DESCRIPTION,
+        cases: e.set(),
+      })
+      .run(edgeDbClient);
+
+    await s3IndexService.syncWithDatabaseFromDatasetUri(
+      TENG_URI,
+      datasetAdministratorUser,
+      "australian-genomics-directories"
+    );
+  }
 
   const ten_f_uri = await insert10F(dc);
   const ten_c_uri = await insert10C(dc);

@@ -38,13 +38,7 @@ export const datasetRouter = router({
     .query(async ({ input, ctx }) => {
       const { user } = ctx;
       const { datasetUri, includeDeletedFile = false } = input;
-      const res = await ctx.datasetService.get({
-        user,
-        includeDeletedFile,
-        datasetUri,
-      });
-
-      return res;
+      return await ctx.datasetService.get(user, datasetUri, includeDeletedFile);
     }),
   updateDataset: internalProcedure
     .input(inputSingleDatasetUri)
@@ -66,13 +60,6 @@ export const datasetRouter = router({
             loader
           );
           break;
-        case "australian-genomics-directories-demo":
-          await ctx.agS3IndexService.syncWithDatabaseFromDatasetUri(
-            datasetUri,
-            user,
-            loader
-          );
-          break;
         default:
           throw Error(`Unknown dataset or loader for URI ${datasetUri}`);
       }
@@ -88,36 +75,5 @@ export const datasetRouter = router({
       const { consentId } = input;
 
       return await ctx.datasetService.getDatasetsConsent(user, consentId);
-    }),
-  updateGen3Sync: internalProcedure
-    .input(
-      z.object({
-        uri: z.string(),
-        gen3Url: z.string(),
-        gen3Bearer: z.string(),
-      })
-    )
-    .query(async ({ input, ctx }) => {
-      const { user } = ctx;
-      const { uri, gen3Url, gen3Bearer } = input;
-
-      // WIP
-
-      // if (!datasetGen3SyncRequestValidate(request.body)) {
-      //   //reply
-      //   //    .code(200)
-      //   //    .header('Content-Type', 'application/json; charset=utf-8')
-      //   //    .send({ hello: 'world' })
-
-      //   reply.send({
-      //     error: datasetGen3SyncRequestValidate.errors?.join(" "),
-      //   });
-      // }
-
-      // reply.send({
-      //   error: undefined,
-      // });
-
-      return new Error();
     }),
 });

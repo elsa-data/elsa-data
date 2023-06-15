@@ -41,6 +41,7 @@ import {
   selectDatasetIdByDatasetUri,
   selectDatasetPatientByExternalIdAndDatasetUriQuery,
   selectDatasetSpecimen,
+  updateDatasetPatientSex,
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
@@ -48,9 +49,16 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
 import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
 import {
-  australianGenomicsDirectoriesDemoLoaderFor10G,
+  australianGenomicsDirectoryStructureFor10G,
   TENG_URI,
 } from "../../../test-data/dataset/insert-test-data-10g";
+import phenopackets from "../../../generated/phenopackets";
+import { Logger } from "pino";
+
+type PhenopacketIndividiual =
+  phenopackets.org.phenopackets.schema.v2.IPhenopacket;
+type PhenopacketFamily = phenopackets.org.phenopackets.schema.v2.IFamily;
+type PhenopacketCohort = phenopackets.org.phenopackets.schema.v2.ICohort;
 
 /**
  * Manifest Type as what current AG manifest data will look like
@@ -64,8 +72,15 @@ export type ManifestType = {
 export type MergedManifestMetadataType = ManifestType & S3ObjectMetadataType;
 
 export type FileGroupType = {
-  filetype: ArtifactEnum;
-  filenameId: String;
+  // we allow phenopacket files - even though we don't support them yet as artifacts in the dataset
+  // instead we use them to guide the dataset construction
+  // for the types of phenopackets see https://phenopacket-schema.readthedocs.io/en/latest/toplevel.html
+  filetype:
+    | ArtifactEnum
+    | "PHENOPACKET_INDIVIDUAL"
+    | "PHENOPACKET_FAMILY"
+    | "PHENOPACKET_COHORT";
+  filenameId: string;
   specimenId: string;
   patientIdArray: string[];
   file: MergedManifestMetadataType[];
@@ -79,6 +94,7 @@ export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Logger") private readonly logger: Logger,
     @inject(DatasetService) private readonly datasetService: DatasetService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService
@@ -269,6 +285,12 @@ export class S3IndexApplicationService {
           ? ArtifactEnum.VCF
           : filenameId.endsWith(".cram") || filenameId.endsWith(".crai")
           ? ArtifactEnum.CRAM
+          : filenameId.endsWith(".phenopacket.json")
+          ? "PHENOPACKET_INDIVIDUAL"
+          : filenameId.endsWith(".family.json")
+          ? "PHENOPACKET_FAMILY"
+          : filenameId.endsWith(".cohort.json")
+          ? "PHENOPACKET_COHORT"
           : undefined;
 
       // The context of agha_study_id is actually the patient Id
@@ -284,7 +306,7 @@ export class S3IndexApplicationService {
       }
 
       if (!filetype) {
-        console.warn("No matching Artifact Type");
+        this.logger.warn("No matching Artifact Type");
         continue;
       }
 
@@ -359,23 +381,45 @@ export class S3IndexApplicationService {
         a.s3Url.toLowerCase() > b.s3Url.toLowerCase() ? 1 : -1
       );
     const manifestSet = sortManifestFile(groupManifest.file);
+
     const baseFile = this.convertManifestToStorageFileType(manifestSet[0]);
+
+    // as our only file types that are individual file - and also incidentally doesn't get inserted into the dataset -
+    // we do some seperate logic for phenopackets
+    if (
+      groupManifest.filetype === "PHENOPACKET_INDIVIDUAL" ||
+      groupManifest.filetype === "PHENOPACKET_FAMILY" ||
+      groupManifest.filetype === "PHENOPACKET_COHORT"
+    ) {
+      return undefined;
+    }
+
+    if (manifestSet.length <= 1) {
+      throw new Error(
+        `Dataset import encountered only a single file with base ${groupManifest.filenameId} - but all our files should come in as pairs`
+      );
+    }
+
     const indexFile = this.convertManifestToStorageFileType(manifestSet[1]);
 
-    if (groupManifest.filetype == ArtifactEnum.FASTQ) {
-      return insertArtifactFastqPairQuery(baseFile, indexFile);
-    } else if (groupManifest.filetype == ArtifactEnum.VCF) {
-      return insertArtifactVcfQuery(
-        baseFile,
-        indexFile,
-        groupManifest.patientIdArray
-      );
-    } else if (groupManifest.filetype == ArtifactEnum.BAM) {
-      return insertArtifactBamQuery(baseFile, indexFile);
-    } else if (groupManifest.filetype == ArtifactEnum.CRAM) {
-      return insertArtifactCramQuery(baseFile, indexFile);
+    switch (groupManifest.filetype) {
+      case ArtifactEnum.FASTQ:
+        return insertArtifactFastqPairQuery(baseFile, indexFile);
+      case ArtifactEnum.VCF:
+        return insertArtifactVcfQuery(
+          baseFile,
+          indexFile,
+          groupManifest.patientIdArray
+        );
+      case ArtifactEnum.BAM:
+        return insertArtifactBamQuery(baseFile, indexFile);
+      case ArtifactEnum.CRAM:
+        return insertArtifactCramQuery(baseFile, indexFile);
+      default:
+        throw new Error(
+          `Attempt to insert artifact of unknown type ${groupManifest.filetype}`
+        );
     }
-    return undefined;
   }
 
   /**
@@ -695,54 +739,15 @@ export class S3IndexApplicationService {
 
         break;
       case "australian-genomics-directories-demo":
-        const fakeS3UrlPrefix =
-          this.datasetService.getDemonstrationStoragePrefixFromDatasetUri(
-            datasetUri
-          );
-
-        if (!fakeS3UrlPrefix) {
-          console.warn("No demonstration storage prefix");
-          return;
-        }
-
-        if (datasetUri === TENG_URI) {
-          const phases = await australianGenomicsDirectoriesDemoLoaderFor10G(
-            fakeS3UrlPrefix
-          );
-
-          s3MetadataList = phases[1].files;
-
-          s3ManifestTypeObjectDict =
-            await this.getS3ManifestObjectListFromAllObjectList(
-              s3MetadataList,
-              async (url: string) => {
-                if (!(url in phases[1].fileContent))
-                  throw new Error(
-                    `Demo dataset loader missing manifest content at ${url}`
-                  );
-
-                return phases[1].fileContent[url];
-              }
-            );
-
-          const datasetConfig: any =
-            this.datasetService.getDatasetConfiguration(datasetUri);
-          if (datasetConfig) {
-            if (datasetConfig.demonstrationSpecimenIdentifierRegex) {
-              datasetSpecimenIdRe =
-                datasetConfig.demonstrationSpecimenIdentifierRegex;
-            }
-            if (datasetConfig.demonstrationCaseIdentifierRegex) {
-              datasetCaseIdRe = datasetConfig.demonstrationCaseIdentifierRegex;
-            }
-          }
-        } else throw Error("AG demo loader used with unknown dataset URI");
-        break;
+        throw new Error(
+          "This was written for AG demo but we have a better work around now"
+        );
       default:
         throw new Error("Unknown loader type");
     }
 
-    // Grab all ManifestType object from current edgedb
+    // Grab all ManifestType object from current edgedb (i.e all the artifacts for a dataset but represented
+    // as they would have been in their original manifest)
     const dbs3ManifestTypeObjectDict =
       await this.getDbManifestObjectListByDatasetId(datasetId);
 
@@ -809,18 +814,46 @@ export class S3IndexApplicationService {
       // A patientId link array that will be used for linking new patient record
       const patientIdAndDataCaseIdLinkingArray = [];
 
-      for (const index in groupedManifestByFiletype) {
-        // Parsing for easy access
-        const patientIdArray = groupedManifestByFiletype[index].patientIdArray;
-        const specimenId = groupedManifestByFiletype[index].specimenId;
-        const filenameId = groupedManifestByFiletype[index].filenameId;
+      const phenopacketsFound: { [patientId: string]: PhenopacketIndividiual } =
+        {};
 
-        // Artifact insertion query
-        const artifactInsertionQuery = this.insertArtifact(
-          groupedManifestByFiletype[index]
-        );
+      for (const groupedManifest of groupedManifestByFiletype) {
+        // Parsing for easy access
+        const patientIdArray = groupedManifest.patientIdArray;
+        const specimenId = groupedManifest.specimenId;
+        const filenameId = groupedManifest.filenameId;
+
+        if (groupedManifest.filetype === "PHENOPACKET_INDIVIDUAL") {
+          // we can load the content of the phenopacket and use it to inform other aspects
+          const phenopacketString = await readObjectToStringFromS3Url(
+            this.s3Client,
+            groupedManifest.filenameId
+          );
+          const phenopacket: PhenopacketIndividiual =
+            JSON.parse(phenopacketString);
+
+          if (patientIdArray.length === 1) {
+            phenopacketsFound[patientIdArray[0]] = phenopacket;
+          } else {
+            this.logger.info(
+              `Found individual phenopacket but they matched to multiple patient ids`
+            );
+          }
+
+          continue;
+        } else if (groupedManifest.filetype === "PHENOPACKET_FAMILY") {
+          throw new Error("Phenopacket family is not yet supported");
+        } else if (groupedManifest.filetype === "PHENOPACKET_COHORT") {
+          throw new Error("Phenopacket cohort is not yet supported");
+        }
+
+        // get the edgedb query to insert this
+        const artifactInsertionQuery = this.insertArtifact(groupedManifest);
+
         if (!artifactInsertionQuery) {
-          console.error("Invalid artifact Type!");
+          console.error(
+            `File base ${groupedManifest.filenameId} was not of a type for insertion as an artifact so it has been skipped`
+          );
           continue;
         }
 
@@ -878,13 +911,16 @@ export class S3IndexApplicationService {
           /**
            * (3) Insert: Artifact, datasetSpecimen, DatasetPatient
            */
-          const sexAtBirth: dataset.SexAtBirthType | null = patientId.endsWith(
-            "_pat"
-          )
-            ? "male"
-            : patientId.endsWith("_mat")
-            ? "female"
-            : null;
+          const sexAtBirth: dataset.SexAtBirthType | null = null;
+
+          // we have disabled the sex detection here (that used filenames) - and instead rely on
+          // their being phenopackets for each individual
+          // patientId.endsWith(
+          //  "_pat"
+          //            ? "male"
+          //  : patientId.endsWith("_mat")
+          //  ? "female"
+          //  : null;
 
           datasetPatientUUID = (
             await insertNewDatasetPatient({
@@ -920,7 +956,7 @@ export class S3IndexApplicationService {
               datasetPatientUUID,
             }).run(this.edgeDbClient);
 
-            // Continue to to the next patientId, to make brand new patient has a link to their cases
+            // Continue to the next patientId, to make brand new patient has a link to their cases
             continue;
           }
 
@@ -948,6 +984,34 @@ export class S3IndexApplicationService {
         datasetUri,
         patientIdAndDataCaseIdLinkingArray
       );
+
+      // by now everyone that should exist does exist... so we can take all the phenopackets we have
+      // encountered and use them to set sex
+      for (const [patientId, phenopacket] of Object.entries(
+        phenopacketsFound
+      )) {
+        const datasetPatient =
+          await selectDatasetPatientByExternalIdAndDatasetUriQuery({
+            exId: patientId,
+            datasetUri: datasetUri,
+          }).run(this.edgeDbClient);
+
+        if (datasetPatient) {
+          // this is just for a simple mapping of sex - obviously once we get to more complex phenotypes
+          // we'll need to put some sort of proper mapping engine thing here
+          if (phenopacket?.subject?.sex?.toString() === "MALE")
+            await updateDatasetPatientSex({
+              datasetPatientUuid: datasetPatient.id,
+              sexAtBirth: "male",
+            }).run(this.edgeDbClient);
+
+          if (phenopacket?.subject?.sex?.toString() === "FEMALE")
+            await updateDatasetPatientSex({
+              datasetPatientUuid: datasetPatient.id,
+              sexAtBirth: "female",
+            }).run(this.edgeDbClient);
+        }
+      }
     }
 
     const now = new Date();

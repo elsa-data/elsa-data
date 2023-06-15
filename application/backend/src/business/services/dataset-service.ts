@@ -74,17 +74,6 @@ export class DatasetService {
     return null;
   }
 
-  public getDemonstrationStoragePrefixFromDatasetUri(datasetUri: string) {
-    for (const d of this.settings.datasets) {
-      if (d.uri === datasetUri) {
-        if (d.loader === "australian-genomics-directories-demo")
-          return d.demonstrationStoragePrefix;
-      }
-    }
-
-    return null;
-  }
-
   /**
    *
    * @param releaseKey
@@ -152,15 +141,18 @@ export class DatasetService {
     );
   }
 
-  public async get({
-    user,
-    datasetUri,
-    includeDeletedFile,
-  }: {
-    user: AuthenticatedUser;
-    datasetUri: string;
-    includeDeletedFile: boolean;
-  }): Promise<DatasetDeepType | null> {
+  /**
+   * Get the main details of a specific dataset as loaded into the database (cases etc).
+   *
+   * @param user
+   * @param datasetUri
+   * @param includeDeletedFile
+   */
+  public async get(
+    user: AuthenticatedUser,
+    datasetUri: string,
+    includeDeletedFile: boolean
+  ): Promise<DatasetDeepType | null> {
     const datasetCasesQuery = await getDatasetCasesByUri(this.edgeDbClient, {
       userDbId: user.dbId,
       datasetUri: datasetUri,
@@ -195,37 +187,6 @@ export class DatasetService {
       bamCount: datasetStorageStatsQuery.bamCount,
       cramCount: datasetStorageStatsQuery.cramCount,
     };
-  }
-
-  /**
-   * Get all the cases for a dataset
-   *
-   * @param user
-   * @param datasetId
-   * @param limit
-   * @param offset
-   */
-  public async getCases(
-    user: AuthenticatedUser,
-    datasetId: string,
-    limit: number,
-    offset: number
-  ): Promise<any | null> {
-    return await e
-      .select(e.dataset.DatasetCase, (dsc) => ({
-        ...e.dataset.DatasetCase["*"],
-        externalIdentifiers: true,
-        patients: {
-          externalIdentifiers: true,
-          specimens: {
-            externalIdentifiers: true,
-          },
-        },
-        filter: e.op(dsc.dataset.id, "=", e.uuid(datasetId)),
-        limit: e.int32(limit),
-        offset: e.int32(offset),
-      }))
-      .run(this.edgeDbClient);
   }
 
   /**

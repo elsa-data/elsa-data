@@ -17,7 +17,7 @@ export async function commandAddScenario(
 
   switch (scenario) {
     case 1:
-      insertScenario1(dc);
+      await insertScenario1(dc);
       break;
 
     default:
