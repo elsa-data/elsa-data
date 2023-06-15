@@ -25,7 +25,7 @@ export class ReleaseParticipationExistError extends Base7807Error {
     super(
       "The participant email exist in the current release",
       400,
-      `The release with id '${releaseKey}' have the existing participant email '${email}'`
+      `The release with id '${releaseKey}' already has an existing participant email '${email}'`
     );
   }
 }
