@@ -45,11 +45,7 @@ it("basic summary get all works", async () => {
 });
 
 it("basic summary get all has correct summary values for family dataset", async () => {
-  const result = await datasetService.get({
-    user: adminUser,
-    includeDeletedFile: true,
-    datasetUri: TENG_URI,
-  });
+  const result = await datasetService.get(adminUser, TENG_URI, true);
 
   expect(result).not.toBeNull();
   assert(result);

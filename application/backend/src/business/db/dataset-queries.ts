@@ -182,3 +182,17 @@ export const insertNewDatasetPatient = ({
       filter_single: e.op(ds.id, "=", e.uuid(datasetSpecimenUUID)),
     })),
   });
+
+export const updateDatasetPatientSex = ({
+  datasetPatientUuid,
+  sexAtBirth,
+}: {
+  datasetPatientUuid: string;
+  sexAtBirth: "male" | "female";
+}) =>
+  e.update(e.dataset.DatasetPatient, (dp) => ({
+    filter_single: e.op(dp.id, "=", e.uuid(datasetPatientUuid)),
+    set: {
+      sexAtBirth: sexAtBirth,
+    },
+  }));

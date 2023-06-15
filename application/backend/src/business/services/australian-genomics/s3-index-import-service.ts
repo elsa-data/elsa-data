@@ -41,6 +41,7 @@ import {
   selectDatasetIdByDatasetUri,
   selectDatasetPatientByExternalIdAndDatasetUriQuery,
   selectDatasetSpecimen,
+  updateDatasetPatientSex,
 } from "../../db/dataset-queries";
 import { DatasetService } from "../dataset-service";
 import { dataset } from "../../../../dbschema/interfaces";
@@ -738,54 +739,15 @@ export class S3IndexApplicationService {
 
         break;
       case "australian-genomics-directories-demo":
-        const fakeS3UrlPrefix =
-          this.datasetService.getDemonstrationStoragePrefixFromDatasetUri(
-            datasetUri
-          );
-
-        if (!fakeS3UrlPrefix) {
-          console.warn("No demonstration storage prefix");
-          return;
-        }
-
-        if (datasetUri === TENG_URI) {
-          const phases = await australianGenomicsDirectoriesDemoLoaderFor10G(
-            fakeS3UrlPrefix
-          );
-
-          s3MetadataList = phases[1].files;
-
-          s3ManifestTypeObjectDict =
-            await this.getS3ManifestObjectListFromAllObjectList(
-              s3MetadataList,
-              async (url: string) => {
-                if (!(url in phases[1].fileContent))
-                  throw new Error(
-                    `Demo dataset loader missing manifest content at ${url}`
-                  );
-
-                return phases[1].fileContent[url];
-              }
-            );
-
-          const datasetConfig: any =
-            this.datasetService.getDatasetConfiguration(datasetUri);
-          if (datasetConfig) {
-            if (datasetConfig.demonstrationSpecimenIdentifierRegex) {
-              datasetSpecimenIdRe =
-                datasetConfig.demonstrationSpecimenIdentifierRegex;
-            }
-            if (datasetConfig.demonstrationCaseIdentifierRegex) {
-              datasetCaseIdRe = datasetConfig.demonstrationCaseIdentifierRegex;
-            }
-          }
-        } else throw Error("AG demo loader used with unknown dataset URI");
-        break;
+        throw new Error(
+          "This was written for AG demo but we have a better work around now"
+        );
       default:
         throw new Error("Unknown loader type");
     }
 
-    // Grab all ManifestType object from current edgedb
+    // Grab all ManifestType object from current edgedb (i.e all the artifacts for a dataset but represented
+    // as they would have been in their original manifest)
     const dbs3ManifestTypeObjectDict =
       await this.getDbManifestObjectListByDatasetId(datasetId);
 
@@ -852,6 +814,9 @@ export class S3IndexApplicationService {
       // A patientId link array that will be used for linking new patient record
       const patientIdAndDataCaseIdLinkingArray = [];
 
+      const phenopacketsFound: { [patientId: string]: PhenopacketIndividiual } =
+        {};
+
       for (const groupedManifest of groupedManifestByFiletype) {
         // Parsing for easy access
         const patientIdArray = groupedManifest.patientIdArray;
@@ -867,9 +832,13 @@ export class S3IndexApplicationService {
           const phenopacket: PhenopacketIndividiual =
             JSON.parse(phenopacketString);
 
-          this.logger.info(
-            `Found individual phenopacket stating ${patientIdArray} has sex ${phenopacket?.subject?.sex}`
-          );
+          if (patientIdArray.length === 1) {
+            phenopacketsFound[patientIdArray[0]] = phenopacket;
+          } else {
+            this.logger.info(
+              `Found individual phenopacket but they matched to multiple patient ids`
+            );
+          }
 
           continue;
         } else if (groupedManifest.filetype === "PHENOPACKET_FAMILY") {
@@ -942,13 +911,16 @@ export class S3IndexApplicationService {
           /**
            * (3) Insert: Artifact, datasetSpecimen, DatasetPatient
            */
-          const sexAtBirth: dataset.SexAtBirthType | null = patientId.endsWith(
-            "_pat"
-          )
-            ? "male"
-            : patientId.endsWith("_mat")
-            ? "female"
-            : null;
+          const sexAtBirth: dataset.SexAtBirthType | null = null;
+
+          // we have disabled the sex detection here (that used filenames) - and instead rely on
+          // their being phenopackets for each individual
+          // patientId.endsWith(
+          //  "_pat"
+          //            ? "male"
+          //  : patientId.endsWith("_mat")
+          //  ? "female"
+          //  : null;
 
           datasetPatientUUID = (
             await insertNewDatasetPatient({
@@ -984,7 +956,7 @@ export class S3IndexApplicationService {
               datasetPatientUUID,
             }).run(this.edgeDbClient);
 
-            // Continue to to the next patientId, to make brand new patient has a link to their cases
+            // Continue to the next patientId, to make brand new patient has a link to their cases
             continue;
           }
 
@@ -1012,6 +984,34 @@ export class S3IndexApplicationService {
         datasetUri,
         patientIdAndDataCaseIdLinkingArray
       );
+
+      // by now everyone that should exist does exist... so we can take all the phenopackets we have
+      // encountered and use them to set sex
+      for (const [patientId, phenopacket] of Object.entries(
+        phenopacketsFound
+      )) {
+        const datasetPatient =
+          await selectDatasetPatientByExternalIdAndDatasetUriQuery({
+            exId: patientId,
+            datasetUri: datasetUri,
+          }).run(this.edgeDbClient);
+
+        if (datasetPatient) {
+          // this is just for a simple mapping of sex - obviously once we get to more complex phenotypes
+          // we'll need to put some sort of proper mapping engine thing here
+          if (phenopacket?.subject?.sex?.toString() === "MALE")
+            await updateDatasetPatientSex({
+              datasetPatientUuid: datasetPatient.id,
+              sexAtBirth: "male",
+            }).run(this.edgeDbClient);
+
+          if (phenopacket?.subject?.sex?.toString() === "FEMALE")
+            await updateDatasetPatientSex({
+              datasetPatientUuid: datasetPatient.id,
+              sexAtBirth: "female",
+            }).run(this.edgeDbClient);
+        }
+      }
     }
 
     const now = new Date();

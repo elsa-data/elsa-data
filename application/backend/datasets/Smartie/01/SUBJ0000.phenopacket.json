@@ -1,7 +1,7 @@
 {
   "id": "226d6a28-564f-4fcb-88ae-b2868a7251fc",
   "subject": {
-    "id": "MM0000",
+    "id": "SUBJ0000",
     "timeAtLastEncounter": {
       "age": {
         "iso8601duration": "P10Y"
