@@ -24,9 +24,9 @@ select {
           then 
         .uri desc
     offset
-        <int16>$offset
+       <optional int64>$offset
     limit
-        <int16>$limit
+       <optional int64>$limit
   ),
   total := count(dataset)
 }
