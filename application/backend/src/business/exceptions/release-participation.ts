@@ -10,12 +10,22 @@ export class ReleaseParticipationPermissionError extends Base7807Error {
   }
 }
 
-export class ReleaseParticipationUuidNotFoundError extends Base7807Error {
-  constructor(releaseKey: string, participantUuid: string) {
+export class ReleaseParticipationNotFoundError extends Base7807Error {
+  constructor(releaseKey: string, email: string) {
     super(
-      "The no participant UUID found in this release",
+      "The participant email is not found in this release",
       400,
-      `The release with id '${releaseKey}' do not have participant UUID '${participantUuid}'`
+      `The release with id '${releaseKey}' do not have participant email '${email}'`
+    );
+  }
+}
+
+export class ReleaseParticipationExistError extends Base7807Error {
+  constructor(releaseKey: string, email: string) {
+    super(
+      "The participant email exist in the current release",
+      400,
+      `The release with id '${releaseKey}' have the existing participant email '${email}'`
     );
   }
 }

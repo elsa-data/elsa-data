@@ -33,7 +33,7 @@ export const releaseParticipantRouter = router({
         calculateOffset(page, pageSize)
       );
     }),
-  addOrEditParticipant: internalProcedure
+  addParticipant: internalProcedure
     .input(
       z.object({
         releaseKey: inputReleaseKey,
@@ -45,7 +45,27 @@ export const releaseParticipantRouter = router({
       const { user } = ctx;
       const { releaseKey, email, role } = input;
 
-      return ctx.releaseParticipantService.addOrEditParticipant(
+      return ctx.releaseParticipantService.addParticipant(
+        user,
+        releaseKey,
+        email,
+        role
+      );
+    }),
+
+  editParticipant: internalProcedure
+    .input(
+      z.object({
+        releaseKey: inputReleaseKey,
+        email: z.string(),
+        role: z.enum(ReleaseParticipantRoleConst),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey, email, role } = input;
+
+      return ctx.releaseParticipantService.editParticipant(
         user,
         releaseKey,
         email,
@@ -57,17 +77,17 @@ export const releaseParticipantRouter = router({
     .input(
       z.object({
         releaseKey: inputReleaseKey,
-        participantUuid: z.string(),
+        email: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
-      const { releaseKey, participantUuid } = input;
+      const { releaseKey, email } = input;
 
       return ctx.releaseParticipantService.removeParticipant(
         user,
         releaseKey,
-        participantUuid
+        email
       );
     }),
 });

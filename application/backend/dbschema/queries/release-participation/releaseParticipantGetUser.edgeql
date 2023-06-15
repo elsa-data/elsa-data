@@ -14,7 +14,7 @@ with
     filter (
       .releaseParticipant.releaseKey =  <str>$releaseKey 
         and 
-      .id = <uuid>$participantUuid
+      .email = <str>$email
       )
   ),
 
@@ -29,7 +29,7 @@ with
     filter (
       .futureReleaseParticipant.releaseKey =  <str>$releaseKey
         and
-      .id = <uuid>$participantUuid
+      .email = <str>$email
     )
   )
 

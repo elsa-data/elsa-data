@@ -7,6 +7,8 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import {
   releaseParticipantAddPotentialUser,
   releaseParticipantAddUser,
+  releaseParticipantEditPotentialUser,
+  releaseParticipantEditUser,
   releaseParticipantGetAll,
   releaseParticipantGetUser,
   releaseParticipantRemovePotentialUser,
@@ -14,7 +16,8 @@ import {
 } from "../../../dbschema/queries";
 import {
   ReleaseParticipationPermissionError,
-  ReleaseParticipationUuidNotFoundError,
+  ReleaseParticipationNotFoundError,
+  ReleaseParticipationExistError,
 } from "../exceptions/release-participation";
 import {
   singlePotentialUserByEmailQuery,
@@ -114,7 +117,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
    * @param newUserEmail the email address of the user to add
    * @param newUserRole the role the user should have in the release
    */
-  public async addOrEditParticipant(
+  public async addParticipant(
     user: AuthenticatedUser,
     releaseKey: string,
     newUserEmail: string,
@@ -125,12 +128,26 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       releaseKey
     );
 
+    // We need to get the participant Role (to check if it is <= than the authenticated user role)
+    const participantReleaseInfo = await releaseParticipantGetUser(
+      this.edgeDbClient,
+      {
+        email: newUserEmail,
+        releaseKey: releaseKey,
+      }
+    );
+
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Add Participant",
       async () => {
-        // User must have the right to add/edit release participants role
+        // Check if this new user exist in Db (and should not allowed to add)
+        if (participantReleaseInfo) {
+          throw new ReleaseParticipationExistError(releaseKey, newUserEmail);
+        }
+
+        // User must have the right to add release participants role
         const roleAllowed = this.getParticipantRoleOption(userRole);
         const isAllowedToEditNewRole = roleAllowed?.includes(newUserRole);
 
@@ -205,10 +222,111 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     );
   }
 
+  /**
+   * Edit a participant in to a release where the participant is identified by email
+   * address
+   *
+   * @param user the user performing the operation
+   * @param releaseKey the release to change the participation of
+   * @param existingEmail the email address of the existing email
+   * @param newUserRole the role the user should have in the release
+   */
+  public async editParticipant(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    existingEmail: string,
+    newUserRole: ReleaseParticipantRoleType
+  ) {
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
+
+    // We need to get the participant Role (to check if it is <= than the authenticated user role)
+    const participantReleaseInfo = await releaseParticipantGetUser(
+      this.edgeDbClient,
+      {
+        email: existingEmail,
+        releaseKey: releaseKey,
+      }
+    );
+
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+      user,
+      releaseKey,
+      "Edit Participant",
+      async () => {
+        // Check if this new user exist in Db (and should not allowed to add)
+        if (!participantReleaseInfo) {
+          throw new ReleaseParticipationNotFoundError(
+            releaseKey,
+            existingEmail
+          );
+        }
+
+        // User must have the right to add release participants role
+        const roleAllowed = this.getParticipantRoleOption(userRole);
+        const isAllowedToEditNewRole = roleAllowed?.includes(newUserRole);
+
+        // User shouldn't able to change their own role
+        const isOwnUser = user.email === existingEmail;
+
+        if (!isAllowedToEditNewRole || isOwnUser) {
+          throw new ReleaseParticipationPermissionError(releaseKey);
+        }
+      },
+      async (tx, a) => {
+        // a data structure we pass to the next stage AND which we put into the Audit log details
+        const auditLogDetail = (id: string) => ({
+          email: existingEmail,
+          role: newUserRole,
+          affectedUserOrPotentialUser: id,
+        });
+
+        // we have two scenarios to handle
+        // (1) the target user has logged in
+        // (2) the target user has not logged in but exist already as a PotentialUser
+
+        // (1)
+        const dbUser = await singleUserByEmailQuery.run(tx, {
+          email: existingEmail,
+        });
+
+        if (dbUser) {
+          await releaseParticipantEditUser(tx, {
+            email: existingEmail,
+            releaseKey: releaseKey,
+            role: newUserRole,
+          });
+          return auditLogDetail(dbUser.id);
+        }
+
+        // (2)
+        const potentialDbUser = await singlePotentialUserByEmailQuery.run(tx, {
+          email: existingEmail,
+        });
+
+        if (potentialDbUser) {
+          await releaseParticipantEditPotentialUser(tx, {
+            email: existingEmail,
+            releaseKey: releaseKey,
+            role: newUserRole,
+          });
+          return auditLogDetail(potentialDbUser.id);
+        }
+
+        throw new Error("Existing User failed to modify");
+      },
+      async (a) => {
+        return a.affectedUserOrPotentialUser;
+      }
+    );
+  }
+
   public async removeParticipant(
     user: AuthenticatedUser,
     releaseKey: string,
-    participantUuid: string
+    email: string
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
@@ -218,25 +336,25 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     const participantReleaseInfo = await releaseParticipantGetUser(
       this.edgeDbClient,
       {
-        participantUuid: participantUuid,
+        email: email,
         releaseKey: releaseKey,
       }
     );
-    const participantRole =
-      participantReleaseInfo?.role as ReleaseParticipantRoleType;
-    if (!participantRole) {
-      throw new ReleaseParticipationUuidNotFoundError(
-        releaseKey,
-        participantUuid
-      );
-    }
+
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Remove Participant",
       async () => {
-        const roleAllowed = this.getParticipantRoleOption(userRole);
+        // Check if participant exist
+        if (!participantReleaseInfo) {
+          throw new ReleaseParticipationNotFoundError(releaseKey, email);
+        }
 
+        // Check if current user role is authorised to remove
+        const participantRole =
+          participantReleaseInfo.role as ReleaseParticipantRoleType;
+        const roleAllowed = this.getParticipantRoleOption(userRole);
         if (!roleAllowed?.includes(participantRole)) {
           throw new ReleaseParticipationPermissionError(releaseKey);
         }
@@ -247,12 +365,12 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         // WE COULD DECIDE TO DO THIS DIFFERENTLY (?)
 
         const userRemoved = await releaseParticipantRemoveUser(tx, {
-          userUuid: participantUuid,
+          email: email,
           releaseKey: releaseKey,
         });
         const potentialUserRemoved =
           await releaseParticipantRemovePotentialUser(tx, {
-            potentialUserUuid: participantUuid,
+            email: email,
             releaseKey: releaseKey,
           });
 

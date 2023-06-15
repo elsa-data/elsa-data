@@ -39,6 +39,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
 
   const afterMutateForceRefresh = () => {
     utils.releaseParticipant.getParticipants.invalidate();
+    setNewUserEmail("");
+    setNewUserRole("Member");
   };
 
   const releaseParticipantsQuery =
@@ -56,7 +58,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const participantDataList = releaseParticipantsQuery.data?.data;
 
   const addParticipantMutate =
-    trpc.releaseParticipant.addOrEditParticipant.useMutation({
+    trpc.releaseParticipant.addParticipant.useMutation({
       onSuccess: afterMutateForceRefresh,
     });
 
@@ -118,8 +120,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
               </p>
               <p>
                 To modify existing users, you can use the edit button to altered
-                their permission for this release. Alternatively, you could
-                reinvite them with the new role. You will not able to update
+                their permission for this release. You will not able to update
                 your own role.
               </p>
               <p>
@@ -204,12 +205,11 @@ export const ReleasesUserManagementPage: React.FC = () => {
                   </tr>
                 }
                 tableBody={participantDataList.map(
-                  (row: ReleaseParticipantType) => {
+                  (row: ReleaseParticipantType, idx) => {
                     const {
-                      id: participantUuid,
+                      role,
                       email,
                       displayName,
-                      role: currentRole,
                       subjectId,
                       lastLogin,
                       canBeRemoved,
@@ -217,7 +217,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                     } = row;
 
                     return (
-                      <tr key={participantUuid}>
+                      <tr key={idx}>
                         <td>
                           <div>
                             <div
@@ -232,7 +232,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                           </div>
                         </td>
                         <td>
-                          <div>{currentRole}</div>
+                          <div>{role}</div>
                         </td>
                         <td>
                           {lastLogin
@@ -241,7 +241,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                         </td>
                         <td className="text-right">
                           <>
-                            {currentRole && canBeRoleAltered && (
+                            {role && canBeRoleAltered && (
                               <EditParticipantRoleDialog
                                 releaseKey={releaseKey}
                                 releaseParticipant={row}
@@ -265,7 +265,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                                   onConfirm={() => {
                                     removeParticipantMutate.mutate({
                                       releaseKey,
-                                      participantUuid: participantUuid,
+                                      email: email,
                                     });
                                   }}
                                 />
