@@ -30,6 +30,8 @@ export const DacRemsSchema = z.object({
   botKey: z.string().brand<Sensitive>(),
 });
 
+export type DacRemsType = z.infer<typeof DacRemsSchema>;
+
 export const DacRedcapAustralianGenomicsCsvSchema = z.object({
   id: z.string().regex(ID_REGEX, ID_REGEX_MSG).describe(ID_DESCRIBE),
   type: z.literal("redcap-australian-genomics-csv").describe(TYPE_DESCRIBE),

@@ -7,7 +7,7 @@ import { ReleaseService } from "../release-service";
 import { DacType } from "../../../config/config-schema-dac";
 import _ from "lodash";
 import { RemsService } from "./rems-service";
-import { RedcapImportApplicationService } from "../australian-genomics/redcap-import-application-service";
+import { RedcapImportApplicationService } from "./redcap-import-application-service";
 
 /**
  * A service wrapping all our upstream Data Access Committee
@@ -49,8 +49,8 @@ export class DacService {
    * as that doesn't need a detectNew operation).
    *
    * @param user
-   * @param id
-   * @param body
+   * @param id the DAC id
+   * @param body arbitrary data dependent on DAC type
    */
   public async detectNew(user: AuthenticatedUser, id: string, body: any) {
     for (const d of this.settings.dacs) {
@@ -64,7 +64,7 @@ export class DacService {
             );
           case "rems":
             // WIP need to pass in data and fix rems service
-            return await this.remsService.detectNewReleases(user);
+            return await this.remsService.detectNewReleases(user, d);
           case "manual":
             throw new Error(
               "detectNew should never be called on a 'manual' DAC"
@@ -76,6 +76,14 @@ export class DacService {
     }
   }
 
+  /**
+   * Handles the clever dispatching to the correct DAC service the call to actually
+   * make a new release.
+   *
+   * @param user
+   * @param id the DAC id
+   * @param body arbitrary data dependent on DAC type
+   */
   public async createNew(user: AuthenticatedUser, id: string, body: any) {
     for (const d of this.settings.dacs) {
       if (d.id === id) {
@@ -88,7 +96,7 @@ export class DacService {
             );
           case "rems":
             // WIP need to pass in data and fix rems service
-            return await this.remsService.startNewRelease(user, body);
+            return await this.remsService.startNewRelease(user, d, body);
           case "manual":
             return await this.releaseService.new(user, body);
           default:

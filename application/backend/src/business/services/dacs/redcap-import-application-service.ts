@@ -262,9 +262,7 @@ This application was sourced from Australian Genomics Redcap on ${format(
 
 The identifier for this application in the source is
 
-~~~
 ${csvAsJson.daf_num}
-~~~
 
 ### Summary
 
@@ -287,7 +285,9 @@ ${csvAsJson.application_date_hid}
 ${csvAsJson.daf_applicant_name} (${csvAsJson.daf_applicant_email})
 ${csvAsJson.daf_applicant_institution}
 
-### Involved (at time of application - this can subsequently be altered - see User Management)
+### Involved
+ 
+NOTE: at time of application - this can subsequently be altered - see User Management
 
 ${roleTable.join("\n")}
 

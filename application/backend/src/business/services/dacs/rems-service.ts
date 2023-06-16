@@ -12,6 +12,10 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseService } from "../release-service";
+import {
+  DacRedcapAustralianGenomicsCsvType,
+  DacRemsType,
+} from "../../../config/config-schema-dac";
 
 @injectable()
 export class RemsService {
@@ -43,7 +47,8 @@ export class RemsService {
   }
 
   public async detectNewReleases(
-    user: AuthenticatedUser
+    user: AuthenticatedUser,
+    dacConfiguration: DacRemsType
   ): Promise<RemsApprovedApplicationType[]> {
     this.releaseService.checkIsAllowedViewReleases(user);
 
@@ -98,11 +103,9 @@ export class RemsService {
 
   public async startNewRelease(
     user: AuthenticatedUser,
+    dacConfiguration: DacRemsType,
     remsId: number
   ): Promise<string> {
-    // TODO: this uses a config REMS setting when the UI implies we ask the user for the REMS to use
-    // need to decide if this is user configurable or only admin configurable
-
     this.releaseService.checkIsAllowedCreateReleases(user);
 
     /*const appData = await axios.get(
