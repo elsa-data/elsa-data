@@ -1,4 +1,3 @@
-import { AG_CARDIAC_FLAGSHIP } from "@umccr/elsa-types";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
@@ -176,7 +175,7 @@ const DATASET_3: DataSet = {
 export async function insertCARDIAC() {
   await e
     .insert(e.dataset.Dataset, {
-      uri: AG_CARDIAC_FLAGSHIP,
+      uri: "urn:fdc:cardiac-flagship",
       description: "Australian Genomics cardiac flagship",
       externalIdentifiers: makeSystemlessIdentifierArray("CARDIAC"),
       cases: e.set(

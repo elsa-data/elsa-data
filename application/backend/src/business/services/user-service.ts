@@ -59,6 +59,18 @@ export class UserService {
   }
 
   /**
+   * Get the current database details of the given user.
+   *
+   * @param user
+   */
+  public async getUser(user: AuthenticatedUser) {
+    return await e.select(e.permission.User, (u) => ({
+      ...e.permission.User["*"],
+      filter_single: { id: user.dbId },
+    }));
+  }
+
+  /**
    * Get all the users. Users always have permission to make this call, but
    * will be limited in which records are returned to them if they do
    * not have broader permissions than an ordinary user.

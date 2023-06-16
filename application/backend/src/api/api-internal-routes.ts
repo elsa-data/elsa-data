@@ -10,7 +10,6 @@ import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { isEmpty, isString, trim } from "lodash";
 import { auditEventRoutes } from "./routes/internal/audit-event-routes";
-import { dacRoutes } from "./routes/internal/dac-routes";
 import { ElsaSettings } from "../config/elsa-settings";
 import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
 import { userRoutes } from "./routes/internal/user-routes";
@@ -137,8 +136,6 @@ export const apiInternalRoutes = async (
 
     fastify.register(auditEventRoutes, routeOpts);
     fastify.register(releaseRoutes, routeOpts);
-    fastify.register(dacRoutes, routeOpts);
-
     fastify.register(userRoutes, routeOpts);
   });
 };

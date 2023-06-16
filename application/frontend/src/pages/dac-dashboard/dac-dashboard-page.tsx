@@ -37,7 +37,6 @@ export const DacDashboardPage: React.FC = () => {
                 return <ManualDacTriggerDiv key={idx} dacId={a.id} />;
 
               case "redcap-australian-genomics-csv":
-              case "redcap-australian-genomics-demo-csv":
                 return (
                   <AustralianGenomicsDacRedcapTriggerDiv
                     key={idx}
