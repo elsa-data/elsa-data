@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 import { isNil, isNumber } from "lodash";
 import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../../../components/tables";
+import { trpc } from "../../../helpers/trpc";
 
 type Props = {
   showing: boolean;
   cancelShowing: () => void;
+  dacId: string;
   possibleApplications: AustraliaGenomicsDacRedcap[];
   initialError?: string;
 };
@@ -18,6 +19,7 @@ type Props = {
 export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   showing,
   cancelShowing,
+  dacId,
   possibleApplications,
   initialError,
 }) => {
@@ -31,11 +33,13 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   const [lastError, setLastError] = useState<string | undefined>();
   useEffect(() => setLastError(initialError), [initialError]);
 
-  const createNewReleaseMutate = useMutation((d: AustraliaGenomicsDacRedcap) =>
+  const createNewReleaseMutate = trpc.dac.createNew.useMutation();
+
+  /*const createNewReleaseMutatex = useMutation((d: AustraliaGenomicsDacRedcap) =>
     axios
       .post<string>(`/api/dac/redcap/new`, d)
       .then((response) => response.data)
-  );
+  ); */
 
   const closeDialog = () => {
     setSelectedRowIndex(null);
@@ -54,25 +58,25 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
             <p className="text-sm text-gray-500">
               This is a list of applications in CSV extracted from the
               Australian Genomics Redcap instance that are
-              <ul className="list-disc text-sm text-gray-500">
-                <li>not already associated with an Elsa Data release</li>
-                <li>
-                  involve a resource that corresponds to a dataset under Elsa
-                  Data control
-                </li>
-              </ul>
             </p>
+            <ul className="list-disc text-sm text-gray-500">
+              <li>not already associated with an Elsa Data release</li>
+              <li>
+                involve a resource that corresponds to a dataset under Elsa Data
+                control
+              </li>
+            </ul>
           </div>
           <Table
             additionalTableClassName="mt-4 text-sm"
             tableBody={
               possibleApplications &&
               possibleApplications.map((pa, paIndex) => (
-                <tr>
+                <tr key={paIndex}>
                   <td>
                     <input
                       type="radio"
-                      checked={selectedRowIndex === paIndex}
+                      defaultChecked={selectedRowIndex === paIndex}
                       onClick={() => {
                         // clear any previous errors
                         setLastError(undefined);
@@ -99,7 +103,10 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
             onClick={() => {
               if (isNumber(selectedRowIndex))
                 createNewReleaseMutate.mutate(
-                  possibleApplications[selectedRowIndex],
+                  {
+                    dacId: dacId,
+                    dacData: possibleApplications[selectedRowIndex],
+                  },
                   {
                     onSuccess: (newReleaseKey) => {
                       // invalidate the keys so that going to the dashboard will be refreshed
@@ -107,7 +114,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                         .invalidateQueries(REACT_QUERY_RELEASE_KEYS.all)
                         .then(() => {
                           // bounce us to the details page for the release we just made
-                          navigate(`/releases/${newReleaseKey}`);
+                          navigate(`/releases/${newReleaseKey}/detail`);
                         });
 
                       // now close the dialog

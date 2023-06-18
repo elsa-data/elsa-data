@@ -1,12 +1,11 @@
 import React, { useCallback, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
-import { partial } from "lodash";
-import { FileRejection, useDropzone } from "react-dropzone";
+import { DropEvent, FileRejection, useDropzone } from "react-dropzone";
 import Papa, { ParseResult } from "papaparse";
-import axios from "axios";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
+import { trpc } from "../../../helpers/trpc";
 
 const GENERIC_ERR_MSG = "Something went wrong.";
 
@@ -57,53 +56,6 @@ function formatError(
   showingRedcapDialogSetter(true);
 }
 
-async function onDropCallback<T extends File>(
-  showingRedcapDialogSetter: (b: boolean) => void,
-  possibleApplicationsSetter: (d: AustraliaGenomicsDacRedcap[]) => void,
-  parseErrorSetter: (s: string | undefined) => void,
-  acceptedFiles: T[],
-  fileRejections: FileRejection[]
-) {
-  possibleApplicationsSetter([]);
-  parseErrorSetter(undefined);
-
-  if (fileRejections.length > 0) {
-    formatError(
-      errorMessage(fileRejections),
-      parseErrorSetter,
-      showingRedcapDialogSetter
-    );
-    return;
-  }
-
-  const parseCsvPromises = acceptedFiles.map((f) => parseCsv<T>(f));
-  const parsedPromises =
-    (await Promise.all(parseCsvPromises).catch((_: any) => {
-      formatError(
-        `${GENERIC_ERR_MSG} while parsing CSV file`,
-        parseErrorSetter,
-        showingRedcapDialogSetter
-      );
-    })) ?? undefined;
-
-  if (!parsedPromises) {
-    return;
-  }
-
-  const parsed = parsedPromises.flat();
-
-  await axios
-    .post<AustraliaGenomicsDacRedcap[]>(`/api/dac/redcap/possible`, parsed)
-    .then((response) => response.data)
-    .then((d) => {
-      possibleApplicationsSetter(d);
-      showingRedcapDialogSetter(true);
-    })
-    .catch((err: any) => {
-      formatError(err, parseErrorSetter, showingRedcapDialogSetter);
-    });
-}
-
 type Props = {
   dacId: string;
 };
@@ -112,18 +64,61 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
   dacId,
 }) => {
   const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
+
   const [possibleApplications, setPossibleApplications] = useState<
     AustraliaGenomicsDacRedcap[]
   >([]);
+
   const [parseError, setParseError] = useState<string | undefined>(undefined);
 
+  const detectQuery = trpc.dac.detectNew.useMutation({
+    onSuccess: (d) => {
+      setPossibleApplications(d as any);
+      setShowingRedcapDialog(true);
+    },
+    onError: (err) => {
+      formatError(err, setParseError, setShowingRedcapDialog);
+    },
+  });
+
   const onDrop = useCallback(
-    partial(
-      onDropCallback,
-      setShowingRedcapDialog,
-      setPossibleApplications,
-      setParseError
-    ),
+    (
+      acceptedFiles: File[],
+      filesRejected: FileRejection[],
+      event: DropEvent
+    ) => {
+      setPossibleApplications([]);
+      setParseError(undefined);
+
+      if (filesRejected.length > 0) {
+        formatError(
+          errorMessage(filesRejected),
+          setParseError,
+          setShowingRedcapDialog
+        );
+        return;
+      }
+
+      if (acceptedFiles.length === 0 || acceptedFiles.length > 1) {
+        formatError(errorMessage([]), setParseError, setShowingRedcapDialog);
+        return;
+      }
+
+      parseCsv(acceptedFiles[0])
+        .then((parsed) => {
+          detectQuery.mutate({
+            dacId: dacId,
+            dacData: parsed,
+          });
+        })
+        .catch((e) => {
+          formatError(
+            `${GENERIC_ERR_MSG} while parsing CSV file`,
+            setParseError,
+            setShowingRedcapDialog
+          );
+        });
+    },
     []
   );
 
@@ -131,10 +126,12 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
     formatError(err, setParseError, setShowingRedcapDialog);
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    onDrop: onDrop,
     onError,
     accept: { "text/csv": [] },
+    // I don't think we are prepared in a UI sense to handle multiple CSVs so lets not allow
+    multiple: false,
   });
 
   return (
@@ -149,6 +146,7 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
       <AustralianGenomicsDacDialog
         showing={showingRedcapDialog}
         cancelShowing={() => setShowingRedcapDialog(false)}
+        dacId={dacId}
         possibleApplications={possibleApplications}
         initialError={parseError}
       />

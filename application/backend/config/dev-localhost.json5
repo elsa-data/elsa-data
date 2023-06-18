@@ -37,6 +37,16 @@
       description: "Manual",
     },
     {
+      id: "redcap-ag",
+      type: "redcap-australian-genomics-csv",
+      description: "Australian Genomics Redcap DAC",
+      identifierSystem: "https://redcap.mcri.edu.au",
+      csvFlagshipDatasets: {
+        daf_flagships_rd___1: "urn:example:elsa-data-demo-dataset-smartie",
+        daf_flagships_rd___2: "urn:fdc:umccr.org:2022:dataset/10g",
+      },
+    },
+    {
       id: "rems-hgpp",
       type: "rems",
       description: "REMS HGPP (demo)",
@@ -52,11 +62,6 @@
       url: "https://fake-rems.dev.umccr.org",
       botUser: "not",
       botKey: "arealkey",
-    },
-    {
-      id: "redcap-ag",
-      type: "redcap-australian-genomics-csv",
-      description: "Australian Genomics Redcap DAC",
     },
   ],
   aws: {
