@@ -174,26 +174,36 @@ export const SharerControlBox: React.FC<Props> = ({
               >
                 <div className="form-control flex-grow lg:w-3/4">
                   <label className="label">
-                    <span className="label-text">Destination for Copy Out</span>
+                    <span className="label-text">
+                      Destination for Copy Out (this field can be edited by the
+                      researchers as well)
+                    </span>
                   </label>
                   <input
                     type="text"
-                    className="input-bordered input input-disabled w-full"
+                    className="input-bordered input w-full"
                     defaultValue={
                       releaseData.dataSharingCopyOut?.destinationLocation
                     }
+                    disabled={releasePatchMutate.isLoading}
+                    onBlur={(e) =>
+                      releasePatchMutate.mutate({
+                        op: "replace",
+                        path: "/dataSharingConfiguration/copyOutDestinationLocation",
+                        value: e.target.value,
+                      })
+                    }
                   />
                 </div>
-                <div className="form-control flex-grow lg:w-3/4">
+                <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Start a Background Copy</span>
-                    <span className="label-text-alt">
-                      (running time can be hours)
+                    <span className="label-text">
+                      Start a Background Copy (can run for hours)
                     </span>
                   </label>
                   <button
                     type="button"
-                    className="btn-normal"
+                    className="btn-normal w-fit"
                     onClick={() => {
                       copyOutMutate.mutate({
                         releaseKey: releaseKey,
@@ -203,6 +213,7 @@ export const SharerControlBox: React.FC<Props> = ({
                       });
                     }}
                     disabled={
+                      !releaseData.activation ||
                       copyOutMutate.isLoading ||
                       !!copyOutSetting.notWorkingReason
                     }

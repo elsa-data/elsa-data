@@ -13,12 +13,17 @@ export function createMockSecretsManager() {
     .onAnyCommand()
     .rejects("All calls to Secrets Manager need to be mocked");
 
+  const fakeEntries = {
+    accessKeyId: "AAAABBCCDDEEEEFFFGGG", // pragma: allowlist secret
+    secretAccessKey: "andherewouldbearandomstringthatactuallysignsthings", // pragma: allowlist secret
+  };
+
   secretsManagerClientMock
     .on(GetSecretValueCommand, {
       SecretId: MOCK_AWS_OBJECT_SIGNING_SECRET_NAME, // pragma: allowlist secret
     })
     .resolves({
-      SecretString: "abc", // pragma: allowlist secret
+      SecretString: JSON.stringify(fakeEntries), // pragma: allowlist secret
     });
 
   return secretsManagerClientMock;
