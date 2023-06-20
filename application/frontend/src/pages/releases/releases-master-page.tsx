@@ -103,7 +103,7 @@ export const ReleasesMasterPage: React.FC = () => {
                   key={`${lastUpdated} ${lastUpdatedSubjectId}`}
                   icon={<TriangleExclamationIcon />}
                   additionalAlertClassName={"alert-warning"}
-                  description={`Someone else has recently edited this release (at ${formatFromNowTime(
+                  description={`Someone else has recently edited this release (${formatFromNowTime(
                     lastUpdated
                   )}). Consider if what you are intending to do will interfere with their editing.`}
                 />

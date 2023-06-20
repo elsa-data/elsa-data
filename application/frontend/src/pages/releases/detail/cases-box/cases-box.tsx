@@ -29,6 +29,9 @@ type Props = {
 
   // whether the table is being viewed by someone with permissions to edit it
   isEditable: boolean;
+
+  // whether to show any consent iconography/popups
+  showConsent: boolean;
 };
 
 export const CasesBox: React.FC<Props> = ({
@@ -37,6 +40,7 @@ export const CasesBox: React.FC<Props> = ({
   datasetMap,
   pageSize,
   isEditable,
+  showConsent,
 }) => {
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
     useState<boolean>(true);
@@ -142,6 +146,26 @@ export const CasesBox: React.FC<Props> = ({
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
 
+  // if they cannot edit cases AND the release is not activated then effectively there is nothing
+  // they can do yet... so we give them some instructions informing them of that
+  if (!releaseIsActivated && !isEditable)
+    return (
+      <Box heading="Cases">
+        <div className="prose max-w-none">
+          <p>
+            Once a release is created - the data owners and stewards must go
+            through a process of setting up the exact set of data which will be
+            shared with you.
+          </p>
+          <p>
+            That process is currently not completed - you will receive an email
+            informing you when the process is completed at which point you will
+            be able to access the data.
+          </p>
+        </div>
+      </Box>
+    );
+
   return (
     <Box heading="Cases" applyIsLockedStyle={releaseIsActivated}>
       <div className={classNames("flex flex-col")}>
@@ -225,16 +249,15 @@ export const CasesBox: React.FC<Props> = ({
                           "w-40"
                         )}
                       >
-                        {row.externalId}{" "}
-                        {row.customConsent && (
-                          <>
-                            {" - "}
+                        <div className="flex space-x-1">
+                          <span>{row.externalId}</span>
+                          {showConsent && row.customConsent && (
                             <ConsentPopup
                               releaseKey={releaseKey}
                               nodeId={row.id}
                             />
-                          </>
-                        )}
+                          )}
+                        </div>
                       </td>
                       <td
                         className={classNames(
@@ -251,6 +274,7 @@ export const CasesBox: React.FC<Props> = ({
                           onCheckboxClicked={() =>
                             setIsSelectAllIndeterminate(true)
                           }
+                          showConsent={showConsent}
                         />
                       </td>
                       {/* if we only have one dataset - then we don't show this column at all */}

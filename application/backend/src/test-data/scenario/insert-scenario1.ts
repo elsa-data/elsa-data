@@ -37,6 +37,7 @@ import {
   SMARTIE_URI,
 } from "../dataset/insert-test-data-smartie";
 import { addMocksForInMemory } from "../aws-mock/add-s3-mocks-for-in-memory";
+import { insertRelease6 } from "../release/insert-test-data-release6";
 
 const BLANK_DB_PROPS = [
   { id: "10M", uri: "urn:fdc:umccr.org:2022:dataset/10m" },
@@ -165,6 +166,12 @@ export async function insertScenario1(dc: DependencyContainer) {
     releaseManager: [manager],
     releaseMember: [member],
     datasetUris: [ten_f_uri],
+  });
+  const r6 = await insertRelease6(dc, {
+    releaseAdministrator: [administrator],
+    releaseManager: [manager],
+    releaseMember: [member],
+    datasetUris: [SMARTIE_URI],
   });
 
   logger.debug(
