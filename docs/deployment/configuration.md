@@ -41,7 +41,7 @@ An example meta config source string is
 
 `file('base') file('dev-common') file('dev-localhost') file('datasets') osx-keychain('elsa-data')`
 
-Read below for futher details of how each configuration source works.
+Read below for further details of how each configuration source works.
 
 #### File `file('name')`
 
@@ -130,4 +130,7 @@ After all file loading is complete - individual settings can be replaced if a co
 environment variable exists. All environment variables for Elsa Data start with
 `ELSA_DATA_CONFIG_`.
 
-e.g. `ELSA_DATA_CONFIG_PORT` -> will set the port.
+e.g. `ELSA_DATA_CONFIG_HTTP_HOSTING_PORT` -> will set the port the HTTP server listens at.
+
+See `config-load-environment-variable-map.ts` for the definitive list of
+these variables.
