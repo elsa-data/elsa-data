@@ -18,6 +18,7 @@ import {
 import { join } from "node:path";
 import { addMocksForInMemory } from "./test-data/aws-mock/add-s3-mocks-for-in-memory";
 import { australianGenomicsDirectoryStructureFor10G } from "./test-data/dataset/insert-test-data-10g";
+import { createMockSteps } from "./test-data/aws-mock/steps";
 
 /**
  * Register factories for all the AWS clients we might need.
@@ -67,10 +68,12 @@ export async function bootstrapDependencyInjectionAwsClients(
 
     const serviceDiscoverClient = createMockServiceDiscovery();
     const secretsManagerClient = createMockSecretsManager();
+    const sfnClient = createMockSteps();
 
     dc.register("S3Client", { useValue: s3MockClient });
     dc.register("ServiceDiscoveryClient", { useValue: serviceDiscoverClient });
     dc.register("SecretsManagerClient", { useValue: secretsManagerClient });
+    dc.register("SFNClient", { useValue: sfnClient });
   } else {
     dc.register<S3Client>("S3Client", {
       useFactory: () => new S3Client(awsClientConfig),
@@ -82,7 +85,13 @@ export async function bootstrapDependencyInjectionAwsClients(
     dc.register("SecretsManagerClient", {
       useFactory: () => new SecretsManagerClient(awsClientConfig),
     });
+    dc.register<SFNClient>("SFNClient", {
+      useFactory: () => new SFNClient(awsClientConfig),
+    });
   }
+
+  // OK below here are clients we have not yet mocked for running locally in dev (if you hit any
+  // part of elsa that uses these it will obviously fail unless in AWS)
 
   dc.register<CloudTrailClient>("CloudTrailClient", {
     useFactory: () => new CloudTrailClient(awsClientConfig),
@@ -94,10 +103,6 @@ export async function bootstrapDependencyInjectionAwsClients(
 
   dc.register<SESClient>("SESClient", {
     useFactory: () => new SESClient(awsClientConfig),
-  });
-
-  dc.register<SFNClient>("SFNClient", {
-    useFactory: () => new SFNClient(awsClientConfig),
   });
 
   dc.register<STSClient>("STSClient", {

@@ -1,5 +1,6 @@
 import {
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
+  FEATURE_RELEASE_CONSENT_DISPLAY,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
 import { ElsaSettings } from "./config/elsa-settings";
@@ -26,31 +27,10 @@ export async function getFeaturesEnabled(
 
     if (settings.feature.enableDataEgressViewer)
       featuresEnabled.add(FEATURE_RELEASE_DATA_EGRESS_VIEWER);
+
+    if (settings.feature.enableConsentDisplay)
+      featuresEnabled.add(FEATURE_RELEASE_CONSENT_DISPLAY);
   }
-
-  // we want to do our feature discovery in a container context that goes away afterwards
-  /*
-  WE HAVE PIVOTED TO DOING SHARER DISCOVERY VIA AN EXPLICIT CONFIGURATION
-  'sharer'. All of this discovery is performed on each login by a user.
-
-  const childContainer = container.createChildContainer();
-
-  if (await childContainer.resolve(AwsEnabledService).isEnabled()) {
-    featuresEnabled.add(FEATURE_DATA_SHARING_AWS_ACCESS_POINT);
-
-    // some AWS services need AWS + other things installed too
-    if (
-      await childContainer.resolve(AwsDiscoveryService).locateCopyOutStepsArn()
-    ) {
-      featuresEnabled.add(FEATURE_DATA_SHARING_COPY_OUT);
-    }
-  }
-
-  if (await childContainer.resolve(GcpEnabledService).isEnabled()) {
-    featuresEnabled.add(FEATURE_DATA_SHARING_GCP_IAM);
-  }
-
-  childContainer.dispose(); */
 
   return featuresEnabled;
 }

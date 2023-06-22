@@ -39,20 +39,26 @@ export const SharerControlBox: React.FC<Props> = ({
   const releasePatchMutate = useMutation(
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // this is not as efficient as our PATCH operation actually returns the new release data
-      // BUT we currently have BOTH trpc and react query so lets decide on one first
-      onSuccess: async (result: ReleaseTypeLocal) =>
-        utils.releaseRouter.getSpecificRelease.invalidate({
+      onSuccess: async () =>
+        await utils.releaseRouter.getSpecificRelease.invalidate({
           releaseKey: releaseKey,
         }),
     }
   );
 
-  const copyOutMutate = trpc.releaseJob.startCopyOut.useMutation({
-    onSettled: async () =>
-      utils.releaseRouter.getSpecificRelease.invalidate({
+  const copyOutTriggerMutate = trpc.releaseJob.startCopyOut.useMutation({
+    onSuccess: async () => {
+      await utils.releaseRouter.getSpecificRelease.invalidate({
         releaseKey: releaseKey,
-      }),
+      });
+      // once we have started the copy out and invalidated the release state - our next render
+      // will show a progress bar at the top... we take them there to show it occurring
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+    },
   });
 
   type SharingConfigurationAccordionProps = {
@@ -174,28 +180,44 @@ export const SharerControlBox: React.FC<Props> = ({
               >
                 <div className="form-control flex-grow lg:w-3/4">
                   <label className="label">
-                    <span className="label-text">Destination for Copy Out</span>
+                    <span className="label-text">
+                      Destination for Copy Out{" "}
+                      <span className="text-xs">
+                        (NOTE this field can be edited by the researchers as
+                        well)
+                      </span>
+                    </span>
                   </label>
                   <input
                     type="text"
-                    className="input-bordered input input-disabled w-full"
+                    className="input-bordered input w-full"
                     defaultValue={
                       releaseData.dataSharingCopyOut?.destinationLocation
                     }
+                    disabled={releasePatchMutate.isLoading}
+                    onBlur={(e) =>
+                      releasePatchMutate.mutate({
+                        op: "replace",
+                        path: "/dataSharingConfiguration/copyOutDestinationLocation",
+                        value: e.target.value,
+                      })
+                    }
                   />
                 </div>
-                <div className="form-control flex-grow lg:w-3/4">
+                <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Start a Background Copy</span>
-                    <span className="label-text-alt">
-                      (running time can be hours)
+                    <span className="label-text">
+                      Start a Background Copy{" "}
+                      <span className="text-xs">
+                        (NOTE these jobs can run for hours)
+                      </span>
                     </span>
                   </label>
                   <button
                     type="button"
-                    className="btn-normal"
+                    className="btn-normal w-fit"
                     onClick={() => {
-                      copyOutMutate.mutate({
+                      copyOutTriggerMutate.mutate({
                         releaseKey: releaseKey,
                         destinationBucket:
                           releaseData.dataSharingCopyOut?.destinationLocation ||
@@ -203,7 +225,15 @@ export const SharerControlBox: React.FC<Props> = ({
                       });
                     }}
                     disabled={
-                      copyOutMutate.isLoading ||
+                      // can't be already running a job
+                      !!releaseData.runningJob ||
+                      // must be activated
+                      !releaseData.activation ||
+                      // can't be within our own trigger operation
+                      copyOutTriggerMutate.isLoading ||
+                      // can't be started whilst other fields are being mutated
+                      releasePatchMutate.isLoading ||
+                      // copy out needs to be working as a mechanism
                       !!copyOutSetting.notWorkingReason
                     }
                   >

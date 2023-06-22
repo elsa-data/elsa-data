@@ -34,6 +34,7 @@ export const LoggedInUserConfigRelayProvider: React.FC<{
   const qSettings = {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    refetchOnMount: false,
     retry: false,
     enabled: !!loggedInUser,
   };

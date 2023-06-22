@@ -57,7 +57,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       >
         <div className="container mx-auto w-full px-2">
           <div className="mt-0 w-full items-center justify-between pt-3 pb-3 lg:pb-0">
-            <div className="block flex w-full justify-between lg:hidden">
+            <div className="flex w-full justify-between lg:hidden">
               <button
                 onClick={() => setIsMenuBarOpen((prev: boolean) => !prev)}
                 id="nav-toggle"
@@ -200,7 +200,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
       </nav>
       {/* NAV END */}
 
-      <div className="container mx-auto w-full grow px-2 pt-10 lg:pt-20">
+      <div className="container mx-auto w-full grow px-2 pt-14 lg:pt-24">
         <div className="mt-8 mb-8 w-full leading-normal text-gray-800">
           <ErrorBoundary renderCommonErrors={true}>
             <div className="flex flex-col space-y-4">

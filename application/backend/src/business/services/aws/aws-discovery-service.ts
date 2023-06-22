@@ -23,14 +23,14 @@ export type IAwsDiscoveryService = {
 type CachedLookup = {
   readonly serviceName: string;
 
-  readonly attributeName: string;
+  readonly attributeName: string | undefined;
   readonly attributeSecretName: string | undefined;
 
   lastAnyAttempt?: Date;
   lastSuccessfulAttempt?: Date;
 
   value?: string;
-  secretValue?: string;
+  secretValue?: any;
 };
 
 /**
@@ -57,7 +57,7 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
   }
 
   private copyOutResult: CachedLookup = {
-    serviceName: "ElsaDataCopyOut",
+    serviceName: "CopyOut",
     attributeName: "stateMachineArn",
     attributeSecretName: undefined,
   };
@@ -74,8 +74,8 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
   }
 
   private objectSigningResult: CachedLookup = {
-    serviceName: "ElsaDataObjectSigning",
-    attributeName: "s3AccessKey",
+    serviceName: "ObjectSigning",
+    attributeName: undefined,
     attributeSecretName: "s3AccessKeySecretName", // pragma: allowlist secret
   };
 
@@ -89,16 +89,17 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
     if (
       await this.discoverAttributeValueWithCaching(this.objectSigningResult)
     ) {
-      return [
-        this.objectSigningResult.value!,
-        this.objectSigningResult.secretValue!,
-      ];
+      // the JSON comes back from our secret - the name of the fields in it are set by the
+      // object signing stack. Be sure to keep in sync with below
+      const pair = this.objectSigningResult.secretValue;
+
+      return [pair.accessKeyId, pair.secretAccessKey];
     }
     return undefined;
   }
 
   private beaconLambdaResult: CachedLookup = {
-    serviceName: "ElsaDataBeacon",
+    serviceName: "Beacon",
     attributeName: "lambdaArn",
     attributeSecretName: undefined,
   };
@@ -116,11 +117,12 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
 
   /**
    * Using a special cache data structure, performs rate limited service discovery
-   * of attributes and secrets from cloudmap.
+   * of attributes and secrets from CloudMap.
+   *
    * Return true if the passed in "cl" data structure now has valid values, and false if
    * it does not (i.e. if the lookup was unsuccessful).
    *
-   * @param cl
+   * @param cl the mutable state cached lookup we are performing
    * @returns true if successful lookup (or successful cache lookup), false otherwise
    * @private
    */
@@ -158,8 +160,10 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
 
       for (const i of response.Instances || []) {
         if (i.Attributes) {
-          if (cl.attributeName in i.Attributes) {
-            v1 = i.Attributes[cl.attributeName];
+          if (cl.attributeName) {
+            if (cl.attributeName in i.Attributes) {
+              v1 = i.Attributes[cl.attributeName];
+            }
           }
 
           if (cl.attributeSecretName) {
@@ -170,10 +174,15 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
         }
       }
 
-      if (!v1) throw new Error(`No attribute ${cl.attributeName}`);
+      if (cl.attributeName && !v1)
+        throw new Error(`No attribute ${cl.attributeName}`);
 
       if (cl.attributeSecretName && !v2)
         throw new Error(`No attribute ${cl.attributeSecretName}`);
+
+      if (cl.attributeName) {
+        cl.value = v1;
+      } else cl.value = undefined;
 
       if (cl.attributeSecretName) {
         // we want to look up the secret value
@@ -186,10 +195,9 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
         if (secretResult.SecretString) v2 = secretResult.SecretString;
         else
           throw new Error(`Discovery secret ${v2} did not have string content`);
-      }
 
-      cl.value = v1;
-      cl.secretValue = v2;
+        cl.secretValue = JSON.parse(v2);
+      } else cl.secretValue = undefined;
 
       cl.lastSuccessfulAttempt = new Date();
 
