@@ -16,6 +16,8 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
 import { SharerHtsgetType } from "../../config/config-schema-sharer";
+import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
+import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -305,141 +307,163 @@ export abstract class ReleaseBaseService {
    * @param system the system URI of the entry to add/delete
    * @param code the code value of the entry to add/delete
    * @param removeRatherThanAdd if false then we are asking to add (default), else asking to remove
-   * @returns true if the array was actually altered (i.e. the entry was actually removed or added)
+   * @returns The new ReleaseDetailType after the alteration
    * @private
    */
   protected async alterApplicationCodedArrayEntry(
-    userRole: string,
+    user: AuthenticatedUser,
     releaseKey: string,
     field: CodeArrayFields,
     system: string,
     code: string,
     removeRatherThanAdd: boolean = false
-  ): Promise<boolean> {
+  ): Promise<ReleaseDetailType> {
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    const isRemoveOrAddText = removeRatherThanAdd ? `removing` : `adding`;
+    const actionDescription = `${isRemoveOrAddText} the application coded array (if audit details is false means nothing has changed)`;
+
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
       releaseKey
     );
 
     // we need to get/set the Coded Application all within a transaction context
-    await this.edgeDbClient.transaction(async (tx) => {
-      // get the current coded application
-      const releaseWithAppCoded = await e
-        .select(e.release.Release, (r) => ({
-          applicationCoded: {
-            id: true,
-            studyType: true,
-            countriesInvolved: true,
-            diseasesOfStudy: true,
-          },
-          filter: e.op(r.releaseKey, "=", releaseKey),
-        }))
-        .assert_single()
-        .run(tx);
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+      user,
+      releaseKey,
+      actionDescription,
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
 
-      if (!releaseWithAppCoded)
-        throw new Error(
-          `Release ${releaseKey} that existed just before this code has now disappeared!`
-        );
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+      },
+      async (tx, a) => {
+        // get the current coded application
+        const releaseWithAppCoded = await e
+          .select(e.release.Release, (r) => ({
+            applicationCoded: {
+              id: true,
+              studyType: true,
+              countriesInvolved: true,
+              diseasesOfStudy: true,
+            },
+            filter: e.op(r.releaseKey, "=", releaseKey),
+          }))
+          .assert_single()
+          .run(tx);
 
-      let newArray: { system: string; code: string }[];
+        if (!releaseWithAppCoded)
+          throw new Error(
+            `Release ${releaseKey} that existed just before this code has now disappeared!`
+          );
 
-      if (field === "diseases")
-        newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
-      else if (field === "countries")
-        newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
-      else
-        throw new Error(
-          `Field instruction of ${field} was not a known field for array alteration`
-        );
-
-      const commonFilter = (ac: any) => {
-        return e.op(
-          ac.id,
-          "=",
-          e.uuid(releaseWithAppCoded.applicationCoded.id)
-        );
-      };
-
-      if (removeRatherThanAdd) {
-        const oldLength = newArray.length;
-
-        // we want to remove any entries with the same system/code from our array
-        // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
-        newArray = newArray.filter(
-          (tup) => tup.system !== system || tup.code !== code
-        );
-
-        // nothing to mutate - return false
-        if (newArray.length == oldLength) return false;
+        let newArray: { system: string; code: string }[];
 
         if (field === "diseases")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                diseasesOfStudy: newArray,
-              },
-            }))
-            .run(tx);
+          newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
         else if (field === "countries")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                countriesInvolved: newArray,
-              },
-            }))
-            .run(tx);
+          newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
         else
           throw new Error(
-            `Field instruction of ${field} was not handled in the remove operation`
+            `Field instruction of ${field} was not a known field for array alteration`
           );
-      } else {
-        // only do an insert if the entry is not already present
-        // i.e. set like semantics - but with an ordered array
-        // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
-        if (
-          // if the entry already exists - we can return - nothing to do
-          newArray.findIndex(
-            (tup) => tup.system === system && tup.code === code
-          ) > -1
-        )
-          return false;
 
-        const commonAddition = e.array([
-          e.tuple({ system: system, code: code }),
-        ]);
-
-        if (field === "diseases")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                diseasesOfStudy: e.op(ac.diseasesOfStudy, "++", commonAddition),
-              },
-            }))
-            .run(tx);
-        else if (field === "countries")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                countriesInvolved: e.op(
-                  ac.countriesInvolved,
-                  "++",
-                  commonAddition
-                ),
-              },
-            }))
-            .run(tx);
-        else
-          throw new Error(
-            `Field instruction of ${field} was not handled in the add operation`
+        const commonFilter = (ac: any) => {
+          return e.op(
+            ac.id,
+            "=",
+            e.uuid(releaseWithAppCoded.applicationCoded.id)
           );
-      }
-    });
+        };
 
-    return true;
+        if (removeRatherThanAdd) {
+          const oldLength = newArray.length;
+
+          // we want to remove any entries with the same system/code from our array
+          // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
+          newArray = newArray.filter(
+            (tup) => tup.system !== system || tup.code !== code
+          );
+
+          // nothing to mutate - return false
+          if (newArray.length == oldLength) return false;
+
+          if (field === "diseases")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  diseasesOfStudy: newArray,
+                },
+              }))
+              .run(tx);
+          else if (field === "countries")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  countriesInvolved: newArray,
+                },
+              }))
+              .run(tx);
+          else
+            throw new Error(
+              `Field instruction of ${field} was not handled in the remove operation`
+            );
+        } else {
+          // only do an insert if the entry is not already present
+          // i.e. set like semantics - but with an ordered array
+          // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
+          if (
+            // if the entry already exists - we can return - nothing to do
+            newArray.findIndex(
+              (tup) => tup.system === system && tup.code === code
+            ) > -1
+          )
+            return false;
+
+          const commonAddition = e.array([
+            e.tuple({ system: system, code: code }),
+          ]);
+
+          if (field === "diseases")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  diseasesOfStudy: e.op(
+                    ac.diseasesOfStudy,
+                    "++",
+                    commonAddition
+                  ),
+                },
+              }))
+              .run(tx);
+          else if (field === "countries")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  countriesInvolved: e.op(
+                    ac.countriesInvolved,
+                    "++",
+                    commonAddition
+                  ),
+                },
+              }))
+              .run(tx);
+          else
+            throw new Error(
+              `Field instruction of ${field} was not handled in the add operation`
+            );
+        }
+        return { field, system, code };
+      },
+      async () => await this.getBase(releaseKey, userRole)
+    );
   }
 }
