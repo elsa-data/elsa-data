@@ -19,6 +19,7 @@ import {
 import { AwsAccessPointService } from "../aws/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
+import { Logger } from "pino";
 
 /**
  * A service for performing long-running operations creating new
@@ -27,10 +28,11 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
 @injectable()
 export class JobCloudFormationCreateService extends JobService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
-    @inject(AuditEventService) auditLogService: AuditEventService,
-    @inject(ReleaseService) releaseService: ReleaseService,
-    @inject(SelectService) selectService: SelectService,
+    @inject("Database") readonly edgeDbClient: edgedb.Client,
+    @inject("Logger") readonly logger: Logger,
+    @inject(AuditEventService) readonly auditLogService: AuditEventService,
+    @inject(ReleaseService) readonly releaseService: ReleaseService,
+    @inject(SelectService) readonly selectService: SelectService,
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject(AwsEnabledService)
@@ -179,7 +181,7 @@ export class JobCloudFormationCreateService extends JobService {
       return 0;
     }
 
-    console.log(theStack.StackStatus);
+    this.logger.debug(theStack.StackStatus);
 
     return 0;
   }
