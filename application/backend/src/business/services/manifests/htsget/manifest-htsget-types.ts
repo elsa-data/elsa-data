@@ -37,25 +37,25 @@ export const ManifestCaseSchema = Type.Object({
   patients: Type.Array(ManifestPatientSchema),
 });
 
-export const ManifestRegionRestrictionSchema = Type.Object({
-  // TBD
-  // need to think about what sort of restrictions we want here and how much burden to put on htsget
-  // to calculate them
-  // at the simplest - this would be an array of start/end regions
-  // byGene: Type.Record(Type.String(), Type.Number())
-});
+export const ManifestRegionRestrictionSchema = Type.Array(
+  Type.Object({
+    chromosome: Type.Number(),
+    start: Type.Optional(Type.Number()),
+    end: Type.Optional(Type.Number()),
+  })
+);
 
 export const ManifestReadsFileSchema = Type.Object({
   url: Type.String(),
 
-  restriction: Type.Optional(Type.String()),
+  restrictions: ManifestRegionRestrictionSchema,
 });
 
 export const ManifestVariantsFileSchema = Type.Object({
   url: Type.String(),
   variantSampleId: Type.String(),
 
-  restriction: Type.Optional(Type.String()),
+  restrictions: ManifestRegionRestrictionSchema,
 });
 
 export const ManifestSchema = Type.Object({
@@ -68,10 +68,6 @@ export const ManifestSchema = Type.Object({
   // a dictionary of variants keyed by the htsget {id}
   variants: Type.Record(Type.String(), ManifestVariantsFileSchema),
 
-  // a dictionary of restriction types keyed by arbitrary name/id
-  // TBD
-  restrictions: Type.Record(Type.String(), ManifestRegionRestrictionSchema),
-
   cases: Type.Array(ManifestCaseSchema),
 });
 
@@ -81,6 +77,9 @@ export type ManifestHtsgetReadsFileType = Static<
 >;
 export type ManifestHtsgetVariantsFileType = Static<
   typeof ManifestVariantsFileSchema
+>;
+export type ManifestRegionRestrictionType = Static<
+  typeof ManifestRegionRestrictionSchema
 >;
 
 /**

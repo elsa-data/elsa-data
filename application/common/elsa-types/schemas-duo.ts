@@ -42,11 +42,11 @@ const KnownLimitationCodes = [
 
 const KnownDuoCodes = [...KnownModifierCodes, ...KnownLimitationCodes] as const;
 
-export type KnownModifierCode = typeof KnownModifierCodes[number];
+export type KnownModifierCode = (typeof KnownModifierCodes)[number];
 
-export type KnownLimitationCode = typeof KnownLimitationCodes[number];
+export type KnownLimitationCode = (typeof KnownLimitationCodes)[number];
 
-export type KnownDuoCode = typeof KnownDuoCodes[number];
+export type KnownDuoCode = (typeof KnownDuoCodes)[number];
 
 export const DuoPublicationRequiredSchema = Type.Object({
   code: Type.Literal("DUO:0000019"), // PUB

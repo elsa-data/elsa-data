@@ -109,7 +109,8 @@ export const configZodDefinition = z.object({
         .optional(z.number().int())
         .describe(
           "The amount of time that a htsget manifest remains valid in seconds"
-        ),
+        )
+        .default(600),
       url: z.optional(z.string()).describe("The url for the htsget endpoint"),
     })
   ),
