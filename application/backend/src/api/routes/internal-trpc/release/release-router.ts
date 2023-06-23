@@ -9,6 +9,14 @@ import {
   inputReleaseKeySingle,
 } from "../input-schemas-common";
 
+const htsgetRestriction = z.object({
+  restriction: z.union([
+    z.literal("CongenitalHeartDefect"),
+    z.literal("Autism"),
+    z.literal("Achromatopsia"),
+  ]),
+});
+
 /**
  * RPC for release
  */
@@ -43,6 +51,30 @@ export const releaseRouter = router({
         user,
         releaseKey,
         nodeId
+      );
+    }),
+  applyHtsgetRestriction: internalProcedure
+    .input(inputReleaseKeySingle.merge(htsgetRestriction))
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey, restriction } = input;
+
+      return await ctx.releaseService.applyHtsgetRestriction(
+        user,
+        releaseKey,
+        restriction
+      );
+    }),
+  removeHtsgetRestriction: internalProcedure
+    .input(inputReleaseKeySingle.merge(htsgetRestriction))
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey, restriction } = input;
+
+      return await ctx.releaseService.removeHtsgetRestriction(
+        user,
+        releaseKey,
+        restriction
       );
     }),
 });

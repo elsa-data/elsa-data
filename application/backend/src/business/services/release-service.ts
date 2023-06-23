@@ -721,7 +721,7 @@ ${release.applicantEmailAddresses}
     let info = await this.getBase(releaseKey, userRole);
     if (!info.htsgetRestrictions.includes(restriction)) {
       const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-        this.auditLogService,
+        this.auditEventService,
         this.edgeDbClient,
         user,
         releaseKey,
@@ -736,7 +736,7 @@ ${release.applicantEmailAddresses}
         });
 
         await auditSuccess(
-          this.auditLogService,
+          this.auditEventService,
           tx,
           auditEventId,
           auditEventStart,
@@ -761,7 +761,7 @@ ${release.applicantEmailAddresses}
     let info = await this.getBase(releaseKey, userRole);
     if (info.htsgetRestrictions.includes(restriction)) {
       const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-        this.auditLogService,
+        this.auditEventService,
         this.edgeDbClient,
         user,
         releaseKey,
@@ -776,7 +776,7 @@ ${release.applicantEmailAddresses}
         });
 
         await auditSuccess(
-          this.auditLogService,
+          this.auditEventService,
           tx,
           auditEventId,
           auditEventStart,
