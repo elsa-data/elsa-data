@@ -20,11 +20,6 @@ import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import { releaseGetAllByUser } from "../../../dbschema/queries";
 import { AuditEventService } from "./audit-event-service";
-import {
-  auditFailure,
-  auditReleaseUpdateStart,
-  auditSuccess,
-} from "../../audit-helpers";
 import { Logger } from "pino";
 import { jobAsBadgeLabel } from "./jobs/job-helpers";
 import {
