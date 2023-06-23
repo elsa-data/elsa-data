@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
 import { IsLoadingDiv } from "../../../../components/is-loading-div";
 import { trpc } from "../../../../helpers/trpc";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -49,6 +50,9 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
 
   return (
     <>
+      {releasePatchMutate.isError && (
+        <EagerErrorBoundary error={releasePatchMutate.error} />
+      )}
       <div className="prose flex flex-col">
         <label className="label">
           <span className="label-text">Destination for Copy Out</span>
