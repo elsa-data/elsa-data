@@ -54,7 +54,7 @@ export const AwsAccessPointAccordionContent: React.FC<
       <div className="form-control flex-grow lg:w-3/4">
         <label className="label">
           <span className="label-text">
-            AWS VPC Target
+            Account/VPC Target{" "}
             <span className="text-xs">
               (NOTE additions to this list must be managed by the system
               administrators)
@@ -69,7 +69,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           }
           disabled={props.releasePatchMutator.isLoading}
           onBlur={(e) => {
-            // only attempt a mutate if we think the textbox has changed
+            // only attempt a mutation if we think the textbox has changed
             if (
               e.target.value !=
               props.releaseData.dataSharingCopyOut?.destinationLocation
@@ -92,8 +92,8 @@ export const AwsAccessPointAccordionContent: React.FC<
           onClick={() => {
             accessPointInstallTriggerMutate.mutate({
               releaseKey: props.releaseKey,
-              accounts: [],
-              vpcId: "",
+              accounts: ["12345"],
+              vpcId: "vpc-12312343",
             });
           }}
           disabled={

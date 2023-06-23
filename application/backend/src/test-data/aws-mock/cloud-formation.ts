@@ -23,6 +23,7 @@ export function createMockCloudFormation() {
   // when install is called we want to put us into the installed state - but with a count
   // of X until the stack is "ready"
   cloudFormationClientMock.on(CreateStackCommand).callsFake(() => {
+    console.log("mock:CreateStackCommand");
     currentCount = 0;
     isInstalled = true;
 
