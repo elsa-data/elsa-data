@@ -10,7 +10,7 @@ jobs:
     # run an EdgeDb in the background that will be connected to from our app
     services:
       edgedb:
-        image: edgedb/edgedb:2.7
+        image: edgedb/edgedb:3.0-beta.1
         env:
           EDGEDB_SERVER_SECURITY: insecure_dev_mode
         ports:
@@ -62,6 +62,7 @@ jobs:
       # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
+          cli-version: nightly
           server-dsn: ${{ env.EDGEDB_DSN }}
 
       # get our database schema correct
@@ -75,6 +76,20 @@ jobs:
       # A simple Typescript compile can find some syntax errors
       - name: Typescript compile
         run: npx tsc --noEmit
+        working-directory: application/backend
+
+      # esbuild should succeed and contain no warnings
+      - name: esbuild check
+        run: |
+          output=$(npx node bundle-build.js 2>&1)
+          if [[ $? == 0 ]]; then
+            rm -r server
+            echo "esbuild ran successfully"
+          else
+            echo "esbuild did not succeed"
+            echo "${output}"
+            exit 1
+          fi
         working-directory: application/backend
 
       # db tests run only in the backend and concentrate on validating edgeql queries
@@ -92,6 +107,10 @@ jobs:
       # integration tests run only in the backend and concentrate on auth/http/trpc mechanics (but need frontend files for something to serve as HTML)
       - name: Run integration tests
         run: npm run test:integration
+        working-directory: application/backend
+
+      - name: Run service tests
+        run: npm run test:service
         working-directory: application/backend
 
       # setup a cache explicitly for Playwright dependencies (browser dependencies at the OS level)

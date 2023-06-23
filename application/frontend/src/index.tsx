@@ -12,6 +12,8 @@ import { ErrorBoundary } from "./components/errors";
 import { createRouter } from "./index-router";
 import { TRPCProvider } from "./providers/trpc-provider";
 import { isString } from "lodash";
+import { LoggedInUserConfigRelayProvider } from "./providers/logged-in-user-config-relay-provider";
+import ShowAlert from "./providers/show-alert-provider";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -40,11 +42,14 @@ if (rootElement != null) {
     for (const f of rootElement.dataset.features.split(" ")) {
       if (f.trim().length > 0) fea.add(f.trim());
     }
+  const documentTitle = rootElement.dataset.documentTitle;
+  const brandName = rootElement.dataset.brandName;
+  const brandLogoUriRelative = rootElement.dataset.brandLogoUriRelative;
 
   root.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
-      <ErrorBoundary rethrowError={(_: any) => false}>
+      <ErrorBoundary>
         {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
         <EnvRelayProvider
           version={ver}
@@ -53,14 +58,24 @@ if (rootElement != null) {
           deployedEnvironment={de}
           terminologyFhirUrl={tfu}
           features={fea}
+          documentTitle={documentTitle}
+          brandName={brandName}
+          brandLogoUriRelative={brandLogoUriRelative}
         >
           {/* we use session cookies for auth and use this provider to make them easily available */}
           <CookiesProvider>
-            <LoggedInUserProvider>
-              <TRPCProvider>
-                <RouterProvider router={createRouter(de === "development")} />
-              </TRPCProvider>
-            </LoggedInUserProvider>
+            <ShowAlert>
+              <LoggedInUserProvider>
+                <TRPCProvider>
+                  {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
+                  <LoggedInUserConfigRelayProvider>
+                    <RouterProvider
+                      router={createRouter(de === "development", fea)}
+                    />
+                  </LoggedInUserConfigRelayProvider>
+                </TRPCProvider>
+              </LoggedInUserProvider>
+            </ShowAlert>
           </CookiesProvider>
         </EnvRelayProvider>
       </ErrorBoundary>

@@ -1,9 +1,6 @@
 {
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
-  maxmindDbAssetPath: "asset/maxmind/db/",
   releaseKeyPrefix: "R",
-  htsget: {
-    url: "https://htsget.elsa.dev.umccr.org",
-  },
+  ipLookup: { maxMindDbPath: "config/GeoLite2-City.mmdb" },
 }

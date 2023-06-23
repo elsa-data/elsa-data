@@ -52,11 +52,11 @@ export const DataEgressSummaryBox = ({
         </span>
 
         {/* Toggle to view as summary */}
-        <label className="label cursor-pointer">
+        <label className="label cursor-pointer !py-0">
           <span className="label-text mr-2">Summary View</span>
           <input
             type="checkbox"
-            className="checkbox checkbox-sm"
+            className="checkbox checkbox-xs"
             checked={isSummaryView}
             onChange={() => setIsSummaryView((p) => !p)}
           />
@@ -68,11 +68,7 @@ export const DataEgressSummaryBox = ({
   return (
     <Box heading={<BoxHeader />}>
       {syncReleaseEgressMutate.isError && (
-        <EagerErrorBoundary
-          message={"Something went wrong mutating user's permissions."}
-          error={syncReleaseEgressMutate.error}
-          styling={"bg-red-100"}
-        />
+        <EagerErrorBoundary error={syncReleaseEgressMutate.error} />
       )}
       {isSuccessShow && (
         <div className="alert alert-success flex w-full justify-between shadow-lg">

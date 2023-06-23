@@ -3,7 +3,7 @@ import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import { Storage } from "@google-cloud/storage";
 import { getAllFileRecords } from "./_release-file-list-helper";
 import pLimit, { Limit } from "p-limit";
@@ -20,7 +20,8 @@ export class GcpStorageSharingService {
     @inject("Database") protected edgeDbClient: edgedb.Client,
     @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(GcpEnabledService)
     private readonly gcpEnabledService: GcpEnabledService
   ) {
@@ -144,12 +145,12 @@ export class GcpStorageSharingService {
 
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-      this.edgeDbClient,
       user,
       releaseKey,
       "E",
       "Modified GCP object ACLs for release",
-      now
+      now,
+      this.edgeDbClient
     );
 
     const allFiles = await getAllFileRecords(
@@ -174,24 +175,24 @@ export class GcpStorageSharingService {
       const errorString = e instanceof Error ? e.message : String(e);
 
       await this.auditLogService.completeReleaseAuditEvent(
-        this.edgeDbClient,
         newAuditEventId,
         8,
         now,
         new Date(),
-        { error: errorString }
+        { error: errorString },
+        this.edgeDbClient
       );
 
       throw e;
     }
 
     await this.auditLogService.completeReleaseAuditEvent(
-      this.edgeDbClient,
       newAuditEventId,
       0,
       now,
       new Date(),
-      { numUrls: numberOfFilesModified }
+      { numUrls: numberOfFilesModified },
+      this.edgeDbClient
     );
 
     return numberOfFilesModified;

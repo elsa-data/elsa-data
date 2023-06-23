@@ -8,17 +8,17 @@ import {
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
 import { AwsEnabledService } from "./aws-enabled-service";
-import { AuditLogService } from "../audit-log-service";
+import { AuditEventService } from "../audit-event-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
-import maxmind, { CityResponse, Reader } from "maxmind";
 import { NotAuthorisedSyncDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
   releaseLastUpdatedReset,
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
 } from "../../../../dbschema/queries";
+import { IPLookupService } from "../ip-lookup-service";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -52,11 +52,12 @@ export class AwsCloudTrailLakeService {
     private readonly cloudTrailClient: CloudTrailClient,
     @inject(AwsAccessPointService)
     private readonly awsAccessPointService: AwsAccessPointService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
   ) {}
-  private maxmindLookup: Reader<CityResponse> | undefined = undefined;
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
     const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
@@ -70,7 +71,10 @@ export class AwsCloudTrailLakeService {
   ): Promise<string[] | undefined> {
     const eventDataStoreIdArr: string[] = [];
     for (const dataset of this.settings.datasets) {
-      if (datasetUris.includes(dataset.uri)) {
+      if (
+        datasetUris.includes(dataset.uri) &&
+        dataset.loader === "australian-genomics-directories"
+      ) {
         const id = dataset.aws?.eventDataStoreId;
 
         if (id) eventDataStoreIdArr.push(id);
@@ -193,15 +197,9 @@ export class AwsCloudTrailLakeService {
       const utcDate = new Date(`${trailEvent.eventTime} UTC`);
 
       // Find location based on IP
-      let loc = "-";
-      if (this.maxmindLookup) {
-        const ipInfo = this.maxmindLookup.get(trailEvent.sourceIPAddress);
-        const city = ipInfo?.city?.names.en;
-        const country = ipInfo?.country?.names.en;
-        if (city || country) {
-          loc = `${ipInfo?.city?.names.en}, ${ipInfo?.country?.names.en}`;
-        }
-      }
+      const location = this.ipLookupService.getLocationByIp(
+        trailEvent.sourceIPAddress
+      );
 
       await updateReleaseDataEgress(this.edgeDbClient, {
         releaseKey,
@@ -210,7 +208,7 @@ export class AwsCloudTrailLakeService {
 
         occurredDateTime: utcDate,
         sourceIpAddress: trailEvent.sourceIPAddress,
-        sourceLocation: loc,
+        sourceLocation: location,
 
         egressBytes: parseInt(trailEvent.bytesTransferredOut),
         fileUrl: s3Url,
@@ -358,17 +356,6 @@ export class AwsCloudTrailLakeService {
     const startQueryDate = await this.findCloudTrailStartTimestamp(releaseKey);
     const endQueryDate = new Date();
     const endQueryDateISO = endQueryDate.toISOString();
-
-    // Try initiate maxmind reader if available
-    try {
-      this.maxmindLookup = await maxmind.open<CityResponse>(
-        `${this.settings.maxmindDbAssetPath}/GeoLite2-City.mmdb`
-      );
-    } catch (error) {
-      this.logger.warn(
-        "No maxmind db is configured and therefore will not perform IP city lookup."
-      );
-    }
 
     for (const edsi of eventDataStoreIds) {
       for (const method of Object.keys(CloudTrailQueryType)) {

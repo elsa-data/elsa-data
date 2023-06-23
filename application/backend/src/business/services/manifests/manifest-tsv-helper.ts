@@ -5,6 +5,7 @@ import type {
 import { ManifestMasterType } from "./manifest-master-types";
 import { unpackFileArtifact } from "../_release-file-list-helper";
 import { PresignedUrlService } from "../presigned-url-service";
+import { getFirstSystemSortedExternalIdentifierValue } from "../helpers";
 
 async function manifestBodyElements(
   datasetSpecimen: any,
@@ -32,9 +33,15 @@ async function manifestBodyElements(
   return await Promise.all(
     signedFileArtifacts.map(async (a) => ({
       ...a,
-      caseId: datasetSpecimen.case_.id,
-      patientId: datasetSpecimen.patient.id,
-      specimenId: datasetSpecimen.id,
+      caseId: getFirstSystemSortedExternalIdentifierValue(
+        datasetSpecimen.case_.externalIdentifiers
+      ),
+      patientId: getFirstSystemSortedExternalIdentifierValue(
+        datasetSpecimen.patient.externalIdentifiers
+      ),
+      specimenId: getFirstSystemSortedExternalIdentifierValue(
+        datasetSpecimen.externalIdentifiers
+      ),
     }))
   );
 }

@@ -2,7 +2,6 @@ import React, { SyntheticEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileContract } from "@fortawesome/free-solid-svg-icons";
 
-import Popup from "reactjs-popup";
 import ConsentSummary from "./consent-summary";
 
 type Props = {
@@ -21,16 +20,16 @@ type Props = {
  */
 export const ConsentPopup: React.FC<Props> = (props) => {
   return (
-    <Popup
-      trigger={
+    <div className="dropdown dropdown-hover">
+      <label tabIndex={0}>
         <FontAwesomeIcon className={`cursor-pointer`} icon={faFileContract} />
-      }
-      position={["top center", "bottom right", "bottom left"]}
-      on={["hover", "focus"]}
-    >
-      <div className="rounded border bg-white p-2 text-sm drop-shadow-lg">
+      </label>
+      <ul
+        tabIndex={0}
+        className="dropdown-content !fixed min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg"
+      >
         <ConsentSummary {...props} />
-      </div>
-    </Popup>
+      </ul>
+    </div>
   );
 };

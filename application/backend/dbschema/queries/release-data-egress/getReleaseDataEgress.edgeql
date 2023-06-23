@@ -12,8 +12,8 @@ with
 
 select {
 
-  totalCount := count(allRelatedEgressRecords),
-  results := (
+  total := count(allRelatedEgressRecords),
+  data := (
       select allRelatedEgressRecords {
         auditId,
         occurredDateTime,
@@ -27,8 +27,8 @@ select {
         fileSize,
       }
       offset
-        <int16>$offset
+       <optional int64>$offset
       limit
-        <int16>$limit
+       <optional int64>$limit
   )
 }

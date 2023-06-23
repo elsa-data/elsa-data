@@ -21,6 +21,9 @@ import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { DatasetService } from "../../business/services/dataset-service";
 import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
 import { ReleaseSelectionService } from "../../business/services/release-selection-service";
+import { DacService } from "../../business/services/dacs/dac-service";
+import { AuditEventService } from "../../business/services/audit-event-service";
+import { SharerService } from "../../business/services/sharer-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -124,8 +127,10 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       edgeDbClient,
       settings,
       logger,
+      dacService: ctx.container.resolve(DacService),
       datasetService: ctx.container.resolve(DatasetService),
       userService: userService,
+      auditEventService: ctx.container.resolve(AuditEventService),
       releaseService: ctx.container.resolve(ReleaseService),
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(
@@ -144,6 +149,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
+      sharerService: ctx.container.resolve(SharerService),
       req: ctx.req,
       res: ctx.res,
       ...ctx,

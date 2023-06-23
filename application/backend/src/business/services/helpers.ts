@@ -137,3 +137,20 @@ export async function getReleaseInfo(
     releaseSelectedCasesQuery,
   };
 }
+
+/**
+ * A temporary to pick external identifiers based on the first value stored in the array.
+ * This function will sort (based on the "system" properties) and take the first value from the externalIdentifier array
+ * @param externalIdentifiers
+ * @returns
+ */
+export function getFirstSystemSortedExternalIdentifierValue(
+  externalIdentifiers?: { system: string; value: string }[]
+): string {
+  if (!externalIdentifiers || externalIdentifiers.length == 0) return "";
+
+  externalIdentifiers.sort((a, b) =>
+    a.system.toLowerCase() > b.system.toLowerCase() ? 1 : -1
+  );
+  return externalIdentifiers[0].value;
+}

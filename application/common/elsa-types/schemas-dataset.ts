@@ -61,9 +61,6 @@ export const DatasetSchemaLight = Type.Object({
   totalCaseCount: Type.Number(),
   totalPatientCount: Type.Number(),
   totalSpecimenCount: Type.Number(),
-  totalArtifactCount: Type.Number(),
-  totalArtifactIncludes: Type.String(),
-  totalArtifactSizeBytes: Type.Number(),
 });
 
 export const DatasetArtifactCount = Type.Object({
@@ -76,6 +73,8 @@ export const DatasetArtifactCount = Type.Object({
 
 export const DatasetSchemaNesting = Type.Object({
   cases: Type.Array(DatasetCaseSchema),
+  totalArtifactCount: Type.Number(),
+  totalArtifactSizeBytes: Type.Number(),
 });
 
 export const DatasetSchemaDeep = Type.Intersect([

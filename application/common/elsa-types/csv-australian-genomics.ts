@@ -2,19 +2,12 @@
 // NOTE: we are not doing type/schema checking against this - this is the
 // theoretical output - but be very careful about using values without checking validity
 
-export const AG_CARDIAC_FLAGSHIP =
-  "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac";
-export const AG_MACKENZIES_MISSION_FLAGSHIP =
-  "urn:fdc:australiangenomics.org.au:2022:dataset/mm";
-export const AG_HIDDEN_FLAGSHIP =
-  "urn:fdc:australiangenomics.org.au:2022:dataset/hidden";
-
 /**
  * Return the selected dataset URIs from a given AG Redcap DAC export.
 
  * @param ag the JSON/CSV of a single entry from the export
  */
-export function australianGenomicsDacRedcapToDatasetUris(
+/*export function australianGenomicsDacRedcapToDatasetUris(
   ag: AustraliaGenomicsDacRedcap
 ): string[] {
   const results: string[] = [];
@@ -60,7 +53,7 @@ export function australianGenomicsDacRedcapToDatasetUris(
     throw new Error("Flagship MITO has not yet been assigned an identifier");
 
   return results;
-}
+} */
 
 export function australianGenomicsDacRedcapToDuoString(
   ag: AustraliaGenomicsDacRedcap
@@ -74,7 +67,12 @@ export function australianGenomicsDacRedcapToDuoString(
   if (ag.daf_type_research___other === "1") throw new Error("No Other yet");
   if (ag.daf_type_research___popn_stud === "1")
     throw new Error("No Pop stud yet");
-  throw new Error("No Duo string found!");
+
+  // until we switch on consent matching functionality - we mind as well allow any DUO to be
+  // set as it will be processed by the AG staff and not Elsa Data
+  return "GRU";
+
+  // throw new Error("No Duo string found!");
 }
 
 /**
@@ -108,6 +106,7 @@ export interface AustraliaGenomicsDacRedcap {
   daf_type_research___popn_stud: string; //"1";
 
   // Flagship mapping
+  /* Flagships are mapped via config
   daf_flagships___cancer: string; //"0";
   daf_flagships___genpop: string; //"0";
   daf_flagships___rare: string; //"1";
@@ -127,7 +126,7 @@ export interface AustraliaGenomicsDacRedcap {
   daf_flagships_rd___lung: string; //"1";
   daf_flagships_rd___mito: string; //"1";
   daf_flagships_rd___nmd: string; //"0";
-  daf_flagships_rd___renal: string; //"0";
+  daf_flagships_rd___renal: string; //"0"; */
 
   daf_applicant_email: string; //"meredith@grey.com";
   daf_applicant_institution: string; // "Grey Sloan Hospital";
@@ -200,9 +199,12 @@ export interface AustraliaGenomicsDacRedcap {
   daf_data_house_site18: string; //"";
   daf_data_house_site19: string; //"";
   daf_data_house_site20: string; //"";
+
   daf_data_req: string; //"1";
   daf_data_req_subset: string; //"";
+
   daf_ethics_letter: string; //"ethics.pdf";
+
   daf_file_types___bams: string; //"1";
   daf_file_types___contact: string; //"0";
   daf_file_types___fastq: string; //"1";
@@ -230,6 +232,7 @@ export interface AustraliaGenomicsDacRedcap {
   daf_institution_site18: string; //"";
   daf_institution_site19: string; //"";
   daf_institution_site20: string; //"";
+
   daf_pi_email: string; //"christina@yang.com";
   daf_pi_institution: string; //"";
   daf_pi_institution_same: string; //"Yes";

@@ -8,11 +8,9 @@ test.beforeEach(async ({ page }) => {
 test("A release can be created manually which has selectable cases", async ({
   page,
 }) => {
-  await page.goto("./");
-
   await page.getByRole("listitem").filter({ hasText: "DAC" }).click();
-  await page.getByRole("tab", { name: "Manual Entry" }).click();
-  await page.getByRole("button", { name: "Enter Release Details" }).click();
+  await page.getByRole("tab", { name: "Manual" }).click();
+  await page.getByRole("button", { name: "Create Release Manually" }).click();
 
   await page.getByPlaceholder("Release Title").click();
   await page.getByPlaceholder("Release Title").fill("My release title");
@@ -24,19 +22,10 @@ test("A release can be created manually which has selectable cases", async ({
 
   await page.locator(".css-art2ul-ValueContainer2").click(); // Expand the dataset dropdown
 
-  await page
-    .locator("#datasetUriSelector > div")
-    .getByText("urn:fdc:umccr.org:2022:dataset/10c")
-    .click();
-  await page
-    .locator("#datasetUriSelector > div")
-    .getByText("urn:fdc:umccr.org:2022:dataset/10f")
-    .click();
+  await page.locator("#datasetSelector > div").getByText("10C").click();
+  await page.locator("#datasetSelector > div").getByText("10F").click();
 
-  await page
-    .locator("#datasetUriSelector > div")
-    .getByText("urn:fdc:umccr.org:2022:dataset/10g")
-    .click();
+  await page.locator("#datasetSelector > div").getByText("10G").click();
 
   await page.keyboard.press("Escape");
 
@@ -47,7 +36,7 @@ test("A release can be created manually which has selectable cases", async ({
     .getByPlaceholder("Applicant Email Address(es)")
     .fill("myemail@example.com");
 
-  await page.getByRole("button", { name: "Create" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
 
   // We should now be on the new release's details page. We check that the data
   // we just entered is present in the new release.

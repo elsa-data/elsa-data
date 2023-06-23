@@ -3,10 +3,13 @@ import assert from "assert";
 import { beforeEachCommon } from "./dataset.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { DatasetService } from "../../src/business/services/dataset-service";
-import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
-import { insert10C, TENC_URI } from "../../src/test-data/insert-test-data-10c";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
+import {
+  insert10C,
+  TENC_URI,
+} from "../../src/test-data/dataset/insert-test-data-10c";
 import { Client } from "edgedb";
-import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 
 let edgeDbClient: Client;
 let datasetService: DatasetService;
@@ -28,11 +31,9 @@ beforeAll(async () => {
 beforeEach(async () => {
   ({ adminUser, notAllowedUser } = await beforeEachCommon(testContainer));
 });
-
 it("basic summary get all works", async () => {
-  const result = await datasetService.getSummary({
+  const result = await datasetService.getAll({
     user: adminUser,
-    includeDeletedFile: true,
     limit: 1000,
     offset: 0,
   });
@@ -44,38 +45,25 @@ it("basic summary get all works", async () => {
 });
 
 it("basic summary get all has correct summary values for family dataset", async () => {
-  const result = await datasetService.getSummary({
-    user: adminUser,
-    includeDeletedFile: true,
-    limit: 1000,
-    offset: 0,
-  });
+  const result = await datasetService.get(adminUser, TENG_URI, true);
 
   expect(result).not.toBeNull();
-  assert(result && result.data);
+  assert(result);
 
-  expect(result.data.length).toBe(2);
+  expect(result.uri).toBe(TENG_URI);
+  expect(result.description).toBe("UMCCR 10G");
+  expect(result.totalArtifactCount).toBe(50);
 
-  sortBasedOnUri(result.data);
-  const family = result.data[1];
-
-  expect(family.uri).toBe(TENG_URI);
-  expect(family.description).toBe("UMCCR 10G");
-  expect(family.totalArtifactCount).toBe(50);
-
-  expect(family.totalArtifactIncludes.trim()).toBe("VCF BAM");
-
-  expect(family.totalArtifactSizeBytes).toBe(1097309374141);
-  expect(family.totalCaseCount).toBe(10);
-  expect(family.totalPatientCount).toBe(10);
-  expect(family.totalSpecimenCount).toBe(10);
+  expect(result.totalArtifactSizeBytes).toBe(1097309374141);
+  expect(result.totalCaseCount).toBe(10);
+  expect(result.totalPatientCount).toBe(10);
+  expect(result.totalSpecimenCount).toBe(10);
 });
 
 it("basic summary get all is sorted by dataset URI", async () => {
   {
-    const result = await datasetService.getSummary({
+    const result = await datasetService.getAll({
       user: adminUser,
-      includeDeletedFile: true,
       limit: 1000,
       offset: 0,
     });
@@ -88,12 +76,11 @@ it("basic summary get all is sorted by dataset URI", async () => {
   }
 
   // insert the 10c dataset - which should alphabetically go to the start
-  await insert10C();
+  await insert10C(testContainer);
 
   {
-    const result = await datasetService.getSummary({
+    const result = await datasetService.getAll({
       user: adminUser,
-      includeDeletedFile: true,
       limit: 1000,
       offset: 0,
     });
@@ -105,15 +92,4 @@ it("basic summary get all is sorted by dataset URI", async () => {
     expect(result.data[1].uri).toBe(TENF_URI);
     expect(result.data[2].uri).toBe(TENG_URI);
   }
-});
-
-it("not allowed users cannot get dataset data", async () => {
-  const result = await datasetService.getSummary({
-    user: notAllowedUser,
-    includeDeletedFile: true,
-    limit: 1000,
-    offset: 0,
-  });
-
-  expect(result.data?.length).toBe(0);
 });

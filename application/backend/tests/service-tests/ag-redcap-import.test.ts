@@ -1,16 +1,30 @@
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { RedcapImportApplicationService } from "../../src/business/services/australian-genomics/redcap-import-application-service";
+import { RedcapImportApplicationService } from "../../src/business/services/dacs/redcap-import-application-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { UserService } from "../../src/business/services/user-service";
+import { DacRedcapAustralianGenomicsCsvType } from "../../src/config/config-schema-dac";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
+import { SMARTIE_URI } from "../../src/test-data/dataset/insert-test-data-smartie";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 
 const testContainer = registerTypes();
 
 const edgedbClient = edgedb.createClient();
 
+const configDac: DacRedcapAustralianGenomicsCsvType = {
+  id: "aaa",
+  type: "redcap-australian-genomics-csv",
+  description: "A description",
+  identifierSystem: "https://redcap-server.com",
+  csvFlagshipDatasets: {
+    daf_type_research___hmb: TENF_URI,
+    daf_flagships_rd___nmd: TENG_URI,
+  },
+};
 describe("Redcap Import for AG", () => {
   let allowedAdministratorUser: AuthenticatedUser;
 
@@ -44,7 +58,11 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(allowedAdministratorUser, app);
+    await redcapImportService.startNewRelease(
+      allowedAdministratorUser,
+      configDac,
+      app
+    );
 
     const potentialCount = await e
       .count(e.permission.PotentialUser)
@@ -86,7 +104,11 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(allowedAdministratorUser, app);
+    await redcapImportService.startNewRelease(
+      allowedAdministratorUser,
+      configDac,
+      app
+    );
 
     const potentialCount = await e
       .count(e.permission.PotentialUser)
@@ -114,21 +136,6 @@ const sampleApplication1 = {
   daf_type_research___poa: "0",
   daf_type_research___disease: "0",
   daf_type_research___other: "0",
-  daf_flagships___cancer: "0",
-  daf_flagships___rare: "0",
-  daf_flagships___genpop: "0",
-  daf_flagships_rd___ac: "0",
-  daf_flagships_rd___bm: "0",
-  daf_flagships_rd___cardio: "0",
-  daf_flagships_rd___ee: "0",
-  daf_flagships_rd___hidden: "0",
-  daf_flagships_rd___gi: "0",
-  daf_flagships_rd___id: "0",
-  daf_flagships_rd___lung: "0",
-  daf_flagships_rd___renal: "0",
-  daf_flagships_rd___leuko: "0",
-  daf_flagships_rd___mito: "0",
-  daf_flagships_rd___nmd: "0",
   daf_applicant_title: "",
   daf_applicant_name: "",
   daf_applicant_institution: "",

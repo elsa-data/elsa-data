@@ -1,14 +1,10 @@
 import {
-  FEATURE_DATA_SHARING_AWS_ACCESS_POINT,
-  FEATURE_DATA_SHARING_COPY_OUT,
-  FEATURE_DATA_SHARING_GCP_IAM,
-  FEATURE_DATA_SHARING_HTSGET,
+  FEATURE_RELEASE_COHORT_CONSTRUCTOR,
+  FEATURE_RELEASE_CONSENT_DISPLAY,
+  FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
 import { ElsaSettings } from "./config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
-import { AwsEnabledService } from "./business/services/aws/aws-enabled-service";
-import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
-import { GcpEnabledService } from "./business/services/gcp-enabled-service";
 
 /**
  * Determine on startup which features are enabled in this Elsa Data instance.
@@ -25,27 +21,16 @@ export async function getFeaturesEnabled(
 ): Promise<Set<string>> {
   const featuresEnabled = new Set<string>();
 
-  // we want to do our feature discovery in a container context that goes away afterwards
-  const childContainer = container.createChildContainer();
+  if (settings.feature) {
+    if (settings.feature.enableCohortConstructor)
+      featuresEnabled.add(FEATURE_RELEASE_COHORT_CONSTRUCTOR);
 
-  if (settings.htsget) featuresEnabled.add(FEATURE_DATA_SHARING_HTSGET);
+    if (settings.feature.enableDataEgressViewer)
+      featuresEnabled.add(FEATURE_RELEASE_DATA_EGRESS_VIEWER);
 
-  if (await childContainer.resolve(AwsEnabledService).isEnabled()) {
-    featuresEnabled.add(FEATURE_DATA_SHARING_AWS_ACCESS_POINT);
-
-    // some AWS services need AWS + other things installed too
-    if (
-      await childContainer.resolve(AwsDiscoveryService).locateCopyOutStepsArn()
-    ) {
-      featuresEnabled.add(FEATURE_DATA_SHARING_COPY_OUT);
-    }
+    if (settings.feature.enableConsentDisplay)
+      featuresEnabled.add(FEATURE_RELEASE_CONSENT_DISPLAY);
   }
-
-  if (await childContainer.resolve(GcpEnabledService).isEnabled()) {
-    featuresEnabled.add(FEATURE_DATA_SHARING_GCP_IAM);
-  }
-
-  childContainer.dispose();
 
   return featuresEnabled;
 }

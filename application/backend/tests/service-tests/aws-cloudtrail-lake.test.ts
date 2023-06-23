@@ -4,12 +4,13 @@ import { Client } from "edgedb";
 import { beforeEachCommon } from "./releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../src/config/elsa-settings";
-import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
 import { AwsEnabledServiceMock } from "./client-mocks";
+import { IPLookupService } from "../../src/business/services/ip-lookup-service";
 
 const testContainer = registerTypes();
 
@@ -27,6 +28,9 @@ describe("Test CloudTrailLake Service", () => {
     edgeDbClient = testContainer.resolve("Database");
     cloudTrailClient = testContainer.resolve("CloudTrailClient");
     awsEnabledServiceMock = testContainer.resolve(AwsEnabledServiceMock);
+
+    const ipLookupService = testContainer.resolve(IPLookupService);
+    ipLookupService.setup();
   });
 
   beforeEach(async () => {
@@ -126,8 +130,7 @@ describe("Test CloudTrailLake Service", () => {
       }))
       .run(edgeDbClient);
     expect(deArr.length).toEqual(1);
-    const singleLog = deArr[0];
-    expect(singleLog.egressBytes).toEqual(101);
+    expect(deArr[0].egressBytes).toEqual(101);
   });
 
   it("Test unauthorised attempt ", async () => {

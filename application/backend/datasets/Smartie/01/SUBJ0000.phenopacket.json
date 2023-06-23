@@ -1,0 +1,159 @@
+{
+  "id": "226d6a28-564f-4fcb-88ae-b2868a7251fc",
+  "subject": {
+    "id": "SUBJ0000",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P10Y"
+      }
+    },
+    "sex": "MALE",
+    "karyotypicSex": "UNKNOWN_KARYOTYPE"
+  },
+  "phenotypicFeatures": [
+    {
+      "type": {
+        "id": "HP:0031936",
+        "label": "Delayed ability to walk"
+      },
+      "excluded": false,
+      "onset": {
+        "age": {
+          "iso8601duration": "P1Y6M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0003707",
+        "label": "Calf muscle pseudohypertrophy"
+      },
+      "excluded": false,
+      "onset": {
+        "ontologyClass": {
+          "id": "HP:0011463",
+          "label": "Childhood onset"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0009046",
+        "label": "Difficulty running"
+      },
+      "excluded": false,
+      "onset": {
+        "ontologyClass": {
+          "id": "HP:0011463",
+          "label": "Childhood onset"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0003458",
+        "label": "EMG: myopathic abnormalities"
+      },
+      "excluded": false,
+      "onset": {
+        "age": {
+          "iso8601duration": "P10Y"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0003236",
+        "label": "Elevated circulating creatine kinase concentration"
+      },
+      "excluded": false,
+      "onset": {
+        "age": {
+          "iso8601duration": "P10Y"
+        }
+      }
+    }
+  ],
+  "biosamples": [
+    {
+      "id": "AAA",
+      "individualId": "MM0000",
+      "procedure": {
+        "code": {
+          "id": "snomedct:225098009",
+          "label": "Collection of saliva specimen"
+        }
+      }
+    }
+  ],
+  "files": [
+    {
+      "uri": "./AAA_WGS_L001_R1.fq.gz",
+      "fileAttributes": {
+        "fileFormat": "FASTQ"
+      }
+    },
+    {
+      "uri": "./AAA_WGS_L001_R2.fq.gz",
+      "fileAttributes": {
+        "fileFormat": "FASTQ"
+      }
+    },
+    {
+      "uri": "./AAA.bam",
+      "fileAttributes": {
+        "genomeAssembly": "GRCh38",
+        "fileFormat": "BAM"
+      }
+    },
+    {
+      "uri": "./AAA.vcf.gz",
+      "individualToFileIdentifiers": {
+        "MM0000": "AAA"
+      },
+      "fileAttributes": {
+        "genomeAssembly": "GRCh38",
+        "fileFormat": "VCF"
+      }
+    }
+  ],
+  "metaData": {
+    "created": "2023-06-08T10:41:00Z",
+    "createdBy": "sample generator",
+    "resources": [
+      {
+        "id": "hp",
+        "name": "human phenotype ontology",
+        "url": "http://purl.obolibrary.org/obo/hp.owl",
+        "version": "2022-06-11",
+        "namespacePrefix": "HP",
+        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+      },
+      {
+        "id": "mondo",
+        "name": "Mondo Disease Ontology",
+        "url": "http://purl.obolibrary.org/obo/mondo.obo",
+        "version": "2022-04-04",
+        "namespacePrefix": "MONDO",
+        "iriPrefix": "http://purl.obolibrary.org/obo/MONDO_"
+      },
+      {
+        "id": "snomedct",
+        "name": "SNOMED-CT",
+        "url": "http://snomed.info/sct",
+        "version": "2023",
+        "namespacePrefix": "snomedct",
+        "iriPrefix": "http://purl.obolibrary.org/obo/SNOMED_"
+      },
+      {
+        "id": "geno",
+        "name": "Genotype Ontology",
+        "url": "http://purl.obolibrary.org/obo/geno.owl",
+        "version": "2022-03-05",
+        "namespacePrefix": "GENO",
+        "iriPrefix": "http://purl.obolibrary.org/obo/GENO_"
+      }
+    ],
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}

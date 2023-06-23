@@ -3,7 +3,7 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./user.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { UserService } from "../../src/business/services/user-service";
-import { NotAuthorisedModifyUserManagement } from "../../src/business/exceptions/user";
+import { NotAuthorisedEditUserManagement } from "../../src/business/exceptions/user";
 import { getServices } from "../../src/di-helpers";
 import { ElsaSettings } from "../../src/config/elsa-settings";
 
@@ -119,5 +119,5 @@ it("normal user change attempt change permission", async () => {
       isAllowedOverallAdministratorView: true,
       isAllowedRefreshDatasetIndex: true,
     });
-  }).rejects.toThrow(NotAuthorisedModifyUserManagement);
+  }).rejects.toThrow(NotAuthorisedEditUserManagement);
 });

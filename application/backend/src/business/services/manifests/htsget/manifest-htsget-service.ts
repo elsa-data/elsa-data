@@ -20,9 +20,31 @@ import { inject, injectable } from "tsyringe";
 import { ElsaSettings } from "../../../../config/elsa-settings";
 import { Logger } from "pino";
 import { CloudStorage } from "../../cloud-storage-service";
-import { AuditLogService } from "../../audit-log-service";
+import { AuditEventService } from "../../audit-event-service";
 import { ManifestService } from "../manifest-service";
 import { AwsS3Service } from "../../aws/aws-s3-service";
+import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
+
+export function getHtsgetSetting(
+  settings: ElsaSettings
+): SharerHtsgetType | undefined {
+  // the typescript is not clever enough to work out the resolution of the discriminated union
+  // to our htsget type - so we need to typecast
+  const htsgetSettings: SharerHtsgetType[] = settings.sharers.filter(
+    (s) => s.type === "htsget"
+  ) as SharerHtsgetType[];
+
+  if (htsgetSettings.length < 1) {
+    return undefined;
+  }
+
+  if (htsgetSettings.length > 1)
+    throw new Error(
+      "For the moment we have only enabled the logic for a single htsget sharer"
+    );
+
+  return htsgetSettings[0];
+}
 
 /**
  * A manifest service for htsget.
@@ -35,7 +57,7 @@ export abstract class ManifestHtsgetService {
     private readonly edgeDbClient: edgedb.Client,
     private readonly logger: Logger,
     private readonly cloudStorage: CloudStorage,
-    private readonly auditLogService: AuditLogService,
+    private readonly auditLogService: AuditEventService,
     private readonly manifestService: ManifestService
   ) {}
 
@@ -54,7 +76,7 @@ export abstract class ManifestHtsgetService {
 
   async publishHtsgetManifestAuditFn(
     releaseKey: string,
-    completeAuditFn: (executor: Executor, details: any) => Promise<void>
+    completeAuditFn: (details: any, executor: Executor) => Promise<void>
   ): Promise<ManifestHtsgetResponseType> {
     const activated = await releaseIsActivated(this.edgeDbClient, {
       releaseKey,
@@ -70,9 +92,11 @@ export abstract class ManifestHtsgetService {
       throw new ManifestHtsgetNotAllowed();
     }
 
-    if (this.settings.htsget === undefined || this.settings.aws === undefined) {
-      throw new ManifestHtsgetEndpointNotEnabled();
-    }
+    if (!this.settings.aws) throw new ManifestHtsgetEndpointNotEnabled();
+
+    const htsgetSettings = getHtsgetSetting(this.settings);
+
+    if (!htsgetSettings) throw new ManifestHtsgetEndpointNotEnabled();
 
     const manifestKey = `${ManifestHtsgetService.HTSGET_MANIFESTS_FOLDER}/${releaseKey}`;
 
@@ -92,7 +116,7 @@ export abstract class ManifestHtsgetService {
       if (head.lastModified !== undefined) {
         const addMaxAge = addSeconds(
           head.lastModified,
-          this.settings.htsget.maxAge
+          htsgetSettings.maxAgeInSeconds
         );
         timeDifference = differenceInSeconds(addMaxAge, new Date());
       }
@@ -105,7 +129,10 @@ export abstract class ManifestHtsgetService {
       }
     }
 
-    if (timeDifference <= 0 || timeDifference > this.settings.htsget.maxAge) {
+    if (
+      timeDifference <= 0 ||
+      timeDifference > htsgetSettings.maxAgeInSeconds
+    ) {
       const manifest = await this.getActiveHtsgetManifest(releaseKey);
 
       if (manifest === null) {
@@ -124,7 +151,7 @@ export abstract class ManifestHtsgetService {
         JSON.stringify(manifest)
       );
 
-      timeDifference = this.settings.htsget.maxAge;
+      timeDifference = htsgetSettings.maxAgeInSeconds;
     }
 
     const output = {
@@ -135,7 +162,7 @@ export abstract class ManifestHtsgetService {
       maxAge: timeDifference,
     };
 
-    await completeAuditFn(this.edgeDbClient, output);
+    await completeAuditFn(output, this.edgeDbClient);
 
     this.logger.debug(`htsget manifest with output: ${JSON.stringify(output)}`);
 
@@ -167,7 +194,7 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
     @inject("Database") edgeDbClient: edgedb.Client,
     @inject("Logger") logger: Logger,
     @inject(AwsS3Service) awsS3Service: AwsS3Service,
-    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ManifestService) manifestService: ManifestService
   ) {
     super(

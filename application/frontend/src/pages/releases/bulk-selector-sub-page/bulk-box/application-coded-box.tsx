@@ -175,10 +175,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
             {releasePatchMutate.isError && (
-              <EagerErrorBoundary
-                error={releasePatchMutate.error}
-                styling={"bg-red-100"}
-              />
+              <EagerErrorBoundary error={releasePatchMutate.error} />
             )}
             <RhChecks label={"Assertions"}>
               <RhCheckItem

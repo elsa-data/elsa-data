@@ -7,7 +7,7 @@ import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
-import { getDirectConfig } from "../src/config/config-schema";
+import { getDirectConfig } from "../src/config/config-load";
 import pino, { Logger } from "pino";
 import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
 import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
@@ -15,13 +15,15 @@ import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-se
 import { differenceInHours, minTime } from "date-fns";
 import { getFeaturesEnabled } from "../src/features";
 
-// global settings for DI
-const dc = bootstrapDependencyInjection();
-
 (async () => {
-  const settings = await bootstrapSettings(
-    await getDirectConfig(breeWorkerData.job.worker.workerData)
+  const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
+
+  // global settings for DI
+  const dc = await bootstrapDependencyInjection(
+    rawConfig.devTesting?.mockAwsCloud
   );
+
+  const settings = await bootstrapSettings(rawConfig);
 
   // we create a logger that always has a field telling us that the context was the
   // job handler - allows us to separate out job logs in CloudWatch

@@ -6,7 +6,7 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
-import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
+import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
 import {
   CloudFormationClient,
   DeleteStackCommand,
@@ -24,7 +24,7 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
 export class JobCloudFormationDeleteService extends JobService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
     @inject("CloudFormationClient")
@@ -67,12 +67,12 @@ export class JobCloudFormationDeleteService extends JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Delete S3 Access Point",
-        new Date()
+        new Date(),
+        tx
       );
 
       // we have *no* state information passed to us from previous install jobs.. all we
@@ -236,12 +236,15 @@ export class JobCloudFormationDeleteService extends JobService {
         );
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         cloudFormationDeleteJob.auditEntry.id,
         OUTCOME_SUCCESS,
         cloudFormationDeleteJob.started,
         new Date(),
-        { jobId: jobId, awsStackId: cloudFormationDeleteJob.awsStackId }
+        {
+          jobId: jobId,
+          awsStackId: cloudFormationDeleteJob.awsStackId,
+        },
+        tx
       );
 
       await e

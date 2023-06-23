@@ -6,9 +6,12 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { AuditEventType, RouteValidation } from "@umccr/elsa-types";
-import axios from "axios";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import {
+  ActionCategoryType,
+  AuditEventType,
+  RouteValidation,
+} from "@umccr/elsa-types";
+import { UseQueryResult } from "@tanstack/react-query";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
 import {
@@ -22,27 +25,23 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
+import { Base7807Error, Base7807Response } from "@umccr/elsa-types";
 import {
   formatDuration,
   formatFromNowTime,
   formatLocalDateTime,
 } from "../../helpers/datetime-helper";
-import { ActionCategoryType } from "@umccr/elsa-types";
 import { Table } from "../tables";
 import { ToolTip } from "../tooltip";
-import {
-  BiChevronDown,
-  BiChevronRight,
-  BiChevronUp,
-  BiLinkExternal,
-} from "react-icons/bi";
+import { BiChevronDown, BiChevronRight, BiChevronUp } from "react-icons/bi";
 import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
-import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { DetailsRow } from "./details-row";
+import { FilterElements } from "./filter-elements";
+import { NavigateFunction, useNavigate } from "react-router-dom";
+import { IsLoadingDiv } from "../is-loading-div";
+import { trpc } from "../../helpers/trpc";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
-import { FilterMenu } from "./filter-menu";
-import { Link } from "react-router-dom";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -53,37 +52,53 @@ declare module "@tanstack/table-core" {
 }
 
 /**
+ * The type of audit event table to render based on whether
+ * the table is in the release page or the audit events page.
+ */
+export type Type = "AuditEvent" | { releaseKey: string };
+
+/**
  * Props for audit event table.
  */
 type AuditEventTableProps = {
-  /**
-   * The api path to use when displaying the audit entry table.
-   */
-  path?: string;
-  /**
-   * The id of the component in the path.
-   */
-  id?: string;
   /**
    * Maximum number of items to show in the table.
    */
   pageSize: number;
 
   /**
-   * Whether to include the filter menu
+   * Whether to include the filter menu.
    */
-  filterMenu: boolean;
+  filterElements: boolean;
+
+  /**
+   * Initial state of selected items in filter.
+   */
+  filterElementsInitial: AuditEventUserFilterType[];
+
+  /**
+   * Whether to include a toggle for an admin view of the table.
+   */
+  showAdminView: boolean;
+
+  /**
+   * The type of audit event table to use.
+   */
+  type: Type;
 };
 
 /**
  * The main audit event table component.
  */
 export const AuditEventTable = ({
-  path,
-  id,
   pageSize,
-  filterMenu,
+  filterElements,
+  filterElementsInitial,
+  showAdminView,
+  type,
 }: AuditEventTableProps): JSX.Element => {
+  const navigate = useNavigate();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [currentTotal, setCurrentTotal] = useState(1);
 
@@ -98,11 +113,11 @@ export const AuditEventTable = ({
 
   const [includeEvents, setIncludeEvents] = useState<
     AuditEventUserFilterType[]
-  >(["release"]);
+  >(filterElementsInitial);
 
   const dataQueries = useAllAuditEventQueries(
     currentPage,
-    path === undefined || id === undefined ? "" : `/${path}/${id}`,
+    type,
     includeEvents,
     setCurrentTotal,
     setData,
@@ -129,7 +144,7 @@ export const AuditEventTable = ({
 
   const table = useReactTable({
     data: data,
-    columns: createColumns(),
+    columns: createColumns(navigate),
     state: {
       sorting,
     },
@@ -143,120 +158,121 @@ export const AuditEventTable = ({
     manualSorting: true,
   });
 
-  // TODO Search and filtering functionality, refresh button, download audit log button, refresh loading wheel.
+  if (dataQueries.isFetching) return <IsLoadingDiv />;
+
+  // TODO Search and filtering functionality, refresh button, download audit log button
   return (
     <Box
       heading={
-        <div className="flex grow items-center	justify-between">
-          <div>Audit Logs</div>
-          {filterMenu && (
+        <div className="flex grow items-center justify-between">
+          <div>Audit Events</div>
+        </div>
+      }
+    >
+      <>
+        <div className="flex grow justify-end">
+          {filterElements && (
             <div className="ml-2 flex content-center items-center">
-              <FilterMenu
+              <FilterElements
                 includeEvents={includeEvents}
                 setIncludeEvents={setIncludeEvents}
                 setCurrentPage={setCurrentPage}
                 setCurrentTotal={setCurrentTotal}
                 setUpdateData={setUpdateData}
+                showAdminView={showAdminView}
               />
             </div>
           )}
         </div>
-      }
-      errorMessage={"Something went wrong fetching audit logs."}
-    >
-      <div className="flex flex-col">
-        {error.isSuccess ? (
-          <Table
-            tableHead={table.getHeaderGroups().map((headerGroup) => (
-              <tr
-                key={headerGroup.id}
-                className="whitespace-nowrap border-b border-slate-700 bg-slate-50 text-sm text-gray-500"
-              >
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    onClick={
-                      header.id === "objectId"
-                        ? table.getToggleAllRowsExpandedHandler()
-                        : () => {}
-                    }
-                    className={
-                      !header.column.columnDef.meta?.headerStyling
-                        ? "whitespace-nowrap border-b py-4 text-sm text-gray-600 hover:rounded-lg hover:bg-slate-100"
-                        : header.column.columnDef.meta.headerStyling
-                    }
-                  >
-                    {header.isPlaceholder ? undefined : (
-                      <AuditEventTableHeader header={header} />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-            tableBody={table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <tr
-                  key={row.id}
-                  onClick={() =>
-                    row.getCanExpand() &&
-                    row.getValue("hasDetails") &&
-                    row.toggleExpanded()
-                  }
-                  className="group whitespace-nowrap border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50 hover:rounded-lg hover:bg-slate-100"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td
-                      key={cell.id}
+        <div className="flex flex-col">
+          {error.isSuccess ? (
+            <Table
+              tableHead={table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      onClick={
+                        header.id === "hasDetails"
+                          ? table.getToggleAllRowsExpandedHandler()
+                          : () => {}
+                      }
+                      scope="col"
                       className={
-                        !cell.column.columnDef.meta?.cellStyling
-                          ? "whitespace-nowrap border-b py-4 text-sm text-gray-500"
-                          : cell.column.columnDef.meta?.cellStyling
+                        !header.column.columnDef.meta?.headerStyling
+                          ? "whitespace-nowrap"
+                          : header.column.columnDef.meta?.headerStyling
                       }
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
+                      {header.isPlaceholder ? undefined : (
+                        <AuditEventTableHeader header={header} />
                       )}
-                    </td>
+                    </th>
                   ))}
                 </tr>
-                {row.getIsExpanded() &&
-                  (row.getValue("hasDetails") as boolean) && (
-                    <tr
-                      key={row.original.objectId}
-                      className="border-b border-slate-700 text-sm text-gray-500 odd:bg-white even:bg-slate-50"
-                    >
+              ))}
+              tableBody={table.getRowModel().rows.map((row) => (
+                <Fragment key={row.id}>
+                  <tr
+                    key={row.id}
+                    onClick={() =>
+                      row.getCanExpand() &&
+                      row.getValue("hasDetails") &&
+                      row.toggleExpanded()
+                    }
+                  >
+                    {row.getVisibleCells().map((cell, i, row) => (
                       <td
-                        key={row.original.objectId}
-                        colSpan={row.getVisibleCells().length}
-                        className="left border-b p-4 text-sm text-gray-500"
+                        key={cell.id}
+                        className={classNames(
+                          cell.column.columnDef.meta?.cellStyling,
+                          {
+                            "whitespace-nowrap":
+                              !cell.column.columnDef.meta?.cellStyling,
+                            "text-left": i + 1 !== row.length,
+                          }
+                        )}
                       >
-                        <DetailsRow objectId={row.original.objectId} />
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </td>
-                    </tr>
-                  )}
-              </Fragment>
-            ))}
+                    ))}
+                  </tr>
+                  {row.getIsExpanded() &&
+                    (row.getValue("hasDetails") as boolean) && (
+                      <tr key={row.original.objectId}>
+                        {/* skip our expand/unexpand column */}
+                        <td>&nbsp;</td>
+                        {/* expanded content now into the rest of the columns */}
+                        <td
+                          key={row.original.objectId}
+                          colSpan={row.getVisibleCells().length - 1}
+                        >
+                          <DetailsRow objectId={row.original.objectId} />
+                        </td>
+                      </tr>
+                    )}
+                </Fragment>
+              ))}
+            />
+          ) : (
+            <EagerErrorBoundary error={error.error} />
+          )}
+          <BoxPaginator
+            currentPage={currentPage}
+            setPage={(n) => {
+              table.reset();
+              setUpdateData(true);
+              setCurrentPage(n);
+            }}
+            rowCount={currentTotal}
+            rowsPerPage={pageSize}
+            rowWord="audit events"
           />
-        ) : (
-          <EagerErrorBoundary
-            message={"Could not display logs table."}
-            error={error.error}
-            styling={"bg-red-100"}
-          />
-        )}
-        <BoxPaginator
-          currentPage={currentPage}
-          setPage={(n) => {
-            table.reset();
-            setUpdateData(true);
-            setCurrentPage(n);
-          }}
-          rowCount={currentTotal}
-          rowsPerPage={pageSize}
-          rowWord="Log Entries"
-        />
-      </div>
+        </div>
+      </>
     </Box>
   );
 };
@@ -266,7 +282,7 @@ export const AuditEventTable = ({
  */
 export const useAuditEventQuery = (
   currentPage: number,
-  path: string,
+  type: Type,
   orderByProperty: string,
   orderAscending: boolean,
   includeEvents: AuditEventUserFilterType[],
@@ -274,45 +290,36 @@ export const useAuditEventQuery = (
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>
 ) => {
-  return useQuery(
-    [
-      `${path}-audit-event`,
-      currentPage,
-      orderByProperty,
-      orderAscending,
-      includeEvents,
-    ],
-    async () => {
-      let filter = includeEvents
-        .map((include) => `filter=${include}`)
-        .join("&");
-      if (filter !== "") {
-        filter = `&${filter}`;
-      }
-
-      return await axios
-        .get<AuditEventType[]>(
-          `/api${path}/audit-event?page=${currentPage}&orderByProperty=${orderByProperty}&orderAscending=${orderAscending}${filter}`
-        )
-        .then((response) => {
-          handleTotalCountHeaders(response, setCurrentTotal);
-
-          return response.data;
-        });
+  const query = {
+    page: currentPage,
+    orderByProperty: orderByProperty,
+    orderAscending: orderAscending,
+  };
+  const options = {
+    enabled: false,
+    keepPreviousData: true,
+    onSuccess: (data: any) => {
+      setCurrentTotal(data.total);
+      setData((data.data as AuditEventType[]) ?? []);
+      setError({ error: null, isSuccess: data.data !== undefined });
     },
-    {
-      keepPreviousData: true,
-      enabled: false,
-      onSuccess: (data) => {
-        setData(data ?? []);
-        setError({ error: null, isSuccess: data !== undefined });
-      },
-      onError: (error) => {
-        setData([]);
-        setError({ error, isSuccess: false });
-      },
-    }
-  );
+    onError: (error: any) => {
+      setData([]);
+      setError({ error, isSuccess: false });
+    },
+  };
+
+  if (type === "AuditEvent") {
+    return trpc.auditEventRouter.getAuditEvent.useQuery(
+      { ...query, filter: includeEvents },
+      options
+    );
+  } else {
+    return trpc.auditEventRouter.getReleaseAuditEvent.useQuery(
+      { ...query, releaseKey: type.releaseKey },
+      options
+    );
+  }
 };
 
 /**
@@ -320,7 +327,7 @@ export const useAuditEventQuery = (
  */
 export const useAllAuditEventQueries = (
   currentPage: number,
-  path: string,
+  type: Type,
   includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
@@ -332,7 +339,7 @@ export const useAllAuditEventQueries = (
   ) => {
     return useAuditEventQuery(
       currentPage,
-      path,
+      type,
       occurredDateTime,
       orderAscending,
       includeEvents,
@@ -408,15 +415,17 @@ export const ExpandedIndicator = ({
  */
 export const categoryToDescription = (category: ActionCategoryType): string => {
   if (category === "C") {
-    return "Create";
+    return "create";
   } else if (category === "R") {
-    return "Read";
+    return "read";
   } else if (category === "U") {
-    return "Update";
+    return "update";
   } else if (category === "D") {
-    return "Delete";
+    return "delete";
+  } else if (category === "E") {
+    return "execute";
   } else {
-    return "Execute";
+    return "unknown";
   }
 };
 
@@ -425,34 +434,29 @@ export const categoryToDescription = (category: ActionCategoryType): string => {
  */
 export const outcomeToDescription = (outcome: number): string | undefined => {
   if (outcome === 0) {
-    return "Success";
+    return "success";
   } else if (outcome === 4) {
-    return "Minor Failure";
+    return "minor failure";
   } else if (outcome === 8) {
-    return "Serious Failure";
+    return "serious failure";
   } else if (outcome === 12) {
-    return "Major Failure";
+    return "major failure";
   } else {
     return undefined;
   }
 };
 
-/**
- * Check if an outcome is successful.
- */
-export const outcomeIsSuccess = (outcome: number): boolean => {
-  return outcome === 0;
-};
-
-export const CELL_BOX = "flex items-center justify-center w-8 h-8";
+export const CELL_BOX = "flex items-center justify-center";
 
 /**
  * Create the column definition based on the audit entry type.
+ *
+ * @param navigate a function for performing navigation
  */
-export const createColumns = () => {
+export const createColumns = (navigate: NavigateFunction) => {
   const columnHelper = createColumnHelper<AuditEventType>();
   return [
-    columnHelper.accessor("objectId", {
+    columnHelper.accessor("hasDetails", {
       header: ({ table }) => {
         return table.getCanSomeRowsExpand() &&
           table
@@ -467,7 +471,6 @@ export const createColumns = () => {
                 symbolExpanded={<BiChevronDown />}
               ></ExpandedIndicator>
             }
-            applyCSS={"flex-1 font-normal flex py-2"}
             description={
               table.getIsAllRowsExpanded() ? "Contract All" : "Expand All"
             }
@@ -488,66 +491,40 @@ export const createColumns = () => {
                 isExpandedWithDetails ? <BiChevronDown /> : undefined
               }
             />
-            <ToolTip
-              trigger={
-                <Link
-                  to={`${info.getValue()}`}
-                  className={classNames(
-                    "invisible block hover:rounded-lg hover:bg-slate-200 group-hover:visible",
-                    CELL_BOX
-                  )}
-                >
-                  <BiLinkExternal />
-                </Link>
-              }
-              description={"View Entry"}
-            />
           </div>
         );
       },
-      meta: {
-        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
-        headerStyling:
-          "text-sm text-gray-600 whitespace-nowrap border-b hover:bg-slate-100 hover:rounded-lg",
-      },
-      enableSorting: false,
-    }),
-    columnHelper.accessor("hasDetails", {
-      header: () => null,
-      cell: () => null,
       enableSorting: false,
     }),
     columnHelper.accessor("occurredDateTime", {
       header: "Time",
       cell: (info) => {
         const dateTime = info.getValue() as string | undefined;
-        return (
-          <ToolTip
-            trigger={formatFromNowTime(dateTime)}
-            description={formatLocalDateTime(dateTime)}
-          ></ToolTip>
-        );
-      },
-      sortDescFirst: true,
-    }),
-    columnHelper.accessor("outcome", {
-      header: "Outcome",
-      cell: (info) => {
-        const value = info.getValue();
-        return (
-          <ToolTip
-            trigger={value}
-            applyCSS={
-              outcomeIsSuccess(value)
-                ? classNames("rounded-lg bg-green-200", CELL_BOX)
-                : classNames("rounded-lg bg-red-200", CELL_BOX)
-            }
-            description={outcomeToDescription(value)}
-          ></ToolTip>
-        );
-      },
-      meta: {
-        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
+        if (info.row.original.occurredDuration) {
+          return (
+            <ToolTip
+              trigger={
+                <div>
+                  <div className="break-all text-xs">
+                    {formatFromNowTime(dateTime)}
+                  </div>
+                  <div className="break-all text-xs opacity-50">
+                    {`(took ${formatDuration(
+                      info.row.original.occurredDuration
+                    )})`}
+                  </div>
+                </div>
+              }
+              description={formatLocalDateTime(dateTime)}
+            ></ToolTip>
+          );
+        } else
+          return (
+            <ToolTip
+              trigger={formatFromNowTime(dateTime)}
+              description={formatLocalDateTime(dateTime)}
+            ></ToolTip>
+          );
       },
       sortDescFirst: true,
     }),
@@ -556,14 +533,18 @@ export const createColumns = () => {
       cell: (info) => {
         const value = info.getValue();
         return (
-          <ToolTip
-            trigger={<div className="flex h-8 w-8 items-center">{value}</div>}
-            description={categoryToDescription(value)}
-          ></ToolTip>
+          <span
+            className={classNames("badge", {
+              "badge-primary": value === "C",
+              "badge-info": value === "R",
+              "badge-secondary": value === "E",
+              "badge-warning": value === "U",
+              "badge-error": value === "D",
+            })}
+          >
+            {categoryToDescription(value)}
+          </span>
         );
-      },
-      meta: {
-        cellStyling: "text-sm text-gray-500 whitespace-nowrap border-b",
       },
       sortDescFirst: true,
     }),
@@ -574,10 +555,31 @@ export const createColumns = () => {
     columnHelper.accessor("whoDisplayName", {
       header: "Name",
       sortDescFirst: true,
+      cell: (info) => {
+        return (
+          <ToolTip
+            trigger={info.getValue()}
+            description={info.row.original.whoId}
+          ></ToolTip>
+        );
+      },
     }),
-    columnHelper.accessor("occurredDuration", {
-      header: "Duration",
-      cell: (info) => formatDuration(info.getValue()),
+    columnHelper.accessor("outcome", {
+      header: "Outcome",
+      cell: (info) => {
+        const value = info.getValue();
+        return (
+          <span
+            className={classNames("badge", {
+              "badge-success": value < 4,
+              "badge-warning": value >= 4 && value < 8,
+              "badge-error": value >= 8,
+            })}
+          >
+            {outcomeToDescription(value)}
+          </span>
+        );
+      },
       sortDescFirst: true,
     }),
   ];

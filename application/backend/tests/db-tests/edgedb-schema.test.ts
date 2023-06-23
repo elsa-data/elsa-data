@@ -1,7 +1,7 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { blankTestData } from "../../src/test-data/blank-test-data";
-import { makeSystemlessIdentifierArray } from "../../src/test-data/test-data-helpers";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
+import { makeSystemlessIdentifierArray } from "../../src/test-data/util/test-data-helpers";
 
 describe("edgedb tests", () => {
   let edgeDbClient: Client;

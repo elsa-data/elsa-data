@@ -1,7 +1,7 @@
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
-import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/insert-test-data-10f-helpers";
+import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
 import { ReleaseService } from "../../src/business/services/release-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
@@ -11,6 +11,7 @@ import {
   ManifestHtsgetNotAllowed,
 } from "../../src/business/exceptions/manifest-htsget";
 import {
+  getHtsgetSetting,
   ManifestHtsgetService,
   S3ManifestHtsgetService,
 } from "../../src/business/services/manifests/htsget/manifest-htsget-service";
@@ -26,6 +27,7 @@ import { Logger } from "pino";
 import { addSeconds } from "date-fns";
 import { createTestElsaSettings } from "../test-elsa-settings.common";
 import { AwsEnabledServiceMock } from "./client-mocks";
+import assert from "node:assert";
 
 const testContainer = registerTypes();
 
@@ -252,7 +254,7 @@ it("test publish htsget manifest htsget not enabled", async () => {
   testContainerNoHtsget.register<ElsaSettings>("Settings", {
     useFactory: () => {
       let settings = createTestElsaSettings();
-      settings.htsget = undefined;
+      settings.sharers = [];
 
       return settings;
     },
@@ -279,10 +281,10 @@ it("test publish htsget manifest htsget not enabled", async () => {
 it("test publish htsget cached", async () => {
   awsEnabledServiceMock.enable();
 
-  if (settings.htsget?.maxAge === undefined) {
-    logger.warn("Skipping test because htsget is not defined.");
-    return;
-  }
+  const htsgetSettings = getHtsgetSetting(settings);
+
+  expect(htsgetSettings).toBeDefined();
+  assert(htsgetSettings);
 
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
@@ -290,7 +292,10 @@ it("test publish htsget cached", async () => {
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
-    LastModified: addSeconds(new Date(), -settings.htsget.maxAge + 1000),
+    LastModified: addSeconds(
+      new Date(),
+      -htsgetSettings.maxAgeInSeconds + 1000
+    ),
   });
 
   let value = await manifestHtsgetService.publishHtsgetManifest(testReleaseKey);
@@ -299,16 +304,16 @@ it("test publish htsget cached", async () => {
     bucket: settings.aws?.tempBucket,
     key: `htsget-manifests/${testReleaseKey}`,
   });
-  expect(value.maxAge).toBeLessThan(settings.htsget.maxAge);
+  expect(value.maxAge).toBeLessThan(htsgetSettings.maxAgeInSeconds);
 });
 
 it("test publish htsget not cached", async () => {
   awsEnabledServiceMock.enable();
 
-  if (settings.htsget?.maxAge === undefined) {
-    logger.warn("Skipping test because htsget is not defined.");
-    return;
-  }
+  const htsgetSettings = getHtsgetSetting(settings);
+
+  expect(htsgetSettings).toBeDefined();
+  assert(htsgetSettings);
 
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
@@ -316,7 +321,10 @@ it("test publish htsget not cached", async () => {
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
-    LastModified: addSeconds(new Date(), -settings.htsget.maxAge - 1000),
+    LastModified: addSeconds(
+      new Date(),
+      -htsgetSettings.maxAgeInSeconds - 1000
+    ),
   });
   s3ClientMock.on(PutObjectCommand).resolves({});
 
@@ -326,5 +334,5 @@ it("test publish htsget not cached", async () => {
     bucket: settings.aws?.tempBucket,
     key: `htsget-manifests/${testReleaseKey}`,
   });
-  expect(value.maxAge).toEqual(settings.htsget.maxAge);
+  expect(value.maxAge).toEqual(htsgetSettings.maxAgeInSeconds);
 });

@@ -18,11 +18,10 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import { NotAuthorisedModifyUserManagement } from "../exceptions/user";
+import { NotAuthorisedEditUserManagement } from "../exceptions/user";
 import { userGetAllByUser } from "../../../dbschema/queries";
-
-// possibly can somehow get this from the schemas files?
-export type ReleaseRoleStrings = "Administrator" | "Manager" | "Member";
+import { IPLookupService, LocationType } from "./ip-lookup-service";
+import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -30,11 +29,17 @@ export type ChangeablePermission = {
   isAllowedOverallAdministratorView: boolean;
 };
 
+export type LoginDetailType = {
+  ip: string;
+  ipLocation?: LocationType;
+};
+
 @injectable()
 export class UserService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") private readonly settings: ElsaSettings
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
   ) {}
 
   /**
@@ -51,6 +56,18 @@ export class UserService {
     }
 
     return false;
+  }
+
+  /**
+   * Get the current database details of the given user.
+   *
+   * @param user
+   */
+  public async getUser(user: AuthenticatedUser) {
+    return await e.select(e.permission.User, (u) => ({
+      ...e.permission.User["*"],
+      filter_single: { id: user.dbId },
+    }));
   }
 
   /**
@@ -124,7 +141,7 @@ export class UserService {
     permission: ChangeablePermission
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
-      throw new NotAuthorisedModifyUserManagement();
+      throw new NotAuthorisedEditUserManagement();
 
     await e
       .update(e.permission.User, (u) => ({
@@ -158,11 +175,13 @@ export class UserService {
    * @param subjectId
    * @param displayName
    * @param email
+   * @param auditDetails if present, JSON data that will be attached to the Login audit event (for IP etc)
    */
   public async upsertUserForLogin(
     subjectId: string,
     displayName: string,
-    email: string
+    email: string,
+    auditDetails?: LoginDetailType
   ): Promise<AuthenticatedUser> {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
@@ -202,6 +221,12 @@ export class UserService {
         releasesToAdd = e.cast(e.uuid, e.set());
       }
 
+      const ipAddress = auditDetails?.ip;
+      if (ipAddress) {
+        auditDetails["ipLocation"] =
+          this.ipLookupService.getLocationByIp(ipAddress);
+      }
+
       const userAuditEvent = e.insert(e.audit.UserAuditEvent, {
         whoId: subjectId,
         whoDisplayName: displayName,
@@ -209,6 +234,7 @@ export class UserService {
         actionCategory: "E",
         actionDescription: "Login",
         outcome: 0,
+        details: auditDetails,
       });
 
       return await e
@@ -260,7 +286,7 @@ export class UserService {
   public async registerRoleInRelease(
     user: AuthenticatedUser,
     releaseUuid: string,
-    role: ReleaseRoleStrings
+    role: ReleaseParticipantRoleType
   ) {
     await UserService.addUserToReleaseWithRole(
       this.edgeDbClient,
@@ -325,7 +351,7 @@ export class UserService {
   public async roleInRelease(
     user: AuthenticatedUser,
     releaseKey: string
-  ): Promise<ReleaseRoleStrings | null> {
+  ): Promise<ReleaseParticipantRoleType | null> {
     // TODO: check that releaseKey is a valid UUID structure
     // given this is a boundary check function for our routes - we need to protect against being
     // sent release ids that are invalid entirely (as edgedb sends a wierd uuid() error msg)
@@ -349,7 +375,7 @@ export class UserService {
       ) {
         return userWithMatchingReleases[0].releaseParticipant[0][
           "@role"
-        ] as ReleaseRoleStrings;
+        ] as ReleaseParticipantRoleType;
       }
     }
 

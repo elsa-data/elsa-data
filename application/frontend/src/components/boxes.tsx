@@ -10,8 +10,6 @@ type BoxProps = {
   applyIsDisabledStyle?: boolean;
 
   applyIsDisabledMessage?: string;
-
-  errorMessage?: string;
 };
 
 export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
@@ -19,7 +17,6 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
   applyIsLockedStyle,
   applyIsDisabledStyle,
   applyIsDisabledMessage,
-  errorMessage,
   children,
 }) => {
   return (
@@ -41,14 +38,12 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
       )}
       <div
         className={classNames("card-body", {
-          sepia: applyIsLockedStyle,
+          "sepia-[.2]": applyIsLockedStyle,
           grayscale: applyIsDisabledStyle,
         })}
       >
         <h2 className="card-title">{heading}</h2>
-        <ErrorBoundary message={errorMessage} styling={"bg-red-100"}>
-          {children}
-        </ErrorBoundary>
+        <ErrorBoundary>{children}</ErrorBoundary>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditLogService } from "./audit-log-service";
+import { AuditEventService } from "./audit-event-service";
 import { createPagedResult } from "../../api/helpers/pagination-helpers";
 
 import {
@@ -14,6 +14,8 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
+import { LocationType } from "./ip-lookup-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -27,10 +29,20 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject("Features") features: ReadonlySet<string>,
     @inject(AwsCloudTrailLakeService)
     private readonly awsCloudTrailLakeService: AwsCloudTrailLakeService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    auditEventService: AuditEventService,
+    @inject("ReleaseAuditTimedService")
+    auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService
   ) {
-    super(settings, edgeDbClient, features, userService);
+    super(
+      settings,
+      edgeDbClient,
+      features,
+      userService,
+      auditEventService,
+      auditEventTimedService
+    );
   }
 
   private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
@@ -82,8 +94,13 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
 
     return createPagedResult(
-      dataEgressSummaryResult.results,
-      dataEgressSummaryResult.totalCount
+      dataEgressSummaryResult.data.map((v) => ({
+        fileUrl: v.fileUrl ?? "",
+        fileSize: v.fileSize ?? 0,
+        totalDataEgressInBytes: v.totalDataEgressInBytes ?? 0,
+        lastOccurredDateTime: v.lastOccurredDateTime,
+      })),
+      dataEgressSummaryResult.total
     );
   }
 
@@ -105,8 +122,11 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     });
 
     return createPagedResult(
-      dataEgressQueryRes.results,
-      dataEgressQueryRes.totalCount
+      dataEgressQueryRes.data.map((a) => ({
+        ...a,
+        sourceLocation: a.sourceLocation as LocationType,
+      })),
+      dataEgressQueryRes.total
     );
   }
 }

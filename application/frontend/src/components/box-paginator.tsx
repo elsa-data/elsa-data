@@ -52,18 +52,31 @@ export const BoxPaginator: React.FC<Props> = (props) => {
         <div className="flex flex-1 justify-between sm:hidden">
           <a
             onClick={() => props.setPage(props.currentPage - 1)}
-            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className={classNames(
+              "relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
+              {
+                "cursor-pointer": props.currentPage !== 1,
+                "pointer-events-none opacity-50": props.currentPage === 1,
+              }
+            )}
           >
             Previous
           </a>
           {/* TODO what about the search UI on small devices? */}
           <a
             onClick={() => props.setPage(props.currentPage + 1)}
-            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className={classNames(
+              "relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
+              {
+                "cursor-pointer": props.currentPage !== maxPage,
+                "pointer-events-none opacity-50": props.currentPage === maxPage,
+              }
+            )}
           >
             Next
           </a>
         </div>
+
         {/* a full pagination UI if space */}
         <div className="hidden h-10 sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div
@@ -83,6 +96,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               {props.rowWord}
             </p>
           </div>
+
           {/* the search UI is only enabled if set/clear action functions are provided */}
           {props.onSearchTextChange && (
             <div className="relative sm:grow">

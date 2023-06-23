@@ -17,17 +17,18 @@ import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ObjectStoreRecordKey } from "../../../../../common/elsa-types/schemas";
+import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
-import { AuditLogService } from "../audit-log-service";
+import { AuditEventService } from "../audit-event-service";
 
 @injectable()
 export class ManifestService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
-    @inject(AuditLogService) private readonly auditLogService: AuditLogService
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
   /**
@@ -154,30 +155,29 @@ export class ManifestService {
 
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-      this.edgeDbClient,
       user,
       releaseKey,
       "E",
       "Created TSV",
-      now
+      now,
+      this.edgeDbClient
     );
 
     try {
       const tsv = createTsv(newAuditEventId);
       await this.auditLogService.completeReleaseAuditEvent(
-        this.edgeDbClient,
         newAuditEventId,
         0,
         now,
         new Date(),
-        { header }
+        { header },
+        this.edgeDbClient
       );
       return tsv;
     } catch (e) {
       const errorString = e instanceof Error ? e.message : String(e);
 
       await this.auditLogService.completeReleaseAuditEvent(
-        this.edgeDbClient,
         newAuditEventId,
         8,
         now,
@@ -185,7 +185,8 @@ export class ManifestService {
         {
           error: errorString,
           header,
-        }
+        },
+        this.edgeDbClient
       );
 
       throw e;

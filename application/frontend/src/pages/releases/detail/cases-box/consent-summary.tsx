@@ -8,6 +8,7 @@ import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { doLookup } from "../../../../helpers/ontology-helper";
 import { trpc } from "../../../../helpers/trpc";
+import { Flags } from "../../../../components/flags";
 
 type Props = {
   releaseKey?: string;
@@ -15,36 +16,11 @@ type Props = {
   consentId?: string;
 };
 
-type FlagsProps = {
-  regions: string[];
-};
-
 type ResolvedDuo = {
   resolvedCode: string;
   resolvedDiseaseCode?: string;
   diseaseSystem?: string;
   modifiers: DuoModifierType[];
-};
-
-const Flags: React.FC<FlagsProps> = ({ regions }) => {
-  if (regions.length === 0) {
-    return <></>;
-  } else
-    return (
-      <>
-        (
-        <ul className="inline-list comma-list">
-          {regions.map((region, idx) => (
-            <li key={`region-${idx}`}>
-              <span title={region}>
-                {hasFlag(region) ? getUnicodeFlagIcon(region) : `(${region})`}
-              </span>
-            </li>
-          ))}
-        </ul>
-        )
-      </>
-    );
 };
 
 const resolveDuoCode = function (duoCode: string): string {
@@ -134,6 +110,8 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
 
   return (
     <div className="space-y-4">
+      {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
+
       {error.isSuccess && (
         <>
           {duos.map(function (resolvedDuo: ResolvedDuo, duoIdx: number) {
@@ -181,13 +159,6 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
             );
           })}
         </>
-      )}
-      {!error.isSuccess && (
-        <EagerErrorBoundary
-          message={"Something went wrong resolving duos."}
-          error={error.error}
-          styling={"bg-red-100"}
-        />
       )}
     </div>
   );

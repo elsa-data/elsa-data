@@ -9,7 +9,7 @@ import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import { Transaction } from "edgedb/dist/transaction";
-import { AuditLogService } from "../audit-log-service";
+import { AuditEventService } from "../audit-event-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import { jobAsType } from "./job-helpers";
 
@@ -27,8 +27,8 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 export class JobService {
   constructor(
     @inject("Database") protected readonly edgeDbClient: edgedb.Client,
-    @inject(AuditLogService)
-    protected readonly auditLogService: AuditLogService,
+    @inject(AuditEventService)
+    protected readonly auditLogService: AuditEventService,
     @inject(ReleaseService) protected readonly releaseService: ReleaseService,
     @inject(SelectService) protected readonly selectService: SelectService
   ) {}
@@ -134,12 +134,12 @@ export class JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Ran Dynamic Consent",
-        new Date()
+        new Date(),
+        tx
       );
 
       // create a new select job entry
@@ -435,12 +435,12 @@ export class JobService {
       }
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         selectJob.auditEntry.id,
         isCancellation ? 4 : 0,
         selectJob.started,
         new Date(),
-        { jobId: jobId }
+        { jobId: jobId },
+        tx
       );
 
       await e

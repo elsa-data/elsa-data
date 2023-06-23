@@ -12,6 +12,7 @@ import { ConsentPopup } from "./consent-popup";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 import { axiosPatchOperationMutationFn } from "../../queries";
+import { Table } from "../../../../components/tables";
 
 type Props = {
   releaseKey: string;
@@ -28,6 +29,9 @@ type Props = {
 
   // whether the table is being viewed by someone with permissions to edit it
   isEditable: boolean;
+
+  // whether to show any consent iconography/popups
+  showConsent: boolean;
 };
 
 export const CasesBox: React.FC<Props> = ({
@@ -36,6 +40,7 @@ export const CasesBox: React.FC<Props> = ({
   datasetMap,
   pageSize,
   isEditable,
+  showConsent,
 }) => {
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
     useState<boolean>(true);
@@ -141,15 +146,29 @@ export const CasesBox: React.FC<Props> = ({
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
 
+  // if they cannot edit cases AND the release is not activated then effectively there is nothing
+  // they can do yet... so we give them some instructions informing them of that
+  if (!releaseIsActivated && !isEditable)
+    return (
+      <Box heading="Cases">
+        <div className="prose max-w-none">
+          <p>
+            Once a release is created - the data owners and stewards must go
+            through a process of setting up the exact set of data which will be
+            shared with you.
+          </p>
+          <p>
+            That process is currently not completed - you will receive an email
+            informing you when the process is completed at which point you will
+            be able to access the data.
+          </p>
+        </div>
+      </Box>
+    );
+
   return (
-    <Box
-      heading="Cases"
-      applyIsLockedStyle={releaseIsActivated}
-      errorMessage={"Something went wrong fetching cases."}
-    >
-      <div
-        className={classNames("flex flex-col", { sepia: releaseIsActivated })}
-      >
+    <Box heading="Cases" applyIsLockedStyle={releaseIsActivated}>
+      <div className={classNames("flex flex-col")}>
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
@@ -160,6 +179,9 @@ export const CasesBox: React.FC<Props> = ({
           onSearchTextChange={onSearchTextChange}
           isLoading={isLoading}
         />
+
+        {dataQuery.isError && <EagerErrorBoundary error={dataQuery.error} />}
+
         {dataQuery.isLoading && (
           <div className={classNames(baseMessageDivClasses)}>Loading...</div>
         )}
@@ -202,93 +224,87 @@ export const CasesBox: React.FC<Props> = ({
                   </label>
                 </div>
               )}
-              <table className="w-full table-fixed text-left text-sm text-gray-500">
-                <tbody>
-                  {dataQuery.data.map((row, rowIndex) => {
-                    return (
-                      <tr key={row.id} className="border-b">
-                        <td
-                          className={classNames(
-                            baseColumnClasses,
-                            "w-12",
-                            "text-center"
-                          )}
-                        >
-                          <IndeterminateCheckbox
-                            disabled={true}
-                            checked={row.nodeStatus === "selected"}
-                            indeterminate={row.nodeStatus === "indeterminate"}
-                          />
-                        </td>
-                        <td
-                          className={classNames(
-                            baseColumnClasses,
-                            "text-left",
-                            "w-40"
-                          )}
-                        >
-                          {row.externalId}{" "}
-                          {row.customConsent && (
-                            <>
-                              {" - "}
-                              <ConsentPopup
-                                releaseKey={releaseKey}
-                                nodeId={row.id}
-                              />
-                            </>
-                          )}
-                        </td>
-                        <td
-                          className={classNames(
-                            baseColumnClasses,
-                            "text-left",
-                            "pr-4"
-                          )}
-                        >
-                          <PatientsFlexRow
-                            releaseKey={releaseKey}
-                            releaseIsActivated={releaseIsActivated}
-                            patients={row.patients}
-                            showCheckboxes={isEditable}
-                            onCheckboxClicked={() =>
-                              setIsSelectAllIndeterminate(true)
-                            }
-                          />
-                        </td>
-                        {/* if we only have one dataset - then we don't show this column at all */}
-                        {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
-                        {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "w-10",
-                              "px-2",
-                              "border-l",
-                              "border-red-500"
-                            )}
-                            rowSpan={
-                              rowSpans[rowIndex] === 1
-                                ? undefined
-                                : rowSpans[rowIndex]
-                            }
-                          >
-                            {datasetMap.get(row.fromDatasetUri)}
-                          </td>
+              <Table
+                additionalTableClassName="text-left text-sm text-gray-500"
+                tableBody={dataQuery.data.map((row, rowIndex) => {
+                  return (
+                    <tr key={row.id} className="border-b">
+                      <td
+                        className={classNames(
+                          baseColumnClasses,
+                          "w-12",
+                          "text-center"
                         )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      >
+                        <IndeterminateCheckbox
+                          disabled={true}
+                          checked={row.nodeStatus === "selected"}
+                          indeterminate={row.nodeStatus === "indeterminate"}
+                        />
+                      </td>
+                      <td
+                        className={classNames(
+                          baseColumnClasses,
+                          "text-left",
+                          "w-40"
+                        )}
+                      >
+                        <div className="flex space-x-1">
+                          <span>{row.externalId}</span>
+                          {showConsent && row.customConsent && (
+                            <ConsentPopup
+                              releaseKey={releaseKey}
+                              nodeId={row.id}
+                            />
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        className={classNames(
+                          baseColumnClasses,
+                          "text-left",
+                          "pr-4"
+                        )}
+                      >
+                        <PatientsFlexRow
+                          releaseKey={releaseKey}
+                          releaseIsActivated={releaseIsActivated}
+                          patients={row.patients}
+                          showCheckboxes={isEditable}
+                          onCheckboxClicked={() =>
+                            setIsSelectAllIndeterminate(true)
+                          }
+                          showConsent={showConsent}
+                        />
+                      </td>
+                      {/* if we only have one dataset - then we don't show this column at all */}
+                      {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                      {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "w-10",
+                            "px-2",
+                            "border-l",
+                            "border-l-red-500"
+                          )}
+                          rowSpan={
+                            rowSpans[rowIndex] === 1
+                              ? undefined
+                              : rowSpans[rowIndex]
+                          }
+                        >
+                          <div className="w-6">
+                            {datasetMap.get(row.fromDatasetUri)}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              />
             </div>
           </>
-        )}
-        {dataQuery.isError && (
-          <EagerErrorBoundary
-            message={"Something went wrong fetching cases."}
-            error={dataQuery.error}
-            styling={"bg-red-100"}
-          />
         )}
       </div>
       <div id="popup-root" />

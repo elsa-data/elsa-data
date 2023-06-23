@@ -7,7 +7,7 @@ import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
-import { AuditLogService, OUTCOME_SUCCESS } from "../audit-log-service";
+import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import {
   DescribeExecutionCommand,
@@ -17,7 +17,7 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
-import { AwsDiscoveryService } from "../aws/aws-discovery-service";
+import { IAwsDiscoveryService } from "../aws/aws-discovery-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,
@@ -39,12 +39,12 @@ export class JobCopyOutService extends JobService {
 
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
-    @inject(AwsDiscoveryService)
-    private readonly awsDiscoveryService: AwsDiscoveryService,
+    @inject("IAwsDiscoveryService")
+    private readonly awsDiscoveryService: IAwsDiscoveryService,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("SFNClient") private readonly sfnClient: SFNClient
@@ -128,12 +128,12 @@ export class JobCopyOutService extends JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Copy Out",
-        new Date()
+        new Date(),
+        tx
       );
 
       const manifest = await this.manifestService.getActiveBucketKeyManifest(
@@ -324,12 +324,15 @@ export class JobCopyOutService extends JobService {
       );
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         copyOutJob.auditEntry.id,
         OUTCOME_SUCCESS,
         copyOutJob.started,
         new Date(),
-        { jobId: jobId, awsExecutionArn: copyOutJob.awsExecutionArn }
+        {
+          jobId: jobId,
+          awsExecutionArn: copyOutJob.awsExecutionArn,
+        },
+        tx
       );
 
       await this.updateCurrentJob(tx, jobId, {

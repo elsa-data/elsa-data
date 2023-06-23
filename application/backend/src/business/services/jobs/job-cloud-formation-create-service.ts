@@ -7,10 +7,10 @@ import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../release-service";
 import {
-  AuditLogService,
+  AuditEventService,
   OUTCOME_MINOR_FAILURE,
   OUTCOME_SUCCESS,
-} from "../audit-log-service";
+} from "../audit-event-service";
 import {
   CloudFormationClient,
   CreateStackCommand,
@@ -28,7 +28,7 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
 export class JobCloudFormationCreateService extends JobService {
   constructor(
     @inject("Database") edgeDbClient: edgedb.Client,
-    @inject(AuditLogService) auditLogService: AuditLogService,
+    @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
     @inject("CloudFormationClient")
@@ -70,12 +70,12 @@ export class JobCloudFormationCreateService extends JobService {
       // the ability to audit jobs that don't start at all - but maybe we do that
       // some other way
       const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-        tx,
         user,
         releaseKey,
         "E",
         "Install S3 Access Point",
-        new Date()
+        new Date(),
+        tx
       );
 
       const releaseStackName =
@@ -210,12 +210,12 @@ export class JobCloudFormationCreateService extends JobService {
         );
 
       await this.auditLogService.completeReleaseAuditEvent(
-        tx,
         cloudFormationInstallJob.auditEntry.id,
         isCancellation ? OUTCOME_MINOR_FAILURE : OUTCOME_SUCCESS,
         cloudFormationInstallJob.started,
         new Date(),
-        { jobId: jobId }
+        { jobId: jobId },
+        tx
       );
 
       await e

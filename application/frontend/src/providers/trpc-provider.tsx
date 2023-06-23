@@ -7,10 +7,12 @@ import {
   CSRF_TOKEN_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
+import { useShowAlert } from "./show-alert-provider";
 
 export const TRPCProvider: React.FC<Props> = (props: Props) => {
   const queryClient = new QueryClient({});
   const [cookies, _setCookie, removeCookie] = useCookies<any>();
+  const { show } = useShowAlert();
 
   const trpcClient = trpc.createClient({
     links: [
@@ -25,7 +27,9 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
 
             const body = await res?.json();
             const message = body.length > 0 ? body[0]?.error?.message : "";
-            if (message) alert(message);
+            show({
+              description: message,
+            });
           }
 
           return res;

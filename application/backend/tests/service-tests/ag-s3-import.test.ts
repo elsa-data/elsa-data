@@ -1,6 +1,6 @@
 import {
   S3IndexApplicationService,
-  artifactType,
+  FileGroupType,
 } from "../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
@@ -8,18 +8,21 @@ import e from "../../dbschema/edgeql-js";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   File,
-  ArtifactType,
+  ArtifactEnum,
   insertArtifactBamQuery,
 } from "../../src/business/db/lab-queries";
 import { fileByUrlQuery } from "../../src/business/db/storage-queries";
-import { blankTestData } from "../../src/test-data/blank-test-data";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
 import {
   S3_URL_PREFIX,
   MOCK_STORAGE_PREFIX_URL,
   MOCK_DATASET_URI,
-  MOCK_BAM_FILE_SET,
-  MOCK_FASTQ_PAIR_FILE_SET,
-  MOCK_VCF_FILE_SET,
+  MOCK_FASTQ_FORWARD_MERGE_MANIFEST,
+  MOCK_FASTQ_REVERSE_MERGE_MANIFEST,
+  MOCK_BAM_MERGE_MANIFEST,
+  MOCK_BAI_MERGE_MANIFEST,
+  MOCK_VCF_MERGE_MANIFEST,
+  MOCK_TBI_MERGE_MANIFEST,
   MOCK_1_CARDIAC_MANIFEST,
   MOCK_1_CARDIAC_S3_OBJECT_LIST,
   MOCK_1_MANIFEST_OBJECT,
@@ -59,6 +62,11 @@ const s3ClientMock = mockClient(S3Client);
 let edgedbClient: edgedb.Client;
 let user: AuthenticatedUser;
 
+jest.mock("../../src/business/services/aws/aws-helper", () => ({
+  __esModule: true,
+  ...jest.requireActual("../../src/business/services/aws/aws-helper"),
+}));
+
 describe("AWS s3 client", () => {
   beforeAll(async () => {});
 
@@ -89,62 +97,6 @@ describe("AWS s3 client", () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
     const jsonManifest = agService.convertTsvToJson(MOCK_1_CARDIAC_MANIFEST);
     expect(jsonManifest).toEqual(MOCK_1_MANIFEST_OBJECT);
-  });
-
-  it("Test groupManifestByStudyId", async () => {
-    const agService = testContainer.resolve(S3IndexApplicationService);
-
-    const groupArtifactContent = agService.groupManifestByStudyId(
-      MOCK_1_S3URL_MANIFEST_OBJECT
-    );
-    expect(groupArtifactContent["A0000001"]).toEqual(
-      MOCK_1_S3URL_MANIFEST_OBJECT
-    );
-  });
-
-  it("Test groupManifestFileByArtifactTypeAndFilename", async () => {
-    const agService = testContainer.resolve(S3IndexApplicationService);
-
-    const fileRecordListedInManifest: File[] = [
-      ...MOCK_FASTQ_PAIR_FILE_SET,
-      ...MOCK_BAM_FILE_SET,
-      ...MOCK_VCF_FILE_SET,
-    ];
-    const convertArtifactType = fileRecordListedInManifest.map((f) => ({
-      ...f,
-      sampleIdsArray: ["ID0001"],
-    }));
-    const groupArtifactContent =
-      agService.groupManifestFileByArtifactTypeAndFilename(convertArtifactType);
-
-    expect(
-      groupArtifactContent[ArtifactType.FASTQ][
-        `${S3_URL_PREFIX}/FILE_L001.fastq`
-      ]
-    ).toEqual(
-      MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
-        ...f,
-        sampleIdsArray: ["ID0001"],
-      }))
-    );
-    expect(
-      groupArtifactContent[ArtifactType.BAM][`${S3_URL_PREFIX}/A0000001.bam`]
-    ).toEqual(
-      MOCK_BAM_FILE_SET.map((f) => ({
-        ...f,
-        sampleIdsArray: ["ID0001"],
-      }))
-    );
-    expect(
-      groupArtifactContent[ArtifactType.VCF][
-        `${S3_URL_PREFIX}/19W001062.individual.norm.vcf`
-      ]
-    ).toEqual(
-      MOCK_VCF_FILE_SET.map((f) => ({
-        ...f,
-        sampleIdsArray: ["ID0001"],
-      }))
-    );
   });
 
   it("Test updateFileRecordFromManifest", async () => {
@@ -222,34 +174,38 @@ describe("AWS s3 client", () => {
     expect(newIsAvailable).toEqual(true);
   });
 
-  it("Test insertNewArtifact", async () => {
+  it("Test insertArtifact", async () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
-    const dataToInsert: Record<string, Record<string, artifactType[]>> = {
-      FASTQ: {
-        FQFILENAMEID: MOCK_FASTQ_PAIR_FILE_SET.map((f) => ({
-          ...f,
-          sampleIdsArray: ["ID001"],
-        })),
+    const dataToInsert: FileGroupType[] = [
+      {
+        filetype: ArtifactEnum.FASTQ,
+        filenameId: MOCK_FASTQ_FORWARD_MERGE_MANIFEST.s3Url,
+        specimenId: "L001",
+        patientIdArray: ["ID001"],
+        file: [
+          MOCK_FASTQ_FORWARD_MERGE_MANIFEST,
+          MOCK_FASTQ_REVERSE_MERGE_MANIFEST,
+        ],
       },
-      BAM: {
-        BAMFILENAMEID: MOCK_BAM_FILE_SET.map((f) => ({
-          ...f,
-          sampleIdsArray: ["ID002"],
-        })),
+      {
+        filetype: ArtifactEnum.BAM,
+        filenameId: MOCK_BAM_MERGE_MANIFEST.s3Url,
+        specimenId: "L002",
+        patientIdArray: ["ID002"],
+        file: [MOCK_BAM_MERGE_MANIFEST, MOCK_BAI_MERGE_MANIFEST],
       },
-      VCF: {
-        VCFFILENAMEID: MOCK_VCF_FILE_SET.map((f) => ({
-          ...f,
-          sampleIdsArray: ["ID003"],
-        })),
+      {
+        filetype: ArtifactEnum.VCF,
+        filenameId: MOCK_VCF_MERGE_MANIFEST.s3Url,
+        specimenId: "L003",
+        patientIdArray: ["ID003"],
+        file: [MOCK_VCF_MERGE_MANIFEST, MOCK_TBI_MERGE_MANIFEST],
       },
-    };
+    ];
 
-    const insArtifactQueryList =
-      agService.insertNewArtifactListQuery(dataToInsert);
-
-    for (const insQuery of insArtifactQueryList) {
-      await insQuery.run(edgedbClient);
+    for (const i in dataToInsert) {
+      const insertQuery = agService.insertArtifact(dataToInsert[i]);
+      if (insertQuery) await insertQuery.run(edgedbClient);
     }
 
     const artifactBaseList = await e
@@ -301,21 +257,23 @@ describe("AWS s3 client", () => {
       },
     ];
 
-    // Pre-insert DatasetPatient
-    for (const pedigreeId of pedigreeIdList) {
-      const { patientId } = pedigreeId;
-      const dpQuery = e.insert(e.dataset.DatasetPatient, {
-        externalIdentifiers: makeSystemlessIdentifierArray(patientId),
-      });
-      await dpQuery.run(edgedbClient);
-    }
-
     // Pre-insert DataCaseId
-    const insertDatasetCaseQuery = e.insert(e.dataset.DatasetCase, {
-      externalIdentifiers: makeSystemlessIdentifierArray(DATA_CASE_ID),
+    const preInsertDataQuery = e.insert(e.dataset.Dataset, {
+      uri: MOCK_DATASET_URI,
+      description: "UMCCR 10F",
+      cases: e.insert(e.dataset.DatasetCase, {
+        externalIdentifiers: makeSystemlessIdentifierArray(DATA_CASE_ID),
+        patients: e.set(
+          ...pedigreeIdList.map((p) =>
+            e.insert(e.dataset.DatasetPatient, {
+              externalIdentifiers: makeSystemlessIdentifierArray(p.patientId),
+            })
+          )
+        ),
+      }),
     });
-    await insertDatasetCaseQuery.run(edgedbClient);
-    await agService.linkPedigreeRelationship(pedigreeIdList);
+    await preInsertDataQuery.run(edgedbClient);
+    await agService.linkPedigreeRelationship(MOCK_DATASET_URI, pedigreeIdList);
 
     const pedigreeQuery = e.select(e.pedigree.Pedigree, () => ({}));
     const pedigreeArray = await pedigreeQuery.run(edgedbClient);
@@ -344,7 +302,11 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_1_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(
+      MOCK_DATASET_URI,
+      user,
+      "australian-genomics-directories"
+    );
 
     // FILE schema expected values
     const totalFileList = await e
@@ -417,7 +379,11 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_2_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(
+      MOCK_DATASET_URI,
+      user,
+      "australian-genomics-directories"
+    );
 
     // FILE schema expected values
     const totalFileList = await e
@@ -485,7 +451,11 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_3_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(
+      MOCK_DATASET_URI,
+      user,
+      "australian-genomics-directories"
+    );
 
     const expectedFileMarked = [
       `${MOCK_STORAGE_PREFIX_URL}/2022-02-22/A0000002.bam`,
@@ -518,7 +488,11 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(
+      MOCK_DATASET_URI,
+      user,
+      "australian-genomics-directories"
+    );
 
     // FILE schema expected values
     const totalFileList = await e
@@ -540,7 +514,6 @@ describe("AWS s3 client", () => {
       }))
       .run(edgedbClient);
     expect(totalDatasetPatient.length).toEqual(3);
-    console.log("totalDatasetPatient", totalDatasetPatient);
     expect(totalDatasetPatient).toEqual([
       { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
       { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
@@ -563,7 +536,11 @@ describe("AWS s3 client", () => {
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
       .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
 
-    await agService.syncDbFromDatasetUri(MOCK_DATASET_URI, user);
+    await agService.syncWithDatabaseFromDatasetUri(
+      MOCK_DATASET_URI,
+      user,
+      "australian-genomics-directories"
+    );
 
     const userAuditEvent = await e
       .select(e.audit.UserAuditEvent, (event) => ({

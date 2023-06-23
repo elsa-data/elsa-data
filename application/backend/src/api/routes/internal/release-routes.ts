@@ -2,16 +2,12 @@ import { FastifyInstance } from "fastify";
 import {
   DuoLimitationCodedType,
   ReleaseCaseType,
-  ReleaseDetailType,
   ReleaseManualSchema,
   ReleaseManualType,
-  ReleaseParticipantAddType,
-  ReleaseParticipantType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
-  ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
@@ -44,38 +40,6 @@ export const releaseRoutes = async (
   );
   const manifestService = _opts.container.resolve(ManifestService);
 
-  fastify.get<{ Reply: ReleaseSummaryType[] }>(
-    "/releases",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const allForUser = await releaseService.getAll(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
-
-      sendPagedResult(reply, allForUser);
-    }
-  );
-
-  fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      const release = await releaseService.get(authenticatedUser, releaseKey);
-
-      if (release) reply.send(release);
-      else reply.status(400).send();
-    }
-  );
-
   fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
     "/releases/:rid/cases",
     {},
@@ -94,70 +58,6 @@ export const releaseRoutes = async (
       );
 
       sendPagedResult(reply, cases);
-    }
-  );
-
-  fastify.get<{ Params: { rid: string }; Reply: ReleaseParticipantType[] }>(
-    "/releases/:rid/participants",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      const participants = await releaseParticipantService.getParticipants(
-        authenticatedUser,
-        releaseKey
-      );
-
-      // note that participants in *not* paged because there is a natural limit to participants in a release
-      return participants.map(
-        (r): ReleaseParticipantType => ({
-          id: r.id,
-          email: r.email,
-          role: r.role || "None",
-          displayName: r.displayName || r.email,
-          subjectId: r.subjectId || undefined,
-          lastLogin: r.lastLogin || undefined,
-          // WIP - also need to check permissions of authenticatedUser
-          canBeRemoved: r.id !== authenticatedUser.dbId,
-          canBeRoleAltered: r.id !== authenticatedUser.dbId,
-        })
-      );
-    }
-  );
-
-  fastify.post<{
-    Params: { rid: string };
-    Body: ReleaseParticipantAddType;
-    Reply: void;
-  }>("/releases/:rid/participants", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseUuid = request.params.rid;
-
-    return releaseParticipantService.addParticipant(
-      authenticatedUser,
-      releaseUuid,
-      request.body.email,
-      request.body.role
-    );
-  });
-
-  fastify.delete<{ Params: { rid: string; pid: string }; Reply: void }>(
-    "/releases/:rid/participants/:pid",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-      const participantUuid = request.params.pid;
-
-      return releaseParticipantService.removeParticipant(
-        authenticatedUser,
-        releaseKey,
-        participantUuid
-      );
     }
   );
 
@@ -438,11 +338,14 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const releaseKey = request.params.rid;
+      const presignHeaderArray = Array.isArray(request.body.presignHeader)
+        ? request.body.presignHeader
+        : [request.body.presignHeader];
 
       const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
         authenticatedUser,
         releaseKey,
-        request.body.presignHeader
+        presignHeaderArray
       );
 
       reply.header(
@@ -526,6 +429,9 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeaderArray = Array.isArray(presignHeader)
+        ? presignHeader
+        : [presignHeader];
 
       const releaseKey = request.params.rid;
 
@@ -533,7 +439,7 @@ export const releaseRoutes = async (
         presignedUrlService,
         authenticatedUser,
         releaseKey,
-        presignHeader
+        presignHeaderArray
       );
 
       if (!manifest) {
@@ -560,6 +466,10 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
       const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeaderArray = Array.isArray(presignHeader)
+        ? presignHeader
+        : [presignHeader];
+
       if (presignHeader.includes("objectStoreSigned")) {
         // This would ideally be checked with an appropriate type for the request
         // `Body`. But that'd involve defining a separate type almost identical
@@ -574,7 +484,7 @@ export const releaseRoutes = async (
         presignedUrlService,
         authenticatedUser,
         releaseKey,
-        presignHeader
+        presignHeaderArray
       );
 
       if (!manifest) {

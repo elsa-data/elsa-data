@@ -1,7 +1,8 @@
 import { createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/blank-test-data";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import assert from "node:assert";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -24,8 +25,14 @@ export async function beforeEachCommon() {
       subjectId: allowedPiSubject,
       displayName: allowedPiDisplayName,
       email: allowedPiEmail,
+      isAllowedRefreshDatasetIndex: true,
+      isAllowedCreateRelease: true,
+      isAllowedOverallAdministratorView: true,
     })
     .run(edgeDbClient);
+
+  assert(allowedManagerUserInsert);
+  assert(allowedManagerUserInsert.id);
 
   const existingUser = new AuthenticatedUser({
     id: allowedManagerUserInsert.id,

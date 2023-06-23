@@ -12,7 +12,7 @@ import { useLoggedInUser } from "./providers/logged-in-user-provider";
 import { EagerErrorBoundary } from "./components/errors";
 import { AccountPage } from "./pages/account-page";
 import { UsersDashboardPage } from "./pages/users-dashboard/users-dashboard-page";
-import { DacImportPage } from "./pages/dac-import/dac-import-page";
+import { DacDashboardPage } from "./pages/dac-dashboard/dac-dashboard-page";
 import { ReleasesDashboardPage } from "./pages/releases-dashboard/releases-dashboard-page";
 import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-sub-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
@@ -27,18 +27,31 @@ import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page
 import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
-import { AuditLogSubPage } from "./pages/releases/audit-log-sub-page/audit-log-sub-page";
+import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit-events-sub-page";
 import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
+import {
+  FEATURE_RELEASE_COHORT_CONSTRUCTOR,
+  FEATURE_RELEASE_DATA_EGRESS_VIEWER,
+} from "@umccr/elsa-constants";
 
-export function createRouter(addBypassLoginPage: boolean) {
+/**
+ * Create the complete set of routes for the application.
+ *
+ * @param addBypassLoginPage if true, adds in a page that allows direct login as test users
+ * @param features the set of features to enable in the UI
+ */
+export function createRouter(
+  addBypassLoginPage: boolean,
+  features: Set<string>
+) {
   const NoMatch = () => {
     let location = useLocation();
 
     return (
       <EagerErrorBoundary
-        message={
+        error={
           <div>
             <p>
               No React router match for <code>{location.pathname}</code>
@@ -68,43 +81,44 @@ export function createRouter(addBypassLoginPage: boolean) {
     return <Outlet />;
   };
 
-  const releaseChildren = [
-    {
-      text: "Detail",
-      path: "detail",
-      element: <ReleasesDetailSubPage />,
-      children: <></>,
-    },
-    {
+  const releaseChildren = [];
+
+  releaseChildren.push({
+    text: "Detail",
+    path: "detail",
+    element: <ReleasesDetailSubPage />,
+    children: <></>,
+  });
+
+  if (features.has(FEATURE_RELEASE_COHORT_CONSTRUCTOR))
+    releaseChildren.push({
       text: "Cohort Constructor",
       path: "cohort-constructor",
       element: <BulkSelectorSubPage />,
       children: <></>,
-    },
-    {
-      text: "User Management",
-      path: "user-management",
-      element: <ReleasesUserManagementPage />,
-      children: <></>,
-    },
-    {
+    });
+
+  releaseChildren.push({
+    text: "User Management",
+    path: "user-management",
+    element: <ReleasesUserManagementPage />,
+    children: <></>,
+  });
+
+  if (features.has(FEATURE_RELEASE_DATA_EGRESS_VIEWER))
+    releaseChildren.push({
       text: "Data Egress Summary",
       path: "data-egress-summary",
       element: <DataEgressSummarySubPage />,
       children: <></>,
-    },
-    {
-      text: "Audit Log",
-      path: "audit-log",
-      element: <AuditLogSubPage />,
-      children: <></>,
-    },
-    {
-      path: "audit-log/:objectId",
-      element: <AuditEventDetailedPage />,
-      children: <></>,
-    },
-  ];
+    });
+
+  releaseChildren.push({
+    text: "Audit Events",
+    path: "audit-events",
+    element: <AuditEventsSubPage />,
+    children: <></>,
+  });
 
   return createBrowserRouter(
     createRoutesFromElements(
@@ -160,23 +174,28 @@ export function createRouter(addBypassLoginPage: boolean) {
             </Route>
           </Route>
 
-          <Route path={`datasets`} element={<DatasetLayout />}>
+          <Route path={`datasets`}>
             <Route index element={<DatasetsDashboardPage />} />
-            <Route path={`:datasetUri`} element={<DatasetsDetailPage />} />
+            <Route path={`:datasetUri`} element={<DatasetLayout />}>
+              <Route index element={<DatasetsDetailPage />} />
+            </Route>
           </Route>
 
           <Route path={`dac`} element={<DacLayout />}>
-            <Route index element={<DacImportPage />} />
+            <Route index element={<DacDashboardPage />} />
           </Route>
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
 
-          <Route
+          <Route path={`audit-events`} element={<AuditEventsPage />} />
+
+          {/* disabled - need to know how this relates to audit events when we arrive from releases audit page?
+              as it turns out - very few audit entries have long details so we don't even need currently
+            <Route
             path={`audit-events/:objectId`}
             element={<AuditEventDetailedPage />}
-          />
-          <Route path={`audit-events`} element={<AuditEventsPage />} />
+          /> */}
         </Route>
 
         <Route path="*" element={<NoMatch />} />

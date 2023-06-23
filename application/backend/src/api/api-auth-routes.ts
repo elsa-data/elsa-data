@@ -14,7 +14,7 @@ import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { generators } from "openid-client";
-import { AuditLogService } from "../business/services/audit-log-service";
+import { AuditEventService } from "../business/services/audit-event-service";
 import {
   cookieForBackend,
   cookieForUI,
@@ -24,12 +24,12 @@ import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
-  if (!settings.oidcIssuer)
+  if (!settings.oidc || !settings.oidc.issuer)
     throw new Error("Cannot establish OIDC login without OIDC settings");
 
-  return new settings.oidcIssuer.Client({
-    client_id: settings.oidcClientId,
-    client_secret: settings.oidcClientSecret,
+  return new settings.oidc.issuer.Client({
+    client_id: settings.oidc.clientId,
+    client_secret: settings.oidc.clientSecret,
     redirect_uris: [redirectUri],
     response_types: ["code"],
     token_endpoint_auth_method: "client_secret_post",
@@ -54,7 +54,7 @@ export const apiAuthRoutes = async (
   const { logger, edgeDbClient, settings } = getServices(opts.container);
 
   const userService = opts.container.resolve(UserService);
-  const auditLogService = opts.container.resolve(AuditLogService);
+  const auditLogService = opts.container.resolve(AuditEventService);
 
   const client = createClient(settings, opts.redirectUri);
 
@@ -85,13 +85,15 @@ export const apiAuthRoutes = async (
 
     if (dbUser !== undefined) {
       auditLogService.createUserAuditEvent(
-        edgeDbClient,
         dbUser.id,
         dbUser.subjectId,
         dbUser.displayName,
         "E",
         "Logout",
-        auditDetails
+        auditDetails,
+        0,
+        new Date(),
+        edgeDbClient
       );
     }
     // delete all the backend session cookies
@@ -168,7 +170,10 @@ export const callbackRoutes = async (
     const authUser = await userService.upsertUserForLogin(
       idClaims.sub,
       idClaims.name,
-      idClaims.email
+      idClaims.email,
+      {
+        ip: request.ip,
+      }
     );
 
     if (!authUser) {

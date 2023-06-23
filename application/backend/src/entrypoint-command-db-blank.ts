@@ -1,4 +1,4 @@
-import { blankTestData } from "./test-data/blank-test-data";
+import { blankTestData } from "./test-data/util/blank-test-data";
 
 export const DB_BLANK_COMMAND = "db-blank";
 
