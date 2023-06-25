@@ -38,7 +38,7 @@ export async function transformMasterManifestToHtsgetManifest(
 
   // I don't really know if these numbers mean that much, but should be okay for a demo.
   // todo: proper way to share/assign particular genes to regions.
-  const applyRestrictions = (update: ManifestRegionRestrictionType) => {
+  const applyRestrictions = (update: ManifestRegionRestrictionType[]) => {
     if (
       masterManifest.releaseHtsgetRestrictions.includes("CongenitalHeartDefect")
     ) {

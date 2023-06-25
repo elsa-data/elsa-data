@@ -37,25 +37,23 @@ export const ManifestCaseSchema = Type.Object({
   patients: Type.Array(ManifestPatientSchema),
 });
 
-export const ManifestRegionRestrictionSchema = Type.Array(
-  Type.Object({
-    chromosome: Type.Number(),
-    start: Type.Optional(Type.Number()),
-    end: Type.Optional(Type.Number()),
-  })
-);
+export const ManifestRegionRestrictionSchema = Type.Object({
+  chromosome: Type.Number(),
+  start: Type.Optional(Type.Number()),
+  end: Type.Optional(Type.Number()),
+});
 
 export const ManifestReadsFileSchema = Type.Object({
   url: Type.String(),
 
-  restrictions: ManifestRegionRestrictionSchema,
+  restrictions: Type.Array(ManifestRegionRestrictionSchema),
 });
 
 export const ManifestVariantsFileSchema = Type.Object({
   url: Type.String(),
   variantSampleId: Type.String(),
 
-  restrictions: ManifestRegionRestrictionSchema,
+  restrictions: Type.Array(ManifestRegionRestrictionSchema),
 });
 
 export const ManifestSchema = Type.Object({
