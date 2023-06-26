@@ -15,7 +15,8 @@ with
     isAllowedVariantData,
     isAllowedS3Data,
     isAllowedGSData,
-    isAllowedR2Data
+    isAllowedR2Data,
+    htsgetRestrictions
   }
   filter .releaseKey = <str>$releaseKey),
 
@@ -33,6 +34,7 @@ select {
   releaseIsAllowedS3Data:= release.isAllowedS3Data,
   releaseIsAllowedGSData:= release.isAllowedGSData,
   releaseIsAllowedR2Data := release.isAllowedR2Data,
+  releaseHtsgetRestrictions := release.htsgetRestrictions,
 
   # the tree is an output representation with all the dataset level
   # fields (sexAtBirth etc) and retaining the hierarchical nature of the data

@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, ReactNode } from "react";
+import React, { PropsWithChildren, ReactNode, useState } from "react";
 import classNames from "classnames";
 import { useMutation } from "@tanstack/react-query";
 import { Box } from "../../../../components/boxes";
@@ -45,6 +45,21 @@ export const SharerControlBox: React.FC<Props> = ({
         }),
     }
   );
+
+  const [congenitalHeartDefect, setCongenitalHeartDefect] = useState(
+    releaseData.htsgetRestrictions.includes("CongenitalHeartDefect")
+  );
+  const [autism, setAutism] = useState(
+    releaseData.htsgetRestrictions.includes("Autism")
+  );
+  const [achromatopsia, setAchromatopsia] = useState(
+    releaseData.htsgetRestrictions.includes("Achromatopsia")
+  );
+
+  const applyHtsgetRestriction =
+    trpc.releaseRouter.applyHtsgetRestriction.useMutation();
+  const removeHtsgetRestriction =
+    trpc.releaseRouter.removeHtsgetRestriction.useMutation();
 
   const copyOutTriggerMutate = trpc.releaseJob.startCopyOut.useMutation({
     onSuccess: async () => {
@@ -122,6 +137,46 @@ export const SharerControlBox: React.FC<Props> = ({
       <div className="collapse-content flex flex-col items-stretch">
         {props.children}
       </div>
+    </div>
+  );
+
+  type HtsgetRestrictionProps = {
+    label: ReactNode;
+    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia";
+    setFn: (restriction: boolean) => void;
+    checked: boolean;
+  };
+  const HtsgetRestriction: React.FC<
+    PropsWithChildren<HtsgetRestrictionProps>
+  > = (props) => (
+    <div className="form-control items-start font-medium">
+      <label className="label cursor-pointer">
+        <input
+          type="checkbox"
+          checked={props.checked}
+          onChange={(e) => {
+            props.setFn(e.target.checked);
+
+            if (e.target.checked) {
+              applyHtsgetRestriction.mutate({
+                releaseKey,
+                restriction: props.restriction,
+              });
+            } else {
+              removeHtsgetRestriction.mutate({
+                releaseKey,
+                restriction: props.restriction,
+              });
+            }
+          }}
+          className={classNames("checkbox-accent checkbox checkbox-sm mr-2", {
+            "opacity-50":
+              applyHtsgetRestriction.isLoading ||
+              removeHtsgetRestriction.isLoading,
+          })}
+        />
+        <span className="label-text">{props.label}</span>
+      </label>
     </div>
   );
 
@@ -250,8 +305,35 @@ export const SharerControlBox: React.FC<Props> = ({
                 current={htsgetEnabled}
                 notWorkingReason={htsgetSetting.notWorkingReason}
               >
-                <p>Some text about htsget</p>
-                <pre>{releaseData.dataSharingHtsget?.url}</pre>
+                <div className="flex flex-col">
+                  <div className={"pb-2"}>
+                    htsget is a protocol that allows restricting data sharing to
+                    specific regions.
+                  </div>
+                  <pre className="pb-4">
+                    {releaseData.dataSharingHtsget?.url}
+                  </pre>
+
+                  <div className="font-medium">Restrictions</div>
+                  <HtsgetRestriction
+                    label="Congenital Heart Defect"
+                    setFn={setCongenitalHeartDefect}
+                    restriction="CongenitalHeartDefect"
+                    checked={congenitalHeartDefect}
+                  ></HtsgetRestriction>
+                  <HtsgetRestriction
+                    label="Autism"
+                    setFn={setAutism}
+                    restriction="Autism"
+                    checked={autism}
+                  ></HtsgetRestriction>
+                  <HtsgetRestriction
+                    label="Achromatopsia"
+                    setFn={setAchromatopsia}
+                    restriction="Achromatopsia"
+                    checked={achromatopsia}
+                  ></HtsgetRestriction>
+                </div>
               </SharingConfigurationAccordion>
             )}
 
