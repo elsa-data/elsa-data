@@ -9,7 +9,7 @@ let edgeDbClient: Client;
 let releaseService: ReleaseService;
 let testReleaseKey: string;
 
-let superAdminUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
 let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
@@ -21,8 +21,12 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
-    await beforeEachCommon(testContainer));
+  ({
+    testReleaseKey,
+    allowedAdministratorUser,
+    allowedManagerUser,
+    notAllowedUser,
+  } = await beforeEachCommon(testContainer));
 });
 it("basic add/remove of diseases from coded application", async () => {
   {
@@ -35,7 +39,7 @@ it("basic add/remove of diseases from coded application", async () => {
   }
   {
     await releaseService.addDiseaseToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "AA",
       "BB"
@@ -56,14 +60,14 @@ it("basic add/remove of diseases from coded application", async () => {
 
   {
     await releaseService.addDiseaseToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "AA",
       "CC"
     );
 
     await releaseService.removeDiseaseFromApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "mondo",
       "ABCD"
@@ -94,7 +98,7 @@ it("basic add/remove of countries from coded application", async () => {
   }
   {
     await releaseService.addCountryToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "AA",
       "BB"
@@ -115,14 +119,14 @@ it("basic add/remove of countries from coded application", async () => {
 
   {
     await releaseService.addCountryToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "AA",
       "CC"
     );
 
     await releaseService.removeCountryFromApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "iso",
       "AU"
@@ -145,7 +149,7 @@ it("basic add/remove of countries from coded application", async () => {
 it("set like behaviour of disease/country in coded application", async () => {
   {
     await releaseService.addCountryToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "iso",
       "AU"
@@ -162,7 +166,7 @@ it("set like behaviour of disease/country in coded application", async () => {
 
   {
     await releaseService.addDiseaseToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "mondo",
       "ABCD"
@@ -180,7 +184,7 @@ it("set like behaviour of disease/country in coded application", async () => {
   // confirm that adding something where only the system changes - does still push something
   {
     await releaseService.addDiseaseToApplicationCoded(
-      allowedManagerUser,
+      allowedAdministratorUser,
       testReleaseKey,
       "mondoNOT",
       "ABCD"
