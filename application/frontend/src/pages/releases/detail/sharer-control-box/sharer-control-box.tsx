@@ -14,6 +14,7 @@ import { trpc } from "../../../../helpers/trpc";
 import { isDiscriminate } from "@umccr/elsa-constants";
 import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
 import { InputWrapper } from "../../../../components/input-wrapper";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -156,6 +157,7 @@ export const SharerControlBox: React.FC<Props> = ({
     <div className="form-control items-start font-medium">
       <label className="label cursor-pointer">
         <input
+          disabled={!isEditable}
           type="checkbox"
           checked={props.checked}
           onChange={(e) => {
@@ -202,9 +204,16 @@ export const SharerControlBox: React.FC<Props> = ({
   const awsAccessPointEnabled = !!releaseData.dataSharingAwsAccessPoint;
   // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
 
-  const error = releasePatchMutate.error ?? copyOutTriggerMutate.error;
-  const isError = releasePatchMutate.isError || copyOutTriggerMutate.isError;
-
+  const error =
+    releasePatchMutate.error ??
+    copyOutTriggerMutate.error ??
+    removeHtsgetRestriction.error ??
+    applyHtsgetRestriction.error;
+  const isError =
+    releasePatchMutate.isError ||
+    copyOutTriggerMutate.isError ||
+    removeHtsgetRestriction.isError ||
+    applyHtsgetRestriction.isError;
   return (
     <Box heading="Data Sharing Control">
       <RhSection>
@@ -217,6 +226,8 @@ export const SharerControlBox: React.FC<Props> = ({
         />
         <RightDiv>
           <RhChecks label="Researcher Access Via">
+            {isError && <EagerErrorBoundary error={error} />}
+
             <InputWrapper isDisabledChildrenInput={!isEditable}>
               <>
                 {objectSigningSetting && (

@@ -23,6 +23,11 @@ import {
   releaseGetAllByUser,
   removeHtsgetRestriction,
 } from "../../../dbschema/queries";
+import {
+  auditFailure,
+  auditReleaseUpdateStart,
+  auditSuccess,
+} from "../../audit-helpers";
 import { AuditEventService } from "./audit-event-service";
 import { Logger } from "pino";
 import { jobAsBadgeLabel } from "./jobs/job-helpers";
@@ -681,6 +686,9 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
+    if (userRole != "Administrator")
+      throw new ReleaseSelectionPermissionError(releaseKey);
+
     let info = await this.getBase(releaseKey, userRole);
     if (!info.htsgetRestrictions.includes(restriction)) {
       const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
@@ -720,6 +728,9 @@ ${release.applicantEmailAddresses}
       user,
       releaseKey
     );
+
+    if (userRole != "Administrator")
+      throw new ReleaseSelectionPermissionError(releaseKey);
 
     let info = await this.getBase(releaseKey, userRole);
     if (info.htsgetRestrictions.includes(restriction)) {
