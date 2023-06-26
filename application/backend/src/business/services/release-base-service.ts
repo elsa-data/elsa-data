@@ -243,7 +243,6 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
-      htsgetRestrictions: releaseInfo.htsgetRestrictions,
       // password only gets sent down to the Manager
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
@@ -272,6 +271,7 @@ export abstract class ReleaseBaseService {
               releaseInfo.dataSharingConfiguration.copyOutDestinationLocation,
           }
         : undefined,
+      dataSharingHtsgetRestrictions: releaseInfo.dataSharingConfiguration.htsgetRestrictions,
       dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
         ? this.configForFeature("isAllowedHtsget")
         : undefined,

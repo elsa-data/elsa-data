@@ -37,6 +37,7 @@ import {
   splitUserEmails,
 } from "./_dac-user-helper";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import {Executor} from "edgedb";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -708,6 +709,42 @@ ${release.applicantEmailAddresses}
     }
   }
 
+  async htsgetRestrictionsFn(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia",
+    actionDescription: string,
+    restrictionFn: (client: Executor, args: {
+      userDbId: string;
+      releaseKey: string;
+      restriction: string;
+    }) => Promise<{ id: string } | null>,
+  ) {
+    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+      this.auditEventService,
+      this.edgeDbClient,
+      user,
+      releaseKey,
+      actionDescription
+    );
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      await restrictionFn(this.edgeDbClient, {
+        userDbId: user.dbId,
+        releaseKey,
+        restriction,
+      });
+
+      await auditSuccess(
+        this.auditEventService,
+        tx,
+        auditEventId,
+        auditEventStart,
+        { restriction }
+      );
+    });
+  }
+
   public async applyHtsgetRestriction(
     user: AuthenticatedUser,
     releaseKey: string,
@@ -719,30 +756,8 @@ ${release.applicantEmailAddresses}
     );
 
     let info = await this.getBase(releaseKey, userRole);
-    if (!info.htsgetRestrictions.includes(restriction)) {
-      const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-        this.auditEventService,
-        this.edgeDbClient,
-        user,
-        releaseKey,
-        "Applying htsget restriction"
-      );
-
-      await this.edgeDbClient.transaction(async (tx) => {
-        await applyHtsgetRestriction(this.edgeDbClient, {
-          userDbId: user.dbId,
-          releaseKey,
-          restriction,
-        });
-
-        await auditSuccess(
-          this.auditEventService,
-          tx,
-          auditEventId,
-          auditEventStart,
-          { restriction }
-        );
-      });
+    if (!info.dataSharingHtsgetRestrictions.includes(restriction)) {
+      await this.htsgetRestrictionsFn(user, releaseKey, restriction, "Applying htsget restriction", applyHtsgetRestriction);
     }
 
     return await this.getBase(releaseKey, userRole);
@@ -759,30 +774,8 @@ ${release.applicantEmailAddresses}
     );
 
     let info = await this.getBase(releaseKey, userRole);
-    if (info.htsgetRestrictions.includes(restriction)) {
-      const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-        this.auditEventService,
-        this.edgeDbClient,
-        user,
-        releaseKey,
-        "Removed htsget restriction"
-      );
-
-      await this.edgeDbClient.transaction(async (tx) => {
-        await removeHtsgetRestriction(this.edgeDbClient, {
-          userDbId: user.dbId,
-          releaseKey,
-          restriction,
-        });
-
-        await auditSuccess(
-          this.auditEventService,
-          tx,
-          auditEventId,
-          auditEventStart,
-          { restriction }
-        );
-      });
+    if (info.dataSharingHtsgetRestrictions.includes(restriction)) {
+      await this.htsgetRestrictionsFn(user, releaseKey, restriction, "Removing htsget restriction", removeHtsgetRestriction);
     }
 
     return await this.getBase(releaseKey, userRole);

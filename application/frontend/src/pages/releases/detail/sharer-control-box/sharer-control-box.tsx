@@ -47,13 +47,13 @@ export const SharerControlBox: React.FC<Props> = ({
   );
 
   const [congenitalHeartDefect, setCongenitalHeartDefect] = useState(
-    releaseData.htsgetRestrictions.includes("CongenitalHeartDefect")
+    releaseData.dataSharingHtsgetRestrictions.includes("CongenitalHeartDefect")
   );
   const [autism, setAutism] = useState(
-    releaseData.htsgetRestrictions.includes("Autism")
+    releaseData.dataSharingHtsgetRestrictions.includes("Autism")
   );
   const [achromatopsia, setAchromatopsia] = useState(
-    releaseData.htsgetRestrictions.includes("Achromatopsia")
+    releaseData.dataSharingHtsgetRestrictions.includes("Achromatopsia")
   );
 
   const applyHtsgetRestriction =

@@ -126,7 +126,7 @@ export const ReleaseDetailSchema = Type.Object({
     })
   ),
 
-  htsgetRestrictions: Type.Array(Type.String()),
+  dataSharingHtsgetRestrictions: Type.Array(Type.String()),
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
   dataSharingCopyOut: Type.Optional(
