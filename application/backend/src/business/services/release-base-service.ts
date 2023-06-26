@@ -271,7 +271,8 @@ export abstract class ReleaseBaseService {
               releaseInfo.dataSharingConfiguration.copyOutDestinationLocation,
           }
         : undefined,
-      dataSharingHtsgetRestrictions: releaseInfo.dataSharingConfiguration.htsgetRestrictions,
+      dataSharingHtsgetRestrictions:
+        releaseInfo.dataSharingConfiguration.htsgetRestrictions,
       dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
         ? this.configForFeature("isAllowedHtsget")
         : undefined,

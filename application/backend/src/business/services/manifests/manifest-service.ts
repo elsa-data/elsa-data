@@ -48,7 +48,9 @@ export class ManifestService {
         activation: {
           manifest: true,
         },
-        htsgetRestrictions: true,
+        dataSharingConfiguration: {
+          htsgetRestrictions: true,
+        },
         filter: e.op(r.releaseKey, "=", releaseKey),
       }))
       .assert_single()
@@ -64,7 +66,8 @@ export class ManifestService {
 
     const manifest = releaseWithManifest.activation
       .manifest as ManifestMasterType;
-    manifest.releaseHtsgetRestrictions = releaseWithManifest.htsgetRestrictions;
+    manifest.releaseHtsgetRestrictions =
+      releaseWithManifest.dataSharingConfiguration.htsgetRestrictions;
 
     return manifest;
   }

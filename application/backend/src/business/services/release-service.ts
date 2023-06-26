@@ -37,7 +37,7 @@ import {
   splitUserEmails,
 } from "./_dac-user-helper";
 import { AuditEventTimedService } from "./audit-event-timed-service";
-import {Executor} from "edgedb";
+import { Executor } from "edgedb";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -714,11 +714,14 @@ ${release.applicantEmailAddresses}
     releaseKey: string,
     restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia",
     actionDescription: string,
-    restrictionFn: (client: Executor, args: {
-      userDbId: string;
-      releaseKey: string;
-      restriction: string;
-    }) => Promise<{ id: string } | null>,
+    restrictionFn: (
+      client: Executor,
+      args: {
+        userDbId: string;
+        releaseKey: string;
+        restriction: string;
+      }
+    ) => Promise<{ id: string } | null>
   ) {
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
       this.auditEventService,
@@ -757,7 +760,13 @@ ${release.applicantEmailAddresses}
 
     let info = await this.getBase(releaseKey, userRole);
     if (!info.dataSharingHtsgetRestrictions.includes(restriction)) {
-      await this.htsgetRestrictionsFn(user, releaseKey, restriction, "Applying htsget restriction", applyHtsgetRestriction);
+      await this.htsgetRestrictionsFn(
+        user,
+        releaseKey,
+        restriction,
+        "Applying htsget restriction",
+        applyHtsgetRestriction
+      );
     }
 
     return await this.getBase(releaseKey, userRole);
@@ -775,7 +784,13 @@ ${release.applicantEmailAddresses}
 
     let info = await this.getBase(releaseKey, userRole);
     if (info.dataSharingHtsgetRestrictions.includes(restriction)) {
-      await this.htsgetRestrictionsFn(user, releaseKey, restriction, "Removing htsget restriction", removeHtsgetRestriction);
+      await this.htsgetRestrictionsFn(
+        user,
+        releaseKey,
+        restriction,
+        "Removing htsget restriction",
+        removeHtsgetRestriction
+      );
     }
 
     return await this.getBase(releaseKey, userRole);
