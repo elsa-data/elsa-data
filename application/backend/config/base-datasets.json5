@@ -1,0 +1,16 @@
+{
+  datasets: [
+    {
+      uri: "urn:example:elsa-data-demo-dataset-smartie",
+      name: "Smartie",
+      description: "Smartie",
+      loader: "australian-genomics-directories",
+      storageLocation: "aws-s3",
+      // this URL needs to match the constants defined in insert-test-data-smartie - though importantly the
+      // bucket itself is NOT REAL - this data all comes via mocks when we are in dev
+      storageUriPrefix: "s3://elsa-data-demo-datasets/Smartie",
+      // attempt to derive specimen id from filenames
+      specimenIdentifierRegex: "^.*([A-Z][A-Z][A-Z])[._].*$",
+    },
+  ],
+}

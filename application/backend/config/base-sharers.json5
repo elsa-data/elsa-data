@@ -1,0 +1,13 @@
+{
+  sharers: [
+    {
+      id: "signing",
+      type: "object-signing",
+      maxAgeInSeconds: 600,
+    },
+    {
+      id: "copy",
+      type: "copy-out",
+    },
+  ],
+}

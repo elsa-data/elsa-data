@@ -1,14 +1,5 @@
 {
-  sharers: [
-    {
-      id: "signing",
-      type: "object-signing",
-      maxAgeInSeconds: 600,
-    },
-    {
-      id: "co",
-      type: "copy-out",
-    },
+  "+sharers": [
     {
       id: "umccr-htsget",
       type: "htsget",
