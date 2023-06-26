@@ -9,6 +9,7 @@ import { getAllFileRecords } from "./_release-file-list-helper";
 import pLimit, { Limit } from "p-limit";
 import { ReleaseService } from "./release-service";
 import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 
 @injectable()
 export class GcpStorageSharingService {
@@ -140,7 +141,7 @@ export class GcpStorageSharingService {
       );
 
     if (userRole != "Administrator") {
-      throw new Error("Unauthorised role to modify user.");
+      throw new ReleaseSelectionPermissionError(releaseKey);
     }
 
     const now = new Date();

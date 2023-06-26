@@ -6,7 +6,6 @@ import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { ErrorBoundary } from "../../../../components/errors";
 import { Alert } from "../../../../components/alert";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type Props = {
   releaseKey: string;

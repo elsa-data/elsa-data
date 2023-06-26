@@ -81,9 +81,7 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
         <div className="prose">
           <button
             disabled={isLoading}
-            className={classNames("btn-normal btn mt-4", {
-              loading: isLoading,
-            })}
+            className="btn-normal btn mt-4"
             onClick={() =>
               releasePatchMutate.mutate({
                 op: "replace",
@@ -92,6 +90,7 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
               })
             }
           >
+            {isLoading && <span className="loading loading-spinner" />}
             {"Save" +
               (!releaseData.activation ? " (Release Must Be Active)" : "")}
           </button>
