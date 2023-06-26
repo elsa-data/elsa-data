@@ -121,6 +121,7 @@ it("test basic operation of manifest helper", async () => {
     const readValues = Object.values(htsgetManifest.reads);
     expect(readValues).toHaveLength(7);
     expect(readValues).toContainEqual({
+      restrictions: [],
       url: "s3://umccr-10g-data-dev/HG00173/HG00173.bam",
     });
   }

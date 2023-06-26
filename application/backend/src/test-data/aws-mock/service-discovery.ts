@@ -4,19 +4,20 @@ import {
   ServiceDiscoveryClient,
 } from "@aws-sdk/client-servicediscovery";
 import { MOCK_AWS_OBJECT_SIGNING_SECRET_NAME } from "./secrets-manager";
+import { MOCK_COPY_OUT_STEPS_ARN } from "./steps";
 
 export function createMockServiceDiscovery() {
   const serviceDiscoveryClientMock = mockClient(ServiceDiscoveryClient);
 
   serviceDiscoveryClientMock
     .on(DiscoverInstancesCommand, {
-      ServiceName: "ElsaDataCopyOut",
+      ServiceName: "CopyOut",
     })
     .resolves({
       Instances: [
         {
           Attributes: {
-            stateMachineArn: "sdfsf",
+            stateMachineArn: MOCK_COPY_OUT_STEPS_ARN,
           },
         },
       ],
@@ -24,13 +25,12 @@ export function createMockServiceDiscovery() {
 
   serviceDiscoveryClientMock
     .on(DiscoverInstancesCommand, {
-      ServiceName: "ElsaDataObjectSigning",
+      ServiceName: "ObjectSigning",
     })
     .resolves({
       Instances: [
         {
           Attributes: {
-            s3AccessKey: "sdfsf",
             s3AccessKeySecretName: MOCK_AWS_OBJECT_SIGNING_SECRET_NAME,
           },
         },

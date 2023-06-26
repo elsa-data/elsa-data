@@ -40,7 +40,7 @@ export const ObjectStoreRecordKey = [
 ] as const;
 
 const ObjectStoreRecordKeySchema: TLiteral<
-  typeof ObjectStoreRecordKey[number]
+  (typeof ObjectStoreRecordKey)[number]
 >[] = ObjectStoreRecordKey.map((header) => Type.Literal(header));
 
 const FileRecordHeaderElementSchema: TUnion<typeof ObjectStoreRecordKeySchema> =
@@ -61,7 +61,7 @@ export const ReleasePresignResponseSchema = Type.Object({
   files: Type.Array(Type.String()),
 });
 
-export type FileRecordHeaderType = typeof ObjectStoreRecordKey[number];
+export type FileRecordHeaderType = (typeof ObjectStoreRecordKey)[number];
 export type ReleasePresignRequestType = Static<
   typeof ReleasePresignRequestSchema
 >;

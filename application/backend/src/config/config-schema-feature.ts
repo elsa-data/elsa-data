@@ -5,6 +5,11 @@ import { z } from "zod";
  * particular instance.
  */
 export const FeatureSchema = z.object({
+  enableConsentDisplay: z
+    .optional(z.boolean())
+    .describe(
+      "Whether the UI display of consent information in Elsa Data should be enabled"
+    ),
   enableCohortConstructor: z
     .optional(z.boolean())
     .describe(

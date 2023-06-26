@@ -5,6 +5,7 @@ import type {
   ManifestHtsgetVariantsFileType,
 } from "./manifest-htsget-types";
 import { ManifestMasterType } from "../manifest-master-types";
+import { ManifestRegionRestrictionType } from "./manifest-htsget-types";
 
 /**
  * Create a structured/tree manifest for the data included in a release.
@@ -35,6 +36,42 @@ export async function transformMasterManifestToHtsgetManifest(
   const variantDictionary: { [hid: string]: ManifestHtsgetVariantsFileType } =
     {};
 
+  // I don't really know if these numbers mean that much, but should be okay for a demo.
+  // todo: proper way to share/assign particular genes to regions.
+  const applyRestrictions = (update: ManifestRegionRestrictionType[]) => {
+    if (
+      masterManifest.releaseHtsgetRestrictions.includes("CongenitalHeartDefect")
+    ) {
+      update.push(
+        ...[
+          { chromosome: 9, start: 130713043, end: 130887675 },
+          { chromosome: 15, start: 34790230, end: 34795549 },
+          { chromosome: 2, start: 157736446, end: 157876330 },
+        ]
+      );
+    }
+
+    if (masterManifest.releaseHtsgetRestrictions.includes("Autism")) {
+      update.push(
+        ...[
+          { chromosome: 20, start: 50888918, end: 50931437 },
+          { chromosome: 22, start: 40346500, end: 40387527 },
+          { chromosome: 1, start: 27534245, end: 27604227 },
+        ]
+      );
+    }
+
+    if (masterManifest.releaseHtsgetRestrictions.includes("Achromatopsia")) {
+      update.push(
+        ...[
+          { chromosome: 1, start: 161766320, end: 161964070 },
+          { chromosome: 2, start: 98346456, end: 98398601 },
+          { chromosome: 8, start: 86574179, end: 86743634 },
+        ]
+      );
+    }
+  };
+
   for (const filesResult of masterManifest.specimenList) {
     // NOTE: we prefer the specimen id over the artifact id here - because of the VCF with multiple samples problem
     // it is entirely possible we might have 3 specimens say (a trio) all pointing to a single VCF artifact
@@ -63,19 +100,22 @@ export async function transformMasterManifestToHtsgetManifest(
         const url = art["vcfFile"]?.url;
         if (_.isString(url)) {
           if (url.startsWith(S3_PREFIX))
-            s3Variant = { url: url, variantSampleId: "" };
+            s3Variant = { url: url, variantSampleId: "", restrictions: [] };
           if (url.startsWith(GS_PREFIX))
-            gsVariant = { url: url, variantSampleId: "" };
+            gsVariant = { url: url, variantSampleId: "", restrictions: [] };
           if (url.startsWith(R2_PREFIX))
-            r2Variant = { url: url, variantSampleId: "" };
+            r2Variant = { url: url, variantSampleId: "", restrictions: [] };
         }
       }
       if ("bamFile" in art) {
         const url = art["bamFile"]?.url;
         if (url) {
-          if (url.startsWith(S3_PREFIX)) s3Read = { url: url };
-          if (url.startsWith(GS_PREFIX)) gsRead = { url: url };
-          if (url.startsWith(R2_PREFIX)) r2Read = { url: url };
+          if (url.startsWith(S3_PREFIX))
+            s3Read = { url: url, restrictions: [] };
+          if (url.startsWith(GS_PREFIX))
+            gsRead = { url: url, restrictions: [] };
+          if (url.startsWith(R2_PREFIX))
+            r2Read = { url: url, restrictions: [] };
         }
       }
     }
@@ -83,13 +123,27 @@ export async function transformMasterManifestToHtsgetManifest(
     // note the logic here prefers AWS over GS over R2 - where more than 1
     // are present as artifacts AND more than 1 are selected for inclusion
     // TODO think how we might handle this better
-    if (s3Variant) variantDictionary[htsgetId] = s3Variant;
-    else if (gsVariant) variantDictionary[htsgetId] = gsVariant;
-    else if (r2Variant) variantDictionary[htsgetId] = r2Variant;
+    if (s3Variant) {
+      variantDictionary[htsgetId] = s3Variant;
+      applyRestrictions(variantDictionary[htsgetId].restrictions);
+    } else if (gsVariant) {
+      variantDictionary[htsgetId] = gsVariant;
+      applyRestrictions(variantDictionary[htsgetId].restrictions);
+    } else if (r2Variant) {
+      variantDictionary[htsgetId] = r2Variant;
+      applyRestrictions(variantDictionary[htsgetId].restrictions);
+    }
 
-    if (s3Read) readDictionary[htsgetId] = s3Read;
-    else if (gsRead) readDictionary[htsgetId] = gsRead;
-    else if (r2Read) readDictionary[htsgetId] = r2Read;
+    if (s3Read) {
+      readDictionary[htsgetId] = s3Read;
+      applyRestrictions(readDictionary[htsgetId].restrictions);
+    } else if (gsRead) {
+      readDictionary[htsgetId] = gsRead;
+      applyRestrictions(readDictionary[htsgetId].restrictions);
+    } else if (r2Read) {
+      readDictionary[htsgetId] = r2Read;
+      applyRestrictions(readDictionary[htsgetId].restrictions);
+    }
   }
 
   const externalIdsToMap = (
@@ -121,7 +175,6 @@ export async function transformMasterManifestToHtsgetManifest(
     reads: readDictionary,
     variants: variantDictionary,
     // TODO implement a restrictions mechanism both here and in the htsget server
-    restrictions: {},
     cases: masterManifest.caseTree.map((c) => {
       return {
         ids: externalIdsToMap(c.externalIdentifiers),

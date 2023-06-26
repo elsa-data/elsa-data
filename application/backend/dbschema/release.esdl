@@ -103,6 +103,7 @@ module release {
             # we cascade delete this configuration if the release itself is deleted
             on source delete delete target;
         }
+        multi htsgetRestrictions: str;
 
         # if present indicates that a running job is active in the context of this release
         #

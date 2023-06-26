@@ -7,6 +7,7 @@ import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
 import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 import jsonpath from "jsonpath";
 import _ from "lodash";
+import { environmentVariableMap } from "./config-load-environment-variable-map";
 
 const env_prefix = "ELSA_DATA_CONFIG_";
 
@@ -113,38 +114,11 @@ export async function getMetaConfig(
 
   // TODO a mechanism that perhaps _parses_ env names - and works out the path itself..
   // (i.e. replace _ with . and capitalise! but better)
+  for (const [e, v] of Object.entries(environmentVariableMap)) {
+    trySetEnvironmentVariableString(e, v);
+  }
 
-  trySetEnvironmentVariableString(
-    "SERVICE_DISCOVERY_NAMESPACE",
-    "serviceDiscoveryNamespace"
-  );
-  trySetEnvironmentVariableString("AWS_TEMP_BUCKET", "aws.tempBucket");
-  trySetEnvironmentVariableString(
-    "CLOUDFLARE_SIGNING_ACCESS_KEY_ID",
-    "cloudflare.signingAccessKeyId"
-  );
-  trySetEnvironmentVariableString(
-    "CLOUDFLARE_SIGNING_SECRET_ACCESS_KEY",
-    "cloudflare.signingSecretAccessKey"
-  );
-  trySetEnvironmentVariableString("DEPLOYED_URL", "deployedUrl");
-
-  trySetEnvironmentVariableString(
-    "HTTP_HOSTING_SESSION_SECRET",
-    "httpHosting.session.secret"
-  );
-  trySetEnvironmentVariableString(
-    "HTTP_HOSTING_SESSION_SALT",
-    "httpHosting.session.salt"
-  );
   trySetEnvironmentVariableInteger("HTTP_HOSTING_PORT", "httpHosting.port");
-  trySetEnvironmentVariableString("HTTP_HOSTING_HOST", "httpHosting.host");
-
-  trySetEnvironmentVariableString("LOGGER_LEVEL", "logger.level");
-
-  trySetEnvironmentVariableString("MAILER_OPTIONS", "mailer.options");
-  trySetEnvironmentVariableString("MAILER_DEFAULTS", "mailer.defaults");
-  trySetEnvironmentVariableString("MAILER_MODE", "mailer.mode");
 
   // perform validation on the final config object and return it transformed
   // (the transform will do type coercion and setting defaults)

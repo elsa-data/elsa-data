@@ -18,7 +18,11 @@ import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
-import { releaseGetAllByUser } from "../../../dbschema/queries";
+import {
+  applyHtsgetRestriction,
+  releaseGetAllByUser,
+  removeHtsgetRestriction,
+} from "../../../dbschema/queries";
 import { AuditEventService } from "./audit-event-service";
 import { Logger } from "pino";
 import { jobAsBadgeLabel } from "./jobs/job-helpers";
@@ -665,5 +669,85 @@ ${release.applicantEmailAddresses}
         return await this.getBase(releaseKey, userRole);
       }
     );
+  }
+
+  public async applyHtsgetRestriction(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia"
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
+
+    let info = await this.getBase(releaseKey, userRole);
+    if (!info.htsgetRestrictions.includes(restriction)) {
+      const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+        this.auditEventService,
+        this.edgeDbClient,
+        user,
+        releaseKey,
+        "Applying htsget restriction"
+      );
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        await applyHtsgetRestriction(this.edgeDbClient, {
+          userDbId: user.dbId,
+          releaseKey,
+          restriction,
+        });
+
+        await auditSuccess(
+          this.auditEventService,
+          tx,
+          auditEventId,
+          auditEventStart,
+          { restriction }
+        );
+      });
+    }
+
+    return await this.getBase(releaseKey, userRole);
+  }
+
+  public async removeHtsgetRestriction(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia"
+  ): Promise<ReleaseDetailType> {
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
+
+    let info = await this.getBase(releaseKey, userRole);
+    if (info.htsgetRestrictions.includes(restriction)) {
+      const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
+        this.auditEventService,
+        this.edgeDbClient,
+        user,
+        releaseKey,
+        "Removed htsget restriction"
+      );
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        await removeHtsgetRestriction(this.edgeDbClient, {
+          userDbId: user.dbId,
+          releaseKey,
+          restriction,
+        });
+
+        await auditSuccess(
+          this.auditEventService,
+          tx,
+          auditEventId,
+          auditEventStart,
+          { restriction }
+        );
+      });
+    }
+
+    return await this.getBase(releaseKey, userRole);
   }
 }

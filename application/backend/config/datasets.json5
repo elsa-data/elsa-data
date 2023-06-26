@@ -10,7 +10,7 @@
       // bucket itself is NOT REAL - this data all comes via mocks when we are in dev
       storageUriPrefix: "s3://elsa-data-demo-datasets/Smartie",
       // attempt to derive specimen id from filenames
-      specimenIdentifierRegex: "^.*(SAMP\\d\\d\\d\\d).*$",
+      specimenIdentifierRegex: "^.*([A-Z][A-Z][A-Z])[._].*$",
     },
     {
       uri: "urn:fdc:umccr.org:2022:dataset/10g",

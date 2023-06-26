@@ -33,6 +33,7 @@ export const configZodDefinition = z.object({
   httpHosting: HttpHostingSchema,
   oidc: z.optional(OidcSchema),
   feature: z.optional(FeatureSchema).default({
+    enableConsentDisplay: true,
     enableCohortConstructor: true,
     enableDataEgressViewer: true,
   }),
