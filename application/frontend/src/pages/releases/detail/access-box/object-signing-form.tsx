@@ -20,6 +20,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
     <>
       {isSetPrepareDownload && (
         <Alert
+          icon={<span className="loading loading-bars loading-xs" />}
           description={"Preparing signed ZIP file to download"}
           additionalAlertClassName={
             "alert alert-info bg-slate-300 text-md py-1 mb-3"

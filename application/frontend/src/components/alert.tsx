@@ -86,7 +86,7 @@ export const Alert = ({
   return (
     <Transition
       className={classNames(
-        "alert flex-row shadow-lg",
+        "alert flex flex-row justify-between shadow-lg",
         additionalAlertClassName,
         {
           "animate-pop": isInView && animate,
@@ -101,7 +101,7 @@ export const Alert = ({
       leaveTo="opacity-0"
       ref={alertRef}
     >
-      <div>
+      <div className="flex space-x-4">
         {icon}
         <span>{description}</span>
       </div>

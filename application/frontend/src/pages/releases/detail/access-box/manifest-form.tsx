@@ -20,6 +20,7 @@ export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
     <>
       {isSetPrepareDownload && (
         <Alert
+          icon={<span className="loading loading-bars loading-xs" />}
           description={"Preparing manifest for download."}
           additionalAlertClassName={
             "alert alert-info bg-slate-300 text-md py-1 mb-3"
