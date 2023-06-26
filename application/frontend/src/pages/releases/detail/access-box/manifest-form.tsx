@@ -7,11 +7,6 @@ import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { ErrorBoundary } from "../../../../components/errors";
 import { Alert } from "../../../../components/alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faSpinner,
-  faUserGear,
-} from "@fortawesome/free-solid-svg-icons";
 
 type Props = {
   releaseKey: string;

@@ -28,15 +28,20 @@ export const ReleasesDetailSubPage: React.FC = () => {
         releaseIsActivated={!!releaseData.activation}
       />
 
-      {releaseData.permissionEditSelections && (
+      {releaseData.permissionViewSelections && (
         <FurtherRestrictionsBox
           releaseKey={releaseKey}
           releaseData={releaseData}
+          isEditable={releaseData.permissionEditSelections || false}
         />
       )}
 
-      {releaseData.permissionEditSelections && (
-        <SharerControlBox releaseKey={releaseKey} releaseData={releaseData} />
+      {releaseData.permissionViewSelections && (
+        <SharerControlBox
+          releaseKey={releaseKey}
+          releaseData={releaseData}
+          isEditable={releaseData.permissionEditSelections || false}
+        />
       )}
 
       {releaseData.permissionAccessData && (

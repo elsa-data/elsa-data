@@ -15,11 +15,13 @@ import { trpc } from "../../../helpers/trpc";
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
+  isEditable: boolean;
 };
 
 export const FurtherRestrictionsBox: React.FC<Props> = ({
   releaseKey,
   releaseData,
+  isEditable = false,
 }) => {
   const utils = trpc.useContext();
 

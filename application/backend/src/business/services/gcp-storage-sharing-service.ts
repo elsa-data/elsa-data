@@ -140,7 +140,7 @@ export class GcpStorageSharingService {
       );
 
     if (userRole != "Administrator") {
-      throw new Error("");
+      throw new Error("Unauthorised role to modify user.");
     }
 
     const now = new Date();

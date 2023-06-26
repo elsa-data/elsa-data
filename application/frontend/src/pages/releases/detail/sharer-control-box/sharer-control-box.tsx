@@ -13,10 +13,13 @@ import { axiosPatchOperationMutationFn } from "../../queries";
 import { trpc } from "../../../../helpers/trpc";
 import { isDiscriminate } from "@umccr/elsa-constants";
 import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
+import { InputWrapper } from "../../../../components/input-wrapper";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
+  isEditable: boolean;
 };
 
 /**
@@ -30,6 +33,7 @@ type Props = {
 export const SharerControlBox: React.FC<Props> = ({
   releaseKey,
   releaseData,
+  isEditable = false,
 }) => {
   const { sharers } = useLoggedInUserConfigRelay()!;
   const utils = trpc.useContext();
@@ -95,6 +99,7 @@ export const SharerControlBox: React.FC<Props> = ({
         <div className={classNames("form-control", "items-start", "space-x-2")}>
           <label className="label cursor-pointer">
             <input
+              disabled={!isEditable}
               type="checkbox"
               className={classNames(
                 "checkbox-accent checkbox checkbox-sm mr-2",
@@ -137,6 +142,9 @@ export const SharerControlBox: React.FC<Props> = ({
   const awsAccessPointEnabled = !!releaseData.dataSharingAwsAccessPoint;
   // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
 
+  const error = releasePatchMutate.error || copyOutMutate.error;
+  const isError = releasePatchMutate.isError || copyOutMutate.isError;
+
   return (
     <Box heading="Data Sharing Control">
       <RhSection>
@@ -149,125 +157,142 @@ export const SharerControlBox: React.FC<Props> = ({
         />
         <RightDiv>
           <RhChecks label="Researcher Access Via">
-            {objectSigningSetting && (
-              <SharingConfigurationAccordion
-                path="/dataSharingConfiguration/objectSigningEnabled"
-                label="Object Signing"
-                current={objectSigningEnabled}
-                notWorkingReason={objectSigningSetting.notWorkingReason}
-              >
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Signing Expiry in Hours</span>
-                  </label>
-                  <label>{objectSigningSetting.maxAgeInSeconds / 60}</label>
-                </div>
-              </SharingConfigurationAccordion>
-            )}
-
-            {copyOutSetting && (
-              <SharingConfigurationAccordion
-                path="/dataSharingConfiguration/copyOutEnabled"
-                label="Copy Out"
-                current={copyOutEnabled}
-                notWorkingReason={copyOutSetting.notWorkingReason}
-              >
-                <div className="form-control flex-grow lg:w-3/4">
-                  <label className="label">
-                    <span className="label-text">Destination for Copy Out</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="input-bordered input input-disabled w-full"
-                    defaultValue={
-                      releaseData.dataSharingCopyOut?.destinationLocation
-                    }
-                  />
-                </div>
-                <div className="form-control flex-grow lg:w-3/4">
-                  <label className="label">
-                    <span className="label-text">Start a Background Copy</span>
-                    <span className="label-text-alt">
-                      (running time can be hours)
-                    </span>
-                  </label>
-                  <button
-                    type="button"
-                    className="btn-normal"
-                    onClick={() => {
-                      copyOutMutate.mutate({
-                        releaseKey: releaseKey,
-                        destinationBucket:
-                          releaseData.dataSharingCopyOut?.destinationLocation ||
-                          "",
-                      });
-                    }}
-                    disabled={
-                      copyOutMutate.isLoading ||
-                      !!copyOutSetting.notWorkingReason
-                    }
+            <InputWrapper isDisabledChildrenInput={!isEditable}>
+              <>
+                {isError && <EagerErrorBoundary error={error} />}
+                {objectSigningSetting && (
+                  <SharingConfigurationAccordion
+                    path="/dataSharingConfiguration/objectSigningEnabled"
+                    label="Object Signing"
+                    current={objectSigningEnabled}
+                    notWorkingReason={objectSigningSetting.notWorkingReason}
                   >
-                    Copy Out
-                  </button>
-                </div>
-              </SharingConfigurationAccordion>
-            )}
+                    <div className="form-control">
+                      <label className="label">
+                        <span className="label-text">
+                          Signing Expiry in Hours
+                        </span>
+                      </label>
+                      <label>{objectSigningSetting.maxAgeInSeconds / 60}</label>
+                    </div>
+                  </SharingConfigurationAccordion>
+                )}
 
-            {htsgetSetting && (
-              <SharingConfigurationAccordion
-                path="/dataSharingConfiguration/htsgetEnabled"
-                label="Htsget"
-                current={htsgetEnabled}
-                notWorkingReason={htsgetSetting.notWorkingReason}
-              >
-                <p>Some text about htsget</p>
-                <pre>{releaseData.dataSharingHtsget?.url}</pre>
-              </SharingConfigurationAccordion>
-            )}
+                {copyOutSetting && (
+                  <SharingConfigurationAccordion
+                    path="/dataSharingConfiguration/copyOutEnabled"
+                    label="Copy Out"
+                    current={copyOutEnabled}
+                    notWorkingReason={copyOutSetting.notWorkingReason}
+                  >
+                    <div className="form-control flex-grow lg:w-3/4">
+                      <label className="label">
+                        <span className="label-text">
+                          Destination for Copy Out
+                        </span>
+                      </label>
+                      <input
+                        type="text"
+                        className="input-bordered input w-full"
+                        defaultValue={
+                          releaseData.dataSharingCopyOut?.destinationLocation
+                        }
+                      />
+                    </div>
+                    <div className="form-control flex-grow lg:w-3/4">
+                      <label className="label">
+                        <span className="label-text">
+                          Start a Background Copy
+                        </span>
+                        <span className="label-text-alt">
+                          (running time can be hours)
+                        </span>
+                      </label>
+                      <button
+                        type="button"
+                        className="btn-normal"
+                        onClick={() => {
+                          copyOutMutate.mutate({
+                            releaseKey: releaseKey,
+                            destinationBucket:
+                              releaseData.dataSharingCopyOut
+                                ?.destinationLocation || "",
+                          });
+                        }}
+                        disabled={
+                          copyOutMutate.isLoading ||
+                          !!copyOutSetting.notWorkingReason
+                        }
+                      >
+                        Copy Out
+                      </button>
+                    </div>
+                  </SharingConfigurationAccordion>
+                )}
 
-            {awsAccessPointSetting && (
-              <SharingConfigurationAccordion
-                path="/dataSharingConfiguration/awsAccessPointEnabled"
-                label="AWS Access Point"
-                current={awsAccessPointEnabled}
-                notWorkingReason={awsAccessPointSetting.notWorkingReason}
-              >
-                <div className="form-control flex-grow self-end">
-                  <label className="label">
-                    <span className="label-text">Account Id</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="input-bordered input input-disabled w-full"
-                    defaultValue={
-                      releaseData.dataSharingAwsAccessPoint?.accountId
-                    }
-                  />
-                </div>
-                <div className="divider divider-horizontal"></div>
-                <div className="form-control flex-grow self-end">
-                  <label className="label">
-                    <span className="label-text">VPC Id</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="input-bordered input input-disabled w-full"
-                    defaultValue={releaseData.dataSharingAwsAccessPoint?.vpcId}
-                  />
-                </div>
-                <div className="divider divider-horizontal"></div>
-                <div className="form-control flex-grow self-end">
-                  <label className="label">
-                    <span className="label-text">Install Cloud Formation</span>
-                  </label>
-                  <button type="button" className="btn-normal" disabled={true}>
-                    Install
-                  </button>
-                </div>
-              </SharingConfigurationAccordion>
-            )}
+                {htsgetSetting && (
+                  <SharingConfigurationAccordion
+                    path="/dataSharingConfiguration/htsgetEnabled"
+                    label="Htsget"
+                    current={htsgetEnabled}
+                    notWorkingReason={htsgetSetting.notWorkingReason}
+                  >
+                    <p>Some text about htsget</p>
+                    <pre>{releaseData.dataSharingHtsget?.url}</pre>
+                  </SharingConfigurationAccordion>
+                )}
 
-            {/*{features.has(FEATURE_DATA_SHARING_GCP_IAM) && (
+                {awsAccessPointSetting && (
+                  <SharingConfigurationAccordion
+                    path="/dataSharingConfiguration/awsAccessPointEnabled"
+                    label="AWS Access Point"
+                    current={awsAccessPointEnabled}
+                    notWorkingReason={awsAccessPointSetting.notWorkingReason}
+                  >
+                    <div className="form-control flex-grow self-end">
+                      <label className="label">
+                        <span className="label-text">Account Id</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="input-bordered input w-full"
+                        defaultValue={
+                          releaseData.dataSharingAwsAccessPoint?.accountId
+                        }
+                      />
+                    </div>
+                    <div className="divider divider-horizontal"></div>
+                    <div className="form-control flex-grow self-end">
+                      <label className="label">
+                        <span className="label-text">VPC Id</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="input-bordered input w-full"
+                        defaultValue={
+                          releaseData.dataSharingAwsAccessPoint?.vpcId
+                        }
+                      />
+                    </div>
+                    <div className="divider divider-horizontal"></div>
+                    <div className="form-control flex-grow self-end">
+                      <label className="label">
+                        <span className="label-text">
+                          Install Cloud Formation
+                        </span>
+                      </label>
+                      <button
+                        type="button"
+                        className="btn-normal"
+                        disabled={true}
+                      >
+                        Install
+                      </button>
+                    </div>
+                  </SharingConfigurationAccordion>
+                )}
+
+                {/*{features.has(FEATURE_DATA_SHARING_GCP_IAM) && (
               <SharingConfigurationAccordion
                 path="/dataSharingConfiguration/gcpStorageIamEnabled"
                 label="GCP Storage IAM"
@@ -279,7 +304,7 @@ export const SharerControlBox: React.FC<Props> = ({
                   </label>
                   <input
                     type="text"
-                    className="input-bordered input input-disabled w-full"
+                    className="input-bordered input w-full"
                     defaultValue={releaseData.dataSharingGcpStorageIam?.users.join(
                       " "
                     )}
@@ -299,6 +324,8 @@ export const SharerControlBox: React.FC<Props> = ({
                 </div>
               </SharingConfigurationAccordion>
             )} */}
+              </>
+            </InputWrapper>
           </RhChecks>
         </RightDiv>
       </RhSection>

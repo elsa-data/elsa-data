@@ -19,6 +19,8 @@ import { SharerHtsgetType } from "../../config/config-schema-sharer";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 
+type UserRoleInRelease = ReleaseParticipantRoleType & "AdminView";
+
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
 type CodeArrayFields = "diseases" | "countries" | "type";
@@ -52,7 +54,7 @@ export abstract class ReleaseBaseService {
    * @returns The options where this user could alter
    */
   protected getParticipantRoleOption(
-    currentUserRole: ReleaseParticipantRoleType
+    currentUserRole: ReleaseParticipantRoleType | string
   ): ReleaseParticipantRoleType[] | null {
     switch (currentUserRole) {
       case "Administrator": {
@@ -137,12 +139,18 @@ export abstract class ReleaseBaseService {
       releaseKey: releaseKey,
     });
 
-    const role = boundaryInfo?.role;
+    const roleInDb = boundaryInfo?.role as
+      | ReleaseParticipantRoleType
+      | null
+      | undefined;
 
     if (!boundaryInfo) throw new ReleaseViewError(releaseKey);
 
+    // If boundaryInfo exist but userRole is empty, then it must be an AdminView
+    const role = roleInDb ? roleInDb : "AdminView";
+
     return {
-      userRole: role as ReleaseParticipantRoleType,
+      userRole: role as UserRoleInRelease,
       isActivated: !!boundaryInfo.activation,
       isRunningJob: !!boundaryInfo.runningJob,
     };
@@ -178,7 +186,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseKey: string,
-    userRole: ReleaseParticipantRoleType
+    userRole: UserRoleInRelease
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
@@ -254,10 +262,12 @@ export abstract class ReleaseBaseService {
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
       // administrators can code/edit the release information
+      permissionViewSelections:
+        userRole === "Administrator" || userRole === "AdminView",
       permissionEditSelections: userRole === "Administrator",
       permissionEditApplicationCoded: userRole === "Administrator",
-      // administrators cannot however access the raw data (if they want access to their data - they need to go other ways)
-      permissionAccessData: userRole !== "Administrator",
+      // Only 'Manager' and 'Member' can access data
+      permissionAccessData: userRole === "Manager" || userRole === "Member",
 
       // data sharing objects
       dataSharingObjectSigning: releaseInfo.dataSharingConfiguration
