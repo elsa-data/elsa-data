@@ -52,7 +52,7 @@ export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
           <div className="prose">
             <input
               type="submit"
-              disabled={!releaseData.activation || isPrepareDownload}
+              disabled={!releaseData.activation}
               className="btn-normal mt-4"
               value={
                 "Download TSV" +

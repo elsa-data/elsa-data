@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import classNames from "classnames";
 import { CSRFInputToken } from "../../../../components/csrf-token";
 import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";
@@ -48,7 +49,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
           <div className="prose">
             <input
               type="submit"
-              disabled={!releaseData.activation || isPrepareDownload}
+              disabled={!releaseData.activation}
               className="btn-normal mt-4"
               value={
                 "Download Zip" +
