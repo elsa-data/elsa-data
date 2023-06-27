@@ -4,7 +4,6 @@ import { CSRFInputToken } from "../../../../components/csrf-token";
 import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
-import { ErrorBoundary } from "../../../../components/errors";
 import { Alert } from "../../../../components/alert";
 
 type Props = {
@@ -13,14 +12,14 @@ type Props = {
 };
 
 export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
-  const [isSetPrepareDownload, setPrepareDownload] = useState<boolean>(false);
+  const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
 
   return (
     <>
-      {isSetPrepareDownload && (
+      {isPrepareDownload && (
         <Alert
           icon={<span className="loading loading-bars loading-xs" />}
-          description={"Preparing manifest for download."}
+          description={"Preparing manifest for download"}
           additionalAlertClassName={
             "alert alert-info bg-slate-300 text-md py-1 mb-3"
           }
@@ -53,16 +52,16 @@ export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
           <div className="prose">
             <input
               type="submit"
-              disabled={!releaseData.activation}
+              disabled={!releaseData.activation || isPrepareDownload}
               className="btn-normal mt-4"
               value={
                 "Download TSV" +
                 (!releaseData.activation ? " (Release Must Be Active)" : "")
               }
               onClick={() => {
-                setPrepareDownload(true);
+                setIsPrepareDownload(true);
                 setTimeout(() => {
-                  setPrepareDownload(false);
+                  setIsPrepareDownload(false);
                 }, 3000);
               }}
             />

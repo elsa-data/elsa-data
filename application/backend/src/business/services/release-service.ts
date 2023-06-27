@@ -11,7 +11,7 @@ import { PagedResult } from "../../api/helpers/pagination-helpers";
 import { getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
-import { ReleaseBaseService } from "./release-base-service";
+import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
 import { getNextReleaseKey } from "../db/release-queries";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
@@ -105,7 +105,9 @@ export class ReleaseService extends ReleaseBaseService {
             ? jobAsBadgeLabel(a.runningJob[0])
             : undefined,
         isActivated: a.activation != null,
-        roleInRelease: a.role!,
+        // If this exist in this results but null is returned,
+        // it means this user is an AdminView as the query have considered this.
+        roleInRelease: (a.role ?? "AdminView") as UserRoleInRelease,
       })),
     };
   }

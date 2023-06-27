@@ -19,7 +19,7 @@ import { SharerHtsgetType } from "../../config/config-schema-sharer";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 
-type UserRoleInRelease = ReleaseParticipantRoleType & "AdminView";
+export type UserRoleInRelease = ReleaseParticipantRoleType & "AdminView";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)

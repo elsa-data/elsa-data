@@ -14,14 +14,14 @@ export const ObjectSigningForm: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
-  const [isSetPrepareDownload, setPrepareDownload] = useState<boolean>(false);
+  const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
 
   return (
     <>
-      {isSetPrepareDownload && (
+      {isPrepareDownload && (
         <Alert
           icon={<span className="loading loading-bars loading-xs" />}
-          description={"Preparing signed ZIP file to download"}
+          description={"Preparing signed ZIP file for download"}
           additionalAlertClassName={
             "alert alert-info bg-slate-300 text-md py-1 mb-3"
           }
@@ -48,7 +48,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
           <div className="prose">
             <input
               type="submit"
-              disabled={!releaseData.activation}
+              disabled={!releaseData.activation || isPrepareDownload}
               className="btn-normal mt-4"
               value={
                 "Download Zip" +
@@ -56,9 +56,9 @@ export const ObjectSigningForm: React.FC<Props> = ({
               }
               onClick={() => {
                 // Set loader alert
-                setPrepareDownload(true);
+                setIsPrepareDownload(true);
                 setTimeout(() => {
-                  setPrepareDownload(false);
+                  setIsPrepareDownload(false);
                 }, 3000);
               }}
             />
