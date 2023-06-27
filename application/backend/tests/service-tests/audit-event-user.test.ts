@@ -164,3 +164,29 @@ it("get entries with no filter", async () => {
   );
   expect(events).toEqual(null);
 });
+
+it("get in progress user entries", async () => {
+  const aeId = await auditEventService.startUserAuditEvent(
+    existingUser.subjectId,
+    existingUser.displayName,
+    existingUser.dbId,
+    "E",
+    "Login",
+    new Date(),
+    edgeDbClient
+  );
+
+  const events = await auditEventService.getUserEntries(
+    ["user"],
+    existingUser,
+    1000,
+    0,
+    false,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
+
+  const auditEvent = events?.data?.find((element) => element.objectId === aeId);
+  expect(auditEvent).toBeUndefined();
+});

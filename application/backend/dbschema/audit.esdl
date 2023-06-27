@@ -51,6 +51,11 @@ module audit {
         # bespoke JSON with details of the event
 
         property details -> json;
+
+        # Whether its expected that this audit event will be updated.
+        required inProgress: bool {
+            default := false;
+        }
     }
 
     # An audit event which can be caused by a user.

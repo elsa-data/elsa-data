@@ -123,6 +123,7 @@ export class AuditEventService {
       details: e.json({
         errorMessage: "Audit entry not completed",
       }),
+      inProgress: true,
     });
 
     await this.updateRelease(releaseKey, auditEvent, executor, user);
@@ -189,6 +190,7 @@ export class AuditEventService {
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
+          inProgress: false,
         },
       }))
       .run(executor);
@@ -259,6 +261,7 @@ export class AuditEventService {
       occurredDateTime: start,
       outcome: 8,
       details: { errorMessage: "Audit entry not completed" },
+      inProgress: true,
     });
 
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
@@ -358,6 +361,7 @@ export class AuditEventService {
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
+          inProgress: false,
         },
       }))
       .run(executor);
@@ -384,6 +388,7 @@ export class AuditEventService {
         occurredDateTime: start,
         outcome: 8,
         details: { errorMessage: "Audit entry not completed" },
+        inProgress: true,
       })
     ).id;
   }
@@ -446,6 +451,7 @@ export class AuditEventService {
               ? e.duration(diffDuration)
               : null,
           updatedDateTime: e.datetime_current(),
+          inProgress: false,
         },
       }))
       .run(executor);
@@ -480,19 +486,25 @@ export class AuditEventService {
     );
 
     return createPagedResult(
-      pageOfEntries.map((entry) => ({
-        objectId: entry.id,
-        whoId: entry.whoId,
-        whoDisplayName: entry.whoDisplayName,
-        actionCategory: entry.actionCategory,
-        actionDescription: entry.actionDescription,
-        recordedDateTime: entry.recordedDateTime,
-        updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime,
-        occurredDuration: entry.occurredDuration?.toString(),
-        outcome: entry.outcome,
-        hasDetails: entry.hasDetails,
-      })),
+      pageOfEntries.flatMap((entry) =>
+        !entry.inProgress
+          ? [
+              {
+                objectId: entry.id,
+                whoId: entry.whoId,
+                whoDisplayName: entry.whoDisplayName,
+                actionCategory: entry.actionCategory,
+                actionDescription: entry.actionDescription,
+                recordedDateTime: entry.recordedDateTime,
+                updatedDateTime: entry.updatedDateTime,
+                occurredDateTime: entry.occurredDateTime,
+                occurredDuration: entry.occurredDuration?.toString(),
+                outcome: entry.outcome,
+                hasDetails: entry.hasDetails,
+              },
+            ]
+          : []
+      ),
       totalEntries
     );
   }
@@ -545,19 +557,26 @@ export class AuditEventService {
     );
 
     return createPagedResult(
-      (await entries.run(executor)).map((entry: any) => ({
-        objectId: entry.id,
-        whoId: entry.whoId,
-        whoDisplayName: entry.whoDisplayName,
-        actionCategory: entry.actionCategory,
-        actionDescription: entry.actionDescription,
-        recordedDateTime: entry.recordedDateTime,
-        updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime,
-        occurredDuration: entry.occurredDuration?.toString(),
-        outcome: entry.outcome,
-        hasDetails: entry.hasDetails,
-      })),
+      (await entries.run(executor)).flatMap((entry) =>
+        !entry.inProgress
+          ? [
+              {
+                objectId: entry.id,
+                whoId: entry.whoId,
+                whoDisplayName: entry.whoDisplayName,
+                actionCategory: entry.actionCategory,
+                actionDescription: entry.actionDescription,
+                recordedDateTime: entry.recordedDateTime,
+                updatedDateTime: entry.updatedDateTime,
+                occurredDateTime: entry.occurredDateTime,
+                occurredDuration: entry.occurredDuration?.toString(),
+                outcome: entry.outcome,
+                inProgress: entry.inProgress,
+                hasDetails: entry.hasDetails,
+              },
+            ]
+          : []
+      ),
       length
     );
   }
@@ -585,19 +604,25 @@ export class AuditEventService {
     );
 
     return createPagedResult(
-      pageOfEntries.map((entry) => ({
-        objectId: entry.id,
-        whoId: null,
-        whoDisplayName: null,
-        actionCategory: entry.actionCategory,
-        actionDescription: entry.actionDescription,
-        recordedDateTime: entry.recordedDateTime,
-        updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime,
-        occurredDuration: entry.occurredDuration?.toString(),
-        outcome: entry.outcome,
-        hasDetails: entry.hasDetails,
-      })),
+      pageOfEntries.flatMap((entry) =>
+        !entry.inProgress
+          ? [
+              {
+                objectId: entry.id,
+                whoId: null,
+                whoDisplayName: null,
+                actionCategory: entry.actionCategory,
+                actionDescription: entry.actionDescription,
+                recordedDateTime: entry.recordedDateTime,
+                updatedDateTime: entry.updatedDateTime,
+                occurredDateTime: entry.occurredDateTime,
+                occurredDuration: entry.occurredDuration?.toString(),
+                outcome: entry.outcome,
+                hasDetails: entry.hasDetails,
+              },
+            ]
+          : []
+      ),
       totalEntries
     );
   }

@@ -58,6 +58,7 @@ export const auditEventProperties = {
   occurredDateTime: true,
   occurredDuration: true,
   outcome: true,
+  inProgress: true,
 } as const;
 
 /**
