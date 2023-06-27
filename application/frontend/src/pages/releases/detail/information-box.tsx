@@ -56,7 +56,7 @@ export const InformationBox: React.FC<Props> = ({
   const releaseIsActivated = !!releaseData.activation;
 
   const ActivateDeactivateButtonRow = () => (
-    <div className="flex flex-row space-x-4">
+    <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
       <button
         className="btn-success btn-lg btn grow"
         disabled={releaseIsActivated || mutationInProgress}

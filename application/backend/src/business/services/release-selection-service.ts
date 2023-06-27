@@ -495,7 +495,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
             specimenIds && specimenIds.length > 0 ? validSpecimenIds : ["*"],
         };
       },
-      async (a) => {
+      async () => {
         return await this.getBase(releaseKey, userRole);
       }
     );

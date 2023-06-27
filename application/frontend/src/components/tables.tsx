@@ -17,11 +17,15 @@ export const Table = ({
   return (
     <div className={`overflow-x-auto`}>
       <table
-        className={`table w-full table-auto whitespace-normal break-all	${
+        className={`table w-full table-auto whitespace-normal break-words rounded-t-lg rounded-tl-lg	${
           additionalTableClassName ?? ""
         }`}
       >
-        {tableHead && <thead>{tableHead}</thead>}
+        {tableHead && (
+          <thead className="rounded-t-lg bg-gray-200 uppercase text-black">
+            {tableHead}
+          </thead>
+        )}
         {tableBody && <tbody>{tableBody}</tbody>}
       </table>
     </div>
