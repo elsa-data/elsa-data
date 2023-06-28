@@ -230,6 +230,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
               whoDisplayName: user.displayName,
               whoId: user.subjectId,
               occurredDateTime: e.datetime_current(),
+              inProgress: false,
             })
           ),
         })

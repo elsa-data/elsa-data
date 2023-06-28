@@ -136,6 +136,19 @@ export async function insertRelease1(
           whoDisplayName: "System",
           whoId: "system",
           occurredDateTime: e.datetime_current(),
+          inProgress: false,
+        }),
+        e.insert(e.audit.ReleaseAuditEvent, {
+          actionCategory: "E",
+          actionDescription: "Test in-progress audit event",
+          outcome: 8,
+          whoDisplayName: "System",
+          whoId: "system",
+          occurredDateTime: e.datetime_current(),
+          details: e.json({
+            errorMessage: "Audit entry not completed",
+          }),
+          inProgress: true,
         })
       ),
       dataEgressRecord: await makeSyntheticDataEgressRecord(),
