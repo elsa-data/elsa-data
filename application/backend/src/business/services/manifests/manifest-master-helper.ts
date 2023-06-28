@@ -33,13 +33,13 @@ export async function transformDbManifestToMasterManifest(
     return false;
   };
 
-  // Check to see if cases/specimens exist to being with before activating a release.
+  // Check to see if cases/specimens exist to begin with before activating a release.
   if (manifest.caseTree.length === 0) {
-    throw new ReleaseActivatedNothingError("no cases selected");
+    throw new ReleaseActivatedNothingError("No cases selected");
   }
   if (manifest.specimenList.length === 0) {
     throw new ReleaseActivatedNothingError(
-      "no specimens for the selected cases"
+      "No specimens for the selected cases"
     );
   }
 
@@ -49,7 +49,7 @@ export async function transformDbManifestToMasterManifest(
     !manifest.releaseIsAllowedGSData &&
     !manifest.releaseIsAllowedR2Data
   ) {
-    throw new ReleaseActivatedNothingError("no data sources enabled");
+    throw new ReleaseActivatedNothingError("No data sources enabled");
   }
 
   // we need to prune the manifest of all files that we should not be giving out access to
@@ -147,7 +147,7 @@ export async function transformDbManifestToMasterManifest(
       )
     ) {
       throw new ReleaseActivatedNothingError(
-        "read data is enabled although there are no read data artifacts"
+        "Read data is enabled but there are no read data artifacts"
       );
     }
     if (
@@ -155,7 +155,7 @@ export async function transformDbManifestToMasterManifest(
       allowedArtifacts.every((a) => !a.vcfFile && !a.tbiFile)
     ) {
       throw new ReleaseActivatedNothingError(
-        "variant data is enabled although there are no variant data artifacts for specimen"
+        "Variant data is enabled but there are no variant data artifacts"
       );
     }
 
