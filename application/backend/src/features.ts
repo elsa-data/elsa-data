@@ -1,4 +1,5 @@
 import {
+  FEATURE_DEV_TEST_USERS_LOGIN,
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_CONSENT_DISPLAY,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
@@ -31,6 +32,10 @@ export async function getFeaturesEnabled(
     if (settings.feature.enableConsentDisplay)
       featuresEnabled.add(FEATURE_RELEASE_CONSENT_DISPLAY);
   }
+
+  // allowTestUsers makes some special purpose users and routes that allow direct login
+  if (settings.devTesting && settings.devTesting.allowTestUsers)
+    featuresEnabled.add(FEATURE_DEV_TEST_USERS_LOGIN);
 
   return featuresEnabled;
 }
