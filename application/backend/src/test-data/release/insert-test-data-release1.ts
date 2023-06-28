@@ -136,6 +136,7 @@ export async function insertRelease1(
           whoDisplayName: "System",
           whoId: "system",
           occurredDateTime: e.datetime_current(),
+          inProgress: false,
         }),
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "E",

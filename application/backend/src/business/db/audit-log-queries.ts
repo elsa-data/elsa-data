@@ -154,6 +154,7 @@ export const addUserAuditEventToReleaseQuery = (
         : "Add user to release",
     outcome: 0,
     details: e.json({ role: role }),
+    inProgress: false,
   });
 };
 
@@ -173,6 +174,7 @@ export const addUserAuditEventPermissionChange = (
     actionDescription: `Change user permission`,
     outcome: 0,
     details: e.json(permission),
+    inProgress: false,
   });
 };
 

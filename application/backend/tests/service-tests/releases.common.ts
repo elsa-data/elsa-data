@@ -90,6 +90,7 @@ export async function beforeEachCommon(dc: DependencyContainer) {
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
+          inProgress: false,
         })
       ),
       lastDataEgressQueryTimestamp: e.datetime_current(),

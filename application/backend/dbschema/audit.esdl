@@ -53,9 +53,7 @@ module audit {
         property details -> json;
 
         # Whether its expected that this audit event will be updated.
-        required inProgress: bool {
-            default := false;
-        }
+        required inProgress: bool;
     }
 
     # An audit event which can be caused by a user.
