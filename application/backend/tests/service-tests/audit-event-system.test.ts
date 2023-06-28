@@ -127,3 +127,23 @@ it("audit system duration", async () => {
 
   console.log(JSON.stringify(events));
 });
+
+it("get in progress system entries", async () => {
+  const aeId = await auditEventService.startSystemAuditEvent(
+    "E",
+    "Login",
+    new Date(),
+    edgeDbClient
+  );
+
+  const events = await auditEventService.getSystemEntries(
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
+
+  const auditEvent = events?.data?.find((element) => element.objectId === aeId);
+  expect(auditEvent).toBeUndefined();
+});

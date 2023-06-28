@@ -7,5 +7,6 @@ insert ReleaseAuditEvent {
   actionDescription := <optional str>$actionDescription ?? "",
   occurredDateTime := <optional datetime>$occurredDateTime ?? datetime_current(),
   outcome := <optional int16>$outcome ?? 0,
-  details := <optional json>$details ?? {}
+  details := <optional json>$details ?? {},
+  inProgress := <optional bool>$inProgress ?? false
 };

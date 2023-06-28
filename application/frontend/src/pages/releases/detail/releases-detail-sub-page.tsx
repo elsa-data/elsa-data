@@ -36,15 +36,20 @@ export const ReleasesDetailSubPage: React.FC = () => {
         showConsent={features.has(FEATURE_RELEASE_CONSENT_DISPLAY)}
       />
 
-      {releaseData.permissionEditSelections && (
+      {releaseData.permissionViewSelections && (
         <FurtherRestrictionsBox
           releaseKey={releaseKey}
           releaseData={releaseData}
+          isEditable={releaseData.permissionEditSelections || false}
         />
       )}
 
-      {releaseData.permissionEditSelections && (
-        <SharerControlBox releaseKey={releaseKey} releaseData={releaseData} />
+      {releaseData.permissionViewSelections && (
+        <SharerControlBox
+          releaseKey={releaseKey}
+          releaseData={releaseData}
+          isEditable={releaseData.permissionEditSelections || false}
+        />
       )}
 
       {/* until the release is activated - there is no point in showing the access box */}

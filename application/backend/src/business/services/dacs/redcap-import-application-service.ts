@@ -328,6 +328,7 @@ ${roleTable.join("\n")}
               whoDisplayName: user.displayName,
               whoId: user.subjectId,
               occurredDateTime: e.datetime_current(),
+              inProgress: false,
             })
           ),
         })

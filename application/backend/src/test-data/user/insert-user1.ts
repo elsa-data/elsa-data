@@ -33,6 +33,7 @@ export async function insertUser1(
         actionCategory: "E",
         actionDescription: "Login",
         outcome: 0,
+        inProgress: false,
       }),
     })
     .run(edgeDbClient);

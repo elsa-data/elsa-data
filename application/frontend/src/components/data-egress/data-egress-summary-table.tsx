@@ -44,8 +44,8 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
   return (
     <>
       <div className="mb-2	text-gray-500">
-        A summary of events of every data egress from the data storage based on
-        file associated with the release.
+        A summary of data egress file events per file from the data storage
+        server associated with this release.
       </div>
 
       {dataEgressQuery.isError && (
@@ -78,7 +78,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
                       row[objKey] != null ? (
                       formatLocalDateTime(row[objKey] as string)
                     ) : objKey === "fileUrl" ? (
-                      row[objKey]
+                      <pre className="break-all">{row[objKey]}</pre>
                     ) : objKey === "downloadStatus" ? (
                       <DisplayDownloadStatus
                         downloadedSize={row["totalDataEgressInBytes"]}
@@ -117,9 +117,9 @@ function DisplayDownloadStatus({
   fileSize: number;
 }) {
   if (downloadedSize > fileSize) {
-    return <div className="badge-warning badge">{`multiple-download`}</div>;
+    return <div className="badge badge-warning">{`multiple-download`}</div>;
   } else if (downloadedSize == fileSize) {
-    return <div className="badge-success badge">{"complete"}</div>;
+    return <div className="badge badge-success">{"complete"}</div>;
   }
-  return <div className="badge-ghost badge">{"incomplete"}</div>;
+  return <div className="badge badge-ghost">{"incomplete"}</div>;
 }

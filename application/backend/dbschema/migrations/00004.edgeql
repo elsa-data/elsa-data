@@ -1,12 +1,9 @@
-CREATE MIGRATION m1w7u37iidzp26tefsdkr6xwwq3qku3czenswhbbubqt7ricbozjsa
+CREATE MIGRATION m1g7nv7dyddbdoy5l6yj53gh2dkv2wytkkecpxd23cevmnp3qb44sq
     ONTO m17ibvtylic3vcs76juwofv2epzn67br6qow5zynfi3cfqu67utyua
 {
-  ALTER TYPE release::DataSharingConfiguration {
-      ALTER PROPERTY awsAccessPointAccountId {
-          RENAME TO awsAccessPointName;
+  ALTER TYPE audit::AuditEvent {
+      CREATE REQUIRED PROPERTY inProgress: std::bool {
+          SET REQUIRED USING (<std::bool>false);
       };
-  };
-  ALTER TYPE release::DataSharingConfiguration {
-      DROP PROPERTY awsAccessPointVpcId;
   };
 };
