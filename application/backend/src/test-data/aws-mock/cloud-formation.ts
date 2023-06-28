@@ -98,6 +98,14 @@ export function createMockCloudFormation(
             StackStatus: StackStatus.CREATE_COMPLETE,
             StackName: s.stackName,
             CreationTime: new Date(),
+            // Outputs: [
+            //    {
+            //        OutputKey: "",
+            //        OutputValue: "",
+            //        Description: "",
+            //        ExportName: ""
+            //    }
+            // ]
             //  : StackStatus.CREATE_IN_PROGRESS,
           })),
       };
