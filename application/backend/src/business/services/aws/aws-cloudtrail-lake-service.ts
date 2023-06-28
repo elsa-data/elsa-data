@@ -12,7 +12,7 @@ import { AuditEventService } from "../audit-event-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
-import { NotAuthorisedSyncDataEgressRecords } from "../../exceptions/audit-authorisation";
+import { NotAuthorisedUpdateDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
   releaseLastUpdatedReset,
   updateLastDataEgressQueryTimestamp,
@@ -59,13 +59,6 @@ export class AwsCloudTrailLakeService {
     @inject(IPLookupService) private readonly ipLookupService: IPLookupService
   ) {}
 
-  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
-    if (isPermissionAllow) return;
-
-    throw new NotAuthorisedSyncDataEgressRecords();
-  }
-
   async getEventDataStoreIdFromDatasetUris(
     datasetUris: string[]
   ): Promise<string[] | undefined> {
@@ -82,6 +75,7 @@ export class AwsCloudTrailLakeService {
     }
     return eventDataStoreIdArr;
   }
+
   async findCloudTrailStartTimestamp(
     releaseKey: string
   ): Promise<string | null> {
@@ -346,8 +340,6 @@ export class AwsCloudTrailLakeService {
     releaseKey: string;
     datasetUrisArray: string[];
   }) {
-    this.checkIsAllowedRefreshDatasetIndex(user);
-
     const eventDataStoreIds = await this.getEventDataStoreIdFromDatasetUris(
       datasetUrisArray
     );

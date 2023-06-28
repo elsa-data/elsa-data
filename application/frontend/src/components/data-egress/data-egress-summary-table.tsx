@@ -56,7 +56,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
         tableHead={
           <tr>
             {COLUMN_TO_SHOW.map((header) => (
-              <th className="!left-auto normal-case" key={header.key}>
+              <th className="!left-auto" key={header.key}>
                 {header.value}
               </th>
             ))}
@@ -78,7 +78,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
                       row[objKey] != null ? (
                       formatLocalDateTime(row[objKey] as string)
                     ) : objKey === "fileUrl" ? (
-                      <pre className="break-all">{row[objKey]}</pre>
+                      <div className="font-mono">{row[objKey]}</div>
                     ) : objKey === "downloadStatus" ? (
                       <DisplayDownloadStatus
                         downloadedSize={row["totalDataEgressInBytes"]}

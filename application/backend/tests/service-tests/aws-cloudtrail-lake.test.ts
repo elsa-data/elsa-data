@@ -7,7 +7,7 @@ import { ElsaSettings } from "../../src/config/elsa-settings";
 import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
+import { NotAuthorisedUpdateDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
 import { AwsEnabledServiceMock } from "./client-mocks";
 import { IPLookupService } from "../../src/business/services/ip-lookup-service";
@@ -144,6 +144,6 @@ describe("Test CloudTrailLake Service", () => {
         releaseKey: testReleaseKey,
         datasetUrisArray: [TENG_URI],
       });
-    }).rejects.toThrow(NotAuthorisedSyncDataEgressRecords);
+    }).rejects.toThrow(NotAuthorisedUpdateDataEgressRecords);
   });
 });

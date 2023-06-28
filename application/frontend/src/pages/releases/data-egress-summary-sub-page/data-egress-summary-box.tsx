@@ -20,8 +20,8 @@ export const DataEgressSummaryBox = ({
   const uiAllowed = useUiAllowed();
 
   const queryClient = useQueryClient();
-  const syncReleaseEgressMutate =
-    trpc.releaseDataEgress.syncDataEgress.useMutation({
+  const updateReleaseEgressRecordMutate =
+    trpc.releaseDataEgress.updateDataEgressRecord.useMutation({
       onSuccess: () => {
         setIsSuccessShow(true);
       },
@@ -37,14 +37,16 @@ export const DataEgressSummaryBox = ({
           {/* Title */}
           <div>Data Egress Details</div>
 
-          {/* Button for re-sync data egress records */}
+          {/* Button for update data egress records */}
           {uiAllowed.has(ALLOWED_DATASET_UPDATE) && (
             <button
               className="btn-outline btn-xs btn ml-2"
-              onClick={() => syncReleaseEgressMutate.mutate({ releaseKey })}
+              onClick={() =>
+                updateReleaseEgressRecordMutate.mutate({ releaseKey })
+              }
             >
               <FontAwesomeIcon
-                spin={syncReleaseEgressMutate.isLoading}
+                spin={updateReleaseEgressRecordMutate.isLoading}
                 icon={faRotate}
               />
             </button>
@@ -67,8 +69,8 @@ export const DataEgressSummaryBox = ({
 
   return (
     <Box heading={<BoxHeader />}>
-      {syncReleaseEgressMutate.isError && (
-        <EagerErrorBoundary error={syncReleaseEgressMutate.error} />
+      {updateReleaseEgressRecordMutate.isError && (
+        <EagerErrorBoundary error={updateReleaseEgressRecordMutate.error} />
       )}
       {isSuccessShow && (
         <div className="alert alert-success flex w-full justify-between shadow-lg">

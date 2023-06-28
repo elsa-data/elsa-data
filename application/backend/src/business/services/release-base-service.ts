@@ -45,10 +45,10 @@ export abstract class ReleaseBaseService {
   ) {}
 
   /**
-   * Some user role are allowed to change other users role for its release participants.
+   * Some user role are allowed to change other users role for the release participants.
    * Eventually this must be guarded so that they can't change/make permission to a higher hierarchy.
    * This function will spit out the available options that this user could assigned/alter to other participant.
-   * e.g. A manager cannot a member to an administrator (as it is higher than its own role)
+   * e.g. A manager cannot promote a member to an administrator (as it is higher than its own role)
    *
    * @param currentUserRole The authenticated user role
    * @returns The options where this user could alter
@@ -133,7 +133,11 @@ export abstract class ReleaseBaseService {
   public async getBoundaryInfoWithThrowOnFailure(
     user: AuthenticatedUser,
     releaseKey: string
-  ) {
+  ): Promise<{
+    userRole: UserRoleInRelease;
+    isActivated: boolean;
+    isRunningJob: boolean;
+  }> {
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,
       releaseKey: releaseKey,

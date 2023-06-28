@@ -12,7 +12,7 @@ import {
   getReleaseDataEgressSummary,
   releaseGetByReleaseKey,
 } from "../../../dbschema/queries";
-import { NotAuthorisedSyncDataEgressRecords } from "../exceptions/audit-authorisation";
+import { NotAuthorisedUpdateDataEgressRecords } from "../exceptions/audit-authorisation";
 import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
 import { LocationType } from "./ip-lookup-service";
@@ -45,18 +45,14 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
   }
 
-  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
-    if (isPermissionAllow) return;
-
-    throw new NotAuthorisedSyncDataEgressRecords();
-  }
-
   public async syncDataEgressByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    this.checkIsAllowedRefreshDatasetIndex(user);
+    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+      user,
+      releaseKey
+    );
 
     const datasetUrisArray = (
       await releaseGetByReleaseKey(this.edgeDbClient, {
@@ -64,13 +60,25 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       })
     )?.datasetUris;
 
-    if (!datasetUrisArray) throw new Error("No dataset found!");
-
-    this.awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+    this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      datasetUrisArray,
-    });
+      "update the latest data egress records available",
+      async () => {
+        if (userRole !== "Administrator")
+          throw NotAuthorisedUpdateDataEgressRecords;
+      },
+      async (tx, a) => {
+        if (!datasetUrisArray) throw new Error("No dataset found!");
+
+        this.awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+          user,
+          releaseKey,
+          datasetUrisArray,
+        });
+      },
+      async () => {}
+    );
   }
 
   public async getSummaryDataEgressByReleaseKey(

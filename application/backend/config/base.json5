@@ -3,4 +3,9 @@
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
   releaseKeyPrefix: "R",
   ipLookup: { maxMindDbPath: "config/GeoLite2-City.mmdb" },
+  feature: {
+    enableConsentDisplay: true,
+    enableCohortConstructor: true,
+    enableDataEgressViewer: true,
+  },
 }
