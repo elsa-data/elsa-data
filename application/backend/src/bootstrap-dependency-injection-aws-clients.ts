@@ -23,6 +23,7 @@ import { createMockCloudTrail } from "./test-data/aws-mock/cloud-trail";
 import { createMockSts } from "./test-data/aws-mock/sts";
 import { createMockSes } from "./test-data/aws-mock/ses";
 import { createMockCloudFormation } from "./test-data/aws-mock/cloud-formation";
+import { Logger } from "pino";
 
 /**
  * Register factories for all the AWS clients we might need.
@@ -34,6 +35,7 @@ import { createMockCloudFormation } from "./test-data/aws-mock/cloud-formation";
  */
 export async function bootstrapDependencyInjectionAwsClients(
   dc: DependencyContainer,
+  logger: Logger,
   mockAws: boolean
 ) {
   if (mockAws) {
@@ -66,7 +68,8 @@ export async function bootstrapDependencyInjectionAwsClients(
     s3MockClient.on(PutObjectCommand).resolves({});
 
     const cloudFormationClient = createMockCloudFormation(
-      dc.resolve("Database")
+      dc.resolve("Database"),
+      logger
     );
     const cloudTrailClient = createMockCloudTrail();
     const secretsManagerClient = createMockSecretsManager();

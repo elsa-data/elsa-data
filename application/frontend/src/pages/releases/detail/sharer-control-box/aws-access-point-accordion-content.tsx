@@ -77,6 +77,9 @@ export const AwsAccessPointAccordionContent: React.FC<
     // must be activated
     !props.releaseData.activation;
 
+  const isCurrentlyAlreadyInstalled =
+    props?.releaseData.dataSharingAwsAccessPoint?.installed;
+
   const isCurrentlyDescriptions = new Set<string>();
 
   if (isCurrentlyMissingNeededValues)
@@ -87,6 +90,10 @@ export const AwsAccessPointAccordionContent: React.FC<
     isCurrentlyDescriptions.add("currently running another job");
   if (isCurrentlyInactiveRelease)
     isCurrentlyDescriptions.add("currently not activated release");
+  if (isCurrentlyAlreadyInstalled)
+    isCurrentlyDescriptions.add(
+      "currently already an access point in place for this release"
+    );
 
   return (
     <>
@@ -176,7 +183,8 @@ export const AwsAccessPointAccordionContent: React.FC<
             isCurrentlyMissingNeededValues ||
             isCurrentlyMutating ||
             // must be activated
-            !props.releaseData.activation
+            !props.releaseData.activation ||
+            isCurrentlyAlreadyInstalled
           }
           title={`Disabled due to\n${Array.from(
             isCurrentlyDescriptions.values()
@@ -201,7 +209,8 @@ export const AwsAccessPointAccordionContent: React.FC<
           disabled={
             isCurrentlyRunningAnotherJob ||
             isCurrentlyMissingNeededValues ||
-            isCurrentlyMutating
+            isCurrentlyMutating ||
+            !isCurrentlyAlreadyInstalled
           }
           title={"Disabled due to "}
         >

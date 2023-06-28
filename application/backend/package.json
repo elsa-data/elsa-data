@@ -115,6 +115,7 @@
     "tar-stream": "3.0.0",
     "temp": "0.9.4",
     "tsyringe": "4.7.0",
+    "uuid": "^9.0.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -136,6 +137,7 @@
     "@types/supertest": "2.0.12",
     "@types/tar-stream": "^2.2.2",
     "@types/temp": "^0.9.1",
+    "@types/uuid": "^9.0.2",
     "aws-sdk-client-mock": "2.0.1",
     "babel-jest": "^29.5.0",
     "cross-env": "7.0.3",

@@ -1,3 +1,4 @@
 # Delete the cloud formation stack
 
-delete mock::AwsCloudFormationStack filter .stackName = <str>$stackName;
+with cs := (delete mock::AwsCloudFormationStack filter .stackName = <str>$stackName)
+select cs {id, stackName, stackId};

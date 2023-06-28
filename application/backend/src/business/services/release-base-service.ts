@@ -26,7 +26,6 @@ import {
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
 } from "@aws-sdk/client-cloudformation";
-import { SharerHtsgetType } from "../../config/config-schema-sharer";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 
@@ -201,6 +200,70 @@ export abstract class ReleaseBaseService {
   }
 
   /**
+   * Where the AWS access point feature is enabled we check to see what the
+   * current access point status is.
+   *
+   * @param config
+   * @param releaseKey
+   * @param awsAccessPointName
+   *
+   * NOTE we only call this method when we are
+   * sure that the access point mechanism is configured - else it would just be a
+   * wasted unnecessary call to CloudFormation
+   */
+  public async getAwsAccessPointDetail(
+    config: SharerAwsAccessPointType,
+    releaseKey: string,
+    awsAccessPointName?: string
+  ): Promise<DataSharingAwsAccessPointType | undefined> {
+    // NOTE we need to calculate the installation status *independent* of the config lookups
+    //      - because we need the ability to "uninstall" an access point stack after the config
+    //        changes (i.e. if I remove the config for a "Nextflow VPC" - I still need the ability
+    //        to remove previously installed access points that used that config)
+    let isAwsAccessPointInstalled = false;
+
+    try {
+      // TODO FIX - first need to refactor the release base into a mixin - so do in another PR
+      //            we have a circular dependency otherwise
+      const releaseStackName = `elsa-data-release-${releaseKey}`;
+      const releaseStackResult = await this.cfnClient.send(
+        new DescribeStacksCommand({
+          StackName: releaseStackName,
+        })
+      );
+      isAwsAccessPointInstalled =
+        (releaseStackResult &&
+          releaseStackResult.Stacks &&
+          releaseStackResult.Stacks.length == 1) ||
+        false;
+    } catch (e) {
+      // TODO tighten the error code here so we don't gobble up other "unexpected" errors
+      // describing a stack that is not present throws an exception so we take that to mean it is
+      // not present
+    }
+
+    const firstNameMatch = Object.entries(config.allowedVpcs).find(
+      (n) => n[0] === awsAccessPointName
+    );
+
+    if (firstNameMatch) {
+      return {
+        name: firstNameMatch[0],
+        accountId: firstNameMatch[1].accountId,
+        vpcId: firstNameMatch[1].vpcId,
+        installed: isAwsAccessPointInstalled,
+      };
+    } else {
+      return {
+        name: "",
+        accountId: "",
+        vpcId: "",
+        installed: isAwsAccessPointInstalled,
+      };
+    }
+  }
+
+  /**
    * Get a single release assuming the user definitely has the role
    * passed in and that the release exists (otherwise how could they have a role?).
    * This is the base level fetch that can be used after
@@ -243,67 +306,15 @@ export abstract class ReleaseBaseService {
         ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
         : false;
 
-    let dataSharingAwsAccessPoint: DataSharingAwsAccessPointType | undefined =
-      undefined;
+    const isAllowedAwsAccessPointConfig = this.configForAwsAccessPointFeature();
 
-    {
-      // TODO FIX
-      const releaseStackName = `elsa-data-release-${releaseKey}`;
-
-      let releaseStack: DescribeStacksCommandOutput | undefined = undefined;
-
-      try {
-        releaseStack = await this.cfnClient.send(
-          new DescribeStacksCommand({
-            StackName: releaseStackName,
-          })
-        );
-      } catch (e) {
-        // describing a stack that is not present throws an exception so we take that to mean it is
-        // not present
-        // TODO tighten the error code here so we don't gobble up other "unexpected" errors
-        console.log(e);
-        releaseStack = undefined;
-      }
-
-      const isAllowedAwsAccessPointConfig =
-        this.configForAwsAccessPointFeature();
-
-      if (isAllowedAwsAccessPointConfig) {
-        const firstNameMatch = Object.entries(
-          isAllowedAwsAccessPointConfig.allowedVpcs
-        ).find(
-          (n) =>
-            n[0] === releaseInfo.dataSharingConfiguration.awsAccessPointName
-        );
-
-        if (firstNameMatch) {
-          dataSharingAwsAccessPoint = {
-            name: firstNameMatch[0],
-            accountId: firstNameMatch[1].accountId,
-            vpcId: firstNameMatch[1].vpcId,
-            installed:
-              (releaseStack &&
-                releaseStack.Stacks &&
-                releaseStack.Stacks.length == 1) ||
-              false,
-          };
-        } else {
-          dataSharingAwsAccessPoint = {
-            name: "",
-            accountId: "",
-            vpcId: "",
-            installed:
-              (releaseStack &&
-                releaseStack.Stacks &&
-                releaseStack.Stacks.length == 1) ||
-              false,
-          };
-        }
-      }
-    }
-
-    console.log(JSON.stringify(dataSharingAwsAccessPoint, null, 2));
+    const dataSharingAwsAccessPoint = isAllowedAwsAccessPointConfig
+      ? await this.getAwsAccessPointDetail(
+          isAllowedAwsAccessPointConfig,
+          releaseKey,
+          releaseInfo.dataSharingConfiguration.awsAccessPointName
+        )
+      : undefined;
 
     return {
       id: releaseInfo.id,
@@ -399,7 +410,7 @@ export abstract class ReleaseBaseService {
    * I can't make EdgeDb libraries re-use code where I'd like (which is possibly more about me than
    * edgedb)
    *
-   * @param userRole the role the user has in this release (must be something!)
+   * @param user the user performing the change
    * @param releaseKey the release id of the release to alter (must exist)
    * @param field the field name to alter e.g. 'institutes', 'diseases'...
    * @param system the system URI of the entry to add/delete

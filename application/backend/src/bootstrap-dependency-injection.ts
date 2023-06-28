@@ -40,7 +40,7 @@ export async function bootstrapDependencyInjection(
     ),
   });
 
-  await bootstrapDependencyInjectionAwsClients(dc, mockAws);
+  await bootstrapDependencyInjectionAwsClients(dc, logger, mockAws);
 
   bootstrapDependencyInjectionSingletonServices(dc, mockAws);
 

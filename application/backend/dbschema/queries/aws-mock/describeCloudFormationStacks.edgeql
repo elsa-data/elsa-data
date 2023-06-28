@@ -3,5 +3,5 @@
 select mock::AwsCloudFormationStack {
   stackName,
   stackId,
-  occurredDateTime
+  installedDateTime
 };

@@ -3,5 +3,5 @@
 insert mock::AwsCloudFormationStack {
   stackName := <str>$stackName,
   stackId := <str>$stackId,
-  occurredDateTime := datetime_current()
+  installedDateTime := datetime_current()
 };
