@@ -37,6 +37,7 @@ import {
   splitUserEmails,
 } from "./_dac-user-helper";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -49,7 +50,8 @@ export class ReleaseService extends ReleaseBaseService {
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
-    @inject(UserService) userService: UserService
+    @inject(UserService) userService: UserService,
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
       settings,
@@ -57,7 +59,8 @@ export class ReleaseService extends ReleaseBaseService {
       features,
       userService,
       auditEventService,
-      auditEventTimedService
+      auditEventTimedService,
+      cfnClient
     );
   }
 
@@ -578,8 +581,7 @@ ${release.applicantEmailAddresses}
       | "/dataSharingConfiguration/copyOutDestinationLocation"
       | "/dataSharingConfiguration/htsgetEnabled"
       | "/dataSharingConfiguration/awsAccessPointEnabled"
-      | "/dataSharingConfiguration/awsAccessPointVpcId"
-      | "/dataSharingConfiguration/awsAccessPointAccountId"
+      | "/dataSharingConfiguration/awsAccessPointName"
       | "/dataSharingConfiguration/gcpStorageIamEnabled"
       | "/dataSharingConfiguration/gcpStorageIamUsers",
     value: any
@@ -644,14 +646,9 @@ ${release.applicantEmailAddresses}
             awsAccessPointEnabled: e.bool(value),
           };
           break;
-        case "/dataSharingConfiguration/awsAccessPointAccountId":
+        case "/dataSharingConfiguration/awsAccessPointName":
           fieldToSet = {
-            awsAccessPointAccountId: e.str(value),
-          };
-          break;
-        case "/dataSharingConfiguration/awsAccessPointVpcId":
-          fieldToSet = {
-            awsAccessPointVpcId: e.str(value),
+            awsAccessPointName: e.str(value),
           };
           break;
         case "/dataSharingConfiguration/gcpStorageIamEnabled":

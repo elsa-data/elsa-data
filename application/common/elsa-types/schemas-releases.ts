@@ -69,6 +69,19 @@ export const ReleaseActivationSchema = Type.Object({
   activatedByDisplayName: Type.String(),
 });
 
+export const DataSharingAwsAccessPointSchema = Type.Optional(
+  Type.Object({
+    name: Type.String(),
+    accountId: Type.String(),
+    vpcId: Type.String(),
+    installed: Type.Boolean(),
+  })
+);
+
+export type DataSharingAwsAccessPointType = Static<
+  typeof DataSharingAwsAccessPointSchema
+>;
+
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
@@ -143,12 +156,7 @@ export const ReleaseDetailSchema = Type.Object({
   ),
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
-  dataSharingAwsAccessPoint: Type.Optional(
-    Type.Object({
-      accountId: Type.String(),
-      vpcId: Type.Optional(Type.String()),
-    })
-  ),
+  dataSharingAwsAccessPoint: DataSharingAwsAccessPointSchema,
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
   dataSharingGcpStorageIam: Type.Optional(

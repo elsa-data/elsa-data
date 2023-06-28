@@ -1,6 +1,7 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
+  DataSharingAwsAccessPointType,
   ReleaseDetailType,
   ReleaseParticipantRoleType,
 } from "@umccr/elsa-types";
@@ -15,7 +16,16 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
-import { SharerHtsgetType } from "../../config/config-schema-sharer";
+import {
+  SharerAwsAccessPointType,
+  SharerHtsgetType,
+} from "../../config/config-schema-sharer";
+import { release } from "../../../dbschema/interfaces";
+import {
+  CloudFormationClient,
+  DescribeStacksCommand,
+  DescribeStacksCommandOutput,
+} from "@aws-sdk/client-cloudformation";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -37,7 +47,8 @@ export abstract class ReleaseBaseService {
     protected readonly features: ReadonlySet<string>,
     protected readonly userService: UserService,
     protected readonly auditEventService: AuditEventService,
-    protected readonly auditEventTimedService: AuditEventTimedService
+    protected readonly auditEventTimedService: AuditEventTimedService,
+    private readonly cfnClient: CloudFormationClient
   ) {}
 
   /**
@@ -153,12 +164,27 @@ export abstract class ReleaseBaseService {
    *
    * @param property
    */
-  public configForFeature(property: "isAllowedHtsget"): any | undefined {
+  public configForFeature(property: "isAllowedHtsget"): URL | undefined {
     const h = this.settings.sharers.filter(
       (s) => s.type === "htsget"
     ) as SharerHtsgetType[];
 
     if (h.length === 1) return new URL(h[0].url);
+    return undefined;
+  }
+
+  /**
+   * Get the config for the AWS access point feature or undefined if this
+   * sharer is not in the config.
+   */
+  public configForAwsAccessPointFeature():
+    | SharerAwsAccessPointType
+    | undefined {
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "aws-access-point"
+    ) as SharerAwsAccessPointType[];
+
+    if (h.length === 1) return h[0];
 
     return undefined;
   }
@@ -206,6 +232,68 @@ export abstract class ReleaseBaseService {
         ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
         : false;
 
+    let dataSharingAwsAccessPoint: DataSharingAwsAccessPointType | undefined =
+      undefined;
+
+    {
+      // TODO FIX
+      const releaseStackName = `elsa-data-release-${releaseKey}`;
+
+      let releaseStack: DescribeStacksCommandOutput | undefined = undefined;
+
+      try {
+        releaseStack = await this.cfnClient.send(
+          new DescribeStacksCommand({
+            StackName: releaseStackName,
+          })
+        );
+      } catch (e) {
+        // describing a stack that is not present throws an exception so we take that to mean it is
+        // not present
+        // TODO tighten the error code here so we don't gobble up other "unexpected" errors
+        console.log(e);
+        releaseStack = undefined;
+      }
+
+      const isAllowedAwsAccessPointConfig =
+        this.configForAwsAccessPointFeature();
+
+      if (isAllowedAwsAccessPointConfig) {
+        const firstNameMatch = Object.entries(
+          isAllowedAwsAccessPointConfig.allowedVpcs
+        ).find(
+          (n) =>
+            n[0] === releaseInfo.dataSharingConfiguration.awsAccessPointName
+        );
+
+        if (firstNameMatch) {
+          dataSharingAwsAccessPoint = {
+            name: firstNameMatch[0],
+            accountId: firstNameMatch[1].accountId,
+            vpcId: firstNameMatch[1].vpcId,
+            installed:
+              (releaseStack &&
+                releaseStack.Stacks &&
+                releaseStack.Stacks.length == 1) ||
+              false,
+          };
+        } else {
+          dataSharingAwsAccessPoint = {
+            name: "",
+            accountId: "",
+            vpcId: "",
+            installed:
+              (releaseStack &&
+                releaseStack.Stacks &&
+                releaseStack.Stacks.length == 1) ||
+              false,
+          };
+        }
+      }
+    }
+
+    console.log(JSON.stringify(dataSharingAwsAccessPoint, null, 2));
+
     return {
       id: releaseInfo.id,
       roleInRelease: userRole,
@@ -248,7 +336,7 @@ export abstract class ReleaseBaseService {
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
 
-      // A list of roles allowed to edit other user's role depending of this auth user
+      // A list of roles allowed to edit other user's role depending on this auth user
       // e.g. A manager cannot edit Administrator role.
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
@@ -273,15 +361,13 @@ export abstract class ReleaseBaseService {
           }
         : undefined,
       dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
-        ? this.configForFeature("isAllowedHtsget")
+        ? {
+            url: this.configForFeature("isAllowedHtsget")?.toString()!,
+          }
         : undefined,
       dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
         .awsAccessPointEnabled
-        ? {
-            accountId:
-              releaseInfo.dataSharingConfiguration.awsAccessPointAccountId,
-            vpcId: releaseInfo.dataSharingConfiguration.awsAccessPointVpcId,
-          }
+        ? dataSharingAwsAccessPoint
         : undefined,
       dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
         .gcpStorageIamEnabled

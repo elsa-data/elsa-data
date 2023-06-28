@@ -1,10 +1,7 @@
 import React, { PropsWithChildren } from "react";
 import { UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
-import {
-  SharerAwsAccessPointType,
-  SharerCopyOutType,
-} from "../../../../../../backend/src/config/config-schema-sharer";
+import { SharerAwsAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
 import { trpc } from "../../../../helpers/trpc";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
 
@@ -20,6 +17,8 @@ type AwsAccessPointAccordionContentProps = {
   awsAccessPointSetting: SharerAwsAccessPointType;
   awsAccessPointWorking: boolean;
 };
+
+const NONE_DISPLAY = "-- none --";
 
 export const AwsAccessPointAccordionContent: React.FC<
   PropsWithChildren<AwsAccessPointAccordionContentProps>
@@ -40,47 +39,125 @@ export const AwsAccessPointAccordionContent: React.FC<
   };
 
   const accessPointInstallTriggerMutate =
-    trpc.releaseJob.startAccessPointInstall.useMutation({
+    trpc.releaseJob.startAwsAccessPointInstall.useMutation({
       onSuccess: onSuccess,
     });
 
   const accessPointUninstallTriggerMutate =
-    trpc.releaseJob.startAccessPointUninstall.useMutation({
+    trpc.releaseJob.startAwsAccessPointUninstall.useMutation({
       onSuccess: onSuccess,
     });
+
+  // ALL OUR boolean states that will go into enabling or disabling buttons
+
+  // does the backend have non-empty values for any fields
+  const isCurrentlyMissingNeededValues =
+    !props.releaseData?.dataSharingAwsAccessPoint?.name ||
+    !props.releaseData?.dataSharingAwsAccessPoint?.vpcId ||
+    !props.releaseData?.dataSharingAwsAccessPoint?.accountId;
+
+  // if mutators are running then UI bits needs to be disabled until finished
+  const isCurrentlyMutating =
+    // can't be within our own trigger operation
+    accessPointInstallTriggerMutate.isLoading ||
+    accessPointUninstallTriggerMutate.isLoading ||
+    // can't be started whilst other fields are being mutated
+    props.releasePatchMutator.isLoading;
+
+  // there are various system/release level things that can cause us to not want to enable UI
+  const isCurrentlyRunningAnotherJob =
+    // can't be already running a job
+    !!props.releaseData.runningJob;
+
+  //const isCurrentlyNotWorking =
+  //  // aws access point needs to be working as a mechanism
+  //  !props.awsAccessPointWorking;
+
+  const isCurrentlyInactiveRelease =
+    // must be activated
+    !props.releaseData.activation;
+
+  const isCurrentlyDescriptions = new Set<string>();
+
+  if (isCurrentlyMissingNeededValues)
+    isCurrentlyDescriptions.add("missing needed configuration values");
+  if (isCurrentlyMutating)
+    isCurrentlyDescriptions.add("currently in a mutation operation");
+  if (isCurrentlyRunningAnotherJob)
+    isCurrentlyDescriptions.add("currently running another job");
+  if (isCurrentlyInactiveRelease)
+    isCurrentlyDescriptions.add("currently not activated release");
 
   return (
     <>
       <div className="form-control flex-grow lg:w-3/4">
         <label className="label">
           <span className="label-text">
-            Account/VPC Target{" "}
+            Account/VPC Target{"  "}
             <span className="text-xs">
               (NOTE additions to this list must be managed by the system
               administrators)
             </span>
           </span>
         </label>
-        <input
-          type="text"
+        <select
           className="input-bordered input w-full"
           defaultValue={
-            props.releaseData.dataSharingCopyOut?.destinationLocation
+            props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY
           }
           disabled={props.releasePatchMutator.isLoading}
-          onBlur={(e) => {
-            // only attempt a mutation if we think the textbox has changed
-            if (
-              e.target.value !=
-              props.releaseData.dataSharingCopyOut?.destinationLocation
-            )
+          onChange={(e) => {
+            // we make sure we are only changing to a name that exists in our config
+            const newName = Object.keys(
+              props.awsAccessPointSetting.allowedVpcs
+            ).find((name) => name === e.target.value);
+
+            if (newName) {
               props.releasePatchMutator.mutate({
                 op: "replace",
-                path: "/dataSharingConfiguration/copyOutDestinationLocation",
-                value: e.target.value,
+                path: "/dataSharingConfiguration/awsAccessPointName",
+                value: newName,
               });
+            } else {
+              props.releasePatchMutator.mutate({
+                op: "replace",
+                path: "/dataSharingConfiguration/awsAccessPointName",
+                value: "",
+              });
+            }
           }}
-        />
+        >
+          <option value={""}>{NONE_DISPLAY}</option>
+          {Object.entries(props.awsAccessPointSetting.allowedVpcs).map(
+            (entry) => (
+              <option>{entry[0]}</option>
+            )
+          )}
+        </select>
+        <div className="form-control flex-grow">
+          <label className="label">
+            <span className="label-text">Account Id</span>
+          </label>
+          <input
+            type="text"
+            disabled={true}
+            className="input-bordered input input-disabled w-full"
+            defaultValue={
+              props.releaseData.dataSharingAwsAccessPoint?.accountId
+            }
+          />
+        </div>
+        <div className="form-control flex-grow">
+          <label className="label">
+            <span className="label-text">VPC Id</span>
+          </label>
+          <input
+            type="text"
+            disabled={true}
+            className="input-bordered input input-disabled w-full"
+            defaultValue={props.releaseData.dataSharingAwsAccessPoint?.vpcId}
+          />
+        </div>
       </div>
       <div className="form-control">
         <label className="label">
@@ -92,23 +169,18 @@ export const AwsAccessPointAccordionContent: React.FC<
           onClick={() => {
             accessPointInstallTriggerMutate.mutate({
               releaseKey: props.releaseKey,
-              accounts: ["12345"],
-              vpcId: "vpc-12312343",
             });
           }}
           disabled={
-            // can't be already running a job
-            !!props.releaseData.runningJob ||
+            isCurrentlyRunningAnotherJob ||
+            isCurrentlyMissingNeededValues ||
+            isCurrentlyMutating ||
             // must be activated
-            !props.releaseData.activation ||
-            // can't be within our own trigger operation
-            accessPointInstallTriggerMutate.isLoading ||
-            accessPointUninstallTriggerMutate.isLoading ||
-            // can't be started whilst other fields are being mutated
-            props.releasePatchMutator.isLoading ||
-            // aws access point needs to be working as a mechanism
-            props.awsAccessPointWorking
+            !props.releaseData.activation
           }
+          title={`Disabled due to\n${Array.from(
+            isCurrentlyDescriptions.values()
+          ).join("\n")}`}
         >
           Install
         </button>
@@ -127,40 +199,14 @@ export const AwsAccessPointAccordionContent: React.FC<
             });
           }}
           disabled={
-            // can't be already running a job
-            !!props.releaseData.runningJob ||
-            // can't be within our own trigger operation
-            accessPointInstallTriggerMutate.isLoading ||
-            accessPointUninstallTriggerMutate.isLoading ||
-            // can't be started whilst other fields are being mutated
-            props.releasePatchMutator.isLoading ||
-            // aws access point needs to be working as a mechanism
-            props.awsAccessPointWorking
+            isCurrentlyRunningAnotherJob ||
+            isCurrentlyMissingNeededValues ||
+            isCurrentlyMutating
           }
+          title={"Disabled due to "}
         >
           Uninstall
         </button>
-      </div>
-
-      <div className="form-control flex-grow self-end">
-        <label className="label">
-          <span className="label-text">Account Id</span>
-        </label>
-        <input
-          type="text"
-          className="input-bordered input input-disabled w-full"
-          defaultValue={props.releaseData.dataSharingAwsAccessPoint?.accountId}
-        />
-      </div>
-      <div className="form-control flex-grow self-end">
-        <label className="label">
-          <span className="label-text">VPC Id</span>
-        </label>
-        <input
-          type="text"
-          className="input-bordered input input-disabled w-full"
-          defaultValue={props.releaseData.dataSharingAwsAccessPoint?.vpcId}
-        />
       </div>
     </>
   );

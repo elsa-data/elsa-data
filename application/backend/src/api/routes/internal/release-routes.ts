@@ -271,8 +271,7 @@ export const releaseRoutes = async (
               case "/dataSharingConfiguration/copyOutDestinationLocation":
               case "/dataSharingConfiguration/htsgetEnabled":
               case "/dataSharingConfiguration/awsAccessPointEnabled":
-              case "/dataSharingConfiguration/awsAccessPointAccountId":
-              case "/dataSharingConfiguration/awsAccessPointVpcId":
+              case "/dataSharingConfiguration/awsAccessPointName":
               case "/dataSharingConfiguration/gcpStorageIamEnabled":
               case "/dataSharingConfiguration/gcpStorageIamUsers":
                 reply.send(
