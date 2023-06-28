@@ -45,7 +45,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
   }
 
-  public async syncDataEgressByReleaseKey(
+  public async updateDataEgressRecordByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
@@ -53,25 +53,23 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       user,
       releaseKey
     );
-
     const datasetUrisArray = (
       await releaseGetByReleaseKey(this.edgeDbClient, {
         releaseKey,
       })
     )?.datasetUris;
 
-    this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+    await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "update the latest data egress records available",
       async () => {
-        if (userRole !== "Administrator")
-          throw NotAuthorisedUpdateDataEgressRecords;
+        if (!user.isAllowedRefreshDatasetIndex)
+          throw new NotAuthorisedUpdateDataEgressRecords();
       },
       async (tx, a) => {
         if (!datasetUrisArray) throw new Error("No dataset found!");
-
-        this.awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+        await this.awsCloudTrailLakeService.fetchCloudTrailLakeLog({
           user,
           releaseKey,
           datasetUrisArray,

@@ -5,10 +5,10 @@ import { DataEgressDetailedTable } from "../../../components/data-egress/data-eg
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRotate, faX } from "@fortawesome/free-solid-svg-icons";
 import { trpc } from "../../../helpers/trpc";
-import { useQueryClient } from "@tanstack/react-query";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
+import { Alert } from "../../../components/alert";
 
 export const DataEgressSummaryBox = ({
   releaseKey,
@@ -16,17 +16,13 @@ export const DataEgressSummaryBox = ({
   releaseKey: string;
 }) => {
   const [isSummaryView, setIsSummaryView] = useState<boolean>(true);
-  const [isSuccessShow, setIsSuccessShow] = useState<boolean>(false);
   const uiAllowed = useUiAllowed();
+  const utils = trpc.useContext();
 
-  const queryClient = useQueryClient();
   const updateReleaseEgressRecordMutate =
     trpc.releaseDataEgress.updateDataEgressRecord.useMutation({
-      onSuccess: () => {
-        setIsSuccessShow(true);
-      },
-      onSettled: () => {
-        queryClient.invalidateQueries();
+      onSettled: async () => {
+        await utils.releaseDataEgress.invalidate();
       },
     });
 
@@ -41,6 +37,7 @@ export const DataEgressSummaryBox = ({
           {uiAllowed.has(ALLOWED_DATASET_UPDATE) && (
             <button
               className="btn-outline btn-xs btn ml-2"
+              disabled={updateReleaseEgressRecordMutate.isLoading}
               onClick={() =>
                 updateReleaseEgressRecordMutate.mutate({ releaseKey })
               }
@@ -72,16 +69,20 @@ export const DataEgressSummaryBox = ({
       {updateReleaseEgressRecordMutate.isError && (
         <EagerErrorBoundary error={updateReleaseEgressRecordMutate.error} />
       )}
-      {isSuccessShow && (
-        <div className="alert alert-success flex w-full justify-between shadow-lg">
-          <span>Successfully update egress records.</span>
-          <button
-            className="btn-outline btn-xs btn-circle btn"
-            onClick={() => setIsSuccessShow(false)}
-          >
-            <FontAwesomeIcon icon={faX} />
-          </button>
-        </div>
+      {updateReleaseEgressRecordMutate.isLoading && (
+        <Alert
+          icon={<span className="loading loading-bars loading-xs" />}
+          description={"Updating data egress records"}
+          additionalAlertClassName={
+            "alert alert-info bg-slate-300 text-md py-1 mb-3"
+          }
+        />
+      )}
+      {updateReleaseEgressRecordMutate.isSuccess && (
+        <Alert
+          description={"Successfully update egress records."}
+          additionalAlertClassName={"alert alert-success text-md py-1 mb-3"}
+        />
       )}
       <div className="overflow-x-auto">
         {isSummaryView ? (

@@ -117,9 +117,13 @@ function DisplayDownloadStatus({
   fileSize: number;
 }) {
   if (downloadedSize > fileSize) {
-    return <div className="badge badge-warning">{`multiple-download`}</div>;
+    return (
+      <div className="badge badge-warning whitespace-pre">{`multiple-download`}</div>
+    );
   } else if (downloadedSize == fileSize) {
-    return <div className="badge badge-success">{"complete"}</div>;
+    return (
+      <div className="badge badge-success whitespace-pre">{"complete"}</div>
+    );
   }
-  return <div className="badge badge-ghost">{"incomplete"}</div>;
+  return <div className="badge badge-ghost whitespace-pre">{"incomplete"}</div>;
 }
