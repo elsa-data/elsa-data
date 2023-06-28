@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { ManifestMasterType } from "./manifest-master-types";
+import { ReleaseActivatedNothingError } from "../../exceptions/release-activation";
 
 const S3_PREFIX = "s3://";
 const GS_PREFIX = "gs://";
@@ -31,6 +32,25 @@ export async function transformDbManifestToMasterManifest(
     }
     return false;
   };
+
+  // Check to see if cases/specimens exist to being with before activating a release.
+  if (manifest.caseTree.length === 0) {
+    throw new ReleaseActivatedNothingError("no cases selected");
+  }
+  if (manifest.specimenList.length === 0) {
+    throw new ReleaseActivatedNothingError(
+      "no specimens for the selected cases"
+    );
+  }
+
+  // Check that at least some data sources are enabled.
+  if (
+    !manifest.releaseIsAllowedS3Data &&
+    !manifest.releaseIsAllowedGSData &&
+    !manifest.releaseIsAllowedR2Data
+  ) {
+    throw new ReleaseActivatedNothingError("no data sources enabled");
+  }
 
   // we need to prune the manifest of all files that we should not be giving out access to
   // (according to our includeReadData etc)
@@ -109,6 +129,34 @@ export async function transformDbManifestToMasterManifest(
       // if we allowed any file data through then this is an artifact record to keep in the manifest
       if (!removeBcl || !removeFastq || !removeBam || !removeCram || !removeVcf)
         allowedArtifacts.push(a);
+    }
+
+    // If read or variant data is allowed, then throw an error if every read or variant artifact is null. That is, there
+    // should be at least some read or variant data artifacts if that type of data is allowed.
+    if (
+      manifest.releaseIsAllowedReadData &&
+      allowedArtifacts.every(
+        (a) =>
+          !a.bclFile &&
+          !a.forwardFile &&
+          !a.reverseFile &&
+          !a.bamFile &&
+          !a.baiFile &&
+          !a.cramFile &&
+          !a.craiFile
+      )
+    ) {
+      throw new ReleaseActivatedNothingError(
+        "read data is enabled although there are no read data artifacts"
+      );
+    }
+    if (
+      manifest.releaseIsAllowedVariantData &&
+      allowedArtifacts.every((a) => !a.vcfFile && !a.tbiFile)
+    ) {
+      throw new ReleaseActivatedNothingError(
+        "variant data is enabled although there are no variant data artifacts for specimen"
+      );
     }
 
     specimen.artifacts = allowedArtifacts;

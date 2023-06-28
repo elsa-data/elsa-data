@@ -39,7 +39,7 @@ export const BASE_7807_ABOUT_BLANK = "about:blank";
 export interface Base7807Response {
   type: string;
   title: string;
-  status: number;
+  status?: number;
   detail?: string;
   instance?: string;
 
@@ -51,13 +51,13 @@ export interface Base7807Response {
  * Is this object a Base7807Response.
  */
 export const isBase7807Response = (object: any): object is Base7807Response => {
-  return "type" in object && "title" in object && "status" in object;
+  return "type" in object && "title" in object;
 };
 
 export class Base7807Error extends Error {
   constructor(
     title: string,
-    public status: number,
+    public status?: number,
     public detail?: string,
     public instance?: string
   ) {
