@@ -16,7 +16,6 @@
     "watch:aws": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.aws nodemon src/entrypoint.ts web-server-with-scenario 1",
     "//dev:*": "Run the dev application (no source watch or restart) with configuration for a Mac or Linux",
     "dev": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.minimum node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
-    "dev:umccr": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.umccr node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
     "dev:mac": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.mac node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
     "dev:linux": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.linux node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
     "dev:aws": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.aws node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",

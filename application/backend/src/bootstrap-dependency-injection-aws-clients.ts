@@ -28,6 +28,9 @@ import { createMockCloudFormation } from "./test-data/aws-mock/cloud-formation";
  * Register factories for all the AWS clients we might need.
  *
  * This helps consolidate the constructor to one spot in case we need to inject settings.
+ *
+ * It also allows us to provide mock implementations if we want to simulate AWS
+ * features in non-AWS environments.
  */
 export async function bootstrapDependencyInjectionAwsClients(
   dc: DependencyContainer,
@@ -62,7 +65,9 @@ export async function bootstrapDependencyInjectionAwsClients(
     // so we add this (WIP - this will clash with anything else that uses temp bucket)
     s3MockClient.on(PutObjectCommand).resolves({});
 
-    const cloudFormationClient = createMockCloudFormation();
+    const cloudFormationClient = createMockCloudFormation(
+      dc.resolve("Database")
+    );
     const cloudTrailClient = createMockCloudTrail();
     const secretsManagerClient = createMockSecretsManager();
     const serviceDiscoverClient = createMockServiceDiscovery();

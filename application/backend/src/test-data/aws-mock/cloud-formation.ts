@@ -1,4 +1,5 @@
 import { mockClient } from "aws-sdk-client-mock";
+import * as edgedb from "edgedb";
 import {
   CloudFormationClient,
   CreateStackCommand,
@@ -7,7 +8,6 @@ import {
   DescribeStacksOutput,
   StackStatus,
 } from "@aws-sdk/client-cloudformation";
-import { util } from "protobufjs";
 
 export const MOCK_INSTALLED_STACK_ID = "423906456904604";
 
@@ -17,13 +17,15 @@ const TIMES_TO_FAKE = 3;
 
 let currentCount = 0;
 
-export function createMockCloudFormation() {
+export function createMockCloudFormation(edgeDbClient: edgedb.Client) {
   const cloudFormationClientMock = mockClient(CloudFormationClient);
 
   // when install is called we want to put us into the installed state - but with a count
   // of X until the stack is "ready"
   cloudFormationClientMock.on(CreateStackCommand).callsFake(() => {
     console.log("mock:CreateStackCommand");
+
+    // edgeDbClient.
     currentCount = 0;
     isInstalled = true;
 
