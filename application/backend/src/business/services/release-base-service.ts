@@ -221,6 +221,7 @@ export abstract class ReleaseBaseService {
     //        changes (i.e. if I remove the config for a "Nextflow VPC" - I still need the ability
     //        to remove previously installed access points that used that config)
     let isAwsAccessPointInstalled = false;
+    let isAwsAccessPointArn: string | undefined = undefined;
 
     try {
       // TODO FIX - first need to refactor the release base into a mixin - so do in another PR
@@ -231,11 +232,14 @@ export abstract class ReleaseBaseService {
           StackName: releaseStackName,
         })
       );
-      isAwsAccessPointInstalled =
-        (releaseStackResult &&
-          releaseStackResult.Stacks &&
-          releaseStackResult.Stacks.length == 1) ||
-        false;
+      if (
+        releaseStackResult &&
+        releaseStackResult.Stacks &&
+        releaseStackResult.Stacks.length == 1
+      ) {
+        isAwsAccessPointInstalled = true;
+        isAwsAccessPointArn = releaseStackResult.Stacks[0].StackId;
+      }
     } catch (e) {
       // TODO tighten the error code here so we don't gobble up other "unexpected" errors
       // describing a stack that is not present throws an exception so we take that to mean it is
@@ -252,6 +256,7 @@ export abstract class ReleaseBaseService {
         accountId: firstNameMatch[1].accountId,
         vpcId: firstNameMatch[1].vpcId,
         installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
       };
     } else {
       return {
@@ -259,6 +264,7 @@ export abstract class ReleaseBaseService {
         accountId: "",
         vpcId: "",
         installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
       };
     }
   }

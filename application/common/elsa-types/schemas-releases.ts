@@ -75,6 +75,7 @@ export const DataSharingAwsAccessPointSchema = Type.Optional(
     accountId: Type.String(),
     vpcId: Type.String(),
     installed: Type.Boolean(),
+    installedStackArn: Type.Optional(Type.String()),
   })
 );
 
