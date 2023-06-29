@@ -19,6 +19,7 @@ import {
 import { AwsAccessPointService } from "../aws/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
+import { Logger } from "pino";
 
 /**
  * A service for performing long-running operations creating new
@@ -27,10 +28,11 @@ import { AwsEnabledService } from "../aws/aws-enabled-service";
 @injectable()
 export class JobCloudFormationCreateService extends JobService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
-    @inject(AuditEventService) auditLogService: AuditEventService,
-    @inject(ReleaseService) releaseService: ReleaseService,
-    @inject(SelectService) selectService: SelectService,
+    @inject("Database") readonly edgeDbClient: edgedb.Client,
+    @inject("Logger") readonly logger: Logger,
+    @inject(AuditEventService) readonly auditLogService: AuditEventService,
+    @inject(ReleaseService) readonly releaseService: ReleaseService,
+    @inject(SelectService) readonly selectService: SelectService,
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject(AwsEnabledService)
@@ -73,32 +75,10 @@ export class JobCloudFormationCreateService extends JobService {
         user,
         releaseKey,
         "E",
-        "Install S3 Access Point",
+        "Install AWS Access Point",
         new Date(),
         tx
       );
-
-      const releaseStackName =
-        AwsAccessPointService.getReleaseStackName(releaseKey);
-
-      const newReleaseStack = await this.cfnClient.send(
-        new CreateStackCommand({
-          StackName: releaseStackName,
-          TemplateURL: s3HttpsUrl,
-          Capabilities: ["CAPABILITY_IAM"],
-          OnFailure: "DELETE",
-          // need to determine this number - but creating access points is pretty simple so
-          // we only need to set this generously above the upper limit we see in practice
-          TimeoutInMinutes: 5,
-        })
-      );
-
-      if (!newReleaseStack || !newReleaseStack.StackId) {
-        throw new Error("Failed to even trigger the cloud formation create");
-
-        // TODO: finish off the audit entry and create a 'failed' job representing that we didn't even
-        //       get off the ground
-      }
 
       // create a new cloud formation install entry
       await e
@@ -113,8 +93,10 @@ export class JobCloudFormationCreateService extends JobService {
               filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
             }))
             .assert_single(),
-          awsStackId: newReleaseStack.StackId,
           s3HttpsUrl: s3HttpsUrl,
+          // we have not yet started the cloud formation create - our first step will be to get this stack id
+          // TODO: change schema to allow this to be optional
+          awsStackId: "",
         })
         .run(tx);
     });
@@ -135,8 +117,11 @@ export class JobCloudFormationCreateService extends JobService {
 
     const cfInstallJobQuery = e
       .select(e.job.CloudFormationInstallJob, (j) => ({
-        forRelease: true,
+        forRelease: {
+          releaseKey: true,
+        },
         awsStackId: true,
+        s3HttpsUrl: true,
         filter: e.op(j.id, "=", e.uuid(jobId)),
       }))
       .assert_single();
@@ -145,6 +130,50 @@ export class JobCloudFormationCreateService extends JobService {
 
     if (!cfInstallJob)
       throw new Error("Job id passed in was not a Cloud Formation Install Job");
+
+    if (!cfInstallJob.awsStackId) {
+      const releaseStackName = AwsAccessPointService.getReleaseStackName(
+        cfInstallJob.forRelease.releaseKey
+      );
+
+      const newReleaseStack = await this.cfnClient.send(
+        new CreateStackCommand({
+          StackName: releaseStackName,
+          TemplateURL: cfInstallJob.s3HttpsUrl,
+          Capabilities: ["CAPABILITY_IAM"],
+          OnFailure: "DELETE",
+          // need to determine this number - but creating access points is pretty simple so
+          // we only need to set this generously above the upper limit we see in practice
+          TimeoutInMinutes: 5,
+        })
+      );
+
+      if (!newReleaseStack || !newReleaseStack.StackId) {
+        console.log("Failed to even trigger the cloud formation create");
+        return 0;
+      }
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        const cloudFormationInstallQuery = e
+          .select(e.job.CloudFormationInstallJob, (j) => ({
+            auditEntry: true,
+            started: true,
+            filter: e.op(j.id, "=", e.uuid(jobId)),
+          }))
+          .assert_single();
+
+        await e
+          .update(cloudFormationInstallQuery, (sj) => ({
+            set: {
+              percentDone: 1,
+              awsStackId: newReleaseStack.StackId,
+            },
+          }))
+          .run(tx);
+      });
+
+      return 1;
+    }
 
     const describeStacksResult = await this.cfnClient.send(
       new DescribeStacksCommand({
@@ -179,7 +208,7 @@ export class JobCloudFormationCreateService extends JobService {
       return 0;
     }
 
-    console.log(theStack.StackStatus);
+    this.logger.debug(theStack.StackStatus);
 
     return 0;
   }

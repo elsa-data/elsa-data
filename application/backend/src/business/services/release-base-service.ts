@@ -1,6 +1,7 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
+  DataSharingAwsAccessPointType,
   ReleaseDetailType,
   ReleaseParticipantRoleType,
 } from "@umccr/elsa-types";
@@ -15,7 +16,16 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
-import { SharerHtsgetType } from "../../config/config-schema-sharer";
+import {
+  SharerAwsAccessPointType,
+  SharerHtsgetType,
+} from "../../config/config-schema-sharer";
+import { release } from "../../../dbschema/interfaces";
+import {
+  CloudFormationClient,
+  DescribeStacksCommand,
+  DescribeStacksCommandOutput,
+} from "@aws-sdk/client-cloudformation";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 
@@ -41,7 +51,8 @@ export abstract class ReleaseBaseService {
     protected readonly features: ReadonlySet<string>,
     protected readonly userService: UserService,
     protected readonly auditEventService: AuditEventService,
-    protected readonly auditEventTimedService: AuditEventTimedService
+    protected readonly auditEventTimedService: AuditEventTimedService,
+    private readonly cfnClient: CloudFormationClient
   ) {}
 
   /**
@@ -163,14 +174,99 @@ export abstract class ReleaseBaseService {
    *
    * @param property
    */
-  public configForFeature(property: "isAllowedHtsget"): any | undefined {
+  public configForFeature(property: "isAllowedHtsget"): URL | undefined {
     const h = this.settings.sharers.filter(
       (s) => s.type === "htsget"
     ) as SharerHtsgetType[];
 
     if (h.length === 1) return new URL(h[0].url);
+    return undefined;
+  }
+
+  /**
+   * Get the config for the AWS access point feature or undefined if this
+   * sharer is not in the config.
+   */
+  public configForAwsAccessPointFeature():
+    | SharerAwsAccessPointType
+    | undefined {
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "aws-access-point"
+    ) as SharerAwsAccessPointType[];
+
+    if (h.length === 1) return h[0];
 
     return undefined;
+  }
+
+  /**
+   * Where the AWS access point feature is enabled we check to see what the
+   * current access point status is.
+   *
+   * @param config
+   * @param releaseKey
+   * @param awsAccessPointName
+   *
+   * NOTE we only call this method when we are
+   * sure that the access point mechanism is configured - else it would just be a
+   * wasted unnecessary call to CloudFormation
+   */
+  public async getAwsAccessPointDetail(
+    config: SharerAwsAccessPointType,
+    releaseKey: string,
+    awsAccessPointName?: string
+  ): Promise<DataSharingAwsAccessPointType | undefined> {
+    // NOTE we need to calculate the installation status *independent* of the config lookups
+    //      - because we need the ability to "uninstall" an access point stack after the config
+    //        changes (i.e. if I remove the config for a "Nextflow VPC" - I still need the ability
+    //        to remove previously installed access points that used that config)
+    let isAwsAccessPointInstalled = false;
+    let isAwsAccessPointArn: string | undefined = undefined;
+
+    try {
+      // TODO FIX - first need to refactor the release base into a mixin - so do in another PR
+      //            we have a circular dependency otherwise
+      const releaseStackName = `elsa-data-release-${releaseKey}`;
+      const releaseStackResult = await this.cfnClient.send(
+        new DescribeStacksCommand({
+          StackName: releaseStackName,
+        })
+      );
+      if (
+        releaseStackResult &&
+        releaseStackResult.Stacks &&
+        releaseStackResult.Stacks.length == 1
+      ) {
+        isAwsAccessPointInstalled = true;
+        isAwsAccessPointArn = releaseStackResult.Stacks[0].StackId;
+      }
+    } catch (e) {
+      // TODO tighten the error code here so we don't gobble up other "unexpected" errors
+      // describing a stack that is not present throws an exception so we take that to mean it is
+      // not present
+    }
+
+    const firstNameMatch = Object.entries(config.allowedVpcs).find(
+      (n) => n[0] === awsAccessPointName
+    );
+
+    if (firstNameMatch) {
+      return {
+        name: firstNameMatch[0],
+        accountId: firstNameMatch[1].accountId,
+        vpcId: firstNameMatch[1].vpcId,
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    } else {
+      return {
+        name: "",
+        accountId: "",
+        vpcId: "",
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    }
   }
 
   /**
@@ -216,6 +312,16 @@ export abstract class ReleaseBaseService {
         ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
         : false;
 
+    const isAllowedAwsAccessPointConfig = this.configForAwsAccessPointFeature();
+
+    const dataSharingAwsAccessPoint = isAllowedAwsAccessPointConfig
+      ? await this.getAwsAccessPointDetail(
+          isAllowedAwsAccessPointConfig,
+          releaseKey,
+          releaseInfo.dataSharingConfiguration.awsAccessPointName
+        )
+      : undefined;
+
     return {
       id: releaseInfo.id,
       roleInRelease: userRole,
@@ -258,7 +364,7 @@ export abstract class ReleaseBaseService {
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
 
-      // A list of roles allowed to edit other user's role depending of this auth user
+      // A list of roles allowed to edit other user's role depending on this auth user
       // e.g. A manager cannot edit Administrator role.
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
@@ -285,15 +391,13 @@ export abstract class ReleaseBaseService {
           }
         : undefined,
       dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
-        ? this.configForFeature("isAllowedHtsget")
+        ? {
+            url: this.configForFeature("isAllowedHtsget")?.toString()!,
+          }
         : undefined,
       dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
         .awsAccessPointEnabled
-        ? {
-            accountId:
-              releaseInfo.dataSharingConfiguration.awsAccessPointAccountId,
-            vpcId: releaseInfo.dataSharingConfiguration.awsAccessPointVpcId,
-          }
+        ? dataSharingAwsAccessPoint
         : undefined,
       dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
         .gcpStorageIamEnabled
@@ -312,7 +416,7 @@ export abstract class ReleaseBaseService {
    * I can't make EdgeDb libraries re-use code where I'd like (which is possibly more about me than
    * edgedb)
    *
-   * @param userRole the role the user has in this release (must be something!)
+   * @param user the user performing the change
    * @param releaseKey the release id of the release to alter (must exist)
    * @param field the field name to alter e.g. 'institutes', 'diseases'...
    * @param system the system URI of the entry to add/delete

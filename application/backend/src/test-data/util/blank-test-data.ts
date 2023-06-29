@@ -12,6 +12,9 @@ const edgeDbClient = edgedb.createClient();
 export async function blankTestData(printDetailsToConsole: boolean = false) {
   // TODO: add a guard such that this can only execute on a local db
 
+  // Schema: mock
+  await e.delete(e.mock.AwsCloudFormationStack).run(edgeDbClient);
+
   // Schema: pedigree
   const pedigreeDeleted = await e.delete(e.pedigree.Pedigree).run(edgeDbClient);
   const pedigreeRelationshipDeleted = await e

@@ -17,6 +17,7 @@ import etag from "etag";
 import { Logger } from "pino";
 import { ManifestService } from "./manifests/manifest-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -33,7 +34,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
-    @inject(UserService) userService: UserService
+    @inject(UserService) userService: UserService,
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
       settings,
@@ -41,7 +43,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
       features,
       userService,
       auditEventService,
-      auditEventTimedService
+      auditEventTimedService,
+      cfnClient
     );
   }
 
