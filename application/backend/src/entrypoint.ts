@@ -62,6 +62,7 @@ bootstrapGlobalSynchronous();
 
   // global settings for DI
   const dc = await bootstrapDependencyInjection(
+    logger,
     rawConfig.devTesting?.mockAwsCloud
   );
 

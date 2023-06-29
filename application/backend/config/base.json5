@@ -2,7 +2,7 @@
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
   releaseKeyPrefix: "R",
-  ipLookup: { maxMindDbPath: "config/GeoLite2-City.mmdb" },
+  ipLookup: { maxMindDbPath: "config/Geoacumen-Country.mmdb" },
   feature: {
     enableConsentDisplay: true,
     enableCohortConstructor: true,

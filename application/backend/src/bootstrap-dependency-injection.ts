@@ -7,12 +7,19 @@ import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-se
 import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
 import { bootstrapDependencyInjectionAwsClients } from "./bootstrap-dependency-injection-aws-clients";
 import { bootstrapDependencyInjectionSingletonServices } from "./bootstrap-dependency-injection-singleton-services";
+import { Logger } from "pino";
 
 /**
  * Bootstrap the DI with some basic services that are
  * available across the entire application.
+ *
+ * @param logger a logger instance in case we want to log as part of DI
+ * @param mockAws if true then introduce mock AWS clients rather than real ones
  */
-export async function bootstrapDependencyInjection(mockAws: boolean = false) {
+export async function bootstrapDependencyInjection(
+  logger: Logger,
+  mockAws: boolean = false
+) {
   // this should be the ONLY point where we use the global tsyringe container -
   // all subsequent dcs should be passed into us - never using the global "container"
   // (that is why we call it "dc" throughout so we can do easy searches for places
@@ -33,7 +40,7 @@ export async function bootstrapDependencyInjection(mockAws: boolean = false) {
     ),
   });
 
-  await bootstrapDependencyInjectionAwsClients(dc, mockAws);
+  await bootstrapDependencyInjectionAwsClients(dc, logger, mockAws);
 
   bootstrapDependencyInjectionSingletonServices(dc, mockAws);
 

@@ -34,6 +34,7 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -48,7 +49,8 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     @inject(AuditEventService) auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
-    @inject(UserService) userService: UserService
+    @inject(UserService) userService: UserService,
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
       settings,
@@ -56,7 +58,8 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       features,
       userService,
       auditEventService,
-      auditEventTimedService
+      auditEventTimedService,
+      cfnClient
     );
   }
 

@@ -16,6 +16,7 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../exceptions/audit-author
 import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
 import { LocationType } from "./ip-lookup-service";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -33,7 +34,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
-    @inject(UserService) userService: UserService
+    @inject(UserService) userService: UserService,
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
       settings,
@@ -41,7 +43,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       features,
       userService,
       auditEventService,
-      auditEventTimedService
+      auditEventTimedService,
+      cfnClient
     );
   }
 

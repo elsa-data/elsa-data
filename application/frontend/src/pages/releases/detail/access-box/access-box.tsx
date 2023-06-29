@@ -4,7 +4,7 @@ import { VerticalTabs } from "../../../../components/vertical-tabs";
 import { Box } from "../../../../components/boxes";
 import { ManifestForm } from "./manifest-form";
 import { CopyOutForm } from "./copy-out-form";
-import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
+import { AwsAccessPointForm } from "./aws-access-point-form";
 import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
 import { ObjectSigningForm } from "./object-signing-form";
@@ -77,7 +77,12 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
             htsgetUrl={releaseData.dataSharingHtsget?.url || ""}
           />
         )}
-        {awsAccessPointSetting && <AwsS3VpcShareForm releaseKey={releaseKey} />}
+        {awsAccessPointSetting && (
+          <AwsAccessPointForm
+            releaseKey={releaseKey}
+            releaseData={releaseData}
+          />
+        )}
         {/* {dataSharingGcpStorageIam && (
           <GcpStorageIamShareForm releaseKey={releaseKey} />
         )} */}

@@ -31,6 +31,7 @@ import {
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 import { releaseGetSpecimenToDataSetCrossLinks } from "../../../dbschema/queries";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**
  * The release selection service handles CRUD operations on the list of items
@@ -48,7 +49,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
-    @inject(UserService) userService: UserService
+    @inject(UserService) userService: UserService,
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
       settings,
@@ -56,7 +58,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       features,
       userService,
       auditEventService,
-      auditEventTimedService
+      auditEventTimedService,
+      cfnClient
     );
   }
 

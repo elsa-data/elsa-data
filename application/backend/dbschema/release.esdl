@@ -260,8 +260,10 @@ module release {
         # TODO htsget endpoint selection - currently only one htsget endpoint so not needed yet
 
         required property awsAccessPointEnabled -> bool { default := false };
-        required property awsAccessPointAccountId -> str { default := "" };
-        required property awsAccessPointVpcId -> str { default := "" };
+        # NOTE the implication of storing only the access point name (the actual settings come
+        #      from configuration) - is that registering/updating AWS Access Points is an system administration
+        #      level activity
+        required property awsAccessPointName -> str { default := "" };
 
         required property gcpStorageIamEnabled -> bool { default := false };
         required property gcpStorageIamUsers -> array<str> { default := <array<str>>[] };

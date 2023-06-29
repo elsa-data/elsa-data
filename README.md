@@ -3,7 +3,7 @@
 **Genomic data sharing support software ("let the data go")**
 
 Elsa Data is a software stack that helps provide data custodians and researchers
-will a collaborative space in which manage the sharing of approved genomic
+with a collaborative space in which manage the sharing of approved genomic
 data sets.
 
 Elsa Data can ingest approved applications from a variety of sources
@@ -15,7 +15,7 @@ copy out, access points). All of this sharing activity is strongly audited.
 
 ## Development
 
-To get started with development see [development start here](docs/start-here.md).
+To get started with development see [development start here](docs/development/start-here.md).
 
 ## Configuration
 
