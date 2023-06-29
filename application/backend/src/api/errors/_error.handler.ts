@@ -80,14 +80,14 @@ export function ErrorHandler(
 
   // we can't allow a non-error status to come through this code-path - and if we get one - we have to report this
   // as an internal error
-  if (problemResponse.status < 400) {
+  if (problemResponse.status !== undefined && problemResponse.status < 400) {
     problemResponse.type = "about:blank";
     problemResponse.title = "Internal Server Error";
     problemResponse.status = 500;
   }
 
   reply
-    .code(problemResponse.status)
+    .code(problemResponse.status ?? 404)
     .type("application/problem+json")
     .send(problemResponse);
 }
