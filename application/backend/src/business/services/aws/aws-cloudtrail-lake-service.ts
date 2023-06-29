@@ -12,7 +12,6 @@ import { AuditEventService } from "../audit-event-service";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
-import { NotAuthorisedUpdateDataEgressRecords } from "../../exceptions/audit-authorisation";
 import {
   releaseLastUpdatedReset,
   updateLastDataEgressQueryTimestamp,
@@ -34,6 +33,7 @@ type CloudTrailInputQueryType = {
 
 type CloudTrailLakeResponseType = {
   eventTime: string;
+  eventId: string;
   sourceIPAddress: string;
   bucketName: string;
   key: string;
@@ -95,14 +95,20 @@ export class AwsCloudTrailLakeService {
       return null;
     }
 
+    // Date is round down to the nearest date (e.g. 27/06/2023 16:22:04 rounded to 27/06/04 00:00:00)
+    // As the cost of querying in cloudTrailLake is the interval of days, we might just query
+    // all with the same cost.
+
     // If have not been queried before, will be using the release created date.
     if (!releaseDates.lastDataEgressQueryTimestamp) {
-      return releaseDates.created.toISOString();
+      const createdData = releaseDates.created;
+      createdData.setHours(0, 0, 0, 0);
+
+      return createdData.toISOString();
     }
 
-    // Adding 1 ms from previous query to prevent overlap results.
     const dateObj = new Date(releaseDates.lastDataEgressQueryTimestamp);
-    dateObj.setTime(dateObj.getTime() + 1);
+    dateObj.setHours(0, 0, 0, 0);
 
     return dateObj.toISOString();
   }
@@ -199,6 +205,7 @@ export class AwsCloudTrailLakeService {
         releaseKey,
         description,
         auditId: trailEvent.auditId,
+        egressId: trailEvent.eventId,
 
         occurredDateTime: utcDate,
         sourceIpAddress: trailEvent.sourceIPAddress,
@@ -262,6 +269,7 @@ export class AwsCloudTrailLakeService {
       "element_at(requestParameters, 'x-auditId') as auditId, " +
       "element_at(requestParameters, 'x-releaseKey') as releaseKey, " +
       "eventTime, " +
+      "eventId, " +
       "sourceIPAddress, " +
       "element_at(requestParameters, 'bucketName') as bucketName, " +
       "element_at(requestParameters, 'key') as key, " +
@@ -358,6 +366,8 @@ export class AwsCloudTrailLakeService {
             releaseKey: releaseKey,
             eventDataStoreId: edsi,
           });
+
+          this.logger.debug("SQL statement: ", sqlQueryStatement);
 
           await this.queryAndRecord({
             sqlQueryStatement: sqlQueryStatement,

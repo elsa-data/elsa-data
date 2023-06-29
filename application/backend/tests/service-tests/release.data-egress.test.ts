@@ -52,6 +52,7 @@ it("audit data access log", async () => {
         dataEgressRecord: {
           "+=": e.insert(e.release.DataEgressRecord, {
             auditId: "abcd-defg-hijk-lmno",
+            egressId: "egress-01",
             occurredDateTime: e.datetime(new Date()),
             description: "Accessed via pre-signed URL",
             sourceIpAddress: "123.123.123.123",

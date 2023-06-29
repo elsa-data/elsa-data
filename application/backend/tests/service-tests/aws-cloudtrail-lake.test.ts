@@ -56,6 +56,7 @@ describe("Test CloudTrailLake Service", () => {
         bytesTransferredOut: "101.0",
         releaseKey: testReleaseKey,
         auditId: "abcd-defg-hijk-lmno",
+        eventId: "1234-5678-1234-5678",
       },
     ];
 
@@ -107,7 +108,59 @@ describe("Test CloudTrailLake Service", () => {
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
-        auditId: "id",
+        auditId: "audit-01",
+        eventId: "egress-01",
+      },
+    ];
+
+    jest
+      .spyOn(awsCloudTrailLakeService, "startCommandQueryCloudTrailLake")
+      .mockImplementation(async () => "RANDOM_ID");
+    jest
+      .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
+      .mockImplementation(async () => mockData);
+    await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+      user: superAdminUser,
+      releaseKey: testReleaseKey,
+      datasetUrisArray: [TENG_URI],
+    });
+
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
+      }))
+      .run(edgeDbClient);
+    expect(deArr.length).toEqual(1);
+    expect(deArr[0].egressBytes).toEqual(101);
+  });
+
+  it("test idempotent egressId", async () => {
+    awsEnabledServiceMock.enable();
+
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+    const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
+    const BUCKET_NAME = "umccr-10g-data-dev";
+    const mockData = [
+      {
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+        auditId: "audit-01",
+        eventId: "egress-01",
+      },
+      {
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+        auditId: "audit-01",
+        eventId: "egress-01",
       },
     ];
 

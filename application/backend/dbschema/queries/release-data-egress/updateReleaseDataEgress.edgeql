@@ -6,6 +6,8 @@ set {
   dataEgressRecord += (
     insert release::DataEgressRecord{
 
+      egressId := <str>$egressId,
+
       auditId := <str>$auditId,
       occurredDateTime := <datetime>$occurredDateTime,
       description := <str>$description,
@@ -21,6 +23,6 @@ set {
             filter .url = <str>$fileUrl
         )).size
       ),
-    }
+    } unless conflict on .egressId
   )
 }

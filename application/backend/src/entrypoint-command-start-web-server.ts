@@ -124,7 +124,7 @@ export async function startJobQueue(config: any) {
       },
       {
         name: jobEgressUpdateFileName,
-        cron: "0 1 * * *",
+        cron: "0 6 * * *", // Every 6am
         worker: {
           workerData: config,
         },
