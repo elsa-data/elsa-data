@@ -1,4 +1,5 @@
 import { Base7807Error } from "@umccr/elsa-types/error-types";
+import { TRPCError } from "@trpc/server";
 
 export class ReleaseActivationPermissionError extends Base7807Error {
   constructor(releaseKey: string) {
@@ -36,6 +37,16 @@ export class ReleaseDeactivationStateError extends Base7807Error {
       "An attempt was made to deactivate a release that was not activated",
       400,
       `The release with id '${releaseKey}' is deactivate and hence cannot be deactivated again`
+    );
+  }
+}
+
+export class ReleaseActivatedNothingError extends Base7807Error {
+  constructor(detail: string) {
+    super(
+      "Cannot activate release when nothing will be released",
+      undefined,
+      detail
     );
   }
 }

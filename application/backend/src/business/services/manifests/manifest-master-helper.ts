@@ -1,5 +1,6 @@
 import _ from "lodash";
 import { ManifestMasterType } from "./manifest-master-types";
+import { ReleaseActivatedNothingError } from "../../exceptions/release-activation";
 
 const S3_PREFIX = "s3://";
 const GS_PREFIX = "gs://";
@@ -31,6 +32,25 @@ export async function transformDbManifestToMasterManifest(
     }
     return false;
   };
+
+  // Check to see if cases/specimens exist to begin with before activating a release.
+  if (manifest.caseTree.length === 0) {
+    throw new ReleaseActivatedNothingError("No cases selected");
+  }
+  if (manifest.specimenList.length === 0) {
+    throw new ReleaseActivatedNothingError(
+      "No specimens for the selected cases"
+    );
+  }
+
+  // Check that at least some data sources are enabled.
+  if (
+    !manifest.releaseIsAllowedS3Data &&
+    !manifest.releaseIsAllowedGSData &&
+    !manifest.releaseIsAllowedR2Data
+  ) {
+    throw new ReleaseActivatedNothingError("No data sources enabled");
+  }
 
   // we need to prune the manifest of all files that we should not be giving out access to
   // (according to our includeReadData etc)
@@ -114,5 +134,68 @@ export async function transformDbManifestToMasterManifest(
     specimen.artifacts = allowedArtifacts;
   }
 
+  checkArtifacts(manifest);
+
   return manifest;
+}
+
+/**
+ * Checks if artifacts exist across read or variant for the whole manifest if those data
+ * types are enabled. Throws an error if this is not the case.
+ * @param manifest
+ */
+export function checkArtifacts(manifest: ManifestMasterType) {
+  const artifacts = manifest.specimenList.flatMap(
+    (specimen) => specimen.artifacts
+  );
+
+  let checkReadData = (artifact: any) => {
+    return (
+      !artifact.bclFile &&
+      !artifact.forwardFile &&
+      !artifact.reverseFile &&
+      !artifact.bamFile &&
+      !artifact.baiFile &&
+      !artifact.cramFile &&
+      !artifact.craiFile
+    );
+  };
+
+  let checkVariantData = (artifact: any) => {
+    return !artifact.vcfFile && !artifact.tbiFile;
+  };
+
+  // Check for the general case when no artifacts are present at all.
+  if (
+    artifacts.length === 0 ||
+    artifacts.every(
+      (artifact) => checkReadData(artifact) && checkVariantData(artifact)
+    )
+  ) {
+    throw new ReleaseActivatedNothingError("No data artifacts present");
+  }
+
+  if (
+    manifest.releaseIsAllowedReadData ||
+    manifest.releaseIsAllowedVariantData
+  ) {
+    const artifacts = manifest.specimenList.flatMap(
+      (specimen) => specimen.artifacts
+    );
+
+    if (manifest.releaseIsAllowedReadData && artifacts.every(checkReadData)) {
+      throw new ReleaseActivatedNothingError(
+        "Read data is enabled but there are no read data artifacts"
+      );
+    }
+
+    if (
+      manifest.releaseIsAllowedVariantData &&
+      artifacts.every(checkVariantData)
+    ) {
+      throw new ReleaseActivatedNothingError(
+        "Variant data is enabled but there are no variant data artifacts"
+      );
+    }
+  }
 }

@@ -74,7 +74,7 @@ export const Format7807Error = ({
     <div>
       <h3 className="font-bold">{error.title}</h3>
       <div className="text-xs">
-        {error.status}: {error.detail}
+        {error.status ? `${error.status}: ${error.detail}` : `${error.detail}`}
       </div>
     </div>
   );
