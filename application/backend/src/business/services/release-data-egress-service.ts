@@ -62,7 +62,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      "update the latest data egress records available",
+      `Update data egress records: ${releaseKey}`,
       async () => {
         if (!user.isAllowedRefreshDatasetIndex)
           throw new NotAuthorisedUpdateDataEgressRecords();

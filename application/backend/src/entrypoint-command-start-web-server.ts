@@ -11,7 +11,7 @@ import { MailService } from "./business/services/mail-service";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
-import { constants, exists } from "fs";
+import { constants } from "fs";
 import { access } from "fs/promises";
 import { IPLookupService } from "./business/services/ip-lookup-service";
 
@@ -101,11 +101,15 @@ export async function startJobQueue(config: any) {
   let jobFileName = "entrypoint-job-handler.ts";
   let root = path.resolve("jobs");
 
+  let jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.ts";
+
   try {
     await access(path.resolve("jobs", jobFileName), constants.R_OK);
+    await access(path.resolve("jobs", jobEgressUpdateFileName), constants.R_OK);
   } catch (e) {
     root = path.resolve("server/dist/jobs");
     jobFileName = "entrypoint-job-handler.js";
+    jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.js";
   }
 
   const bree = new Bree({
@@ -118,9 +122,15 @@ export async function startJobQueue(config: any) {
           workerData: config,
         },
       },
+      {
+        name: jobEgressUpdateFileName,
+        cron: "0 1 * * *",
+        worker: {
+          workerData: config,
+        },
+      },
     ],
   });
-
   await bree.start();
 }
 
