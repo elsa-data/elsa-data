@@ -32,14 +32,20 @@ export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
 /**
  * An enum type for participant roles in the release
  */
-export const ReleaseParticipantRole = ["Administrator", "Manager", "Member"];
 export const ReleaseParticipantRoleConst = [
+  "AdminView",
   "Administrator",
   "Manager",
   "Member",
 ] as const;
 export type ReleaseParticipantRoleType =
   typeof ReleaseParticipantRoleConst[number];
+export const ReleaseParticipantRole: ReleaseParticipantRoleType[] = [
+  "AdminView",
+  "Administrator",
+  "Manager",
+  "Member",
+];
 
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
@@ -86,7 +92,11 @@ export type DataSharingAwsAccessPointType = Static<
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
-  roleInRelease: Type.String(),
+  roleInRelease: Type.Union(
+    ReleaseParticipantRole.map((r: ReleaseParticipantRoleType) =>
+      Type.Literal(r)
+    )
+  ),
 
   lastUpdatedDateTime: TypeDate,
   lastUpdatedUserSubjectId: Type.String(),

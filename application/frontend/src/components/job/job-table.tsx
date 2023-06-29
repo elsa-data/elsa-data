@@ -6,8 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { ReleasePreviousJobType, RouteValidation } from "@umccr/elsa-types";
-import { UseQueryResult } from "@tanstack/react-query";
+import { ReleasePreviousJobType } from "@umccr/elsa-types";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
 import {
@@ -19,12 +18,10 @@ import {
   getExpandedRowModel,
   Row,
   RowData,
-  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { Base7807Error, Base7807Response } from "@umccr/elsa-types";
 import {
-  formatDuration,
   formatFromNowTime,
   formatLocalDateTime,
 } from "../../helpers/datetime-helper";
@@ -33,7 +30,6 @@ import { ToolTip } from "../tooltip";
 import { BiChevronDown, BiChevronRight, BiChevronUp } from "react-icons/bi";
 import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
-import { NavigateFunction, useNavigate } from "react-router-dom";
 import { IsLoadingDiv } from "../is-loading-div";
 import { trpc } from "../../helpers/trpc";
 
@@ -67,8 +63,6 @@ export const JobTable = ({
   pageSize,
   releaseKey,
 }: JobTableProps): JSX.Element => {
-  const navigate = useNavigate();
-
   const [currentPage, setCurrentPage] = useState(1);
   const [currentTotal, setCurrentTotal] = useState(1);
 
@@ -280,6 +274,13 @@ export const ExpandedIndicator = ({
   );
 };
 
+const TimeToolTip = ({ time }: { time: string | undefined }) => (
+  <ToolTip
+    trigger={formatFromNowTime(time)}
+    description={formatLocalDateTime(time)}
+  />
+);
+
 /**
  * Create the column definition based on the audit entry type.
  *
@@ -330,20 +331,34 @@ export const createColumns = () => {
     }),
     columnHelper.accessor("type", {
       header: "Type",
+      enableSorting: false,
     }),
     columnHelper.accessor("created", {
       header: "Created",
+      cell: (info) => (
+        <TimeToolTip time={info.getValue<string | undefined>()} />
+      ),
+      enableSorting: false,
     }),
     columnHelper.accessor("started", {
       header: "Started",
+      cell: (info) => (
+        <TimeToolTip time={info.getValue<string | undefined>()} />
+      ),
+      enableSorting: false,
     }),
     columnHelper.accessor("ended", {
       header: "Ended",
+      cell: (info) => (
+        <TimeToolTip time={info.getValue<string | undefined>()} />
+      ),
+      enableSorting: false,
     }),
     columnHelper.accessor("requestedCancellation", {
       header: "Requested Cancellation",
       cell: (info) =>
         info.row.getValue("requestedCancellation") ? "Yes" : "No",
+      enableSorting: false,
     }),
   ];
 };

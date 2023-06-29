@@ -99,6 +99,7 @@ export async function insertRelease6(
         whoDisplayName: "Someone",
         whoId: "a",
         occurredDateTime: e.datetime_current(),
+        inProgress: false,
       }),
       awsExecutionArn: "not-a-real-arn",
     })
@@ -123,6 +124,7 @@ export async function insertRelease6(
         whoDisplayName: "Someone",
         whoId: "a",
         occurredDateTime: e.datetime_current(),
+        inProgress: false,
       }),
       awsStackId: "not-a-real-stack-id",
     })

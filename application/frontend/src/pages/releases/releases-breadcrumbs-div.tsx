@@ -35,7 +35,9 @@ export const ReleasesBreadcrumbsDiv: React.FC<{
   const finalSiblingItems = lastSiblingItems.filter(
     (si) =>
       // Don't show the "Jobs" breadcrumb for non-admins
-      si.id !== "jobs" || props.releaseData.roleInRelease === "Administrator"
+      si.id !== "jobs" ||
+      props.releaseData.roleInRelease === "Administrator" ||
+      props.releaseData.roleInRelease === "AdminView"
   );
 
   return (
