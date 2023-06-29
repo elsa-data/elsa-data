@@ -48,7 +48,9 @@ export class ManifestService {
         activation: {
           manifest: true,
         },
-        htsgetRestrictions: true,
+        dataSharingConfiguration: {
+          htsgetRestrictions: true,
+        },
         filter: e.op(r.releaseKey, "=", releaseKey),
       }))
       .assert_single()
@@ -64,7 +66,8 @@ export class ManifestService {
 
     const manifest = releaseWithManifest.activation
       .manifest as ManifestMasterType;
-    manifest.releaseHtsgetRestrictions = releaseWithManifest.htsgetRestrictions;
+    manifest.releaseHtsgetRestrictions =
+      releaseWithManifest.dataSharingConfiguration.htsgetRestrictions;
 
     return manifest;
   }
@@ -113,7 +116,7 @@ export class ManifestService {
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey)[number][]
+    header: typeof ObjectStoreRecordKey[number][]
   ): Promise<string | null> {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
@@ -197,7 +200,7 @@ export class ManifestService {
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey)[number][]
+    header: typeof ObjectStoreRecordKey[number][]
   ): Promise<archiver.Archiver | null> {
     const buf = await this.getActiveTsvManifestAsString(
       presignedUrlService,

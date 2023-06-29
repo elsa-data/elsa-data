@@ -22,7 +22,7 @@ with
     isAllowedOverallAdministratorView
   ),
 
-update r
+update r.dataSharingConfiguration
 filter isAllowed
 set {
     htsgetRestrictions -= <str>$restriction
