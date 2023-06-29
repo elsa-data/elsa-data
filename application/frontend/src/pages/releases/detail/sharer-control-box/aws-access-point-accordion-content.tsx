@@ -84,44 +84,39 @@ export const AwsAccessPointAccordionContent: React.FC<
   const isUninstallDisabledDescription = new Set<string>();
 
   if (isCurrentlyMissingNeededValues) {
-    isInstallDisabledDescriptions.add("missing needed configuration values");
-    isUninstallDisabledDescription.add("missing needed configuration values");
+    const m = "missing needed configuration values";
+    isInstallDisabledDescriptions.add(m);
+    isUninstallDisabledDescription.add(m);
   }
 
   if (isCurrentlyRunningAnotherJob) {
-    isInstallDisabledDescriptions.add("currently running another job");
-    isUninstallDisabledDescription.add("currently running another job");
+    const m = "currently running another job";
+    isInstallDisabledDescriptions.add(m);
+    isUninstallDisabledDescription.add(m);
   }
 
   if (isCurrentlyMutating) {
-    isInstallDisabledDescriptions.add("currently in a mutation operation");
-    isUninstallDisabledDescription.add("currently in a mutation operation");
+    const m = "currently in a mutation operation";
+    isInstallDisabledDescriptions.add(m);
+    isUninstallDisabledDescription.add(m);
   }
 
-  if (isCurrentlyInactiveRelease)
-    isInstallDisabledDescriptions.add("currently not activated release");
+  if (isCurrentlyInactiveRelease) {
+    isInstallDisabledDescriptions.add("release is not activated");
+  }
 
-  if (isCurrentlyAlreadyInstalled)
+  if (isCurrentlyAlreadyInstalled) {
     isInstallDisabledDescriptions.add(
-      "currently already an access point in place for this release"
+      "an access point for this release is already installed"
     );
-  else
+  } else {
     isUninstallDisabledDescription.add(
-      "currently no access point in place for this release"
+      "there is no installed access point for this release"
     );
+  }
 
-  const isInstallDisabled =
-    isCurrentlyMissingNeededValues ||
-    isCurrentlyRunningAnotherJob ||
-    isCurrentlyMutating ||
-    isCurrentlyInactiveRelease ||
-    isCurrentlyAlreadyInstalled;
-
-  const isUninstallDisabled =
-    isCurrentlyMissingNeededValues ||
-    isCurrentlyRunningAnotherJob ||
-    isCurrentlyMutating ||
-    !isCurrentlyAlreadyInstalled;
+  const isInstallDisabled = isInstallDisabledDescriptions.size > 0;
+  const isUninstallDisabled = isUninstallDisabledDescription.size > 0;
 
   return (
     <>
