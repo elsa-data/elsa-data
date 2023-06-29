@@ -37,6 +37,7 @@ import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
 import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
+import { Logger } from "pino";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -62,7 +63,8 @@ export class AuditEventService {
 
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Logger") private readonly logger: Logger
   ) {}
 
   /**
@@ -481,7 +483,7 @@ export class AuditEventService {
       orderAscending
     ).run(executor);
 
-    console.log(
+    this.logger.debug(
       `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
@@ -552,7 +554,7 @@ export class AuditEventService {
     );
 
     const length = await count.run(executor);
-    console.log(
+    this.logger.debug(
       `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${length}, pageOfEntries=...`
     );
 
@@ -599,7 +601,7 @@ export class AuditEventService {
       orderAscending
     ).run(executor);
 
-    console.log(
+    this.logger.debug(
       `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
     );
 
