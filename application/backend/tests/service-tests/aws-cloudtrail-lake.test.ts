@@ -132,18 +132,4 @@ describe("Test CloudTrailLake Service", () => {
     expect(deArr.length).toEqual(1);
     expect(deArr[0].egressBytes).toEqual(101);
   });
-
-  it("Test unauthorised attempt ", async () => {
-    const awsCloudTrailLakeService = testContainer.resolve(
-      AwsCloudTrailLakeService
-    );
-
-    await expect(async () => {
-      const result = await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-        user: allowedMemberUser,
-        releaseKey: testReleaseKey,
-        datasetUrisArray: [TENG_URI],
-      });
-    }).rejects.toThrow(NotAuthorisedUpdateDataEgressRecords);
-  });
 });

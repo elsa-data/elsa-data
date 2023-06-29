@@ -5,6 +5,9 @@ import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AuditEventService } from "../../src/business/services/audit-event-service";
 import { ReleaseDataEgressService } from "../../src/business/services/release-data-egress-service";
+import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
+import { NotAuthorisedUpdateDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
 
 let testReleaseKey: string;
 
@@ -76,4 +79,14 @@ it("audit data access log", async () => {
 
   expect(res.total).toBe(1);
   expect(firstData?.fileUrl).toBe(fileUrl);
+});
+
+it("test unauthorised attempt", async () => {
+  await expect(async () => {
+    const result =
+      await releaseDataEgressService.updateDataEgressRecordByReleaseKey(
+        allowedAdministratorUser,
+        testReleaseKey
+      );
+  }).rejects.toThrow(NotAuthorisedUpdateDataEgressRecords);
 });
