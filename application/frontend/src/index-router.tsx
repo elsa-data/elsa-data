@@ -1,10 +1,11 @@
 import React from "react";
 import {
-  createBrowserRouter,
-  createRoutesFromElements,
   Navigate,
   Outlet,
   Route,
+  RouterProvider,
+  createBrowserRouter,
+  createRoutesFromElements,
   useLocation,
 } from "react-router-dom";
 import "./index.css";
@@ -28,13 +29,20 @@ import { AuditEventDetailedPage } from "./components/audit-event/audit-event-det
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit-events-sub-page";
+import { JobsSubPage } from "./pages/releases/jobs-sub-page/jobs-sub-page";
 import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
 import {
+  ALLOWED_OVERALL_ADMIN_VIEW,
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
+
+type IndexRouterProps = {
+  addBypassLoginPage: boolean;
+  features: Set<string>;
+};
 
 /**
  * Create the complete set of routes for the application.
@@ -42,10 +50,10 @@ import {
  * @param addBypassLoginPage if true, adds in a page that allows direct login as test users
  * @param features the set of features to enable in the UI
  */
-export function createRouter(
-  addBypassLoginPage: boolean,
-  features: Set<string>
-) {
+export function IndexRouter({
+  addBypassLoginPage,
+  features,
+}: IndexRouterProps) {
   const NoMatch = () => {
     let location = useLocation();
 
@@ -74,6 +82,7 @@ export function createRouter(
     redirectPath,
   }) => {
     const user = useLoggedInUser();
+
     if (!user) {
       return <Navigate to={redirectPath} replace />;
     }
@@ -120,7 +129,14 @@ export function createRouter(
     children: <></>,
   });
 
-  return createBrowserRouter(
+  releaseChildren.push({
+    text: "Jobs",
+    path: "jobs",
+    element: <JobsSubPage />,
+    children: <></>,
+  });
+
+  const router = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<LayoutBase />}>
         {/* the following 'public' routes need to come first so that they will match before
@@ -151,26 +167,25 @@ export function createRouter(
               handle={{
                 siblingItems: releaseChildren
                   .map((c, i) => ({
+                    id: c.path,
                     to: `./${c.path}`,
                     text: c.text,
                   }))
                   .filter(({ text }) => text !== undefined),
               }}
             >
-              <>
-                {releaseChildren.map((c, i) => (
-                  <Route
-                    key={i}
-                    path={c.path}
-                    element={c.element}
-                    handle={{
-                      crumbText: c.text,
-                    }}
-                  >
-                    {c.children}
-                  </Route>
-                ))}
-              </>
+              {releaseChildren.map((c, i) => (
+                <Route
+                  key={i}
+                  path={c.path}
+                  element={c.element}
+                  handle={{
+                    crumbText: c.text,
+                  }}
+                >
+                  {c.children}
+                </Route>
+              ))}
             </Route>
           </Route>
 
@@ -202,6 +217,8 @@ export function createRouter(
       </Route>
     )
   );
+
+  return <RouterProvider router={router} />;
 }
 
 // Redirection component

@@ -75,5 +75,57 @@ export async function insertRelease6(
     await insertRole(insertRelease6.id, user.email, "Member", edgeDbClient);
   }
 
+  await e
+    .insert(e.job.CopyOutJob, {
+      forRelease: e
+        .select(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(insertRelease6.id)),
+        }))
+        .assert_single(),
+      status: e.job.JobStatus.cancelled,
+      requestedCancellation: true,
+      started: e.datetime_current(),
+      ended: e.datetime_current(),
+      percentDone: e.int16(0),
+      messages: e.literal(e.array(e.str), [
+        "Doing stuff...",
+        "Stuff-doing was cancelled",
+      ]),
+      auditEntry: e.insert(e.audit.ReleaseAuditEvent, {
+        actionCategory: "C",
+        actionDescription: "Started copy out job in AWS",
+        outcome: 0,
+        whoDisplayName: "Someone",
+        whoId: "a",
+        occurredDateTime: e.datetime_current(),
+      }),
+      awsExecutionArn: "not-a-real-arn",
+    })
+    .run(edgeDbClient);
+
+  await e
+    .insert(e.job.CloudFormationDeleteJob, {
+      forRelease: e
+        .select(e.release.Release, (r) => ({
+          filter: e.op(r.id, "=", e.uuid(insertRelease6.id)),
+        }))
+        .assert_single(),
+      status: e.job.JobStatus.failed,
+      started: e.datetime_current(),
+      ended: e.datetime_current(),
+      percentDone: e.int16(0),
+      messages: e.literal(e.array(e.str), []),
+      auditEntry: e.insert(e.audit.ReleaseAuditEvent, {
+        actionCategory: "C",
+        actionDescription: "Started copy out job",
+        outcome: 0,
+        whoDisplayName: "Someone",
+        whoId: "a",
+        occurredDateTime: e.datetime_current(),
+      }),
+      awsStackId: "not-a-real-stack-id",
+    })
+    .run(edgeDbClient);
+
   return insertRelease6;
 }

@@ -217,6 +217,17 @@ export const ReleaseCaseSchema = Type.Object({
   customConsent: Type.Boolean(),
 });
 
+export const ReleasePreviousJobSchema = Type.Object({
+  objectId: Type.String(),
+  type: Type.String(),
+  created: TypeDate,
+  started: TypeDate,
+  ended: TypeDate,
+  requestedCancellation: Type.Boolean(),
+  messages: Type.Array(Type.String()),
+});
+export type ReleasePreviousJobType = Static<typeof ReleasePreviousJobSchema>;
+
 // Schema for manually creating a release instead importing it from a DAC
 export const ReleaseManualSchema = Type.Object({
   releaseTitle: Type.String(),

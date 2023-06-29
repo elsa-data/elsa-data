@@ -1,6 +1,5 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { RouterProvider } from "react-router-dom";
 import {
   DeployedEnvironments,
   EnvRelayProvider,
@@ -9,7 +8,7 @@ import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
-import { createRouter } from "./index-router";
+import { IndexRouter } from "./index-router";
 import { TRPCProvider } from "./providers/trpc-provider";
 import { isString } from "lodash";
 import { LoggedInUserConfigRelayProvider } from "./providers/logged-in-user-config-relay-provider";
@@ -69,8 +68,9 @@ if (rootElement != null) {
                 <TRPCProvider>
                   {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
                   <LoggedInUserConfigRelayProvider>
-                    <RouterProvider
-                      router={createRouter(de === "development", fea)}
+                    <IndexRouter
+                      addBypassLoginPage={de === "development"}
+                      features={fea}
                     />
                   </LoggedInUserConfigRelayProvider>
                 </TRPCProvider>
