@@ -68,10 +68,7 @@ if (rootElement != null) {
                 <TRPCProvider>
                   {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
                   <LoggedInUserConfigRelayProvider>
-                    <IndexRouter
-                      addBypassLoginPage={de === "development"}
-                      features={fea}
-                    />
+                    <IndexRouter features={fea} />
                   </LoggedInUserConfigRelayProvider>
                 </TRPCProvider>
               </LoggedInUserProvider>

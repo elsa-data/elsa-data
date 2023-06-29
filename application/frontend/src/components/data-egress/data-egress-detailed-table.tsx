@@ -44,7 +44,7 @@ export function DataEgressDetailedTable({
   return (
     <>
       <div className="mb-2	text-gray-500">
-        A detailed events on every events egress from data storage.
+        A detailed events on every data egressed from the data storage.
       </div>
 
       {dataEgressQuery.isError && (
@@ -82,6 +82,10 @@ export function DataEgressDetailedTable({
                             {`${city ?? "-"}, ${country ?? "-"} `}
                             {region && <Flags regions={[region]} />}
                           </>
+                        );
+                      } else if (objKey === "fileUrl") {
+                        return (
+                          <pre className="break-all">{row[objKey] ?? ""}</pre>
                         );
                       } else if (
                         objKey === "fileUrl" ||

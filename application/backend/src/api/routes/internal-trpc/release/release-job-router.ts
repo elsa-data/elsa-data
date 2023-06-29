@@ -15,30 +15,28 @@ export const releaseJobRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.jobService.startSelectJob(ctx.user, input.releaseKey);
     }),
-  startAccessPointInstall: internalProcedure
+  startAwsAccessPointInstall: internalProcedure
     .input(
       z.object({
         releaseKey: inputReleaseKey,
-        accounts: z.array(z.string()),
-        vpcId: z.optional(z.string()),
       })
     )
     .mutation(async ({ input, ctx }) => {
+      // create the cloud formation template and save it to temp S3 bucket
       const s3HttpsUrl =
         await ctx.awsAccessPointService.createAccessPointCloudFormationTemplate(
           ctx.user,
-          input.releaseKey,
-          input.accounts,
-          input.vpcId
+          input.releaseKey
         );
 
+      // start the job that actually installs the cloud formation
       await ctx.jobCloudFormationCreateService.startCloudFormationInstallJob(
         ctx.user,
         input.releaseKey,
         s3HttpsUrl
       );
     }),
-  startAccessPointUninstall: internalProcedure
+  startAwsAccessPointUninstall: internalProcedure
     .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(

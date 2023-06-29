@@ -18,7 +18,6 @@ import { ReleasesDashboardPage } from "./pages/releases-dashboard/releases-dashb
 import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-sub-page";
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
 import { LayoutBase } from "./layouts/layout-base";
-import { LoginDevPage } from "./pages/login-dev-page";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
 import { LoginPage } from "./pages/login-page";
 import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
@@ -34,26 +33,21 @@ import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
 import {
-  ALLOWED_OVERALL_ADMIN_VIEW,
+  FEATURE_DEV_TEST_USERS_LOGIN,
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
 
 type IndexRouterProps = {
-  addBypassLoginPage: boolean;
   features: Set<string>;
 };
 
 /**
  * Create the complete set of routes for the application.
  *
- * @param addBypassLoginPage if true, adds in a page that allows direct login as test users
  * @param features the set of features to enable in the UI
  */
-export function IndexRouter({
-  addBypassLoginPage,
-  features,
-}: IndexRouterProps) {
+export function IndexRouter({ features }: IndexRouterProps) {
   const NoMatch = () => {
     let location = useLocation();
 
@@ -141,13 +135,15 @@ export function IndexRouter({
       <Route element={<LayoutBase />}>
         {/* the following 'public' routes need to come first so that they will match before
             the more generic / route */}
-        <Route path={`/login`} element={<LoginPage />} />
+        <Route
+          path={`/login`}
+          element={
+            <LoginPage
+              showDevTestLogin={features.has(FEATURE_DEV_TEST_USERS_LOGIN)}
+            />
+          }
+        />
         <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
-
-        {/* a login bypass route/page that only appears in dev */}
-        {addBypassLoginPage && (
-          <Route path={`/dev-bm3ey56`} element={<LoginDevPage />} />
-        )}
 
         {/* a protected hierarchy of routes - user must be logged in */}
         <Route path={`/`} element={<ProtectedRoute redirectPath="/login" />}>

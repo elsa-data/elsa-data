@@ -32,9 +32,6 @@ export const releaseRoutes = async (
     GcpStorageSharingService
   );
   const releaseService = _opts.container.resolve(ReleaseService);
-  const releaseParticipantService = _opts.container.resolve(
-    ReleaseParticipationService
-  );
   const releaseSelectionService = _opts.container.resolve(
     ReleaseSelectionService
   );
@@ -271,8 +268,7 @@ export const releaseRoutes = async (
               case "/dataSharingConfiguration/copyOutDestinationLocation":
               case "/dataSharingConfiguration/htsgetEnabled":
               case "/dataSharingConfiguration/awsAccessPointEnabled":
-              case "/dataSharingConfiguration/awsAccessPointAccountId":
-              case "/dataSharingConfiguration/awsAccessPointVpcId":
+              case "/dataSharingConfiguration/awsAccessPointName":
               case "/dataSharingConfiguration/gcpStorageIamEnabled":
               case "/dataSharingConfiguration/gcpStorageIamUsers":
                 reply.send(
@@ -295,34 +291,6 @@ export const releaseRoutes = async (
       }
     }
   );
-
-  // /**
-  //  * @param binary Buffer
-  //  * returns readableInstanceStream Readable
-  //  */
-  // function bufferToStream(binary: Buffer) {
-  //   return new Readable({
-  //     read() {
-  //       this.push(binary);
-  //       this.push(null);
-  //     },
-  //   });
-  // }
-
-  fastify.get<{
-    Params: { rid: string };
-  }>("/releases/:rid/cfn", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
-
-    const res = await awsAccessPointService.getInstalledAccessPointResources(
-      authenticatedUser,
-      releaseKey
-    );
-
-    reply.send(res);
-  });
 
   fastify.post<{
     Body: ReleasePresignRequestType;

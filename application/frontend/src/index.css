@@ -88,3 +88,10 @@ textarea {
   z-index: 0 !important;
   position: static;
 }
+
+.table th:first-child {
+  border-top-left-radius: 0.5rem;
+}
+.table th:last-child {
+  border-top-right-radius: 0.5rem;
+}

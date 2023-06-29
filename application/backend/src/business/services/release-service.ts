@@ -11,7 +11,7 @@ import { PagedResult } from "../../api/helpers/pagination-helpers";
 import { getReleaseInfo } from "./helpers";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
-import { ReleaseBaseService } from "./release-base-service";
+import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
 import { getNextReleaseKey } from "../db/release-queries";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
@@ -23,12 +23,12 @@ import {
   releaseGetAllByUser,
   removeHtsgetRestriction,
 } from "../../../dbschema/queries";
-import { AuditEventService } from "./audit-event-service";
 import {
   auditFailure,
   auditReleaseUpdateStart,
   auditSuccess,
 } from "../../audit-helpers";
+import { AuditEventService } from "./audit-event-service";
 import { Logger } from "pino";
 import { jobAsBadgeLabel } from "./jobs/job-helpers";
 import {
@@ -37,6 +37,8 @@ import {
   splitUserEmails,
 } from "./_dac-user-helper";
 import { AuditEventTimedService } from "./audit-event-timed-service";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -49,7 +51,8 @@ export class ReleaseService extends ReleaseBaseService {
     auditEventService: AuditEventService,
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
-    @inject(UserService) userService: UserService
+    @inject(UserService) userService: UserService,
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
       settings,
@@ -57,7 +60,8 @@ export class ReleaseService extends ReleaseBaseService {
       features,
       userService,
       auditEventService,
-      auditEventTimedService
+      auditEventTimedService,
+      cfnClient
     );
   }
 
@@ -104,7 +108,9 @@ export class ReleaseService extends ReleaseBaseService {
             ? jobAsBadgeLabel(a.runningJob[0])
             : undefined,
         isActivated: a.activation != null,
-        roleInRelease: a.role!,
+        // If this exist in this results but null is returned,
+        // it means this user is an AdminView as the query have considered this.
+        roleInRelease: (a.role ?? "AdminView") as UserRoleInRelease,
       })),
     };
   }
@@ -283,21 +289,14 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+    return await this.alterApplicationCodedArrayEntry(
       user,
-      releaseKey
-    );
-
-    await this.alterApplicationCodedArrayEntry(
-      userRole,
       releaseKey,
       "diseases",
       system,
       code,
       false
     );
-
-    return await this.getBase(releaseKey, userRole);
   }
 
   public async removeDiseaseFromApplicationCoded(
@@ -306,21 +305,14 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+    return await this.alterApplicationCodedArrayEntry(
       user,
-      releaseKey
-    );
-
-    await this.alterApplicationCodedArrayEntry(
-      userRole,
       releaseKey,
       "diseases",
       system,
       code,
       true
     );
-
-    return await this.getBase(releaseKey, userRole);
   }
 
   public async addCountryToApplicationCoded(
@@ -329,21 +321,14 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+    return await this.alterApplicationCodedArrayEntry(
       user,
-      releaseKey
-    );
-
-    await this.alterApplicationCodedArrayEntry(
-      userRole,
       releaseKey,
       "countries",
       system,
       code,
       false
     );
-
-    return await this.getBase(releaseKey, userRole);
   }
 
   public async removeCountryFromApplicationCoded(
@@ -352,21 +337,14 @@ ${release.applicantEmailAddresses}
     system: string,
     code: string
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+    return await this.alterApplicationCodedArrayEntry(
       user,
-      releaseKey
-    );
-
-    await this.alterApplicationCodedArrayEntry(
-      userRole,
       releaseKey,
       "countries",
       system,
       code,
       true
     );
-
-    return await this.getBase(releaseKey, userRole);
   }
 
   public async setTypeOfApplicationCoded(
@@ -379,38 +357,53 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    await this.edgeDbClient.transaction(async (tx) => {
-      // get the current coded application
-      const releaseWithAppCoded = await e
-        .select(e.release.Release, (r) => ({
-          applicationCoded: {
-            id: true,
-            studyType: true,
-            countriesInvolved: true,
-            diseasesOfStudy: true,
-          },
-          filter: e.op(r.releaseKey, "=", releaseKey),
-        }))
-        .assert_single()
-        .run(tx);
+    const actionDescription = "set application coded type";
 
-      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseKey);
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+      user,
+      releaseKey,
+      actionDescription,
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
+      },
+      async (tx, a) => {
+        // get the current coded application
+        const releaseWithAppCoded = await e
+          .select(e.release.Release, (r) => ({
+            applicationCoded: {
+              id: true,
+              studyType: true,
+              countriesInvolved: true,
+              diseasesOfStudy: true,
+            },
+            filter: e.op(r.releaseKey, "=", releaseKey),
+          }))
+          .assert_single()
+          .run(tx);
+        if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseKey);
 
-      await e
-        .update(e.release.ApplicationCoded, (ac) => ({
-          filter: e.op(
-            ac.id,
-            "=",
-            e.uuid(releaseWithAppCoded.applicationCoded.id)
-          ),
-          set: {
-            studyType: type,
-          },
-        }))
-        .run(tx);
-    });
+        await e
+          .update(e.release.ApplicationCoded, (ac) => ({
+            filter: e.op(
+              ac.id,
+              "=",
+              e.uuid(releaseWithAppCoded.applicationCoded.id)
+            ),
+            set: {
+              studyType: type,
+            },
+          }))
+          .run(tx);
 
-    return await this.getBase(releaseKey, userRole);
+        return {
+          studyType: type,
+        };
+      },
+      async () => {
+        return await this.getBase(releaseKey, userRole);
+      }
+    );
   }
 
   public async setBeaconQuery(
@@ -418,40 +411,54 @@ ${release.applicantEmailAddresses}
     releaseKey: string,
     query: any
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
-      releaseKey
+      releaseKey,
+      "set beacon query",
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
+
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+      },
+      async (tx, a) => {
+        // TODO JSON schema the query once the becaon v2 spec is stable
+        await this.edgeDbClient.transaction(async (tx) => {
+          // get the current coded application
+          const releaseWithAppCoded = await e
+            .select(e.release.Release, (r) => ({
+              applicationCoded: true,
+              filter: e.op(r.releaseKey, "=", releaseKey),
+            }))
+            .assert_single()
+            .run(tx);
+
+          if (!releaseWithAppCoded)
+            throw new ReleaseDisappearedError(releaseKey);
+
+          await e
+            .update(e.release.ApplicationCoded, (ac) => ({
+              filter: e.op(
+                ac.id,
+                "=",
+                e.uuid(releaseWithAppCoded.applicationCoded.id)
+              ),
+              set: {
+                beaconQuery: query,
+              },
+            }))
+            .run(tx);
+        });
+        return query;
+      },
+      async () => {
+        return await this.getBase(releaseKey, userRole);
+      }
     );
-
-    // TODO JSON schema the query once the becaon v2 spec is stable
-
-    await this.edgeDbClient.transaction(async (tx) => {
-      // get the current coded application
-      const releaseWithAppCoded = await e
-        .select(e.release.Release, (r) => ({
-          applicationCoded: true,
-          filter: e.op(r.releaseKey, "=", releaseKey),
-        }))
-        .assert_single()
-        .run(tx);
-
-      if (!releaseWithAppCoded) throw new ReleaseDisappearedError(releaseKey);
-
-      await e
-        .update(e.release.ApplicationCoded, (ac) => ({
-          filter: e.op(
-            ac.id,
-            "=",
-            e.uuid(releaseWithAppCoded.applicationCoded.id)
-          ),
-          set: {
-            beaconQuery: query,
-          },
-        }))
-        .run(tx);
-    });
-
-    return await this.getBase(releaseKey, userRole);
   }
 
   /**
@@ -481,82 +488,57 @@ ${release.applicantEmailAddresses}
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
-    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-      this.auditEventService,
-      this.edgeDbClient,
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      `Updated IsAllowed boolean field`
+      "set isAllowed in the release",
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
+
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+      },
+      async (tx, a) => {
+        // map the booleans fields to the clause needed in edgedb
+        // (acts as a protection from passing arbitrary strings into edgedb)
+        const fieldToSet = {
+          isAllowedReadData: {
+            isAllowedReadData: value,
+          },
+          isAllowedVariantData: {
+            isAllowedVariantData: value,
+          },
+          isAllowedPhenotypeData: {
+            isAllowedPhenotypeData: value,
+          },
+          isAllowedS3Data: {
+            isAllowedS3Data: value,
+          },
+          isAllowedGSData: {
+            isAllowedGSData: value,
+          },
+          isAllowedR2Data: { isAllowedR2Data: value },
+        }[type];
+
+        await this.edgeDbClient.transaction(async (tx) => {
+          await e
+            .update(e.release.Release, (r) => ({
+              filter_single: e.op(r.releaseKey, "=", releaseKey),
+              set: fieldToSet,
+            }))
+            .run(tx);
+        });
+
+        return {
+          field: type,
+          newValue: value,
+        };
+      },
+      async () => {
+        return await this.getBase(releaseKey, userRole);
+      }
     );
-
-    try {
-      if (isActivated)
-        throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
-
-      if (!_.isBoolean(value))
-        throw new Error(
-          `setIsAllowed was passed a non-boolean value '${value}'`
-        );
-
-      // map the booleans fields to the clause needed in edgedb
-      // (acts as a protection from passing arbitrary strings into edgedb)
-      const fieldToSet = {
-        isAllowedReadData: {
-          isAllowedReadData: value,
-        },
-        isAllowedVariantData: {
-          isAllowedVariantData: value,
-        },
-        isAllowedPhenotypeData: {
-          isAllowedPhenotypeData: value,
-        },
-        isAllowedS3Data: {
-          isAllowedS3Data: value,
-        },
-        isAllowedGSData: {
-          isAllowedGSData: value,
-        },
-        isAllowedR2Data: { isAllowedR2Data: value },
-      }[type];
-
-      if (!fieldToSet)
-        throw new Error(
-          `setIsAllowed passed in unknown field type to set '${type}'`
-        );
-
-      await this.edgeDbClient.transaction(async (tx) => {
-        await e
-          .update(e.release.Release, (r) => ({
-            filter_single: e.op(r.releaseKey, "=", releaseKey),
-            set: fieldToSet,
-          }))
-          .run(tx);
-
-        await auditSuccess(
-          this.auditEventService,
-          tx,
-          auditEventId,
-          auditEventStart,
-          {
-            field: type,
-            newValue: value,
-          }
-        );
-      });
-
-      // TODO should this be part of the transaction?
-      return await this.getBase(releaseKey, userRole);
-    } catch (e) {
-      await auditFailure(
-        this.auditEventService,
-        this.edgeDbClient,
-        auditEventId,
-        auditEventStart,
-        e
-      );
-
-      throw e;
-    }
   }
 
   /**
@@ -578,8 +560,7 @@ ${release.applicantEmailAddresses}
       | "/dataSharingConfiguration/copyOutDestinationLocation"
       | "/dataSharingConfiguration/htsgetEnabled"
       | "/dataSharingConfiguration/awsAccessPointEnabled"
-      | "/dataSharingConfiguration/awsAccessPointVpcId"
-      | "/dataSharingConfiguration/awsAccessPointAccountId"
+      | "/dataSharingConfiguration/awsAccessPointName"
       | "/dataSharingConfiguration/gcpStorageIamEnabled"
       | "/dataSharingConfiguration/gcpStorageIamUsers",
     value: any
@@ -589,123 +570,114 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
-      this.auditEventService,
-      this.edgeDbClient,
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
-      `Updated Data Sharing Configuration field`
-    );
+      "Updated Data Sharing Configuration field",
+      async () => {
+        if (
+          userRole != "Administrator" &&
+          userRole != "Manager" &&
+          userRole != "Member"
+        )
+          throw new ReleaseSelectionPermissionError(releaseKey);
 
-    // TODO permission checks depending on the field type
-    //egif (
-    ///        type === "isAllowedHtsget" &&
-    //     this.configForFeature("isAllowedHtsget") === undefined
-    // ) {
-    //   throw new ReleaseHtsgetNotConfigured();
-    // }
+        // TODO permission checks depending on the field type
+        //egif (
+        ///        type === "isAllowedHtsget" &&
+        //     this.configForFeature("isAllowedHtsget") === undefined
+        // ) {
+        //   throw new ReleaseHtsgetNotConfigured();
+        // }
+      },
+      async (tx, a) => {
+        let fieldToSet: any = undefined;
 
-    try {
-      let fieldToSet: any = undefined;
+        // this switch matches the operation type to the corresponding database field to set
+        // - which in general should be the same name - but we do have the flexibility here to adapt
+        // to multiple fields / renamed fields etc
+        // we add EdgeDb type coercions to make sure our input value is correct
+        // for the corresponding operation type
+        switch (type) {
+          case "/dataSharingConfiguration/objectSigningEnabled":
+            fieldToSet = {
+              objectSigningEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/objectSigningExpiryHours":
+            fieldToSet = {
+              objectSigningExpiryHours: e.int16(value),
+            };
+            break;
+          case "/dataSharingConfiguration/copyOutEnabled":
+            fieldToSet = {
+              copyOutEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/copyOutDestinationLocation":
+            fieldToSet = {
+              copyOutDestinationLocation: e.str(value),
+            };
+            break;
+          case "/dataSharingConfiguration/htsgetEnabled":
+            fieldToSet = {
+              htsgetEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/awsAccessPointEnabled":
+            fieldToSet = {
+              awsAccessPointEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/awsAccessPointEnabled":
+            fieldToSet = {
+              awsAccessPointEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/awsAccessPointName":
+            fieldToSet = {
+              awsAccessPointName: e.str(value),
+            };
+            break;
+          case "/dataSharingConfiguration/gcpStorageIamEnabled":
+            fieldToSet = {
+              gcpStorageIamEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/gcpStorageIamUsers":
+            fieldToSet = {
+              gcpStorageIamUsers: e.array(value),
+            };
+            break;
+          default:
+            throw new Error(
+              `setDataSharingConfigurationField passed in unknown field type to set '${type}'`
+            );
+        }
 
-      // this switch matches the operation type to the corresponding database field to set
-      // - which in general should be the same name - but we do have the flexibility here to adapt
-      // to multiple fields / renamed fields etc
-      // we add EdgeDb type coercions to make sure our input value is correct
-      // for the corresponding operation type
-      switch (type) {
-        case "/dataSharingConfiguration/objectSigningEnabled":
-          fieldToSet = {
-            objectSigningEnabled: e.bool(value),
-          };
-          break;
-        case "/dataSharingConfiguration/objectSigningExpiryHours":
-          fieldToSet = {
-            objectSigningExpiryHours: e.int16(value),
-          };
-          break;
-        case "/dataSharingConfiguration/copyOutEnabled":
-          fieldToSet = {
-            copyOutEnabled: e.bool(value),
-          };
-          break;
-        case "/dataSharingConfiguration/copyOutDestinationLocation":
-          fieldToSet = {
-            copyOutDestinationLocation: e.str(value),
-          };
-          break;
-        case "/dataSharingConfiguration/htsgetEnabled":
-          fieldToSet = {
-            htsgetEnabled: e.bool(value),
-          };
-          break;
-        case "/dataSharingConfiguration/awsAccessPointEnabled":
-          fieldToSet = {
-            awsAccessPointEnabled: e.bool(value),
-          };
-          break;
-        case "/dataSharingConfiguration/awsAccessPointAccountId":
-          fieldToSet = {
-            awsAccessPointAccountId: e.str(value),
-          };
-          break;
-        case "/dataSharingConfiguration/awsAccessPointVpcId":
-          fieldToSet = {
-            awsAccessPointVpcId: e.str(value),
-          };
-          break;
-        case "/dataSharingConfiguration/gcpStorageIamEnabled":
-          fieldToSet = {
-            gcpStorageIamEnabled: e.bool(value),
-          };
-          break;
-        case "/dataSharingConfiguration/gcpStorageIamUsers":
-          fieldToSet = {
-            gcpStorageIamUsers: e.array(value),
-          };
-          break;
-        default:
-          throw new Error(
-            `setDataSharingConfigurationField passed in unknown field type to set '${type}'`
-          );
+        await this.edgeDbClient.transaction(async (tx) => {
+          await e
+            .update(e.release.Release.dataSharingConfiguration, (dsc) => ({
+              filter_single: e.op(
+                dsc["<dataSharingConfiguration[is release::Release]"]
+                  .releaseKey,
+                "=",
+                releaseKey
+              ),
+              set: fieldToSet,
+            }))
+            .run(tx);
+        });
+
+        return {
+          field: type,
+          newValue: value,
+        };
+      },
+      async () => {
+        return await this.getBase(releaseKey, userRole);
       }
-
-      await this.edgeDbClient.transaction(async (tx) => {
-        await e
-          .update(e.release.Release.dataSharingConfiguration, (dsc) => ({
-            filter_single: e.op(
-              dsc["<dataSharingConfiguration[is release::Release]"].releaseKey,
-              "=",
-              releaseKey
-            ),
-            set: fieldToSet,
-          }))
-          .run(tx);
-
-        await auditSuccess(
-          this.auditEventService,
-          tx,
-          auditEventId,
-          auditEventStart,
-          {
-            field: type,
-            newValue: value,
-          }
-        );
-      });
-
-      return await this.getBase(releaseKey, userRole);
-    } catch (e) {
-      await auditFailure(
-        this.auditEventService,
-        this.edgeDbClient,
-        auditEventId,
-        auditEventStart,
-        e
-      );
-
-      throw e;
-    }
+    );
   }
 
   public async applyHtsgetRestriction(
@@ -717,6 +689,9 @@ ${release.applicantEmailAddresses}
       user,
       releaseKey
     );
+
+    if (userRole != "Administrator")
+      throw new ReleaseSelectionPermissionError(releaseKey);
 
     let info = await this.getBase(releaseKey, userRole);
     if (!info.htsgetRestrictions.includes(restriction)) {
@@ -757,6 +732,9 @@ ${release.applicantEmailAddresses}
       user,
       releaseKey
     );
+
+    if (userRole != "Administrator")
+      throw new ReleaseSelectionPermissionError(releaseKey);
 
     let info = await this.getBase(releaseKey, userRole);
     if (info.htsgetRestrictions.includes(restriction)) {

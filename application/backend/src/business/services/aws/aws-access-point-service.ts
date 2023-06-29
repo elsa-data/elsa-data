@@ -185,14 +185,10 @@ export class AwsAccessPointService {
    *
    * @param user the user asking for the cloud formation template (may alter which data is released)
    * @param releaseKey the release id
-   * @param accountIds an array of account ids that the files will be shared to
-   * @param vpcId if specified, a specific VPC id that the files will further be restricted to
    */
   public async createAccessPointCloudFormationTemplate(
     user: AuthenticatedUser,
-    releaseKey: string,
-    accountIds: string[],
-    vpcId?: string
+    releaseKey: string
   ): Promise<string> {
     // the AWS guard is switched on as this needs to write out to S3
     await this.awsEnabledService.enabledGuard();
@@ -208,6 +204,16 @@ export class AwsAccessPointService {
     if (userRole !== "Administrator") {
       throw new ReleaseViewError(releaseKey);
     }
+
+    const releaseInfo = await this.releaseService.getBase(releaseKey, userRole);
+
+    if (
+      !releaseInfo.dataSharingAwsAccessPoint ||
+      !releaseInfo.dataSharingAwsAccessPoint.name
+    )
+      throw new Error(
+        "There were no data sharing configuration settings for AWS Access Point saved for this release"
+      );
 
     // TODO use file manifest
     // find all the files encompassed by this release as a flat array of S3 URLs
@@ -226,8 +232,8 @@ export class AwsAccessPointService {
         REGION,
         releaseKey,
         filesArray,
-        accountIds,
-        vpcId
+        [releaseInfo.dataSharingAwsAccessPoint.accountId],
+        releaseInfo.dataSharingAwsAccessPoint.vpcId
       );
 
     // we've made the templates - but we need to save them to known locations in S3 so that we

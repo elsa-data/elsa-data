@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  axiosPatchOperationMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "../../queries";
+import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
+import classNames from "classnames";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { IsLoadingDiv } from "../../../../components/is-loading-div";
+import { trpc } from "../../../../helpers/trpc";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -20,6 +23,7 @@ type Props = {
  */
 export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
@@ -29,38 +33,69 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
       // whenever we do a patch mutations of our release - our API returns the complete updated
       // state of the *whole* release - and we can use that data to replace the stored react-query state
       onSuccess: (result: ReleaseTypeLocal) => {
-        queryClient.setQueryData(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-          result
-        );
+        utils.releaseRouter.getSpecificRelease.invalidate();
+      },
+      onError: (e) => {
+        console.log(e);
       },
     }
   );
+  const [input, setInput] = useState<string>(
+    releaseData.dataSharingCopyOut?.destinationLocation ?? ""
+  );
+
+  const isMatchDb =
+    input === releaseData.dataSharingCopyOut?.destinationLocation;
+  const isLoading = releasePatchMutate.isLoading;
 
   return (
     <>
-      <form>
-        <div className="flex flex-col gap-6">
-          <div className="form-control prose">
-            <label className="label">
-              <span className="label-text">Destination for Copy Out</span>
-            </label>
-            <input
-              type="text"
-              className="input-bordered input w-full"
-              defaultValue={releaseData.dataSharingCopyOut?.destinationLocation}
-              disabled={releasePatchMutate.isLoading}
-              onBlur={(e) =>
-                releasePatchMutate.mutate({
-                  op: "replace",
-                  path: "/dataSharingConfiguration/copyOutDestinationLocation",
-                  value: e.target.value,
-                })
-              }
-            />
+      {releasePatchMutate.isError && (
+        <EagerErrorBoundary error={releasePatchMutate.error} />
+      )}
+      <div className="prose flex flex-col">
+        <label className="label">
+          <span className="label-text">Destination for Copy Out</span>
+        </label>
+
+        <div className="flex flex-row">
+          <input
+            type="text"
+            className="input-bordered input w-full"
+            disabled={isLoading}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <div className="flex w-10 items-center justify-center ">
+            {isMatchDb ? (
+              <FontAwesomeIcon className="text-green-500" icon={faCheck} />
+            ) : (
+              <FontAwesomeIcon
+                size="xs"
+                className="text-slate-300"
+                icon={faCircle}
+              />
+            )}
           </div>
         </div>
-      </form>
+        <div className="prose">
+          <button
+            disabled={isLoading}
+            className="btn-normal btn mt-4"
+            onClick={() =>
+              releasePatchMutate.mutate({
+                op: "replace",
+                path: "/dataSharingConfiguration/copyOutDestinationLocation",
+                value: input,
+              })
+            }
+          >
+            {isLoading && <span className="loading loading-spinner" />}
+            {"Save" +
+              (!releaseData.activation ? " (Release Must Be Active)" : "")}
+          </button>
+        </div>
+      </div>
     </>
   );
 };
