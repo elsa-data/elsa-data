@@ -107,6 +107,7 @@ export async function createLoggedInServerWithRelease(role: string) {
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
+          inProgress: false,
         })
       ),
     })

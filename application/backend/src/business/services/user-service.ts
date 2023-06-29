@@ -235,6 +235,7 @@ export class UserService {
         actionDescription: "Login",
         outcome: 0,
         details: auditDetails,
+        inProgress: false,
       });
 
       return await e

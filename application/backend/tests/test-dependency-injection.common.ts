@@ -19,18 +19,20 @@ export function registerTypes() {
   // we want an independent setup each call to this in testing (unlike in real code)
   testContainer.reset();
 
+  const logger = pino(createTestElsaSettings().logger);
+
   testContainer.register<edgedb.Client>("Database", {
     useFactory: () => edgedb.createClient(),
   });
 
-  bootstrapDependencyInjectionAwsClients(testContainer, false);
+  bootstrapDependencyInjectionAwsClients(testContainer, logger, false);
 
   testContainer.register<ElsaSettings>("Settings", {
     useFactory: createTestElsaSettings,
   });
 
   testContainer.register<Logger>("Logger", {
-    useValue: pino(createTestElsaSettings().logger),
+    useValue: logger,
   });
 
   testContainer.register<ReadonlySet<string>>("Features", {

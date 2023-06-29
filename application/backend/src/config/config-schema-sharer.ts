@@ -29,12 +29,17 @@ export const SharerHtsgetSchema = z.object({
   url: z.string().describe("The URL for the htsget endpoint"),
 });
 
+export const SharerAwsAccessPointTargetSchema = z.object({
+  accountId: z.string().regex(/^\d{12}$/),
+  vpcId: z.string().startsWith("vpc-"),
+});
+
 export const SharerAwsAccessPointSchema = z.object({
   id: z.string(),
   type: z.literal("aws-access-point"),
   allowedVpcs: z
-    .record(z.string().startsWith("vpc-"))
-    .describe("A dictionary of VPC descriptions and their AWS ids"),
+    .record(SharerAwsAccessPointTargetSchema)
+    .describe("A dictionary of access point target names and their details"),
 });
 
 export const SharerSchema = z.discriminatedUnion("type", [
@@ -49,3 +54,6 @@ export type SharerType = z.infer<typeof SharerSchema>;
 export type SharerObjectSigningType = z.infer<typeof SharerObjectSigningSchema>;
 export type SharerCopyOutType = z.infer<typeof SharerCopyOutSchema>;
 export type SharerHtsgetType = z.infer<typeof SharerHtsgetSchema>;
+export type SharerAwsAccessPointType = z.infer<
+  typeof SharerAwsAccessPointSchema
+>;

@@ -4,7 +4,7 @@ import { VerticalTabs } from "../../../../components/vertical-tabs";
 import { Box } from "../../../../components/boxes";
 import { ManifestForm } from "./manifest-form";
 import { CopyOutForm } from "./copy-out-form";
-import { AwsS3VpcShareForm } from "./aws-s3-vpc-share-form";
+import { AwsAccessPointForm } from "./aws-access-point-form";
 import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
 import { ObjectSigningForm } from "./object-signing-form";
@@ -48,41 +48,44 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const dataSharingAwsAccessPoint =
     !!releaseData.dataSharingAwsAccessPoint &&
     !awsAccessPointSetting?.notWorkingReason;
-  const dataSharingGcpStorageIam = !!releaseData.dataSharingGcpStorageIam;
+  // const dataSharingGcpStorageIam = !!releaseData.dataSharingGcpStorageIam;
 
   const tabHeadings: string[] = ["Manifest"];
 
-  if (dataSharingObjectSigning) tabHeadings.push("Object Signing");
-  if (dataSharingCopyOut) tabHeadings.push("Copy Out");
-  if (dataSharingHtsget) tabHeadings.push("htsget");
-  if (dataSharingAwsAccessPoint) tabHeadings.push("AWS Access Point");
-  if (dataSharingGcpStorageIam) tabHeadings.push("GCP Storage IAM");
+  if (objectSigningSetting) tabHeadings.push("Object Signing");
+  if (copyOutSetting) tabHeadings.push("Copy Out");
+  if (htsgetSetting) tabHeadings.push("htsget");
+  if (awsAccessPointSetting) tabHeadings.push("AWS Access Point");
+  // if (dataSharingGcpStorageIam) tabHeadings.push("GCP Storage IAM");
 
   return (
     <Box heading="Access Data" applyIsDisabledStyle={!releaseData.activation}>
       <VerticalTabs tabHeadings={tabHeadings}>
         <ManifestForm releaseKey={releaseKey} releaseData={releaseData} />
-        {dataSharingObjectSigning && (
+        {objectSigningSetting && (
           <ObjectSigningForm
             releaseKey={releaseKey}
             releaseData={releaseData}
           />
         )}
-        {dataSharingCopyOut && (
+        {copyOutSetting && (
           <CopyOutForm releaseKey={releaseKey} releaseData={releaseData} />
         )}
-        {dataSharingHtsget && (
+        {htsgetSetting && (
           <HtsgetForm
             releaseKey={releaseKey}
             htsgetUrl={releaseData.dataSharingHtsget?.url || ""}
           />
         )}
-        {dataSharingAwsAccessPoint && (
-          <AwsS3VpcShareForm releaseKey={releaseKey} />
+        {awsAccessPointSetting && (
+          <AwsAccessPointForm
+            releaseKey={releaseKey}
+            releaseData={releaseData}
+          />
         )}
-        {dataSharingGcpStorageIam && (
+        {/* {dataSharingGcpStorageIam && (
           <GcpStorageIamShareForm releaseKey={releaseKey} />
-        )}
+        )} */}
       </VerticalTabs>
     </Box>
   );

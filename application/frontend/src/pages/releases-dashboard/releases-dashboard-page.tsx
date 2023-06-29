@@ -94,12 +94,12 @@ export const ReleasesDashboardPage: React.FC = () => {
                             as {r.roleInRelease}
                           </span>
                           {r.isActivated && (
-                            <span className="badge-success badge xl:hidden">
+                            <span className="badge badge-success xl:hidden">
                               activated
                             </span>
                           )}
                           {jobBadgeContent && (
-                            <span className="badge-info badge xl:hidden">
+                            <span className="badge badge-info xl:hidden">
                               {jobBadgeContent}
                             </span>
                           )}
@@ -123,7 +123,7 @@ export const ReleasesDashboardPage: React.FC = () => {
 
                         {r.isActivated && (
                           <div>
-                            <span className="badge-success badge">
+                            <span className="badge badge-success">
                               activated
                             </span>
                           </div>
@@ -131,7 +131,7 @@ export const ReleasesDashboardPage: React.FC = () => {
 
                         {jobBadgeContent && (
                           <div>
-                            <span className="badge-info badge">
+                            <span className="badge badge-info">
                               {jobBadgeContent}
                             </span>
                           </div>

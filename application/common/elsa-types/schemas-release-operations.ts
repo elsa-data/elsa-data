@@ -114,12 +114,7 @@ export const ReleasePatchOperationSchema = Type.Union([
   }),
   Type.Object({
     op: Type.Literal("replace"),
-    path: Type.Literal("/dataSharingConfiguration/awsAccessPointVpcId"),
-    value: Type.String(),
-  }),
-  Type.Object({
-    op: Type.Literal("replace"),
-    path: Type.Literal("/dataSharingConfiguration/awsAccessPointAccountId"),
+    path: Type.Literal("/dataSharingConfiguration/awsAccessPointName"),
     value: Type.String(),
   }),
   Type.Object({

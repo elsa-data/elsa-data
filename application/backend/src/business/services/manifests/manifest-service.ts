@@ -116,7 +116,7 @@ export class ManifestService {
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey)[number][]
+    header: typeof ObjectStoreRecordKey[number][]
   ): Promise<string | null> {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
@@ -200,7 +200,7 @@ export class ManifestService {
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey)[number][]
+    header: typeof ObjectStoreRecordKey[number][]
   ): Promise<archiver.Archiver | null> {
     const buf = await this.getActiveTsvManifestAsString(
       presignedUrlService,

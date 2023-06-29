@@ -27,29 +27,17 @@ beforeEach(async () => {
   auditEventService = testContainer.resolve(AuditEventService);
 });
 
-/**
- *
- */
 it("audit release stuff instant", async () => {
-  const start = new Date();
-
-  const aeId = await auditEventService.startReleaseAuditEvent(
+  const aeId = await auditEventService.createReleaseAuditEvent(
     allowedManagerUser,
     testReleaseKey,
     "C",
     "Made User",
-    start,
-    edgeDbClient
-  );
-
-  await auditEventService.completeReleaseAuditEvent(
-    aeId,
+    {
+      field: "A field",
+    },
     0,
-    start,
     new Date(),
-    {
-      field: "A field",
-    },
     edgeDbClient
   );
 
@@ -62,6 +50,16 @@ it("audit release stuff instant", async () => {
     false,
     edgeDbClient
   );
+
+  const auditEvent = events?.data?.find((element) => element.objectId === aeId);
+  expect(auditEvent).toBeDefined();
+  expect(auditEvent).toMatchObject({
+    actionCategory: "C",
+    actionDescription: "Made User",
+    whoId: allowedManagerUser.subjectId,
+    whoDisplayName: allowedManagerUser.displayName,
+    hasDetails: true,
+  });
 
   console.log(JSON.stringify(events));
 });
@@ -99,43 +97,16 @@ it("audit release stuff duration", async () => {
     edgeDbClient
   );
 
-  console.log(JSON.stringify(events));
-});
-
-it("audit release stuff duration", async () => {
-  const start = new Date();
-
-  const aeId = await auditEventService.startReleaseAuditEvent(
-    allowedManagerUser,
-    testReleaseKey,
-    "C",
-    "Made User Over Time",
-    start,
-    edgeDbClient
-  );
-
-  await auditEventService.completeReleaseAuditEvent(
-    aeId,
-    0,
-    start,
-    addSeconds(start, 96),
-    {
-      field: "A field",
-    },
-    edgeDbClient
-  );
-
-  const events = await auditEventService.getReleaseEntries(
-    allowedManagerUser,
-    testReleaseKey,
-    1000,
-    0,
-    "occurredDateTime",
-    false,
-    edgeDbClient
-  );
-
-  console.log(JSON.stringify(events));
+  const auditEvent = events?.data?.find((element) => element.objectId === aeId);
+  expect(auditEvent).toBeDefined();
+  expect(auditEvent).toMatchObject({
+    occurredDuration: "PT1M36S",
+    actionCategory: "C",
+    actionDescription: "Made User Over Time",
+    whoId: allowedManagerUser.subjectId,
+    whoDisplayName: allowedManagerUser.displayName,
+    hasDetails: true,
+  });
 });
 
 it("get entries with release filter", async () => {
@@ -182,4 +153,28 @@ it("get entries with release filter", async () => {
     whoDisplayName: allowedManagerUser.displayName,
     hasDetails: true,
   });
+});
+
+it("get in progress release entries", async () => {
+  const aeId = await auditEventService.startReleaseAuditEvent(
+    allowedManagerUser,
+    testReleaseKey,
+    "C",
+    "Made User Over Time",
+    new Date(),
+    edgeDbClient
+  );
+
+  const events = await auditEventService.getReleaseEntries(
+    allowedManagerUser,
+    testReleaseKey,
+    1000,
+    0,
+    "occurredDateTime",
+    false,
+    edgeDbClient
+  );
+
+  const auditEvent = events?.data?.find((element) => element.objectId === aeId);
+  expect(auditEvent).toBeUndefined();
 });

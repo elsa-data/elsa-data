@@ -15,6 +15,7 @@
     "watch:linux": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.linux nodemon src/entrypoint.ts web-server-with-scenario 1",
     "watch:aws": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.aws nodemon src/entrypoint.ts web-server-with-scenario 1",
     "//dev:*": "Run the dev application (no source watch or restart) with configuration for a Mac or Linux",
+    "dev": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.minimum node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
     "dev:mac": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.mac node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
     "dev:linux": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.linux node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
     "dev:aws": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.aws node --loader ts-node/esm -r dotenv/config src/entrypoint.ts web-server-with-scenario 1",
@@ -114,6 +115,7 @@
     "tar-stream": "3.0.0",
     "temp": "0.9.4",
     "tsyringe": "4.7.0",
+    "uuid": "^9.0.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -135,6 +137,7 @@
     "@types/supertest": "2.0.12",
     "@types/tar-stream": "^2.2.2",
     "@types/temp": "^0.9.1",
+    "@types/uuid": "^9.0.2",
     "aws-sdk-client-mock": "2.0.1",
     "babel-jest": "^29.5.0",
     "cross-env": "7.0.3",

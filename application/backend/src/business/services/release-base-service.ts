@@ -1,6 +1,7 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
 import {
+  DataSharingAwsAccessPointType,
   ReleaseDetailType,
   ReleaseParticipantRoleType,
 } from "@umccr/elsa-types";
@@ -15,7 +16,20 @@ import {
 import { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
-import { SharerHtsgetType } from "../../config/config-schema-sharer";
+import {
+  SharerAwsAccessPointType,
+  SharerHtsgetType,
+} from "../../config/config-schema-sharer";
+import { release } from "../../../dbschema/interfaces";
+import {
+  CloudFormationClient,
+  DescribeStacksCommand,
+  DescribeStacksCommandOutput,
+} from "@aws-sdk/client-cloudformation";
+import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
+import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
+
+export type UserRoleInRelease = ReleaseParticipantRoleType & "AdminView";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -37,7 +51,8 @@ export abstract class ReleaseBaseService {
     protected readonly features: ReadonlySet<string>,
     protected readonly userService: UserService,
     protected readonly auditEventService: AuditEventService,
-    protected readonly auditEventTimedService: AuditEventTimedService
+    protected readonly auditEventTimedService: AuditEventTimedService,
+    private readonly cfnClient: CloudFormationClient
   ) {}
 
   /**
@@ -50,7 +65,7 @@ export abstract class ReleaseBaseService {
    * @returns The options where this user could alter
    */
   protected getParticipantRoleOption(
-    currentUserRole: ReleaseParticipantRoleType
+    currentUserRole: ReleaseParticipantRoleType | string
   ): ReleaseParticipantRoleType[] | null {
     switch (currentUserRole) {
       case "Administrator": {
@@ -135,12 +150,18 @@ export abstract class ReleaseBaseService {
       releaseKey: releaseKey,
     });
 
-    const role = boundaryInfo?.role;
+    const roleInDb = boundaryInfo?.role as
+      | ReleaseParticipantRoleType
+      | null
+      | undefined;
 
     if (!boundaryInfo) throw new ReleaseViewError(releaseKey);
 
+    // If boundaryInfo exist but userRole is empty, then it must be an AdminView
+    const role = roleInDb ? roleInDb : "AdminView";
+
     return {
-      userRole: role as ReleaseParticipantRoleType,
+      userRole: role as UserRoleInRelease,
       isActivated: !!boundaryInfo.activation,
       isRunningJob: !!boundaryInfo.runningJob,
     };
@@ -153,14 +174,99 @@ export abstract class ReleaseBaseService {
    *
    * @param property
    */
-  public configForFeature(property: "isAllowedHtsget"): any | undefined {
+  public configForFeature(property: "isAllowedHtsget"): URL | undefined {
     const h = this.settings.sharers.filter(
       (s) => s.type === "htsget"
     ) as SharerHtsgetType[];
 
     if (h.length === 1) return new URL(h[0].url);
+    return undefined;
+  }
+
+  /**
+   * Get the config for the AWS access point feature or undefined if this
+   * sharer is not in the config.
+   */
+  public configForAwsAccessPointFeature():
+    | SharerAwsAccessPointType
+    | undefined {
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "aws-access-point"
+    ) as SharerAwsAccessPointType[];
+
+    if (h.length === 1) return h[0];
 
     return undefined;
+  }
+
+  /**
+   * Where the AWS access point feature is enabled we check to see what the
+   * current access point status is.
+   *
+   * @param config
+   * @param releaseKey
+   * @param awsAccessPointName
+   *
+   * NOTE we only call this method when we are
+   * sure that the access point mechanism is configured - else it would just be a
+   * wasted unnecessary call to CloudFormation
+   */
+  public async getAwsAccessPointDetail(
+    config: SharerAwsAccessPointType,
+    releaseKey: string,
+    awsAccessPointName?: string
+  ): Promise<DataSharingAwsAccessPointType | undefined> {
+    // NOTE we need to calculate the installation status *independent* of the config lookups
+    //      - because we need the ability to "uninstall" an access point stack after the config
+    //        changes (i.e. if I remove the config for a "Nextflow VPC" - I still need the ability
+    //        to remove previously installed access points that used that config)
+    let isAwsAccessPointInstalled = false;
+    let isAwsAccessPointArn: string | undefined = undefined;
+
+    try {
+      // TODO FIX - first need to refactor the release base into a mixin - so do in another PR
+      //            we have a circular dependency otherwise
+      const releaseStackName = `elsa-data-release-${releaseKey}`;
+      const releaseStackResult = await this.cfnClient.send(
+        new DescribeStacksCommand({
+          StackName: releaseStackName,
+        })
+      );
+      if (
+        releaseStackResult &&
+        releaseStackResult.Stacks &&
+        releaseStackResult.Stacks.length == 1
+      ) {
+        isAwsAccessPointInstalled = true;
+        isAwsAccessPointArn = releaseStackResult.Stacks[0].StackId;
+      }
+    } catch (e) {
+      // TODO tighten the error code here so we don't gobble up other "unexpected" errors
+      // describing a stack that is not present throws an exception so we take that to mean it is
+      // not present
+    }
+
+    const firstNameMatch = Object.entries(config.allowedVpcs).find(
+      (n) => n[0] === awsAccessPointName
+    );
+
+    if (firstNameMatch) {
+      return {
+        name: firstNameMatch[0],
+        accountId: firstNameMatch[1].accountId,
+        vpcId: firstNameMatch[1].vpcId,
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    } else {
+      return {
+        name: "",
+        accountId: "",
+        vpcId: "",
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    }
   }
 
   /**
@@ -176,7 +282,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseKey: string,
-    userRole: ReleaseParticipantRoleType
+    userRole: UserRoleInRelease
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
@@ -205,6 +311,16 @@ export abstract class ReleaseBaseService {
       userRole === "Administrator"
         ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
         : false;
+
+    const isAllowedAwsAccessPointConfig = this.configForAwsAccessPointFeature();
+
+    const dataSharingAwsAccessPoint = isAllowedAwsAccessPointConfig
+      ? await this.getAwsAccessPointDetail(
+          isAllowedAwsAccessPointConfig,
+          releaseKey,
+          releaseInfo.dataSharingConfiguration.awsAccessPointName
+        )
+      : undefined;
 
     return {
       id: releaseInfo.id,
@@ -247,15 +363,17 @@ export abstract class ReleaseBaseService {
       downloadPassword:
         userRole === "Manager" ? releaseInfo.releasePassword : undefined,
 
-      // A list of roles allowed to edit other user's role depending of this auth user
+      // A list of roles allowed to edit other user's role depending on this auth user
       // e.g. A manager cannot edit Administrator role.
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
       // administrators can code/edit the release information
+      permissionViewSelections:
+        userRole === "Administrator" || userRole === "AdminView",
       permissionEditSelections: userRole === "Administrator",
       permissionEditApplicationCoded: userRole === "Administrator",
-      // administrators cannot however access the raw data (if they want access to their data - they need to go other ways)
-      permissionAccessData: userRole !== "Administrator",
+      // Only 'Manager' and 'Member' can access data
+      permissionAccessData: userRole === "Manager" || userRole === "Member",
 
       // data sharing objects
       dataSharingObjectSigning: releaseInfo.dataSharingConfiguration
@@ -274,15 +392,13 @@ export abstract class ReleaseBaseService {
       dataSharingHtsgetRestrictions:
         releaseInfo.dataSharingConfiguration.htsgetRestrictions,
       dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
-        ? this.configForFeature("isAllowedHtsget")
+        ? {
+            url: this.configForFeature("isAllowedHtsget")?.toString()!,
+          }
         : undefined,
       dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
         .awsAccessPointEnabled
-        ? {
-            accountId:
-              releaseInfo.dataSharingConfiguration.awsAccessPointAccountId,
-            vpcId: releaseInfo.dataSharingConfiguration.awsAccessPointVpcId,
-          }
+        ? dataSharingAwsAccessPoint
         : undefined,
       dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
         .gcpStorageIamEnabled
@@ -301,147 +417,169 @@ export abstract class ReleaseBaseService {
    * I can't make EdgeDb libraries re-use code where I'd like (which is possibly more about me than
    * edgedb)
    *
-   * @param userRole the role the user has in this release (must be something!)
+   * @param user the user performing the change
    * @param releaseKey the release id of the release to alter (must exist)
    * @param field the field name to alter e.g. 'institutes', 'diseases'...
    * @param system the system URI of the entry to add/delete
    * @param code the code value of the entry to add/delete
    * @param removeRatherThanAdd if false then we are asking to add (default), else asking to remove
-   * @returns true if the array was actually altered (i.e. the entry was actually removed or added)
+   * @returns The new ReleaseDetailType after the alteration
    * @private
    */
   protected async alterApplicationCodedArrayEntry(
-    userRole: string,
+    user: AuthenticatedUser,
     releaseKey: string,
     field: CodeArrayFields,
     system: string,
     code: string,
     removeRatherThanAdd: boolean = false
-  ): Promise<boolean> {
+  ): Promise<ReleaseDetailType> {
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    const isRemoveOrAddText = removeRatherThanAdd ? `removing` : `adding`;
+    const actionDescription = `${isRemoveOrAddText} the application coded array (if audit details is false means nothing has changed)`;
+
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
       releaseKey
     );
 
     // we need to get/set the Coded Application all within a transaction context
-    await this.edgeDbClient.transaction(async (tx) => {
-      // get the current coded application
-      const releaseWithAppCoded = await e
-        .select(e.release.Release, (r) => ({
-          applicationCoded: {
-            id: true,
-            studyType: true,
-            countriesInvolved: true,
-            diseasesOfStudy: true,
-          },
-          filter: e.op(r.releaseKey, "=", releaseKey),
-        }))
-        .assert_single()
-        .run(tx);
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+      user,
+      releaseKey,
+      actionDescription,
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
 
-      if (!releaseWithAppCoded)
-        throw new Error(
-          `Release ${releaseKey} that existed just before this code has now disappeared!`
-        );
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+      },
+      async (tx, a) => {
+        // get the current coded application
+        const releaseWithAppCoded = await e
+          .select(e.release.Release, (r) => ({
+            applicationCoded: {
+              id: true,
+              studyType: true,
+              countriesInvolved: true,
+              diseasesOfStudy: true,
+            },
+            filter: e.op(r.releaseKey, "=", releaseKey),
+          }))
+          .assert_single()
+          .run(tx);
 
-      let newArray: { system: string; code: string }[];
+        if (!releaseWithAppCoded)
+          throw new Error(
+            `Release ${releaseKey} that existed just before this code has now disappeared!`
+          );
 
-      if (field === "diseases")
-        newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
-      else if (field === "countries")
-        newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
-      else
-        throw new Error(
-          `Field instruction of ${field} was not a known field for array alteration`
-        );
-
-      const commonFilter = (ac: any) => {
-        return e.op(
-          ac.id,
-          "=",
-          e.uuid(releaseWithAppCoded.applicationCoded.id)
-        );
-      };
-
-      if (removeRatherThanAdd) {
-        const oldLength = newArray.length;
-
-        // we want to remove any entries with the same system/code from our array
-        // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
-        newArray = newArray.filter(
-          (tup) => tup.system !== system || tup.code !== code
-        );
-
-        // nothing to mutate - return false
-        if (newArray.length == oldLength) return false;
+        let newArray: { system: string; code: string }[];
 
         if (field === "diseases")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                diseasesOfStudy: newArray,
-              },
-            }))
-            .run(tx);
+          newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
         else if (field === "countries")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                countriesInvolved: newArray,
-              },
-            }))
-            .run(tx);
+          newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
         else
           throw new Error(
-            `Field instruction of ${field} was not handled in the remove operation`
+            `Field instruction of ${field} was not a known field for array alteration`
           );
-      } else {
-        // only do an insert if the entry is not already present
-        // i.e. set like semantics - but with an ordered array
-        // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
-        if (
-          // if the entry already exists - we can return - nothing to do
-          newArray.findIndex(
-            (tup) => tup.system === system && tup.code === code
-          ) > -1
-        )
-          return false;
 
-        const commonAddition = e.array([
-          e.tuple({ system: system, code: code }),
-        ]);
-
-        if (field === "diseases")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                diseasesOfStudy: e.op(ac.diseasesOfStudy, "++", commonAddition),
-              },
-            }))
-            .run(tx);
-        else if (field === "countries")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                countriesInvolved: e.op(
-                  ac.countriesInvolved,
-                  "++",
-                  commonAddition
-                ),
-              },
-            }))
-            .run(tx);
-        else
-          throw new Error(
-            `Field instruction of ${field} was not handled in the add operation`
+        const commonFilter = (ac: any) => {
+          return e.op(
+            ac.id,
+            "=",
+            e.uuid(releaseWithAppCoded.applicationCoded.id)
           );
-      }
-    });
+        };
 
-    return true;
+        if (removeRatherThanAdd) {
+          const oldLength = newArray.length;
+
+          // we want to remove any entries with the same system/code from our array
+          // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
+          newArray = newArray.filter(
+            (tup) => tup.system !== system || tup.code !== code
+          );
+
+          // nothing to mutate - return false
+          if (newArray.length == oldLength) return false;
+
+          if (field === "diseases")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  diseasesOfStudy: newArray,
+                },
+              }))
+              .run(tx);
+          else if (field === "countries")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  countriesInvolved: newArray,
+                },
+              }))
+              .run(tx);
+          else
+            throw new Error(
+              `Field instruction of ${field} was not handled in the remove operation`
+            );
+        } else {
+          // only do an insert if the entry is not already present
+          // i.e. set like semantics - but with an ordered array
+          // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
+          if (
+            // if the entry already exists - we can return - nothing to do
+            newArray.findIndex(
+              (tup) => tup.system === system && tup.code === code
+            ) > -1
+          )
+            return false;
+
+          const commonAddition = e.array([
+            e.tuple({ system: system, code: code }),
+          ]);
+
+          if (field === "diseases")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  diseasesOfStudy: e.op(
+                    ac.diseasesOfStudy,
+                    "++",
+                    commonAddition
+                  ),
+                },
+              }))
+              .run(tx);
+          else if (field === "countries")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  countriesInvolved: e.op(
+                    ac.countriesInvolved,
+                    "++",
+                    commonAddition
+                  ),
+                },
+              }))
+              .run(tx);
+          else
+            throw new Error(
+              `Field instruction of ${field} was not handled in the add operation`
+            );
+        }
+        return { field, system, code };
+      },
+      async () => await this.getBase(releaseKey, userRole)
+    );
   }
 }

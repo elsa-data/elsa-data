@@ -21,7 +21,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
   return (
     <div
       className={classNames(
-        "grid grid-cols-5",
+        "flex flex-row space-x-4",
         "min-h-[200px]" // we want to assert a minimum height so that the whole tab group doesn't resize up and down as we tab through (small) content
       )}
     >
@@ -29,7 +29,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
         <Tab.List
           className={classNames(
             "flex flex-col justify-start", // vertical flex column but everything justified start (as we have a overall min height we *don't* want to grow into)
-            "col-span-1", // assert a column span for the headers - here 1/5 of the overall grid
+            "min-w-min", // assert a column span for the headers - here 1/5 of the overall grid
             "space-y-4" // with some spacing between tab headers
           )}
         >
@@ -53,7 +53,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
             </Tab>
           ))}
         </Tab.List>
-        <Tab.Panels className="col-span-4">
+        <Tab.Panels className="w-full overflow-x-auto pl-4">
           {React.Children.map(children, (child) => (
             <Tab.Panel>{child}</Tab.Panel>
           ))}

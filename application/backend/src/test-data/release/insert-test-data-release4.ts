@@ -78,6 +78,7 @@ export async function insertRelease4(
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
+          inProgress: false,
         })
       ),
     })
