@@ -78,22 +78,50 @@ export const AwsAccessPointAccordionContent: React.FC<
     !props.releaseData.activation;
 
   const isCurrentlyAlreadyInstalled =
-    props?.releaseData.dataSharingAwsAccessPoint?.installed;
+    props?.releaseData?.dataSharingAwsAccessPoint?.installed || false;
 
-  const isCurrentlyDescriptions = new Set<string>();
+  const isInstallDisabledDescriptions = new Set<string>();
+  const isUninstallDisabledDescription = new Set<string>();
 
-  if (isCurrentlyMissingNeededValues)
-    isCurrentlyDescriptions.add("missing needed configuration values");
-  if (isCurrentlyMutating)
-    isCurrentlyDescriptions.add("currently in a mutation operation");
-  if (isCurrentlyRunningAnotherJob)
-    isCurrentlyDescriptions.add("currently running another job");
+  if (isCurrentlyMissingNeededValues) {
+    isInstallDisabledDescriptions.add("missing needed configuration values");
+    isUninstallDisabledDescription.add("missing needed configuration values");
+  }
+
+  if (isCurrentlyRunningAnotherJob) {
+    isInstallDisabledDescriptions.add("currently running another job");
+    isUninstallDisabledDescription.add("currently running another job");
+  }
+
+  if (isCurrentlyMutating) {
+    isInstallDisabledDescriptions.add("currently in a mutation operation");
+    isUninstallDisabledDescription.add("currently in a mutation operation");
+  }
+
   if (isCurrentlyInactiveRelease)
-    isCurrentlyDescriptions.add("currently not activated release");
+    isInstallDisabledDescriptions.add("currently not activated release");
+
   if (isCurrentlyAlreadyInstalled)
-    isCurrentlyDescriptions.add(
+    isInstallDisabledDescriptions.add(
       "currently already an access point in place for this release"
     );
+  else
+    isUninstallDisabledDescription.add(
+      "currently no access point in place for this release"
+    );
+
+  const isInstallDisabled =
+    isCurrentlyMissingNeededValues ||
+    isCurrentlyRunningAnotherJob ||
+    isCurrentlyMutating ||
+    isCurrentlyInactiveRelease ||
+    isCurrentlyAlreadyInstalled;
+
+  const isUninstallDisabled =
+    isCurrentlyMissingNeededValues ||
+    isCurrentlyRunningAnotherJob ||
+    isCurrentlyMutating ||
+    !isCurrentlyAlreadyInstalled;
 
   return (
     <>
@@ -134,10 +162,12 @@ export const AwsAccessPointAccordionContent: React.FC<
             }
           }}
         >
-          <option value={""}>{NONE_DISPLAY}</option>
+          <option key="none" value={""}>
+            {NONE_DISPLAY}
+          </option>
           {Object.entries(props.awsAccessPointSetting.allowedVpcs).map(
-            (entry) => (
-              <option>{entry[0]}</option>
+            (entry, index) => (
+              <option key={index}>{entry[0]}</option>
             )
           )}
         </select>
@@ -178,17 +208,14 @@ export const AwsAccessPointAccordionContent: React.FC<
               releaseKey: props.releaseKey,
             });
           }}
-          disabled={
-            isCurrentlyRunningAnotherJob ||
-            isCurrentlyMissingNeededValues ||
-            isCurrentlyMutating ||
-            // must be activated
-            !props.releaseData.activation ||
-            isCurrentlyAlreadyInstalled
+          disabled={isInstallDisabled}
+          title={
+            isInstallDisabled
+              ? `Disabled due to\n${Array.from(
+                  isInstallDisabledDescriptions.values()
+                ).join("\n")}`
+              : undefined
           }
-          title={`Disabled due to\n${Array.from(
-            isCurrentlyDescriptions.values()
-          ).join("\n")}`}
         >
           Install
         </button>
@@ -206,13 +233,14 @@ export const AwsAccessPointAccordionContent: React.FC<
               releaseKey: props.releaseKey,
             });
           }}
-          disabled={
-            isCurrentlyRunningAnotherJob ||
-            isCurrentlyMissingNeededValues ||
-            isCurrentlyMutating ||
-            !isCurrentlyAlreadyInstalled
+          disabled={isUninstallDisabled}
+          title={
+            isUninstallDisabled
+              ? `Disabled due to\n${Array.from(
+                  isUninstallDisabledDescription.values()
+                ).join("\n")}`
+              : undefined
           }
-          title={"Disabled due to "}
         >
           Uninstall
         </button>
