@@ -1,5 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { managerSetup } from "./manager.common";
+import { test } from "../custom-base-test";
 import * as fs from "fs";
 import * as Seven from "node-7z";
 

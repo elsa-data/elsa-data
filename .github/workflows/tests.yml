@@ -10,7 +10,7 @@ jobs:
     # run an EdgeDb in the background that will be connected to from our app
     services:
       edgedb:
-        image: edgedb/edgedb:3.0-beta.1
+        image: edgedb/edgedb:3
         env:
           EDGEDB_SERVER_SECURITY: insecure_dev_mode
         ports:
@@ -62,7 +62,8 @@ jobs:
       # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
-          cli-version: nightly
+          cli-version: stable
+          server-version: none
           server-dsn: ${{ env.EDGEDB_DSN }}
 
       # get our database schema correct
@@ -123,10 +124,10 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('./e2e/package-lock.json') }}
 
       # install the OS playwright dependencies but hopefully with caching
-      - run: npx playwright install --with-deps
+      - run: npx playwright install --with-deps chromium
         working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-      - run: npx playwright install-deps
+      - run: npx playwright install-deps chromium
         working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit == 'true'
 
