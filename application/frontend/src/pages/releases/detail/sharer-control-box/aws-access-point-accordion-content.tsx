@@ -78,22 +78,45 @@ export const AwsAccessPointAccordionContent: React.FC<
     !props.releaseData.activation;
 
   const isCurrentlyAlreadyInstalled =
-    props?.releaseData.dataSharingAwsAccessPoint?.installed;
+    props?.releaseData?.dataSharingAwsAccessPoint?.installed || false;
 
-  const isCurrentlyDescriptions = new Set<string>();
+  const isInstallDisabledDescriptions = new Set<string>();
+  const isUninstallDisabledDescription = new Set<string>();
 
-  if (isCurrentlyMissingNeededValues)
-    isCurrentlyDescriptions.add("missing needed configuration values");
-  if (isCurrentlyMutating)
-    isCurrentlyDescriptions.add("currently in a mutation operation");
-  if (isCurrentlyRunningAnotherJob)
-    isCurrentlyDescriptions.add("currently running another job");
-  if (isCurrentlyInactiveRelease)
-    isCurrentlyDescriptions.add("currently not activated release");
-  if (isCurrentlyAlreadyInstalled)
-    isCurrentlyDescriptions.add(
-      "currently already an access point in place for this release"
+  if (isCurrentlyMissingNeededValues) {
+    const m = "missing needed configuration values";
+    isInstallDisabledDescriptions.add(m);
+    isUninstallDisabledDescription.add(m);
+  }
+
+  if (isCurrentlyRunningAnotherJob) {
+    const m = "currently running another job";
+    isInstallDisabledDescriptions.add(m);
+    isUninstallDisabledDescription.add(m);
+  }
+
+  if (isCurrentlyMutating) {
+    const m = "currently in a mutation operation";
+    isInstallDisabledDescriptions.add(m);
+    isUninstallDisabledDescription.add(m);
+  }
+
+  if (isCurrentlyInactiveRelease) {
+    isInstallDisabledDescriptions.add("release is not activated");
+  }
+
+  if (isCurrentlyAlreadyInstalled) {
+    isInstallDisabledDescriptions.add(
+      "an access point for this release is already installed"
     );
+  } else {
+    isUninstallDisabledDescription.add(
+      "there is no installed access point for this release"
+    );
+  }
+
+  const isInstallDisabled = isInstallDisabledDescriptions.size > 0;
+  const isUninstallDisabled = isUninstallDisabledDescription.size > 0;
 
   return (
     <>
@@ -134,10 +157,12 @@ export const AwsAccessPointAccordionContent: React.FC<
             }
           }}
         >
-          <option value={""}>{NONE_DISPLAY}</option>
+          <option key="none" value={""}>
+            {NONE_DISPLAY}
+          </option>
           {Object.entries(props.awsAccessPointSetting.allowedVpcs).map(
-            (entry) => (
-              <option>{entry[0]}</option>
+            (entry, index) => (
+              <option key={index}>{entry[0]}</option>
             )
           )}
         </select>
@@ -178,17 +203,14 @@ export const AwsAccessPointAccordionContent: React.FC<
               releaseKey: props.releaseKey,
             });
           }}
-          disabled={
-            isCurrentlyRunningAnotherJob ||
-            isCurrentlyMissingNeededValues ||
-            isCurrentlyMutating ||
-            // must be activated
-            !props.releaseData.activation ||
-            isCurrentlyAlreadyInstalled
+          disabled={isInstallDisabled}
+          title={
+            isInstallDisabled
+              ? `Disabled due to\n${Array.from(
+                  isInstallDisabledDescriptions.values()
+                ).join("\n")}`
+              : undefined
           }
-          title={`Disabled due to\n${Array.from(
-            isCurrentlyDescriptions.values()
-          ).join("\n")}`}
         >
           Install
         </button>
@@ -206,13 +228,14 @@ export const AwsAccessPointAccordionContent: React.FC<
               releaseKey: props.releaseKey,
             });
           }}
-          disabled={
-            isCurrentlyRunningAnotherJob ||
-            isCurrentlyMissingNeededValues ||
-            isCurrentlyMutating ||
-            !isCurrentlyAlreadyInstalled
+          disabled={isUninstallDisabled}
+          title={
+            isUninstallDisabled
+              ? `Disabled due to\n${Array.from(
+                  isUninstallDisabledDescription.values()
+                ).join("\n")}`
+              : undefined
           }
-          title={"Disabled due to "}
         >
           Uninstall
         </button>

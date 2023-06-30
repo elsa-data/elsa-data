@@ -103,7 +103,6 @@ module release {
             # we cascade delete this configuration if the release itself is deleted
             on source delete delete target;
         }
-        multi htsgetRestrictions: str;
 
         # if present indicates that a running job is active in the context of this release
         #
@@ -257,6 +256,7 @@ module release {
         required property copyOutDestinationLocation -> str { default := "" };
 
         required property htsgetEnabled -> bool { default := false };
+        multi htsgetRestrictions: str;
         # TODO htsget endpoint selection - currently only one htsget endpoint so not needed yet
 
         required property awsAccessPointEnabled -> bool { default := false };
