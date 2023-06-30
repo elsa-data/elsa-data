@@ -19,16 +19,18 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions
 (async () => {
   const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
 
-  // global settings for DI
-  const dc = await bootstrapDependencyInjection(
-    rawConfig.devTesting?.mockAwsCloud
-  );
-
   const settings = await bootstrapSettings(rawConfig);
 
   // we create a logger that always has a field telling us that the context was the
   // job handler - allows us to separate out job logs in CloudWatch
   const logger = pino(settings.logger).child({ context: "job-handler" });
+
+  // global settings for DI
+  const dc = await bootstrapDependencyInjection(
+    logger,
+    rawConfig.devTesting?.mockAwsCloud
+  );
+
   dc.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
