@@ -10,7 +10,7 @@ jobs:
     # run an EdgeDb in the background that will be connected to from our app
     services:
       edgedb:
-        image: edgedb/edgedb:3.0-beta.1
+        image: edgedb/edgedb:3.0
         env:
           EDGEDB_SERVER_SECURITY: insecure_dev_mode
         ports:
@@ -137,6 +137,8 @@ jobs:
       # run the UI tests
       - run: npx playwright test --trace on
         working-directory: e2e
+        env:
+          PWTEST_SKIP_TEST_OUTPUT: 1
 
       - uses: actions/upload-artifact@v3
         if: always()
