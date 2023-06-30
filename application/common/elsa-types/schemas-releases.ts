@@ -126,9 +126,6 @@ export const ReleaseDetailSchema = Type.Object({
   // if present, means that this release is in the process of running a background job
   runningJob: Type.Optional(ReleaseRunningJobSchema),
 
-  // if present, is the password used for all download artifacts (zip files etc)
-  downloadPassword: Type.Optional(Type.String()),
-
   permissionViewSelections: Type.Optional(Type.Boolean()),
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
