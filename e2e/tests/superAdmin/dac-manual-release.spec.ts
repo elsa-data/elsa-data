@@ -1,5 +1,6 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { superAdminSetup } from "./superAdmin.common";
+import { test } from "../custom-base-test";
 
 test.beforeEach(async ({ page }) => {
   await superAdminSetup(page);
