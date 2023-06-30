@@ -16,7 +16,16 @@ export const FeatureSchema = z.object({
       "Whether the cohort constructor features of Elsa Data should be enabled"
     ),
   enableDataEgressViewer: z
-    .optional(z.boolean())
+    .optional(
+      z.object({
+        isEnabled: z.boolean(),
+        cronExpression: z
+          .optional(z.string())
+          .describe(
+            "If specified, a cron expression on when the system will need to auto-update the data egress records."
+          ),
+      })
+    )
     .describe(
       "Whether the data egress viewer features of Elsa Data should be enabled"
     ),

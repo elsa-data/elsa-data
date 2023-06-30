@@ -32,11 +32,7 @@ export const configZodDefinition = z.object({
   ),
   httpHosting: HttpHostingSchema,
   oidc: z.optional(OidcSchema),
-  feature: z.optional(FeatureSchema).default({
-    enableConsentDisplay: true,
-    enableCohortConstructor: true,
-    enableDataEgressViewer: true,
-  }),
+  feature: z.optional(FeatureSchema),
   aws: z.optional(
     z.object({
       tempBucket: z

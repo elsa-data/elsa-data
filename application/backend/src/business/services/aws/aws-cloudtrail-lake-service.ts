@@ -103,11 +103,16 @@ export class AwsCloudTrailLakeService {
     if (!releaseDates.lastDataEgressQueryTimestamp) {
       const createdData = releaseDates.created;
       createdData.setHours(0, 0, 0, 0);
-
       return createdData.toISOString();
     }
 
     const dateObj = new Date(releaseDates.lastDataEgressQueryTimestamp);
+
+    // First we subtract by one hour just to make sure capture late events from previous query
+    // As CloudTrailLake event can take 15 minutes or more to appear on the query
+    dateObj.setHours(dateObj.getHours() - 1);
+
+    // Then we round down to nearest 00:00 time
     dateObj.setHours(0, 0, 0, 0);
 
     return dateObj.toISOString();

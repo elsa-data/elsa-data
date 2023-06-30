@@ -1,6 +1,5 @@
 import { App } from "./app";
 import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
-import { blankTestData } from "./test-data/util/blank-test-data";
 import Bree from "bree";
 import { DependencyContainer } from "tsyringe";
 import path from "path";
@@ -14,6 +13,7 @@ import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
 import { constants } from "fs";
 import { access } from "fs/promises";
 import { IPLookupService } from "./business/services/ip-lookup-service";
+import { ElsaConfigurationType } from "./config/config-schema";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -97,40 +97,55 @@ export async function startWebServer(
  *
  * @param config
  */
-export async function startJobQueue(config: any) {
-  let jobFileName = "entrypoint-job-handler.ts";
+export async function startJobQueue(config: ElsaConfigurationType) {
   let root = path.resolve("jobs");
 
-  let jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.ts";
+  const convertFileNameTsToJs = (tsFile: string) =>
+    tsFile.replace(/.ts$/, ".js");
 
+  const breeJobs: Bree.JobOptions[] = [];
+
+  // A long service job that always run
+  const jobFileName = "entrypoint-job-handler.ts";
+
+  // Check whether we need to take file from `/dist` directory
+  let isCompiled = false;
   try {
     await access(path.resolve("jobs", jobFileName), constants.R_OK);
-    await access(path.resolve("jobs", jobEgressUpdateFileName), constants.R_OK);
   } catch (e) {
+    isCompiled = true;
     root = path.resolve("server/dist/jobs");
-    jobFileName = "entrypoint-job-handler.js";
-    jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.js";
+  }
+
+  breeJobs.push({
+    name: isCompiled ? convertFileNameTsToJs(jobFileName) : jobFileName,
+    worker: {
+      workerData: config,
+    },
+  });
+
+  // If specified for auto-update egress records
+  const cronExpressionInterval =
+    config.feature?.enableDataEgressViewer?.cronExpression;
+  if (cronExpressionInterval) {
+    const jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.ts";
+
+    breeJobs.push({
+      name: isCompiled
+        ? convertFileNameTsToJs(jobEgressUpdateFileName)
+        : jobEgressUpdateFileName,
+      cron: cronExpressionInterval,
+      worker: {
+        workerData: config,
+      },
+    });
   }
 
   const bree = new Bree({
     root: root,
-    // only one of the following jobs will be present depending on where we are deployed
-    jobs: [
-      {
-        name: jobFileName,
-        worker: {
-          workerData: config,
-        },
-      },
-      {
-        name: jobEgressUpdateFileName,
-        cron: "0 6 * * *", // Every 6am
-        worker: {
-          workerData: config,
-        },
-      },
-    ],
+    jobs: breeJobs,
   });
+
   await bree.start();
 }
 
