@@ -227,6 +227,17 @@ export const useJobQuery = (
   );
 };
 
+const createdToolTipDescription = (created: any, started: any) => {
+  const formattedCreated = formatLocalDateTime(String(created));
+  const formattedStarted = formatLocalDateTime(String(started));
+
+  if (formattedCreated === formattedStarted) {
+    return formattedCreated;
+  }
+
+  return `Created: ${formattedCreated}, Started: ${formattedStarted}`;
+};
+
 export type JobTableHeaderProps<TData, TValue> = {
   header: CoreHeader<TData, TValue> & ColumnSizingHeader;
 };
@@ -336,14 +347,14 @@ export const createColumns = () => {
     columnHelper.accessor("created", {
       header: "Created",
       cell: (info) => (
-        <TimeToolTip time={info.getValue<string | undefined>()} />
-      ),
-      enableSorting: false,
-    }),
-    columnHelper.accessor("started", {
-      header: "Started",
-      cell: (info) => (
-        <TimeToolTip time={info.getValue<string | undefined>()} />
+        <ToolTip
+          trigger={formatFromNowTime(info.getValue<string | undefined>())}
+          applyCSS="before:max-w-none"
+          description={createdToolTipDescription(
+            info.row.original.created,
+            info.row.original.started
+          )}
+        />
       ),
       enableSorting: false,
     }),
