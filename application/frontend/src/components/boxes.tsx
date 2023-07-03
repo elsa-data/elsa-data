@@ -38,7 +38,9 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
         <>
           {applyIsDisabledStyle ? (
             <div className="w-full bg-gray-400 pb-2 text-center text-xs">
-              {applyIsDisabledMessage ? applyIsDisabledMessage : "Disabled"}
+              {applyIsDisabledMessage
+                ? applyIsDisabledMessage
+                : "You are not allowed to modify this section"}
             </div>
           ) : applyIsActivatedLockedStyle ? (
             <div className="w-full bg-amber-100 pb-2 text-center text-xs">

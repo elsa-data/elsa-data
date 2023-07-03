@@ -72,7 +72,6 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   return (
     <Box
       heading="Access Control"
-      applyIsDisabledMessage="You are not allowed to edit this"
       applyIsDisabledStyle={!isAllowEdit}
       applyIsDisabledAllInput={!isAllowEdit}
       applyIsActivatedLockedStyle={!!releaseData.activation}

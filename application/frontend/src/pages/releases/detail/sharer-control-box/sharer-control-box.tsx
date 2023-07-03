@@ -79,7 +79,6 @@ export const SharerControlBox: React.FC<Props> = ({
   return (
     <Box
       heading="Data Sharing Control"
-      applyIsDisabledMessage="You are not allowed to modify this section"
       applyIsDisabledStyle={!isAllowEdit}
       applyIsDisabledAllInput={!isAllowEdit}
     >
