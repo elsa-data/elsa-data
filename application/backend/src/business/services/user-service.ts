@@ -23,6 +23,7 @@ import {
 } from "../../../dbschema/queries";
 import { IPLookupService, LocationType } from "./ip-lookup-service";
 import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
+import { UserData } from "../data/user-data";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -40,7 +41,8 @@ export class UserService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
   /**
@@ -57,24 +59,6 @@ export class UserService {
     }
 
     return false;
-  }
-
-  /**
-   * Get the current database details of the given user.
-   *
-   * @param user
-   */
-  public async getExistingUser(user: AuthenticatedUser) {
-    const u = await userGetByDbId(this.edgeDbClient, {
-      dbId: user.dbId,
-    });
-
-    if (!u)
-      throw new Error(
-        `User with database uuid ${user.dbId} (${user.displayName}) was expected to exist but has disappeared from the database`
-      );
-
-    return u;
   }
 
   /**
@@ -189,7 +173,7 @@ export class UserService {
     displayName: string,
     email: string,
     auditDetails?: LoginDetailType
-  ): Promise<AuthenticatedUser> {
+  ) {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
     if (isNil(subjectId) || isEmpty(subjectId.trim()))
@@ -251,6 +235,10 @@ export class UserService {
           subjectId: subjectId,
           displayName: displayName,
           email: email,
+          // we are explicit here about our default permissions being "no permissions"
+          isAllowedOverallAdministratorView: false,
+          isAllowedCreateRelease: false,
+          isAllowedRefreshDatasetIndex: false,
           releaseParticipant: e.select(e.release.Release, (r) => ({
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),
@@ -274,7 +262,10 @@ export class UserService {
     // there is no way to get the upsert to also return the other db fields so we
     // have to requery if we want to return a full authenticated user here
     if (dbUser != null) {
-      const newOrUpdatedUser = await this.getBySubjectId(subjectId);
+      const newOrUpdatedUser = await this.userData.getDbUserByDbId(
+        this.edgeDbClient,
+        dbUser.id
+      );
 
       if (newOrUpdatedUser) return newOrUpdatedUser;
     }

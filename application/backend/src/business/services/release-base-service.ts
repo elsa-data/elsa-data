@@ -106,28 +106,6 @@ export abstract class ReleaseBaseService {
   }
 
   /**
-   * This is to check if user has a special create release permission granted by an admin.
-   * @param user
-   */
-  public checkIsAllowedViewReleases(user: AuthenticatedUser): void {
-    const isAllow = user.isAllowedOverallAdministratorView;
-    if (!isAllow) {
-      throw new ReleaseViewError();
-    }
-  }
-
-  /**
-   * This is to check if user has a special create release permission granted by an admin.
-   * @param user
-   */
-  public checkIsAllowedCreateReleases(user: AuthenticatedUser): void {
-    const isAllow = user.isAllowedCreateRelease;
-    if (!isAllow) {
-      throw new ReleaseCreateError();
-    }
-  }
-
-  /**
    * Return the minimum information we need from the database to establish the
    * base boundary level conditions for proceeding into any release service
    * functionality.

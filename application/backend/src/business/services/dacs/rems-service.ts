@@ -16,6 +16,11 @@ import {
   DacRedcapAustralianGenomicsCsvType,
   DacRemsType,
 } from "../../../config/config-schema-dac";
+import {
+  ReleaseCreateError,
+  ReleaseViewError,
+} from "../../exceptions/release-authorisation";
+import { UserData } from "../../data/user-data";
 
 @injectable()
 export class RemsService {
@@ -23,6 +28,7 @@ export class RemsService {
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(UserService) private readonly userService: UserService,
+    @inject(UserData) private readonly userData: UserData,
     @inject(ReleaseService) private readonly releaseService: ReleaseService
   ) {}
 
@@ -50,7 +56,9 @@ export class RemsService {
     user: AuthenticatedUser,
     dacConfiguration: DacRemsType
   ): Promise<RemsApprovedApplicationType[]> {
-    this.releaseService.checkIsAllowedViewReleases(user);
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
+
+    if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     /*const appData = await this.getRemsApplications("rems-hgpp");
 
@@ -106,7 +114,9 @@ export class RemsService {
     dacConfiguration: DacRemsType,
     remsId: number
   ): Promise<string> {
-    this.releaseService.checkIsAllowedCreateReleases(user);
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
+
+    if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     /*const appData = await axios.get(
       `${this.settings.remsUrl}/api/applications/${remsId}`,

@@ -6,10 +6,12 @@ import { UserService } from "../../src/business/services/user-service";
 import { NotAuthorisedEditUserManagement } from "../../src/business/exceptions/user";
 import { getServices } from "../../src/di-helpers";
 import { ElsaSettings } from "../../src/config/elsa-settings";
+import { UserData } from "../../src/business/data/user-data";
 
 let existingUser: AuthenticatedUser;
 let edgeDbClient: edgedb.Client;
 let userService: UserService;
+let userData: UserData;
 
 const testContainer = registerTypes();
 
@@ -17,6 +19,7 @@ beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
   userService = testContainer.resolve(UserService);
+  userData = testContainer.resolve(UserData);
 });
 
 it("test for existence of user who does exist", async () => {
@@ -99,12 +102,14 @@ it("SuperAdmin change other user permission", async () => {
     isAllowedRefreshDatasetIndex: true,
   });
 
-  const u = await newUserService.getBySubjectId("http://test.com");
-  expect(u).toBeInstanceOf(AuthenticatedUser);
+  const u = await userData.getDbUserBySubjectId(
+    edgeDbClient,
+    "http://test.com"
+  );
 
-  expect(u!.isAllowedCreateRelease).toBe(true);
-  expect(u!.isAllowedOverallAdministratorView).toBe(true);
-  expect(u!.isAllowedRefreshDatasetIndex).toBe(true);
+  expect(u.isAllowedCreateRelease).toBe(true);
+  expect(u.isAllowedOverallAdministratorView).toBe(true);
+  expect(u.isAllowedRefreshDatasetIndex).toBe(true);
 });
 
 it("normal user change attempt change permission", async () => {
@@ -113,8 +118,9 @@ it("normal user change attempt change permission", async () => {
     "New Display Name",
     "test@example.com"
   );
+  const newAuthedUser = new AuthenticatedUser(newUser);
   await expect(async () => {
-    await userService.changePermission(newUser, "test@example.com", {
+    await userService.changePermission(newAuthedUser, "test@example.com", {
       isAllowedCreateRelease: true,
       isAllowedOverallAdministratorView: true,
       isAllowedRefreshDatasetIndex: true,

@@ -8,6 +8,7 @@ import { DacType } from "../../../config/config-schema-dac";
 import _ from "lodash";
 import { RemsService } from "./rems-service";
 import { RedcapImportApplicationService } from "./redcap-import-application-service";
+import { UserData } from "../../data/user-data";
 
 /**
  * A service wrapping all our upstream Data Access Committee
@@ -22,7 +23,8 @@ export class DacService {
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(RemsService) private readonly remsService: RemsService,
     @inject(RedcapImportApplicationService)
-    private redcapImportApplicationService: RedcapImportApplicationService
+    private redcapImportApplicationService: RedcapImportApplicationService,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
   /**
@@ -32,8 +34,10 @@ export class DacService {
    * @param user
    */
   public async getConfigured(user: AuthenticatedUser): Promise<DacType[]> {
-    // TODO rather than use permission from cookie - make a db check here
-    if (!user.isAllowedCreateRelease)
+    // get the most up-to-date version of this user as we need to check their up-to-date perms
+    const u = await this.userData.getDbUser(this.edgeDbClient, user);
+
+    if (!u.isAllowedCreateRelease)
       // NOTE we make the decision that anyone can call this API without error - but that
       // the lack of permissions just means they get no information back
       // the reason is that this method is called on startup by all users even if the

@@ -22,6 +22,7 @@ import {
 } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
+import { AuthenticatedUser } from "../business/authenticated-user";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
   if (!settings.oidc || !settings.oidc.issuer)
@@ -167,7 +168,7 @@ export const callbackRoutes = async (
       return;
     }
 
-    const authUser = await userService.upsertUserForLogin(
+    const dbUser = await userService.upsertUserForLogin(
       idClaims.sub,
       idClaims.name,
       idClaims.email,
@@ -176,16 +177,18 @@ export const callbackRoutes = async (
       }
     );
 
-    if (!authUser) {
+    if (!dbUser) {
       // TODO: redirect to a static error page?
       reply.redirect("/error");
       return;
     }
 
     request.log.info(
-      { resolvedUser: authUser, oidcParams: params, oidcTokens: tokenSet },
+      { resolvedUser: dbUser, oidcParams: params, oidcTokens: tokenSet },
       `authRoutes: Login OIDC callback event`
     );
+
+    const authUser = new AuthenticatedUser(dbUser);
 
     // the secure session token is HTTP only - so its existence can't even be tracked in
     // the React code - it is made available to the backend that can use it as a
@@ -201,17 +204,17 @@ export const callbackRoutes = async (
     cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
 
     // these cookies however are available to React - PURELY for UI/display purposes
-    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
-    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
-    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, authUser.email);
+    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, dbUser.subjectId);
+    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, dbUser.displayName);
+    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, dbUser.email);
 
     const userAllowedCookieString = createUserAllowedCookie(
-      userService.isConfiguredSuperAdmin(authUser.subjectId),
+      userService.isConfiguredSuperAdmin(dbUser.subjectId),
       {
-        isAllowedCreateRelease: authUser.isAllowedCreateRelease,
-        isAllowedRefreshDatasetIndex: authUser.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: dbUser.isAllowedCreateRelease,
+        isAllowedRefreshDatasetIndex: dbUser.isAllowedRefreshDatasetIndex,
         isAllowedOverallAdministratorView:
-          authUser.isAllowedOverallAdministratorView,
+          dbUser.isAllowedOverallAdministratorView,
       }
     );
 

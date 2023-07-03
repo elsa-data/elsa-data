@@ -20,6 +20,8 @@ import {
   DacType,
 } from "../../../config/config-schema-dac";
 import { Logger } from "pino";
+import { ReleaseCreateError } from "../../exceptions/release-authorisation";
+import { UserData } from "../../data/user-data";
 
 @injectable()
 export class RedcapImportApplicationService {
@@ -28,6 +30,7 @@ export class RedcapImportApplicationService {
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,
+    @inject(UserData) private readonly userData: UserData,
     @inject(ReleaseService) private readonly releaseService: ReleaseService
   ) {}
 
@@ -46,10 +49,9 @@ export class RedcapImportApplicationService {
     dacConfiguration: DacRedcapAustralianGenomicsCsvType,
     csvAsJson: AustraliaGenomicsDacRedcap[]
   ): Promise<AustraliaGenomicsDacRedcap[]> {
-    const perms = await this.userService.getExistingUser(user);
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
-    if (!perms.isAllowedCreateRelease)
-      throw new Error("Not allowed to create new releases");
+    if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers FOR OUR UNIQUE AG SYSTEM
@@ -81,7 +83,7 @@ export class RedcapImportApplicationService {
   }
 
   /**
-   * Given a new application as a CSV/JSON object - we create a new release
+   * Given a new application as a CSV/JSON object from Redcap - we create a new release
    * representing it - in a transaction.
    *
    * @param user the user attempting this
@@ -94,10 +96,9 @@ export class RedcapImportApplicationService {
     dacConfiguration: DacRedcapAustralianGenomicsCsvType,
     csvAsJson: AustraliaGenomicsDacRedcap
   ): Promise<string> {
-    const perms = await this.userService.getExistingUser(user);
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
-    if (!perms.isAllowedCreateRelease)
-      throw new Error("Not allowed to create new releases");
+    if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     // TODO: some error checking here of the incoming application data
 

@@ -39,10 +39,6 @@ export async function beforeEachCommon() {
     subjectId: allowedPiSubject,
     displayName: allowedPiDisplayName,
     email: allowedPiEmail,
-    isAllowedRefreshDatasetIndex: true,
-    isAllowedCreateRelease: true,
-    isAllowedOverallAdministratorView: true,
-    lastLoginDateTime: new Date(),
   });
 
   return {

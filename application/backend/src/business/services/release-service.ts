@@ -40,6 +40,7 @@ import { AuditEventTimedService } from "./audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { Executor } from "edgedb";
+import { ReleaseCreateError } from "../exceptions/release-authorisation";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -146,7 +147,9 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
-    this.checkIsAllowedCreateReleases(user);
+    const realUser = await this.userService.getExistingUser(user);
+
+    if (!realUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     const otherResearchers = splitUserEmails(release.applicantEmailAddresses);
 
