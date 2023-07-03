@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "./custom-base-test";
 
 test("homepage has title and links to intro page", async ({ page }) => {
   await page.goto("./");
@@ -6,6 +7,9 @@ test("homepage has title and links to intro page", async ({ page }) => {
   // expect the title
   await expect(page).toHaveTitle(/Elsa Data/);
 
-  // because we are not logged in we get some text to show Releases
+  // general page Releases
   await expect(page.getByRole("heading", { name: "Releases" })).toBeVisible();
+
+  // expect a table of releases including R0001
+  await expect(page.getByRole("cell", { name: "R001" })).toBeVisible();
 });

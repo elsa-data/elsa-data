@@ -20,7 +20,7 @@ type Props = {
  */
 export const ConsentPopup: React.FC<Props> = (props) => {
   return (
-    <div className="dropdown dropdown-hover">
+    <div className="dropdown-hover dropdown">
       <label tabIndex={0}>
         <FontAwesomeIcon className={`cursor-pointer`} icon={faFileContract} />
       </label>

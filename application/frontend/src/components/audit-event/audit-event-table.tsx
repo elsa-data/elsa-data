@@ -474,6 +474,7 @@ export const createColumns = (navigate: NavigateFunction) => {
             description={
               table.getIsAllRowsExpanded() ? "Contract All" : "Expand All"
             }
+            applyCSS={"tooltip-right break-all text-xs font-normal capitalize"}
           />
         ) : null;
       },
