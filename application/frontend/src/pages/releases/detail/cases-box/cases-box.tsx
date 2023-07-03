@@ -167,7 +167,7 @@ export const CasesBox: React.FC<Props> = ({
     );
 
   return (
-    <Box heading="Cases" applyIsLockedStyle={releaseIsActivated}>
+    <Box heading="Cases" applyIsActivatedLockedStyle={releaseIsActivated}>
       <div className={classNames("flex flex-col")}>
         <BoxPaginator
           currentPage={currentPage}

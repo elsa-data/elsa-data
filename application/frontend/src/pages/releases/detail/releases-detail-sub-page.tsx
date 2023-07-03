@@ -40,7 +40,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         <FurtherRestrictionsBox
           releaseKey={releaseKey}
           releaseData={releaseData}
-          isEditable={releaseData.permissionEditSelections || false}
+          isAllowEdit={releaseData.permissionEditSelections || false}
         />
       )}
 
@@ -48,7 +48,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         <SharerControlBox
           releaseKey={releaseKey}
           releaseData={releaseData}
-          isEditable={releaseData.permissionEditSelections || false}
+          isAllowEdit={releaseData.permissionEditSelections || false}
         />
       )}
 

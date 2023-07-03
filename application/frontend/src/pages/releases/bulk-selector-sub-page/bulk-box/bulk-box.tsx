@@ -44,7 +44,7 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const isJobRunning = !isUndefined(releaseData.runningJob);
 
   return (
-    <Box heading="Cohort Constructor" applyIsLockedStyle={isActivated}>
+    <Box heading="Cohort Constructor" applyIsActivatedLockedStyle={isActivated}>
       {/*
       The consent sources are not needed until we hook up real Dynamic systems like CTRL
       <ConsentSourcesBox releaseKey={releaseKey} />

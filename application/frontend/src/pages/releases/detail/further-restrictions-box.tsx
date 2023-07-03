@@ -15,13 +15,13 @@ import { trpc } from "../../../helpers/trpc";
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
-  isEditable: boolean;
+  isAllowEdit: boolean;
 };
 
 export const FurtherRestrictionsBox: React.FC<Props> = ({
   releaseKey,
   releaseData,
-  isEditable = false,
+  isAllowEdit = false,
 }) => {
   const utils = trpc.useContext();
 
@@ -70,7 +70,13 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   );
 
   return (
-    <Box heading="Access Control" applyIsLockedStyle={!!releaseData.activation}>
+    <Box
+      heading="Access Control"
+      applyIsDisabledMessage="You are not allowed to edit this"
+      applyIsDisabledStyle={!isAllowEdit}
+      applyIsDisabledAllInput={!isAllowEdit}
+      applyIsActivatedLockedStyle={!!releaseData.activation}
+    >
       <RhSection>
         <LeftDiv
           heading={"Data"}

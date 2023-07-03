@@ -23,23 +23,6 @@ type ObjectSigningAccordionContentProps = {
 export const ObjectSigningAccordionContent: React.FC<
   PropsWithChildren<ObjectSigningAccordionContentProps>
 > = (props) => {
-  const utils = trpc.useContext();
-
-  const copyOutTriggerMutate = trpc.releaseJob.startCopyOut.useMutation({
-    onSuccess: async () => {
-      await utils.releaseRouter.getSpecificRelease.invalidate({
-        releaseKey: props.releaseKey,
-      });
-      // once we have started the copy out and invalidated the release state - our next render
-      // will show a progress bar at the top... we take them there to show it occurring
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "smooth",
-      });
-    },
-  });
-
   return (
     <>
       <div className="form-control">
