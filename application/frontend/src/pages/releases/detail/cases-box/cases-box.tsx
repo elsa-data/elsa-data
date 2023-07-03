@@ -13,6 +13,7 @@ import { EagerErrorBoundary } from "../../../../components/errors";
 import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 import { axiosPatchOperationMutationFn } from "../../queries";
 import { Table } from "../../../../components/tables";
+import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
 
 type Props = {
   releaseKey: string;
@@ -167,7 +168,10 @@ export const CasesBox: React.FC<Props> = ({
     );
 
   return (
-    <Box heading="Cases" applyIsActivatedLockedStyle={releaseIsActivated}>
+    <Box
+      heading="Cases"
+      applyIsActivatedLockedStyle={isEditable && releaseIsActivated}
+    >
       <div className={classNames("flex flex-col")}>
         <BoxPaginator
           currentPage={currentPage}
@@ -180,132 +184,144 @@ export const CasesBox: React.FC<Props> = ({
           isLoading={isLoading}
         />
 
-        {dataQuery.isError && <EagerErrorBoundary error={dataQuery.error} />}
-
-        {dataQuery.isLoading && (
-          <div className={classNames(baseMessageDivClasses)}>Loading...</div>
-        )}
-        {dataQuery.data &&
-          dataQuery.data.length === 0 &&
-          !makeUseableSearchText(searchText) && (
-            <div className={classNames(baseMessageDivClasses)}>
-              <p>
-                There are no cases visible in the dataset(s) of this release
-              </p>
-            </div>
-          )}
-        {dataQuery.data &&
-          dataQuery.data.length === 0 &&
-          makeUseableSearchText(searchText) && (
-            <div className={classNames(baseMessageDivClasses)}>
-              <p>
-                Searching for the identifier <b>{searchText}</b> returned no
-                results
-              </p>
-            </div>
-          )}
-        {dataQuery.data && dataQuery.data.length > 0 && (
+        <DisabledInputWrapper
+          isInputDisabled={!isEditable || releaseIsActivated}
+        >
           <>
-            <div className={releasePatchMutate.isLoading ? "opacity-50" : ""}>
-              {isEditable && (
-                <div className="flex flex-wrap items-center border-b py-4">
-                  <label>
-                    <div className="inline-block w-12 text-center">
-                      <IndeterminateCheckbox
-                        className="checkbox-accent"
-                        disabled={
-                          releasePatchMutate.isLoading || releaseIsActivated
-                        }
-                        indeterminate={isSelectAllIndeterminate}
-                        onChange={onSelectAllChange}
-                      />
-                    </div>
-                    Select All
-                  </label>
+            {dataQuery.isError && (
+              <EagerErrorBoundary error={dataQuery.error} />
+            )}
+
+            {dataQuery.isLoading && (
+              <div className={classNames(baseMessageDivClasses)}>
+                Loading...
+              </div>
+            )}
+            {dataQuery.data &&
+              dataQuery.data.length === 0 &&
+              !makeUseableSearchText(searchText) && (
+                <div className={classNames(baseMessageDivClasses)}>
+                  <p>
+                    There are no cases visible in the dataset(s) of this release
+                  </p>
                 </div>
               )}
-              <Table
-                additionalTableClassName="text-left text-sm text-gray-500"
-                tableBody={dataQuery.data.map((row, rowIndex) => {
-                  return (
-                    <tr key={row.id} className="border-b">
-                      <td
-                        className={classNames(
-                          baseColumnClasses,
-                          "w-12",
-                          "text-center"
-                        )}
-                      >
-                        <IndeterminateCheckbox
-                          disabled={true}
-                          checked={row.nodeStatus === "selected"}
-                          indeterminate={row.nodeStatus === "indeterminate"}
-                        />
-                      </td>
-                      <td
-                        className={classNames(
-                          baseColumnClasses,
-                          "text-left",
-                          "w-40"
-                        )}
-                      >
-                        <div className="flex space-x-1">
-                          <span>{row.externalId}</span>
-                          {showConsent && row.customConsent && (
-                            <ConsentPopup
-                              releaseKey={releaseKey}
-                              nodeId={row.id}
-                            />
-                          )}
+            {dataQuery.data &&
+              dataQuery.data.length === 0 &&
+              makeUseableSearchText(searchText) && (
+                <div className={classNames(baseMessageDivClasses)}>
+                  <p>
+                    Searching for the identifier <b>{searchText}</b> returned no
+                    results
+                  </p>
+                </div>
+              )}
+            {dataQuery.data && dataQuery.data.length > 0 && (
+              <>
+                <div
+                  className={releasePatchMutate.isLoading ? "opacity-50" : ""}
+                >
+                  {isEditable && (
+                    <div className="flex flex-wrap items-center border-b py-4">
+                      <label>
+                        <div className="inline-block w-12 text-center">
+                          <IndeterminateCheckbox
+                            className="checkbox-accent"
+                            disabled={
+                              releasePatchMutate.isLoading || releaseIsActivated
+                            }
+                            indeterminate={isSelectAllIndeterminate}
+                            onChange={onSelectAllChange}
+                          />
                         </div>
-                      </td>
-                      <td
-                        className={classNames(
-                          baseColumnClasses,
-                          "text-left",
-                          "pr-4"
-                        )}
-                      >
-                        <PatientsFlexRow
-                          releaseKey={releaseKey}
-                          releaseIsActivated={releaseIsActivated}
-                          patients={row.patients}
-                          showCheckboxes={isEditable}
-                          onCheckboxClicked={() =>
-                            setIsSelectAllIndeterminate(true)
-                          }
-                          showConsent={showConsent}
-                        />
-                      </td>
-                      {/* if we only have one dataset - then we don't show this column at all */}
-                      {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
-                      {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
-                        <td
-                          className={classNames(
-                            baseColumnClasses,
-                            "w-10",
-                            "px-2",
-                            "border-l",
-                            "border-l-red-500"
+                        Select All
+                      </label>
+                    </div>
+                  )}
+                  <Table
+                    additionalTableClassName="text-left text-sm text-gray-500"
+                    tableBody={dataQuery.data.map((row, rowIndex) => {
+                      return (
+                        <tr key={row.id} className="border-b">
+                          <td
+                            className={classNames(
+                              baseColumnClasses,
+                              "w-12",
+                              "text-center"
+                            )}
+                          >
+                            <IndeterminateCheckbox
+                              disabled={true}
+                              checked={row.nodeStatus === "selected"}
+                              indeterminate={row.nodeStatus === "indeterminate"}
+                            />
+                          </td>
+                          <td
+                            className={classNames(
+                              baseColumnClasses,
+                              "text-left",
+                              "w-40"
+                            )}
+                          >
+                            <div className="flex space-x-1">
+                              <span>{row.externalId}</span>
+                              {showConsent && row.customConsent && (
+                                <ConsentPopup
+                                  releaseKey={releaseKey}
+                                  nodeId={row.id}
+                                />
+                              )}
+                            </div>
+                          </td>
+                          <td
+                            className={classNames(
+                              baseColumnClasses,
+                              "text-left",
+                              "pr-4"
+                            )}
+                          >
+                            <PatientsFlexRow
+                              releaseKey={releaseKey}
+                              releaseIsActivated={releaseIsActivated}
+                              patients={row.patients}
+                              showCheckboxes={isEditable}
+                              onCheckboxClicked={() =>
+                                setIsSelectAllIndeterminate(true)
+                              }
+                              showConsent={showConsent}
+                            />
+                          </td>
+                          {/* if we only have one dataset - then we don't show this column at all */}
+                          {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                          {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
+                            <td
+                              className={classNames(
+                                baseColumnClasses,
+                                "w-10",
+                                "px-2",
+                                "border-l",
+                                "border-l-red-500"
+                              )}
+                              rowSpan={
+                                rowSpans[rowIndex] === 1
+                                  ? undefined
+                                  : rowSpans[rowIndex]
+                              }
+                            >
+                              <div className="w-6">
+                                {datasetMap.get(row.fromDatasetUri)}
+                              </div>
+                            </td>
                           )}
-                          rowSpan={
-                            rowSpans[rowIndex] === 1
-                              ? undefined
-                              : rowSpans[rowIndex]
-                          }
-                        >
-                          <div className="w-6">
-                            {datasetMap.get(row.fromDatasetUri)}
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              />
-            </div>
+                        </tr>
+                      );
+                    })}
+                  />
+                </div>
+              </>
+            )}
           </>
-        )}
+        </DisabledInputWrapper>
       </div>
       <div id="popup-root" />
     </Box>

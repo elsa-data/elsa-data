@@ -6,7 +6,7 @@ import React, { useEffect, useRef } from "react";
  */
 type Props = {
   children: React.ReactElement;
-  isInputDisabled: boolean;
+  isInputDisabled?: boolean;
 };
 export const DisabledInputWrapper = ({ children, isInputDisabled }: Props) => {
   const childrenRef = useRef<HTMLDivElement>(null);

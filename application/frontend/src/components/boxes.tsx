@@ -13,6 +13,8 @@ type BoxProps = {
 
 /**
  * The apply isDisabled has a higher precedence that the "applyIsActivatedLockedStyle"
+ *
+ * @param applyIsDisabledAllInput is a boolean and will disable all form of inputs except for `select`. Do take note if you have a table paginator as part of the children
  */
 export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
   heading,
@@ -22,11 +24,6 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
   applyIsDisabledAllInput,
   children,
 }) => {
-  const isDisabledAllInput =
-    applyIsDisabledAllInput ||
-    applyIsDisabledStyle ||
-    applyIsActivatedLockedStyle;
-
   return (
     <div
       className={classNames("card-major w-full", {
@@ -34,7 +31,7 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
         "border-8 border-gray-400": applyIsDisabledStyle,
       })}
     >
-      <DisabledInputWrapper isInputDisabled={!!isDisabledAllInput}>
+      <DisabledInputWrapper isInputDisabled={applyIsDisabledAllInput}>
         <>
           {applyIsDisabledStyle ? (
             <div className="w-full bg-gray-400 pb-2 text-center text-xs">
@@ -51,7 +48,7 @@ export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
           )}
           <div
             className={classNames("card-body", {
-              grayscale: applyIsDisabledStyle,
+              "grayscale-[75%]": applyIsDisabledStyle,
               "sepia-[.2]": applyIsActivatedLockedStyle,
             })}
           >
