@@ -46,7 +46,7 @@ export class RedcapImportApplicationService {
     dacConfiguration: DacRedcapAustralianGenomicsCsvType,
     csvAsJson: AustraliaGenomicsDacRedcap[]
   ): Promise<AustraliaGenomicsDacRedcap[]> {
-    const perms = await this.userService.getUser(user);
+    const perms = await this.userService.getExistingUser(user);
 
     if (!perms.isAllowedCreateRelease)
       throw new Error("Not allowed to create new releases");
@@ -94,7 +94,7 @@ export class RedcapImportApplicationService {
     dacConfiguration: DacRedcapAustralianGenomicsCsvType,
     csvAsJson: AustraliaGenomicsDacRedcap
   ): Promise<string> {
-    const perms = await this.userService.getUser(user);
+    const perms = await this.userService.getExistingUser(user);
 
     if (!perms.isAllowedCreateRelease)
       throw new Error("Not allowed to create new releases");

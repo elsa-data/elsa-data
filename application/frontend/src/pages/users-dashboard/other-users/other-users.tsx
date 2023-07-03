@@ -23,6 +23,7 @@ import {
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../../../components/tables";
+import { IsLoadingDiv } from "../../../components/is-loading-div";
 
 const permissionIconProperties: {
   key: UserPermissionType;
@@ -56,6 +57,13 @@ type Props = {
   pageSize: number;
 };
 
+/**
+ * A box containing all the users in the database that are *not* the logged in user
+ * (whose details are displayed elsewhere).
+ *
+ * @param pageSize
+ * @constructor
+ */
 export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -73,22 +81,21 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
       page: currentPage,
     },
     {
-      select: (a) => {
-        if (!a) return undefined;
+      keepPreviousData: true,
+      onSuccess: (res) => {
+        if (!res) return undefined;
 
         // use the total
-        setCurrentTotal(a.total);
-
-        if (!a.data) return [];
-
-        // return the actual users (without us though)
-        return a.data.filter(
-          (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
-        );
+        setCurrentTotal(res.total);
       },
-      keepPreviousData: true,
     }
   );
+
+  const usersWithoutMe = usersQuery?.data?.data
+    ? usersQuery.data.data.filter(
+        (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
+      )
+    : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900";
 
@@ -173,20 +180,23 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
       <div className="flex flex-col">
         {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
-        {usersQuery && usersQuery.data && (
-          <Table
-            tableHead={createHeaders()}
-            tableBody={usersQuery.isSuccess && createRows(usersQuery.data)}
-          />
+        {usersQuery.isSuccess && (
+          <>
+            <Table
+              tableHead={createHeaders()}
+              tableBody={createRows(usersWithoutMe)}
+            />
+            <BoxPaginator
+              currentPage={currentPage}
+              setPage={(n) => setCurrentPage(n)}
+              rowCount={currentTotal - 1}
+              rowsPerPage={pageSize}
+              rowWord="other users"
+            />
+          </>
         )}
 
-        <BoxPaginator
-          currentPage={currentPage}
-          setPage={(n) => setCurrentPage(n)}
-          rowCount={currentTotal - 1}
-          rowsPerPage={pageSize}
-          rowWord="other users"
-        />
+        {usersQuery.isLoading && <IsLoadingDiv />}
       </div>
     </Box>
   );

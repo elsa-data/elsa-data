@@ -64,10 +64,17 @@ export class UserService {
    *
    * @param user
    */
-  public async getUser(user: AuthenticatedUser) {
-    return await userGetByDbId(this.edgeDbClient, {
+  public async getExistingUser(user: AuthenticatedUser) {
+    const u = await userGetByDbId(this.edgeDbClient, {
       dbId: user.dbId,
     });
+
+    if (!u)
+      throw new Error(
+        `User with database uuid ${user.dbId} (${user.displayName}) was expected to exist but has disappeared from the database`
+      );
+
+    return u;
   }
 
   /**
