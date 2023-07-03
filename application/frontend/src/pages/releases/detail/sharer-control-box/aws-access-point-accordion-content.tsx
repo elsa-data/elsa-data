@@ -4,6 +4,7 @@ import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerAwsAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
 import { trpc } from "../../../../helpers/trpc";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type AwsAccessPointAccordionContentProps = {
   releaseKey: string;
@@ -118,8 +119,16 @@ export const AwsAccessPointAccordionContent: React.FC<
   const isInstallDisabled = isInstallDisabledDescriptions.size > 0;
   const isUninstallDisabled = isUninstallDisabledDescription.size > 0;
 
+  const error =
+    accessPointInstallTriggerMutate.error ??
+    accessPointUninstallTriggerMutate.error;
+  const isError =
+    accessPointInstallTriggerMutate.isError ||
+    accessPointUninstallTriggerMutate.isError;
+
   return (
     <>
+      {isError && <EagerErrorBoundary error={error} />}
       <div className="form-control flex-grow lg:w-3/4">
         <label className="label">
           <span className="label-text">
@@ -215,7 +224,6 @@ export const AwsAccessPointAccordionContent: React.FC<
           Install
         </button>
       </div>
-
       <div className="form-control">
         <label className="label">
           <span className="label-text">Uninstall AWS Access Point</span>

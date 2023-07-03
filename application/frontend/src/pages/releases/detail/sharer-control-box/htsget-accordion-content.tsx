@@ -9,6 +9,7 @@ import {
 import { trpc } from "../../../../helpers/trpc";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
 import classNames from "classnames";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type HtsgetAccordionContentProps = {
   releaseKey: string;
@@ -83,8 +84,14 @@ export const HtsgetAccordionContent: React.FC<
     </div>
   );
 
+  const error = removeHtsgetRestriction.error ?? applyHtsgetRestriction.error;
+  const isError =
+    removeHtsgetRestriction.isError || applyHtsgetRestriction.isError;
+
   return (
     <>
+      {isError && <EagerErrorBoundary error={error} />}
+
       <div className="flex flex-col">
         <div className={"pb-2"}>
           htsget is a protocol that allows restricting data sharing to specific
