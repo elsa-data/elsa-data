@@ -3,9 +3,9 @@ import { SESSION_USER_DB_OBJECT } from "./session-cookie-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
 import { SECURE_COOKIE_NAME } from "@umccr/elsa-constants";
 import { ElsaSettings } from "../../config/elsa-settings";
-import { SingleUserBySubjectIdType } from "../../business/db/user-queries";
 import { AuthenticatedUser } from "../../business/authenticated-user";
 import { UserService } from "../../business/services/user-service";
+import { SingleUserBySubjectIdType } from "../../business/data/user-data";
 
 /**
  * Return a secure sessions plugin options object for Fastify.

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { trpc } from "../../../helpers/trpc";
 import classNames from "classnames";
 import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
@@ -15,7 +14,6 @@ import {
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
-import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 import { PermissionDialog } from "./permission-dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -70,22 +68,26 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
     USER_NAME_COOKIE_NAME,
   ]);
 
-  const dataQuery = useQuery(
-    ["users", currentPage],
-    async () => {
-      return await axios
-        .get<UserSummaryType[]>(`/api/users?page=${currentPage}`)
-        .then((response) => {
-          const usersWithoutMe = response.data.filter(
-            (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
-          );
-
-          handleTotalCountHeaders(response, setCurrentTotal);
-
-          return usersWithoutMe;
-        });
+  const usersQuery = trpc.user.getUsers.useQuery(
+    {
+      page: currentPage,
     },
-    { keepPreviousData: true }
+    {
+      select: (a) => {
+        if (!a) return undefined;
+
+        // use the total
+        setCurrentTotal(a.total);
+
+        if (!a.data) return [];
+
+        // return the actual users (without us though)
+        return a.data.filter(
+          (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
+        );
+      },
+      keepPreviousData: true,
+    }
   );
 
   const baseColumnClasses = "py-4 font-medium text-gray-900";
@@ -169,12 +171,14 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   return (
     <Box heading="Other Users">
       <div className="flex flex-col">
-        {dataQuery.isError && <EagerErrorBoundary error={dataQuery.error} />}
+        {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
-        <Table
-          tableHead={createHeaders()}
-          tableBody={dataQuery.isSuccess && createRows(dataQuery.data)}
-        />
+        {usersQuery && usersQuery.data && (
+          <Table
+            tableHead={createHeaders()}
+            tableBody={usersQuery.isSuccess && createRows(usersQuery.data)}
+          />
+        )}
 
         <BoxPaginator
           currentPage={currentPage}

@@ -8,18 +8,19 @@ import {
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import {
-  deletePotentialUserByEmailQuery,
-  singlePotentialUserByEmailQuery,
-  singleUserBySubjectIdQuery,
-} from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
 import { NotAuthorisedEditUserManagement } from "../exceptions/user";
-import { userGetAllByUser } from "../../../dbschema/queries";
+import {
+  potentialUserDeleteByEmail,
+  potentialUserGetByEmail,
+  userGetAllByUser,
+  userGetByDbId,
+  userGetBySubjectId,
+} from "../../../dbschema/queries";
 import { IPLookupService, LocationType } from "./ip-lookup-service";
 import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 
@@ -64,10 +65,9 @@ export class UserService {
    * @param user
    */
   public async getUser(user: AuthenticatedUser) {
-    return await e.select(e.permission.User, (u) => ({
-      ...e.permission.User["*"],
-      filter_single: { id: user.dbId },
-    }));
+    return await userGetByDbId(this.edgeDbClient, {
+      dbId: user.dbId,
+    });
   }
 
   /**
@@ -120,7 +120,7 @@ export class UserService {
   public async getBySubjectId(
     subjectId: string
   ): Promise<AuthenticatedUser | null> {
-    const dbUser = await singleUserBySubjectIdQuery.run(this.edgeDbClient, {
+    const dbUser = await userGetBySubjectId(this.edgeDbClient, {
       subjectId: subjectId,
     });
 
@@ -196,7 +196,7 @@ export class UserService {
 
     const dbUser = await this.edgeDbClient.transaction(async (tx) => {
       // did we already perhaps see reference to this user from an application - but the user hasn't logged in?
-      const potentialDbUser = await singlePotentialUserByEmailQuery.run(tx, {
+      const potentialDbUser = await potentialUserGetByEmail(tx, {
         email: email,
       });
 
@@ -205,6 +205,7 @@ export class UserService {
       if (potentialDbUser) {
         // find all the 'default' settings (like releases they are part of) for the user
         releasesToAdd =
+          potentialDbUser.futureReleaseParticipant &&
           potentialDbUser.futureReleaseParticipant.length > 0
             ? e.set(
                 ...potentialDbUser.futureReleaseParticipant.map((a) =>
@@ -214,7 +215,7 @@ export class UserService {
             : e.cast(e.uuid, e.set());
 
         // the user is no longer potential - they will be real in the users table - so delete from potential
-        await deletePotentialUserByEmailQuery.run(tx, {
+        await potentialUserDeleteByEmail(tx, {
           email: email,
         });
       } else {

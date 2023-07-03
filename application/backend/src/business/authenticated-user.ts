@@ -1,6 +1,6 @@
 import { UnexpectedStateInternalServerError } from "../api/errors/unexpected-state-internal-server-error";
 import { isNil } from "lodash";
-import { SingleUserBySubjectIdType } from "./db/user-queries";
+import { SingleUserBySubjectIdType } from "./data/user-data";
 
 export class AuthenticatedUser {
   constructor(private readonly dbUser: SingleUserBySubjectIdType) {
