@@ -89,7 +89,7 @@ export const JobTable = ({
     columns: createColumns(),
     getRowCanExpand: (row: Row<ReleasePreviousJobType> | undefined) => {
       if (row === undefined) return false;
-      return row.getValue<string[]>("messages").length > 0;
+      return row.getValue<string>("details").length > 0;
     },
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -114,7 +114,7 @@ export const JobTable = ({
                   <th
                     key={header.id}
                     onClick={
-                      header.id === "messages"
+                      header.id === "details"
                         ? table.getToggleAllRowsExpandedHandler()
                         : () => {}
                     }
@@ -138,7 +138,7 @@ export const JobTable = ({
                   key={row.id}
                   onClick={() =>
                     row.getCanExpand() &&
-                    row.getValue("messages") &&
+                    row.getValue("details") &&
                     row.toggleExpanded()
                   }
                 >
@@ -161,14 +161,14 @@ export const JobTable = ({
                     </td>
                   ))}
                 </tr>
-                {row.getIsExpanded() && row.getValue<string[]>("messages") && (
+                {row.getIsExpanded() && row.getValue<string>("details") && (
                   <tr key={`expanded-row.id`}>
                     {/* skip our expand/unexpand column */}
                     <td>&nbsp;</td>
                     {/* expanded content now into the rest of the columns */}
                     <td key={row.id} colSpan={row.getVisibleCells().length - 1}>
                       <div className="whitespace-pre-wrap font-mono text-xs">
-                        {row.getValue<string[]>("messages").join("\n")}
+                        {row.getValue<string>("details")}
                       </div>
                     </td>
                   </tr>
@@ -300,12 +300,12 @@ const TimeToolTip = ({ time }: { time: string | undefined }) => (
 export const createColumns = () => {
   const columnHelper = createColumnHelper<ReleasePreviousJobType>();
   return [
-    columnHelper.accessor("messages", {
+    columnHelper.accessor("details", {
       header: ({ table }) => {
         return table.getCanSomeRowsExpand() &&
           table
             .getRowModel()
-            .rows.map((row) => row.getValue<string[]>("messages"))
+            .rows.map((row) => row.getValue<string[]>("details"))
             .some((x) => x.length > 0) ? (
           <ToolTip
             trigger={
@@ -323,7 +323,7 @@ export const createColumns = () => {
       },
       cell: (info) => {
         const isExpandedWithDetails =
-          info.row.getCanExpand() && info.row.getValue("messages");
+          info.row.getCanExpand() && info.row.getValue("details");
         return (
           <div className="flex justify-start">
             <ExpandedIndicator

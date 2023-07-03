@@ -18,6 +18,7 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../../api/helpers/pagination-helpers";
+import _ from "lodash";
 
 export class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseKey: string) {
@@ -497,6 +498,16 @@ export class JobService {
         ended: true,
         requestedCancellation: true,
         messages: true,
+        ...e.is(e.job.CloudFormationInstallJob, {
+          s3HttpsUrl: true,
+          awsStackId: true,
+        }),
+        ...e.is(e.job.CloudFormationDeleteJob, {
+          awsStackId: true,
+        }),
+        ...e.is(e.job.CopyOutJob, {
+          awsExecutionArn: true,
+        }),
         filter: e.op(
           e.op(sj.status, "!=", e.job.JobStatus.running),
           "and",
@@ -525,7 +536,25 @@ export class JobService {
         started: entry.started,
         ended: entry.ended,
         requestedCancellation: entry.requestedCancellation,
-        messages: entry.messages,
+        details: JSON.stringify(
+          _(entry)
+            .pickBy((v, k) => v !== null)
+            .omit([
+              "__type__",
+              "created",
+              "ended",
+              "id",
+              "messages",
+              "requestedCancellation",
+              "started",
+            ])
+            .merge({
+              messages: entry.messages.join("\n"),
+            })
+            .value(),
+          null,
+          2
+        ),
       })),
       totalEntries
     );

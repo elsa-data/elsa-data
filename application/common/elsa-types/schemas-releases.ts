@@ -244,7 +244,7 @@ export const ReleasePreviousJobSchema = Type.Object({
   started: TypeDate,
   ended: TypeDate,
   requestedCancellation: Type.Boolean(),
-  messages: Type.Array(Type.String()),
+  details: Type.String(),
 });
 export type ReleasePreviousJobType = Static<typeof ReleasePreviousJobSchema>;
 
