@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { trpc } from "../../../helpers/trpc";
 import classNames from "classnames";
 import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
@@ -15,7 +14,6 @@ import {
 } from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
-import { handleTotalCountHeaders } from "../../../helpers/paging-helper";
 import { PermissionDialog } from "./permission-dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -25,6 +23,7 @@ import {
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../../../components/tables";
+import { IsLoadingDiv } from "../../../components/is-loading-div";
 
 const permissionIconProperties: {
   key: UserPermissionType;
@@ -58,6 +57,13 @@ type Props = {
   pageSize: number;
 };
 
+/**
+ * A box containing all the users in the database that are *not* the logged in user
+ * (whose details are displayed elsewhere).
+ *
+ * @param pageSize
+ * @constructor
+ */
 export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -70,23 +76,26 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
     USER_NAME_COOKIE_NAME,
   ]);
 
-  const dataQuery = useQuery(
-    ["users", currentPage],
-    async () => {
-      return await axios
-        .get<UserSummaryType[]>(`/api/users?page=${currentPage}`)
-        .then((response) => {
-          const usersWithoutMe = response.data.filter(
-            (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
-          );
-
-          handleTotalCountHeaders(response, setCurrentTotal);
-
-          return usersWithoutMe;
-        });
+  const usersQuery = trpc.user.getUsers.useQuery(
+    {
+      page: currentPage,
     },
-    { keepPreviousData: true }
+    {
+      keepPreviousData: true,
+      onSuccess: (res) => {
+        if (!res) return undefined;
+
+        // use the total
+        setCurrentTotal(res.total);
+      },
+    }
   );
+
+  const usersWithoutMe = usersQuery?.data?.data
+    ? usersQuery.data.data.filter(
+        (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
+      )
+    : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900";
 
@@ -169,20 +178,25 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   return (
     <Box heading="Other Users">
       <div className="flex flex-col">
-        {dataQuery.isError && <EagerErrorBoundary error={dataQuery.error} />}
+        {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
-        <Table
-          tableHead={createHeaders()}
-          tableBody={dataQuery.isSuccess && createRows(dataQuery.data)}
-        />
+        {usersQuery.isSuccess && (
+          <>
+            <Table
+              tableHead={createHeaders()}
+              tableBody={createRows(usersWithoutMe)}
+            />
+            <BoxPaginator
+              currentPage={currentPage}
+              setPage={(n) => setCurrentPage(n)}
+              rowCount={currentTotal - 1}
+              rowsPerPage={pageSize}
+              rowWord="other users"
+            />
+          </>
+        )}
 
-        <BoxPaginator
-          currentPage={currentPage}
-          setPage={(n) => setCurrentPage(n)}
-          rowCount={currentTotal - 1}
-          rowsPerPage={pageSize}
-          rowWord="other users"
-        />
+        {usersQuery.isLoading && <IsLoadingDiv />}
       </div>
     </Box>
   );

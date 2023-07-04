@@ -38,6 +38,7 @@ import {
   createUserAllowedCookie,
 } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
+import { AuthenticatedUser } from "../business/authenticated-user";
 
 const ALL_TEST_SUBJECT = [
   {
@@ -127,7 +128,7 @@ const addTestUserRoute = (
     const { logger } = getServices(container);
     const userService = container.resolve(UserService);
 
-    const authUser = await userService.upsertUserForLogin(
+    const dbUser = await userService.upsertUserForLogin(
       subjectId,
       name,
       email,
@@ -140,6 +141,8 @@ const addTestUserRoute = (
       `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`
     );
 
+    const authUser = new AuthenticatedUser(dbUser);
+
     cookieForBackend(
       request,
       reply,
@@ -149,13 +152,13 @@ const addTestUserRoute = (
     cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
 
     // these cookies however are available to React - PURELY for UI/display purposes
-    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
-    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
-    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, authUser.email);
+    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, dbUser.subjectId);
+    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, dbUser.displayName);
+    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, dbUser.email);
 
     const allowed = createUserAllowedCookie(
-      userService.isConfiguredSuperAdmin(authUser.subjectId),
-      authUser
+      userService.isConfiguredSuperAdmin(dbUser.subjectId),
+      dbUser
     );
 
     cookieForUI(request, reply, USER_ALLOWED_COOKIE_NAME, allowed);

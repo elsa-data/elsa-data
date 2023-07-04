@@ -39,10 +39,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
     subjectId: allowedAdminSubject,
     displayName: "Admin",
     email: allowedAdminEmail,
-    isAllowedRefreshDatasetIndex: true,
-    isAllowedCreateRelease: true,
-    isAllowedOverallAdministratorView: true,
-    lastLoginDateTime: new Date(),
   });
 
   const allowedMemberSubject = "http://subject2.com";
@@ -62,10 +58,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
     subjectId: "http://subject-not-allowed.com",
     displayName: "not-allowed Member",
     email: "not-allow@email.com",
-    isAllowedRefreshDatasetIndex: false,
-    isAllowedCreateRelease: false,
-    isAllowedOverallAdministratorView: false,
-    lastLoginDateTime: new Date(),
   });
 
   return {

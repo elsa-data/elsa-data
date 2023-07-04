@@ -17,6 +17,7 @@ import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
 import { LocationType } from "./ip-lookup-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { UserData } from "../data/user-data";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -35,7 +36,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
+    @inject(UserData) private readonly userData: UserData
   ) {
     super(
       settings,
@@ -48,18 +50,20 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
   }
 
-  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
-    if (isPermissionAllow) return;
+  private async checkIsAllowedRefreshDatasetIndex(
+    user: AuthenticatedUser
+  ): Promise<void> {
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
-    throw new NotAuthorisedSyncDataEgressRecords();
+    if (!dbUser.isAllowedRefreshDatasetIndex)
+      throw new NotAuthorisedSyncDataEgressRecords();
   }
 
   public async syncDataEgressByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    this.checkIsAllowedRefreshDatasetIndex(user);
+    await this.checkIsAllowedRefreshDatasetIndex(user);
 
     const datasetUrisArray = (
       await releaseGetByReleaseKey(this.edgeDbClient, {

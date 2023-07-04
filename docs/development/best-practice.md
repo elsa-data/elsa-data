@@ -1,5 +1,30 @@
 # Best Practice Pointers
 
+## User Permissions
+
+All users have a permission set (boolean fields) that exist in their EdgeDb User.
+
+On login, this permission set is used to give the front end a list of rights. However,
+due to the desire for the permissions to be immediately responsive (i.e if an
+admin _removes_ the rights from a user we want that to apply immediately) -
+the back end _always_ uses the permissions current in the database at the point of operation.
+
+What does this mean in practice? It means that the AuthenticatedUser which proves
+who is logged in to the backend - and is maintained in the session - does not itself
+have any permissions information.
+
+Permissions need to be resolved in the service operation using
+one of the following techniques as appropriate.
+
+- Integrate the authorisation decisions into the query itself - so an Edgeql query
+  that takes the `userDbId` as a parameter and changes the results based on the permissions -
+  see for instance `auditEventGetSomeByUser.edgeql`
+- Opportunistically get the permissions as part of the boundary checks of the service
+  as these possibly already hit the User table of the database - see for instance
+  `releaseGetBoundaryInfo.edgeql`
+- Explicitly use the `UserData` data class to look up the user in the database
+  and make the corresponding authorisation decision
+
 ## EdgeDb
 
 ### Paging

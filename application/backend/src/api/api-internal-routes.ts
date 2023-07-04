@@ -12,7 +12,6 @@ import { isEmpty, isString, trim } from "lodash";
 import { auditEventRoutes } from "./routes/internal/audit-event-routes";
 import { ElsaSettings } from "../config/elsa-settings";
 import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
-import { userRoutes } from "./routes/internal/user-routes";
 
 type Opts = {
   container: DependencyContainer;
@@ -136,6 +135,5 @@ export const apiInternalRoutes = async (
 
     fastify.register(auditEventRoutes, routeOpts);
     fastify.register(releaseRoutes, routeOpts);
-    fastify.register(userRoutes, routeOpts);
   });
 };

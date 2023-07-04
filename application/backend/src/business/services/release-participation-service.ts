@@ -5,6 +5,7 @@ import { UserService } from "./user-service";
 import { ReleaseBaseService } from "./release-base-service";
 import { ElsaSettings } from "../../config/elsa-settings";
 import {
+  potentialUserGetByEmail,
   releaseParticipantAddPotentialUser,
   releaseParticipantAddUser,
   releaseParticipantEditPotentialUser,
@@ -13,16 +14,13 @@ import {
   releaseParticipantGetUser,
   releaseParticipantRemovePotentialUser,
   releaseParticipantRemoveUser,
+  userGetByEmail,
 } from "../../../dbschema/queries";
 import {
   ReleaseParticipationPermissionError,
   ReleaseParticipationNotFoundError,
   ReleaseParticipationExistError,
 } from "../exceptions/release-participation";
-import {
-  singlePotentialUserByEmailQuery,
-  singleUserByEmailQuery,
-} from "../db/user-queries";
 import e from "../../../dbschema/edgeql-js";
 import { AuditEventService } from "./audit-event-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
@@ -175,7 +173,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         // (3) the user is completely new and we need to create and link as a PotentialUser
 
         // (1)
-        const dbUser = await singleUserByEmailQuery.run(tx, {
+        const dbUser = await userGetByEmail(tx, {
           email: newUserEmail,
         });
 
@@ -189,7 +187,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         }
 
         // (2)
-        const potentialDbUser = await singlePotentialUserByEmailQuery.run(tx, {
+        const potentialDbUser = await potentialUserGetByEmail(tx, {
           email: newUserEmail,
         });
 
@@ -291,7 +289,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         // (2) the target user has not logged in but exist already as a PotentialUser
 
         // (1)
-        const dbUser = await singleUserByEmailQuery.run(tx, {
+        const dbUser = await userGetByEmail(tx, {
           email: existingEmail,
         });
 
@@ -305,7 +303,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         }
 
         // (2)
-        const potentialDbUser = await singlePotentialUserByEmailQuery.run(tx, {
+        const potentialDbUser = await potentialUserGetByEmail(tx, {
           email: existingEmail,
         });
 

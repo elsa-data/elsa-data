@@ -19,6 +19,8 @@ import {
   updateReleaseDataEgress,
 } from "../../../../dbschema/queries";
 import { IPLookupService } from "../ip-lookup-service";
+import { ReleaseCreateError } from "../../exceptions/release-authorisation";
+import { UserData } from "../../data/user-data";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -56,14 +58,17 @@ export class AwsCloudTrailLakeService {
     private readonly auditLogService: AuditEventService,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService,
-    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
-  private checkIsAllowedRefreshDatasetIndex(user: AuthenticatedUser): void {
-    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
-    if (isPermissionAllow) return;
+  private async checkIsAllowedRefreshDatasetIndex(
+    user: AuthenticatedUser
+  ): Promise<void> {
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
-    throw new NotAuthorisedSyncDataEgressRecords();
+    if (!dbUser.isAllowedRefreshDatasetIndex)
+      throw new NotAuthorisedSyncDataEgressRecords();
   }
 
   async getEventDataStoreIdFromDatasetUris(
@@ -346,7 +351,7 @@ export class AwsCloudTrailLakeService {
     releaseKey: string;
     datasetUrisArray: string[];
   }) {
-    this.checkIsAllowedRefreshDatasetIndex(user);
+    await this.checkIsAllowedRefreshDatasetIndex(user);
 
     const eventDataStoreIds = await this.getEventDataStoreIdFromDatasetUris(
       datasetUrisArray

@@ -15,7 +15,7 @@ export const UserSummarySchema = Type.Object({
   subjectIdentifier: Type.String(),
   email: Type.String(),
   displayName: Type.String(),
-  lastLogin: TypeDate,
+  lastLogin: Type.Optional(TypeDate),
 
   isAllowedChangeUserPermission: Type.Boolean(),
   isAllowedCreateRelease: Type.Boolean(),

@@ -480,13 +480,13 @@ export class JobService {
     limit: number,
     offset: number
   ): Promise<PagedResult<ReleasePreviousJobType>> {
-    const { userRole } =
+    const { userRole, isAllowedOverallAdministratorView } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
         releaseKey
       );
 
-    if (userRole != "Administrator" && !user.isAllowedOverallAdministratorView)
+    if (userRole != "Administrator" && !isAllowedOverallAdministratorView)
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
     const pageOfEntriesQueryFn = (params?: { offset: number; limit: number }) =>

@@ -38,6 +38,8 @@ import { Transaction } from "edgedb/dist/transaction";
 import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
 import { Logger } from "pino";
+import { UserData } from "../data/user-data";
+import { ReleaseCreateError } from "../exceptions/release-authorisation";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -64,7 +66,8 @@ export class AuditEventService {
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Logger") private readonly logger: Logger
+    @inject("Logger") private readonly logger: Logger,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
   /**
@@ -80,8 +83,9 @@ export class AuditEventService {
     executor: Executor = this.edgeDbClient
   ): Promise<void> {
     // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedOverallAdministratorView;
-    if (isPermissionAllow) return;
+    const dbUser = await this.userData.getDbUser(executor, user);
+
+    if (dbUser.isAllowedOverallAdministratorView) return;
 
     // Check if user is part of release therefore have access
     if (releaseKey) {

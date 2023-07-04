@@ -8,20 +8,23 @@ import {
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import {
-  deletePotentialUserByEmailQuery,
-  singlePotentialUserByEmailQuery,
-  singleUserBySubjectIdQuery,
-} from "../db/user-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
 import { NotAuthorisedEditUserManagement } from "../exceptions/user";
-import { userGetAllByUser } from "../../../dbschema/queries";
+import {
+  potentialUserDeleteByEmail,
+  potentialUserGetByEmail,
+  userGetAllByUser,
+  userGetByDbId,
+  userGetBySubjectId,
+} from "../../../dbschema/queries";
 import { IPLookupService, LocationType } from "./ip-lookup-service";
 import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
+import { UserData } from "../data/user-data";
+import { NotAuthorisedToControlJob } from "./jobs/job-service";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -39,7 +42,8 @@ export class UserService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
   /**
@@ -56,18 +60,6 @@ export class UserService {
     }
 
     return false;
-  }
-
-  /**
-   * Get the current database details of the given user.
-   *
-   * @param user
-   */
-  public async getUser(user: AuthenticatedUser) {
-    return await e.select(e.permission.User, (u) => ({
-      ...e.permission.User["*"],
-      filter_single: { id: user.dbId },
-    }));
   }
 
   /**
@@ -120,7 +112,7 @@ export class UserService {
   public async getBySubjectId(
     subjectId: string
   ): Promise<AuthenticatedUser | null> {
-    const dbUser = await singleUserBySubjectIdQuery.run(this.edgeDbClient, {
+    const dbUser = await userGetBySubjectId(this.edgeDbClient, {
       subjectId: subjectId,
     });
 
@@ -182,7 +174,7 @@ export class UserService {
     displayName: string,
     email: string,
     auditDetails?: LoginDetailType
-  ): Promise<AuthenticatedUser> {
+  ) {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
     if (isNil(subjectId) || isEmpty(subjectId.trim()))
@@ -196,7 +188,7 @@ export class UserService {
 
     const dbUser = await this.edgeDbClient.transaction(async (tx) => {
       // did we already perhaps see reference to this user from an application - but the user hasn't logged in?
-      const potentialDbUser = await singlePotentialUserByEmailQuery.run(tx, {
+      const potentialDbUser = await potentialUserGetByEmail(tx, {
         email: email,
       });
 
@@ -205,6 +197,7 @@ export class UserService {
       if (potentialDbUser) {
         // find all the 'default' settings (like releases they are part of) for the user
         releasesToAdd =
+          potentialDbUser.futureReleaseParticipant &&
           potentialDbUser.futureReleaseParticipant.length > 0
             ? e.set(
                 ...potentialDbUser.futureReleaseParticipant.map((a) =>
@@ -214,7 +207,7 @@ export class UserService {
             : e.cast(e.uuid, e.set());
 
         // the user is no longer potential - they will be real in the users table - so delete from potential
-        await deletePotentialUserByEmailQuery.run(tx, {
+        await potentialUserDeleteByEmail(tx, {
           email: email,
         });
       } else {
@@ -243,6 +236,10 @@ export class UserService {
           subjectId: subjectId,
           displayName: displayName,
           email: email,
+          // we are explicit here about our default permissions being "no permissions"
+          isAllowedOverallAdministratorView: false,
+          isAllowedCreateRelease: false,
+          isAllowedRefreshDatasetIndex: false,
           releaseParticipant: e.select(e.release.Release, (r) => ({
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),
@@ -266,7 +263,10 @@ export class UserService {
     // there is no way to get the upsert to also return the other db fields so we
     // have to requery if we want to return a full authenticated user here
     if (dbUser != null) {
-      const newOrUpdatedUser = await this.getBySubjectId(subjectId);
+      const newOrUpdatedUser = await this.userData.getDbUserByDbId(
+        this.edgeDbClient,
+        dbUser.id
+      );
 
       if (newOrUpdatedUser) return newOrUpdatedUser;
     }
