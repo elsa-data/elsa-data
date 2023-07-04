@@ -788,6 +788,36 @@ export class AuditEventService {
    * @param transFunc
    * @param finishFunc
    */
+  public async transactionalReadInReleaseAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    return this.transactionalAuditPattern(
+      user,
+      releaseKey,
+      "R",
+      actionDescription,
+      initFunc,
+      transFunc,
+      finishFunc
+    );
+  }
+
+  /**
+   * Perform our standard audit pattern for a create to a release
+   * including transactions and try/catch.
+   *
+   * @param user
+   * @param releaseKey
+   * @param actionDescription
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
   public async transactionalCreateInReleaseAuditPattern<T, U, V>(
     user: AuthenticatedUser,
     releaseKey: string,

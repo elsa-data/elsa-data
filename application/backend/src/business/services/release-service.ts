@@ -13,7 +13,10 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
 import { getNextReleaseKey } from "../db/release-queries";
-import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
+import {
+  ReleaseActivationPermissionError,
+  ReleaseNoEditingWhilstActivatedError,
+} from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
@@ -40,6 +43,7 @@ import { AuditEventTimedService } from "./audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { Executor } from "edgedb";
+import { ReleaseViewError } from "../exceptions/release-authorisation";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -244,6 +248,10 @@ ${release.applicantEmailAddresses}
       user,
       releaseKey
     );
+
+    if (userRole !== "Member" && userRole !== "Manager") {
+      throw new ReleaseViewError(releaseKey);
+    }
 
     const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseKey);
 
