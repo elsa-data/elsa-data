@@ -32,7 +32,7 @@ Do note, there is a possible risk where the administrator configures the sharing
 
 We are using the HTTPS protocol to protect data traffic, which enables encryption between networks. This prevents attackers from tapping into the network and intercepting the transmitted data. Additionally, Elsa's database does not store sensitive data. It primarily stores indexes for specific genomic datasets, including subject IDs that do not identify specific individuals.
 
-To ensure the security of active presigned URL files, we encrypt them with a randomly generated UUID, which is stored in the database. This prevents participants from storing unencrypted presigned URLs locally. Participants can obtain the password for accessing these files through the application. Currently, the password is stored as a string as the purpose of this feature is solely to protect unencrypted files stored on local devices.
+For file encryption, to ensure the security of active presigned URL files, we encrypt them with a randomly generated UUID, which is stored in the database. This prevents participants from storing unencrypted presigned URLs locally. Participants can obtain the password for accessing these files through the application. Currently, the password is stored as a string as the purpose of this feature is solely to protect unencrypted files stored on local devices.
 
 ### 3. Injection
 
@@ -72,7 +72,7 @@ We have placed a strong emphasis on data integrity in our application by careful
 
 We have implemented extensive logging capabilities to capture user interactions within the system. Following the [FHIR audit event documentation](https://www.hl7.org/fhir/valueset-audit-event-action.html), we have adopted a transactional auditing pattern to store audit records in the database. These audit records are made available for viewing by relevant users, ensuring awareness of system activities. For instance, participants involved in a specific release can easily access a comprehensive log of events related to that particular release.
 
-Additionally, we have enhanced logging by implementing data egress logs, as data access is a primary function of the application. If enabled by the software administrator (which only works if the deployment in AWS), this feature tracks the data egressed by each researcher. For example, when a researcher generates pre-signed URLs for a dataset, accessing those URLs triggers the retrieval of information from the storage server, which is then stored in the application database. Data custodians can monitor and log these activities, and certain events, such as data downloads from foreign IP addresses or multiple downloads, are flagged to highlight potential anomalies and to track egress costs.
+Additionally, we have enhanced logging by implementing data egress logs, as data access is a primary function of the application. If enabled by the software administrator (which currently only works in the AWS deployment), this feature tracks the data egressed by each researcher. For example, when a researcher generates pre-signed URLs for a dataset, accessing those URLs triggers the retrieval of information from the storage server, which is then stored in the application database. Data custodians can monitor and log these activities, and certain events, such as data downloads from foreign IP addresses or multiple downloads, are flagged to highlight potential anomalies and to track egress costs.
 
 ### 10. Server-Side Request Forgery (SSRF)
 
