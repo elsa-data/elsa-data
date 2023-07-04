@@ -24,7 +24,7 @@ We tried as much as possible to protect this software from any security threat. 
 
 We have taken steps to ensure that every user has the authorisation checks before accessing the related resources. We have implemented boundary rule checks where only related participants and administrators can view the detail of the release. This rule is implemented in the user interface where it disables the actions that are not authorised as well as on our backend that throws an error if unauthorised request is being made to the system.
 
-In addition, we also separate the layer of the sharing configuration and accessing the datasets. With this, we have made that only participants (managers and members) can access the datasets (e.g. generate presigned-urls) where the administrator can only organise what and how the datasets are available to them.
+In addition, we also explicitly separate the layer of the sharing configuration and accessing the datasets. With this, we have made that only participants (managers and members) can access the datasets (e.g. generate presigned-urls) where the administrator can only organise what and how the datasets are available to them.
 
 Do note, there is a possible risk where the administrator configures the sharing configuration (e.g. a copy-out to an S3-bucket mechanism), where the destination bucket is their own bucket.
 
