@@ -10,6 +10,15 @@ export type AuthenticatedUserJsonType = Omit<
   | "lastLoginDateTime"
 >;
 
+/**
+ * A simply persistable (can be converted to/from JSON)
+ * representation of a user that has been authenticated
+ * into the system. This class has a subset of the fields for the user - only
+ * those which are unlikely to change within a login session.
+ *
+ * This class does not contain any permission fields as they
+ * must be fetched from the database at the time of any operation.
+ */
 export class AuthenticatedUser {
   constructor(private readonly dbUser: AuthenticatedUserJsonType) {
     // we are super cautious about data integrity here because we can construct these
@@ -19,8 +28,7 @@ export class AuthenticatedUser {
       isNil(this.dbUser.id) ||
       isNil(this.dbUser.subjectId) ||
       isNil(this.dbUser.displayName) ||
-      isNil(this.dbUser.email) //||
-      //isNil(this.dbUser.lastLoginDateTime)
+      isNil(this.dbUser.email)
     )
       throw new UnexpectedStateInternalServerError(
         "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
@@ -28,52 +36,32 @@ export class AuthenticatedUser {
   }
 
   /**
-   * The internal EdgeDb id for the User record
+   * The internal EdgeDb id for the User record.
    */
   public get dbId(): string {
-    return this.dbUser!.id;
+    return this.dbUser.id;
   }
 
   /**
-   * The OIDC subject identifier for the user in the broader world
+   * The OIDC subject identifier for the user in the broader world.
    */
   public get subjectId(): string {
-    return this.dbUser!.subjectId;
+    return this.dbUser.subjectId;
   }
 
   /**
-   * A display name for the user
+   * A display name for the user.
    */
   public get displayName(): string {
-    return this.dbUser!.displayName;
+    return this.dbUser.displayName;
   }
 
+  /**
+   * The email address for the user.
+   */
   public get email(): string {
-    return this.dbUser!.email;
+    return this.dbUser.email;
   }
-
-  /**
-   * Read permission
-   * @deprecated moving our queries over to using the field directly from the db
-   */
-  //public get isAllowedOverallAdministratorView(): boolean {
-  // return this.dbUser!.isAllowedOverallAdministratorView;
-  // }
-
-  /**
-   * Write permission
-   * @deprecated moving our queries over to using the field directly from the db
-   */
-  // public get isAllowedCreateRelease(): boolean {
-  //   return this.dbUser!.isAllowedCreateRelease;
-  // }
-
-  /**
-   * @deprecated moving our queries over to using the field directly from the db
-   */
-  //public get isAllowedRefreshDatasetIndex(): boolean {
-  //  return this.dbUser!.isAllowedRefreshDatasetIndex;
-  // }
 
   /**
    * For round trip persisting this user in non-database things (cookies for instance)
