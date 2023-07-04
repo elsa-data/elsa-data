@@ -65,23 +65,23 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions
 
   // Iterate releaseKey and trigger update egress records
   for (const rd of releasesDetails) {
-    await auditEventService.transactionalUpdateInReleaseAuditPattern(
-      systemUser,
-      rd.releaseKey,
-      `System scheduled update data egress records: ${rd.releaseKey}`,
-      async () => {
-        if (!systemUser.isAllowedRefreshDatasetIndex)
-          throw new NotAuthorisedUpdateDataEgressRecords();
-      },
-      async (tx, a) => {
-        if (!rd.datasetUris) throw new Error("No dataset found!");
-        await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-          user: systemUser,
-          releaseKey: rd.releaseKey,
-          datasetUrisArray: rd.datasetUris,
-        });
-      },
-      async () => {}
-    );
+    // await auditEventService.transactionalUpdateInReleaseAuditPattern(
+    //   systemUser,
+    //   rd.releaseKey,
+    //   `System scheduled update data egress records: ${rd.releaseKey}`,
+    //   async () => {
+    //     if (!systemUser.isAllowedRefreshDatasetIndex)
+    //       throw new NotAuthorisedUpdateDataEgressRecords();
+    //   },
+    //   async (tx, a) => {
+    //     if (!rd.datasetUris) throw new Error("No dataset found!");
+    //     await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+    //       user: systemUser,
+    //       releaseKey: rd.releaseKey,
+    //       datasetUrisArray: rd.datasetUris,
+    //     });
+    //   },
+    //   async () => {}
+    // );
   }
 })();
