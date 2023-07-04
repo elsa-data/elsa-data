@@ -3,9 +3,9 @@ import _ from "lodash";
 import e from "../../../dbschema/edgeql-js";
 import { addUserAuditEventToReleaseQuery } from "../db/audit-log-queries";
 import {
-  singlePotentialUserByEmailQuery,
-  singleUserByEmailQuery,
-} from "../db/user-queries";
+  potentialUserGetByEmail,
+  userGetByEmail,
+} from "../../../dbschema/queries";
 
 export type Role = "Manager" | "Member";
 
@@ -55,10 +55,10 @@ export const insertPotentialOrReal = async (
   releaseKey: string
 ) => {
   // Find if user had logged in to elsa
-  const dbUser = await singleUserByEmailQuery.run(executor, {
+  const dbUser = await userGetByEmail(executor, {
     email: au.email,
   });
-  const potentialDbUser = await singlePotentialUserByEmailQuery.run(executor, {
+  const potentialDbUser = await potentialUserGetByEmail(executor, {
     email: au.email,
   });
 

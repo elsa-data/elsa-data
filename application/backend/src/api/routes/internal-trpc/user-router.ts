@@ -1,5 +1,6 @@
-import { router, internalProcedure } from "../trpc-bootstrap";
+import { router, internalProcedure, calculateOffset } from "../trpc-bootstrap";
 import { z } from "zod";
+import { inputPaginationParameter } from "./input-schemas-common";
 
 /**
  * RPC for user permission
@@ -12,11 +13,26 @@ export const inputChangeUserPermission = z.object({
 });
 
 export const userRouter = router({
+  getUsers: internalProcedure
+    .input(inputPaginationParameter)
+    .query(async ({ input, ctx }) => {
+      const { user, pageSize } = ctx;
+      const { page = 1 } = input;
+
+      return await ctx.userService.getUsers(
+        user,
+        pageSize,
+        calculateOffset(page, pageSize)
+      );
+    }),
   changeUserPermission: internalProcedure
     .input(inputChangeUserPermission)
     .mutation(async ({ input, ctx }) => {
       await ctx.userService.changePermission(ctx.user, input.userEmail, {
-        ...input,
+        isAllowedCreateRelease: input.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView:
+          input.isAllowedOverallAdministratorView,
+        isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
       });
     }),
 });

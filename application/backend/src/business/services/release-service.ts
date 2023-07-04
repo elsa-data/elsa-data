@@ -13,7 +13,10 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
 import { getNextReleaseKey } from "../db/release-queries";
-import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
+import {
+  ReleaseActivationPermissionError,
+  ReleaseNoEditingWhilstActivatedError,
+} from "../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { randomUUID } from "crypto";
@@ -40,6 +43,8 @@ import { AuditEventTimedService } from "./audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { Executor } from "edgedb";
+import { ReleaseCreateError, ReleaseViewError } from "../exceptions/release-authorisation";
+import { UserData } from "../data/user-data";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -53,6 +58,7 @@ export class ReleaseService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
+    @inject(UserData) private readonly userData: UserData,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
@@ -146,7 +152,9 @@ export class ReleaseService extends ReleaseBaseService {
     user: AuthenticatedUser,
     release: ReleaseManualType
   ): Promise<string> {
-    this.checkIsAllowedCreateReleases(user);
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
+
+    if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     const otherResearchers = splitUserEmails(release.applicantEmailAddresses);
 
@@ -244,6 +252,10 @@ ${release.applicantEmailAddresses}
       user,
       releaseKey
     );
+
+    if (userRole !== "Member" && userRole !== "Manager") {
+      throw new ReleaseViewError(releaseKey);
+    }
 
     const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseKey);
 

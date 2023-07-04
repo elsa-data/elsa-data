@@ -19,22 +19,27 @@ with
           filter .releaseKey = <str>$releaseKey
         ),
 
-  isAllowedOverallAdministratorView := (
-                                          select permission::User {
-                                            isAllowedOverallAdministratorView
-                                          }
-                                          filter .id = <uuid>$userDbId
-                                        ).isAllowedOverallAdministratorView,
+  u := (select assert_single(
+         (select permission::User { * } filter .id = <uuid>$userDbId)
+       )),
 
   isAllowed := (
     select exists(r.userRole)
     or 
-    isAllowedOverallAdministratorView
+    u.isAllowedOverallAdministratorView
   )
 
 select r {
     runningJob,
     activation,
-    role := (select assert_single(.userRole@role))
+
+    # relay out the role in the release or null if no role but can see this via isAllowedOverallAdministratorView
+    role := (select assert_single(.userRole@role)),
+
+    # also relay out the current permissions of the user as this *might* be useful
+    # and might save us another db round trip (and doesn't hurt performance wise as we already fetch the user)
+    isAllowedOverallAdministratorView := u.isAllowedOverallAdministratorView ?? false,
+    isAllowedRefreshDatasetIndex := u.isAllowedRefreshDatasetIndex ?? false,
+    isAllowedCreateRelease := u.isAllowedCreateRelease ?? false
 }
 filter isAllowed

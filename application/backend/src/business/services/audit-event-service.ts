@@ -38,6 +38,8 @@ import { Transaction } from "edgedb/dist/transaction";
 import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
 import { Logger } from "pino";
+import { UserData } from "../data/user-data";
+import { ReleaseCreateError } from "../exceptions/release-authorisation";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -64,7 +66,8 @@ export class AuditEventService {
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Logger") private readonly logger: Logger
+    @inject("Logger") private readonly logger: Logger,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
   /**
@@ -80,8 +83,9 @@ export class AuditEventService {
     executor: Executor = this.edgeDbClient
   ): Promise<void> {
     // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedOverallAdministratorView;
-    if (isPermissionAllow) return;
+    const dbUser = await this.userData.getDbUser(executor, user);
+
+    if (dbUser.isAllowedOverallAdministratorView) return;
 
     // Check if user is part of release therefore have access
     if (releaseKey) {
@@ -774,6 +778,36 @@ export class AuditEventService {
       0,
       new Date(),
       executor
+    );
+  }
+
+  /**
+   * Perform our standard audit pattern for a create to a release
+   * including transactions and try/catch.
+   *
+   * @param user
+   * @param releaseKey
+   * @param actionDescription
+   * @param initFunc
+   * @param transFunc
+   * @param finishFunc
+   */
+  public async transactionalReadInReleaseAuditPattern<T, U, V>(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    actionDescription: string,
+    initFunc: () => Promise<T>,
+    transFunc: (tx: Transaction, a: T) => Promise<U>,
+    finishFunc: (a: U) => Promise<V>
+  ) {
+    return this.transactionalAuditPattern(
+      user,
+      releaseKey,
+      "R",
+      actionDescription,
+      initFunc,
+      transFunc,
+      finishFunc
     );
   }
 

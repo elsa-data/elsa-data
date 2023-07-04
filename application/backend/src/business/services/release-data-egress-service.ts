@@ -17,6 +17,7 @@ import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
 import { AuditEventTimedService } from "./audit-event-timed-service";
 import { LocationType } from "./ip-lookup-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { UserData } from "../data/user-data";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -35,7 +36,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
+    @inject(UserData) private readonly userData: UserData
   ) {
     super(
       settings,
@@ -48,14 +50,21 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     );
   }
 
+  private async checkIsAllowedRefreshDatasetIndex(
+    user: AuthenticatedUser
+  ): Promise<void> {
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
+
+    if (!dbUser.isAllowedRefreshDatasetIndex)
+      throw new NotAuthorisedUpdateDataEgressRecords();
+  }
+
   public async updateDataEgressRecordByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
+    await this.checkIsAllowedRefreshDatasetIndex(user);
+
     const datasetUrisArray = (
       await releaseGetByReleaseKey(this.edgeDbClient, {
         releaseKey,
@@ -67,8 +76,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       releaseKey,
       `Update data egress records: ${releaseKey}`,
       async () => {
-        if (!user.isAllowedRefreshDatasetIndex)
-          throw new NotAuthorisedUpdateDataEgressRecords();
+        await this.checkIsAllowedRefreshDatasetIndex(user);
       },
       async (tx, a) => {
         if (!datasetUrisArray) throw new Error("No dataset found!");

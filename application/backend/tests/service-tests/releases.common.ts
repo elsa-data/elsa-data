@@ -138,10 +138,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       subjectId: superAdminSubject,
       displayName: superAdminDisplayName,
       email: superAdminEmail,
-      lastLoginDateTime: new Date(),
-      isAllowedRefreshDatasetIndex: true,
-      isAllowedCreateRelease: true,
-      isAllowedOverallAdministratorView: true,
     });
   }
 
@@ -156,6 +152,9 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         subjectId: allowedAdministratorSubject,
         displayName: allowedDisplayName,
         email: allowedEmail,
+        isAllowedRefreshDatasetIndex: false,
+        isAllowedCreateRelease: true,
+        isAllowedOverallAdministratorView: false,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
           "@role": e.str("Administrator"),
@@ -168,10 +167,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       subjectId: allowedAdministratorSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
-      lastLoginDateTime: new Date(),
-      isAllowedRefreshDatasetIndex: false,
-      isAllowedCreateRelease: true,
-      isAllowedOverallAdministratorView: false,
     });
   }
 
@@ -186,6 +181,9 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         subjectId: allowedPiSubject,
         displayName: allowedDisplayName,
         email: allowedEmail,
+        isAllowedRefreshDatasetIndex: false,
+        isAllowedCreateRelease: false,
+        isAllowedOverallAdministratorView: false,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
           "@role": e.str("Manager"),
@@ -198,10 +196,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       subjectId: allowedPiSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
-      lastLoginDateTime: new Date(),
-      isAllowedRefreshDatasetIndex: false,
-      isAllowedCreateRelease: false,
-      isAllowedOverallAdministratorView: false,
     });
   }
 
@@ -216,6 +210,9 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         subjectId: allowedMemberSubject,
         displayName: allowedMemberDisplayName,
         email: allowedMemberEmail,
+        isAllowedRefreshDatasetIndex: false,
+        isAllowedCreateRelease: false,
+        isAllowedOverallAdministratorView: false,
         releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(testReleaseKey, "=", r.releaseKey),
           "@role": e.str("Member"),
@@ -228,10 +225,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       subjectId: allowedMemberSubject,
       displayName: allowedMemberDisplayName,
       email: allowedMemberEmail,
-      lastLoginDateTime: new Date(),
-      isAllowedRefreshDatasetIndex: false,
-      isAllowedCreateRelease: false,
-      isAllowedOverallAdministratorView: false,
     });
   }
 
@@ -245,6 +238,9 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       .insert(e.permission.User, {
         subjectId: notAllowedSubject,
         email: notAllowedEmail,
+        isAllowedRefreshDatasetIndex: false,
+        isAllowedCreateRelease: false,
+        isAllowedOverallAdministratorView: false,
         displayName: "Test User Who Isn't Allowed Any Access",
       })
       .run(edgeDbClient);
@@ -254,10 +250,6 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       subjectId: notAllowedSubject,
       displayName: notAllowedDisplayName,
       email: notAllowedEmail,
-      lastLoginDateTime: new Date(),
-      isAllowedRefreshDatasetIndex: false,
-      isAllowedCreateRelease: false,
-      isAllowedOverallAdministratorView: false,
     });
   }
 

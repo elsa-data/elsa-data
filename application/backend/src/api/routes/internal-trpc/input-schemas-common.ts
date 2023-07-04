@@ -12,6 +12,10 @@ export const inputReleaseKeySingle = z.object({
   releaseKey: inputReleaseKey,
 });
 
+export const unorderedInputPaginationParameter = z.object({
+  page: z.number().positive().default(1),
+});
+
 /**
  * A Zod objects for pagination properties
  *

@@ -32,14 +32,20 @@ export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
 /**
  * An enum type for participant roles in the release
  */
-export const ReleaseParticipantRole = ["Administrator", "Manager", "Member"];
 export const ReleaseParticipantRoleConst = [
+  "AdminView",
   "Administrator",
   "Manager",
   "Member",
 ] as const;
 export type ReleaseParticipantRoleType =
   typeof ReleaseParticipantRoleConst[number];
+export const ReleaseParticipantRole: ReleaseParticipantRoleType[] = [
+  "AdminView",
+  "Administrator",
+  "Manager",
+  "Member",
+];
 
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
@@ -86,7 +92,11 @@ export type DataSharingAwsAccessPointType = Static<
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
-  roleInRelease: Type.String(),
+  roleInRelease: Type.Union(
+    ReleaseParticipantRole.map((r: ReleaseParticipantRoleType) =>
+      Type.Literal(r)
+    )
+  ),
 
   lastUpdatedDateTime: TypeDate,
   lastUpdatedUserSubjectId: Type.String(),
@@ -125,9 +135,6 @@ export const ReleaseDetailSchema = Type.Object({
 
   // if present, means that this release is in the process of running a background job
   runningJob: Type.Optional(ReleaseRunningJobSchema),
-
-  // if present, is the password used for all download artifacts (zip files etc)
-  downloadPassword: Type.Optional(Type.String()),
 
   permissionViewSelections: Type.Optional(Type.Boolean()),
   permissionEditSelections: Type.Optional(Type.Boolean()),
@@ -226,6 +233,17 @@ export const ReleaseCaseSchema = Type.Object({
   // whether there is case specific consent statements
   customConsent: Type.Boolean(),
 });
+
+export const ReleasePreviousJobSchema = Type.Object({
+  objectId: Type.String(),
+  type: Type.String(),
+  created: TypeDate,
+  started: TypeDate,
+  ended: TypeDate,
+  requestedCancellation: Type.Boolean(),
+  details: Type.String(),
+});
+export type ReleasePreviousJobType = Static<typeof ReleasePreviousJobSchema>;
 
 // Schema for manually creating a release instead importing it from a DAC
 export const ReleaseManualSchema = Type.Object({

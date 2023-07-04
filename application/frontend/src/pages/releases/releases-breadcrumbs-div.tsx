@@ -1,8 +1,10 @@
 import React from "react";
 import { NavLink, useMatches } from "react-router-dom";
 import { HiChevronRight, HiOutlineReply } from "react-icons/hi";
+import { ReleaseTypeLocal } from "./shared-types";
 
 export type BreadcrumbDropDownEntry = {
+  id: string;
   to: string;
   text: string;
 };
@@ -16,23 +18,27 @@ export type BreadcrumbDropDownEntry = {
  * @param props
  * @constructor
  */
-export const ReleasesBreadcrumbsDiv: React.FC<{ releaseKey: string }> = (
-  props
-) => {
+export const ReleasesBreadcrumbsDiv: React.FC<{
+  releaseKey: string;
+  releaseData: ReleaseTypeLocal;
+}> = (props) => {
   const matches = useMatches();
-
-  // find all the crumb text from our current matched route
-  let crumbsText = matches
-    .filter((match: any) => Boolean(match.handle?.crumbText))
-    .map((match: any) => match.handle.crumbText);
 
   // find the last 'siblingItems' which has details of our siblings
   const siblingList = matches
     .filter((match: any) => Boolean(match.handle?.siblingItems))
     .map((match: any) => match.handle.siblingItems);
 
-  const finalSiblingItems: BreadcrumbDropDownEntry[] =
+  const lastSiblingItems: BreadcrumbDropDownEntry[] =
     siblingList.length > 0 ? siblingList.slice(-1)[0] : [];
+
+  const finalSiblingItems = lastSiblingItems.filter(
+    (si) =>
+      // Don't show the "Jobs" breadcrumb for non-admins
+      si.id !== "jobs" ||
+      props.releaseData.roleInRelease === "Administrator" ||
+      props.releaseData.roleInRelease === "AdminView"
+  );
 
   return (
     <nav

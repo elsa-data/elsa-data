@@ -109,7 +109,10 @@ export const ReleasesMasterPage: React.FC = () => {
                 />
               )}
 
-            <ReleasesBreadcrumbsDiv releaseKey={releaseKey} />
+            <ReleasesBreadcrumbsDiv
+              releaseKey={releaseKey}
+              releaseData={masterOutletContext.releaseData}
+            />
 
             {/* NOTE job information will only be returned from the backend where the user is a release
                      administrator - so this section will only appear for admins */}

@@ -75,8 +75,6 @@ describe("AWS s3 client", () => {
 
     ({ existingUser: user, edgeDbClient: edgedbClient } =
       await beforeEachCommon());
-
-    await blankTestData();
   });
 
   afterEach(async () => {

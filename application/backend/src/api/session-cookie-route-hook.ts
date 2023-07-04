@@ -21,7 +21,11 @@ export function createSessionCookieRouteHook(userService: UserService) {
     if (!authedUser) throw new NotAuthorisedCredentials();
     request.log.trace(authedUser, `createSessionCookieRouteHook: user details`);
 
-    const dbUser = await userService.getBySubjectId(authedUser.subjectId);
+    /*
+    DISABLED - WE NO LONGER STORE ANY PERMISSIONS IN THE SESSION - SO THERE IS NO SENSE IN WHICH THEY
+  CAN GET OUT OF SYNC
+  WHAT CAN GET OUT OF SYNC THOUGH IS THE UI COOKIES - CAN WE CHECK THAT??
+    const dbUser = await userService.getDbUser(authedUser);
     if (!dbUser) throw new NotAuthorisedCredentials();
     request.log.trace(dbUser, `databaseUser: user details`);
 
@@ -31,6 +35,7 @@ export function createSessionCookieRouteHook(userService: UserService) {
       dbUser
     );
     const sessionPermission = createUserAllowedCookie(
+
       userService.isConfiguredSuperAdmin(authedUser.subjectId),
       authedUser
     );
@@ -38,7 +43,7 @@ export function createSessionCookieRouteHook(userService: UserService) {
       throw new NotAuthorisedCredentials(
         "User permissions have changed. Please try logging back in!"
       );
-    }
+    } */
 
     // set the full authenticated user into the request state for the rest of the request handling
     (request as any).user = authedUser;
