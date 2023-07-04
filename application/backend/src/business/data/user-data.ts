@@ -21,7 +21,7 @@ export type UserDataDbUser = NonNullable<UserGetBySubjectIdReturns>;
  */
 @injectable()
 export class UserData {
-  constructor(@inject("Settings") private readonly settings: ElsaSettings) {}
+  constructor() {}
 
   /**
    * Get the current database details of the given user - with

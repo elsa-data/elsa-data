@@ -18,6 +18,8 @@ describe("user load tests", () => {
     await blankTestData();
   });
 
+  const LOAD_SIZE = 500000;
+
   it("create a lot of users and query", async () => {
     const query = e.params({ items: e.json }, (params) => {
       return e.for(e.json_array_unpack(params.items), (item) => {
@@ -31,7 +33,7 @@ describe("user load tests", () => {
 
     const allUserItems = [];
 
-    for (let i = 0; i < 500000; i++) {
+    for (let i = 0; i < LOAD_SIZE; i++) {
       allUserItems.push({
         subjectId: `https://subject-${i}`,
         email: `person${i}@place.com`,
@@ -43,20 +45,19 @@ describe("user load tests", () => {
       items: allUserItems,
     });
 
-    expect(result).toHaveLength(500000);
+    expect(result).toHaveLength(LOAD_SIZE);
 
-    userData = new UserData({} as ElsaSettings);
+    userData = new UserData();
+
+    // currently we don't *do* anything with our load test information - we should possibly
+    // (or maybe package it into a report?)
 
     console.time("Q");
-
     await userData.getDbUserBySubjectId(edgeDbClient, "https://subject-55");
-
     console.timeEnd("Q");
 
     console.time("Q2");
-
     await userData.getDbUserByEmail(edgeDbClient, "PErson1065@place.com");
-
     console.timeEnd("Q2");
   });
 });
