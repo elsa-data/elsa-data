@@ -1,7 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
-  ALLOWED_CHANGE_ADMINS,
-  ALLOWED_CREATE_NEW_RELEASES,
   CSRF_TOKEN_COOKIE_NAME,
   USER_ALLOWED_COOKIE_NAME,
   USER_EMAIL_COOKIE_NAME,
@@ -11,31 +9,27 @@ import {
 import {
   SESSION_TOKEN_PRIMARY,
   SESSION_USER_DB_OBJECT,
-} from "./session-cookie-constants";
+} from "./auth/session-cookie-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import { generators } from "openid-client";
-import { isSuperAdmin } from "./session-cookie-route-hook";
-import { AuditLogService } from "../business/services/audit-log-service";
-import { AuthenticatedUser } from "../business/authenticated-user";
+import { AuditEventService } from "../business/services/audit-event-service";
 import {
-  TEST_SUBJECT_1,
-  TEST_SUBJECT_1_DISPLAY,
-  TEST_SUBJECT_1_EMAIL,
-  TEST_SUBJECT_2,
-  TEST_SUBJECT_2_DISPLAY,
-  TEST_SUBJECT_2_EMAIL,
-  TEST_SUBJECT_3,
-  TEST_SUBJECT_3_DISPLAY,
-  TEST_SUBJECT_3_EMAIL,
-} from "../test-data/insert-test-users";
-import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
+  cookieForBackend,
+  cookieForUI,
+  createUserAllowedCookie,
+} from "./helpers/cookie-helpers";
+import { getServices } from "../di-helpers";
+import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
-  return new settings.oidcIssuer.Client({
-    client_id: settings.oidcClientId,
-    client_secret: settings.oidcClientSecret,
+  if (!settings.oidc || !settings.oidc.issuer)
+    throw new Error("Cannot establish OIDC login without OIDC settings");
+
+  return new settings.oidc.issuer.Client({
+    client_id: settings.oidc.clientId,
+    client_secret: settings.oidc.clientSecret,
     redirect_uris: [redirectUri],
     response_types: ["code"],
     token_endpoint_auth_method: "client_secret_post",
@@ -57,9 +51,10 @@ export const apiAuthRoutes = async (
     includeTestUsers: boolean;
   }
 ) => {
-  const settings = opts.container.resolve<ElsaSettings>("Settings");
-  const userService = opts.container.resolve(UsersService);
-  const auditLogService = opts.container.resolve(AuditLogService);
+  const { logger, edgeDbClient, settings } = getServices(opts.container);
+
+  const userService = opts.container.resolve(UserService);
+  const auditLogService = opts.container.resolve(AuditEventService);
 
   const client = createClient(settings, opts.redirectUri);
 
@@ -81,7 +76,26 @@ export const apiAuthRoutes = async (
 
   // clean *our* cookies - meaning the browser is no longer authorised into Elsa Data for
   // web browsing or API calls
-  const clearOurLoginState = (request: FastifyRequest, reply: FastifyReply) => {
+  const clearOurLoginState = (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    auditDetails: any = null
+  ) => {
+    const dbUser = request.session.get(SESSION_USER_DB_OBJECT);
+
+    if (dbUser !== undefined) {
+      auditLogService.createUserAuditEvent(
+        dbUser.id,
+        dbUser.subjectId,
+        dbUser.displayName,
+        "E",
+        "Logout",
+        auditDetails,
+        0,
+        new Date(),
+        edgeDbClient
+      );
+    }
     // delete all the backend session cookies
     request.session.delete();
 
@@ -97,7 +111,9 @@ export const apiAuthRoutes = async (
   });
 
   fastify.post("/logout-completely", async (request, reply) => {
-    clearOurLoginState(request, reply);
+    clearOurLoginState(request, reply, {
+      message: "complete logout, redirected to CILogon",
+    });
 
     // TODO: this probably needs to be configurable per OIDC setup - but given we are setting
     // up firstly for CILogon - it can wait till after that
@@ -107,104 +123,28 @@ export const apiAuthRoutes = async (
   });
 
   if (opts.includeTestUsers) {
-    const subject1 = await userService.upsertUserForLogin(
-      TEST_SUBJECT_1,
-      TEST_SUBJECT_1_DISPLAY,
-      TEST_SUBJECT_1_EMAIL
-    );
-    const subject2 = await userService.upsertUserForLogin(
-      TEST_SUBJECT_2,
-      TEST_SUBJECT_2_DISPLAY,
-      TEST_SUBJECT_2_EMAIL
-    );
-    const subject3 = await userService.upsertUserForLogin(
-      TEST_SUBJECT_3,
-      TEST_SUBJECT_3_DISPLAY,
-      TEST_SUBJECT_3_EMAIL
-    );
-
-    if (!subject1 || !subject2 || !subject3)
-      throw new Error(
-        "Test users not setup correctly in database even though they are meant to be enabled"
-      );
-
-    // register a login endpoint that sets a cookie without actual login
-    // NOTE: this has to replicate all the real auth login steps (set the same cookies etc)
-    const addTestUserRoute = (
-      path: string,
-      authUser: AuthenticatedUser,
-      allowed: string[]
-    ) => {
-      fastify.post(path, async (request, reply) => {
-        cookieForBackend(
-          request,
-          reply,
-          SESSION_TOKEN_PRIMARY,
-          "Thiswouldneedtobearealbearertokenforexternaldata"
-        );
-        cookieForBackend(
-          request,
-          reply,
-          SESSION_USER_DB_OBJECT,
-          authUser.asJson()
-        );
-
-        // these cookies however are available to React - PURELY for UI/display purposes
-        cookieForUI(
-          request,
-          reply,
-          USER_SUBJECT_COOKIE_NAME,
-          authUser.subjectId
-        );
-        cookieForUI(
-          request,
-          reply,
-          USER_NAME_COOKIE_NAME,
-          authUser.displayName
-        );
-        cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, "user@email.com");
-        cookieForUI(
-          request,
-          reply,
-          USER_ALLOWED_COOKIE_NAME,
-          allowed.join(",")
-        );
-
-        // CSRF Token passed as cookie
-        cookieForUI(
-          request,
-          reply,
-          CSRF_TOKEN_COOKIE_NAME,
-          await reply.generateCsrf()
-        );
-
-        reply.redirect("/");
-      });
-    };
-
-    // a test user that is in charge of a few datasets
-    addTestUserRoute("/login-bypass-1", subject1, [
-      ALLOWED_CREATE_NEW_RELEASES,
-    ]);
-    // a test user that is a PI in some releases
-    addTestUserRoute("/login-bypass-2", subject2, []);
-    // a test user that is a super admin equivalent
-    addTestUserRoute("/login-bypass-3", subject3, [ALLOWED_CHANGE_ADMINS]);
+    await addTestUserRoutesAndActualUsers(fastify, opts);
   }
 };
 
+/**
+ * Register the main callback route for completing an OIDC flow.
+ *
+ * @param fastify
+ * @param opts
+ */
 export const callbackRoutes = async (
   fastify: FastifyInstance,
   opts: {
-    // DI resolver
     container: DependencyContainer;
     redirectUri: string;
     includeTestUsers: boolean;
   }
 ) => {
   const settings = opts.container.resolve<ElsaSettings>("Settings");
-  const userService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
 
+  // TODO persist the client/flow info somehow - so we can use nonces, state etc
   const client = createClient(settings, opts.redirectUri);
 
   // the cb (callback) route is the route that is redirected to as part of the OIDC flow
@@ -221,13 +161,19 @@ export const callbackRoutes = async (
 
     const idClaims = tokenSet.claims();
 
-    const displayName = idClaims.name || "No Display Name";
-    const email = idClaims.email || "No Email";
+    if (!idClaims.name || !idClaims.email) {
+      // TODO work out what we are doing about errors here
+      reply.redirect("/missing-name-or-email");
+      return;
+    }
 
     const authUser = await userService.upsertUserForLogin(
       idClaims.sub,
-      displayName,
-      email
+      idClaims.name,
+      idClaims.email,
+      {
+        ip: request.ip,
+      }
     );
 
     if (!authUser) {
@@ -257,34 +203,23 @@ export const callbackRoutes = async (
     // these cookies however are available to React - PURELY for UI/display purposes
     cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, authUser.subjectId);
     cookieForUI(request, reply, USER_NAME_COOKIE_NAME, authUser.displayName);
-    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, email); // TODO: save this in backend too.. (if needed?)
+    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, authUser.email);
 
-    // NOTE: this is a UI cookie - the actual enforcement of this grouping at an API layer is elsewhere
-    // we do it this way so that we can centralise all permissions logic on the backend, and hand down
-    // simple "is allowed" decisions to the UI
-    // MAKE SURE ALL THE DECISIONS HERE MATCH THE API AUTH LOGIC - THAT IS THE POINT OF THIS TECHNIQUE
-    const allowed = new Set<string>();
-
-    // the super admins are defined in settings/config - not in the db
-    // that is - they are a deployment instance level setting
-    const isa = isSuperAdmin(settings, authUser);
-
-    if (isa) {
-      allowed.add(ALLOWED_CHANGE_ADMINS);
-      // for the moment if we want to do demos it is easy if the super admins get all the functionality
-      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
-    }
-
-    // some garbage temporary logic for giving extra permissions to some people
-    // this would normally come via group info
-    if (email.endsWith("unimelb.edu.au"))
-      allowed.add(ALLOWED_CREATE_NEW_RELEASES);
+    const userAllowedCookieString = createUserAllowedCookie(
+      userService.isConfiguredSuperAdmin(authUser.subjectId),
+      {
+        isAllowedCreateRelease: authUser.isAllowedCreateRelease,
+        isAllowedRefreshDatasetIndex: authUser.isAllowedRefreshDatasetIndex,
+        isAllowedOverallAdministratorView:
+          authUser.isAllowedOverallAdministratorView,
+      }
+    );
 
     cookieForUI(
       request,
       reply,
       USER_ALLOWED_COOKIE_NAME,
-      Array.from(allowed.values()).join(",")
+      userAllowedCookieString
     );
 
     // CSRF Token passed as cookie

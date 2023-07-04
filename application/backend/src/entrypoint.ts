@@ -7,6 +7,7 @@ import { getCommands, getFromEnv } from "./entrypoint-command-helper";
 import {
   startJobQueue,
   startWebServer,
+  waitForDatabaseReady,
   WEB_SERVER_COMMAND,
   WEB_SERVER_WITH_SCENARIO_COMMAND,
 } from "./entrypoint-command-start-web-server";
@@ -26,60 +27,89 @@ import {
   commandDeleteDataset,
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
-import { container } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
+import { AuditEventService } from "./business/services/audit-event-service";
+import { ReleaseActivationService } from "./business/services/release-activation-service";
+import { getFeaturesEnabled } from "./features";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
 
-// global settings for DI
-bootstrapDependencyInjection();
-
-/**
- * Help text for the commands that can be executed
- */
-function printHelpText() {
-  console.log(`${WEB_SERVER_COMMAND} - launch Elsa Data web server and wait`);
-  console.log(
-    `${WEB_SERVER_WITH_SCENARIO_COMMAND} <scenario 1|2...> - launch Elsa Data web server and always blank/insert the given scenario on start up`
-  );
-  console.log(`${DB_BLANK_COMMAND}`);
-  // TODO implement some guards on destructive operations
-  //      console.log(`${DB_BLANK_COMMAND} [hostname] - delete all data from the database, requires hostname to be specified if in production`);
-  console.log(`${DB_MIGRATE_COMMAND} - migrate database schema`);
-  console.log(
-    `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
-  );
-  // TODO implement some guards on destructive operations
-  // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
-}
-
 /**
  * Elsa Data entrypoint - process command line arguments performing operations - the main one which is
- * to start an Elsa Data web server (but can also do db migrations etc)
+ * to start an Elsa Data web server. Other commands are more on-off things like "do db migration" etc)
  */
 (async () => {
   // now we are async - we can perform setup operations that themselves need to be async
   // settings and config are mainly of interest only to the web server - but it is possible some other
-  // operations might need to use services so we get all the setup out of the way here
-  const { settings, config, redactedConfig, sources } = await getFromEnv();
+  // operations might need to use services - so we get all the setup out of the way here
+  const { sources, settings, rawConfig, redactedConfig } = await getFromEnv();
 
   const logger = pino(settings.logger);
+
+  logger.trace("Logger trace test");
+  logger.debug("Logger debug test");
+  logger.info("Logger info test");
+  logger.warn("Logger warn test");
+  logger.error("Logger error test");
+  logger.fatal("Logger fatal test");
 
   logger.info(
     redactedConfig,
     `Configuration (redacted) was sourced from "${sources}"`
   );
 
+  // global settings for DI
+  const dc = await bootstrapDependencyInjection(
+    logger,
+    rawConfig.devTesting?.mockAwsCloud
+  );
+
+  dc.afterResolution(
+    "Database",
+    // Callback signature is (token: InjectionToken<T>, result: T | T[], resolutionType: ResolutionType)
+    (_t, result, resolutionType) => {
+      logger.debug(
+        "Expect the resolution type for the database client to be Single = " +
+          resolutionType
+      );
+    },
+    { frequency: "Once" }
+  );
+
   // register all these for use in any service that supports DI
-  container.register<ElsaSettings>("Settings", {
+  dc.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
 
-  container.register<Logger>("Logger", {
+  dc.register<Logger>("Logger", {
     useValue: logger,
   });
+
+  const features = await getFeaturesEnabled(dc, settings);
+
+  dc.register<ReadonlySet<string>>("Features", {
+    useValue: features,
+  });
+
+  // do some DI resolutions nice and early because if DI is broken (as can happen with @decorators)
+  // then we should find out now rather than failing later
+  logger.info(
+    `Sample DI resolve of AuditLogService gave us ${typeof dc.resolve(
+      AuditEventService
+    )}`
+  );
+  logger.info(
+    `Sample DI resolve of ReleaseActivationService gave us ${typeof dc.resolve(
+      ReleaseActivationService
+    )}`
+  );
+  logger.info(
+    `Sample DI resolve of AwsDiscoveryService gave us ${typeof dc.resolve(
+      "IAwsDiscoveryService"
+    )}`
+  );
 
   const commands = getCommands(process.argv);
   const todo = [];
@@ -102,8 +132,9 @@ function printHelpText() {
         break;
 
       case WEB_SERVER_COMMAND:
-        todo.push(async () => startJobQueue(config));
-        todo.push(async () => startWebServer(null));
+        todo.push(async () => waitForDatabaseReady(dc));
+        todo.push(async () => startJobQueue(rawConfig));
+        todo.push(async () => startWebServer(dc, null));
         break;
 
       case WEB_SERVER_WITH_SCENARIO_COMMAND:
@@ -112,8 +143,9 @@ function printHelpText() {
             `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
           );
 
-        todo.push(async () => startJobQueue(config));
-        todo.push(async () => startWebServer(parseInt(c.args[0])));
+        todo.push(async () => waitForDatabaseReady(dc));
+        todo.push(async () => startJobQueue(rawConfig));
+        todo.push(async () => startWebServer(dc, parseInt(c.args[0])));
         break;
 
       case ADD_SCENARIO_COMMAND:
@@ -122,7 +154,7 @@ function printHelpText() {
             `Command ${ADD_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`
           );
 
-        todo.push(async () => commandAddScenario(parseInt(c.args[0])));
+        todo.push(async () => commandAddScenario(dc, parseInt(c.args[0])));
         break;
 
       case DB_BLANK_COMMAND:
@@ -134,7 +166,7 @@ function printHelpText() {
         break;
 
       case DELETE_DATASETS_COMMAND:
-        todo.push(async () => commandDeleteDataset(c.args));
+        todo.push(async () => commandDeleteDataset(dc, c.args));
         break;
 
       default:
@@ -146,8 +178,9 @@ function printHelpText() {
 
   // if no commands were specified - then our default behaviour is to pretend they asked us todo start-web-server
   if (todo.length === 0) {
-    await startJobQueue(config);
-    await startWebServer(null);
+    await waitForDatabaseReady(dc);
+    await startJobQueue(rawConfig);
+    await startWebServer(dc, null);
   } else {
     for (const t of todo) {
       const returnCode = await t();
@@ -162,3 +195,22 @@ function printHelpText() {
   // TODO think about how we can report back the success or otherwise of the set of commands we ran
   process.exit(0);
 })();
+
+/**
+ * Help text for the commands that can be executed
+ */
+function printHelpText() {
+  console.log(`${WEB_SERVER_COMMAND} - launch Elsa Data web server and wait`);
+  console.log(
+    `${WEB_SERVER_WITH_SCENARIO_COMMAND} <scenario 1|2...> - launch Elsa Data web server and always blank/insert the given scenario on start up`
+  );
+  console.log(`${DB_BLANK_COMMAND}`);
+  // TODO implement some guards on destructive operations
+  //      console.log(`${DB_BLANK_COMMAND} [hostname] - delete all data from the database, requires hostname to be specified if in production`);
+  console.log(`${DB_MIGRATE_COMMAND} - migrate database schema`);
+  console.log(
+    `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
+  );
+  // TODO implement some guards on destructive operations
+  // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
+}

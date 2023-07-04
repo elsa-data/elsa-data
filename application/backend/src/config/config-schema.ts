@@ -1,217 +1,155 @@
-import convict from "convict";
-import { parseMeta } from "./meta/meta-parser";
-import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
-import { ProviderFile } from "./providers/provider-file";
-import {
-  configDefinition,
-  loggerTransportTargetsArray,
-} from "./config-constants";
-import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
-import { ProviderLinuxPass } from "./providers/provider-linux-pass";
+import { z } from "zod";
+import { Sensitive } from "./config-schema-sensitive";
+import { DacSchema } from "./config-schema-dac";
+import { DatasetSchema } from "./config-schema-dataset";
+import { SharerSchema } from "./config-schema-sharer";
+import { MailerSchema } from "./config-schema-mailer";
+import { BrandingSchema } from "./config-schema-branding";
+import { OidcSchema } from "./config-schema-oidc";
+import { HttpHostingSchema } from "./config-schema-http-hosting";
+import { FeatureSchema } from "./config-schema-feature";
 
-convict.addFormat(loggerTransportTargetsArray);
+export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
+export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
 
-// an array of user records designated in the config for extra permissions etc
-convict.addFormat({
-  name: "array",
-  validate: function (items: any[], schema) {
-    if (!Array.isArray(items)) {
-      throw new Error("Must be of type Array");
-    }
-
-    for (const child of items) {
-      convict(schema.children).load(child).validate();
-    }
-  },
+/**
+ * The master schema definition for our configuration objects (i.e. JSON).
+ */
+export const configZodDefinition = z.object({
+  serviceDiscoveryNamespace: z
+    .optional(z.string())
+    .default("elsa-data")
+    .describe(
+      "The name of the root artifact used for dynamic service discovery - this will differ for each deployment environment. For AWS - it refers to a CloudMap namespace"
+    ),
+  // all production deployments will require this to be set - though the logic for this check is elsewhere
+  deployedUrl: z.optional(
+    z
+      .string()
+      .describe(
+        "The externally accessible Url for the deployed location of Elsa Data"
+      )
+  ),
+  httpHosting: HttpHostingSchema,
+  oidc: z.optional(OidcSchema),
+  feature: z.optional(FeatureSchema).default({
+    enableConsentDisplay: true,
+    enableCohortConstructor: true,
+    enableDataEgressViewer: true,
+  }),
+  aws: z.optional(
+    z.object({
+      tempBucket: z
+        .optional(z.string())
+        .describe(
+          "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day"
+        ),
+    })
+  ),
+  cloudflare: z.optional(
+    z.object({
+      signingAccessKeyId: z
+        .string()
+        .describe(
+          "A CloudFlare R2 access key id for a user with read permission of files that can be shared via signed URLs"
+        )
+        .brand<Sensitive>(),
+      signingSecretAccessKey: z
+        .string()
+        .describe(
+          "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs"
+        )
+        .brand<Sensitive>(),
+    })
+  ),
+  logger: z
+    .object({
+      level: z
+        .string()
+        .describe(
+          "The logging level as per Pino (all the standard level strings + silent)"
+        )
+        .default("debug"),
+      transportTargets: z
+        .array(
+          z
+            .object({
+              target: z.string(),
+            })
+            .passthrough()
+        )
+        .describe("An array of Pino logger transport targets configurations")
+        .default([]),
+    })
+    .default({
+      level: "debug",
+      transportTargets: [],
+    }),
+  ontoFhirUrl: z.optional(z.string()),
+  releaseKeyPrefix: z
+    .string()
+    .default("R")
+    .describe("The prefix appended on the releaseKey before the count number"),
+  datasets: z
+    .array(DatasetSchema)
+    .default([])
+    .describe(
+      "An array defining the datasets which are shareable from this instance"
+    ),
+  superAdmins: z
+    .array(
+      z.object({
+        sub: z
+          .string()
+          .describe(
+            "The subject id of the user that should be given super admin permissions"
+          ),
+      })
+    )
+    .default([])
+    .describe(
+      "A collection of users with super administration rights i.e. the ability to alter other user rights"
+    ),
+  dacs: z.array(DacSchema).default([
+    {
+      id: "manual",
+      type: "manual",
+      description: "Manual",
+    },
+  ]),
+  sharers: z
+    .array(SharerSchema)
+    .default([])
+    .describe(
+      "An array defining the sharing mechanisms which are to be enabled from this instance"
+    ),
+  // if present, a mailer is being configured and if not present, then the mailer does not start
+  mailer: z.optional(MailerSchema),
+  ipLookup: z.optional(
+    z.object({
+      maxMindDbPath: z
+        .string()
+        .describe(
+          "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
+        ),
+    })
+  ),
+  devTesting: z.optional(
+    z.object({
+      allowTestUsers: z
+        .boolean()
+        .describe(
+          "If test users should be allowed, including various techniques used to adjust user sessions"
+        ),
+      allowTestRoutes: z.boolean().describe("If test routes should be added"),
+      mockAwsCloud: z
+        .boolean()
+        .describe(
+          "If we should replace the AWS cloud clients with ones that always returns mock values"
+        ),
+    })
+  ),
+  branding: z.optional(BrandingSchema),
 });
 
-// a TLS artifact that we fetch and possibly save to disk for use in TLS connections
-convict.addFormat({
-  name: "tls",
-  validate(val: any, schema: convict.SchemaObj) {
-    if (val) {
-      if (!val.startsWith("-----BEGIN"))
-        throw new Error("TLS must start with ASCII armor -----BEGIN");
-    }
-  },
-  coerce: function (val) {
-    if (val) return val.replaceAll("\\n", "\n");
-    return val;
-  },
-});
-
-/**
- * Process the raw config JSON data - before it goes to convict - allowing us to have a feature
- * by which arrays can be grown or shrunk using a
- * "+key" or "-key" notation.
- *
- * @param rawConfigs the JSON config files as loaded directly from disk/store
- * @param arrayMarkers an array of "key names" that we want to enable this array functionality for (e.g. ["datasets", "admins"])
- */
-function handleConfigArraysBeforeConvict(
-  rawConfigs: any[],
-  arrayMarkers: string[]
-): { strippedConfigs: any[]; arrayProcessed: { [k: string]: any[] } } {
-  // we want to allow 'deletion' of config entries using a pretty loose logic where they can specify anything
-  // the looks like an id and we broadly search for it
-  const idPresent = (possibleId: string, obj: any): boolean => {
-    for (const [k, v] of Object.entries(obj)) {
-      if (k === "uri" && v === possibleId) return true;
-      if (k === "id" && v === possibleId) return true;
-      if (k === "name" && v === possibleId) return true;
-    }
-
-    return false;
-  };
-
-  const strippedConfigs: any[] = [];
-  const arrayProcessed: { [k: string]: any[] } = {};
-
-  for (const rc of rawConfigs) {
-    // copy the raw config before we mutate
-    const newStrippedConfig = { ...rc };
-
-    for (const am of arrayMarkers) {
-      // our starting point is always a blank array
-      if (!(am in arrayProcessed)) arrayProcessed[am] = [];
-
-      const addKey = `+${am}`;
-      const deleteKey = `-${am}`;
-      const replaceKey = am;
-
-      if (replaceKey in newStrippedConfig) {
-        // the presence of the key name directly means we are doing a straight "replace" - and hence can't be doing an add or delete
-        if (addKey in newStrippedConfig || deleteKey in newStrippedConfig) {
-          throw new Error(
-            `If a configuration has a key '${replaceKey}' to replace array content - it does not make any sense to also have a '${addKey}' or '${deleteKey}' key`
-          );
-        }
-
-        arrayProcessed[am] = newStrippedConfig[am];
-
-        // this won't particularly matter - but set this to a nice safe [] for convict
-        newStrippedConfig[am] = [];
-      } else {
-        // it may make sense to have BOTH a + and a - so we need to be cool with both appearing
-
-        if (addKey in newStrippedConfig) {
-          arrayProcessed[am].push(...newStrippedConfig[addKey]);
-
-          // strip out the +?? key as we have handled it and we don't want to pass it on to convict (which won't understand it)
-          delete newStrippedConfig[addKey];
-        }
-
-        if (deleteKey in newStrippedConfig) {
-          for (const toDelete of newStrippedConfig[deleteKey]) {
-            const startLength = arrayProcessed[am].length;
-            arrayProcessed[am] = arrayProcessed[am].filter(
-              (v) => !idPresent(toDelete, v)
-            );
-            if (startLength === arrayProcessed[am].length) {
-              throw new Error(
-                `The configuration instruction ${deleteKey} of ${toDelete} did not do anything as no existing config had an entry with an id,uri or name of ${toDelete}`
-              );
-            }
-          }
-
-          // strip out the -?? key as we have handled it and we don't want to pass it on to convict (which won't understand it)
-          delete newStrippedConfig[deleteKey];
-        }
-      }
-    }
-
-    strippedConfigs.push(newStrippedConfig);
-  }
-
-  return {
-    strippedConfigs: strippedConfigs,
-    arrayProcessed: arrayProcessed,
-  };
-}
-
-/**
- * Give the raw JSON of configuration, return the data loaded into Convict.
- * This function is drop in replacement for getMetaConfig - but is useful in
- * some testing situations.
- *
- * @param config
- */
-export async function getDirectConfig(
-  config: any
-): Promise<convict.Config<any>> {
-  const convictConfig = convict(configDefinition, {});
-
-  convictConfig.load(config);
-  // perform validation
-  convictConfig.validate({ allowed: "strict" });
-
-  return convictConfig;
-}
-
-/**
- * Given a meta configuration description (a string listing a sequence of config
- * providers), this loads all the relevant configs in order and returns them
- * merged and loaded into convict. Convict will do the handling of default values
- * and overrides via ENV variables.
- *
- * @param meta
- */
-export async function getMetaConfig(
-  meta: string
-): Promise<convict.Config<any>> {
-  // setup our configuration schema
-  const convictConfig = convict(configDefinition, {});
-
-  const metaProviders = parseMeta(meta);
-  const foundRawConfigs = [];
-
-  for (const mp of metaProviders) {
-    let providerConfig;
-    switch (mp.providerToken.value) {
-      case "aws-secret":
-        providerConfig = await new ProviderAwsSecretsManager(
-          mp.argTokens
-        ).getConfig();
-        break;
-      case "file":
-        providerConfig = await new ProviderFile(mp.argTokens).getConfig();
-        break;
-      case "osx-keychain":
-        providerConfig = await new ProviderOsxKeychain(
-          mp.argTokens
-        ).getConfig();
-        break;
-      case "linux-pass":
-        providerConfig = await new ProviderLinuxPass(mp.argTokens).getConfig();
-        break;
-      default:
-        throw new Error(
-          `unrecognised configuration provider ${mp.providerToken.value}`
-        );
-    }
-    foundRawConfigs.push(providerConfig);
-  }
-
-  // ok here we do some hacky magic
-  // we want to support "array" elements in convict to have the ability to add or remove in different config files
-  // but convict will not support this - so we implement it ourselves as a phase before even getting to convict
-
-  // preprocess to take all the array entries out of the configs
-  const { arrayProcessed, strippedConfigs } = handleConfigArraysBeforeConvict(
-    foundRawConfigs,
-    ["superAdmins", "datasets"]
-  );
-
-  // process in convict the configs without arrays
-  for (const sc of strippedConfigs) convictConfig.load(sc);
-
-  // add back into convict the arrays as we calculated them
-  convictConfig.set("datasets", arrayProcessed["datasets"] as never[]);
-  convictConfig.set("superAdmins", arrayProcessed["superAdmins"] as never[]);
-
-  // perform validation
-  // the computed array content is still passed into convict here for validation
-  convictConfig.validate({ allowed: "strict" });
-
-  return convictConfig;
-}
+export type ElsaConfigurationType = z.infer<typeof configZodDefinition>;

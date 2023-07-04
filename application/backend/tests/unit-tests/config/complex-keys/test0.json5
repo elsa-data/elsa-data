@@ -1,0 +1,13 @@
+{
+  aws: {
+    signingAccessKeyId: "signing string",
+    tempBucket: "a bucket",
+  },
+  httpHosting: {
+    port: 8000,
+    session: {
+      salt: "0123456789012345",
+      secret: "01234567890123456",
+    },
+  },
+}

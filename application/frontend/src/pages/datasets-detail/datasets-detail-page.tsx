@@ -1,101 +1,128 @@
 import React from "react";
-import { useQuery } from "react-query";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { DatasetDeepType, DatasetCaseType } from "@umccr/elsa-types";
-import { LayoutBase } from "../../layouts/layout-base";
+import { DatasetCaseType } from "@umccr/elsa-types";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
-import { Table } from "flowbite-react";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMale, faFemale } from "@fortawesome/free-solid-svg-icons";
+import { faMale, faFemale, faRotate } from "@fortawesome/free-solid-svg-icons";
 import ConsentSummary from "../releases/detail/cases-box/consent-summary";
+import { trpc } from "../../helpers/trpc";
+import { IsLoadingDiv } from "../../components/is-loading-div";
+import { isNil } from "lodash";
+import { useUiAllowed } from "../../hooks/ui-allowed";
+import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
+import { useQueryClient } from "@tanstack/react-query";
+import { Table } from "../../components/tables";
 
 type DatasetsSpecificPageParams = {
-  datasetId: string;
+  datasetUri: string;
 };
 
-const DATASET_REACT_QUERY_KEY = "dataset";
-
 export const DatasetsDetailPage: React.FC = () => {
-  const { datasetId: datasetIdParam } = useParams<DatasetsSpecificPageParams>();
+  const uiAllowed = useUiAllowed();
+  const queryClient = useQueryClient();
 
-  const { data: datasetData, error } = useQuery({
-    queryKey: [DATASET_REACT_QUERY_KEY, datasetIdParam],
-    queryFn: async ({ queryKey }) => {
-      const did = queryKey[1];
+  const { datasetUri: encodedDatasetUri } =
+    useParams<DatasetsSpecificPageParams>();
+  const datasetUri = decodeURIComponent(encodedDatasetUri ?? "").replaceAll(
+    "[dot]",
+    "."
+  );
 
-      return await axios
-        .get<DatasetDeepType>(`/api/datasets/${did}`)
-        .then((response) => response.data);
+  const datasetMutate = trpc.datasetRouter.updateDataset.useMutation({
+    onSettled: () => {
+      queryClient.invalidateQueries();
     },
   });
 
-  return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <>
-          {datasetData && (
-            <>
-              <Box heading="Summary">
-                <JSONToTable
-                  jsonObj={{
-                    ID: datasetData.id,
-                    URI: datasetData.uri,
-                    Description: datasetData.description,
-                    "Last Updated": datasetData.updatedDateTime ?? "-",
-                    "Artifact Count": datasetData.summaryArtifactCount,
-                    "Artifact Filetypes": datasetData.summaryArtifactIncludes
-                      ? datasetData.summaryArtifactIncludes.replaceAll(" ", "/")
-                      : "-",
-                    "Artifact Size": fileSize(
-                      datasetData.summaryArtifactSizeBytes ?? 0
-                    ),
-                    Configuration: configurationChip(datasetData.isInConfig),
-                  }}
-                />
-              </Box>
+  const datasetQuery = trpc.datasetRouter.getSingleDataset.useQuery(
+    {
+      datasetUri: datasetUri,
+    },
+    {
+      keepPreviousData: true,
+    }
+  );
 
-              <Box
-                heading={
-                  <div className="flex items-center	justify-between">
-                    <div>Dataset</div>
-                    <button
-                      disabled={!datasetData.id}
-                      onClick={async () =>
-                        await axios.post<any>(`/api/datasets/sync/`, {
-                          datasetURI: datasetData.uri,
-                        })
-                      }
-                      type="button"
-                      className="inline-block	cursor-pointer rounded bg-slate-200 px-6	py-2.5	text-xs font-medium text-slate-500 shadow-md hover:bg-slate-300 hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:bg-slate-400 active:text-white active:shadow-lg"
-                    >
-                      SYNC
-                    </button>
-                  </div>
-                }
-              >
-                <div>
-                  {datasetData && <DatasetTable cases={datasetData.cases} />}
-                </div>
-              </Box>
-              {/* <ConsentBox /> */}
-            </>
-          )}
-          {error && (
-            <EagerErrorBoundary
-              message={"Something went wrong fetching datasets."}
-              error={error}
-              styling={"bg-red-100"}
-            />
-          )}
-        </>
+  if (datasetQuery.isLoading) return <IsLoadingDiv />;
+  const data = datasetQuery?.data;
+  if (isNil(data))
+    return (
+      <div className={""}>
+        <p>No dataset URI found</p>
       </div>
-    </LayoutBase>
+    );
+
+  // Some ArtifactEnum COUNT
+  let fileTypes = "";
+  if (data.bclCount) fileTypes += `BCL(${data.bclCount}) `;
+  if (data.fastqCount) fileTypes += `FASTQ(${data.fastqCount}) `;
+  if (data.vcfCount) fileTypes += `VCF(${data.vcfCount}) `;
+  if (data.bamCount) fileTypes += `BAM(${data.bamCount}) `;
+  if (data.cramCount) fileTypes += `CRAM(${data.cramCount}) `;
+
+  return (
+    <div className="mt-2 flex flex-grow flex-row flex-wrap space-y-4">
+      <>
+        {datasetQuery.isError && (
+          <EagerErrorBoundary error={datasetQuery.error} />
+        )}
+        {datasetMutate.isError && !datasetQuery.isError && (
+          <EagerErrorBoundary error={datasetMutate.error} />
+        )}
+
+        {data && (
+          <>
+            <Box heading="Summary">
+              <JSONToTable
+                jsonObj={{
+                  URI: data.uri,
+                  Description: data.description,
+                  "Last Updated": data.updatedDateTime ?? "-",
+                  "Artifact Count": data.totalArtifactCount,
+                  "Artifact Filetypes":
+                    fileTypes != ""
+                      ? fileTypes.trim().replaceAll(" ", ", ")
+                      : "-",
+                  "Artifact Size": fileSize(data.totalArtifactSizeBytes ?? 0),
+                  Configuration: configurationChip(data.isInConfig),
+                }}
+              />
+            </Box>
+
+            <Box
+              heading={
+                <div className="flex items-center	justify-between">
+                  <div>Dataset</div>
+
+                  {uiAllowed.has(ALLOWED_DATASET_UPDATE) && (
+                    <button
+                      className="btn-outline btn-xs btn ml-2"
+                      onClick={() => datasetMutate.mutate({ datasetUri })}
+                    >
+                      <FontAwesomeIcon
+                        spin={datasetMutate.isLoading}
+                        icon={faRotate}
+                      />
+                    </button>
+                  )}
+                </div>
+              }
+            >
+              <div className="overflow-auto">
+                {data && <DatasetTable cases={data.cases} />}
+              </div>
+            </Box>
+            {/* <ConsentBox /> */}
+          </>
+        )}
+      </>
+    </div>
   );
 };
 
@@ -107,94 +134,92 @@ const DATASET_COLUMN = [
 ];
 const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
   return (
-    <Table striped={true}>
-      <Table.Head>
-        {DATASET_COLUMN.map((val, i) => (
-          <Table.HeadCell key={i}>{val.columnTitle}</Table.HeadCell>
-        ))}
-      </Table.Head>
-      <Table.Body className="divide-y">
-        {cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
-          const exId = getFirstExternalIdentifierValue(
-            caseVal.externalIdentifiers ?? undefined
+    <Table
+      tableHead={
+        <tr>
+          {DATASET_COLUMN.map((val, i) => (
+            <th key={i}>{val.columnTitle}</th>
+          ))}
+        </tr>
+      }
+      tableBody={cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
+        const exId = getFirstExternalIdentifierValue(
+          caseVal.externalIdentifiers ?? undefined
+        );
+        const patients = caseVal.patients;
+
+        return patients.map((patient, patientIdx) => {
+          const patientId = getFirstExternalIdentifierValue(
+            patient.externalIdentifiers ?? undefined
           );
-          const patients = caseVal.patients;
-
-          return patients.map((patient, patientIdx) => {
-            const patientId = getFirstExternalIdentifierValue(
-              patient.externalIdentifiers ?? undefined
-            );
-            return (
-              <Table.Row key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
-                {DATASET_COLUMN.map(
-                  (col: Record<string, string>, colIdx: number) => {
-                    return (
-                      <React.Fragment
-                        key={`${caseIdx}-${patientIdx}-${colIdx}`}
-                      >
-                        {col.jsonKey == "caseId" ? (
-                          <>
-                            {patientIdx == 0 && (
-                              <Table.Cell
-                                rowSpan={patients.length}
-                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                              >
-                                {exId}
-                              </Table.Cell>
-                            )}
-                          </>
-                        ) : col.jsonKey == "caseConsentId" ? (
-                          <>
-                            {patientIdx == 0 && (
-                              <Table.Cell
-                                rowSpan={patients.length}
-                                className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                              >
-                                {caseVal.consent?.id ? (
-                                  <ConsentSummary
-                                    consentId={caseVal.consent.id}
-                                  />
-                                ) : (
-                                  `-`
-                                )}
-                              </Table.Cell>
-                            )}
-                          </>
-                        ) : col.jsonKey == "patientId" ? (
-                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                            <>
-                              {patient.sexAtBirth == "female" ? (
-                                <FontAwesomeIcon icon={faFemale} />
-                              ) : patient.sexAtBirth == "male" ? (
-                                <FontAwesomeIcon icon={faMale} />
+          return (
+            <tr key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
+              {DATASET_COLUMN.map(
+                (col: Record<string, string>, colIdx: number) => {
+                  return (
+                    <React.Fragment key={`${caseIdx}-${patientIdx}-${colIdx}`}>
+                      {col.jsonKey == "caseId" ? (
+                        <>
+                          {patientIdx == 0 && (
+                            <td
+                              rowSpan={patients.length}
+                              className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                            >
+                              {exId}
+                            </td>
+                          )}
+                        </>
+                      ) : col.jsonKey == "caseConsentId" ? (
+                        <>
+                          {patientIdx == 0 && (
+                            <td
+                              rowSpan={patients.length}
+                              className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+                            >
+                              {caseVal.consent?.id ? (
+                                <ConsentSummary
+                                  consentId={caseVal.consent.id}
+                                />
                               ) : (
-                                <></>
+                                `-`
                               )}
-
-                              {` - ${patientId}`}
-                            </>
-                          </Table.Cell>
-                        ) : col.jsonKey == "patientConsentId" ? (
-                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                            {patient.consent?.id ? (
-                              <ConsentSummary consentId={patient.consent.id} />
+                            </td>
+                          )}
+                        </>
+                      ) : col.jsonKey == "patientId" ? (
+                        <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          <>
+                            {patient.sexAtBirth == "female" ? (
+                              <FontAwesomeIcon icon={faFemale} />
+                            ) : patient.sexAtBirth == "male" ? (
+                              <FontAwesomeIcon icon={faMale} />
                             ) : (
-                              `-`
+                              <></>
                             )}
-                          </Table.Cell>
-                        ) : (
-                          <Table.Cell>{col.jsonKey}</Table.Cell>
-                        )}
-                      </React.Fragment>
-                    );
-                  }
-                )}
-              </Table.Row>
-            );
-          });
-        })}
-      </Table.Body>
-    </Table>
+
+                            {` - ${patientId}`}
+                          </>
+                        </td>
+                      ) : col.jsonKey == "patientConsentId" ? (
+                        <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                          {patient.consent?.id ? (
+                            <ConsentSummary consentId={patient.consent.id} />
+                          ) : (
+                            `-`
+                          )}
+                        </td>
+                      ) : (
+                        <td>{col.jsonKey}</td>
+                      )}
+                    </React.Fragment>
+                  );
+                }
+              )}
+            </tr>
+          );
+        });
+      })}
+    />
   );
 };
 

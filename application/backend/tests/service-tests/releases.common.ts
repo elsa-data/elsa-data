@@ -1,21 +1,24 @@
 import { createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/blank-test-data";
-import { insert10G, TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
+import {
+  insert10G,
+  TENG_URI,
+} from "../../src/test-data/dataset/insert-test-data-10g";
 import e from "../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import {
   findSpecimenQuery,
   makeSingleCodeArray,
-  makeSystemlessIdentifier,
-} from "../../src/test-data/test-data-helpers";
-import { insert10F } from "../../src/test-data/insert-test-data-10f";
-import { findSpecimen } from "./utils";
-import { TENF_URI } from "../../src/test-data/insert-test-data-10f-helpers";
+} from "../../src/test-data/util/test-data-helpers";
+import { insert10F } from "../../src/test-data/dataset/insert-test-data-10f";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
-} from "../../src/test-data/insert-test-data-10f-simpsons";
-import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons";
+} from "../../src/test-data/dataset/insert-test-data-10f-simpsons";
+import { JUDY_SPECIMEN } from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
+import { insert10C } from "../../src/test-data/dataset/insert-test-data-10c";
+import { DependencyContainer } from "tsyringe";
 
 /**
  * This is a common beforeEach call that should be used to setup a base
@@ -26,16 +29,20 @@ import { JUDY_SPECIMEN } from "../../src/test-data/insert-test-data-10f-jetsons"
  * If you make *any* changes here - you must re-run all the release tests
  * to ensure that the state change hasn't unexpectedly resulted in a test failing.
  */
-export async function beforeEachCommon() {
+export async function beforeEachCommon(dc: DependencyContainer) {
   const edgeDbClient = createClient({});
 
   await blankTestData();
-  await insert10G();
-  await insert10F();
+  await insert10G(dc);
+  await insert10F(dc);
+  // note that we insert these in order to have some records that _aren't_ in involved in this release
+  // ONLY 10G and 10F are actually in the release
+  await insert10C(dc);
 
   const testReleaseInsert = await e
     .insert(e.release.Release, {
       created: e.datetime(new Date()),
+      lastUpdatedSubjectId: "unknown",
       applicationDacIdentifier: { system: "", value: "XYZ" },
       applicationDacTitle: "A Study in Many Parts",
       applicationDacDetails:
@@ -56,21 +63,10 @@ export async function beforeEachCommon() {
       isAllowedReadData: true,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
-
-      // we set up the test data so that in no circumstances should SINGLETONMARIA->MARIA->HG00174 specimens ever
-      // be allowed to be selected
-      //TO BE IMPLEMENTED
-      // manualExclusions: e.select(e.dataset.DatasetCase, (dss) => ({
-      //  filter: e.op(
-      //   e.set(makeSystemlessIdentifier("SINGLETONMARIA")),
-      //    "in",
-      //    e.array_unpack(dss.externalIdentifiers)
-      //  ),
-      //  "@who": e.str("PA"),
-      //  "@recorded": e.str("June"),
-      //  "@reason": e.str("Because"),
-      //})),
-      releaseIdentifier: "A",
+      isAllowedS3Data: true,
+      isAllowedGSData: true,
+      isAllowedR2Data: true,
+      releaseKey: "TESTRELEASE0001",
       releasePassword: "A", // pragma: allowlist secret
       // we pre-select a bunch of specimens across 10g and 10f
       selectedSpecimens: e.set(
@@ -82,6 +78,10 @@ export async function beforeEachCommon() {
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(JUDY_SPECIMEN)
       ),
+      dataSharingConfiguration: e.insert(
+        e.release.DataSharingConfiguration,
+        {}
+      ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",
@@ -90,74 +90,148 @@ export async function beforeEachCommon() {
           whoDisplayName: "Someone",
           whoId: "a",
           occurredDateTime: e.datetime_current(),
+          inProgress: false,
         })
       ),
-      lastDateTimeDataAccessLogQuery: e.datetime_current(),
+      lastDataEgressQueryTimestamp: e.datetime_current(),
     })
     .run(edgeDbClient);
 
-  const testReleaseId = testReleaseInsert.id;
-  let allowedDataOwnerUser: AuthenticatedUser;
-  let allowedPiUser: AuthenticatedUser;
+  const rQuery = await e
+    .select(e.release.Release, (r) => ({
+      releaseKey: true,
+      filter_single: e.op(e.uuid(testReleaseInsert.id), "=", r.id),
+    }))
+    .assert_single()
+    .run(edgeDbClient);
+  const testReleaseKey = rQuery?.releaseKey ?? "";
+
+  let allowedAdministratorUser: AuthenticatedUser;
+  let allowedManagerUser: AuthenticatedUser;
+  let allowedMemberUser: AuthenticatedUser;
   let notAllowedUser: AuthenticatedUser;
+  let superAdminUser: AuthenticatedUser;
 
-  // data owner has read/write access and complete visibility of everything
+  // Super Admin Access
   {
-    const allowedDataOwnerSubject = "https://i-am-admin.org";
-    const allowedDisplayName = "Test User Who Is Allowed Data Owner Access";
-    const allowedEmail = "admin@elsa.net";
+    const superAdminSubject = "http://superAdminUser.com";
+    const superAdminDisplayName = "Test User Who Is a SuperAdmin Access";
+    const superAdminEmail = "subject0@elsa.net";
 
-    const allowedDataOwnerUserInsert = await e
+    const superAdminUserInsert = await e
       .insert(e.permission.User, {
-        subjectId: allowedDataOwnerSubject,
-        displayName: allowedDisplayName,
-        email: allowedEmail,
+        subjectId: superAdminSubject,
+        displayName: superAdminDisplayName,
+        email: superAdminEmail,
+        isAllowedRefreshDatasetIndex: true,
+        isAllowedCreateRelease: true,
+        isAllowedOverallAdministratorView: true,
         releaseParticipant: e.select(e.release.Release, (r) => ({
-          filter: e.op(e.uuid(testReleaseId), "=", r.id),
-          "@role": e.str("DataOwner"),
+          filter: e.op(testReleaseKey, "=", r.releaseKey),
+          "@role": e.str("Administrator"),
         })),
       })
       .run(edgeDbClient);
 
-    allowedDataOwnerUser = new AuthenticatedUser({
-      id: allowedDataOwnerUserInsert.id,
-      subjectId: allowedDataOwnerSubject,
-      displayName: allowedDisplayName,
-      email: allowedEmail,
+    superAdminUser = new AuthenticatedUser({
+      id: superAdminUserInsert.id,
+      subjectId: superAdminSubject,
+      displayName: superAdminDisplayName,
+      email: superAdminEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: true,
+      isAllowedCreateRelease: true,
+      isAllowedOverallAdministratorView: true,
     });
   }
 
-  // PI user has limits to read/write and only visibility of released data items
+  // data administrator has read/write access and complete visibility of everything
+  {
+    const allowedAdministratorSubject = "https://i-am-admin.org";
+    const allowedDisplayName = "Test User Who Is Allowed Administrator Access";
+    const allowedEmail = "admin@elsa.net";
+
+    const allowedAdministratorUserInsert = await e
+      .insert(e.permission.User, {
+        subjectId: allowedAdministratorSubject,
+        displayName: allowedDisplayName,
+        email: allowedEmail,
+        releaseParticipant: e.select(e.release.Release, (r) => ({
+          filter: e.op(testReleaseKey, "=", r.releaseKey),
+          "@role": e.str("Administrator"),
+        })),
+      })
+      .run(edgeDbClient);
+
+    allowedAdministratorUser = new AuthenticatedUser({
+      id: allowedAdministratorUserInsert.id,
+      subjectId: allowedAdministratorSubject,
+      displayName: allowedDisplayName,
+      email: allowedEmail,
+      lastLoginDateTime: new Date(),
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: true,
+      isAllowedOverallAdministratorView: false,
+    });
+  }
+
+  // Manager user has limits to read/write and only visibility of released data items
   {
     const allowedPiSubject = "http://subject1.com";
-    const allowedDisplayName = "Test User Who Is Allowed PI Access";
+    const allowedDisplayName = "Test User Who Is Allowed Manager Access";
     const allowedEmail = "subject1@elsa.net";
 
-    const allowedPiUserInsert = await e
+    const allowedManagerUserInsert = await e
       .insert(e.permission.User, {
         subjectId: allowedPiSubject,
         displayName: allowedDisplayName,
         email: allowedEmail,
         releaseParticipant: e.select(e.release.Release, (r) => ({
-          filter: e.op(e.uuid(testReleaseId), "=", r.id),
-          "@role": e.str("PI"),
+          filter: e.op(testReleaseKey, "=", r.releaseKey),
+          "@role": e.str("Manager"),
         })),
       })
       .run(edgeDbClient);
 
-    allowedPiUser = new AuthenticatedUser({
-      id: allowedPiUserInsert.id,
+    allowedManagerUser = new AuthenticatedUser({
+      id: allowedManagerUserInsert.id,
       subjectId: allowedPiSubject,
       displayName: allowedDisplayName,
       email: allowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedOverallAdministratorView: false,
+    });
+  }
+
+  // member user has just basic access
+  {
+    const allowedMemberSubject = "http://subject4.com";
+    const allowedMemberDisplayName = "Test User Who Is Allowed Member Access";
+    const allowedMemberEmail = "subject4@elsa.net";
+
+    const allowedMemberUserInsert = await e
+      .insert(e.permission.User, {
+        subjectId: allowedMemberSubject,
+        displayName: allowedMemberDisplayName,
+        email: allowedMemberEmail,
+        releaseParticipant: e.select(e.release.Release, (r) => ({
+          filter: e.op(testReleaseKey, "=", r.releaseKey),
+          "@role": e.str("Member"),
+        })),
+      })
+      .run(edgeDbClient);
+
+    allowedMemberUser = new AuthenticatedUser({
+      id: allowedMemberUserInsert.id,
+      subjectId: allowedMemberSubject,
+      displayName: allowedMemberDisplayName,
+      email: allowedMemberEmail,
+      lastLoginDateTime: new Date(),
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedOverallAdministratorView: false,
     });
   }
 
@@ -181,17 +255,19 @@ export async function beforeEachCommon() {
       displayName: notAllowedDisplayName,
       email: notAllowedEmail,
       lastLoginDateTime: new Date(),
-      allowedImportDataset: false,
-      allowedChangeReleaseDataOwner: false,
-      allowedCreateRelease: false,
+      isAllowedRefreshDatasetIndex: false,
+      isAllowedCreateRelease: false,
+      isAllowedOverallAdministratorView: false,
     });
   }
 
   return {
     edgeDbClient,
-    testReleaseId,
-    allowedDataOwnerUser,
-    allowedPiUser,
+    testReleaseKey,
+    superAdminUser,
+    allowedAdministratorUser,
+    allowedManagerUser,
+    allowedMemberUser,
     notAllowedUser,
   };
 }

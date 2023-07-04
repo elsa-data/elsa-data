@@ -3,14 +3,21 @@ import { ElsaSettings } from "../../config/elsa-settings";
 import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
 import Mail from "nodemailer/lib/mailer";
+import { Logger } from "pino";
+import { AuditEventService } from "./audit-event-service";
+import * as edgedb from "edgedb";
 
 @injectable()
 export class MailService {
   private transporter?: Transporter;
 
   constructor(
-    @inject("Settings") private settings: ElsaSettings,
-    @inject("SESClient") private ses: aws.SES
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("SESClient") private readonly ses: aws.SES,
+    @inject("Logger") private readonly logger: Logger,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
   /**
@@ -35,9 +42,9 @@ export class MailService {
 
     this.transporter?.verify((error, _) => {
       if (error) {
-        console.log(`Failed to setup mail server:\n  ${error}`);
+        this.logger.error(error, `Failed to setup mail server`);
       } else {
-        console.log("Mail server ready");
+        this.logger.info("Mail server ready");
       }
     });
   }
@@ -46,6 +53,16 @@ export class MailService {
    * Send email.
    */
   public async sendMail(mail: Mail.Options): Promise<any> {
+    await this.auditLogService.createSystemAuditEvent(
+      "E",
+      "Email sent",
+      {
+        from: mail.from,
+        to: mail.to,
+      },
+      0,
+      this.edgeDbClient
+    );
     return await this.transporter?.sendMail(mail);
   }
 }

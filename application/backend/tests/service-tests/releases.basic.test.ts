@@ -1,35 +1,39 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { ReleaseService } from "../../src/business/services/release-service";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let allowedAdministratorUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
 });
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
-    await beforeEachCommon());
+  ({
+    testReleaseKey,
+    allowedAdministratorUser,
+    allowedManagerUser,
+    notAllowedUser,
+  } = await beforeEachCommon(testContainer));
 });
 
 /**
  *
  */
 it("allowed users can get release data", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseId);
+  const result = await releaseService.get(allowedManagerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -40,12 +44,12 @@ it("allowed users can get release data", async () => {
  */
 it("not allowed users cannot get release data", async () => {
   await expect(async () => {
-    const result = await releaseService.get(notAllowedUser, testReleaseId);
+    const result = await releaseService.get(notAllowedUser, testReleaseKey);
   }).rejects.toThrow(Error);
 });
 
-it("basic release data is present for PI", async () => {
-  const result = await releaseService.get(allowedPiUser, testReleaseId);
+it("basic release data is present for Manager", async () => {
+  const result = await releaseService.get(allowedManagerUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -55,12 +59,15 @@ it("basic release data is present for PI", async () => {
   expect(result.applicationDacDetails).toBe(
     "So this is all that we have brought over not coded"
   );
-  // as the PI we will only see cases already selected
+  // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(6);
 });
 
-it("basic release data is present for data owner", async () => {
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
+it("basic release data is present for release administrator", async () => {
+  const result = await releaseService.get(
+    allowedAdministratorUser,
+    testReleaseKey
+  );
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -70,6 +77,6 @@ it("basic release data is present for data owner", async () => {
   expect(result.applicationDacDetails).toBe(
     "So this is all that we have brought over not coded"
   );
-  // as the PI we will only see cases already selected
+  // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(14);
 });

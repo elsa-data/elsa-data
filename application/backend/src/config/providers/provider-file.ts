@@ -1,9 +1,9 @@
 import { Token } from "../meta/meta-lexer";
-import { promises as fs, constants } from "fs";
+import { constants, promises as fs } from "fs";
 import path, { resolve } from "path";
 import { ProviderBase } from "./provider-base";
 import json5 from "json5";
-import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../config-constants";
+import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../config-schema";
 
 /**
  * A provider that can get config from a file
@@ -80,9 +80,7 @@ export class ProviderFile extends ProviderBase {
       for (const x of onlyJson5Files) {
         if (x.name === fileName) {
           const path = resolve(folder, x.name);
-          const content = await json5.parse(await fs.readFile(path, "utf-8"));
-
-          return content;
+          return await json5.parse(await fs.readFile(path, "utf-8"));
         }
       }
     }

@@ -10,10 +10,10 @@ export const ActionCategorySchema = Type.Union([
 ]);
 export type ActionCategoryType = Static<typeof ActionCategorySchema>;
 
-const AuditEntryBaseSchema = Type.Object({
+const AuditEventBaseSchema = Type.Object({
   objectId: Type.String(),
-  whoId: Type.String(),
-  whoDisplayName: Type.String(),
+  whoId: Type.Optional(Type.Union([Type.Null(), Type.String()])),
+  whoDisplayName: Type.Optional(Type.Union([Type.Null(), Type.String()])),
   actionCategory: ActionCategorySchema,
   actionDescription: Type.String(),
   recordedDateTime: TypeDate,
@@ -23,40 +23,59 @@ const AuditEntryBaseSchema = Type.Object({
   outcome: Type.Integer(),
 });
 
-export const AuditEntrySchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
+export const AuditEventSchema = Type.Object({
+  ...AuditEventBaseSchema.properties,
   hasDetails: Type.Boolean(),
 });
-export type AuditEntryType = Static<typeof AuditEntrySchema>;
+export type AuditEventType = Static<typeof AuditEventSchema>;
 
-export const AuditEntryDetailsSchema = Type.Object({
+export const AuditEventDetailsSchema = Type.Object({
   objectId: Type.String(),
   details: Type.Optional(Type.String()),
   truncated: Type.Optional(Type.Boolean()),
 });
-export type AuditEntryDetailsType = Static<typeof AuditEntryDetailsSchema>;
+export type AuditEventDetailsType = Static<typeof AuditEventDetailsSchema>;
 
-export const AuditEntryFullSchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
+export const AuditEventFullSchema = Type.Object({
+  ...AuditEventBaseSchema.properties,
   details: Type.Optional(Type.Any()),
 });
-export type AuditEntryFullType = Static<typeof AuditEntryFullSchema>;
+export type AuditEventFullType = Static<typeof AuditEventFullSchema>;
 
-export const AuditDataAccessSchema = Type.Object({
-  ...AuditEntryBaseSchema.properties,
-  occurredDateTime: Type.String(),
-  fileUrl: Type.String(),
-  fileSize: Type.Integer(),
-  egressBytes: Type.Integer(),
-});
-export type AuditDataAccessType = Static<typeof AuditDataAccessSchema>;
+export namespace RouteValidation {
+  export const AuditEventUserFilterSchema = Type.Union([
+    Type.Literal("release"),
+    Type.Literal("user"),
+    Type.Literal("system"),
+    Type.Literal("all"),
+  ]);
+  export type AuditEventUserFilterType = Static<
+    typeof AuditEventUserFilterSchema
+  >;
 
-export const AuditDataSummarySchema = Type.Object({
-  fileUrl: Type.String(),
-  fileSize: Type.Integer(),
-  dataAccessedInBytes: Type.Integer(),
-  downloadStatus: Type.String(),
-  lastAccessedTime: Type.String(),
-  target: Type.String(),
-});
-export type AuditDataSummaryType = Static<typeof AuditDataSummarySchema>;
+  // Todo: Potentially generate TypeBox schemas from the EdgeDb interface for fastify validation.
+  //       E.g https://github.com/sinclairzx81/typebox/discussions/317
+  export const AuditEventForQuerySchema = Type.Object({
+    page: Type.Optional(Type.Number()),
+    orderByProperty: Type.Optional(Type.String()),
+    orderAscending: Type.Optional(Type.Boolean()),
+    filter: Type.Optional(Type.Array(AuditEventUserFilterSchema)),
+  });
+  export type AuditEventForQueryType = Static<typeof AuditEventForQuerySchema>;
+
+  export const AuditEventByIdQuerySchema = Type.Object({
+    id: Type.String(),
+  });
+  export type AuditEventFullQueryType = Static<
+    typeof AuditEventByIdQuerySchema
+  >;
+
+  export const AuditEventDetailsQuerySchema = Type.Object({
+    ...AuditEventByIdQuerySchema.properties,
+    start: Type.Optional(Type.Number()),
+    end: Type.Optional(Type.Number()),
+  });
+  export type AuditEventDetailsQueryType = Static<
+    typeof AuditEventDetailsQuerySchema
+  >;
+}

@@ -15,14 +15,13 @@ const config: PlaywrightTestConfig = {
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 10000,
   },
   /* Run tests in files in parallel */
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: 0, // we had retries on CI but why?? process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -60,7 +59,9 @@ const config: PlaywrightTestConfig = {
   /* set up so our test server runs directly from dev */
   webServer: {
     cwd: "../application/backend",
-    command: "node --loader ts-node/esm src/entrypoint.ts",
+    command:
+      "node --loader ts-node/esm src/entrypoint.ts web-server-with-scenario 1",
+    timeout: 2 * 60 * 1000,
     port: 3000,
     // there should be nothing running on our port in CI
     reuseExistingServer: !process.env.CI,
@@ -68,10 +69,11 @@ const config: PlaywrightTestConfig = {
     env: {
       DEBUG: "pw:webserver",
       NODE_ENV: "development",
+      AWS_REGION: "ap-southeast-2",
       ELSA_DATA_VERSION: "e2e",
       ELSA_DATA_BUILT: "now",
       ELSA_DATA_REVISION: "abcd",
-      ELSA_DATA_META_CONFIG_SOURCES: "file('e2e')",
+      ELSA_DATA_META_CONFIG_SOURCES: "file('e2e') file('datasets')",
       ELSA_DATA_META_CONFIG_FOLDERS: resolve("config"),
     },
   },

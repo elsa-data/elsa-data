@@ -19,12 +19,13 @@ import { ElsaSettings } from "./config/elsa-settings";
  *
  * @inject("Settings") private settings: ElsaSettings,
  *
- * @param container
+ * @param dc the dependency container
  */
-export function getServices(container: DependencyContainer) {
+export function getServices(dc: DependencyContainer) {
   return {
-    edgeDbClient: container.resolve<Client>("Database"),
-    settings: container.resolve<ElsaSettings>("Settings"),
-    logger: container.resolve<Logger>("Logger"),
+    edgeDbClient: dc.resolve<Client>("Database"),
+    settings: dc.resolve<ElsaSettings>("Settings"),
+    logger: dc.resolve<Logger>("Logger"),
+    features: dc.resolve<ReadonlySet<string>>("Features"),
   };
 }

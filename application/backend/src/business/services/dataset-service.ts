@@ -6,46 +6,86 @@ import {
   DuoLimitationCodedType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable, singleton } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import { BadLimitOffset } from "../exceptions/bad-limit-offset";
 import { makeSystemlessIdentifierArray } from "../db/helper";
-import {
-  datasetAllCountQuery,
-  datasetAllSummaryQuery,
-  singleDatasetSummaryQuery,
-  selectDatasetIdByDatasetUri,
-} from "../db/dataset-queries";
+import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
+import { AuditEventService } from "./audit-event-service";
+import {
+  getAllDataset,
+  getDatasetCasesByUri,
+  getDatasetConsent,
+  getDatasetStorageStatsByUri,
+} from "../../../dbschema/queries";
+import { DatasetType } from "../../config/config-schema-dataset";
 
 @injectable()
-@singleton()
 export class DatasetService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
-    @inject("Settings") private settings: ElsaSettings
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService
   ) {}
 
-  getUriPrefixFromFromDatasetUri(datasetUri: string): string | null {
+  /**
+   * This give all configuration given from the datasetUri
+   * @param datasetUri
+   * @returns
+   */
+  public getDatasetConfiguration(datasetUri: string): DatasetType | undefined {
+    return this.settings.datasets.find((o) => o.uri == datasetUri);
+  }
+
+  /**
+   * Get Storage URI Prefix from dataset URI
+   * @param datasetUri
+   * @returns
+   */
+  public getStorageUriPrefixFromFromDatasetUri(
+    datasetUri: string
+  ): string | null {
     for (const d of this.settings.datasets) {
       if (d.uri === datasetUri) {
-        return d.storageUriPrefix;
+        if (d.loader === "australian-genomics-directories")
+          return d.storageUriPrefix;
       }
     }
 
     return null;
   }
 
-  async getDatasetUrisFromReleaseId(
-    releaseId: string
+  /**
+   * Get the loader that is used for this configured dataset
+   * @param datasetUri
+   * @returns
+   */
+  public getLoaderFromFromDatasetUri(datasetUri: string): string | null {
+    for (const d of this.settings.datasets) {
+      if (d.uri === datasetUri) {
+        return d.loader;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   *
+   * @param releaseKey
+   * @returns
+   */
+  public async getDatasetUrisFromReleaseKey(
+    releaseKey: string
   ): Promise<string[] | undefined> {
     return (
       await e
         .select(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
+          filter: e.op(r.releaseKey, "=", releaseKey),
           datasetUris: true,
         }))
         .assert_single()
@@ -54,140 +94,118 @@ export class DatasetService {
   }
 
   /**
-   * Return a paged result of datasets in summary form.
+   * Return a dictionary of the datasets that are configured in this instance of Elsa
+   * and their corresponding name. This is functionality that is available to
+   * all users.
    *
    * @param user
-   * @param limit
-   * @param offset
    */
-  public async getSummary(
-    user: AuthenticatedUser,
-    includeDeletedFile: boolean,
-    limit?: number,
-    offset?: number
-  ): Promise<PagedResult<DatasetLightType>> {
-    if (
-      (limit !== undefined && limit <= 0) ||
-      (offset !== undefined && offset < 0)
-    )
-      throw new BadLimitOffset(limit, offset);
-
-    // TODO: if we introduce any security model into dataset (i.e. at the moment
-    // all data owners can see all datasets) - we need to add some filtering to these
-    // queries
-    const fullCount = await datasetAllCountQuery.run(this.edgeDbClient);
-    const fullDatasets = await datasetAllSummaryQuery.run(this.edgeDbClient, {
-      ...(limit === undefined ? {} : { limit }),
-      ...(offset === undefined ? {} : { offset }),
-      includeDeletedFile: includeDeletedFile,
-    });
-
-    const converted: DatasetLightType[] = fullDatasets.map((fd: any) => {
-      const includes: string[] = [];
-      if (fd.summaryBamCount > 0) includes.push("BAM");
-      if (fd.summaryBclCount > 0) includes.push("BCL");
-      if (fd.summaryCramCount > 0) includes.push("CRAM");
-      if (fd.summaryFastqCount > 0) includes.push("FASTQ");
-      if (fd.summaryVcfCount > 0) includes.push("VCF");
-      return {
-        id: fd.id,
-        uri: fd.uri!,
-        description: fd.description,
-        updatedDateTime: fd.updatedDateTime,
-        isInConfig: fd.isInConfig,
-        summaryCaseCount: fd.summaryCaseCount,
-        summaryPatientCount: fd.summaryPatientCount,
-        summarySpecimenCount: fd.summarySpecimenCount,
-        summaryArtifactCount: fd.summaryArtifactCount,
-        summaryArtifactIncludes: includes.join(" "),
-        summaryArtifactSizeBytes: fd.summaryArtifactBytes,
-      };
-    });
-
-    return createPagedResult(converted, fullCount);
-  }
-
-  public async get(
-    user: AuthenticatedUser,
-    datasetId: string
-  ): Promise<DatasetDeepType | null> {
-    const sd = await singleDatasetSummaryQuery.run(this.edgeDbClient, {
-      includeDeletedFile: false,
-      datasetId: datasetId,
-    });
-
-    if (sd) {
-      const includes: string[] = [];
-      if (sd.summaryBamCount > 0) includes.push("BAM");
-      if (sd.summaryBclCount > 0) includes.push("BCL");
-      if (sd.summaryCramCount > 0) includes.push("CRAM");
-      if (sd.summaryFastqCount > 0) includes.push("FASTQ");
-      if (sd.summaryVcfCount > 0) includes.push("VCF");
-      return {
-        id: sd.id,
-        uri: sd.uri,
-        updatedDateTime: sd.updatedDateTime,
-        isInConfig: sd.isInConfig,
-        description: sd.description,
-        summaryCaseCount: sd.summaryCaseCount,
-        summaryPatientCount: sd.summaryPatientCount,
-        summarySpecimenCount: sd.summarySpecimenCount,
-        summaryArtifactCount: sd.summaryArtifactCount,
-        summaryArtifactIncludes: includes.join(" "),
-        summaryArtifactSizeBytes: sd.summaryArtifactBytes,
-        cases: sd.cases,
-      };
-    }
-
-    return sd;
+  public async getConfigured(user: AuthenticatedUser) {
+    return Object.fromEntries(
+      this.settings.datasets.map((a) => [a.uri, a.name])
+    );
   }
 
   /**
-   * Get all the cases for a dataset
+   * Return a paged result of datasets.
    *
    * @param user
-   * @param datasetId
    * @param limit
    * @param offset
    */
-  public async getCases(
-    user: AuthenticatedUser,
-    datasetId: string,
-    limit: number,
-    offset: number
-  ): Promise<any | null> {
-    const pageCases = await e
-      .select(e.dataset.DatasetCase, (dsc) => ({
-        ...e.dataset.DatasetCase["*"],
-        externalIdentifiers: true,
-        patients: {
-          externalIdentifiers: true,
-          specimens: {
-            externalIdentifiers: true,
-          },
-        },
-        filter: e.op(dsc.dataset.id, "=", e.uuid(datasetId)),
-        limit: e.int32(limit),
-        offset: e.int32(offset),
-      }))
-      .run(this.edgeDbClient);
+  public async getAll({
+    user,
+    limit,
+    offset,
+  }: {
+    user: AuthenticatedUser;
+    limit: number;
+    offset: number;
+  }): Promise<PagedResult<DatasetLightType>> {
+    const datasetSummaryQuery = await getAllDataset(this.edgeDbClient, {
+      limit,
+      offset,
+    });
 
-    return pageCases;
+    return createPagedResult(
+      datasetSummaryQuery.data.map((r) => ({
+        uri: r.uri,
+        description: r.description,
+        updatedDateTime: r.updatedDateTime,
+        isInConfig: r.isInConfig,
+        totalCaseCount: r.totalCaseCount,
+        totalPatientCount: r.totalPatientCount,
+        totalSpecimenCount: r.totalSpecimenCount,
+      })),
+      datasetSummaryQuery.total
+    );
+  }
+
+  /**
+   * Get the main details of a specific dataset as loaded into the database (cases etc).
+   *
+   * @param user
+   * @param datasetUri
+   * @param includeDeletedFile
+   */
+  public async get(
+    user: AuthenticatedUser,
+    datasetUri: string,
+    includeDeletedFile: boolean
+  ): Promise<DatasetDeepType | null> {
+    const datasetCasesQuery = await getDatasetCasesByUri(this.edgeDbClient, {
+      userDbId: user.dbId,
+      datasetUri: datasetUri,
+    });
+    const datasetStorageStatsQuery = await getDatasetStorageStatsByUri(
+      this.edgeDbClient,
+      {
+        userDbId: user.dbId,
+        datasetUri: datasetUri,
+        includeDeletedFile,
+      }
+    );
+
+    if (!datasetCasesQuery || !datasetStorageStatsQuery) return null;
+
+    return {
+      uri: datasetCasesQuery.uri,
+      description: datasetCasesQuery.description,
+      updatedDateTime: datasetCasesQuery.updatedDateTime,
+      isInConfig: datasetCasesQuery.isInConfig,
+      totalCaseCount: datasetCasesQuery.totalCaseCount,
+      totalPatientCount: datasetCasesQuery.totalPatientCount,
+      totalSpecimenCount: datasetCasesQuery.totalSpecimenCount,
+      cases: datasetCasesQuery.cases,
+
+      // Artifact Type Count
+      totalArtifactCount: datasetStorageStatsQuery.totalArtifactCount,
+      totalArtifactSizeBytes: datasetStorageStatsQuery.totalArtifactSizeBytes,
+      bclCount: datasetStorageStatsQuery.bclCount,
+      fastqCount: datasetStorageStatsQuery.fastqCount,
+      vcfCount: datasetStorageStatsQuery.vcfCount,
+      bamCount: datasetStorageStatsQuery.bamCount,
+      cramCount: datasetStorageStatsQuery.cramCount,
+    };
   }
 
   /**
    * Select or insert new dataset if doesn't exist in Db
+   * Optionally add a UserAuditEvent if a user parameter is supplied.
    * @returns Dataset Id
    */
-  public async selectOrInsertDataset({
-    datasetUri,
-    datasetDescription,
-    datasetName,
-  }: {
-    datasetUri: string;
-    datasetDescription: string;
-    datasetName: string;
-  }): Promise<string> {
+  public async selectOrInsertDataset(
+    {
+      datasetUri,
+      datasetDescription,
+      datasetName,
+    }: {
+      datasetUri: string;
+      datasetDescription: string;
+      datasetName: string;
+    },
+    user?: AuthenticatedUser
+  ): Promise<string> {
     // Find current Dataset
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
@@ -195,13 +213,25 @@ export class DatasetService {
     if (datasetId) return datasetId;
 
     // Else, create new dataset
-    const insertDatasetQuery = e.insert(e.dataset.Dataset, {
-      uri: datasetUri,
-      externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
-      description: datasetDescription,
+    return await this.edgeDbClient.transaction(async (tx) => {
+      const insertDatasetQuery = e.insert(e.dataset.Dataset, {
+        uri: datasetUri,
+        externalIdentifiers: makeSystemlessIdentifierArray(datasetName),
+        description: datasetDescription,
+      });
+
+      const newDataset = await insertDatasetQuery.run(tx);
+
+      if (user !== undefined) {
+        await this.auditLogService.insertAddDatasetAuditEvent(
+          user,
+          datasetUri,
+          tx
+        );
+      }
+
+      return newDataset.id;
     });
-    const newDataset = await insertDatasetQuery.run(this.edgeDbClient);
-    return newDataset.id;
   }
 
   /**
@@ -220,21 +250,36 @@ export class DatasetService {
 
   /**
    * Delete given dataset URI from database.
+   * Optionally add a UserAuditEvent if a user parameter is supplied.
    * @returns DatasetId
    */
-  public async deleteDataset({
-    datasetUri,
-  }: {
-    datasetUri: string;
-  }): Promise<string | undefined> {
-    const deleteDataset = e
-      .delete(e.dataset.Dataset, (d) => ({
-        filter: e.op(d.uri, "=", datasetUri),
-      }))
-      .assert_single();
+  public async deleteDataset(
+    {
+      datasetUri,
+    }: {
+      datasetUri: string;
+    },
+    user?: AuthenticatedUser
+  ): Promise<string | undefined> {
+    return await this.edgeDbClient.transaction(async (tx) => {
+      const deleteDataset = e
+        .delete(e.dataset.Dataset, (d) => ({
+          filter: e.op(d.uri, "=", datasetUri),
+        }))
+        .assert_single();
 
-    const datasetDeleted = await deleteDataset.run(this.edgeDbClient);
-    return datasetDeleted?.id;
+      const datasetDeleted = await deleteDataset.run(tx);
+
+      if (user !== undefined) {
+        await this.auditLogService.insertDeleteDatasetAuditEvent(
+          user,
+          datasetUri,
+          tx
+        );
+      }
+
+      return datasetDeleted?.id;
+    });
   }
 
   public async configureDataset(
@@ -277,12 +322,12 @@ export class DatasetService {
     }
   }
 
-  public async updateDatasetCurrentTimestamp(datasetId: string) {
+  public async updateDatasetCurrentTimestamp(datasetId: string, date?: Date) {
     await e
       .update(e.dataset.Dataset, (d) => ({
         filter: e.op(d.id, "=", e.uuid(datasetId)).assert_single(),
         set: {
-          updatedDateTime: new Date(),
+          updatedDateTime: date ?? new Date(),
         },
       }))
       .run(this.edgeDbClient);
@@ -292,19 +337,10 @@ export class DatasetService {
     user: AuthenticatedUser,
     consentId: string
   ): Promise<DuoLimitationCodedType[]> {
-    // Should be some mechanism to check if user is authorize to see the consent
-
-    const consentQuery = e
-      .select(e.consent.Consent, (c) => ({
-        id: true,
-        statements: {
-          ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
-        },
-        filter: e.op(c.id, "=", e.uuid(consentId)),
-      }))
-      .assert_single();
-
-    const consent = await consentQuery.run(this.edgeDbClient);
+    const consent = await getDatasetConsent(this.edgeDbClient, {
+      userDbId: user.dbId,
+      consentDbId: consentId,
+    });
 
     if (!consent) return [];
 

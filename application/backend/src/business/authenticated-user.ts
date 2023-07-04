@@ -13,9 +13,9 @@ export class AuthenticatedUser {
       isNil(this.dbUser.displayName) ||
       isNil(this.dbUser.email) ||
       isNil(this.dbUser.lastLoginDateTime) ||
-      isNil(this.dbUser.allowedCreateRelease) ||
-      isNil(this.dbUser.allowedChangeReleaseDataOwner) ||
-      isNil(this.dbUser.allowedImportDataset)
+      isNil(this.dbUser.isAllowedRefreshDatasetIndex) ||
+      isNil(this.dbUser.isAllowedCreateRelease) ||
+      isNil(this.dbUser.isAllowedOverallAdministratorView)
     )
       throw new UnexpectedStateInternalServerError(
         "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
@@ -47,16 +47,27 @@ export class AuthenticatedUser {
     return this.dbUser!.email;
   }
 
-  public get allowedCreateRelease(): boolean {
-    return this.dbUser!.allowedCreateRelease;
+  /**
+   * Read permission
+   * @deprecated moving our queries over to using the field directly from the db
+   */
+  public get isAllowedOverallAdministratorView(): boolean {
+    return this.dbUser!.isAllowedOverallAdministratorView;
   }
 
-  public get allowedChangeReleaseDataOwner(): boolean {
-    return this.dbUser!.allowedChangeReleaseDataOwner;
+  /**
+   * Write permission
+   * @deprecated moving our queries over to using the field directly from the db
+   */
+  public get isAllowedCreateRelease(): boolean {
+    return this.dbUser!.isAllowedCreateRelease;
   }
 
-  public get allowedImportDataset(): boolean {
-    return this.dbUser!.allowedImportDataset;
+  /**
+   * @deprecated moving our queries over to using the field directly from the db
+   */
+  public get isAllowedRefreshDatasetIndex(): boolean {
+    return this.dbUser!.isAllowedRefreshDatasetIndex;
   }
 
   /**

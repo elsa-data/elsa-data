@@ -1,21 +1,16 @@
-import {
-  Static,
-  TLiteral,
-  TSchema,
-  TString,
-  TUnion,
-  Type,
-} from "@sinclair/typebox";
+import { Static, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
-import { StringUnion, TypeDate } from "./typebox-helpers";
+import { StringUnion, TypeDate, Nullable } from "./typebox-helpers";
 
 export const ReleaseSummarySchema = Type.Object({
-  // the edge db id of this release
-  id: Type.String(),
-
   // the primary public identifier for this release
-  releaseIdentifier: Type.String(),
+  releaseKey: Type.String(),
 
+  // the date time of last change to anything in this release
+  lastUpdatedDateTime: TypeDate,
+  lastUpdatedUserSubjectId: Type.String(),
+
+  // details of the DAC this release was created from
   applicationDacIdentifierSystem: Type.String(),
   applicationDacIdentifierValue: Type.String(),
   applicationDacTitle: Type.String(),
@@ -23,14 +18,34 @@ export const ReleaseSummarySchema = Type.Object({
   // if this release has been activated for allowing actual data sharing activity
   isActivated: Type.Boolean(),
 
-  // if a job is running then this is the percent it is complete
+  // if a job is running then this is the percent it is complete - this info will
+  // only appear if the caller is an administrator in the release
   isRunningJobPercentDone: Type.Optional(Type.Number()),
+  isRunningJobBadge: Type.Optional(Type.String()),
 
   // the role the caller has in this particular release
   roleInRelease: Type.String(),
 });
 
 export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
+
+/**
+ * An enum type for participant roles in the release
+ */
+export const ReleaseParticipantRoleConst = [
+  "AdminView",
+  "Administrator",
+  "Manager",
+  "Member",
+] as const;
+export type ReleaseParticipantRoleType =
+  typeof ReleaseParticipantRoleConst[number];
+export const ReleaseParticipantRole: ReleaseParticipantRoleType[] = [
+  "AdminView",
+  "Administrator",
+  "Manager",
+  "Member",
+];
 
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
@@ -60,8 +75,31 @@ export const ReleaseActivationSchema = Type.Object({
   activatedByDisplayName: Type.String(),
 });
 
+export const DataSharingAwsAccessPointSchema = Type.Optional(
+  Type.Object({
+    name: Type.String(),
+    accountId: Type.String(),
+    vpcId: Type.String(),
+    installed: Type.Boolean(),
+    installedStackArn: Type.Optional(Type.String()),
+  })
+);
+
+export type DataSharingAwsAccessPointType = Static<
+  typeof DataSharingAwsAccessPointSchema
+>;
+
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
+
+  roleInRelease: Type.Union(
+    ReleaseParticipantRole.map((r: ReleaseParticipantRoleType) =>
+      Type.Literal(r)
+    )
+  ),
+
+  lastUpdatedDateTime: TypeDate,
+  lastUpdatedUserSubjectId: Type.String(),
 
   datasetUris: Type.Array(Type.String()),
 
@@ -69,16 +107,28 @@ export const ReleaseDetailSchema = Type.Object({
   applicationDacTitle: Type.Optional(Type.String()),
   applicationDacDetails: Type.Optional(Type.String()),
 
-  // the number of cases visible to whoever makes this call - for data owners this will always
+  // the number of cases visible to whoever makes this call - for administrators this will always
   // be *all* cases, for others it will only be those available to them
   visibleCasesCount: Type.Integer(),
 
   applicationCoded: ReleaseApplicationCodedSchema,
 
   // which categories of data are allowed to be shared
+
+  // by type
   isAllowedReadData: Type.Boolean(),
   isAllowedVariantData: Type.Boolean(),
   isAllowedPhenotypeData: Type.Boolean(),
+
+  // by location
+  isAllowedS3Data: Type.Boolean(),
+  isAllowedGSData: Type.Boolean(),
+  isAllowedR2Data: Type.Boolean(),
+
+  // Permission for the current user that allowed to edit other user's role within the release.
+  rolesAllowedToAlterParticipant: Nullable(
+    Type.Array(StringUnion(ReleaseParticipantRole))
+  ),
 
   // if present, means that this release has been activated for data sharing
   activation: Type.Optional(ReleaseActivationSchema),
@@ -86,12 +136,43 @@ export const ReleaseDetailSchema = Type.Object({
   // if present, means that this release is in the process of running a background job
   runningJob: Type.Optional(ReleaseRunningJobSchema),
 
-  // if present, is the password used for all download artifacts (zip files etc)
-  downloadPassword: Type.Optional(Type.String()),
-
+  permissionViewSelections: Type.Optional(Type.Boolean()),
   permissionEditSelections: Type.Optional(Type.Boolean()),
   permissionEditApplicationCoded: Type.Optional(Type.Boolean()),
   permissionAccessData: Type.Optional(Type.Boolean()),
+
+  // if enabled by the data custodian AND as a feature, this structure is present.. if not, it is not
+  dataSharingObjectSigning: Type.Optional(
+    Type.Object({
+      expiryHours: Type.Integer(),
+    })
+  ),
+
+  dataSharingHtsgetRestrictions: Type.Array(Type.String()),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingCopyOut: Type.Optional(
+    Type.Object({
+      destinationLocation: Type.String(),
+    })
+  ),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingHtsget: Type.Optional(
+    Type.Object({
+      url: Type.String(),
+    })
+  ),
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingAwsAccessPoint: DataSharingAwsAccessPointSchema,
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingGcpStorageIam: Type.Optional(
+    Type.Object({
+      users: Type.Array(Type.String()),
+    })
+  ),
 
   // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),
@@ -153,6 +234,17 @@ export const ReleaseCaseSchema = Type.Object({
   customConsent: Type.Boolean(),
 });
 
+export const ReleasePreviousJobSchema = Type.Object({
+  objectId: Type.String(),
+  type: Type.String(),
+  created: TypeDate,
+  started: TypeDate,
+  ended: TypeDate,
+  requestedCancellation: Type.Boolean(),
+  details: Type.String(),
+});
+export type ReleasePreviousJobType = Static<typeof ReleasePreviousJobSchema>;
+
 // Schema for manually creating a release instead importing it from a DAC
 export const ReleaseManualSchema = Type.Object({
   releaseTitle: Type.String(),
@@ -163,6 +255,45 @@ export const ReleaseManualSchema = Type.Object({
   datasetUris: Type.Array(Type.String()),
   applicantEmailAddresses: Type.String(),
 });
+export type ReleaseManualType = Static<typeof ReleaseManualSchema>;
+
+/**
+ * A schema representing the participation of someone in a release.
+ *
+ * This schema is primarily for use by the release user management
+ * user interface.
+ */
+export const ReleaseParticipantSchema = Type.Object({
+  // the internal identifier (UUID) for this user
+  id: Type.String(),
+  email: Type.String(),
+  // the role of this user in this release
+  role: Nullable(StringUnion(ReleaseParticipantRole)),
+  displayName: Nullable(Type.String()),
+  subjectId: Nullable(Type.String()),
+  // the last login datetime or null if this user has never logged in
+  lastLogin: Type.Optional(Nullable(TypeDate)),
+
+  // is true if the person making the call has enough permissions to alter this particular record
+  // this is the start of a pattern for how per release permissions can be relayed to the UI
+  canBeRemoved: Type.Boolean(),
+  canBeRoleAltered: Type.Boolean(),
+  // The role options for that participant from the logged in user
+  roleAlterOptions: Nullable(Type.Array(StringUnion(ReleaseParticipantRole))),
+});
+export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
+
+/**
+ * A schema representing the operation to add a user to a release with
+ * a specific role.
+ */
+export const ReleaseParticipantAddSchema = Type.Object({
+  email: Type.String(),
+  role: Type.String(),
+});
+export type ReleaseParticipantAddType = Static<
+  typeof ReleaseParticipantAddSchema
+>;
 
 export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
 
@@ -171,5 +302,3 @@ export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
 export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
 
 export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
-
-export type ReleaseManualType = Static<typeof ReleaseManualSchema>;

@@ -1,7 +1,7 @@
 import e from "../../../dbschema/edgeql-js";
-import { Client, Executor } from "edgedb";
+import { Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 
 /**
@@ -19,16 +19,19 @@ export function collapseExternalIds(externals: any): string {
  * checks if the user has a role in the given release (and therefore also if the release
  * exists).
  *
- * @param usersService
+ * @param userService
  * @param user
- * @param releaseId
+ * @param releaseKey
+ * @deprecated use the base boundary method in Release preferably
  */
 export async function doRoleInReleaseCheck(
-  usersService: UsersService,
+  userService: UserService,
   user: AuthenticatedUser,
-  releaseId: string
+  releaseKey?: string
 ) {
-  const userRole = await usersService.roleInRelease(user, releaseId);
+  const userRole = releaseKey
+    ? await userService.roleInRelease(user, releaseKey)
+    : null;
 
   if (!userRole)
     throw new Error(
@@ -45,16 +48,16 @@ export async function doRoleInReleaseCheck(
  * that is useful and friendly for the caller (i.e. ids -> JS Set())
  *
  * @param edgeDbClient an edgedb client
- * @param releaseId the release to load
+ * @param releaseKey the release to load
  */
 export async function getReleaseInfo(
   edgeDbClient: Executor,
-  releaseId: string
+  releaseKey: string
 ) {
   // the base (id only) query that will give us just the release
   const releaseQuery = e
     .select(e.release.Release, (r) => ({
-      filter: e.op(r.id, "=", e.uuid(releaseId)),
+      filter: e.op(r.releaseKey, "=", releaseKey),
     }))
     .assert_single();
 
@@ -74,6 +77,9 @@ export async function getReleaseInfo(
     activation: {
       ...e.release.Activation["*"],
     },
+    dataSharingConfiguration: {
+      ...e.release.DataSharingConfiguration["*"],
+    },
     // we are loosely linked (by uri) to datasets which this release draws data from
     // TODO: revisit the loose linking
     datasetIds: e.select(e.dataset.Dataset, (ds) => ({
@@ -85,7 +91,7 @@ export async function getReleaseInfo(
 
   const releaseInfo = await releaseInfoQuery.run(edgeDbClient);
 
-  if (!releaseInfo) throw new ReleaseDisappearedError(releaseId);
+  if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
   const datasetUriToIdMap = new Map(
     releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)])
@@ -130,4 +136,21 @@ export async function getReleaseInfo(
     releaseAllDatasetCasesQuery,
     releaseSelectedCasesQuery,
   };
+}
+
+/**
+ * A temporary to pick external identifiers based on the first value stored in the array.
+ * This function will sort (based on the "system" properties) and take the first value from the externalIdentifier array
+ * @param externalIdentifiers
+ * @returns
+ */
+export function getFirstSystemSortedExternalIdentifierValue(
+  externalIdentifiers?: { system: string; value: string }[]
+): string {
+  if (!externalIdentifiers || externalIdentifiers.length == 0) return "";
+
+  externalIdentifiers.sort((a, b) =>
+    a.system.toLowerCase() > b.system.toLowerCase() ? 1 : -1
+  );
+  return externalIdentifiers[0].value;
 }

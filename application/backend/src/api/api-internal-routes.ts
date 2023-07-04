@@ -1,6 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { releaseRoutes } from "./routes/internal/release-routes";
-import { datasetRoutes } from "./routes/internal/dataset-routes";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   currentPageSize,
@@ -8,10 +7,9 @@ import {
   TOTAL_COUNT_HEADER_NAME,
 } from "./helpers/pagination-helpers";
 import { DependencyContainer } from "tsyringe";
-import { UsersService } from "../business/services/users-service";
+import { UserService } from "../business/services/user-service";
 import { isEmpty, isString, trim } from "lodash";
-import { auditLogRoutes } from "./routes/internal/audit-log-routes";
-import { dacRoutes } from "./routes/internal/dac-routes";
+import { auditEventRoutes } from "./routes/internal/audit-event-routes";
 import { ElsaSettings } from "../config/elsa-settings";
 import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
 import { userRoutes } from "./routes/internal/user-routes";
@@ -80,7 +78,22 @@ export function sendResult<T>(
 
 /**
  * A helper function that can send arbitrary paged results back to the client
- * but inserting various headers to support paging.
+ * without checking if the result is empty and inserting headers to support paging.
+ * @param reply
+ * @param pr
+ */
+export function sendUncheckedPagedResult<T>(
+  reply: FastifyReply,
+  pr: PagedResult<T>
+) {
+  sendResult(reply, pr.data, {
+    [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
+  });
+}
+
+/**
+ * A helper function that can send arbitrary paged results back to the client
+ * with various headers to support paging.
  */
 export function sendPagedResult<T>(
   reply: FastifyReply,
@@ -88,9 +101,7 @@ export function sendPagedResult<T>(
 ) {
   if (!pr || !pr.data) sendResult(reply, null);
   else {
-    sendResult(reply, pr.data, {
-      [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
-    });
+    sendUncheckedPagedResult(reply, pr);
   }
 }
 
@@ -108,14 +119,11 @@ export const apiInternalRoutes = async (
     allowTestCookieEquals?: string;
   }
 ) => {
-  const usersService = opts.container.resolve(UsersService);
+  const userService = opts.container.resolve(UserService);
 
-  const authInternalHook = createSessionCookieRouteHook(
-    usersService,
-    opts.allowTestCookieEquals != null
-  );
+  fastify.addHook("preHandler", fastify.csrfProtection);
 
-  fastify.addHook("onRequest", fastify.csrfProtection);
+  const authInternalHook = createSessionCookieRouteHook(userService);
 
   // now register the auth hook and then register all the rest of our routes nested within
   fastify.addHook("onRequest", authInternalHook).after(() => {
@@ -126,11 +134,8 @@ export const apiInternalRoutes = async (
       allowTestCookieEquals: opts.allowTestCookieEquals,
     };
 
-    fastify.register(auditLogRoutes, routeOpts);
+    fastify.register(auditEventRoutes, routeOpts);
     fastify.register(releaseRoutes, routeOpts);
-    fastify.register(dacRoutes, routeOpts);
-    fastify.register(datasetRoutes, routeOpts);
-
     fastify.register(userRoutes, routeOpts);
   });
 };

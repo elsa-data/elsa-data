@@ -1,70 +1,41 @@
 import { FastifyInstance } from "fastify";
 import {
   DuoLimitationCodedType,
-  ReleasePresignRequestSchema,
-  ReleasePresignRequestType,
   ReleaseCaseType,
-  ReleaseDetailType,
   ReleaseManualSchema,
   ReleaseManualType,
-  ReleaseMasterAccessRequestType,
-  ReleasePatchOperationSchema,
-  ReleasePatchOperationType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
-  ReleaseSummaryType,
+  ReleasePresignRequestSchema,
+  ReleasePresignRequestType,
 } from "@umccr/elsa-types";
 import {
   authenticatedRouteOnEntryHelper,
   sendPagedResult,
 } from "../../api-internal-routes";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
-import { container } from "tsyringe";
-import { JobsService } from "../../../business/services/jobs/jobs-base-service";
+import { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/release-service";
-import { AwsAccessPointService } from "../../../business/services/aws-access-point-service";
+import { AwsAccessPointService } from "../../../business/services/aws/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
-import { PresignedUrlsService } from "../../../business/services/presigned-urls-service";
-import { AuditEventForReleaseQuerySchema } from "./audit-log-routes";
+import { PresignedUrlService } from "../../../business/services/presigned-url-service";
+import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
+import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
+import { ManifestService } from "../../../business/services/manifests/manifest-service";
 
-export const releaseRoutes = async (fastify: FastifyInstance) => {
-  const jobsService = container.resolve(JobsService);
-  const presignedUrlsService = container.resolve(PresignedUrlsService);
-  const awsAccessPointService = container.resolve(AwsAccessPointService);
-  const gcpStorageSharingService = container.resolve(GcpStorageSharingService);
-  const releasesService = container.resolve(ReleaseService);
-
-  fastify.get<{ Reply: ReleaseSummaryType[] }>(
-    "/releases",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, offset } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const allForUser = await releasesService.getAll(
-        authenticatedUser,
-        pageSize,
-        offset
-      );
-
-      reply.send(allForUser);
-    }
+export const releaseRoutes = async (
+  fastify: FastifyInstance,
+  _opts: { container: DependencyContainer }
+) => {
+  const presignedUrlService = _opts.container.resolve(PresignedUrlService);
+  const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
+  const gcpStorageSharingService = _opts.container.resolve(
+    GcpStorageSharingService
   );
-
-  fastify.get<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseId = request.params.rid;
-
-      const release = await releasesService.get(authenticatedUser, releaseId);
-
-      if (release) reply.send(release);
-      else reply.status(400).send();
-    }
+  const releaseService = _opts.container.resolve(ReleaseService);
+  const releaseSelectionService = _opts.container.resolve(
+    ReleaseSelectionService
   );
+  const manifestService = _opts.container.resolve(ManifestService);
 
   fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
     "/releases/:rid/cases",
@@ -73,11 +44,11 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
       const { authenticatedUser, pageSize, page, q } =
         authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
-      const cases = await releasesService.getCases(
+      const cases = await releaseSelectionService.getCases(
         authenticatedUser,
-        releaseId,
+        releaseKey,
         pageSize,
         (page - 1) * pageSize,
         q
@@ -93,12 +64,12 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
   }>("/releases/:rid/consent/:nid", {}, async function (request, reply) {
     const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-    const releaseId = request.params.rid;
+    const releaseKey = request.params.rid;
     const nodeId = request.params.nid;
 
-    const r = await releasesService.getNodeConsent(
+    const r = await releaseSelectionService.getNodeConsent(
       authenticatedUser,
-      releaseId,
+      releaseKey,
       nodeId
     );
 
@@ -106,37 +77,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
 
     reply.send(r);
   });
-
-  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid/jobs/select",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseId = request.params.rid;
-
-      reply.send(
-        await jobsService.startSelectJob(authenticatedUser, releaseId)
-      );
-    }
-  );
-
-  fastify.post<{ Params: { rid: string }; Reply: ReleaseDetailType }>(
-    "/releases/:rid/jobs/cancel",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseId = request.params.rid;
-
-      reply.send(
-        await jobsService.cancelInProgressSelectJob(
-          authenticatedUser,
-          releaseId
-        )
-      );
-    }
-  );
 
   /**
    * The main route for altering fields in a release. Normally the UI component for the
@@ -156,7 +96,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
       if (request.body.length > 1)
         // the JSON patch standard says that all operations if more than 1 need to succeed/fail
@@ -172,18 +112,18 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/specimens":
                 reply.send(
-                  await releasesService.setSelected(
+                  await releaseSelectionService.setSelected(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value
                   )
                 );
                 return;
               case "/applicationCoded/diseases":
                 reply.send(
-                  await releasesService.addDiseaseToApplicationCoded(
+                  await releaseService.addDiseaseToApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -191,9 +131,9 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/countries":
                 reply.send(
-                  await releasesService.addCountryToApplicationCoded(
+                  await releaseService.addCountryToApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -209,18 +149,18 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/specimens":
                 reply.send(
-                  await releasesService.setUnselected(
+                  await releaseSelectionService.setUnselected(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value
                   )
                 );
                 return;
               case "/applicationCoded/diseases":
                 reply.send(
-                  await releasesService.removeDiseaseFromApplicationCoded(
+                  await releaseService.removeDiseaseFromApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -228,9 +168,9 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
                 return;
               case "/applicationCoded/countries":
                 reply.send(
-                  await releasesService.removeCountryFromApplicationCoded(
+                  await releaseService.removeCountryFromApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value.system,
                     op.value.code
                   )
@@ -246,48 +186,96 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
             switch (op.path) {
               case "/applicationCoded/type":
                 reply.send(
-                  await releasesService.setTypeOfApplicationCoded(
+                  await releaseService.setTypeOfApplicationCoded(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value as any
                   )
                 );
                 return;
               case "/applicationCoded/beacon":
                 reply.send(
-                  await releasesService.setBeaconQuery(
+                  await releaseService.setBeaconQuery(
                     authenticatedUser,
-                    releaseId,
+                    releaseKey,
                     op.value
                   )
                 );
                 return;
               case "/allowedRead":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
-                    releaseId,
-                    "read",
+                    releaseKey,
+                    "isAllowedReadData",
                     op.value
                   )
                 );
                 return;
               case "/allowedVariant":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
-                    releaseId,
-                    "variant",
+                    releaseKey,
+                    "isAllowedVariantData",
                     op.value
                   )
                 );
                 return;
               case "/allowedPhenotype":
                 reply.send(
-                  await releasesService.setIsAllowed(
+                  await releaseService.setIsAllowed(
                     authenticatedUser,
-                    releaseId,
-                    "phenotype",
+                    releaseKey,
+                    "isAllowedPhenotypeData",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedS3":
+                reply.send(
+                  await releaseService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedS3Data",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedGS":
+                reply.send(
+                  await releaseService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedGSData",
+                    op.value
+                  )
+                );
+                return;
+              case "/allowedR2":
+                reply.send(
+                  await releaseService.setIsAllowed(
+                    authenticatedUser,
+                    releaseKey,
+                    "isAllowedR2Data",
+                    op.value
+                  )
+                );
+                return;
+              case "/dataSharingConfiguration/objectSigningEnabled":
+              case "/dataSharingConfiguration/objectSigningExpiryHours":
+              case "/dataSharingConfiguration/copyOutEnabled":
+              case "/dataSharingConfiguration/copyOutDestinationLocation":
+              case "/dataSharingConfiguration/htsgetEnabled":
+              case "/dataSharingConfiguration/awsAccessPointEnabled":
+              case "/dataSharingConfiguration/awsAccessPointName":
+              case "/dataSharingConfiguration/gcpStorageIamEnabled":
+              case "/dataSharingConfiguration/gcpStorageIamUsers":
+                reply.send(
+                  await releaseService.setDataSharingConfigurationField(
+                    authenticatedUser,
+                    releaseKey,
+                    op.path,
                     op.value
                   )
                 );
@@ -304,122 +292,6 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     }
   );
 
-  // /**
-  //  * @param binary Buffer
-  //  * returns readableInstanceStream Readable
-  //  */
-  // function bufferToStream(binary: Buffer) {
-  //   return new Readable({
-  //     read() {
-  //       this.push(binary);
-  //       this.push(null);
-  //     },
-  //   });
-  // }
-
-  fastify.post<{
-    Body: ReleaseMasterAccessRequestType;
-    Params: { rid: string };
-  }>("/releases/:rid/access", {}, async function (request) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseId = request.params.rid;
-
-    await releasesService.setMasterAccess(
-      authenticatedUser,
-      releaseId,
-      undefined, //isString(request.body.start) ? Date.parse(request.body.start) : request.body.start,
-      undefined // request.body.end
-    );
-  });
-
-  fastify.get<{
-    Params: { rid: string };
-  }>("/releases/:rid/cfn", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseId = request.params.rid;
-
-    if (!awsAccessPointService.isEnabled)
-      throw new Error(
-        "The AWS service was not started so AWS VPC sharing will not work"
-      );
-
-    const res = await awsAccessPointService.getInstalledAccessPointResources(
-      authenticatedUser,
-      releaseId
-    );
-
-    reply.send(res);
-  });
-
-  fastify.post<{
-    Body: { accounts: string[]; vpcId?: string };
-    Params: { rid: string };
-  }>("/releases/:rid/cfn", {}, async function (request) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseId = request.params.rid;
-
-    if (!awsAccessPointService.isEnabled)
-      throw new Error(
-        "The AWS service was not started so AWS VPC sharing will not work"
-      );
-
-    const s3HttpsUrl =
-      await awsAccessPointService.createAccessPointCloudFormationTemplate(
-        authenticatedUser,
-        releaseId,
-        request.body.accounts,
-        request.body.vpcId
-      );
-
-    await jobsService.startCloudFormationInstallJob(
-      authenticatedUser,
-      releaseId,
-      s3HttpsUrl
-    );
-  });
-
-  // const PresignedT = Type.Object({
-  //   header: Type.Array(Type.Union([Type.Literal("A"), Type.Literal("B")])),
-  // });
-
-  fastify.post<{
-    Body: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>(
-    "/releases/:rid/presigned",
-    {
-      schema: {
-        body: ReleasePresignRequestSchema,
-      },
-    },
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseId = request.params.rid;
-      if (!presignedUrlsService.isEnabled)
-        throw new Error(
-          "The presigned URLs service was not started so URL presigning will " +
-            "not work"
-        );
-
-      const presignResult = await presignedUrlsService.getPresigned(
-        authenticatedUser,
-        releaseId,
-        request.body.presignHeader
-      );
-
-      reply.raw.writeHead(200, {
-        "Content-Disposition": `attachment; filename=${presignResult.filename}`,
-        "Content-Type": "application/octet-stream",
-      });
-
-      presignResult.archive.pipe(reply.raw);
-    }
-  );
-
   fastify.post<{
     Body: ReleasePresignRequestType;
     Params: { rid: string };
@@ -433,16 +305,15 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const releaseId = request.params.rid;
-      if (!awsAccessPointService.isEnabled)
-        throw new Error(
-          "The AWS service was not started so AWS S3 Access Points will not work"
-        );
+      const releaseKey = request.params.rid;
+      const presignHeaderArray = Array.isArray(request.body.presignHeader)
+        ? request.body.presignHeader
+        : [request.body.presignHeader];
 
       const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
         authenticatedUser,
-        releaseId,
-        request.body.presignHeader
+        releaseKey,
+        presignHeaderArray
       );
 
       reply.header(
@@ -466,7 +337,7 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     },
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-      reply.send(await releasesService.new(authenticatedUser, request.body));
+      reply.send(await releaseService.new(authenticatedUser, request.body));
     }
   );
 
@@ -480,18 +351,13 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      if (!gcpStorageSharingService.isEnabled)
-        throw new Error(
-          "The GCP storage sharing service was not started so object sharing will not work"
-        );
-
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       const users = request.body.users;
 
       reply.send(
         await gcpStorageSharingService.addUsers(
           authenticatedUser,
-          releaseId,
+          releaseKey,
           users
         )
       );
@@ -508,52 +374,100 @@ export const releaseRoutes = async (fastify: FastifyInstance) => {
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      if (!gcpStorageSharingService.isEnabled)
-        throw new Error(
-          "The GCP storage sharing service was not started so object sharing will not work"
-        );
-
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
       const users = request.body.users;
 
       reply.send(
         await gcpStorageSharingService.deleteUsers(
           authenticatedUser,
-          releaseId,
+          releaseKey,
           users
         )
       );
     }
   );
 
-  fastify.get<{
-    Body: ReleasePresignRequestType;
+  fastify.post<{
+    Body?: ReleasePresignRequestType;
     Params: { rid: string };
   }>(
-    "/releases/:rid/gcp-storage/acls/manifest",
+    "/releases/:rid/tsv-manifest-archive",
     {},
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      if (!gcpStorageSharingService.isEnabled)
-        throw new Error(
-          "The GCP storage sharing service was not started so object sharing will not work"
-        );
+      const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeaderArray = Array.isArray(presignHeader)
+        ? presignHeader
+        : [presignHeader];
 
-      const releaseId = request.params.rid;
+      const releaseKey = request.params.rid;
 
-      const manifest = await gcpStorageSharingService.manifest(
+      const manifest = await manifestService.getActiveTsvManifestAsArchive(
+        presignedUrlService,
         authenticatedUser,
-        releaseId,
-        request.body.presignHeader
+        releaseKey,
+        presignHeaderArray
       );
 
-      reply.header(
-        "Content-disposition",
-        `attachment; filename=${manifest.filename}`
+      if (!manifest) {
+        reply.status(404).send();
+        return;
+      }
+
+      reply.raw.writeHead(200, {
+        "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
+        "Content-Type": "application/octet-stream",
+      });
+
+      manifest.pipe(reply.raw);
+    }
+  );
+
+  fastify.post<{
+    Body?: ReleasePresignRequestType;
+    Params: { rid: string };
+  }>(
+    "/releases/:rid/tsv-manifest-plaintext",
+    {},
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeaderArray = Array.isArray(presignHeader)
+        ? presignHeader
+        : [presignHeader];
+
+      if (presignHeader.includes("objectStoreSigned")) {
+        // This would ideally be checked with an appropriate type for the request
+        // `Body`. But that'd involve defining a separate type almost identical
+        // to `ReleasePresignRequestType`, which is too repetitious for my taste.
+        reply.status(400).send();
+        return;
+      }
+
+      const releaseKey = request.params.rid;
+
+      const manifest = await manifestService.getActiveTsvManifestAsString(
+        presignedUrlService,
+        authenticatedUser,
+        releaseKey,
+        presignHeaderArray
       );
-      reply.type("text/tab-separated-values");
-      reply.send(manifest.content);
+
+      if (!manifest) {
+        reply.status(404).send();
+        return;
+      }
+
+      reply
+        .status(200)
+        .header(
+          "Content-Disposition",
+          `attachment; filename=manifest-${releaseKey}.tsv`
+        )
+        .header("Content-Type", "text/tab-separated-values")
+        .send(manifest);
     }
   );
 };

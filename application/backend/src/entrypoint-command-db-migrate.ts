@@ -17,7 +17,7 @@ export async function commandDbMigrate(): Promise<number> {
 
     console.log(`Executing edgedb CLI`);
 
-    const promiseInvoke = execFilePromise("/app/backend/edgedb", args, {
+    const promiseInvoke = execFilePromise("/a/edgedb", args, {
       maxBuffer: 1024 * 1024 * 64,
     });
 

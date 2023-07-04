@@ -1,32 +1,43 @@
-import { AwsCloudTrailLakeService } from "../../src/business/services/aws-cloudtrail-lake-service";
 import e from "../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { beforeEachCommon } from "./releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../src/config/elsa-settings";
-import { TENG_URI } from "../../src/test-data/insert-test-data-10g";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
 import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { NotAuthorisedSyncDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
+import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
+import { AwsEnabledServiceMock } from "./client-mocks";
+import { IPLookupService } from "../../src/business/services/ip-lookup-service";
+
+const testContainer = registerTypes();
 
 let edgeDbClient: Client;
 let cloudTrailClient: CloudTrailClient;
-let testReleaseId: string;
-let testContainer: DependencyContainer;
+let testReleaseKey: string;
 let elsaSetting: ElsaSettings;
-let allowedDataOwnerUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
+let allowedMemberUser: AuthenticatedUser;
+let awsEnabledServiceMock: AwsEnabledServiceMock;
 
 describe("Test CloudTrailLake Service", () => {
   beforeAll(async () => {
-    testContainer = await registerTypes();
     elsaSetting = testContainer.resolve("Settings");
     edgeDbClient = testContainer.resolve("Database");
     cloudTrailClient = testContainer.resolve("CloudTrailClient");
+    awsEnabledServiceMock = testContainer.resolve(AwsEnabledServiceMock);
+
+    const ipLookupService = testContainer.resolve(IPLookupService);
+    ipLookupService.setup();
   });
 
   beforeEach(async () => {
-    ({ allowedDataOwnerUser, testReleaseId } = await beforeEachCommon());
+    awsEnabledServiceMock.reset();
+
+    ({ superAdminUser, testReleaseKey, allowedMemberUser } =
+      await beforeEachCommon(testContainer));
   });
 
   it("Test recordCloudTrailLake", async () => {
@@ -43,29 +54,32 @@ describe("Test CloudTrailLake Service", () => {
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
+        releaseKey: testReleaseKey,
+        auditId: "abcd-defg-hijk-lmno",
       },
     ];
 
     await awsCloudTrailLakeService.recordCloudTrailLake({
       lakeResponse: mockData,
-      releaseId: testReleaseId,
+      releaseKey: testReleaseKey,
       description: "Object accessed",
+      user: superAdminUser,
     });
 
-    const daArr = await e
-      .select(e.audit.DataAccessAuditEvent, (da) => ({
-        ...da["*"],
-        filter: e.op(da.release_.id, "=", e.uuid(testReleaseId)),
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
       }))
       .run(edgeDbClient);
 
-    expect(daArr.length).toEqual(1);
+    expect(deArr.length).toEqual(1);
 
-    const singleLog = daArr[0];
+    const singleLog = deArr[0];
     expect(singleLog.egressBytes).toEqual(101);
   });
 
-  it("Test getEventDataStoreIdFromReleaseId", async () => {
+  it("Test getEventDataStoreIdFromReleaseKey", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
       AwsCloudTrailLakeService
     );
@@ -79,6 +93,8 @@ describe("Test CloudTrailLake Service", () => {
   });
 
   it("Test fetchCloudTrailLakeLog", async () => {
+    awsEnabledServiceMock.enable();
+
     const awsCloudTrailLakeService = testContainer.resolve(
       AwsCloudTrailLakeService
     );
@@ -91,6 +107,7 @@ describe("Test CloudTrailLake Service", () => {
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
+        auditId: "id",
       },
     ];
 
@@ -101,19 +118,32 @@ describe("Test CloudTrailLake Service", () => {
       .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
       .mockImplementation(async () => mockData);
     await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-      user: allowedDataOwnerUser,
-      releaseId: testReleaseId,
-      eventDataStoreIds: [TENG_AWS_EVENT_DATA_STORE_ID],
+      user: superAdminUser,
+      releaseKey: testReleaseKey,
+      datasetUrisArray: [TENG_URI],
     });
 
-    const daArr = await e
-      .select(e.audit.DataAccessAuditEvent, (da) => ({
-        ...da["*"],
-        filter: e.op(da.release_.id, "=", e.uuid(testReleaseId)),
+    const deArr = await e
+      .select(e.release.DataEgressRecord, (de) => ({
+        ...de["*"],
+        filter: e.op(de.release.releaseKey, "=", testReleaseKey),
       }))
       .run(edgeDbClient);
-    expect(daArr.length).toEqual(1);
-    const singleLog = daArr[0];
-    expect(singleLog.egressBytes).toEqual(101);
+    expect(deArr.length).toEqual(1);
+    expect(deArr[0].egressBytes).toEqual(101);
+  });
+
+  it("Test unauthorised attempt ", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+
+    await expect(async () => {
+      const result = await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
+        user: allowedMemberUser,
+        releaseKey: testReleaseKey,
+        datasetUrisArray: [TENG_URI],
+      });
+    }).rejects.toThrow(NotAuthorisedSyncDataEgressRecords);
   });
 });

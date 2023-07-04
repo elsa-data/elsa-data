@@ -16,9 +16,13 @@ module release {
              default := datetime_current();
         };
 
+        # The most recent user which edited this release.
+        required property lastUpdatedSubjectId -> str;
+
         # the public "friendly" identifier for this release
+        # we explicitly don't want to use the native EdgeDb "id" field for Releases
         #
-        required property releaseIdentifier -> str {
+        required property releaseKey -> str {
             constraint exclusive;
         }
 
@@ -38,7 +42,7 @@ module release {
         #
         required property applicationDacDetails -> str;
 
-        # once a release is started - it is possible for the data owner to encode some
+        # once a release is started - it is possible for the release administrator to encode some
         # details of the application to help with automation
         #
         required link applicationCoded -> ApplicationCoded {
@@ -80,9 +84,25 @@ module release {
 
         # which file types are allowed to be accessed for the selectedSpecimens
         #
-        required property isAllowedReadData -> bool;
-        required property isAllowedVariantData -> bool;
-        required property isAllowedPhenotypeData -> bool;
+        required property isAllowedReadData -> bool { default := false };
+        required property isAllowedVariantData -> bool { default := false };
+        required property isAllowedPhenotypeData -> bool { default := false };
+
+        # which file locations are allowed to be accessed for the selectedSpecimens
+        #
+        required property isAllowedS3Data -> bool { default := false };
+        required property isAllowedGSData -> bool { default := false };
+        required property isAllowedR2Data -> bool { default := false };
+
+        # once a release is activated, the data sharing configuration defines
+        # the actual practical mechanisms of how data can be accessed
+        #
+        required link dataSharingConfiguration -> DataSharingConfiguration {
+            constraint exclusive;
+
+            # we cascade delete this configuration if the release itself is deleted
+            on source delete delete target;
+        }
 
         # if present indicates that a running job is active in the context of this release
         #
@@ -119,12 +139,22 @@ module release {
             on target delete restrict;
         }
 
-        multi link dataAccessAuditLog -> audit::DataAccessAuditEvent {
-            # audit events should not be able to be deleted (singly)
-            on target delete restrict;
+        # store records of data being accessed (mostly 3rd parties e.g. CloudTrailLake)
+        #
+        multi link dataEgressRecord -> DataEgressRecord {
+            # as these records are 3rd party data - we are free to delete our copies
+            # of them if the release itself is deleted
+            #
+            on source delete delete target;
         }
-        property lastDateTimeDataAccessLogQuery -> datetime;
 
+        # A quick access to know the last data egress records query was made (to determine the next interval query)
+        # 
+        property lastDataEgressQueryTimestamp -> datetime;
+
+        # the participants of this release as Users
+        #
+        multi link participants := .<releaseParticipant[is permission::User];
     }
 
     scalar type ApplicationCodedStudyType extending enum<'GRU', 'HMB', 'CC', 'POA', 'DS'>;
@@ -177,11 +207,58 @@ module release {
         required property manifest -> json;
 
         # a fixed etag representing this activation of the release - as a combination of the manifest content
-        # and time of activation - this can be used to help clients perform extremely aggressive cacheing
+        # and time of activation - this can be used to help clients perform extremely aggressive caching
         # of the manifest information
         #
         required property manifestEtag -> str;
 
     }
 
+
+    type DataEgressRecord {
+
+        # link back to which release owns this egress record
+        #
+        link release := .<dataEgressRecord[is release::Release];
+
+        # Additional release details
+        property auditId -> str;
+        property description -> str;
+        required property occurredDateTime -> datetime;
+
+        # Details of accessor
+        property sourceIpAddress -> str;
+        property sourceLocation -> json;
+        property egressBytes -> int64;
+
+        # Details of data the object
+        required property fileUrl -> str;
+        required property fileSize -> int64;
+    }
+
+    # A collection of settings for how data can be shared - including potentially
+    # bespoke fields for each sharing type (these fields only need to make sense once
+    # their particular sharing type is enabled - they will otherwise be blank or null or random).
+    #
+    type DataSharingConfiguration {
+
+        required property objectSigningEnabled -> bool { default := false };
+        required property objectSigningExpiryHours -> int16 { default := 6*24 };
+
+        required property copyOutEnabled -> bool { default := false };
+        required property copyOutDestinationLocation -> str { default := "" };
+
+        required property htsgetEnabled -> bool { default := false };
+        multi htsgetRestrictions: str;
+        # TODO htsget endpoint selection - currently only one htsget endpoint so not needed yet
+
+        required property awsAccessPointEnabled -> bool { default := false };
+        # NOTE the implication of storing only the access point name (the actual settings come
+        #      from configuration) - is that registering/updating AWS Access Points is an system administration
+        #      level activity
+        required property awsAccessPointName -> str { default := "" };
+
+        required property gcpStorageIamEnabled -> bool { default := false };
+        required property gcpStorageIamUsers -> array<str> { default := <array<str>>[] };
+    }
 }

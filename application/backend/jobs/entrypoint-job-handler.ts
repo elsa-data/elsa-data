@@ -1,45 +1,58 @@
 import "reflect-metadata";
 
 import { parentPort } from "worker_threads";
-import { container } from "tsyringe";
-import { JobsService } from "../src/business/services/jobs/jobs-base-service";
+import { JobService } from "../src/business/services/jobs/job-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
-import { getDirectConfig } from "../src/config/config-schema";
+import { getDirectConfig } from "../src/config/config-load";
 import pino, { Logger } from "pino";
-
-// global settings for DI
-bootstrapDependencyInjection();
+import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
+import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
+import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
+import { differenceInHours, minTime } from "date-fns";
+import { getFeaturesEnabled } from "../src/features";
 
 (async () => {
-  const settings = await bootstrapSettings(
-    await getDirectConfig(breeWorkerData.job.worker.workerData)
-  );
+  const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
 
-  // we create a logger that always has a a field telling us the context was the
-  // job handler
+  const settings = await bootstrapSettings(rawConfig);
+
+  // we create a logger that always has a field telling us that the context was the
+  // job handler - allows us to separate out job logs in CloudWatch
   const logger = pino(settings.logger).child({ context: "job-handler" });
 
-  container.register<ElsaSettings>("Settings", {
+  // global settings for DI
+  const dc = await bootstrapDependencyInjection(
+    logger,
+    rawConfig.devTesting?.mockAwsCloud
+  );
+
+  dc.register<ElsaSettings>("Settings", {
     useValue: settings,
   });
 
-  container.register<Logger>("Logger", {
+  dc.register<Logger>("Logger", {
     useValue: logger,
   });
 
-  // store boolean if the job is cancelled
-  let isCancelled = false;
+  const features = await getFeaturesEnabled(dc, settings);
+
+  dc.register<ReadonlySet<string>>("Features", {
+    useValue: features,
+  });
+
+  // store boolean if the job handler is cancelled
+  let isJobHandlerCancelled = false;
 
   let failureCount = 0;
 
   // handle cancellation
   if (parentPort)
     parentPort.on("message", (message) => {
-      if (message === "cancel") isCancelled = true;
+      if (message === "cancel") isJobHandlerCancelled = true;
     });
 
   // this is a measure of the chunk size of work we want to do
@@ -47,16 +60,35 @@ bootstrapDependencyInjection();
   // jobs will take about this amount of seconds before the signal is noticed
   const secondsChunk = 10;
 
+  let lastEmptyInProgressMessageDateTime = minTime;
+
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
-      const jobsService = container.resolve(JobsService);
+      const jobService = dc.resolve(JobService);
+      const jobCloudFormationCreateService = dc.resolve(
+        JobCloudFormationCreateService
+      );
+      const jobCloudFormationDeleteService = dc.resolve(
+        JobCloudFormationDeleteService
+      );
+      const jobCopyOutService = dc.resolve(JobCopyOutService);
 
-      const jobs = await jobsService.getInProgressJobs();
+      const jobs = await jobService.getInProgressJobs();
 
-      logger.debug(`Check for in progress jobs resulted in set ${jobs}`);
+      if (!jobs || jobs.length < 1) {
+        if (
+          differenceInHours(Date.now(), lastEmptyInProgressMessageDateTime) > 0
+        ) {
+          logger.debug(
+            `Check for in progress jobs resulted in empty set (this message occurs hourly even though checks are more frequent)`
+          );
+          lastEmptyInProgressMessageDateTime = Date.now();
+        }
+      } else {
+        // we always want to log this if we have actual jobs in progress
+        logger.debug(`Check for in progress jobs resulted in set ${jobs}`);
 
-      if (jobs && jobs.length > 0) {
         // our jobs will be a mixture of 'compute' and 'io'.. what we want to do is structure them
         // into small chunks of work (be that compute or io)
         // we then ask each job to progress its work...
@@ -75,11 +107,11 @@ bootstrapDependencyInjection();
 
           if (j.requestedCancellation) {
             logger.info(
-              `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseId}`
+              `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`
             );
           } else {
             logger.info(
-              `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseId}`
+              `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`
             );
           }
 
@@ -90,27 +122,25 @@ bootstrapDependencyInjection();
           switch (j.jobType) {
             case "SelectJob":
               if (j.requestedCancellation)
-                jobPromises.push(
-                  jobsService.endSelectJob(j.jobId, false, true)
-                );
+                jobPromises.push(jobService.endSelectJob(j.jobId, false, true));
               else
                 jobPromises.push(
-                  jobsService
+                  jobService
                     .doSelectJobWork(j.jobId, secondsChunk)
                     .then((result) => {
                       if (result === 0)
-                        return jobsService.endSelectJob(j.jobId, true, false);
+                        return jobService.endSelectJob(j.jobId, true, false);
                     })
                 );
               break;
 
             case "CloudFormationInstallJob":
               jobPromises.push(
-                jobsService
+                jobCloudFormationCreateService
                   .doCloudFormationInstallJob(j.jobId)
                   .then((result) => {
                     if (result === 0)
-                      return jobsService.endCloudFormationInstallJob(
+                      return jobCloudFormationCreateService.endCloudFormationInstallJob(
                         j.jobId,
                         true,
                         false
@@ -120,6 +150,26 @@ bootstrapDependencyInjection();
               break;
 
             case "CloudFormationDeleteJob":
+              jobPromises.push(
+                jobCloudFormationDeleteService
+                  .doCloudFormationDeleteJob(j.jobId)
+                  .then((result) => {
+                    if (result === 0)
+                      return jobCloudFormationDeleteService.endCloudFormationDeleteJob(
+                        j.jobId,
+                        true
+                      );
+                  })
+              );
+              break;
+
+            case "CopyOutJob":
+              jobPromises.push(
+                jobCopyOutService.progressCopyOutJob(j.jobId).then((result) => {
+                  if (result === 0)
+                    return jobCopyOutService.endCopyOutJob(j.jobId, true);
+                })
+              );
               break;
 
             default:
@@ -129,14 +179,19 @@ bootstrapDependencyInjection();
 
         // we progress some work from each that wants work done
         const jobResults = await Promise.all(jobPromises);
-      } else {
-        await sleep(secondsChunk * 1000);
       }
+
+      await sleep(secondsChunk * 1000);
 
       logger.flush();
 
       // the only way we finish the job service is if the parent asks us
-      if (isCancelled) process.exit(0);
+      if (isJobHandlerCancelled) {
+        logger.warn(
+          "JOB SERVICE FAILURE - RECEIVED PARENT CANCELLATION MESSAGE"
+        );
+        process.exit(0);
+      }
     } catch (e) {
       // TODO replace with a better failure mechanism
       // if we hit 1000 failures then chances are we *are* just looping with failure and we probably do want to exit

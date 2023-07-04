@@ -1,5 +1,6 @@
 {
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
-  maxmindDbAssetPath: "asset/maxmind/db/",
+  releaseKeyPrefix: "R",
+  ipLookup: { maxMindDbPath: "config/Geoacumen-Country.mmdb" },
 }

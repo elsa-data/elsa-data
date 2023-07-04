@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
 import { ReleaseService } from "../../src/business/services/release-service";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
 import e from "../../dbschema/edgeql-js";
@@ -10,71 +10,90 @@ import {
   ReleaseDeactivationStateError,
 } from "../../src/business/exceptions/release-activation";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
+import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;
+let releaseActivationService: ReleaseActivationService;
 let manifestService: ManifestService;
-let testReleaseId: string;
+let testReleaseKey: string;
 
-let allowedDataOwnerUser: AuthenticatedUser;
-let allowedPiUser: AuthenticatedUser;
+let superAdminUser: AuthenticatedUser;
+let allowedManagerUser: AuthenticatedUser;
 let notAllowedUser: AuthenticatedUser;
 
-beforeAll(async () => {
-  const testContainer = await registerTypes();
+const testContainer = registerTypes();
 
+beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
+  releaseActivationService = testContainer.resolve(ReleaseActivationService);
   manifestService = testContainer.resolve(ManifestService);
 });
 
 beforeEach(async () => {
-  ({ testReleaseId, allowedDataOwnerUser, allowedPiUser, notAllowedUser } =
-    await beforeEachCommon());
+  ({ testReleaseKey, superAdminUser, allowedManagerUser, notAllowedUser } =
+    await beforeEachCommon(testContainer));
 });
 
 it("releases can be activated", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
+  const result = await releaseService.get(superAdminUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
   expect(result.activation).toBeDefined();
   expect(result.activation!.activatedByDisplayName).toBe(
-    "Test User Who Is Allowed Data Owner Access"
+    "Test User Who Is a SuperAdmin Access"
   );
 });
 
 it("active releases have a manifest", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
-  const result = await manifestService.getActiveManifest(testReleaseId);
+  const result = await manifestService.getActiveManifest(testReleaseKey);
 
   assert(result != null);
 
   expect(result).toBeDefined();
-  expect(result).toHaveProperty("id");
-  expect(result).toHaveProperty("cases");
-  expect(result.cases).toHaveLength(6);
-  expect(result).toHaveProperty("reads");
-  expect(result).toHaveProperty("variants");
+
+  // note: we aren't doing much testing here of the _content_ of the manifest - as that should be tested
+  // as part of the manifest service.. what we want to test is that some basic content is saved and returned
+  expect(result).toHaveProperty("caseTree");
+  expect(result.caseTree).toHaveLength(6);
+  expect(result).toHaveProperty("specimenList");
 });
 
 it("releases that are active can't be activated again", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   await expect(
-    releaseService.activateRelease(allowedDataOwnerUser, testReleaseId)
+    releaseActivationService.activateRelease(superAdminUser, testReleaseKey)
   ).rejects.toThrow(ReleaseActivationStateError);
 });
 
 it("releases can be deactivated", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
-  const result = await releaseService.get(allowedDataOwnerUser, testReleaseId);
+  const result = await releaseService.get(superAdminUser, testReleaseKey);
 
   expect(result).not.toBeNull();
   assert(result != null);
@@ -83,17 +102,35 @@ it("releases can be deactivated", async () => {
 
 it("deactivation only works when activated", async () => {
   await expect(
-    releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId)
+    releaseActivationService.deactivateRelease(superAdminUser, testReleaseKey)
   ).rejects.toThrow(ReleaseDeactivationStateError);
 });
 
 it("deactivation creates a history of activations", async () => {
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.activateRelease(allowedDataOwnerUser, testReleaseId);
-  await releaseService.deactivateRelease(allowedDataOwnerUser, testReleaseId);
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.activateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
+  await releaseActivationService.deactivateRelease(
+    superAdminUser,
+    testReleaseKey
+  );
 
   // for the moment we can only check the history direct in the db
   const r = await e

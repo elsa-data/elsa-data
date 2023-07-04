@@ -1,4 +1,10 @@
 import e from "../../../dbschema/edgeql-js";
+import { RouteValidation } from "@umccr/elsa-types";
+import * as interfaces from "../../../dbschema/interfaces";
+
+import ReleaseAuditEvent = interfaces.audit.ReleaseAuditEvent;
+import AuditEvent = interfaces.audit.AuditEvent;
+import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 /**
  * An EdgeDb query to count the audit log entries not associated
@@ -14,31 +20,55 @@ export const countAuditLogEntriesForSystemQuery = e.count(
  */
 export const countAuditLogEntriesForReleaseQuery = e.params(
   {
-    releaseId: e.uuid,
+    releaseKey: e.str,
   },
   (params) =>
     e.count(
       e.select(e.audit.ReleaseAuditEvent, (ae) => ({
-        filter: e.op(ae.release_.id, "=", params.releaseId),
+        filter: e.op(ae.release_.releaseKey, "=", params.releaseKey),
       }))
     )
 );
 
 /**
- * An EdgeDb query to count the DataAccessAudit log entries associated
- * with a given release.
+ * An EdgeDb query to count the audit log entries associated
+ * with a given user.
  */
-export const countDataAccessAuditLogEntriesQuery = e.params(
+export const countAuditLogEntriesForUserQuery = e.params(
   {
-    releaseId: e.uuid,
+    userId: e.uuid,
   },
   (params) =>
     e.count(
-      e.select(e.audit.DataAccessAuditEvent, (da) => ({
-        filter: e.op(da.release_.id, "=", params.releaseId),
+      e.select(e.audit.UserAuditEvent, (ae) => ({
+        filter: e.op(ae.user_.id, "=", params.userId),
       }))
     )
 );
+
+/**
+ * Common properties for audit events.
+ */
+export const auditEventProperties = {
+  id: true,
+  actionCategory: true,
+  actionDescription: true,
+  recordedDateTime: true,
+  updatedDateTime: true,
+  occurredDateTime: true,
+  occurredDuration: true,
+  outcome: true,
+  inProgress: true,
+} as const;
+
+/**
+ * Common properties for owned audit events.
+ */
+export const ownedAuditEventProperties = {
+  ...auditEventProperties,
+  whoId: true,
+  whoDisplayName: true,
+} as const;
 
 /**
  * An EdgeDb query for the audit log details associated with an id.
@@ -50,7 +80,8 @@ export const auditLogDetailsForIdQuery = (
 ) => {
   const detailsStr = (auditEvent: any) =>
     e.to_str(auditEvent.details, "pretty");
-  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+
+  return e.select(e.audit.AuditEvent, (auditEvent) => ({
     id: true,
     detailsStr: detailsStr(auditEvent).slice(start, end),
     truncated: e.op(e.len(detailsStr(auditEvent)), ">=", end),
@@ -62,8 +93,10 @@ export const auditLogDetailsForIdQuery = (
  * An EdgeDb query for the full audit log event associated with an id.
  */
 export const auditLogFullForIdQuery = (id: string) => {
-  return e.select(e.audit.ReleaseAuditEvent, (_) => ({
-    ...e.audit.ReleaseAuditEvent["*"],
+  return e.select(e.audit.AuditEvent, (_) => ({
+    ...e.audit.AuditEvent["*"],
+    ...e.is(e.audit.OwnedAuditEvent, { whoId: true }),
+    ...e.is(e.audit.OwnedAuditEvent, { whoDisplayName: true }),
     filter_single: { id: e.uuid(id) },
   }));
 };
@@ -73,49 +106,22 @@ export const auditLogFullForIdQuery = (id: string) => {
  * a given release.
  */
 export const pageableAuditLogEntriesForReleaseQuery = (
-  releaseId: string,
+  releaseKey: string,
   limit: number,
   offset: number,
-  orderByProperty: string = "occurredDateTime",
+  orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
   return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
-    id: true,
-    whoId: true,
-    whoDisplayName: true,
-    actionCategory: true,
-    actionDescription: true,
-    recordedDateTime: true,
-    updatedDateTime: true,
-    occurredDateTime: true,
-    occurredDuration: true,
-    outcome: true,
+    ...ownedAuditEventProperties,
     hasDetails: e.op("exists", auditEvent.details),
-    filter: e.op(auditEvent.release_.id, "=", e.uuid(releaseId)),
+    filter: e.op(auditEvent.release_.releaseKey, "=", releaseKey),
     order_by: [
       {
         expression:
-          orderByProperty === "whoId"
-            ? auditEvent.whoId
-            : orderByProperty === "whoDisplayName"
-            ? auditEvent.whoDisplayName
-            : orderByProperty === "actionCategory"
+          orderByProperty === "actionCategory"
             ? e.cast(e.str, auditEvent.actionCategory)
-            : orderByProperty === "actionDescription"
-            ? auditEvent.actionDescription
-            : orderByProperty === "recordedDateTime"
-            ? auditEvent.recordedDateTime
-            : orderByProperty === "updatedDateTime"
-            ? auditEvent.updatedDateTime
-            : orderByProperty === "occurredDateTime"
-            ? auditEvent.occurredDateTime
-            : orderByProperty === "occurredDuration"
-            ? auditEvent.occurredDuration
-            : orderByProperty === "outcome"
-            ? auditEvent.outcome
-            : orderByProperty === "details"
-            ? auditEvent.details
-            : auditEvent.occurredDateTime,
+            : auditEvent[orderByProperty],
         direction: orderAscending ? e.ASC : e.DESC,
       },
       {
@@ -128,54 +134,262 @@ export const pageableAuditLogEntriesForReleaseQuery = (
   }));
 };
 
-export const selectDataAccessAuditEventByReleaseIdQuery = (
-  releaseId: string,
+/**
+ * Insert an audit event when a user is added to a release.
+ */
+export const addUserAuditEventToReleaseQuery = (
+  whoId: string,
+  whoDisplayName: string,
+  role: string,
+  releaseKey?: string
+) => {
+  return e.insert(e.audit.UserAuditEvent, {
+    whoId,
+    whoDisplayName,
+    occurredDateTime: new Date(),
+    actionCategory: "E",
+    actionDescription:
+      releaseKey !== undefined
+        ? `Add user to release: ${releaseKey}`
+        : "Add user to release",
+    outcome: 0,
+    details: e.json({ role: role }),
+    inProgress: false,
+  });
+};
+
+/**
+ * Insert an audit event when a user's permission is changed.
+ */
+export const addUserAuditEventPermissionChange = (
+  whoId: string,
+  whoDisplayName: string,
+  permission: Record<string, boolean>
+) => {
+  return e.insert(e.audit.UserAuditEvent, {
+    whoId,
+    whoDisplayName,
+    occurredDateTime: new Date(),
+    actionCategory: "E",
+    actionDescription: `Change user permission`,
+    outcome: 0,
+    details: e.json(permission),
+    inProgress: false,
+  });
+};
+
+/**
+ * A pageable EdgeDb query for the audit log entries associated with
+ * a given release.
+ */
+export const pageableAuditEventsForUserInRelease = (
+  userIds: [string] | "all",
   limit: number,
   offset: number,
-  orderByProperty: string = "occurredDateTime",
+  computeDetails: boolean = true,
+  paginate: boolean = true,
+  orderByProperty: keyof ReleaseAuditEvent = "occurredDateTime",
   orderAscending: boolean = false
 ) => {
-  return e.select(e.audit.DataAccessAuditEvent, (da) => ({
-    ...e.audit.DataAccessAuditEvent["*"],
-    fileSize: da.details.size,
-    fileUrl: da.details.url,
-    filter: e.op(da.release_.id, "=", e.uuid(releaseId)),
-    order_by: [
-      {
-        expression:
-          orderByProperty === "whoId"
-            ? da.whoId
-            : orderByProperty === "whoDisplayName"
-            ? da.whoDisplayName
-            : orderByProperty === "actionCategory"
-            ? e.cast(e.str, da.actionCategory)
-            : orderByProperty === "actionDescription"
-            ? da.actionDescription
-            : orderByProperty === "recordedDateTime"
-            ? da.recordedDateTime
-            : orderByProperty === "updatedDateTime"
-            ? da.updatedDateTime
-            : orderByProperty === "occurredDateTime"
-            ? da.occurredDateTime
-            : orderByProperty === "occurredDuration"
-            ? da.occurredDuration
-            : orderByProperty === "outcome"
-            ? da.outcome
-            : orderByProperty === "fileUrl"
-            ? da.details.url
-            : orderByProperty === "fileSize"
-            ? da.details.size
-            : orderByProperty === "egressBytes"
-            ? da.egressBytes
-            : da.occurredDateTime,
-        direction: orderAscending ? e.ASC : e.DESC,
-      },
-      {
-        expression: da.occurredDateTime,
-        direction: e.DESC,
-      },
-    ],
-    limit: limit,
-    offset: offset,
+  return e.select(e.audit.ReleaseAuditEvent, (auditEvent) => ({
+    ...ownedAuditEventProperties,
+    ...(computeDetails && {
+      hasDetails: e.op("exists", auditEvent.details),
+    }),
+    ...(userIds !== "all" && {
+      filter: e.op(
+        e.array_unpack(e.literal(e.array(e.uuid), userIds)),
+        "in",
+        auditEvent.release_.participants.id
+      ),
+    }),
+    ...(paginate && {
+      order_by: [
+        {
+          expression:
+            orderByProperty === "actionCategory"
+              ? e.cast(e.str, auditEvent.actionCategory)
+              : auditEvent[orderByProperty],
+          direction: orderAscending ? e.ASC : e.DESC,
+        },
+        {
+          expression: auditEvent.occurredDateTime,
+          direction: e.DESC,
+        },
+      ],
+      limit: limit,
+      offset: offset,
+    }),
+  }));
+};
+
+/**
+ * A pageable EdgeDb query for the audit log events associated with
+ * a given user and system events.
+ */
+export const pageableAuditEventsQuery = (
+  filter: Omit<AuditEventUserFilterType, "all">[],
+  userIds: [string] | "all",
+  limit: number,
+  offset: number,
+  paginate: boolean = true,
+  orderByProperty: keyof AuditEvent = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  const union = e.for(
+    e.array_unpack(
+      e.literal(
+        e.array(e.str),
+        filter.map((v) => v.toString())
+      )
+    ),
+    (f) => {
+      return e.op(
+        pageableAuditEventsForUserInRelease(
+          userIds,
+          limit,
+          offset,
+          false,
+          false,
+          orderByProperty,
+          orderAscending
+        ),
+        "if",
+        e.op(f, "=", "release"),
+        "else",
+        e.op(
+          pageableAuditLogEntriesForUserQuery(
+            userIds,
+            limit,
+            offset,
+            false,
+            false,
+            orderByProperty,
+            orderAscending
+          ),
+          "if",
+          e.op(f, "=", "user"),
+          "else",
+          pageableAuditLogEntriesForSystemQuery(
+            limit,
+            offset,
+            false,
+            false,
+            orderByProperty,
+            orderAscending
+          )
+        )
+      );
+    }
+  );
+
+  return {
+    count: e.count(union),
+    entries: e.select(union, (auditEvent) => ({
+      ...auditEventProperties,
+      ...e.is(e.audit.OwnedAuditEvent, { whoId: true }),
+      ...e.is(e.audit.OwnedAuditEvent, { whoDisplayName: true }),
+      hasDetails: e.op("exists", auditEvent.details),
+      ...(paginate && {
+        order_by: [
+          {
+            expression:
+              orderByProperty === "actionCategory"
+                ? e.cast(e.str, auditEvent.actionCategory)
+                : auditEvent[orderByProperty],
+            direction: orderAscending ? e.ASC : e.DESC,
+          },
+          {
+            expression: auditEvent.occurredDateTime,
+            direction: e.DESC,
+          },
+        ],
+        limit: limit,
+        offset: offset,
+      }),
+    })),
+  };
+};
+
+/**
+ * A pageable EdgeDb query for the audit log entries associated with
+ * a given user.
+ */
+export const pageableAuditLogEntriesForUserQuery = (
+  userIds: [string] | "all",
+  limit: number,
+  offset: number,
+  computeDetails: boolean = true,
+  paginate: boolean = true,
+  orderByProperty: keyof AuditEvent = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  return e.select(
+    e.audit.AuditEvent.is(e.audit.UserAuditEvent),
+    (auditEvent) => ({
+      ...ownedAuditEventProperties,
+      ...(computeDetails && {
+        hasDetails: e.op("exists", auditEvent.details),
+      }),
+      ...(userIds !== "all" && {
+        filter: e.contains(
+          e.literal(e.array(e.uuid), userIds),
+          auditEvent.user_.id
+        ),
+      }),
+      ...(paginate && {
+        order_by: [
+          {
+            expression:
+              orderByProperty === "actionCategory"
+                ? e.cast(e.str, auditEvent.actionCategory)
+                : auditEvent[orderByProperty],
+            direction: orderAscending ? e.ASC : e.DESC,
+          },
+          {
+            expression: auditEvent.occurredDateTime,
+            direction: e.DESC,
+          },
+        ],
+        limit: limit,
+        offset: offset,
+      }),
+    })
+  );
+};
+
+/**
+ * A pageable EdgeDb query for system audit log entries.
+ */
+export const pageableAuditLogEntriesForSystemQuery = (
+  limit: number,
+  offset: number,
+  computeDetails: boolean = true,
+  paginate: boolean = true,
+  orderByProperty: keyof AuditEvent = "occurredDateTime",
+  orderAscending: boolean = false
+) => {
+  return e.select(e.audit.SystemAuditEvent, (auditEvent) => ({
+    ...auditEventProperties,
+    ...(computeDetails && {
+      hasDetails: e.op("exists", auditEvent.details),
+    }),
+    ...(paginate && {
+      order_by: [
+        {
+          expression:
+            orderByProperty === "actionCategory"
+              ? e.cast(e.str, auditEvent.actionCategory)
+              : auditEvent[orderByProperty],
+          direction: orderAscending ? e.ASC : e.DESC,
+        },
+        {
+          expression: auditEvent.occurredDateTime,
+          direction: e.DESC,
+        },
+      ],
+      limit: limit,
+      offset: offset,
+    }),
   }));
 };

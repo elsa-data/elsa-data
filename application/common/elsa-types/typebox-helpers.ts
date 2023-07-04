@@ -17,3 +17,6 @@ export function StringUnion<T extends string[]>(
 ): TUnion<IntoStringUnion<T>> {
   return { enum: values } as any;
 }
+
+export const Nullable = <T extends TSchema>(schema: T) =>
+  Type.Union([schema, Type.Null()]);

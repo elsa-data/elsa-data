@@ -1,7 +1,15 @@
 import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
-import { ManifestService } from "../../../business/services/manifests/manifest-service";
-import { ManifestType } from "../../../business/services/manifests/manifest-types";
+import {
+  ManifestHtsgetParamsSchema,
+  ManifestHtsgetParamsType,
+  ManifestHtsgetQuerySchema,
+  ManifestHtsgetQueryType,
+  ManifestHtsgetResponseSchema,
+  ManifestHtsgetResponseType,
+} from "../../../business/services/manifests/htsget/manifest-htsget-types";
+import { ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
+import { ManifestHtsgetStorageNotEnabled } from "../../../business/exceptions/manifest-htsget";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,
@@ -9,25 +17,42 @@ export const manifestRoutes = async (
     container: DependencyContainer;
   }
 ) => {
-  const manifestService = opts.container.resolve(ManifestService);
-
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
-  // TODO need clarity on what release id is used here - the EdgeDb one or the release identifier?
-  fastify.get<{ Params: { releaseId: string }; Reply: ManifestType }>(
-    "/manifest/:releaseId",
-    {},
+  fastify.get<{
+    Params: ManifestHtsgetParamsType;
+    Reply: ManifestHtsgetResponseType;
+    Querystring: ManifestHtsgetQueryType;
+  }>(
+    "/manifest/htsget/:releaseKey",
+    {
+      schema: {
+        params: ManifestHtsgetParamsSchema,
+        response: {
+          "2xx": ManifestHtsgetResponseSchema,
+        },
+        querystring: ManifestHtsgetQuerySchema,
+      },
+    },
     async function (request, reply) {
-      const releaseId = request.params.releaseId;
+      if (request.query.type === "GCP" || request.query.type === "R2") {
+        throw new ManifestHtsgetStorageNotEnabled();
+      }
 
-      console.log(releaseId);
+      const releaseKey = request.params.releaseKey;
 
-      const manifest = await manifestService.getActiveManifest(releaseId);
+      const manifestService = opts.container.resolve<ManifestHtsgetService>(
+        request.query.type
+      );
 
-      // whether it be lack of permissions, or bad release id, or non active release - we return 404 Not Found
-      // if we have nothing correct to send
-      if (!manifest) reply.status(404).send();
-      else reply.send(manifest);
+      const output = await manifestService.publishHtsgetManifest(releaseKey);
+
+      reply
+        .header(
+          "Cache-Control",
+          `public, max-age=${output.maxAge}, must-revalidate, immutable`
+        )
+        .send(output);
     }
   );
 };

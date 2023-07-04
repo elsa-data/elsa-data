@@ -1,5 +1,5 @@
 import { Client, createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/blank-test-data";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
 
 describe("edgedb tests", () => {
   let edgeDbClient: Client;

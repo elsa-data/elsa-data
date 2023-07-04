@@ -1,12 +1,22 @@
-CREATE MIGRATION m1bvd6nj7f6xoi54eev5snbeavsli35iejhisxmg7fqqgujd3uvdgq
-    ONTO m1xrjtf74ctw3zx23f7f2cq4rtzfyrjsxhhqv76o5qqotrn7t563eq
+CREATE MIGRATION m14vusedvn5asyxmhxcuam4md72nguug7fw7lzzsds4fipg7e3v6ha
+    ONTO m1g7nv7dyddbdoy5l6yj53gh2dkv2wytkkecpxd23cevmnp3qb44sq
 {
-  ALTER TYPE dataset::Dataset {
-      CREATE REQUIRED PROPERTY isInConfig -> std::bool {
-          SET default := true;
+  CREATE MODULE mock IF NOT EXISTS;
+  CREATE TYPE mock::AwsCloudFormationStack {
+      CREATE REQUIRED PROPERTY installedDateTime: std::datetime;
+      CREATE REQUIRED PROPERTY stackId: std::str {
+          CREATE CONSTRAINT std::exclusive;
       };
-      ALTER PROPERTY uri {
-          CREATE CONSTRAINT std::exclusive ON (std::str_lower(__subject__));
+      CREATE REQUIRED PROPERTY stackName: std::str {
+          CREATE CONSTRAINT std::exclusive;
       };
+  };
+  ALTER TYPE release::DataSharingConfiguration {
+      ALTER PROPERTY awsAccessPointAccountId {
+          RENAME TO awsAccessPointName;
+      };
+  };
+  ALTER TYPE release::DataSharingConfiguration {
+      DROP PROPERTY awsAccessPointVpcId;
   };
 };

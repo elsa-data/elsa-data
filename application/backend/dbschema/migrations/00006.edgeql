@@ -1,12 +1,10 @@
-CREATE MIGRATION m1jsh3lpg6if43yagemnjbkgzejmntxoyaabfi67io7e5budip7sma
-    ONTO m1bvd6nj7f6xoi54eev5snbeavsli35iejhisxmg7fqqgujd3uvdgq
+CREATE MIGRATION m142tdkfmmn77abmq66myb34tvorxht5qkhp4s4nslh3j5vdn55qda
+    ONTO m14vusedvn5asyxmhxcuam4md72nguug7fw7lzzsds4fipg7e3v6ha
 {
-  ALTER TYPE dataset::Dataset {
-      CREATE PROPERTY updatedDateTime -> std::datetime;
+  ALTER TYPE release::DataSharingConfiguration {
+      CREATE MULTI PROPERTY htsgetRestrictions: std::str;
   };
-  ALTER TYPE storage::File {
-      CREATE REQUIRED PROPERTY isDeleted -> std::bool {
-          SET default := false;
-      };
+  ALTER TYPE release::Release {
+      DROP PROPERTY htsgetRestrictions;
   };
 };

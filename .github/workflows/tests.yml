@@ -4,13 +4,13 @@ on: push
 
 jobs:
   test:
-    timeout-minutes: 30
+    timeout-minutes: 15
     runs-on: ubuntu-latest
 
     # run an EdgeDb in the background that will be connected to from our app
     services:
       edgedb:
-        image: edgedb/edgedb:2.7
+        image: edgedb/edgedb:3
         env:
           EDGEDB_SERVER_SECURITY: insecure_dev_mode
         ports:
@@ -40,6 +40,17 @@ jobs:
             application/frontend
           install-command: npm ci --install-links=false
 
+      # Sanity/lint checks
+      - name: Run pre build lint checks
+        run: |
+          if ! grep -qR "container.*tsyringe" src/ tests/ jobs/; then
+            echo "No use of global tsyringe container"
+          else
+            echo "Found an import of the global tsyringe container"
+            exit 1
+          fi
+        working-directory: application/backend
+
       # unit tests can run first before any databases are set up
       - name: Run unit tests
         run: npm run test:unit
@@ -51,6 +62,8 @@ jobs:
       # install the EdgeDb CLI
       - uses: edgedb/setup-edgedb@v1.2.2
         with:
+          cli-version: stable
+          server-version: none
           server-dsn: ${{ env.EDGEDB_DSN }}
 
       # get our database schema correct
@@ -66,6 +79,20 @@ jobs:
         run: npx tsc --noEmit
         working-directory: application/backend
 
+      # esbuild should succeed and contain no warnings
+      - name: esbuild check
+        run: |
+          output=$(npx node bundle-build.js 2>&1)
+          if [[ $? == 0 ]]; then
+            rm -r server
+            echo "esbuild ran successfully"
+          else
+            echo "esbuild did not succeed"
+            echo "${output}"
+            exit 1
+          fi
+        working-directory: application/backend
+
       # db tests run only in the backend and concentrate on validating edgeql queries
       - name: Run database tests
         run: npm run test:db
@@ -78,6 +105,15 @@ jobs:
           # whilst ever we allow React warnings in dev we need to do this to switch off CI over strictness
           CI: false
 
+      # integration tests run only in the backend and concentrate on auth/http/trpc mechanics (but need frontend files for something to serve as HTML)
+      - name: Run integration tests
+        run: npm run test:integration
+        working-directory: application/backend
+
+      - name: Run service tests
+        run: npm run test:service
+        working-directory: application/backend
+
       # setup a cache explicitly for Playwright dependencies (browser dependencies at the OS level)
       # https://justin.poehnelt.com/posts/caching-playwright-in-github-actions/
       - uses: actions/cache@v3
@@ -88,15 +124,19 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('./e2e/package-lock.json') }}
 
       # install the OS playwright dependencies but hopefully with caching
-      - run: npx playwright install --with-deps
+      - run: npx playwright install --with-deps chromium
         working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-      - run: npx playwright install-deps
+      - run: npx playwright install-deps chromium
         working-directory: e2e
         if: steps.playwright-cache.outputs.cache-hit == 'true'
 
+      - name: Setup E2E database state
+        run: npm run test:blank
+        working-directory: application/backend
+
       # run the UI tests
-      - run: npx playwright test
+      - run: npx playwright test --trace on
         working-directory: e2e
 
       - uses: actions/upload-artifact@v3

@@ -1,31 +1,31 @@
 import { AuthenticatedUser } from "../authenticated-user";
 import * as edgedb from "edgedb";
-import { inject, injectable, singleton } from "tsyringe";
-import { UsersService } from "./users-service";
-import { GcpBaseService } from "./gcp-base-service";
-import { AuditLogService } from "./audit-log-service";
+import { inject, injectable } from "tsyringe";
+import { UserService } from "./user-service";
+import { GcpEnabledService } from "./gcp-enabled-service";
+import { AuditEventService } from "./audit-event-service";
 import { Storage } from "@google-cloud/storage";
-import {
-  getAllFileRecords,
-  ReleaseFileListEntry,
-} from "./_release-file-list-helper";
+import { getAllFileRecords } from "./_release-file-list-helper";
 import pLimit, { Limit } from "p-limit";
-import { Metadata } from "@google-cloud/storage/build/src/nodejs-common";
+import { ReleaseService } from "./release-service";
+import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 
 @injectable()
-@singleton()
-export class GcpStorageSharingService extends GcpBaseService {
-  storage: Storage;
-  globalLimit: Limit;
-  objectLimits: { [uri: string]: Limit };
+export class GcpStorageSharingService {
+  private readonly storage: Storage;
+  private readonly globalLimit: Limit;
+  private readonly objectLimits: { [uri: string]: Limit };
 
   constructor(
     @inject("Database") protected edgeDbClient: edgedb.Client,
-    private usersService: UsersService,
-    private auditLogService: AuditLogService
+    @inject(UserService) private readonly userService: UserService,
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditEventService)
+    private readonly auditLogService: AuditEventService,
+    @inject(GcpEnabledService)
+    private readonly gcpEnabledService: GcpEnabledService
   ) {
-    super();
-
     this.storage = new Storage();
 
     // GCP probably rate-limits API requests, otherwise their `Storage` library
@@ -57,60 +57,16 @@ export class GcpStorageSharingService extends GcpBaseService {
     return this.objectLimits[uri];
   }
 
-  /**
-   * Adds/removes a metadata key-value pair to an object which indicates release
-   * membership.
-   *
-   * @param operation whether to add or delete the release's metadata
-   * @param bucket the bucket which the object belongs to
-   * @param key the object's key
-   * @param releaseId the release the object belongs to
-   */
-  modifyObjectMetadataFn(
-    operation: "add" | "delete",
-    bucket: string,
-    key: string,
-    releaseId: string
-  ): () => Promise<void> {
-    // TODO(DoxasticFox): Delete me when we start using the release service
-    // to figure out which objects belong to an active release
-    const go = async () => {
-      const metadataKey = `elsa-data-release-id-${releaseId}`;
-
-      var updatedMetadata: Metadata = {};
-
-      if (operation === "add") {
-        updatedMetadata = {
-          metadata: {
-            [metadataKey]: true,
-          },
-        };
-      } else if (operation === "delete") {
-        updatedMetadata = {
-          metadata: {
-            [metadataKey]: null,
-          },
-        };
-      } else {
-        throw Error(`Unexpected operation ${operation}`);
-      }
-
-      await this.storage.bucket(bucket).file(key).setMetadata(updatedMetadata);
-    };
-
-    const objectLimit = this.getObjectLimit(bucket, key);
-
-    return () => objectLimit(go);
-  }
-
   modifyObjectPrincipalFn(
     operation: "add" | "delete",
     bucket: string,
     key: string,
-    releaseId: string,
+    releaseKey: string,
     principal: string
   ): () => Promise<void> {
     const go = async () => {
+      await this.gcpEnabledService.enabledGuard();
+
       await this.storage
         .bucket(bucket)
         .file(key)
@@ -129,27 +85,24 @@ export class GcpStorageSharingService extends GcpBaseService {
     operation: "add" | "delete",
     bucket: string,
     key: string,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): (() => Promise<void>)[] {
-    return [
-      ...principals.map((principal) =>
-        this.modifyObjectPrincipalFn(
-          operation,
-          bucket,
-          key,
-          releaseId,
-          principal
-        )
-      ),
-      this.modifyObjectMetadataFn(operation, bucket, key, releaseId),
-    ];
+    return principals.map((principal) =>
+      this.modifyObjectPrincipalFn(
+        operation,
+        bucket,
+        key,
+        releaseKey,
+        principal
+      )
+    );
   }
 
   modifyObjectsPrincipalsFns(
     operation: "add" | "delete",
-    allFiles: ReleaseFileListEntry[],
-    releaseId: string,
+    allFiles: ManifestBucketKeyObjectType[],
+    releaseKey: string,
     principals: string[]
   ): (() => Promise<void>)[] {
     return allFiles.flatMap((f) =>
@@ -157,7 +110,7 @@ export class GcpStorageSharingService extends GcpBaseService {
         operation,
         f.objectStoreBucket,
         f.objectStoreKey,
-        releaseId,
+        releaseKey,
         principals
       )
     );
@@ -170,7 +123,7 @@ export class GcpStorageSharingService extends GcpBaseService {
    *
    * @param operation whether to add or delete IAM ACLs
    * @param user
-   * @param releaseId The release containing the objects whose ACLs will be modified
+   * @param releaseKey The release containing the objects whose ACLs will be modified
    * @param principals The IAM principals to be added or delete from the objects' ACLs
    *
    * @returns The number of objects modified
@@ -178,30 +131,40 @@ export class GcpStorageSharingService extends GcpBaseService {
   async modifyUsers(
     operation: "add" | "delete",
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): Promise<number> {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (userRole != "Administrator") {
+      throw new ReleaseSelectionPermissionError(releaseKey);
+    }
+
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
-      this.edgeDbClient,
       user,
-      releaseId,
+      releaseKey,
       "E",
       "Modified GCP object ACLs for release",
-      now
+      now,
+      this.edgeDbClient
     );
 
     const allFiles = await getAllFileRecords(
       this.edgeDbClient,
-      this.usersService,
+      this.userService,
       user,
-      releaseId
+      releaseKey
     );
 
     const shareFns = this.modifyObjectsPrincipalsFns(
       operation,
       allFiles,
-      releaseId,
+      releaseKey,
       principals
     );
 
@@ -213,24 +176,24 @@ export class GcpStorageSharingService extends GcpBaseService {
       const errorString = e instanceof Error ? e.message : String(e);
 
       await this.auditLogService.completeReleaseAuditEvent(
-        this.edgeDbClient,
         newAuditEventId,
         8,
         now,
         new Date(),
-        { error: errorString }
+        { error: errorString },
+        this.edgeDbClient
       );
 
       throw e;
     }
 
     await this.auditLogService.completeReleaseAuditEvent(
-      this.edgeDbClient,
       newAuditEventId,
       0,
       now,
       new Date(),
-      { numUrls: numberOfFilesModified }
+      { numUrls: numberOfFilesModified },
+      this.edgeDbClient
     );
 
     return numberOfFilesModified;
@@ -238,31 +201,21 @@ export class GcpStorageSharingService extends GcpBaseService {
 
   async addUsers(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): Promise<number> {
-    return await this.modifyUsers("add", user, releaseId, principals);
+    await this.gcpEnabledService.enabledGuard();
+
+    return await this.modifyUsers("add", user, releaseKey, principals);
   }
 
   async deleteUsers(
     user: AuthenticatedUser,
-    releaseId: string,
+    releaseKey: string,
     principals: string[]
   ): Promise<number> {
-    return await this.modifyUsers("delete", user, releaseId, principals);
-  }
+    await this.gcpEnabledService.enabledGuard();
 
-  async manifest(
-    user: AuthenticatedUser,
-    releaseId: string,
-    tsvColumns: string[]
-  ): Promise<{ filename: string; content: string }> {
-    // TODO(DoxasticFox): Implement me. A manifest getter is already implemented
-    // here: application/backend/src/business/services/aws-access-point-service.ts
-    //
-    // Though, once it's implemented, it's probably better to use the release
-    // service which @andrewpatto started working on here:
-    // https://github.com/umccr/elsa-data/pull/186
-    return { filename: "", content: "" };
+    return await this.modifyUsers("delete", user, releaseKey, principals);
   }
 }

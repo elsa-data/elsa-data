@@ -1,52 +1,62 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
-import { LeftDiv, RightDiv } from "../../../components/rh/rh-structural";
-import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
+import { ReleaseTypeLocal } from "../shared-types";
 import {
-  axiosPatchOperationMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "./queries";
+  LeftDiv,
+  RhSection,
+  RightDiv,
+} from "../../../components/rh/rh-structural";
+import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
+import { axiosPatchOperationMutationFn } from "../queries";
+import { trpc } from "../../../helpers/trpc";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
+  isAllowEdit: boolean;
 };
 
 export const FurtherRestrictionsBox: React.FC<Props> = ({
-  releaseId,
+  releaseKey,
   releaseData,
+  isAllowEdit = false,
 }) => {
-  const queryClient = useQueryClient();
+  const utils = trpc.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseId}`),
+    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // whenever we do a mutation of application coded data - our API returns the complete updated
-      // state of the *whole* release - and we can use that data to replace the stored react-query state
-      onSuccess: (result: ReleaseTypeLocal) => {
-        queryClient.setQueryData(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseId),
-          result
-        );
-      },
+      onSuccess: (result: ReleaseTypeLocal) =>
+        // we need to cross over into TRPC world to invalidate its cache
+        // eventually we should move this PATCH to TRPC too
+        utils.releaseRouter.getSpecificRelease.invalidate({
+          releaseKey: releaseKey,
+        }),
     }
   );
 
   const isAllowedCheck = (
-    label: string,
-    path: "/allowedRead" | "/allowedVariant" | "/allowedPhenotype" | null,
+    label: ReactNode,
+    path:
+      | "/allowedRead"
+      | "/allowedVariant"
+      | "/allowedPhenotype"
+      | "/allowedS3"
+      | "/allowedGS"
+      | "/allowedR2"
+      | null,
     current: boolean
   ) => (
     <RhCheckItem
       label={label}
       checked={current}
-      disabled={!path}
+      disabled={!path || !!releaseData.activation}
       className={classNames({ "opacity-50": releasePatchMutate.isLoading })}
+      inputClassName={"checkbox-accent"}
       onChange={(e) => {
         if (path) {
           releasePatchMutate.mutate({
@@ -60,66 +70,70 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   );
 
   return (
-    <Box heading="Further Restrictions">
-      <div className="md:grid md:grid-cols-5 md:gap-6">
+    <Box
+      heading="Access Control"
+      applyIsDisabledStyle={!isAllowEdit}
+      applyIsDisabledAllInput={!isAllowEdit}
+      applyIsActivatedLockedStyle={!!releaseData.activation}
+    >
+      <RhSection>
         <LeftDiv
-          heading={"Allowed Data"}
+          heading={"Data"}
           extra={
-            "Access can be restricted to different types of data based on the requirements of the study"
+            "Access must be granted based on the type and location of the data"
           }
         />
         <RightDiv>
-          <RhChecks label="Allow Access To">
-            {isAllowedCheck("Manifest (always allowed)", null, true)}
-            {isAllowedCheck(
-              "Read Data (e.g. BAM, CRAM, FASTQ, ORA)",
-              "/allowedRead",
-              releaseData.isAllowedReadData
-            )}
-            {isAllowedCheck(
-              "Variant Data (e.g. VCF)",
-              "/allowedVariant",
-              releaseData.isAllowedVariantData
-            )}
-            {isAllowedCheck(
-              "Phenotype Data (e.g. FHIR, Phenopackets)",
-              "/allowedPhenotype",
-              releaseData.isAllowedPhenotypeData
-            )}
-          </RhChecks>
+          <div className="flex w-full">
+            <div className="grid flex-grow">
+              <RhChecks label="By Data Type">
+                {isAllowedCheck("Identifiers (always allowed)", null, true)}
+                {isAllowedCheck(
+                  "Reads (e.g. BAM, CRAM, FASTQ, ORA)",
+                  "/allowedRead",
+                  releaseData.isAllowedReadData
+                )}
+                {isAllowedCheck(
+                  "Variants (e.g. VCF)",
+                  "/allowedVariant",
+                  releaseData.isAllowedVariantData
+                )}
+                {isAllowedCheck(
+                  "Phenotypes (e.g. FHIR, Phenopackets) (currently disabled)",
+                  null,
+                  false
+                )}
+              </RhChecks>
+            </div>
+            <div className="divider divider-horizontal"></div>
+            <div className="grid flex-grow">
+              <RhChecks label="By Data Location">
+                {isAllowedCheck(
+                  <>
+                    AWS S3 (<span className="font-mono">s3://...</span>)
+                  </>,
+                  "/allowedS3",
+                  releaseData.isAllowedS3Data
+                )}
+                {isAllowedCheck(
+                  <>
+                    Google GCP (<span className="font-mono">gs://...</span>)
+                  </>,
+                  "/allowedGS",
+                  releaseData.isAllowedGSData
+                )}
+                {isAllowedCheck(
+                  <>
+                    CloudFlare R2 (<span className="font-mono">r2://...</span>)
+                  </>,
+                  "/allowedR2",
+                  releaseData.isAllowedR2Data
+                )}
+              </RhChecks>
+            </div>
+          </div>
         </RightDiv>
-      </div>
-      {/*} <HrDiv />
-      <div className="md:grid md:grid-cols-5 md:gap-6">
-        <LeftDiv
-          heading={"Allowed File Roles"}
-          extra={
-            "Access may be restricted to only those files playing a specific role in a patients care"
-          }
-        />
-        <RightDiv>
-          <RhChecks label="File roles">
-            <RhCheckItem label="Germline" />
-            <RhCheckItem label="Somatic" />
-          </RhChecks>
-        </RightDiv>
-      </div>
-      <HrDiv />
-      <div className="md:grid md:grid-cols-5 md:gap-6">
-        <LeftDiv
-          heading={"Allowed Access Mechanisms"}
-          extra={
-            "Access mechanisms may be restricted to only those included in data transfer agreements"
-          }
-        />
-        <RightDiv>
-          <RhChecks label="Access">
-            <RhCheckItem label="S3" />
-            <RhCheckItem label="htsget" />
-            <RhCheckItem label="DRS" />
-          </RhChecks>
-        </RightDiv>
-      </div> */}
+      </RhSection>
     </Box>
   );
 };

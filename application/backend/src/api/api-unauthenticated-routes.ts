@@ -1,9 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { DependencyContainer } from "tsyringe";
-import {
-  testingDevRoutes,
-  testingRoutes,
-} from "./routes/unauthenticated/testing";
+import { testingDevRoutes } from "./routes/unauthenticated/testing";
+import { healthRoutes } from "./routes/unauthenticated/health";
 
 /**
  * Defined a set of routes that have no authentication
@@ -25,7 +23,7 @@ export const apiUnauthenticatedRoutes = async (
     container: opts.container,
   };
 
-  fastify.register(testingRoutes, newOpts);
+  fastify.register(healthRoutes, newOpts);
 
   if (opts.addDevTestingRoutes) fastify.register(testingDevRoutes, newOpts);
 };

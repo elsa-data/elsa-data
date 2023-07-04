@@ -1,55 +1,59 @@
 import * as edgedb from "edgedb";
-import { container } from "tsyringe";
-import { S3Client } from "@aws-sdk/client-s3";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
-import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
-import { Duration } from "edgedb";
-import { SES } from "@aws-sdk/client-ses";
-import { IPresignedUrlProvider } from "./business/services/presigned-urls-service";
-import { AwsPresignedUrlsService } from "./business/services/aws-presigned-urls-service";
-import { GcpPresignedUrlsService } from "./business/services/gcp-presigned-urls-service";
+import * as tsyringe from "tsyringe";
+import { instanceCachingFactory } from "tsyringe";
+import { IPresignedUrlProvider } from "./business/services/presigned-url-service";
+import { AwsPresignedUrlService } from "./business/services/aws/aws-presigned-url-service";
+import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
+import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
+import { bootstrapDependencyInjectionAwsClients } from "./bootstrap-dependency-injection-aws-clients";
+import { bootstrapDependencyInjectionSingletonServices } from "./bootstrap-dependency-injection-singleton-services";
+import { Logger } from "pino";
 
-export function bootstrapDependencyInjection() {
-  container.register<edgedb.Client>("Database", {
-    useFactory: () =>
+/**
+ * Bootstrap the DI with some basic services that are
+ * available across the entire application.
+ *
+ * @param logger a logger instance in case we want to log as part of DI
+ * @param mockAws if true then introduce mock AWS clients rather than real ones
+ */
+export async function bootstrapDependencyInjection(
+  logger: Logger,
+  mockAws: boolean = false
+) {
+  // this should be the ONLY point where we use the global tsyringe container -
+  // all subsequent dcs should be passed into us - never using the global "container"
+  // (that is why we call it "dc" throughout so we can do easy searches for places
+  // where we have accidentally imported the global container
+  // see our build scripts for where we abort if detecting this regexp)
+  const dc = tsyringe.container.createChildContainer();
+
+  dc.register<edgedb.Client>("Database", {
+    // we want a single instance of the edgedb client as that then will establish a
+    // shared connection pool that is effective
+    // https://www.edgedb.com/docs/clients/js/driver#configuring-clients
+    useFactory: instanceCachingFactory(() =>
       edgedb.createClient().withConfig({
         // we do some bioinformatics activities within a transaction context (looking up variants)
         // and the default 10 seconds sometimes is a bit short
-        session_idle_transaction_timeout: Duration.from({ seconds: 60 }),
-      }),
+        session_idle_transaction_timeout: edgedb.Duration.from({ seconds: 60 }),
+      })
+    ),
   });
 
-  // whilst it is possible to create these AWS clients close to where they are needed - it then becomes
-  // hard to manage any global configuration (not that we have any global config though yet!)
-  // so anyhow - the preferred mechanism for sourcing a AWS service client is by registering
-  // it here and DI it
+  await bootstrapDependencyInjectionAwsClients(dc, logger, mockAws);
 
-  // the assumption here is that AWS_REGION is set by our environment and hence does not need to be
-  // provided here
-  // in all deployed AWS this is true
-  // for local dev we should set AWS_REGION explicitly when setting shell credentials (aws-vault etc)
-  const awsClientConfig = {};
+  bootstrapDependencyInjectionSingletonServices(dc, mockAws);
 
-  container.register<S3Client>("S3Client", {
-    useFactory: () => new S3Client(awsClientConfig),
+  dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: AwsPresignedUrlService,
+  });
+  dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: GcpPresignedUrlService,
+  });
+  dc.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
+    useClass: CloudflarePresignedUrlService,
   });
 
-  container.register<CloudTrailClient>("CloudTrailClient", {
-    useFactory: () => new CloudTrailClient(awsClientConfig),
-  });
-
-  container.register<CloudFormationClient>("CloudFormationClient", {
-    useFactory: () => new CloudFormationClient(awsClientConfig),
-  });
-
-  container.register<SES>("SESClient", {
-    useFactory: () => new SES(awsClientConfig),
-  });
-
-  container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: AwsPresignedUrlsService,
-  });
-  container.register<IPresignedUrlProvider>("IPresignedUrlProvider", {
-    useClass: GcpPresignedUrlsService,
-  });
+  // Note: dependencies of class constructors must be injected manually when using esbuild.
+  return dc;
 }

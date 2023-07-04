@@ -1,5 +1,4 @@
-import { Static, TLiteral, TSchema, TUnion, Type } from "@sinclair/typebox";
-import { CodingSchema } from "./schemas-coding";
+import { Static, Type, TUnion, TLiteral } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
 /**
@@ -26,22 +25,31 @@ export const ReleaseRemsSyncRequestSchema = Type.Object({
   remsKey: Type.String(),
 });
 
-const ObjectStoreRecordKey = [
+export const ObjectStoreRecordKey = [
   "caseId",
   "patientId",
   "specimenId",
-  "fileType",
-  "size",
-  "objectStoreUrl",
+  "objectSize",
+  "objectStoreProtocol",
   "objectStoreBucket",
   "objectStoreKey",
   "objectStoreSigned",
+  "objectStoreUrl",
+  "objectType",
   "md5",
 ] as const;
 
-export const FileRecordHeader = Type.Array(
-  Type.Union(ObjectStoreRecordKey.map((header: string) => Type.Literal(header)))
-);
+const ObjectStoreRecordKeySchema: TLiteral<
+  typeof ObjectStoreRecordKey[number]
+>[] = ObjectStoreRecordKey.map((header) => Type.Literal(header));
+
+const FileRecordHeaderElementSchema: TUnion<typeof ObjectStoreRecordKeySchema> =
+  Type.Union(ObjectStoreRecordKeySchema);
+
+export const FileRecordHeader = Type.Union([
+  Type.Array(FileRecordHeaderElementSchema),
+  FileRecordHeaderElementSchema,
+]);
 
 export const ReleasePresignRequestSchema = Type.Object({
   // id: Type.String(),

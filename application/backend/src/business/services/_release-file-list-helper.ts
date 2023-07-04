@@ -1,34 +1,156 @@
-import e from "../../../dbschema/edgeql-js";
-import { collapseExternalIds } from "./helpers";
-import { Executor } from "edgedb";
+import {
+  collapseExternalIds,
+  doRoleInReleaseCheck,
+  getReleaseInfo,
+} from "./helpers";
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
 import { AuthenticatedUser } from "../authenticated-user";
-import { UsersService } from "./users-service";
+import { UserService } from "./user-service";
+import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+
+// note that we are processing here every artifact that is accessible from
+// the chosen specimens
+// below we apply some simple logic that will rule out classes of artifacts
+// based on the isAllowedReadData, isAllowedVariantData etc
+export const unpackFileArtifact = (
+  fileArtifact: any,
+  includeReadData: boolean = true,
+  includeVariantData: boolean = true
+): Pick<
+  ManifestBucketKeyObjectType,
+  | "artifactId"
+  | "objectType"
+  | "objectSize"
+  | "md5"
+  | "objectStoreUrl"
+  | "objectStoreProtocol"
+  | "objectStoreBucket"
+  | "objectStoreKey"
+  | "objectStoreSigned"
+> | null => {
+  const getMd5 = (checksums: any[]): string => {
+    for (const c of checksums || []) {
+      if (c.type === "MD5") return c.value;
+    }
+    return "";
+  };
+
+  const getRaw = (): Pick<
+    ManifestBucketKeyObjectType,
+    "artifactId" | "md5" | "objectSize" | "objectStoreUrl" | "objectType"
+  > | null => {
+    if (fileArtifact.bclFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "BCL",
+        objectStoreUrl: fileArtifact.bclFile.url,
+        objectSize: fileArtifact.bclFile.size.toString(),
+        artifactId: fileArtifact.bclFile.id,
+        md5: getMd5(fileArtifact.bclFile.checksums),
+      };
+    } else if (fileArtifact.forwardFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "FASTQ",
+        objectStoreUrl: fileArtifact.forwardFile.url,
+        objectSize: fileArtifact.forwardFile.size.toString(),
+        artifactId: fileArtifact.forwardFile.id,
+        md5: getMd5(fileArtifact.forwardFile.checksums),
+      };
+    } else if (fileArtifact.reverseFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "FASTQ",
+        objectStoreUrl: fileArtifact.reverseFile.url,
+        objectSize: fileArtifact.reverseFile.size.toString(),
+        artifactId: fileArtifact.reverseFile.id,
+        md5: getMd5(fileArtifact.reverseFile.checksums),
+      };
+    } else if (fileArtifact.bamFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "BAM",
+        objectStoreUrl: fileArtifact.bamFile.url,
+        objectSize: fileArtifact.bamFile.size.toString(),
+        artifactId: fileArtifact.bamFile.id,
+        md5: getMd5(fileArtifact.bamFile.checksums),
+      };
+    } else if (fileArtifact.baiFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "BAM",
+        objectStoreUrl: fileArtifact.baiFile.url,
+        objectSize: fileArtifact.baiFile.size.toString(),
+        artifactId: fileArtifact.baiFile.id,
+        md5: getMd5(fileArtifact.baiFile.checksums),
+      };
+    } else if (fileArtifact.cramFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "CRAM",
+        objectStoreUrl: fileArtifact.cramFile.url,
+        objectSize: fileArtifact.cramFile.size.toString(),
+        artifactId: fileArtifact.cramFile.id,
+        md5: getMd5(fileArtifact.cramFile.checksums),
+      };
+    } else if (fileArtifact.craiFile) {
+      if (!includeReadData) return null;
+      return {
+        objectType: "CRAM",
+        objectStoreUrl: fileArtifact.craiFile.url,
+        objectSize: fileArtifact.craiFile.size.toString(),
+        artifactId: fileArtifact.craiFile.id,
+        md5: getMd5(fileArtifact.craiFile.checksums),
+      };
+    } else if (fileArtifact.vcfFile) {
+      if (!includeVariantData) return null;
+      return {
+        objectType: "VCF",
+        objectStoreUrl: fileArtifact.vcfFile.url,
+        objectSize: fileArtifact.vcfFile.size.toString(),
+        artifactId: fileArtifact.vcfFile.id,
+        md5: getMd5(fileArtifact.vcfFile.checksums),
+      };
+    } else if (fileArtifact.tbiFile) {
+      if (!includeVariantData) return null;
+      return {
+        objectType: "VCF",
+        objectStoreUrl: fileArtifact.tbiFile.url,
+        objectSize: fileArtifact.tbiFile.size.toString(),
+        artifactId: fileArtifact.tbiFile.id,
+        md5: getMd5(fileArtifact.tbiFile.checksums),
+      };
+    }
+
+    return null;
+  };
+
+  const raw = getRaw();
+
+  if (raw) {
+    // decompose the object URL into protocol, bucket and key
+    const match = raw.objectStoreUrl.match(/^([^:]+):\/\/([^\/]+)\/(.+)$/);
+
+    if (!match) {
+      throw new Error(`Bad URL format: ${raw.objectStoreUrl}`);
+    }
+
+    return {
+      ...raw,
+      objectStoreProtocol: match[1],
+      objectStoreBucket: match[2],
+      objectStoreKey: match[3],
+    };
+  }
+
+  return null;
+};
 
 // TODO possibly this is a 'db' function that could like in that folder
 //      it is very close - but it does some 'business' in collapsing identifiers etc
 //      maybe reconsider as we either add functionality here or move functionality elsewhere
-
-export type ReleaseFileListEntry = {
-  caseId: string;
-  patientId: string;
-  specimenId: string;
-  fileType: string;
-  size: string;
-
-  objectStoreProtocol: string;
-  objectStoreUrl: string;
-  objectStoreBucket: string;
-  objectStoreKey: string;
-
-  // optional fields depending on what type of access asked for
-  objectStoreSigned?: string;
-
-  // optional depending on what checksums have been entered
-  md5?: string;
-};
 
 /**
  * Process the release/specimen information and return a (tabular) list of 'files'
@@ -39,112 +161,20 @@ export type ReleaseFileListEntry = {
  * @param specimens the list of (string) ids of the specimens for the release
  * @param includeReadData whether to include BAM/FASTQ etc
  * @param includeVariantData whether to include VCF etc
+ * @deprecated
  */
 export async function createReleaseFileList(
   executor: Executor,
   specimens: { id: string }[],
   includeReadData: boolean,
   includeVariantData: boolean
-): Promise<ReleaseFileListEntry[]> {
+): Promise<ManifestBucketKeyObjectType[]> {
   // a query to retrieve all the files associated with the given specimen ids
   const filesResult = await artifactFilesForSpecimensQuery.run(executor, {
     specimenIds: specimens.map((s) => s.id),
   });
 
-  const getMd5 = (checksums: any[]): string => {
-    for (const c of checksums || []) {
-      if (c.type === "MD5") return c.value;
-    }
-    return "";
-  };
-
-  // note that we are processing here every artifact that is accessible from
-  // the chosen specimens
-  // below we apply some simple logic that will rule out classes of artifacts
-  // based on the isAllowedReadData, isAllowedVariantData etc
-  const unpackFileArtifact = (
-    fileArtifact: any
-  ): Pick<
-    ReleaseFileListEntry,
-    "fileType" | "objectStoreUrl" | "size" | "md5"
-  > | null => {
-    if (fileArtifact.bclFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "BCL",
-        objectStoreUrl: fileArtifact.bclFile.url,
-        size: fileArtifact.bclFile.size.toString(),
-        md5: getMd5(fileArtifact.bclFile.checksums),
-      };
-    } else if (fileArtifact.forwardFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "FASTQ",
-        objectStoreUrl: fileArtifact.forwardFile.url,
-        size: fileArtifact.forwardFile.size.toString(),
-        md5: getMd5(fileArtifact.forwardFile.checksums),
-      };
-    } else if (fileArtifact.reverseFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "FASTQ",
-        objectStoreUrl: fileArtifact.reverseFile.url,
-        size: fileArtifact.reverseFile.size.toString(),
-        md5: getMd5(fileArtifact.reverseFile.checksums),
-      };
-    } else if (fileArtifact.bamFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "BAM",
-        objectStoreUrl: fileArtifact.bamFile.url,
-        size: fileArtifact.bamFile.size.toString(),
-        md5: getMd5(fileArtifact.bamFile.checksums),
-      };
-    } else if (fileArtifact.baiFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "BAM",
-        objectStoreUrl: fileArtifact.baiFile.url,
-        size: fileArtifact.baiFile.size.toString(),
-        md5: getMd5(fileArtifact.baiFile.checksums),
-      };
-    } else if (fileArtifact.cramFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "CRAM",
-        objectStoreUrl: fileArtifact.cramFile.url,
-        size: fileArtifact.cramFile.size.toString(),
-        md5: getMd5(fileArtifact.cramFile.checksums),
-      };
-    } else if (fileArtifact.craiFile) {
-      if (!includeReadData) return null;
-      return {
-        fileType: "CRAM",
-        objectStoreUrl: fileArtifact.craiFile.url,
-        size: fileArtifact.craiFile.size.toString(),
-        md5: getMd5(fileArtifact.craiFile.checksums),
-      };
-    } else if (fileArtifact.vcfFile) {
-      if (!includeVariantData) return null;
-      return {
-        fileType: "VCF",
-        objectStoreUrl: fileArtifact.vcfFile.url,
-        size: fileArtifact.vcfFile.size.toString(),
-        md5: getMd5(fileArtifact.vcfFile.checksums),
-      };
-    } else if (fileArtifact.tbiFile) {
-      if (!includeVariantData) return null;
-      return {
-        fileType: "VCF",
-        objectStoreUrl: fileArtifact.tbiFile.url,
-        size: fileArtifact.tbiFile.size.toString(),
-        md5: getMd5(fileArtifact.tbiFile.checksums),
-      };
-    }
-    return null;
-  };
-
-  const entries: ReleaseFileListEntry[] = [];
+  const entries: ManifestBucketKeyObjectType[] = [];
 
   for (const f of filesResult) {
     const caseId = collapseExternalIds(f.case_?.externalIdentifiers);
@@ -152,27 +182,19 @@ export async function createReleaseFileList(
     const specimenId = collapseExternalIds(f.externalIdentifiers);
 
     for (const fa of f.artifacts) {
-      const unpacked = unpackFileArtifact(fa);
+      const unpacked = unpackFileArtifact(
+        fa,
+        includeReadData,
+        includeVariantData
+      );
       if (unpacked === null) {
         continue;
       }
 
-      // decompose the object URL into protocol, bucket and key
-      const match = unpacked.objectStoreUrl.match(
-        /^([^:]+):\/\/([^\/]+)\/(.+)$/
-      );
-
-      if (!match) {
-        throw new Error(`Bad URL format: ${unpacked.objectStoreUrl}`);
-      }
-
-      const entry: ReleaseFileListEntry = {
+      const entry: ManifestBucketKeyObjectType = {
         caseId: caseId,
         patientId: patientId,
         specimenId: specimenId,
-        objectStoreProtocol: match[1],
-        objectStoreBucket: match[2],
-        objectStoreKey: match[3],
         ...unpacked,
       };
 
@@ -189,23 +211,24 @@ export async function createReleaseFileList(
  * database - it does not attempt to 'sign urls' etc.
  *
  * @param user
- * @param releaseId
+ * @param releaseKey
+ * @deprecated
  */
 export async function getAllFileRecords(
   edgeDbClient: edgedb.Client,
-  usersService: UsersService,
+  userService: UserService,
   user: AuthenticatedUser,
-  releaseId: string
-): Promise<ReleaseFileListEntry[]> {
+  releaseKey: string
+): Promise<ManifestBucketKeyObjectType[]> {
   const { userRole } = await doRoleInReleaseCheck(
-    usersService,
+    userService,
     user,
-    releaseId
+    releaseKey
   );
 
   const { releaseSelectedSpecimensQuery, releaseInfo } = await getReleaseInfo(
     edgeDbClient,
-    releaseId
+    releaseKey
   );
 
   return await edgeDbClient.transaction(async (tx) => {

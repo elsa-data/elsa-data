@@ -1,19 +1,22 @@
 import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./user.common";
-import { registerTypes } from "./setup";
-import { UsersService } from "../../src/business/services/users-service";
+import { registerTypes } from "../test-dependency-injection.common";
+import { UserService } from "../../src/business/services/user-service";
+import { NotAuthorisedEditUserManagement } from "../../src/business/exceptions/user";
+import { getServices } from "../../src/di-helpers";
+import { ElsaSettings } from "../../src/config/elsa-settings";
 
 let existingUser: AuthenticatedUser;
 let edgeDbClient: edgedb.Client;
-let userService: UsersService;
+let userService: UserService;
+
+const testContainer = registerTypes();
 
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());
 
-  const testContainer = await registerTypes();
-
-  userService = testContainer.resolve(UsersService);
+  userService = testContainer.resolve(UserService);
 });
 
 it("test for existence of user who does exist", async () => {
@@ -61,4 +64,60 @@ it("upsert an existing user to a new display name", async () => {
 
   expect(u!.subjectId).toBe("http://subject1.com");
   expect(u!.displayName).toBe("New Display Name");
+});
+
+it("SuperAdmin change other user permission", async () => {
+  const newContainer = testContainer.createChildContainer();
+
+  // because "superadmin" is a permission derived solely from the config - we need to
+  // alter the settings to make this true just for this test
+  {
+    const { settings } = getServices(newContainer);
+
+    // fix the settings
+    settings.superAdmins.push({
+      sub: existingUser.subjectId,
+    });
+
+    // and set back into the DI container
+    newContainer.register<ElsaSettings>("Settings", {
+      useValue: settings,
+    });
+  }
+
+  const newUserService = newContainer.resolve(UserService);
+
+  const newUser = await newUserService.upsertUserForLogin(
+    "http://test.com",
+    "New Display Name",
+    "test@example.com"
+  );
+
+  await newUserService.changePermission(existingUser, "test@example.com", {
+    isAllowedCreateRelease: true,
+    isAllowedOverallAdministratorView: true,
+    isAllowedRefreshDatasetIndex: true,
+  });
+
+  const u = await newUserService.getBySubjectId("http://test.com");
+  expect(u).toBeInstanceOf(AuthenticatedUser);
+
+  expect(u!.isAllowedCreateRelease).toBe(true);
+  expect(u!.isAllowedOverallAdministratorView).toBe(true);
+  expect(u!.isAllowedRefreshDatasetIndex).toBe(true);
+});
+
+it("normal user change attempt change permission", async () => {
+  const newUser = await userService.upsertUserForLogin(
+    "http://test.com",
+    "New Display Name",
+    "test@example.com"
+  );
+  await expect(async () => {
+    await userService.changePermission(newUser, "test@example.com", {
+      isAllowedCreateRelease: true,
+      isAllowedOverallAdministratorView: true,
+      isAllowedRefreshDatasetIndex: true,
+    });
+  }).rejects.toThrow(NotAuthorisedEditUserManagement);
 });

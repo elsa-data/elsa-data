@@ -1,0 +1,33 @@
+{
+  sharers: [
+    {
+      id: "signing",
+      type: "object-signing",
+      maxAgeInSeconds: 600,
+    },
+    {
+      id: "co",
+      type: "copy-out",
+    },
+    {
+      id: "umccr-htsget",
+      type: "htsget",
+      url: "https://htsget.elsa.dev.umccr.org",
+      maxAgeInSeconds: 600,
+    },
+    {
+      id: "parkville-ap",
+      type: "aws-access-point",
+      allowedVpcs: {
+        "UMCCR Nextflow Tower": {
+          accountId: "123456789012",
+          vpcId: "vpc-1234567",
+        },
+        "PeterMac Jupyter Notebook": {
+          accountId: "012345678912",
+          vpcId: "vpc-5464564",
+        },
+      },
+    },
+  ],
+}

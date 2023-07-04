@@ -1,5 +1,5 @@
 import { Client } from "edgedb";
-import { makeSystemlessIdentifier } from "../../src/test-data/test-data-helpers";
+import { makeSystemlessIdentifier } from "../../src/test-data/util/test-data-helpers";
 import e from "../../dbschema/edgeql-js";
 import {
   ReleaseCaseType,
@@ -7,20 +7,20 @@ import {
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
 
-export async function findDatabaseRelease(client: Client, releaseId: string) {
+export async function findDatabaseRelease(client: Client, releaseKey: string) {
   const res = await e
     .select(e.release.Release, (r) => ({
       ...e.release.Release["*"],
       applicationCoded: {
         ...e.release.ApplicationCoded["*"],
       },
-      filter: e.op(r.id, "=", e.uuid(releaseId)),
+      filter: e.op(r.releaseKey, "=", releaseKey),
     }))
     .assert_single()
     .run(client);
 
   if (res) return res;
-  else throw new Error(`Release id ${releaseId} does not exist in database`);
+  else throw new Error(`Release id ${releaseKey} does not exist in database`);
 }
 
 /**
@@ -45,6 +45,11 @@ export async function findDatabaseSpecimenIds(
       ),
     }))
     .run(client);
+
+  if (toChange.length != valueIds.length)
+    throw new Error(
+      "In our test setup we requested database specimen ids that weren't actually in the database"
+    );
 
   return toChange.map((a) => a.id);
 }

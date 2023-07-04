@@ -1,51 +1,51 @@
 import { Issuer } from "openid-client";
-import { RateLimitPluginOptions } from "@fastify/rate-limit";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { LoggerOptions } from "pino";
+import { DacType } from "./config-schema-dac";
+import { DatasetType } from "./config-schema-dataset";
+import { SharerType } from "./config-schema-sharer";
+import { MailerType } from "./config-schema-mailer";
+import { BrandingType } from "./config-schema-branding";
+import { OidcType } from "./config-schema-oidc";
+import { HttpHostingType } from "./config-schema-http-hosting";
+import { FeatureType } from "./config-schema-feature";
 
 /**
  * The rich, well-typed settings for Elsa.
- * These somewhat duplicate the config values we get via "convict" - but I have my
- * doubts about convict and am retaining this as a little bridge for a bit.
+ * This should be removed and replaced with a passthrough of the Zod config types.
  */
 export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
-  host: string;
-  port: number;
-  mailer: {
-    mode: "None" | "SES" | "SMTP";
-    maxConnections?: number | undefined;
-    sendingRate?: number | undefined;
-    options?: SMTPTransport.Options | string;
-    defaults?: any;
+  // the namespace in which we should be doing service discovery for dynamic services
+  serviceDiscoveryNamespace: string;
+
+  // the settings for our web server (cookies, ports etc)
+  httpHosting: HttpHostingType;
+
+  oidc?: Omit<OidcType, "issuerUrl"> & { issuer?: Issuer };
+
+  // selectively switch on/off functionality
+  feature?: FeatureType;
+
+  // details that are required if running in AWS
+  aws?: {
+    tempBucket: string;
   };
 
-  sessionSecret: string;
-  sessionSalt: string;
-
-  oidcIssuer: Issuer;
-  oidcClientId: string;
-  oidcClientSecret: string;
-
-  remsUrl: string;
-  remsBotUser: string;
-  remsBotKey: string;
-
-  logger: LoggerOptions;
-
-  awsSigningAccessKeyId: string;
-  awsSigningSecretAccessKey: string;
-  awsTempBucket: string;
+  // optional signing details to allow sharing of objects in CloudFlare R2
+  cloudflare?: {
+    signingAccessKeyId: string;
+    signingSecretAccessKey: string;
+  };
 
   // Read the README.md for GCP-related configuration
 
   // the FHIR endpoint for an Ontoserver
   ontoFhirUrl: string;
 
-  // maxmind database for IP Geo lookup
-  maxmindDbAssetPath: string;
+  // prefix for releaseKey
+  releaseKeyPrefix: string;
 
   // NOTE: https://confluence.hl7.org/display/TA/External+Terminologies+-+Information is a good reference for these
   mondoSystem: { uri: string; oid: string };
@@ -54,20 +54,10 @@ export type ElsaSettings = {
   isoCountrySystemUri: string;
   snomedSystem: { uri: string; oid: string };
 
-  superAdmins: { id: string; email: string }[];
-
-  datasets: {
-    name: string;
-    uri: string;
-    description: string;
-    storageLocation: string;
-    storageUriPrefix: string;
-    aws?: {
-      eventDataStoreId?: string;
-    };
+  superAdmins: {
+    // the sub id from the upstream OIDC provider
+    sub: string;
   }[];
-  // options to pass into the rate limiter
-  rateLimit: RateLimitPluginOptions;
 
   // dev/testing settings that can be specified as long as the NODE_ENV is development
   // if NODE_ENV is production then this the presence of any configuration leading to this
@@ -79,5 +69,24 @@ export type ElsaSettings = {
     allowTestUsers: boolean;
 
     allowTestRoutes: boolean;
+  };
+
+  // pass through directly from configuration - eventually we want to pass everything through
+  // directly and essentially remove ElsaSettings as a type
+
+  dacs: DacType[];
+
+  logger: LoggerOptions;
+
+  datasets: DatasetType[];
+
+  sharers: SharerType[];
+
+  mailer?: MailerType;
+
+  branding?: BrandingType & { logoUriRelative?: string };
+
+  ipLookup?: {
+    maxMindDbPath?: string;
   };
 };

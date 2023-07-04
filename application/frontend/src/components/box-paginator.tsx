@@ -52,18 +52,31 @@ export const BoxPaginator: React.FC<Props> = (props) => {
         <div className="flex flex-1 justify-between sm:hidden">
           <a
             onClick={() => props.setPage(props.currentPage - 1)}
-            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className={classNames(
+              "relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
+              {
+                "cursor-pointer": props.currentPage !== 1,
+                "pointer-events-none opacity-50": props.currentPage === 1,
+              }
+            )}
           >
             Previous
           </a>
           {/* TODO what about the search UI on small devices? */}
           <a
             onClick={() => props.setPage(props.currentPage + 1)}
-            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className={classNames(
+              "relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
+              {
+                "cursor-pointer": props.currentPage !== maxPage,
+                "pointer-events-none opacity-50": props.currentPage === maxPage,
+              }
+            )}
           >
             Next
           </a>
         </div>
+
         {/* a full pagination UI if space */}
         <div className="hidden h-10 sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div
@@ -83,29 +96,13 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               {props.rowWord}
             </p>
           </div>
+
           {/* the search UI is only enabled if set/clear action functions are provided */}
           {props.onSearchTextChange && (
             <div className="relative sm:grow">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg
-                  aria-hidden="true"
-                  className="h-5 w-5 text-gray-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  ></path>
-                </svg>
-              </div>
               <input
                 type="search"
-                className="block w-full rounded-lg border border-gray-300 px-4 pl-10 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500"
+                className="input input-sm w-full"
                 placeholder="Search Identifiers"
                 value={props.currentSearchText}
                 onChange={(e) => props.onSearchTextChange!(e.target.value)}

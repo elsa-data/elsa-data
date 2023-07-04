@@ -1,86 +1,134 @@
 import React from "react";
 import { Box } from "../../../components/boxes";
-import { ReleaseTypeLocal } from "./shared-types";
+import { ReleaseTypeLocal } from "../shared-types";
 import ReactMarkdown from "react-markdown";
-import classNames from "classnames";
 import remarkGfm from "remark-gfm";
+import { trpc } from "../../../helpers/trpc";
+import { useQueryClient } from "@tanstack/react-query";
+import { EagerErrorBoundary } from "../../../components/errors";
 
 type Props = {
-  releaseId: string;
+  releaseKey: string;
   releaseData: ReleaseTypeLocal;
 };
 
-/*
-Sample usage of Linugi for restoring at some point.
-import { Trans } from "@lingui/macro";
-import { useLingui } from "@lingui/react";
-  const { i18n } = useLingui();
-    <Box heading={<Trans>Release Information</Trans>}>
-    <Trans>
-      <p>Data access is currently enabled.</p>
-      <p>Access will automatically cease</p>
-      <p title={i18n.date("2022-03-05")}>
-        <b>in six months.</b>
-      </p>
-    </Trans>
- */
-
 /**
- * Displays summary/important information about a release.
+ * Displays summary/important information about a release
+ * and gives the ability to activate and deactivate them.
  *
- * @param releaseData
- * @param releaseId
+ * @param releaseKey the unique key referring to this release
+ * @param releaseData the information about this release
  * @constructor
  */
-export const InformationBox: React.FC<Props> = ({ releaseData, releaseId }) => {
-  const alertBoxClasses = "border-4 rounded-2xl p-4 text-center mb-2";
+export const InformationBox: React.FC<Props> = ({
+  releaseData,
+  releaseKey,
+}) => {
+  const isAllowMutateActivation = releaseData.roleInRelease == "Administrator";
+
+  // a right aligned list of all our datasets and their visualisation colour/box
+  const DatasetList = () => (
+    <ul className="text-left">
+      {Array.from(releaseData.datasetMap.entries()).map(([uri, vis], index) => (
+        <li
+          key={index}
+          className={`flex flex-row align-middle ${
+            isAllowMutateActivation && "lg:justify-end"
+          }`}
+        >
+          <span className="mx-4 font-mono">{uri}</span>
+          <span className="h-6 w-6">{vis}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
+  const queryClient = useQueryClient();
+
+  const activateMutation = trpc.releaseActivation.activate.useMutation();
+  const deactivateMutation = trpc.releaseActivation.deactivate.useMutation();
+
+  const error = activateMutation.error ?? deactivateMutation.error;
+
+  // some handy state booleans
+  const mutationInProgress =
+    activateMutation.isLoading || deactivateMutation.isLoading;
+  const releaseIsActivated = !!releaseData.activation;
+
+  const ActivateDeactivateButtonRow = () => (
+    <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+      <button
+        className="btn-success btn-lg btn grow"
+        disabled={releaseIsActivated || mutationInProgress}
+        onClick={() =>
+          activateMutation.mutate(
+            { releaseKey },
+            { onSuccess: async () => await queryClient.invalidateQueries() }
+          )
+        }
+      >
+        Activate Release
+      </button>
+      <button
+        className="btn-warning btn-lg btn grow"
+        disabled={!releaseIsActivated || mutationInProgress}
+        onClick={() =>
+          deactivateMutation.mutate(
+            { releaseKey },
+            { onSuccess: async () => await queryClient.invalidateQueries() }
+          )
+        }
+      >
+        Deactivate Release
+      </button>
+    </div>
+  );
 
   return (
-    <Box heading="Release Information">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <span className="font-bold">{releaseData.applicationDacTitle}</span>
-          {releaseData.applicationDacDetails && (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={
-                {
-                  // Map `h1` (`# heading`) to use `h2`s.
-                  //h1: ({node, ...props}) => <h1 className="" {...props} />,
-                  // Rewrite `em`s (`*like so*`) to `i` with a red foreground color.
-                  //em: ({node, ...props}) => <i style={{color: 'red'}} {...props} />
-                }
-              }
-              className="prose"
-              children={releaseData.applicationDacDetails}
-            />
-          )}
-        </div>
+    <Box heading={releaseData.applicationDacTitle}>
+      {error && <EagerErrorBoundary error={error} />}
 
-        <div className="flex flex-col items-end gap-2">
-          {releaseData.activation && (
-            <div className={classNames(alertBoxClasses, "border-green-400")}>
-              <p>This release is activated for data access</p>
+      <div className="grid grid-cols-2 gap-4 overflow-x-auto">
+        {releaseIsActivated && (
+          <div className="alert alert-success col-span-2 shadow-lg">
+            <div>
+              <span>Data sharing is activated for this release</span>
             </div>
-          )}
-          {!releaseData.activation && (
-            <div className={classNames(alertBoxClasses, "border-red-400")}>
-              <p>Data access is currently disabled</p>
+          </div>
+        )}
+
+        {/* Hiding release-activation button if they are not authorised */}
+        {isAllowMutateActivation ? (
+          <>
+            <div className="col-span-2 flex flex-col space-y-2 lg:col-auto">
+              <ActivateDeactivateButtonRow />
             </div>
-          )}
-          <ul className="text-right">
-            {Array.from(releaseData.datasetMap.entries()).map(
-              ([uri, vis], index) => (
-                <li
-                  key={index}
-                  className="flex flex-row justify-end align-middle"
-                >
-                  <span className="mr-6 font-mono">{uri}</span>
-                  <span className="h-6 w-6">{vis}</span>
-                </li>
-              )
+
+            <div className="col-span-2 flex flex-col space-y-2 lg:col-auto">
+              <DatasetList />
+            </div>
+          </>
+        ) : (
+          <div className="col-span-2 flex flex-col space-y-2">
+            <DatasetList />
+          </div>
+        )}
+
+        <div className="collapse-arrow rounded-box collapse col-span-2 border border-base-300 bg-base-100">
+          <input type="checkbox" />
+
+          <div className="collapse-compact collapse-title">
+            See details of application
+          </div>
+          <div className="collapse-content">
+            {releaseData.applicationDacDetails && (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                className="prose"
+                children={releaseData.applicationDacDetails}
+              />
             )}
-          </ul>
+          </div>
         </div>
       </div>
     </Box>

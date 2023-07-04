@@ -1,18 +1,18 @@
-import { Component, ReactNode } from "react";
+import React, { Component, isValidElement, ReactNode } from "react";
 import {
   Base7807Error,
   Base7807Response,
   isBase7807Response,
 } from "@umccr/elsa-types/error-types";
-import classNames from "classnames";
 import axios from "axios";
+import { TRPCClientError } from "@trpc/client";
+import { Alert, CircleExclamationIcon } from "./alert";
 
 export type ErrorDisplayProps = {
   children?: ReactNode;
-  message?: ReactNode;
-  styling?: string;
-  // Whether this error should be rethrown to a higher up component.
-  rethrowError?: (error: unknown) => boolean;
+
+  // Whether this component should render common errors, e.g. offline or authentication errors
+  renderCommonErrors?: boolean;
 };
 
 export type EagerErrorDisplayProps = ErrorFormatterDetailProps &
@@ -32,30 +32,23 @@ export type Format7807ErrorProps = {
 
 export type ErrorDisplayState = {
   displayError: boolean;
+  isOnline: boolean;
 } & ErrorFormatterDetailProps;
 
 export type ErrorBoxProps = {
   children?: ReactNode;
-  styling?: string;
 };
 
 /**
  * A general red error box.
  */
-export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
+export const ErrorBox = ({ children }: ErrorBoxProps): JSX.Element => {
   return (
-    <div
-      className={classNames(
-        "flex place-content-center items-center justify-center p-4",
-        styling
-      )}
-    >
-      <div
-        className={classNames("rounded-lg bg-red-100 p-4 text-sm text-red-700")}
-      >
-        {children}
-      </div>
-    </div>
+    <Alert
+      icon={<CircleExclamationIcon />}
+      description={children}
+      additionalAlertClassName="alert-error"
+    />
   );
 };
 
@@ -65,7 +58,9 @@ export const ErrorBox = ({ children, styling }: ErrorBoxProps): JSX.Element => {
 export const isAuthenticationError = (error: any): boolean => {
   return (
     (error instanceof Base7807Error && error.status == 403) ||
-    (axios.isAxiosError(error) && error.code === "403")
+    (axios.isAxiosError(error) && error.code === "403") ||
+    (error instanceof TRPCClientError &&
+      error?.shape?.data?.httpStatus === "403")
   );
 };
 
@@ -76,37 +71,18 @@ export const Format7807Error = ({
   error,
 }: Format7807ErrorProps): JSX.Element => {
   return (
-    <div className="pl-4 pt-4">
-      <div>
-        <span className="font-bold">type: </span>
-        {error.type}
+    <div>
+      <h3 className="font-bold">{error.title}</h3>
+      <div className="text-xs">
+        {error.status ? `${error.status}: ${error.detail}` : `${error.detail}`}
       </div>
-      <div>
-        <span className="font-bold">title: </span>
-        {error.title}
-      </div>
-      <div>
-        <span className="font-bold">status: </span>
-        {error.status}
-      </div>
-      {error.detail && (
-        <div>
-          <span className="font-bold">detail: </span>
-          {error.detail}
-        </div>
-      )}
-      {error.instance && (
-        <div>
-          <span className="font-bold">instance: </span>
-          {error.instance}
-        </div>
-      )}
     </div>
   );
 };
 
 /**
- * Format an error using its details.
+ * Format an error using its details. This component should be fairly safe to
+ * not cause any of its own errors.
  */
 export const ErrorFormatterDetail = ({
   error,
@@ -114,33 +90,51 @@ export const ErrorFormatterDetail = ({
   if (error !== undefined) {
     if (error instanceof Base7807Error) {
       return <Format7807Error error={error.toResponse()} />;
-    } else if (isBase7807Response(error)) {
+    }
+
+    if (isBase7807Response(error)) {
       return <Format7807Error error={error} />;
-    } else if (axios.isAxiosError(error)) {
+    }
+
+    if (error instanceof TRPCClientError) {
+      const base7807ErrorRes = error?.shape?.data?.base7807ErrorRes;
+      if (base7807ErrorRes) {
+        return <Format7807Error error={base7807ErrorRes} />;
+      }
+
+      // Some anticipation if 7807 error res does not exist
+      const code = error?.shape?.data?.httpStatus;
+      return (
+        <span>{code ? `${code}: ${error.message}` : `${error.message}`}</span>
+      );
+    }
+
+    if (axios.isAxiosError(error)) {
       if (error.response?.data instanceof Base7807Error) {
         return <ErrorFormatterDetail error={error.response.data} />;
-      } else {
-        return (
-          <div className="pl-4 pt-4">
-            <div>
-              <span className="font-bold">message: </span>
-              {error.message}
-            </div>
-            <div>
-              <span className="font-bold">code: </span>
-              {error.code}
-            </div>
-          </div>
-        );
       }
-    } else if (error instanceof Error) {
-      return <div className="pl-4 pt-4">{error.message}</div>;
-    } else if (
-      typeof error === "object" &&
-      error !== null &&
-      "toString" in error
-    ) {
-      return <div className="pl-4 pt-4">{error.toString()}</div>;
+
+      return (
+        <span>
+          {error.code ? `${error.code}: ${error.message}` : `${error.message}`}
+        </span>
+      );
+    }
+
+    if (error instanceof Error) {
+      return <span>{error.message}</span>;
+    }
+
+    if (isValidElement(error)) {
+      return error;
+    }
+
+    if (typeof error === "object" && error !== null && "toString" in error) {
+      return <span>{error.toString()}</span>;
+    }
+
+    if (typeof error === "string" || error instanceof String) {
+      return <span>{error}</span>;
     }
   }
 
@@ -148,15 +142,21 @@ export const ErrorFormatterDetail = ({
 };
 
 /**
- * Format an error with a details message.
+ * An alert when there is no connection.
  */
-export const ErrorFormatterWithMessage = ({
-  error,
-}: ErrorFormatterDetailProps): JSX.Element => {
+export const OfflineAlert = ({
+  errorCondition,
+  children,
+  renderCommonErrors = false,
+}: ErrorFormatterProps): JSX.Element => {
   return (
     <>
-      Here are some details:
-      <ErrorFormatterDetail error={error} />
+      {renderCommonErrors && (
+        <div className="py-2">
+          <ErrorBox>You are offline, check your connection.</ErrorBox>
+        </div>
+      )}
+      {!errorCondition && children}
     </>
   );
 };
@@ -166,71 +166,57 @@ export const ErrorFormatterWithMessage = ({
  */
 export const ErrorFormatter = ({
   errorCondition,
-  message,
   error,
-  styling,
   children,
-  rethrowError = rethrowErrorFn,
+  renderCommonErrors = false,
 }: ErrorFormatterProps): JSX.Element => {
-  if (!navigator.onLine) {
-    return (
-      <ErrorBox styling={styling}>
-        You are offline, check your connection.
-      </ErrorBox>
-    );
-  } else if (errorCondition) {
-    if (rethrowError(error)) {
-      throw error;
-    }
-
-    if (isAuthenticationError(error)) {
-      return (
-        <ErrorBox styling={styling}>
-          <>
-            Failed to authenticate, check your crendentials.
-            {error && <ErrorFormatterWithMessage error={error} />}
-          </>
-        </ErrorBox>
-      );
-    } else {
-      return (
-        <ErrorBox styling={styling}>
-          <>
-            {message ? <div>{message}</div> : <div>Something went wrong.</div>}
-            {error && <ErrorFormatterWithMessage error={error} />}
-          </>
-        </ErrorBox>
-      );
-    }
-  } else {
+  // If there is no error, proceed with normal rendering.
+  if (!errorCondition) {
     return <>{children}</>;
   }
-};
 
-/**
- * Default check for whether an error is rethrown.
- */
-export const rethrowErrorFn = (error: any): boolean => {
-  return !navigator.onLine || isAuthenticationError(error);
+  // Only render common errors if the error formatter also enabled the renderCommonErrors property.
+  if (renderCommonErrors && isAuthenticationError(error)) {
+    return (
+      <div className="py-2">
+        <ErrorBox>
+          <span>Failed to authenticate, check your credentials.</span>
+        </ErrorBox>
+      </div>
+    );
+  }
+
+  // If this error is not a common error, render it as a detailed error.
+  if (!isAuthenticationError(error)) {
+    return (
+      <div className="py-2">
+        <ErrorBox>
+          {error ? (
+            <ErrorFormatterDetail error={error} />
+          ) : (
+            <span>An error has occurred.</span>
+          )}
+        </ErrorBox>
+      </div>
+    );
+  }
+
+  return <></>;
 };
 
 /**
  * Display an error passed through props.
  */
 export const EagerErrorBoundary = ({
-  message,
   error,
-  styling,
   children,
-  rethrowError = rethrowErrorFn,
+  renderCommonErrors = false,
 }: EagerErrorDisplayProps): JSX.Element => {
   return (
     <ErrorFormatter
       errorCondition={true}
-      message={message}
       error={error}
-      styling={styling}
-      rethrowError={rethrowError}
+      renderCommonErrors={renderCommonErrors}
     >
       {children}
     </ErrorFormatter>
@@ -245,26 +231,55 @@ export class ErrorBoundary extends Component<
   ErrorDisplayState
 > {
   static defaultProps = {
-    rethrowError: rethrowErrorFn,
+    renderCommonErrors: false,
+    isOnline: navigator.onLine,
   };
 
   static getDerivedStateFromError(error: any): ErrorDisplayState {
-    return { error: error, displayError: true };
+    return { error: error, displayError: true, isOnline: navigator.onLine };
   }
+
+  componentDidMount() {
+    window.addEventListener("offline", this.handleNetworkChange);
+    window.addEventListener("online", this.handleNetworkChange);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("offline", this.handleNetworkChange);
+    window.removeEventListener("online", this.handleNetworkChange);
+  }
+
+  handleNetworkChange = () => {
+    this.setState({ isOnline: navigator.onLine });
+  };
 
   constructor(props: ErrorDisplayProps) {
     super(props);
-    this.state = { error: undefined, displayError: false };
+    this.state = {
+      error: undefined,
+      displayError: false,
+      isOnline: navigator.onLine,
+    };
   }
 
   render() {
+    // If not online, show an alert if also rendering common errors.
+    if (!this.state.isOnline && this.props.renderCommonErrors) {
+      return (
+        <OfflineAlert
+          renderCommonErrors={this.props.renderCommonErrors}
+          errorCondition={this.state.displayError}
+        >
+          {this.props.children}
+        </OfflineAlert>
+      );
+    }
+
     return (
       <ErrorFormatter
         errorCondition={this.state.displayError}
-        message={this.props.message}
         error={this.state.error}
-        styling={this.props.styling}
-        rethrowError={this.props.rethrowError}
+        renderCommonErrors={this.props.renderCommonErrors}
       >
         {this.props.children}
       </ErrorFormatter>

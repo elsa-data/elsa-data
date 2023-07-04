@@ -2,5 +2,14 @@
   // an ontoserver with MONDO terminology loaded
   ontoFhirUrl: "https://server.com/fhir",
   // JSON5 supports trailing ,
-  port: 8000,
+  httpHosting: {
+    port: 8000,
+    session: {
+      salt: "0123456789012345",
+      secret: "01234567890123456",
+    },
+  },
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org",
+  },
 }

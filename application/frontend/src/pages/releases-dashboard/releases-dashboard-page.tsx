@@ -1,129 +1,168 @@
 import React, { useState } from "react";
-import { useQuery } from "react-query";
-import axios from "axios";
-import { BoxNoPad } from "../../components/boxes";
-import { ReleaseSummaryType } from "@umccr/elsa-types";
-import { LayoutBase } from "../../layouts/layout-base";
-import { REACT_QUERY_RELEASE_KEYS } from "../releases/detail/queries";
+import { Box } from "../../components/boxes";
 import { EagerErrorBoundary } from "../../components/errors";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { useNavigate } from "react-router-dom";
 import { BoxPaginator } from "../../components/box-paginator";
-import { handleTotalCountHeaders } from "../../helpers/paging-helper";
 import { usePageSizer } from "../../hooks/page-sizer";
+import classNames from "classnames";
+import { formatLocalDateTime } from "../../helpers/datetime-helper";
+import { trpc } from "../../helpers/trpc";
+import { Table } from "../../components/tables";
 
-export const ReleasesPage: React.FC = () => {
+export const ReleasesDashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const pageSize = usePageSizer();
-  // our internal state for which page we are on
-  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
+  // our internal state for which page we are on
+  const pageSize = usePageSizer();
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const query = useQuery(
-    REACT_QUERY_RELEASE_KEYS.all,
-    async () => {
-      return await axios
-        .get<ReleaseSummaryType[]>(`/api/releases`)
-        .then((response) => {
-          handleTotalCountHeaders(response, setCurrentTotal);
-          return response.data;
-        });
+  const releaseQuery = trpc.releaseRouter.getAllRelease.useQuery(
+    {
+      page: currentPage,
     },
-    {}
+    {
+      keepPreviousData: true,
+      onSuccess: (res) => {
+        setCurrentTotal(res.total);
+      },
+    }
   );
+  const queryData = releaseQuery.data?.data;
 
   return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <BoxNoPad
-          heading="Releases"
-          errorMessage={"Something went wrong fetching releases."}
-        >
-          {query.isLoading && <IsLoadingDiv />}
-          {query.isSuccess && query.data && (
-            <table className="light:text-gray-400 w-full text-left text-sm text-gray-500">
-              <thead className="light:bg-gray-700 light:text-gray-400 border-b uppercase text-gray-700">
+    <>
+      <Box heading="Releases">
+        {releaseQuery.isError && (
+          <EagerErrorBoundary error={releaseQuery.error} />
+        )}
+
+        {releaseQuery.isLoading && <IsLoadingDiv />}
+
+        {releaseQuery.isSuccess && queryData?.length === 0 && (
+          <>
+            <p className="prose">
+              This page normally shows any releases that you are involved in.
+              Currently the system thinks you are not involved in any releases -
+              if this is wrong, please contact the project manager or CI/Manager
+              of your project and ask them to check that you are listed as a
+              participant of a release.
+            </p>
+            <p className="prose">
+              Until this is corrected there is very little functionality enabled
+              for you.
+            </p>
+          </>
+        )}
+        {releaseQuery.isSuccess && queryData && queryData?.length > 0 && (
+          <>
+            <Table
+              tableHead={
                 <tr>
-                  {/* Left in as an example of checkbox columns if we want to enable bulk ops
-                    <th scope="col" className="p-4">
-                    <div className="flex items-center">
-                      <input
-                        id="checkbox-all"
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 light:focus:ring-blue-600 light:ring-offset-gray-800 focus:ring-2 light:bg-gray-700 light:border-gray-600"
-                      />
-                      <label htmlFor="checkbox-all" className="sr-only">
-                        checkbox
-                      </label>
-                    </div>
-                  </th> */}
-                  <th scope="col" className="px-6 py-6">
-                    Release Id
+                  <th scope="col">Title / Identifier</th>
+                  <th scope="col" className="hidden xl:table-cell">
+                    Source DAC
                   </th>
-                  <th scope="col" className="px-6 py-6">
-                    DAC Id
-                  </th>
-                  <th scope="col" className="px-6 py-6">
-                    Title
-                  </th>
-                  <th scope="col" className="px-6 py-6">
+                  <th scope="col" className="hidden xl:table-cell">
                     Role (in release)
                   </th>
+                  <th scope="col" className="hidden xl:table-cell">
+                    Last Modified / Status
+                  </th>
+                  <th scope="col">{/* action links */}</th>
                 </tr>
-              </thead>
-              <tbody>
-                {query.data.map((r, idx) => (
-                  <tr
-                    key={idx}
-                    className="light:bg-gray-800 light:border-gray-700 light:hover:bg-gray-600 border-b bg-white hover:cursor-pointer hover:bg-gray-50"
-                    onClick={() => navigate(`${r.id}`)}
-                  >
-                    <th
-                      scope="row"
-                      className="whitespace-nowrap px-6 py-4 font-mono"
-                    >
-                      {r.releaseIdentifier}
-                    </th>
-                    <th
-                      scope="row"
-                      className="whitespace-nowrap px-6 py-4 font-mono"
-                    >
-                      <a
-                        href={`/releases/${r.id}`}
-                        className="hover:text-blue-500"
-                      >
-                        <span className="text-xs">
+              }
+              tableBody={queryData.map((r, idx) => {
+                const jobBadgeContent = r.isRunningJobBadge
+                  ? `${r.isRunningJobBadge} ${r.isRunningJobPercentDone}%`
+                  : undefined;
+
+                return (
+                  <tr key={idx}>
+                    {/* titles can be arbitrary length so we need to enable word wrapping */}
+                    <td className="whitespace-normal break-words">
+                      <div>
+                        <div className="font-bold">{r.applicationDacTitle}</div>
+                        <div className="flex flex-row space-x-2 text-sm">
+                          <span className="font-mono opacity-50">
+                            {r.releaseKey}
+                          </span>
+                          {/* a replication of the details in other columns - but we use Tailwind
+                              classes to make them disappear on small screens */}
+                          <span className="opacity-50 xl:hidden">
+                            as {r.roleInRelease}
+                          </span>
+                          {r.isActivated && (
+                            <span className="badge badge-success xl:hidden">
+                              activated
+                            </span>
+                          )}
+                          {jobBadgeContent && (
+                            <span className="badge badge-info xl:hidden">
+                              {jobBadgeContent}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="hidden xl:table-cell">
+                      <div>
+                        <div className="break-all text-xs">
                           {r.applicationDacIdentifierSystem}
-                        </span>
-                        <br />
-                        {r.applicationDacIdentifierValue}
-                      </a>
-                    </th>
-                    <td className="px-6 py-4">{r.applicationDacTitle}</td>
-                    <td className="px-6 py-4">{r.roleInRelease}</td>
+                        </div>
+                        <div className="break-all font-mono text-xs opacity-50">
+                          {r.applicationDacIdentifierValue}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="hidden xl:table-cell">{r.roleInRelease}</td>
+                    <td className="hidden xl:table-cell">
+                      <div className="flex flex-col space-y-1">
+                        <div>{formatLocalDateTime(r.lastUpdatedDateTime)}</div>
+
+                        {r.isActivated && (
+                          <div>
+                            <span className="badge badge-success">
+                              activated
+                            </span>
+                          </div>
+                        )}
+
+                        {jobBadgeContent && (
+                          <div>
+                            <span className="badge badge-info">
+                              {jobBadgeContent}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="text-right">
+                      <button
+                        id={`button-view-${r.releaseKey}`}
+                        className={classNames("btn-table-action-navigate")}
+                        onClick={async () => {
+                          navigate(`${r.releaseKey}/detail`);
+                        }}
+                      >
+                        view
+                      </button>
+                    </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          {query.isError && (
-            <EagerErrorBoundary
-              message={"Something went wrong fetching releases."}
-              error={query.error}
-              styling={"bg-red-100"}
+                );
+              })}
             />
-          )}
-          <BoxPaginator
-            currentPage={currentPage}
-            setPage={setCurrentPage}
-            rowCount={currentTotal}
-            rowsPerPage={pageSize}
-            rowWord="releases"
-          />
-        </BoxNoPad>
-      </div>
-    </LayoutBase>
+            <BoxPaginator
+              currentPage={currentPage}
+              setPage={setCurrentPage}
+              rowCount={currentTotal}
+              rowsPerPage={pageSize}
+              rowWord="releases"
+            />
+          </>
+        )}
+      </Box>
+    </>
   );
 };

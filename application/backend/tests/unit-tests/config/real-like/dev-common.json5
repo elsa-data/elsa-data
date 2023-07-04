@@ -1,9 +1,10 @@
 {
   superAdmins: [
     {
-      id: "http://cilogon.org/serverB/users/123356",
-      email: "exampleuser@example.com",
+      sub: "http://cilogon.org/serverB/users/123356",
     },
   ],
-  port: 8001,
+  httpHosting: {
+    port: 8001,
+  },
 }

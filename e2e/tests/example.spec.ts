@@ -1,18 +1,15 @@
-import { test, expect } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "./custom-base-test";
 
 test("homepage has title and links to intro page", async ({ page }) => {
   await page.goto("./");
 
-  // Expect a title "to contain" a substring.
+  // expect the title
   await expect(page).toHaveTitle(/Elsa Data/);
 
-  // create a locator
-  await expect(page.getByText("Home")).toBeVisible();
-  await expect(page.getByText("Releases")).toBeVisible();
+  // general page Releases
+  await expect(page.getByRole("heading", { name: "Releases" })).toBeVisible();
 
-  const dacLink = page.getByRole("link", { name: /DAC/ });
-
-  await dacLink.click();
-
-  await expect(page).toHaveURL(/.*dac/);
+  // expect a table of releases including R0001
+  await expect(page.getByRole("cell", { name: "R001" })).toBeVisible();
 });

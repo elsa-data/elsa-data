@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import { FastifyRequest } from "fastify";
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
@@ -33,9 +33,12 @@ export type PagedResult<T> = {
  * @param data
  * @param total
  */
-export function createPagedResult<T>(data: T[], total: number): PagedResult<T> {
+export function createPagedResult<T>(
+  data: T[],
+  total?: number
+): PagedResult<T> {
   return {
     data: data,
-    total: total,
+    total: total !== undefined ? total : data.length,
   };
 }

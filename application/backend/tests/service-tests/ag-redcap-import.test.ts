@@ -1,41 +1,51 @@
 import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
-import { container, DependencyContainer } from "tsyringe";
-import { RedcapImportApplicationService } from "../../src/business/services/australian-genomics/redcap-import-application-service";
+import { RedcapImportApplicationService } from "../../src/business/services/dacs/redcap-import-application-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "./setup";
+import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
-import { UsersService } from "../../src/business/services/users-service";
+import { UserService } from "../../src/business/services/user-service";
+import { DacRedcapAustralianGenomicsCsvType } from "../../src/config/config-schema-dac";
+import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
+import { SMARTIE_URI } from "../../src/test-data/dataset/insert-test-data-smartie";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
+
+const testContainer = registerTypes();
 
 const edgedbClient = edgedb.createClient();
 
+const configDac: DacRedcapAustralianGenomicsCsvType = {
+  id: "aaa",
+  type: "redcap-australian-genomics-csv",
+  description: "A description",
+  identifierSystem: "https://redcap-server.com",
+  csvFlagshipDatasets: {
+    daf_type_research___hmb: TENF_URI,
+    daf_flagships_rd___nmd: TENG_URI,
+  },
+};
 describe("Redcap Import for AG", () => {
-  let allowedDataOwnerUser: AuthenticatedUser;
-  let testContainer: DependencyContainer;
+  let allowedAdministratorUser: AuthenticatedUser;
 
-  beforeAll(async () => {
-    testContainer = await registerTypes();
-  });
+  beforeAll(async () => {});
 
   beforeEach(async () => {
-    testContainer.clearInstances();
-
-    ({ allowedDataOwnerUser } = await beforeEachCommon());
+    ({ allowedAdministratorUser } = await beforeEachCommon(testContainer));
   });
 
   it("Base case with two new users", async () => {
-    const redcapImportService = container.resolve(
+    const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
-    const usersService = container.resolve(UsersService);
+    const userService = testContainer.resolve(UserService);
 
     const app = {
       ...sampleApplication1,
       daf_type_research___hmb: "1",
       // this maps to our 10g dataset
       daf_flagships_rd___nmd: "1",
-      // an application from entirely unknown users - Albus as applicant/PI
+      // an application from entirely unknown users - Albus as applicant/Manager
       daf_applicant_name: "Albus Dumbledore",
       daf_applicant_email: "albus@example.com",
       daf_applicant_institution: "Hogwarts",
@@ -48,7 +58,11 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(allowedDataOwnerUser, app);
+    await redcapImportService.startNewRelease(
+      allowedAdministratorUser,
+      configDac,
+      app
+    );
 
     const potentialCount = await e
       .count(e.permission.PotentialUser)
@@ -57,13 +71,13 @@ describe("Redcap Import for AG", () => {
   });
 
   it("Base case with existing user mention", async () => {
-    // our base scenario makes 3 users but lets confirm that
+    // our base scenario makes 5 users but lets confirm that
     const existingUserCount = await e
       .count(e.permission.User)
       .run(edgedbClient);
-    expect(existingUserCount).toBe(3);
+    expect(existingUserCount).toBe(5);
 
-    const redcapImportService = container.resolve(
+    const redcapImportService = testContainer.resolve(
       RedcapImportApplicationService
     );
 
@@ -77,7 +91,7 @@ describe("Redcap Import for AG", () => {
       daf_applicant_email: "albus@example.com",
       daf_applicant_institution: "Hogwarts",
       daf_applicant_pi_yn: "0",
-      // but we have an explicit PI - that we know!
+      // but we have an explicit Manager - that we know!
       daf_pi_name: "Test User Who Isn't Allowed Any Access",
       daf_pi_email: "subject1@elsa.net", // refer to release.common.ts file
       daf_pi_institution: "Made Up",
@@ -90,7 +104,11 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(allowedDataOwnerUser, app);
+    await redcapImportService.startNewRelease(
+      allowedAdministratorUser,
+      configDac,
+      app
+    );
 
     const potentialCount = await e
       .count(e.permission.PotentialUser)
@@ -98,7 +116,7 @@ describe("Redcap Import for AG", () => {
     expect(potentialCount).toBe(1);
 
     const userCount = await e.count(e.permission.User).run(edgedbClient);
-    expect(userCount).toBe(3);
+    expect(userCount).toBe(5);
   });
 });
 
@@ -118,21 +136,6 @@ const sampleApplication1 = {
   daf_type_research___poa: "0",
   daf_type_research___disease: "0",
   daf_type_research___other: "0",
-  daf_flagships___cancer: "0",
-  daf_flagships___rare: "0",
-  daf_flagships___genpop: "0",
-  daf_flagships_rd___ac: "0",
-  daf_flagships_rd___bm: "0",
-  daf_flagships_rd___cardio: "0",
-  daf_flagships_rd___ee: "0",
-  daf_flagships_rd___hidden: "0",
-  daf_flagships_rd___gi: "0",
-  daf_flagships_rd___id: "0",
-  daf_flagships_rd___lung: "0",
-  daf_flagships_rd___renal: "0",
-  daf_flagships_rd___leuko: "0",
-  daf_flagships_rd___mito: "0",
-  daf_flagships_rd___nmd: "0",
   daf_applicant_title: "",
   daf_applicant_name: "",
   daf_applicant_institution: "",

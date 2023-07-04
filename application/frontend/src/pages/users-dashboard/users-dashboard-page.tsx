@@ -1,25 +1,30 @@
 import React from "react";
-import { LayoutBase } from "../../layouts/layout-base";
-import { ALLOWED_CHANGE_ADMINS } from "@umccr/elsa-constants";
+import {
+  ALLOWED_CHANGE_USER_PERMISSION,
+  ALLOWED_OVERALL_ADMIN_VIEW,
+} from "@umccr/elsa-constants";
 import { useUiAllowed } from "../../hooks/ui-allowed";
-import { Box } from "../../components/boxes";
-import { OthersBox } from "./others-box/others-box";
+import { OtherUsers } from "./other-users/other-users";
 import { usePageSizer } from "../../hooks/page-sizer";
-import { YouBox } from "./you-box/you-box";
+import { PersonalDetailsBox } from "./personal-details-box/personal-details-box";
 
 export const UsersDashboardPage: React.FC = () => {
   const pageSize = usePageSizer();
 
   const uiAllowed = useUiAllowed();
 
+  // in the first instance - we need to decide if the user can see other users
+  // at all... we give this right to the overall admins (they can _view_ everything) - but
+  // we also give this right to those who have the "change user permission" right
+  // (as this is the only way they can actually use this right on other users)
+  const canSeeOtherUsers =
+    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW) ||
+    uiAllowed.has(ALLOWED_CHANGE_USER_PERMISSION);
+
   return (
-    <LayoutBase>
-      <div className="mt-2 flex flex-grow flex-row flex-wrap">
-        <YouBox />
-        <OthersBox pageSize={pageSize} />
-        {/* only the super admins can change other admins so they are the only ones to get this box */}
-        {uiAllowed.has(ALLOWED_CHANGE_ADMINS) && <Box heading="Others"></Box>}
-      </div>
-    </LayoutBase>
+    <div className="flex flex-col space-y-4">
+      <PersonalDetailsBox />
+      {canSeeOtherUsers && <OtherUsers pageSize={pageSize} />}
+    </div>
   );
 };

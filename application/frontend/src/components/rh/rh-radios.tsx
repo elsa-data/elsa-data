@@ -20,11 +20,11 @@ export const RhRadioItem = React.forwardRef<HTMLInputElement, Props>(
             ref={ref}
             {...props}
             type="radio"
-            className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="radio radio-sm"
           />
         </div>
         <div className="ml-3 text-sm">
-          <label htmlFor={id} className="font-medium text-gray-700">
+          <label htmlFor={id} className="label-text">
             {props.label}
           </label>
           {props.extra && <p className="text-gray-500">{props.extra}</p>}

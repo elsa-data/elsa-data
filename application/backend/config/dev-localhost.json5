@@ -1,12 +1,23 @@
 {
-  // the security of our localhost dev cookies is not so important - for the real deployments
-  // we need to get these secrets from a real secret source
-  session: {
-    secret: "This is a long string that will encrypt our session cookies but only for localhost", // pragma: allowlist secret
-    salt: "Also a string 16",
+  // these need to be sourced from dev specific secret source (i.e. a mac keychain) which
+  // should then overwrite these empty values
+  // in the absence of setting these elsewhere - at least the system will start up - albeit with login problems!
+  oidc: {
+    issuerUrl: "https://test.cilogon.org",
+    clientId: "aclientid",
+    clientSecret: "abc",
   },
-  rateLimit: {
-    allowList: ["127.0.0.1", "::1"],
+  httpHosting: {
+    // the security of our localhost dev cookies is not so important - for the real deployments
+    // we need to get these secrets from a real secret source
+    session: {
+      secret: "This is a long string that will encrypt our session cookies but only for localhost", // pragma: allowlist secret
+      salt: "Also a string 16",
+    },
+    // for localhost deployment there is no point in rate limiting ourselves
+    rateLimit: {
+      allowList: ["127.0.0.1", "::1"],
+    },
   },
   // for localhost development we would like pretty printing and debug level of detail
   logger: {
@@ -14,15 +25,60 @@
     transportTargets: [
       {
         target: "pino-pretty",
-        options: { destination: 1 },
+        options: { destination: 1, minimumLevel: "debug" },
       },
     ],
   },
+  // the upstream data access committees that we want to be able to source new releases from
+  dacs: [
+    {
+      id: "manual",
+      type: "manual",
+      description: "Manual",
+    },
+    {
+      id: "redcap-ag",
+      type: "redcap-australian-genomics-csv",
+      description: "Australian Genomics Redcap DAC",
+      identifierSystem: "https://redcap.mcri.edu.au",
+      csvFlagshipDatasets: {
+        daf_flagships_rd___1: "urn:example:elsa-data-demo-dataset-smartie",
+        daf_flagships_rd___2: "urn:fdc:umccr.org:2022:dataset/10g",
+      },
+    },
+    {
+      id: "rems-hgpp",
+      type: "rems",
+      description: "REMS HGPP (demo)",
+      url: "https://hgpp-rems.dev.umccr.org",
+      // the bot keys will be set via our relevant secret mechanism
+      botUser: "will-be-replaced",
+      botKey: "will-be-replaced",
+    },
+    {
+      id: "rems-fake",
+      type: "rems",
+      description: "REMS Fake (non-existent)",
+      url: "https://fake-rems.dev.umccr.org",
+      botUser: "not",
+      botKey: "arealkey",
+    },
+  ],
   aws: {
     // we have a permanent tmp bucket with a generous expiry lifespan shared for localhost dev
     tempBucket: "elsa-data-tmp",
   },
   mailer: {
     mode: "SES",
+  },
+  "+superAdmins": [
+    {
+      sub: "http://subject1.com",
+    },
+  ],
+  devTesting: {
+    allowTestUsers: true,
+    allowTestRoutes: true,
+    mockAwsCloud: true,
   },
 }

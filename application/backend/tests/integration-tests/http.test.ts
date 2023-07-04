@@ -1,13 +1,15 @@
 import { App } from "../../src/app";
 import { FastifyInstance } from "fastify";
-import { registerTypes } from "../service-tests/setup";
+import { registerTypes } from "../test-dependency-injection.common";
+import { getServices } from "../../src/di-helpers";
 
 describe("http integration tests", () => {
   let server: FastifyInstance;
 
   beforeAll(async () => {
     const testContainer = await registerTypes();
-    const app = testContainer.resolve(App);
+    const { settings, logger } = getServices(testContainer);
+    const app = new App(testContainer, settings, logger, new Set<string>());
     server = await app.setupServer();
     await server.ready();
   });

@@ -1,16 +1,18 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./app";
-import { BrowserRouter } from "react-router-dom";
 import {
   DeployedEnvironments,
   EnvRelayProvider,
 } from "./providers/env-relay-provider";
-import { QueryClient, QueryClientProvider } from "react-query";
 import "./index.css";
 import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
+import { IndexRouter } from "./index-router";
+import { TRPCProvider } from "./providers/trpc-provider";
+import { isString } from "lodash";
+import { LoggedInUserConfigRelayProvider } from "./providers/logged-in-user-config-relay-provider";
+import ShowAlert from "./providers/show-alert-provider";
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement as HTMLElement);
@@ -34,13 +36,19 @@ if (rootElement != null) {
     "development") as DeployedEnvironments;
   const tfu =
     rootElement.dataset.terminologyFhirUrl || "undefined terminology FHIR URL";
-
-  const queryClient = new QueryClient({});
+  const fea: Set<string> = new Set<string>();
+  if (isString(rootElement.dataset.features))
+    for (const f of rootElement.dataset.features.split(" ")) {
+      if (f.trim().length > 0) fea.add(f.trim());
+    }
+  const documentTitle = rootElement.dataset.documentTitle;
+  const brandName = rootElement.dataset.brandName;
+  const brandLogoUriRelative = rootElement.dataset.brandLogoUriRelative;
 
   root.render(
     <React.StrictMode>
       {/* nested providers - outermost levels of nesting are those that are _least_ likely change dynamically */}
-      <ErrorBoundary rethrowError={(_: any) => false}>
+      <ErrorBoundary>
         {/* the env relay converts the backend index.html info into strongly typed values accessible throughout */}
         <EnvRelayProvider
           version={ver}
@@ -48,18 +56,24 @@ if (rootElement != null) {
           revision={rev}
           deployedEnvironment={de}
           terminologyFhirUrl={tfu}
+          features={fea}
+          documentTitle={documentTitle}
+          brandName={brandName}
+          brandLogoUriRelative={brandLogoUriRelative}
         >
-          {/* the query provider comes from react-query and provides standardised remote query semantics */}
-          <QueryClientProvider client={queryClient}>
-            {/* we use session cookies for auth and use this provider to make them easily available */}
-            <CookiesProvider>
+          {/* we use session cookies for auth and use this provider to make them easily available */}
+          <CookiesProvider>
+            <ShowAlert>
               <LoggedInUserProvider>
-                <BrowserRouter>
-                  <App />
-                </BrowserRouter>
+                <TRPCProvider>
+                  {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
+                  <LoggedInUserConfigRelayProvider>
+                    <IndexRouter features={fea} />
+                  </LoggedInUserConfigRelayProvider>
+                </TRPCProvider>
               </LoggedInUserProvider>
-            </CookiesProvider>
-          </QueryClientProvider>
+            </ShowAlert>
+          </CookiesProvider>
         </EnvRelayProvider>
       </ErrorBoundary>
     </React.StrictMode>

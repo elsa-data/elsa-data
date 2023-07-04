@@ -1,10 +1,35 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { ReleaseDetailType } from "@umccr/elsa-types";
+import {
+  DataSharingAwsAccessPointType,
+  ReleaseDetailType,
+  ReleaseParticipantRoleType,
+} from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../authenticated-user";
-import { doRoleInReleaseCheck, getReleaseInfo } from "./helpers";
-import { UsersService } from "./users-service";
-import { touchRelease } from "../db/release-queries";
+import { getReleaseInfo } from "./helpers";
+import { UserService } from "./user-service";
+import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
+import {
+  ReleaseCreateError,
+  ReleaseViewError,
+} from "../exceptions/release-authorisation";
+import { ElsaSettings } from "../../config/elsa-settings";
+import { AuditEventService } from "./audit-event-service";
+import { AuditEventTimedService } from "./audit-event-timed-service";
+import {
+  SharerAwsAccessPointType,
+  SharerHtsgetType,
+} from "../../config/config-schema-sharer";
+import { release } from "../../../dbschema/interfaces";
+import {
+  CloudFormationClient,
+  DescribeStacksCommand,
+  DescribeStacksCommandOutput,
+} from "@aws-sdk/client-cloudformation";
+import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
+import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
+
+export type UserRoleInRelease = ReleaseParticipantRoleType | "AdminView";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -18,82 +43,231 @@ type CodeArrayFields = "diseases" | "countries" | "type";
  * common functionality here and have multiple services.
  */
 export abstract class ReleaseBaseService {
+  private readonly VIEW_AUDIT_EVENT_TIME: Duration = { minutes: 30 };
+
   protected constructor(
+    protected readonly settings: ElsaSettings,
     protected readonly edgeDbClient: edgedb.Client,
-    protected readonly usersService: UsersService
+    protected readonly features: ReadonlySet<string>,
+    protected readonly userService: UserService,
+    protected readonly auditEventService: AuditEventService,
+    protected readonly auditEventTimedService: AuditEventTimedService,
+    private readonly cfnClient: CloudFormationClient
   ) {}
 
-  /* TODO move helpers.ts getReleaseInfo to here
-      protected baseQueriesForReleases(userId: string) {
-    const releasesForUserQuery = e.select(e.release.Release, (r) => ({
-      ...e.release.Release["*"],
-      runningJob: {
-        percentDone: true,
-      },
-      // the master computation of whether we are currently enabled for access
-      accessEnabled: e.op(
-          e.op(e.datetime_current(), ">=", r.releaseStarted),
-          "and",
-          e.op(e.datetime_current(), "<=", r.releaseEnded)
-      ),
-      userRoles: e.select(
-        r["<releaseParticipant[is permission::User]"],
-        (u) => ({
-          id: true,
-          filter: e.op(u.id, "=", e.uuid(userId)),
-          // "@role": true
-        })
-      ),
-    }));
+  /**
+   * Some user role are allowed to change other users role for its release participants.
+   * Eventually this must be guarded so that they can't change/make permission to a higher hierarchy.
+   * This function will spit out the available options that this user could assigned/alter to other participant.
+   * e.g. A manager cannot a member to an administrator (as it is higher than its own role)
+   *
+   * @param currentUserRole The authenticated user role
+   * @returns The options where this user could alter
+   */
+  protected getParticipantRoleOption(
+    currentUserRole: ReleaseParticipantRoleType | string
+  ): ReleaseParticipantRoleType[] | null {
+    switch (currentUserRole) {
+      case "Administrator": {
+        return ["Administrator", "Manager", "Member"];
+      }
 
-    return {
-      releasesForUserQuery
+      case "Manager": {
+        return ["Manager", "Member"];
+      }
+
+      case "Member": {
+        // A member should not have the options to alter anything
+        return null;
+      }
+
+      default:
+        return null;
     }
   }
 
-  protected baseQueriesForSingleRelease(releaseId: string) {
-    const releaseQuery = e
-      .select(e.release.Release, (r) => ({
-        filter: e.op(r.id, "=", e.uuid(releaseId)),
-      }))
-      .assert_single();
-
-    // the set of selected specimens from the release
-    const releaseSelectedSpecimensQuery = e.select(
-      releaseQuery.selectedSpecimens
+  public async createReleaseViewAuditEvent(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ): Promise<void> {
+    await this.auditEventTimedService.createTimedAuditEvent(
+      `${releaseKey}${user.subjectId}`,
+      this.VIEW_AUDIT_EVENT_TIME,
+      async (start) => {
+        return await this.auditEventService.insertViewedReleaseAuditEvent(
+          user,
+          releaseKey,
+          this.VIEW_AUDIT_EVENT_TIME,
+          start,
+          this.edgeDbClient
+        );
+      }
     );
+  }
 
-    const releaseInfoQuery = e.select(releaseQuery, (r) => ({
-      ...e.release.Release["*"],
-      applicationCoded: {
-        ...e.release.ApplicationCoded["*"],
-      },
-      runningJob: {
-        ...e.job.Job["*"],
-      },
-      // the master computation of whether we are currently enabled for access
-      accessEnabled: e.op(
-        e.op(e.datetime_current(), ">=", r.releaseStarted),
-        "and",
-        e.op(e.datetime_current(), "<=", r.releaseEnded)
-      ),
-      // the manual exclusions are nodes that we have explicitly said that they and their children should never be shared
-      //manualExclusions: true,
-      // we are loosely linked (by uri) to datasets which this release draws data from
-      // TODO: revisit the loose linking
-      datasetIds: e.select(e.dataset.Dataset, (ds) => ({
-        id: true,
-        uri: true,
-        filter: e.op(ds.uri, "in", e.array_unpack(r.datasetUris)),
-      })),
-    }));
+  /**
+   * This is to check if user has a special create release permission granted by an admin.
+   * @param user
+   */
+  public checkIsAllowedViewReleases(user: AuthenticatedUser): void {
+    const isAllow = user.isAllowedOverallAdministratorView;
+    if (!isAllow) {
+      throw new ReleaseViewError();
+    }
+  }
+
+  /**
+   * This is to check if user has a special create release permission granted by an admin.
+   * @param user
+   */
+  public checkIsAllowedCreateReleases(user: AuthenticatedUser): void {
+    const isAllow = user.isAllowedCreateRelease;
+    if (!isAllow) {
+      throw new ReleaseCreateError();
+    }
+  }
+
+  /**
+   * Return the minimum information we need from the database to establish the
+   * base boundary level conditions for proceeding into any release service
+   * functionality.
+   *
+   * That is, this checks that the releaseKey (maybe passed direct from API)
+   * is valid, that the given user has a role in the release, and returns some
+   * other useful information that may play a part in permissions/boundary
+   * checks.
+   *
+   * @param user the user wanting to perform an operation on a release
+   * @param releaseKey the key for the release
+   * @protected
+   */
+  public async getBoundaryInfoWithThrowOnFailure(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ) {
+    const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
+      userDbId: user.dbId,
+      releaseKey: releaseKey,
+    });
+
+    const roleInDb = boundaryInfo?.role as
+      | ReleaseParticipantRoleType
+      | null
+      | undefined;
+
+    if (!boundaryInfo) throw new ReleaseViewError(releaseKey);
+
+    // If boundaryInfo exist but userRole is empty, then it must be an AdminView
+    const role = roleInDb ? roleInDb : "AdminView";
 
     return {
-      releaseQuery,
-      releaseSelectedSpecimensQuery,
-      releaseInfoQuery,
+      userRole: role as UserRoleInRelease,
+      isActivated: !!boundaryInfo.activation,
+      isRunningJob: !!boundaryInfo.runningJob,
     };
-  } */
+  }
+
+  /**
+   * Get the config for a feature. Currently, this can just get config for htsget.
+   * It might be good to have this for other features that require config properties to
+   * be set.
+   *
+   * @param property
+   */
+  public configForFeature(property: "isAllowedHtsget"): URL | undefined {
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "htsget"
+    ) as SharerHtsgetType[];
+
+    if (h.length === 1) return new URL(h[0].url);
+    return undefined;
+  }
+
+  /**
+   * Get the config for the AWS access point feature or undefined if this
+   * sharer is not in the config.
+   */
+  public configForAwsAccessPointFeature():
+    | SharerAwsAccessPointType
+    | undefined {
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "aws-access-point"
+    ) as SharerAwsAccessPointType[];
+
+    if (h.length === 1) return h[0];
+
+    return undefined;
+  }
+
+  /**
+   * Where the AWS access point feature is enabled we check to see what the
+   * current access point status is.
+   *
+   * @param config
+   * @param releaseKey
+   * @param awsAccessPointName
+   *
+   * NOTE we only call this method when we are
+   * sure that the access point mechanism is configured - else it would just be a
+   * wasted unnecessary call to CloudFormation
+   */
+  public async getAwsAccessPointDetail(
+    config: SharerAwsAccessPointType,
+    releaseKey: string,
+    awsAccessPointName?: string
+  ): Promise<DataSharingAwsAccessPointType | undefined> {
+    // NOTE we need to calculate the installation status *independent* of the config lookups
+    //      - because we need the ability to "uninstall" an access point stack after the config
+    //        changes (i.e. if I remove the config for a "Nextflow VPC" - I still need the ability
+    //        to remove previously installed access points that used that config)
+    let isAwsAccessPointInstalled = false;
+    let isAwsAccessPointArn: string | undefined = undefined;
+
+    try {
+      // TODO FIX - first need to refactor the release base into a mixin - so do in another PR
+      //            we have a circular dependency otherwise
+      const releaseStackName = `elsa-data-release-${releaseKey}`;
+      const releaseStackResult = await this.cfnClient.send(
+        new DescribeStacksCommand({
+          StackName: releaseStackName,
+        })
+      );
+      if (
+        releaseStackResult &&
+        releaseStackResult.Stacks &&
+        releaseStackResult.Stacks.length == 1
+      ) {
+        isAwsAccessPointInstalled = true;
+        isAwsAccessPointArn = releaseStackResult.Stacks[0].StackId;
+      }
+    } catch (e) {
+      // TODO tighten the error code here so we don't gobble up other "unexpected" errors
+      // describing a stack that is not present throws an exception so we take that to mean it is
+      // not present
+    }
+
+    const firstNameMatch = Object.entries(config.allowedVpcs).find(
+      (n) => n[0] === awsAccessPointName
+    );
+
+    if (firstNameMatch) {
+      return {
+        name: firstNameMatch[0],
+        accountId: firstNameMatch[1].accountId,
+        vpcId: firstNameMatch[1].vpcId,
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    } else {
+      return {
+        name: "",
+        accountId: "",
+        vpcId: "",
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    }
+  }
 
   /**
    * Get a single release assuming the user definitely has the role
@@ -103,18 +277,18 @@ export abstract class ReleaseBaseService {
    * this release. This is public because some other services may want to return the
    * current release state from API operations.
    *
-   * @param releaseId
+   * @param releaseKey
    * @param userRole
    */
   public async getBase(
-    releaseId: string,
-    userRole: string
+    releaseKey: string,
+    userRole: UserRoleInRelease
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
       releaseAllDatasetCasesQuery,
       releaseSelectedCasesQuery,
-    } = await getReleaseInfo(this.edgeDbClient, releaseId);
+    } = await getReleaseInfo(this.edgeDbClient, releaseKey);
 
     if (!releaseInfo)
       throw new Error(
@@ -123,20 +297,36 @@ export abstract class ReleaseBaseService {
 
     // the visible cases depend on what roles you have
     const visibleCasesCount =
-      userRole === "DataOwner"
+      userRole === "Administrator"
         ? await e.count(releaseAllDatasetCasesQuery).run(this.edgeDbClient)
         : await e.count(releaseSelectedCasesQuery).run(this.edgeDbClient);
-
-    const hasRunningJob =
-      releaseInfo.runningJob && releaseInfo.runningJob.length === 1;
 
     if (releaseInfo.runningJob && releaseInfo.runningJob.length > 1)
       throw new Error(
         "There should only be one running job (if any job is running)"
       );
 
+    // only the admins know about long-running jobs
+    const hasRunningJob =
+      userRole === "Administrator"
+        ? releaseInfo.runningJob && releaseInfo.runningJob.length === 1
+        : false;
+
+    const isAllowedAwsAccessPointConfig = this.configForAwsAccessPointFeature();
+
+    const dataSharingAwsAccessPoint = isAllowedAwsAccessPointConfig
+      ? await this.getAwsAccessPointDetail(
+          isAllowedAwsAccessPointConfig,
+          releaseKey,
+          releaseInfo.dataSharingConfiguration.awsAccessPointName
+        )
+      : undefined;
+
     return {
       id: releaseInfo.id,
+      roleInRelease: userRole,
+      lastUpdatedDateTime: releaseInfo.lastUpdated,
+      lastUpdatedUserSubjectId: releaseInfo.lastUpdatedSubjectId,
       datasetUris: releaseInfo.datasetUris,
       applicationDacDetails: releaseInfo.applicationDacDetails!,
       applicationDacIdentifier: releaseInfo.applicationDacIdentifier.value,
@@ -166,103 +356,54 @@ export abstract class ReleaseBaseService {
       isAllowedReadData: releaseInfo.isAllowedReadData,
       isAllowedVariantData: releaseInfo.isAllowedVariantData,
       isAllowedPhenotypeData: releaseInfo.isAllowedPhenotypeData,
-      // password only gets sent down to the PI
-      downloadPassword:
-        userRole === "PI" ? releaseInfo.releasePassword : undefined,
-      // data owners can code/edit the release information
-      permissionEditSelections: userRole === "DataOwner",
-      permissionEditApplicationCoded: userRole === "DataOwner",
-      // data owners cannot however access the raw data (if they want access to their data - they need to go other ways)
-      permissionAccessData: userRole !== "DataOwner",
+      isAllowedS3Data: releaseInfo.isAllowedS3Data,
+      isAllowedGSData: releaseInfo.isAllowedGSData,
+      isAllowedR2Data: releaseInfo.isAllowedR2Data,
+
+      // A list of roles allowed to edit other user's role depending on this auth user
+      // e.g. A manager cannot edit Administrator role.
+      rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
+
+      // administrators can code/edit the release information
+      permissionViewSelections:
+        userRole === "Administrator" || userRole === "AdminView",
+      permissionEditSelections: userRole === "Administrator",
+      permissionEditApplicationCoded: userRole === "Administrator",
+      // Only 'Manager' and 'Member' can access data
+      permissionAccessData: userRole === "Manager" || userRole === "Member",
+
+      // data sharing objects
+      dataSharingObjectSigning: releaseInfo.dataSharingConfiguration
+        .objectSigningEnabled
+        ? {
+            expiryHours:
+              releaseInfo.dataSharingConfiguration.objectSigningExpiryHours,
+          }
+        : undefined,
+      dataSharingCopyOut: releaseInfo.dataSharingConfiguration.copyOutEnabled
+        ? {
+            destinationLocation:
+              releaseInfo.dataSharingConfiguration.copyOutDestinationLocation,
+          }
+        : undefined,
+      dataSharingHtsgetRestrictions:
+        releaseInfo.dataSharingConfiguration.htsgetRestrictions,
+      dataSharingHtsget: releaseInfo.dataSharingConfiguration.htsgetEnabled
+        ? {
+            url: this.configForFeature("isAllowedHtsget")?.toString()!,
+          }
+        : undefined,
+      dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
+        .awsAccessPointEnabled
+        ? dataSharingAwsAccessPoint
+        : undefined,
+      dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
+        .gcpStorageIamEnabled
+        ? {
+            users: releaseInfo.dataSharingConfiguration.gcpStorageIamUsers,
+          }
+        : undefined,
     };
-  }
-
-  /**
-   * A mega function that handles altering the sharing status of a dataset node associated with our 'release'.
-   *
-   * @param user the user attempting the changes
-   * @param releaseId the release id of the release to alter
-   * @param specimenIds the edgedb ids of specimens from datasets of our release, or an empty list if the status should be applied to all specimens in the release
-   * @param statusToSet the status to set i.e. selected = true means shared, selected = false means not shared
-   *
-   * TODO: make this work with any node - not just specimen nodes (i.e. setStatus of patient)
-   *
-   * This function is responsible for ensuring the passed in identifiers are valid - so it makes sure
-   * that all specimen ids are from datasets that are in this release.
-   */
-  protected async setSelectedStatus(
-    user: AuthenticatedUser,
-    statusToSet: boolean,
-    releaseId: string,
-    specimenIds: string[] = []
-  ): Promise<ReleaseDetailType> {
-    const { userRole } = await doRoleInReleaseCheck(
-      this.usersService,
-      user,
-      releaseId
-    );
-
-    // note this db set we get is likely to be small (bounded by the number of datasets in a release)
-    // so we can get away with some use of a edgedb literal 'X in { "A", "B", "C" }'
-    // (which we wouldn't get away with if say there were 1 million datasets!)
-    const { releaseAllDatasetIdDbSet } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseId
-    );
-
-    // we make a query that returns specimens of only where the input specimen ids belong
-    // to the datasets in our release
-    // we need to do this to prevent our list of valid shared specimens from being
-    // infected with edgedb nodes from different datasets
-
-    const specimensFromValidDatasetsQuery = e.select(
-      e.dataset.DatasetSpecimen,
-      (s) => ({
-        id: true,
-        filter: e.op(
-          e.op(s.dataset.id, "in", releaseAllDatasetIdDbSet),
-          "and",
-          specimenIds.length === 0
-            ? e.bool(true)
-            : e.op(s.id, "in", e.set(...specimenIds.map((a) => e.uuid(a))))
-        ),
-      })
-    );
-
-    const actualSpecimens = await specimensFromValidDatasetsQuery.run(
-      this.edgeDbClient
-    );
-
-    if (specimenIds.length > 0 && actualSpecimens.length != specimenIds.length)
-      throw Error(
-        "Mismatch between the specimens that we passed in and those that are allowed specimens in this release"
-      );
-
-    if (statusToSet) {
-      // add specimens to the selected set
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-          set: {
-            selectedSpecimens: { "+=": specimensFromValidDatasetsQuery },
-          },
-        }))
-        .run(this.edgeDbClient);
-    } else {
-      // remove specimens from the selected set
-      await e
-        .update(e.release.Release, (r) => ({
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-          set: {
-            selectedSpecimens: { "-=": specimensFromValidDatasetsQuery },
-          },
-        }))
-        .run(this.edgeDbClient);
-    }
-
-    await touchRelease.run(this.edgeDbClient, { releaseId });
-
-    return await this.getBase(releaseId, userRole);
   }
 
   /**
@@ -273,147 +414,169 @@ export abstract class ReleaseBaseService {
    * I can't make EdgeDb libraries re-use code where I'd like (which is possibly more about me than
    * edgedb)
    *
-   * @param userRole the role the user has in this release (must be something!)
-   * @param releaseId the release id of the release to alter (must exist)
+   * @param user the user performing the change
+   * @param releaseKey the release id of the release to alter (must exist)
    * @param field the field name to alter e.g. 'institutes', 'diseases'...
    * @param system the system URI of the entry to add/delete
    * @param code the code value of the entry to add/delete
    * @param removeRatherThanAdd if false then we are asking to add (default), else asking to remove
-   * @returns true if the array was actually altered (i.e. the entry was actually removed or added)
+   * @returns The new ReleaseDetailType after the alteration
    * @private
    */
   protected async alterApplicationCodedArrayEntry(
-    userRole: string,
-    releaseId: string,
+    user: AuthenticatedUser,
+    releaseKey: string,
     field: CodeArrayFields,
     system: string,
     code: string,
     removeRatherThanAdd: boolean = false
-  ): Promise<boolean> {
+  ): Promise<ReleaseDetailType> {
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    const isRemoveOrAddText = removeRatherThanAdd ? `removing` : `adding`;
+    const actionDescription = `${isRemoveOrAddText} the application coded array (if audit details is false means nothing has changed)`;
+
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseId
+      releaseKey
     );
 
     // we need to get/set the Coded Application all within a transaction context
-    await this.edgeDbClient.transaction(async (tx) => {
-      // get the current coded application
-      const releaseWithAppCoded = await e
-        .select(e.release.Release, (r) => ({
-          applicationCoded: {
-            id: true,
-            studyType: true,
-            countriesInvolved: true,
-            diseasesOfStudy: true,
-          },
-          filter: e.op(r.id, "=", e.uuid(releaseId)),
-        }))
-        .assert_single()
-        .run(tx);
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+      user,
+      releaseKey,
+      actionDescription,
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
 
-      if (!releaseWithAppCoded)
-        throw new Error(
-          `Release ${releaseId} that existed just before this code has now disappeared!`
-        );
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+      },
+      async (tx, a) => {
+        // get the current coded application
+        const releaseWithAppCoded = await e
+          .select(e.release.Release, (r) => ({
+            applicationCoded: {
+              id: true,
+              studyType: true,
+              countriesInvolved: true,
+              diseasesOfStudy: true,
+            },
+            filter: e.op(r.releaseKey, "=", releaseKey),
+          }))
+          .assert_single()
+          .run(tx);
 
-      let newArray: { system: string; code: string }[];
+        if (!releaseWithAppCoded)
+          throw new Error(
+            `Release ${releaseKey} that existed just before this code has now disappeared!`
+          );
 
-      if (field === "diseases")
-        newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
-      else if (field === "countries")
-        newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
-      else
-        throw new Error(
-          `Field instruction of ${field} was not a known field for array alteration`
-        );
-
-      const commonFilter = (ac: any) => {
-        return e.op(
-          ac.id,
-          "=",
-          e.uuid(releaseWithAppCoded.applicationCoded.id)
-        );
-      };
-
-      if (removeRatherThanAdd) {
-        const oldLength = newArray.length;
-
-        // we want to remove any entries with the same system/code from our array
-        // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
-        newArray = newArray.filter(
-          (tup) => tup.system !== system || tup.code !== code
-        );
-
-        // nothing to mutate - return false
-        if (newArray.length == oldLength) return false;
+        let newArray: { system: string; code: string }[];
 
         if (field === "diseases")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                diseasesOfStudy: newArray,
-              },
-            }))
-            .run(tx);
+          newArray = releaseWithAppCoded.applicationCoded.diseasesOfStudy;
         else if (field === "countries")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                countriesInvolved: newArray,
-              },
-            }))
-            .run(tx);
+          newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
         else
           throw new Error(
-            `Field instruction of ${field} was not handled in the remove operation`
+            `Field instruction of ${field} was not a known field for array alteration`
           );
-      } else {
-        // only do an insert if the entry is not already present
-        // i.e. set like semantics - but with an ordered array
-        // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
-        if (
-          // if the entry already exists - we can return - nothing to do
-          newArray.findIndex(
-            (tup) => tup.system === system && tup.code === code
-          ) > -1
-        )
-          return false;
 
-        const commonAddition = e.array([
-          e.tuple({ system: system, code: code }),
-        ]);
-
-        if (field === "diseases")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                diseasesOfStudy: e.op(ac.diseasesOfStudy, "++", commonAddition),
-              },
-            }))
-            .run(tx);
-        else if (field === "countries")
-          await e
-            .update(e.release.ApplicationCoded, (ac) => ({
-              filter: commonFilter(ac),
-              set: {
-                countriesInvolved: e.op(
-                  ac.countriesInvolved,
-                  "++",
-                  commonAddition
-                ),
-              },
-            }))
-            .run(tx);
-        else
-          throw new Error(
-            `Field instruction of ${field} was not handled in the add operation`
+        const commonFilter = (ac: any) => {
+          return e.op(
+            ac.id,
+            "=",
+            e.uuid(releaseWithAppCoded.applicationCoded.id)
           );
-      }
-    });
+        };
 
-    return true;
+        if (removeRatherThanAdd) {
+          const oldLength = newArray.length;
+
+          // we want to remove any entries with the same system/code from our array
+          // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
+          newArray = newArray.filter(
+            (tup) => tup.system !== system || tup.code !== code
+          );
+
+          // nothing to mutate - return false
+          if (newArray.length == oldLength) return false;
+
+          if (field === "diseases")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  diseasesOfStudy: newArray,
+                },
+              }))
+              .run(tx);
+          else if (field === "countries")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  countriesInvolved: newArray,
+                },
+              }))
+              .run(tx);
+          else
+            throw new Error(
+              `Field instruction of ${field} was not handled in the remove operation`
+            );
+        } else {
+          // only do an insert if the entry is not already present
+          // i.e. set like semantics - but with an ordered array
+          // TODO: could we be ok with an actual e.set() (we wouldn't want the UI to jump around due to ordering changes)
+          if (
+            // if the entry already exists - we can return - nothing to do
+            newArray.findIndex(
+              (tup) => tup.system === system && tup.code === code
+            ) > -1
+          )
+            return false;
+
+          const commonAddition = e.array([
+            e.tuple({ system: system, code: code }),
+          ]);
+
+          if (field === "diseases")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  diseasesOfStudy: e.op(
+                    ac.diseasesOfStudy,
+                    "++",
+                    commonAddition
+                  ),
+                },
+              }))
+              .run(tx);
+          else if (field === "countries")
+            await e
+              .update(e.release.ApplicationCoded, (ac) => ({
+                filter: commonFilter(ac),
+                set: {
+                  countriesInvolved: e.op(
+                    ac.countriesInvolved,
+                    "++",
+                    commonAddition
+                  ),
+                },
+              }))
+              .run(tx);
+          else
+            throw new Error(
+              `Field instruction of ${field} was not handled in the add operation`
+            );
+        }
+        return { field, system, code };
+      },
+      async () => await this.getBase(releaseKey, userRole)
+    );
   }
 }

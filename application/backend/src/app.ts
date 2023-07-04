@@ -14,42 +14,77 @@ import {
 import { ErrorHandler } from "./api/errors/_error.handler";
 import { apiInternalRoutes } from "./api/api-internal-routes";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
-import { container, inject, injectable, singleton } from "tsyringe";
+import { DependencyContainer } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
 import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
-import { getSecureSessionOptions } from "./api/session-cookie-route-hook";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
+import { Context } from "./api/routes/trpc-bootstrap";
+import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
+import { trpcRoutes } from "./api/api-trpc-routes";
+import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import * as fs from "fs";
+import * as mime from "mime-types";
 
-@injectable()
-@singleton()
 export class App {
-  public server: FastifyInstance;
+  public readonly server: FastifyInstance;
 
   // a absolute path to where static files are to be served from
-  public staticFilesPath: string;
+  public readonly staticFilesPath: string;
+
+  private readonly trpcCreateContext: (
+    opts: CreateFastifyContextOptions
+  ) => Promise<Context>;
 
   /**
    * Our constructor does all the setup that can be done without async/await
    * (increasingly almost nothing). It should check settings and establish
    * anything that cannot be changed.
+   *
+   * @param dc
+   * @param settings
+   * @param logger
+   * @param features
    */
   constructor(
-    @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Logger") private readonly logger: Logger
+    private readonly dc: DependencyContainer,
+    private readonly settings: ElsaSettings,
+    private readonly logger: Logger,
+    private readonly features: ReadonlySet<string>
   ) {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
 
-    this.server = Fastify({ logger: logger });
+    this.server = Fastify({
+      logger: logger,
+      // needed for supporting TRPC queries (that can get very long!)
+      maxParamLength: 5000,
+      // consider if this should be a setting - but currently we are always deploying behind a load balancer
+      // that will act as a trusted proxy
+      trustProxy: true,
+    });
 
-    // inject a copy of the Elsa settings into every request
+    // inject a copy of the Elsa settings and a custom child DI container into every Fastify request
     this.server.decorateRequest("settings", null);
+    this.server.decorateRequest("container", null);
+
     this.server.addHook("onRequest", async (req, reply) => {
       // we make a shallow copy of the settings on each fastify request to (somewhat)
       // protect against routes doing mutations
       (req as any).settings = { ...settings };
+      // give each request its own DI container
+      (req as any).container = dc.createChildContainer();
+      (req as any).features = features;
+    });
+
+    // similarly for TRPC, start each request context with a copy of the Elsa settings and a custom child DI container
+    this.trpcCreateContext = async (opts: CreateFastifyContextOptions) => ({
+      settings: { ...settings },
+      container: dc.createChildContainer(),
+      features: features,
+      req: opts.req,
+      res: opts.res,
     });
   }
 
@@ -59,10 +94,26 @@ export class App {
   public async setupServer(): Promise<FastifyInstance> {
     // register global fastify plugins
     {
-      await this.server.register(fastifyTraps);
+      // we want our server to quickly shutdown in response to TERM signals - enabling our
+      // other infrastructure (load balancers, ecs etc) to be totally in charge of keeping us
+      // running as a service
+      // this sets up traps to do it gracefully however
+      // we have added strict: false because integration tests we run multiple servers one after each other
+      // and were getting left over SIGINT registrations
+      await this.server.register(fastifyTraps, { strict: false });
+
       await this.server.register(fastifyFormBody);
 
-      await this.server.register(fastifyHelmet, {});
+      await this.server.register(fastifyHelmet, {
+        contentSecurityPolicy: {
+          directives: {
+            // TODO: derive form action hosts from configuration of OIDC
+            formAction: ["'self'", "https:", "*.cilogon.org", "cilogon.org"],
+            // our front end needs to be able to make fetches from ontoserver
+            connectSrc: ["'self'", new URL(this.settings.ontoFhirUrl).host],
+          },
+        },
+      });
 
       await this.server.register(fastifyStatic, {
         root: this.staticFilesPath,
@@ -81,29 +132,38 @@ export class App {
       // set rate limits across the entire app surface - including APIs and HTML
       // NOTE: this rate limit is also applied in the NotFound handler
       // NOTE: we may need to consider moving this only to the /api section
-      await this.server.register(fastifyRateLimit, this.settings.rateLimit);
+      await this.server.register(
+        fastifyRateLimit,
+        this.settings.httpHosting.rateLimit
+      );
     }
 
     this.server.setErrorHandler(ErrorHandler);
 
     this.server.ready(() => {
-      this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
+      // only enable if we are having problems with API routing
+      // this.logger.debug(this.server.printRoutes({ commonPrefix: false }));
+    });
+
+    await this.server.register(trpcRoutes, {
+      prefix: "/api/trpc",
+      trpcCreateContext: this.trpcCreateContext,
     });
 
     this.server.register(apiExternalRoutes, {
       prefix: "/api",
-      container: container,
+      container: this.dc,
     });
 
     this.server.register(apiInternalRoutes, {
       prefix: "/api",
-      container: container,
+      container: this.dc,
       allowTestCookieEquals: undefined,
     });
 
     this.server.register(apiUnauthenticatedRoutes, {
       prefix: "/api",
-      container: container,
+      container: this.dc,
       addDevTestingRoutes: this.settings.devTesting?.allowTestRoutes ?? false,
     });
 
@@ -111,14 +171,14 @@ export class App {
     //       including callback as a special case (because it has to be registered with the OIDC provider)
     this.server.register(apiAuthRoutes, {
       prefix: "/auth",
-      container: container,
+      container: this.dc,
       redirectUri: this.settings.deployedUrl + "/cb",
       includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
     });
 
     this.server.register(callbackRoutes, {
       prefix: "/cb",
-      container: container,
+      container: this.dc,
       redirectUri: this.settings.deployedUrl + "/cb",
       includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
     });
@@ -130,6 +190,7 @@ export class App {
       { preHandler: this.server.rateLimit() },
       async (request, reply) => {
         // any misses that fall through in the API area should actually return 404
+        // we don't want to serve up index.html for mistaken API calls
         if (request.url.toLowerCase().startsWith("/api/")) {
           reply
             .code(404)
@@ -162,14 +223,27 @@ export class App {
 
         // the user hit refresh at (for example) https://ourwebsite.com/docs/a32gf24 - for react routes like
         // this we actually want to send the index content (at which point react routing takes over)
-        else
-          await serveCustomIndexHtml(
-            reply,
-            this.staticFilesPath,
-            this.buildIndexHtmlTemplateData()
-          );
+
+        await serveCustomIndexHtml(
+          reply,
+          this.staticFilesPath,
+          this.buildIndexHtmlTemplateData()
+        );
       }
     );
+
+    const logoUriRelative = this.settings.branding?.logoUriRelative;
+    const logoPath = this.settings.branding?.logoPath;
+    if (logoUriRelative && logoPath) {
+      await this.server.get(logoUriRelative, async (_, reply) => {
+        const mimeType = mime.lookup(logoPath);
+        if (mimeType === false) return reply.status(500);
+        return reply
+          .type(mimeType)
+          .header("Cache-Control", "public, max-age=3600, immutable")
+          .send(fs.createReadStream(logoPath));
+      });
+    }
 
     this.server.get("*", async (request, reply) => {
       const requestPath = request.url;
@@ -208,14 +282,29 @@ export class App {
   private buildIndexHtmlTemplateData(): IndexHtmlTemplateData {
     let dataAttributes = "";
 
-    const addAttribute = (k: string, v: string) => {
-      if (!v)
-        throw new Error(
-          `The index.html generator must have access to a valid value to set for ${k}`
-        );
-
-      dataAttributes = dataAttributes + `\t\t${k}="${v}"\n`;
+    const escapeHtml = (unsafe: string) => {
+      return unsafe.replace(/[<>&'"]/g, function (c) {
+        switch (c) {
+          case '"':
+            return "&quot;";
+          case "&":
+            return "&amp;";
+          case "<":
+            return "&lt;";
+          case ">":
+            return "&gt;";
+          default:
+            return c;
+        }
+      });
     };
+
+    const addAttribute = (k: string, v: string) => {
+      dataAttributes = dataAttributes + `\t\t${k}="${escapeHtml(v)}"\n`;
+    };
+
+    const brandName = this.settings.branding?.brandName;
+    const documentTitle = brandName ? `Elsa Data – ${brandName}` : "Elsa Data";
 
     // these are env variables set in the solution deployment stack - probably via Cloud Formation parameters but also
     // locally they can be set just by shell env variables
@@ -231,10 +320,22 @@ export class App {
     );
     addAttribute(
       "data-terminology-fhir-url",
-      this.settings.ontoFhirUrl || "undefined"
+      this.settings.ontoFhirUrl ?? "undefined"
+    );
+    if (this.features.size > 0)
+      addAttribute(
+        "data-features",
+        Array.from(this.features.values()).join(" ")
+      );
+    addAttribute("data-document-title", documentTitle ?? "");
+    addAttribute("data-brand-name", this.settings.branding?.brandName ?? "");
+    addAttribute(
+      "data-brand-logo-uri-relative",
+      this.settings.branding?.logoUriRelative ?? ""
     );
 
     return {
+      document_title: documentTitle,
       data_attributes: dataAttributes,
     };
   }

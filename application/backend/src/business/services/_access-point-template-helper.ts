@@ -1,7 +1,7 @@
-import { ReleaseFileListEntry } from "./_release-file-list-helper";
 import { has } from "lodash";
 import { randomBytes } from "crypto";
 import { Stack } from "@aws-sdk/client-cloudformation";
+import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 
 export type AccessPointTemplateToSave = {
   root: boolean;
@@ -54,7 +54,7 @@ export function correctAccessPointTemplateOutputs(stack: Stack): {
  *
  * @param templateBucket
  * @param templateRegion
- * @param releaseId an identifier for the release (will normally be edgedb id) - but is only used a string
+ * @param releaseKey a friendly named identifier for the release
  * @param files
  * @param shareToAccountIds
  * @param shareToVpcId
@@ -64,8 +64,8 @@ export function correctAccessPointTemplateOutputs(stack: Stack): {
 export function createAccessPointTemplateFromReleaseFileEntries(
   templateBucket: string,
   templateRegion: string,
-  releaseId: string,
-  files: ReleaseFileListEntry[],
+  releaseKey: string,
+  files: ManifestBucketKeyObjectType[],
   shareToAccountIds: string[],
   shareToVpcId?: string
 ): AccessPointTemplateToSave[] {
@@ -75,7 +75,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
 
   // unlike the file entries array which has other fields (like specimenId etc) - we only interested in
   // the file entries - and duplicates should be removed
-  // (e.g. a trio VCF might have three ReleaseFileListEntry (one for each person) - but we want to only list once)
+  // (e.g. a trio VCF might have three ManifestBucketKeyObjectType (one for each person) - but we want to only list once)
   const uniqueEntries: { [u: string]: AccessPointEntry } = {};
 
   // I'd normally use a Set() here but we want to not have to the S3Url -> S3Bucket,S3key logic again
@@ -156,12 +156,12 @@ export function createAccessPointTemplateFromReleaseFileEntries(
    */
   const addNewStack = (bucketName: string) => {
     subStackCount++;
-    subStackAccessPointName = `${releaseId}-${subStackCount}`;
+    subStackAccessPointName = `${releaseKey.toLowerCase()}-${subStackCount}`;
     subStackStackName = bucketNameAsResource(bucketName);
 
     subStackCurrent = {
       AWSTemplateFormatVersion: "2010-09-09",
-      Description: `S3 AccessPoint template for allowing access in bucket ${bucketName} to files released in release ${releaseId}`,
+      Description: `S3 AccessPoint template for allowing access in bucket ${bucketName} to files released in release ${releaseKey}`,
       Resources: {
         S3AccessPoint: {
           Type: "AWS::S3::AccessPoint",

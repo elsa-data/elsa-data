@@ -4,6 +4,7 @@
       name: "dataset001",
       description: "A dataset sample.",
       uri: "urn:elsa.net:2022:dataset001",
+      loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "example/dataset001",
     },
@@ -11,8 +12,12 @@
       name: "dataset002",
       description: "Another dataset sample.",
       uri: "urn:elsa.net:2022:dataset002",
+      loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "example/dataset002",
     },
   ],
+  htsget: {
+    url: "https://htsget.elsa.dev.umccr.org",
+  },
 }
