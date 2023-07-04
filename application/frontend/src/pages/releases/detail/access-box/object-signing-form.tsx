@@ -5,6 +5,8 @@ import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { Alert } from "../../../../components/alert";
+import { trpc } from "../../../../helpers/trpc";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -17,8 +19,16 @@ export const ObjectSigningForm: React.FC<Props> = ({
 }) => {
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
 
+  const getFilePasswordMutate =
+    trpc.releaseRouter.getReleasePassword.useMutation({});
+
+  const [isPassInClipboard, setIsPassInClipboard] = useState<boolean>(false);
+
   return (
-    <>
+    <div className="prose">
+      {getFilePasswordMutate.isError && (
+        <EagerErrorBoundary error={getFilePasswordMutate.error} />
+      )}
       {isPrepareDownload && (
         <Alert
           icon={<span className="loading loading-bars loading-xs" />}
@@ -28,44 +38,106 @@ export const ObjectSigningForm: React.FC<Props> = ({
           }
         />
       )}
-      <form
-        action={`/api/releases/${releaseKey}/tsv-manifest-archive`}
-        method="POST"
-      >
-        <CSRFInputToken />
-        <div className="flex flex-col gap-6">
-          <article className="prose">
+      <div className="flex w-full flex-col ">
+        <div className="card rounded-box grid flex-grow">
+          <article className="prose mb-5">
+            <span className="text-lg font-bold">File Password</span>
             <p>
-              This allows you to download an encrypted zip file containing a TSV
-              file. The TSV file contains one column holding signed object URLS
-              - URLs that allow you to directly download the given genomic file.
+              The file will be encrypted with a password. Use the following box
+              to view the password.
             </p>
           </article>
+          <span className="flex w-full items-center">
+            {getFilePasswordMutate.data ? (
+              <textarea
+                disabled
+                className="input-bordered input !m-0 w-full overflow-hidden break-words"
+              >
+                {getFilePasswordMutate.data}
+              </textarea>
+            ) : (
+              <input
+                disabled
+                type={"password"}
+                className="input-bordered input !m-0 w-full break-words"
+                value={"1234"}
+              />
+            )}
 
-          {ObjectStoreRecordKey.map((field, i) => (
-            <TsvColumnCheck key={i} field={field} />
-          ))}
+            {getFilePasswordMutate.isLoading ? (
+              <span className="loading loading-spinner ml-4" />
+            ) : getFilePasswordMutate.data ? (
+              <button
+                className="btn-table-action-navigate"
+                onClick={() => {
+                  navigator.clipboard.writeText(getFilePasswordMutate.data!);
+                  setIsPassInClipboard(true);
+                  setTimeout(() => {
+                    setIsPassInClipboard(false);
+                  }, 2000);
+                }}
+              >
+                Copy
+              </button>
+            ) : (
+              <button
+                className="btn-table-action-navigate"
+                onClick={() => {
+                  getFilePasswordMutate.mutate({ releaseKey });
+                }}
+              >
+                View
+              </button>
+            )}
+          </span>
 
-          <div className="prose">
-            <input
-              type="submit"
-              disabled={!releaseData.activation}
-              className="btn-normal mt-4"
-              value={
-                "Download Zip" +
-                (!releaseData.activation ? " (Release Must Be Active)" : "")
-              }
-              onClick={() => {
-                // Set loader alert
-                setIsPrepareDownload(true);
-                setTimeout(() => {
-                  setIsPrepareDownload(false);
-                }, 3000);
-              }}
-            />
-          </div>
+          <label className="label">
+            <span className="label-text-alt h-4 text-red-600">
+              {isPassInClipboard && "Password copied to clipboard"}
+            </span>
+          </label>
         </div>
-      </form>
-    </>
+
+        <form
+          action={`/api/releases/${releaseKey}/tsv-manifest-archive`}
+          method="POST"
+        >
+          <CSRFInputToken />
+          <div className="flex flex-col gap-6">
+            <article className="prose">
+              <span className="text-lg font-bold">TSV Downloader Form</span>
+              <p>
+                This form allows you to download an encrypted zip file
+                containing a TSV file. The TSV file contains one column holding
+                signed object URLS - URLs that allow you to directly download
+                the given genomic file.
+              </p>
+            </article>
+            {ObjectStoreRecordKey.map((field, i) => (
+              <TsvColumnCheck key={i} field={field} />
+            ))}
+
+            <div className="prose">
+              <input
+                type="submit"
+                disabled={!releaseData.activation}
+                className="btn-normal mt-4"
+                value={
+                  "Download Zip" +
+                  (!releaseData.activation ? " (Release Must Be Active)" : "")
+                }
+                onClick={() => {
+                  // Set loader alert
+                  setIsPrepareDownload(true);
+                  setTimeout(() => {
+                    setIsPrepareDownload(false);
+                  }, 3000);
+                }}
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };

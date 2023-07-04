@@ -1,10 +1,11 @@
 import React from "react";
 import {
-  createBrowserRouter,
-  createRoutesFromElements,
   Navigate,
   Outlet,
   Route,
+  RouterProvider,
+  createBrowserRouter,
+  createRoutesFromElements,
   useLocation,
 } from "react-router-dom";
 import "./index.css";
@@ -27,6 +28,7 @@ import { AuditEventDetailedPage } from "./components/audit-event/audit-event-det
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit-events-sub-page";
+import { JobsSubPage } from "./pages/releases/jobs-sub-page/jobs-sub-page";
 import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
@@ -36,12 +38,16 @@ import {
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
 
+type IndexRouterProps = {
+  features: Set<string>;
+};
+
 /**
  * Create the complete set of routes for the application.
  *
  * @param features the set of features to enable in the UI
  */
-export function createRouter(features: Set<string>) {
+export function IndexRouter({ features }: IndexRouterProps) {
   const NoMatch = () => {
     let location = useLocation();
 
@@ -70,6 +76,7 @@ export function createRouter(features: Set<string>) {
     redirectPath,
   }) => {
     const user = useLoggedInUser();
+
     if (!user) {
       return <Navigate to={redirectPath} replace />;
     }
@@ -116,7 +123,14 @@ export function createRouter(features: Set<string>) {
     children: <></>,
   });
 
-  return createBrowserRouter(
+  releaseChildren.push({
+    text: "Jobs",
+    path: "jobs",
+    element: <JobsSubPage />,
+    children: <></>,
+  });
+
+  const router = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<LayoutBase />}>
         {/* the following 'public' routes need to come first so that they will match before
@@ -149,26 +163,25 @@ export function createRouter(features: Set<string>) {
               handle={{
                 siblingItems: releaseChildren
                   .map((c, i) => ({
+                    id: c.path,
                     to: `./${c.path}`,
                     text: c.text,
                   }))
                   .filter(({ text }) => text !== undefined),
               }}
             >
-              <>
-                {releaseChildren.map((c, i) => (
-                  <Route
-                    key={i}
-                    path={c.path}
-                    element={c.element}
-                    handle={{
-                      crumbText: c.text,
-                    }}
-                  >
-                    {c.children}
-                  </Route>
-                ))}
-              </>
+              {releaseChildren.map((c, i) => (
+                <Route
+                  key={i}
+                  path={c.path}
+                  element={c.element}
+                  handle={{
+                    crumbText: c.text,
+                  }}
+                >
+                  {c.children}
+                </Route>
+              ))}
             </Route>
           </Route>
 
@@ -200,6 +213,8 @@ export function createRouter(features: Set<string>) {
       </Route>
     )
   );
+
+  return <RouterProvider router={router} />;
 }
 
 // Redirection component

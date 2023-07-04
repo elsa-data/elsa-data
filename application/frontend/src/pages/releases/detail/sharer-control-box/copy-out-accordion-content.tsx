@@ -4,6 +4,7 @@ import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerCopyOutType } from "../../../../../../backend/src/config/config-schema-sharer";
 import { trpc } from "../../../../helpers/trpc";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type CopyOutAccordionContentProps = {
   releaseKey: string;
@@ -38,8 +39,13 @@ export const CopyOutAccordionContent: React.FC<
     },
   });
 
+  const error = copyOutTriggerMutate.error;
+  const isError = copyOutTriggerMutate.isError;
+
   return (
     <>
+      {isError && <EagerErrorBoundary error={error} />}
+
       <div className="form-control flex-grow lg:w-3/4">
         <label className="label">
           <span className="label-text">

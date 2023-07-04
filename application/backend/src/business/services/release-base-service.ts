@@ -29,7 +29,7 @@ import {
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
 
-export type UserRoleInRelease = ReleaseParticipantRoleType & "AdminView";
+export type UserRoleInRelease = ReleaseParticipantRoleType | "AdminView";
 
 // an internal string set that tells the service which generic field to alter
 // (this allows us to make a mega function that sets all array fields in the same way)
@@ -337,9 +337,6 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
-      // password only gets sent down to the Manager
-      downloadPassword:
-        userRole === "Manager" ? releaseInfo.releasePassword : undefined,
 
       // A list of roles allowed to edit other user's role depending on this auth user
       // e.g. A manager cannot edit Administrator role.

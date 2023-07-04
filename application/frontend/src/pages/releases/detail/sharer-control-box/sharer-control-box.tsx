@@ -18,13 +18,12 @@ import { CopyOutAccordionContent } from "./copy-out-accordion-content";
 import { ObjectSigningAccordionContent } from "./object-signing-accordion-content";
 import { HtsgetAccordionContent } from "./htsget-accordion-content";
 import { AwsAccessPointAccordionContent } from "./aws-access-point-accordion-content";
-import { InputWrapper } from "../../../../components/input-wrapper";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
-  isEditable: boolean;
+  isAllowEdit: boolean;
 };
 
 /**
@@ -39,7 +38,7 @@ type Props = {
 export const SharerControlBox: React.FC<Props> = ({
   releaseKey,
   releaseData,
-  isEditable = false,
+  isAllowEdit = false,
 }) => {
   const { sharers } = useLoggedInUserConfigRelay()!;
   const utils = trpc.useContext();
@@ -74,18 +73,15 @@ export const SharerControlBox: React.FC<Props> = ({
   const awsAccessPointEnabled = !!releaseData.dataSharingAwsAccessPoint;
   // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
 
-  /*const error =
-    releasePatchMutate.error ??
-    copyOutTriggerMutate.error ??
-    removeHtsgetRestriction.error ??
-    applyHtsgetRestriction.error;
-  const isError =
-    releasePatchMutate.isError ||
-    copyOutTriggerMutate.isError ||
-    removeHtsgetRestriction.isError ||
-    applyHtsgetRestriction.isError; */
+  const error = releasePatchMutate.error;
+  const isError = releasePatchMutate.isError;
+
   return (
-    <Box heading="Data Sharing Control">
+    <Box
+      heading="Data Sharing Control"
+      applyIsDisabledStyle={!isAllowEdit}
+      applyIsDisabledAllInput={!isAllowEdit}
+    >
       <RhSection>
         <LeftDiv
           heading={"Mechanism"}
@@ -96,83 +92,81 @@ export const SharerControlBox: React.FC<Props> = ({
         />
         <RightDiv>
           <RhChecks label="Researcher Access Via">
-            {/*isError && <EagerErrorBoundary error={error} />*/}
+            {isError && <EagerErrorBoundary error={error} />}
 
-            <InputWrapper isDisabledChildrenInput={!isEditable}>
-              <>
-                {objectSigningSetting && (
-                  <SharingConfigurationAccordion
-                    mutator={releasePatchMutate}
-                    path="/dataSharingConfiguration/objectSigningEnabled"
-                    label="Object Signing"
-                    current={objectSigningEnabled}
-                    notWorkingReason={objectSigningSetting.notWorkingReason}
-                  >
-                    <ObjectSigningAccordionContent
-                      releaseKey={releaseKey}
-                      releaseData={releaseData}
-                      releasePatchMutator={releasePatchMutate}
-                      objectSigningSetting={objectSigningSetting}
-                    />
-                  </SharingConfigurationAccordion>
-                )}
+            <>
+              {objectSigningSetting && (
+                <SharingConfigurationAccordion
+                  mutator={releasePatchMutate}
+                  path="/dataSharingConfiguration/objectSigningEnabled"
+                  label="Object Signing"
+                  current={objectSigningEnabled}
+                  notWorkingReason={objectSigningSetting.notWorkingReason}
+                >
+                  <ObjectSigningAccordionContent
+                    releaseKey={releaseKey}
+                    releaseData={releaseData}
+                    releasePatchMutator={releasePatchMutate}
+                    objectSigningSetting={objectSigningSetting}
+                  />
+                </SharingConfigurationAccordion>
+              )}
 
-                {copyOutSetting && (
-                  <SharingConfigurationAccordion
-                    mutator={releasePatchMutate}
-                    path="/dataSharingConfiguration/copyOutEnabled"
-                    label="Copy Out"
-                    current={copyOutEnabled}
-                    notWorkingReason={copyOutSetting.notWorkingReason}
-                  >
-                    <CopyOutAccordionContent
-                      releaseKey={releaseKey}
-                      releaseData={releaseData}
-                      releasePatchMutator={releasePatchMutate}
-                      copyOutSetting={copyOutSetting}
-                      copyOutWorking={!!copyOutSetting.notWorkingReason}
-                    />
-                  </SharingConfigurationAccordion>
-                )}
+              {copyOutSetting && (
+                <SharingConfigurationAccordion
+                  mutator={releasePatchMutate}
+                  path="/dataSharingConfiguration/copyOutEnabled"
+                  label="Copy Out"
+                  current={copyOutEnabled}
+                  notWorkingReason={copyOutSetting.notWorkingReason}
+                >
+                  <CopyOutAccordionContent
+                    releaseKey={releaseKey}
+                    releaseData={releaseData}
+                    releasePatchMutator={releasePatchMutate}
+                    copyOutSetting={copyOutSetting}
+                    copyOutWorking={!!copyOutSetting.notWorkingReason}
+                  />
+                </SharingConfigurationAccordion>
+              )}
 
-                {htsgetSetting && (
-                  <SharingConfigurationAccordion
-                    mutator={releasePatchMutate}
-                    path="/dataSharingConfiguration/htsgetEnabled"
-                    label="Htsget"
-                    current={htsgetEnabled}
-                    notWorkingReason={htsgetSetting.notWorkingReason}
-                  >
-                    <HtsgetAccordionContent
-                      releaseKey={releaseKey}
-                      releaseData={releaseData}
-                      releasePatchMutator={releasePatchMutate}
-                      htsgetSetting={htsgetSetting}
-                    />
-                  </SharingConfigurationAccordion>
-                )}
+              {htsgetSetting && (
+                <SharingConfigurationAccordion
+                  mutator={releasePatchMutate}
+                  path="/dataSharingConfiguration/htsgetEnabled"
+                  label="Htsget"
+                  current={htsgetEnabled}
+                  notWorkingReason={htsgetSetting.notWorkingReason}
+                >
+                  <HtsgetAccordionContent
+                    releaseKey={releaseKey}
+                    releaseData={releaseData}
+                    releasePatchMutator={releasePatchMutate}
+                    htsgetSetting={htsgetSetting}
+                  />
+                </SharingConfigurationAccordion>
+              )}
 
-                {awsAccessPointSetting && (
-                  <SharingConfigurationAccordion
-                    mutator={releasePatchMutate}
-                    path="/dataSharingConfiguration/awsAccessPointEnabled"
-                    label="AWS Access Point"
-                    current={awsAccessPointEnabled}
-                    notWorkingReason={awsAccessPointSetting.notWorkingReason}
-                  >
-                    <AwsAccessPointAccordionContent
-                      releaseKey={releaseKey}
-                      releaseData={releaseData}
-                      releasePatchMutator={releasePatchMutate}
-                      awsAccessPointSetting={awsAccessPointSetting}
-                      awsAccessPointWorking={
-                        !!awsAccessPointSetting.notWorkingReason
-                      }
-                    />
-                  </SharingConfigurationAccordion>
-                )}
-              </>
-            </InputWrapper>
+              {awsAccessPointSetting && (
+                <SharingConfigurationAccordion
+                  mutator={releasePatchMutate}
+                  path="/dataSharingConfiguration/awsAccessPointEnabled"
+                  label="AWS Access Point"
+                  current={awsAccessPointEnabled}
+                  notWorkingReason={awsAccessPointSetting.notWorkingReason}
+                >
+                  <AwsAccessPointAccordionContent
+                    releaseKey={releaseKey}
+                    releaseData={releaseData}
+                    releasePatchMutator={releasePatchMutate}
+                    awsAccessPointSetting={awsAccessPointSetting}
+                    awsAccessPointWorking={
+                      !!awsAccessPointSetting.notWorkingReason
+                    }
+                  />
+                </SharingConfigurationAccordion>
+              )}
+            </>
           </RhChecks>
         </RightDiv>
       </RhSection>

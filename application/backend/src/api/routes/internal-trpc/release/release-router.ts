@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ReleaseActivationPermissionError } from "../../../../business/exceptions/release-activation";
 import {
   calculateOffset,
   internalProcedure,
@@ -40,6 +41,25 @@ export const releaseRouter = router({
       const { releaseKey } = input;
 
       return await ctx.releaseService.get(user, releaseKey);
+    }),
+  getReleasePassword: internalProcedure
+    .input(inputReleaseKeySingle)
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey } = input;
+
+      return await ctx.auditEventService.transactionalReadInReleaseAuditPattern(
+        user,
+        releaseKey,
+        `Access the release password: ${releaseKey}`,
+        async () => {},
+        async (tx, a) => {
+          return await ctx.releaseService.getPassword(user, releaseKey);
+        },
+        async (p) => {
+          return p;
+        }
+      );
     }),
   getReleaseConsent: internalProcedure
     .input(inputReleaseKeySingle.merge(z.object({ nodeId: z.string() })))
