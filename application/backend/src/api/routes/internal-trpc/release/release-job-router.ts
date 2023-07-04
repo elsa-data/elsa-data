@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   inputReleaseKey,
   inputReleaseKeySingle,
+  unorderedInputPaginationParameter,
 } from "../input-schemas-common";
 
 /**
@@ -63,6 +64,20 @@ export const releaseJobRouter = router({
       await ctx.jobService.cancelInProgressSelectJob(
         ctx.user,
         input.releaseKey
+      );
+    }),
+  previousJobs: internalProcedure
+    .input(inputReleaseKeySingle.merge(unorderedInputPaginationParameter))
+    .query(async ({ input, ctx }) => {
+      const { user, pageSize } = ctx;
+
+      return (
+        (await ctx.jobService.getPreviousJobs(
+          user,
+          input.releaseKey,
+          pageSize,
+          (input.page - 1) * pageSize
+        )) ?? { data: [], total: 0 }
       );
     }),
 });

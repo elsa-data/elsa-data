@@ -3,7 +3,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
-import { ReleaseDetailType } from "@umccr/elsa-types";
+import { ReleaseDetailType, ReleasePreviousJobType } from "@umccr/elsa-types";
 import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
@@ -12,6 +12,13 @@ import { Transaction } from "edgedb/dist/transaction";
 import { AuditEventService } from "../audit-event-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import { jobAsType } from "./job-helpers";
+import * as interfaces from "../../../../dbschema/interfaces";
+import Job = interfaces.job.Job;
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../../api/helpers/pagination-helpers";
+import _ from "lodash";
 
 export class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseKey: string) {
@@ -462,17 +469,94 @@ export class JobService {
   /**
    * Return all the non-running jobs that have been associated with this release.
    *
+   * @param user
    * @param releaseKey
+   * @param limit
+   * @param offset
    */
-  public async getPreviousJobs(releaseKey: string) {
-    return await e
-      .select(e.job.Job, (sj) => ({
+  public async getPreviousJobs(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    limit: number,
+    offset: number
+  ): Promise<PagedResult<ReleasePreviousJobType>> {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (userRole != "Administrator" && !user.isAllowedOverallAdministratorView)
+      throw new NotAuthorisedToControlJob(userRole, releaseKey);
+
+    const pageOfEntriesQueryFn = (params?: { offset: number; limit: number }) =>
+      e.select(e.job.Job, (sj) => ({
+        id: true,
+        __type__: { name: true },
+        created: true,
+        started: true,
+        ended: true,
+        requestedCancellation: true,
+        messages: true,
+        ...e.is(e.job.CloudFormationInstallJob, {
+          s3HttpsUrl: true,
+          awsStackId: true,
+        }),
+        ...e.is(e.job.CloudFormationDeleteJob, {
+          awsStackId: true,
+        }),
+        ...e.is(e.job.CopyOutJob, {
+          awsExecutionArn: true,
+        }),
         filter: e.op(
           e.op(sj.status, "!=", e.job.JobStatus.running),
           "and",
           e.op(sj.forRelease.releaseKey, "=", releaseKey)
         ),
-      }))
-      .run(this.edgeDbClient);
+        order_by: [
+          {
+            expression: sj.started,
+            direction: e.DESC,
+          },
+        ],
+        ...params,
+      }));
+
+    const countQuery = e.count(pageOfEntriesQueryFn());
+    const pageOfEntriesQuery = pageOfEntriesQueryFn({ limit, offset });
+
+    const totalEntries = await countQuery.run(this.edgeDbClient);
+    const pageOfEntries = await pageOfEntriesQuery.run(this.edgeDbClient);
+
+    return createPagedResult(
+      pageOfEntries.map((entry) => ({
+        objectId: entry.id,
+        type: entry.__type__.name.split("::").at(-1) ?? "",
+        created: entry.created,
+        started: entry.started,
+        ended: entry.ended,
+        requestedCancellation: entry.requestedCancellation,
+        details: JSON.stringify(
+          _(entry)
+            .pickBy((v, k) => v !== null)
+            .omit([
+              "__type__",
+              "created",
+              "ended",
+              "id",
+              "messages",
+              "requestedCancellation",
+              "started",
+            ])
+            .merge({
+              messages: entry.messages.join("\n"),
+            })
+            .value(),
+          null,
+          2
+        ),
+      })),
+      totalEntries
+    );
   }
 }
