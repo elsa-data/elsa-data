@@ -58,7 +58,7 @@ export class RemsService {
   ): Promise<RemsApprovedApplicationType[]> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
-    if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
+    if (!dbUser.isAllowedCreateRelease) throw new ReleaseViewError();
 
     /*const appData = await this.getRemsApplications("rems-hgpp");
 

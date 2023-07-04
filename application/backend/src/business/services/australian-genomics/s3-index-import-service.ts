@@ -54,6 +54,8 @@ import {
 } from "../../../test-data/dataset/insert-test-data-10g";
 import phenopackets from "../../../generated/phenopackets";
 import { Logger } from "pino";
+import { ReleaseCreateError } from "../../exceptions/release-authorisation";
+import { UserData } from "../../data/user-data";
 
 type PhenopacketIndividiual =
   phenopackets.org.phenopackets.schema.v2.IPhenopacket;
@@ -97,7 +99,8 @@ export class S3IndexApplicationService {
     @inject("Logger") private readonly logger: Logger,
     @inject(DatasetService) private readonly datasetService: DatasetService,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService
+    private readonly auditLogService: AuditEventService,
+    @inject(UserData) private readonly userData: UserData
   ) {}
 
   /**
@@ -106,15 +109,14 @@ export class S3IndexApplicationService {
    * @param datasetUri
    * @returns
    */
-  private checkIsImportDatasetAllowed(
+  private async checkIsImportDatasetAllowed(
     user: AuthenticatedUser,
     datasetUri?: string
-  ): void {
-    // Check if user has the permission to view all audit events
-    const isPermissionAllow = user.isAllowedRefreshDatasetIndex;
-    if (isPermissionAllow) return;
+  ): Promise<void> {
+    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
-    throw new NotAuthorisedRefreshDatasetIndex();
+    if (!dbUser.isAllowedRefreshDatasetIndex)
+      throw new NotAuthorisedRefreshDatasetIndex();
   }
 
   /**
@@ -685,7 +687,7 @@ export class S3IndexApplicationService {
       | "australian-genomics-directories-demo"
   ) {
     // triggering a sync is limited to certain users
-    this.checkIsImportDatasetAllowed(user, datasetUri);
+    await this.checkIsImportDatasetAllowed(user, datasetUri);
 
     // TODO this should upset db dataset records to allow us to bootstrap datasets from config
     const datasetId = (
