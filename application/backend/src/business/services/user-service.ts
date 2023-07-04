@@ -24,6 +24,7 @@ import {
 import { IPLookupService, LocationType } from "./ip-lookup-service";
 import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 import { UserData } from "../data/user-data";
+import { NotAuthorisedToControlJob } from "./jobs/job-service";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;

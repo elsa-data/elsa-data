@@ -142,6 +142,10 @@ export abstract class ReleaseBaseService {
       userRole: role as UserRoleInRelease,
       isActivated: !!boundaryInfo.activation,
       isRunningJob: !!boundaryInfo.runningJob,
+      isAllowedOverallAdministratorView:
+        boundaryInfo.isAllowedOverallAdministratorView,
+      isAllowedCreateRelease: boundaryInfo.isAllowedCreateRelease,
+      isAllowedRefreshDatasetIndex: boundaryInfo.isAllowedRefreshDatasetIndex,
     };
   }
 
