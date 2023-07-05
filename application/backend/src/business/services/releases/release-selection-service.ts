@@ -1,5 +1,5 @@
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import {
   DuoLimitationCodedType,
   ReleaseCaseType,
@@ -8,29 +8,29 @@ import {
   ReleasePatientType,
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { isObjectLike, isSafeInteger } from "lodash";
 import {
   createPagedResult,
   PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import { collapseExternalIds, getReleaseInfo } from "./helpers";
+} from "../../../api/helpers/pagination-helpers";
+import { collapseExternalIds, getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
+import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { $DatasetCase } from "../../../dbschema/edgeql-js/modules/dataset";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { dataset } from "../../../dbschema/interfaces";
-import { $scopify } from "../../../dbschema/edgeql-js/typesystem";
-import { AuditEventService } from "./audit-event-service";
+import { $DatasetCase } from "../../../../dbschema/edgeql-js/modules/dataset";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import { dataset } from "../../../../dbschema/interfaces";
+import { $scopify } from "../../../../dbschema/edgeql-js/typesystem";
+import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";
 import {
   ReleaseSelectionDatasetMismatchError,
   ReleaseSelectionPermissionError,
-} from "../exceptions/release-selection";
-import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
-import { releaseGetSpecimenToDataSetCrossLinks } from "../../../dbschema/queries";
-import { AuditEventTimedService } from "./audit-event-timed-service";
+} from "../../exceptions/release-selection";
+import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
+import { releaseGetSpecimenToDataSetCrossLinks } from "../../../../dbschema/queries";
+import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**

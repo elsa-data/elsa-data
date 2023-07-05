@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
-import { ReleaseService } from "../../src/business/services/release-service";
+import { ReleaseService } from "../../src/business/services/releases/release-service";
 import { registerTypes } from "../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
@@ -10,7 +10,7 @@ import {
   ReleaseDeactivationStateError,
 } from "../../src/business/exceptions/release-activation";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
+import { ReleaseActivationService } from "../../src/business/services/releases/release-activation-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;

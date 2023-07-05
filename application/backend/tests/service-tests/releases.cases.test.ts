@@ -23,7 +23,7 @@ import {
   JETSONS_CASE,
   JUDY_SPECIMEN,
 } from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
-import { ReleaseSelectionService } from "../../src/business/services/release-selection-service";
+import { ReleaseSelectionService } from "../../src/business/services/releases/release-selection-service";
 import { ReleaseSelectionDatasetMismatchError } from "../../src/business/exceptions/release-selection";
 import { TN_1_SPECIMEN_TUMOUR } from "../../src/test-data/dataset/insert-test-data-10c";
 

@@ -10,9 +10,9 @@ import {
 import { JUDY_SPECIMEN } from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { ReleaseService } from "../../src/business/services/release-service";
-import { ReleaseSelectionService } from "../../src/business/services/release-selection-service";
-import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
+import { ReleaseService } from "../../src/business/services/releases/release-service";
+import { ReleaseSelectionService } from "../../src/business/services/releases/release-selection-service";
+import { ReleaseActivationService } from "../../src/business/services/releases/release-activation-service";
 import _ from "lodash";
 
 const testContainer = registerTypes();

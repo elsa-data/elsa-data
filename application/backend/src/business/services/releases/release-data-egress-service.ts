@@ -1,23 +1,25 @@
 import * as edgedb from "edgedb";
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
+import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditEventService } from "./audit-event-service";
-import { createPagedResult } from "../../api/helpers/pagination-helpers";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import { AuditEventService } from "../audit-event-service";
+import { createPagedResult } from "../../../api/helpers/pagination-helpers";
 
 import {
   getReleaseDataEgress,
   getReleaseDataEgressSummary,
   releaseGetByReleaseKey,
-} from "../../../dbschema/queries";
-import { NotAuthorisedUpdateDataEgressRecords } from "../exceptions/audit-authorisation";
-import { AwsCloudTrailLakeService } from "./aws/aws-cloudtrail-lake-service";
-import { AuditEventTimedService } from "./audit-event-timed-service";
-import { LocationType } from "./ip-lookup-service";
+  releaseLastUpdatedReset,
+} from "../../../../dbschema/queries";
+import { NotAuthorisedUpdateDataEgressRecords } from "../../exceptions/audit-authorisation";
+import { AwsCloudTrailLakeService } from "../aws/aws-cloudtrail-lake-service";
+import { AuditEventTimedService } from "../audit-event-timed-service";
+import { IPLookupService, LocationType } from "../ip-lookup-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
-import { UserData } from "../data/user-data";
+import { UserData } from "../../data/user-data";
+import { updateDataEgressRecordByReleaseKey } from "./mixins/release-data-egress-mixin";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -37,7 +39,8 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient,
-    @inject(UserData) private readonly userData: UserData
+    @inject(UserData) private readonly userData: UserData,
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
   ) {
     super(
       settings,
@@ -59,7 +62,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       throw new NotAuthorisedUpdateDataEgressRecords();
   }
 
-  public async updateDataEgressRecordByReleaseKey(
+  public async updateDataEgressRecordsByReleaseKey(
     user: AuthenticatedUser,
     releaseKey: string
   ) {
@@ -78,12 +81,19 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       async () => {
         await this.checkIsAllowedRefreshDatasetIndex(user);
       },
+
       async (tx, a) => {
         if (!datasetUrisArray) throw new Error("No dataset found!");
-        await this.awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-          user,
-          releaseKey,
-          datasetUrisArray,
+        await updateDataEgressRecordByReleaseKey({
+          tx: tx,
+          dataEgressQueryService: this.awsCloudTrailLakeService,
+          ipLookupService: this.ipLookupService,
+          releaseKey: releaseKey,
+        });
+
+        await releaseLastUpdatedReset(tx, {
+          releaseKey: releaseKey,
+          lastUpdatedSubjectId: user.subjectId,
         });
       },
       async () => {}

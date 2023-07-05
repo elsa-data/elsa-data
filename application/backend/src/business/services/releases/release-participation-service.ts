@@ -1,9 +1,9 @@
 import * as edgedb from "edgedb";
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
+import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { ElsaSettings } from "../../config/elsa-settings";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import {
   potentialUserGetByEmail,
   releaseParticipantAddPotentialUser,
@@ -15,15 +15,15 @@ import {
   releaseParticipantRemovePotentialUser,
   releaseParticipantRemoveUser,
   userGetByEmail,
-} from "../../../dbschema/queries";
+} from "../../../../dbschema/queries";
 import {
   ReleaseParticipationPermissionError,
   ReleaseParticipationNotFoundError,
   ReleaseParticipationExistError,
-} from "../exceptions/release-participation";
-import e from "../../../dbschema/edgeql-js";
-import { AuditEventService } from "./audit-event-service";
-import { AuditEventTimedService } from "./audit-event-timed-service";
+} from "../../exceptions/release-participation";
+import e from "../../../../dbschema/edgeql-js";
+import { AuditEventService } from "../audit-event-service";
+import { AuditEventTimedService } from "../audit-event-timed-service";
 import {
   ReleaseParticipantRoleType,
   ReleaseParticipantType,
@@ -31,7 +31,7 @@ import {
 import {
   createPagedResult,
   PagedResult,
-} from "../../api/helpers/pagination-helpers";
+} from "../../../api/helpers/pagination-helpers";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**
@@ -159,7 +159,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
           throw new ReleaseParticipationPermissionError(releaseKey);
         }
       },
-      async (tx, a) => {
+      async (tx) => {
         // a data structure we pass to the next stage AND which we put into the Audit log details
         const auditLogDetail = (id: string) => ({
           email: newUserEmail,

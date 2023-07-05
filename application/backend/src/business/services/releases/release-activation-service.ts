@@ -1,22 +1,22 @@
 import * as edgedb from "edgedb";
-import { AuthenticatedUser } from "../authenticated-user";
-import { getReleaseInfo } from "./helpers";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
+import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { ElsaSettings } from "../../config/elsa-settings";
-import e from "../../../dbschema/edgeql-js";
-import { AuditEventService } from "./audit-event-service";
-import { ReleaseDisappearedError } from "../exceptions/release-disappear";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import e from "../../../../dbschema/edgeql-js";
+import { AuditEventService } from "../audit-event-service";
+import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
 import {
   ReleaseActivationPermissionError,
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
-} from "../exceptions/release-activation";
+} from "../../exceptions/release-activation";
 import etag from "etag";
 import { Logger } from "pino";
-import { ManifestService } from "./manifests/manifest-service";
-import { AuditEventTimedService } from "./audit-event-timed-service";
+import { ManifestService } from "../manifests/manifest-service";
+import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
 /**

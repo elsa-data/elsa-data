@@ -11,7 +11,7 @@ import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import {
   DacRedcapAustralianGenomicsCsvType,
   DacRemsType,

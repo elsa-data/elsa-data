@@ -4,7 +4,7 @@ import e from "../../dbschema/edgeql-js";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AuditEventService } from "../../src/business/services/audit-event-service";
-import { ReleaseDataEgressService } from "../../src/business/services/release-data-egress-service";
+import { ReleaseDataEgressService } from "../../src/business/services/releases/release-data-egress-service";
 import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
 import { NotAuthorisedUpdateDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
 import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";

@@ -2,9 +2,9 @@ import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import assert from "assert";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
-import { ReleaseService } from "../../src/business/services/release-service";
+import { ReleaseService } from "../../src/business/services/releases/release-service";
 import { Client } from "edgedb";
-import { ReleaseParticipationService } from "../../src/business/services/release-participation-service";
+import { ReleaseParticipationService } from "../../src/business/services/releases/release-participation-service";
 import _ from "lodash";
 import {
   ReleaseParticipationExistError,

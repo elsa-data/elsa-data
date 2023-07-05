@@ -1,33 +1,33 @@
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import {
   DataSharingAwsAccessPointType,
   ReleaseDetailType,
   ReleaseParticipantRoleType,
 } from "@umccr/elsa-types";
-import { AuthenticatedUser } from "../authenticated-user";
-import { getReleaseInfo } from "./helpers";
-import { UserService } from "./user-service";
-import { releaseGetBoundaryInfo } from "../../../dbschema/queries";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { getReleaseInfo } from "../helpers";
+import { UserService } from "../user-service";
+import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
 import {
   ReleaseCreateError,
   ReleaseViewError,
-} from "../exceptions/release-authorisation";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditEventService } from "./audit-event-service";
-import { AuditEventTimedService } from "./audit-event-timed-service";
+} from "../../exceptions/release-authorisation";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import { AuditEventService } from "../audit-event-service";
+import { AuditEventTimedService } from "../audit-event-timed-service";
 import {
   SharerAwsAccessPointType,
   SharerHtsgetType,
-} from "../../config/config-schema-sharer";
-import { release } from "../../../dbschema/interfaces";
+} from "../../../config/config-schema-sharer";
+import { release } from "../../../../dbschema/interfaces";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
 } from "@aws-sdk/client-cloudformation";
-import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
-import { ReleaseNoEditingWhilstActivatedError } from "../exceptions/release-activation";
+import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
+import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 
 export type UserRoleInRelease = ReleaseParticipantRoleType | "AdminView";
 
@@ -126,6 +126,9 @@ export abstract class ReleaseBaseService {
     userRole: UserRoleInRelease;
     isActivated: boolean;
     isRunningJob: boolean;
+    isAllowedOverallAdministratorView: boolean;
+    isAllowedCreateRelease: boolean;
+    isAllowedRefreshDatasetIndex: boolean;
   }> {
     const boundaryInfo = await releaseGetBoundaryInfo(this.edgeDbClient, {
       userDbId: user.dbId,

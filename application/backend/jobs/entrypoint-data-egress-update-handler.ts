@@ -10,10 +10,9 @@ import pino, { Logger } from "pino";
 import e from "../dbschema/edgeql-js";
 
 import { getFeaturesEnabled } from "../src/features";
-import { ReleaseDataEgressService } from "../src/business/services/release-data-egress-service";
+import { ReleaseDataEgressService } from "../src/business/services/releases/release-data-egress-service";
 import { AuditEventService } from "../src/business/services/audit-event-service";
 import { AwsCloudTrailLakeService } from "../src/business/services/aws/aws-cloudtrail-lake-service";
-import { getSystemAuthUser } from "../src/entrypoint-command-helper";
 import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions/audit-authorisation";
 
 (async () => {
@@ -56,12 +55,6 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions
       datasetUris: true,
     }))
     .run(edgeDbClient);
-
-  const systemUser = await getSystemAuthUser(edgeDbClient);
-
-  if (!systemUser) {
-    throw new Error("system has no permission to update datasets");
-  }
 
   // Iterate releaseKey and trigger update egress records
   for (const rd of releasesDetails) {

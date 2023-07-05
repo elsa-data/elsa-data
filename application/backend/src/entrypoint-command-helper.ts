@@ -8,7 +8,6 @@ import { getMetaConfig } from "./config/config-load";
 import { AuthenticatedUser } from "./business/authenticated-user";
 import { Client } from "edgedb";
 import e from "../dbschema/edgeql-js";
-import { singleUserBySubjectIdQuery } from "./business/db/user-queries";
 
 export type EntrypointCommandHelper = {
   command: string;
@@ -90,35 +89,4 @@ export async function getFromEnv(): Promise<{
     // which we can't do here because we have a chicken/egg problem of constructing the logger first
     redactedConfig: JSON.parse(JSON.stringify(config)),
   };
-}
-
-/**
- * At some point when system need to do action, it does need to be logged in the entries
- */
-export async function getSystemAuthUser(
-  tx: Client
-): Promise<AuthenticatedUser | null> {
-  const systemDetails = {
-    subjectId: "system@elsa.net",
-    email: "system@elsa.net",
-    displayName: "system",
-    isAllowedRefreshDatasetIndex: true,
-    isAllowedCreateRelease: true,
-    isAllowedOverallAdministratorView: true,
-  };
-
-  // Select or Insert from database for the existence of system user
-  await e
-    .insert(e.permission.User, {
-      ...systemDetails,
-    })
-    .unlessConflict()
-    .run(tx);
-
-  const dbUser = await singleUserBySubjectIdQuery.run(tx, {
-    subjectId: systemDetails.subjectId,
-  });
-  if (dbUser != null) return new AuthenticatedUser(dbUser);
-
-  return null;
 }

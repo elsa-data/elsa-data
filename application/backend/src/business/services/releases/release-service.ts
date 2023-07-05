@@ -1,50 +1,53 @@
 import * as edgedb from "edgedb";
-import e from "../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import {
   ReleaseDetailType,
   ReleaseManualType,
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
-import { AuthenticatedUser } from "../authenticated-user";
+import { AuthenticatedUser } from "../../authenticated-user";
 import _ from "lodash";
-import { PagedResult } from "../../api/helpers/pagination-helpers";
-import { getReleaseInfo } from "./helpers";
+import { PagedResult } from "../../../api/helpers/pagination-helpers";
+import { getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
+import { UserService } from "../user-service";
 import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
-import { getNextReleaseKey } from "../db/release-queries";
+import { getNextReleaseKey } from "../../db/release-queries";
 import {
   ReleaseActivationPermissionError,
   ReleaseNoEditingWhilstActivatedError,
-} from "../exceptions/release-activation";
-import { ReleaseDisappearedError } from "../exceptions/release-disappear";
-import { ElsaSettings } from "../../config/elsa-settings";
+} from "../../exceptions/release-activation";
+import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
+import { ElsaSettings } from "../../../config/elsa-settings";
 import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import {
   applyHtsgetRestriction,
   releaseGetAllByUser,
   removeHtsgetRestriction,
-} from "../../../dbschema/queries";
+} from "../../../../dbschema/queries";
 import {
   auditFailure,
   auditReleaseUpdateStart,
   auditSuccess,
-} from "../../audit-helpers";
-import { AuditEventService } from "./audit-event-service";
+} from "../../../audit-helpers";
+import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";
-import { jobAsBadgeLabel } from "./jobs/job-helpers";
+import { jobAsBadgeLabel } from "../jobs/job-helpers";
 import {
   checkValidApplicationUser,
   insertPotentialOrReal,
   splitUserEmails,
-} from "./_dac-user-helper";
-import { AuditEventTimedService } from "./audit-event-timed-service";
+} from "../_dac-user-helper";
+import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
-import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
+import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
 import { Executor } from "edgedb";
-import { ReleaseCreateError, ReleaseViewError } from "../exceptions/release-authorisation";
-import { UserData } from "../data/user-data";
+import {
+  ReleaseCreateError,
+  ReleaseViewError,
+} from "../../exceptions/release-authorisation";
+import { UserData } from "../../data/user-data";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {

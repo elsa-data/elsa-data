@@ -3,7 +3,7 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { ReleaseService } from "../../src/business/services/release-service";
+import { ReleaseService } from "../../src/business/services/releases/release-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { transformMasterManifestToHtsgetManifest } from "../../src/business/services/manifests/htsget/manifest-htsget-helper";
 import {
@@ -15,7 +15,7 @@ import {
   ManifestHtsgetService,
   S3ManifestHtsgetService,
 } from "../../src/business/services/manifests/htsget/manifest-htsget-service";
-import { ReleaseActivationService } from "../../src/business/services/release-activation-service";
+import { ReleaseActivationService } from "../../src/business/services/releases/release-activation-service";
 import { ElsaSettings } from "../../src/config/elsa-settings";
 import { mockClient } from "aws-sdk-client-mock";
 import {

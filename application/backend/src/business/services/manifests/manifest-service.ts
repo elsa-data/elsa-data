@@ -15,7 +15,7 @@ import archiver, { ArchiverOptions } from "archiver";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
