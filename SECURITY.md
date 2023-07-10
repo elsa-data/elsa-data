@@ -112,7 +112,8 @@ additional measures to enhance security. We have integrated [Dependabot](https:/
 into our repository, which automatically detects and addresses any vulnerabilities found in the
 versions of dependencies used.
 
-In addition to dependency vulnerability management, we have configured the [CodeQL](https://codeql.github.com/docs/codeql-overview/about-codeql/)
+In addition to dependency vulnerability management, we have configured the
+[CodeQL](https://codeql.github.com/docs/codeql-overview/about-codeql/)
 analyzer as part of our GitHub actions. This enables automated security checks, including the
 identification of bugs, errors, and potential threats, with every update made to the repository
 
@@ -122,7 +123,8 @@ The application does not have a username-password approach for user identificati
 many security threats on this. We rely on [CILogon](https://www.cilogon.org/home) as an integrated
 identity that supports over 4000 identity providers. We will assume that researcher is part of an
 institution therefore it is expected for their institution IDP and is part of CILogon. To add an
-institution to be part of CILogon, please head up to the [Add Identity Provider page from CILogon](https://www.cilogon.org/service/addidp).
+institution to be part of CILogon, please head up to the
+[Add Identity Provider page from CILogon](https://www.cilogon.org/service/addidp).
 
 The current login is stored in a cookie session and for time being this cookie will expire within
 a day after the login attempt.
@@ -155,14 +157,11 @@ track egress costs.
 
 ### 10. Server-Side Request Forgery (SSRF)
 
-In Elsa, we do not have url fetched input from the user and we try to minimize the fetch of external links
-and aim for the software to operate without any outgoing network calls. Unfortunately certain
-framework components, such as the login mechanism
+In Elsa, we do not have url input supplied from the user and we try to minimize the fetch of
+external links and aim for the software to operate without any outgoing network calls.
+Unfortunately certain framework components, such as the login mechanism
 (CILogon), does require network calls. However, we closely monitor any egress coming out of Elsa to
 ensure it remains minimal and necessary.
-
-To further enhance our security measures, we implement a CodeQL analyzer, as described in (section 6)[###-6-Vulnerable-and-Outdated-Component],
-to detect any egress calls and identify potential vulnerabilities in the codebase.
 
 ### 11. Cross-Site Request Forgery (CSRF)
 
