@@ -33,23 +33,33 @@ export async function transformDbManifestToMasterManifest(
     return false;
   };
 
-  // Check to see if cases/specimens exist to begin with before activating a release.
-  if (manifest.caseTree.length === 0) {
-    throw new ReleaseActivatedNothingError("No cases selected");
-  }
   if (manifest.specimenList.length === 0) {
     throw new ReleaseActivatedNothingError(
-      "No specimens for the selected cases"
+      "No cases/patients/specimens selected"
     );
   }
 
-  // Check that at least some data sources are enabled.
+  // note: in a working system this should not be possible - because selecting specimens is how the
+  // cases become selected - and hence we would already have thrown an error
+  if (manifest.caseTree.length === 0) {
+    throw new ReleaseActivatedNothingError("No cases selected");
+  }
+
+  // Check that at least some data types are enabled.
+  if (
+    !manifest.releaseIsAllowedReadData &&
+    !manifest.releaseIsAllowedVariantData
+  ) {
+    throw new ReleaseActivatedNothingError("No data types enabled");
+  }
+
+  // Check that at least some data locations are enabled.
   if (
     !manifest.releaseIsAllowedS3Data &&
     !manifest.releaseIsAllowedGSData &&
     !manifest.releaseIsAllowedR2Data
   ) {
-    throw new ReleaseActivatedNothingError("No data sources enabled");
+    throw new ReleaseActivatedNothingError("No data locations enabled");
   }
 
   // we need to prune the manifest of all files that we should not be giving out access to
@@ -144,7 +154,7 @@ export async function transformDbManifestToMasterManifest(
  * types are enabled. Throws an error if this is not the case.
  * @param manifest
  */
-export function checkArtifacts(manifest: ManifestMasterType) {
+function checkArtifacts(manifest: ManifestMasterType) {
   const artifacts = manifest.specimenList.flatMap(
     (specimen) => specimen.artifacts
   );

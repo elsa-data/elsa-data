@@ -44,7 +44,7 @@ export class ReleaseDeactivationStateError extends Base7807Error {
 export class ReleaseActivatedNothingError extends Base7807Error {
   constructor(detail: string) {
     super(
-      "Cannot activate release when nothing will be released",
+      "Cannot activate this release because as currently configured no data would actually be contained in the release",
       undefined,
       detail
     );
