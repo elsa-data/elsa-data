@@ -1,7 +1,7 @@
 import { createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/util/blank-test-data";
-import e from "../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { blankTestData } from "../../../src/test-data/util/blank-test-data";
+import e from "../../../dbschema/edgeql-js";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import assert from "node:assert";
 
 /**

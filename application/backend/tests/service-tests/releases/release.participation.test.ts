@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import assert from "assert";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { ReleaseService } from "../../../src/business/services/releases/release-service";
 import { Client } from "edgedb";

@@ -1,7 +1,7 @@
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { AuditEventService } from "../../../src/business/services/audit-event-service";
 import { ReleaseDataEgressService } from "../../../src/business/services/releases/release-data-egress-service";
@@ -10,7 +10,7 @@ import {
   IQueryEgressRecordsProvider,
   ReleaseEgressRecords,
   updateDataEgressRecordByReleaseKey,
-} from "../../../src/business/services/releases/mixins/release-data-egress-mixin";
+} from "../../../src/business/services/releases/helpers/release-data-egress-helper";
 import { NotAuthorisedUpdateDataEgressRecords } from "../../../src/business/exceptions/audit-authorisation";
 import { IPLookupService } from "../../../src/business/services/ip-lookup-service";
 
@@ -144,7 +144,8 @@ it("test update egress function", async () => {
       currentDate: Date;
       lastEgressUpdate?: Date | undefined;
     }): Promise<ReleaseEgressRecords[]> {
-      return mockData;
+      // Also check for idempotent
+      return [...mockData, ...mockData];
     }
   }
   jest

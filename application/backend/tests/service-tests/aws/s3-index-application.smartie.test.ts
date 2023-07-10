@@ -11,7 +11,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { S3IndexApplicationService } from "../../../src/business/services/australian-genomics/s3-index-import-service";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { beforeEachCommon } from "../user.common";
+import { beforeEachCommon } from "../commons/user.common";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 import { DatasetService } from "../../../src/business/services/dataset-service";
 import assert from "node:assert";

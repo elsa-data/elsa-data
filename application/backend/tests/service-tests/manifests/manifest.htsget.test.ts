@@ -1,4 +1,4 @@
-import { beforeEachCommon } from "../releases/releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { Client } from "edgedb";
 import { THOUSAND_GENOMES_SYSTEM } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";

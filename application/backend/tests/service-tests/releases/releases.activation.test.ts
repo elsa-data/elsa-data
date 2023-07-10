@@ -1,5 +1,5 @@
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { ReleaseService } from "../../../src/business/services/releases/release-service";
 import { registerTypes } from "../../test-dependency-injection.common";
 import assert from "assert";

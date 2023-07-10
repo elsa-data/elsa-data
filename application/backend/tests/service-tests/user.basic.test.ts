@@ -1,6 +1,6 @@
 import * as edgedb from "edgedb";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { beforeEachCommon } from "./user.common";
+import { beforeEachCommon } from "./commons/user.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { UserService } from "../../src/business/services/user-service";
 import { NotAuthorisedEditUserManagement } from "../../src/business/exceptions/user";

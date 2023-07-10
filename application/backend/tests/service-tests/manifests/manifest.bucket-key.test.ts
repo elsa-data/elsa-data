@@ -1,4 +1,4 @@
-import { beforeEachCommon } from "../releases/releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";

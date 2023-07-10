@@ -43,7 +43,7 @@ import {
   MOCK_4_STUDY_ID_2,
   MOCK_4_STUDY_ID_1,
   MOCK_4_CARDIAC_VCF_FILENAME,
-} from "./ag.common";
+} from "../commons/ag.common";
 import * as awsHelper from "../../../src/business/services/aws/aws-helper";
 import {
   getMd5FromChecksumsArray,
@@ -54,7 +54,7 @@ import { registerTypes } from "../../test-dependency-injection.common";
 import { DatasetService } from "../../../src/business/services/dataset-service";
 import { storage } from "../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { beforeEachCommon } from "../user.common";
+import { beforeEachCommon } from "../commons/user.common";
 
 const testContainer = registerTypes();
 

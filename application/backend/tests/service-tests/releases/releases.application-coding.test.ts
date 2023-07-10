@@ -1,7 +1,7 @@
 import { Client, createClient } from "edgedb";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { findDatabaseRelease } from "../utils";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { ReleaseService } from "../../../src/business/services/releases/release-service";
 

@@ -1,7 +1,7 @@
 import { Client } from "edgedb";
 import assert from "assert";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { beforeEachCommon } from "./dataset.common";
+import { beforeEachCommon } from "../commons/dataset.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { DatasetService } from "../../../src/business/services/dataset-service";
 import { TENG_URI } from "../../../src/test-data/dataset/insert-test-data-10g";

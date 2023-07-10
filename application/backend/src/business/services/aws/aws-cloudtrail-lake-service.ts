@@ -8,7 +8,7 @@ import {
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "./aws-access-point-service";
 import { Logger } from "pino";
-import { ReleaseEgressRecords } from "../releases/mixins/release-data-egress-mixin";
+import { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -252,9 +252,8 @@ export class AwsCloudTrailLakeService {
   }) {
     const egressRecordsResult: ReleaseEgressRecords[] = [];
 
-    const eventDataStoreIds = await this.getEventDataStoreIdFromDatasetUris(
-      datasetUrisArray
-    );
+    const eventDataStoreIds =
+      this.getEventDataStoreIdFromDatasetUris(datasetUrisArray);
     if (!eventDataStoreIds) throw new Error("No AWS CloudTrailLake Configured");
 
     const startQueryDate = lastEgressUpdate

@@ -8,7 +8,7 @@ import {
   findSpecimen,
 } from "../utils";
 import { ReleaseSpecimenType } from "@umccr/elsa-types";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { Client } from "edgedb";
 import {

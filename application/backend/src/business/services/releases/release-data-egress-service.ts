@@ -19,7 +19,7 @@ import { AuditEventTimedService } from "../audit-event-timed-service";
 import { IPLookupService, LocationType } from "../ip-lookup-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { UserData } from "../../data/user-data";
-import { updateDataEgressRecordByReleaseKey } from "./mixins/release-data-egress-mixin";
+import { updateDataEgressRecordByReleaseKey } from "./helpers/release-data-egress-helper";
 
 /**
  * A service that coordinates the participation of users in a release
