@@ -14,6 +14,8 @@ import { ReleaseDataEgressService } from "../src/business/services/releases/rele
 import { AuditEventService } from "../src/business/services/audit-event-service";
 import { AwsCloudTrailLakeService } from "../src/business/services/aws/aws-cloudtrail-lake-service";
 import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions/audit-authorisation";
+import { updateDataEgressRecordByReleaseKey } from "../src/business/services/releases/helpers/release-data-egress-helper";
+import { IPLookupService } from "../src/business/services/ip-lookup-service";
 
 (async () => {
   const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
@@ -47,6 +49,8 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions
 
   const auditEventService = dc.resolve(AuditEventService);
   const awsCloudTrailLakeService = dc.resolve(AwsCloudTrailLakeService);
+  const ipLookupService = dc.resolve(IPLookupService);
+  const releaseDataEgressService = dc.resolve(ReleaseDataEgressService);
 
   // We need to get all releases in the system
   const releasesDetails = await e
@@ -58,23 +62,19 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../src/business/exceptions
 
   // Iterate releaseKey and trigger update egress records
   for (const rd of releasesDetails) {
-    // await auditEventService.transactionalUpdateInReleaseAuditPattern(
-    //   systemUser,
-    //   rd.releaseKey,
-    //   `System scheduled update data egress records: ${rd.releaseKey}`,
-    //   async () => {
-    //     if (!systemUser.isAllowedRefreshDatasetIndex)
-    //       throw new NotAuthorisedUpdateDataEgressRecords();
-    //   },
-    //   async (tx, a) => {
-    //     if (!rd.datasetUris) throw new Error("No dataset found!");
-    //     await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-    //       user: systemUser,
-    //       releaseKey: rd.releaseKey,
-    //       datasetUrisArray: rd.datasetUris,
-    //     });
-    //   },
-    //   async () => {}
-    // );
+    await auditEventService.systemAuditEventPattern(
+      "update egress record periodically",
+      async (completeAuditFn) => {
+        edgeDbClient.transaction(
+          async (tx) =>
+            await updateDataEgressRecordByReleaseKey({
+              tx: tx,
+              dataEgressQueryService: awsCloudTrailLakeService,
+              ipLookupService: ipLookupService,
+              releaseKey: rd.releaseKey,
+            })
+        );
+      }
+    );
   }
 })();

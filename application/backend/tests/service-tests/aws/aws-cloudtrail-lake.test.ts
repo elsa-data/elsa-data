@@ -1,7 +1,7 @@
 import e from "../../../dbschema/edgeql-js";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { Client } from "edgedb";
-import { beforeEachCommon } from "../releases/releases.common";
+import { beforeEachCommon } from "../commons/releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../../src/config/elsa-settings";
 import { TENG_URI } from "../../../src/test-data/dataset/insert-test-data-10g";
@@ -40,147 +40,66 @@ describe("Test CloudTrailLake Service", () => {
       await beforeEachCommon(testContainer));
   });
 
-  // it("Test queryCloudTrailLake", async () => {
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
-  //   const BUCKET_NAME = "umccr-10g-data-dev";
-  //   const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
+  it("Test queryCloudTrailLake", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
+    const BUCKET_NAME = "umccr-10g-data-dev";
+    const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
+    const mockData = [
+      {
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
+        releaseKey: testReleaseKey,
+        auditId: "abcd-defg-hijk-lmno",
+        eventId: "1234-5678-1234-5678",
+      },
+    ];
+    const release = await e
+      .select(e.release.Release, (r) => ({
+        filter_single: e.op(testReleaseKey, "=", r.releaseKey),
+        datasetUris: true,
+      }))
+      .assert_single()
+      .run(edgeDbClient);
 
-  //   const mockData = [
-  //     {
-  //       eventTime: "2022-10-24 05:56:40.000",
-  //       sourceIPAddress: "192.19.192.192",
-  //       bucketName: BUCKET_NAME,
-  //       key: KEY,
-  //       bytesTransferredOut: "101.0",
-  //       releaseKey: testReleaseKey,
-  //       auditId: "abcd-defg-hijk-lmno",
-  //       eventId: "1234-5678-1234-5678",
-  //     },
-  //   ];
+    if (!release?.datasetUris)
+      throw new Error("No dataset found in the release");
 
-  //   await awsCloudTrailLakeService.recordCloudTrailLake({
-  //     lakeResponse: mockData,
-  //     releaseKey: testReleaseKey,
-  //     description: "Object accessed",
-  //     user: superAdminUser,
-  //   });
+    jest
+      .spyOn(awsCloudTrailLakeService, "queryCloudTrailLake")
+      .mockImplementation(async () => mockData);
 
-  //   const deArr = await e
-  //     .select(e.release.DataEgressRecord, (de) => ({
-  //       ...de["*"],
-  //       filter: e.op(de.release.releaseKey, "=", testReleaseKey),
-  //     }))
-  //     .run(edgeDbClient);
+    const egressRecords = await awsCloudTrailLakeService.getNewEgressRecords({
+      releaseKey: testReleaseKey,
+      datasetUrisArray: release?.datasetUris,
+      currentDate: new Date(),
+    });
 
-  //   expect(deArr.length).toEqual(1);
+    expect(egressRecords.length).toBe(1);
+    expect(egressRecords[0]).toStrictEqual({
+      releaseKey: "TESTRELEASE0001",
+      description: "Accessed via presigned url.",
+      auditId: "abcd-defg-hijk-lmno",
+      egressId: "1234-5678-1234-5678",
+      occurredDateTime: new Date("2022-10-24T05:56:40.000Z"),
+      sourceIpAddress: "192.19.192.192",
+      egressBytes: 101,
+      fileUrl: "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered.vcf.gz",
+    });
+  });
 
-  //   const singleLog = deArr[0];
-  //   expect(singleLog.egressBytes).toEqual(101);
-  // });
+  it("Test getEventDataStoreIdFromReleaseKey", async () => {
+    const awsCloudTrailLakeService = testContainer.resolve(
+      AwsCloudTrailLakeService
+    );
 
-  // it("Test getEventDataStoreIdFromReleaseKey", async () => {
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
+    const eventDataStoreIdArr =
+      awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris([TENG_URI]);
 
-  //   const eventDataStoreIdArr =
-  //     awsCloudTrailLakeService.getEventDataStoreIdFromDatasetUris([TENG_URI]);
-
-  //   expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
-  // });
-
-  // it("Test fetchCloudTrailLakeLog", async () => {
-  //   awsEnabledServiceMock.enable();
-
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
-  //   const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
-  //   const BUCKET_NAME = "umccr-10g-data-dev";
-  //   const mockData = [
-  //     {
-  //       eventTime: "2022-10-24 05:56:40.000",
-  //       sourceIPAddress: "192.19.192.192",
-  //       bucketName: BUCKET_NAME,
-  //       key: KEY,
-  //       bytesTransferredOut: "101.0",
-  //       auditId: "audit-01",
-  //       eventId: "egress-01",
-  //     },
-  //   ];
-
-  //   jest
-  //     .spyOn(awsCloudTrailLakeService, "startCommandQueryCloudTrailLake")
-  //     .mockImplementation(async () => "RANDOM_ID");
-  //   jest
-  //     .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
-  //     .mockImplementation(async () => mockData);
-  //   await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-  //     user: superAdminUser,
-  //     releaseKey: testReleaseKey,
-  //     datasetUrisArray: [TENG_URI],
-  //   });
-
-  //   const deArr = await e
-  //     .select(e.release.DataEgressRecord, (de) => ({
-  //       ...de["*"],
-  //       filter: e.op(de.release.releaseKey, "=", testReleaseKey),
-  //     }))
-  //     .run(edgeDbClient);
-  //   expect(deArr.length).toEqual(1);
-  //   expect(deArr[0].egressBytes).toEqual(101);
-  // });
-
-  // it("test idempotent egressId", async () => {
-  //   awsEnabledServiceMock.enable();
-
-  //   const awsCloudTrailLakeService = testContainer.resolve(
-  //     AwsCloudTrailLakeService
-  //   );
-  //   const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
-  //   const BUCKET_NAME = "umccr-10g-data-dev";
-  //   const mockData = [
-  //     {
-  //       eventTime: "2022-10-24 05:56:40.000",
-  //       sourceIPAddress: "192.19.192.192",
-  //       bucketName: BUCKET_NAME,
-  //       key: KEY,
-  //       bytesTransferredOut: "101.0",
-  //       auditId: "audit-01",
-  //       eventId: "egress-01",
-  //     },
-  //     {
-  //       eventTime: "2022-10-24 05:56:40.000",
-  //       sourceIPAddress: "192.19.192.192",
-  //       bucketName: BUCKET_NAME,
-  //       key: KEY,
-  //       bytesTransferredOut: "101.0",
-  //       auditId: "audit-01",
-  //       eventId: "egress-01",
-  //     },
-  //   ];
-
-  //   jest
-  //     .spyOn(awsCloudTrailLakeService, "startCommandQueryCloudTrailLake")
-  //     .mockImplementation(async () => "RANDOM_ID");
-  //   jest
-  //     .spyOn(awsCloudTrailLakeService, "getResultQueryCloudTrailLakeQuery")
-  //     .mockImplementation(async () => mockData);
-  //   await awsCloudTrailLakeService.fetchCloudTrailLakeLog({
-  //     user: superAdminUser,
-  //     releaseKey: testReleaseKey,
-  //     datasetUrisArray: [TENG_URI],
-  //   });
-
-  //   const deArr = await e
-  //     .select(e.release.DataEgressRecord, (de) => ({
-  //       ...de["*"],
-  //       filter: e.op(de.release.releaseKey, "=", testReleaseKey),
-  //     }))
-  //     .run(edgeDbClient);
-  //   expect(deArr.length).toEqual(1);
-  //   expect(deArr[0].egressBytes).toEqual(101);
-  // });
+    expect(eventDataStoreIdArr).toEqual([TENG_AWS_EVENT_DATA_STORE_ID]);
+  });
 });
