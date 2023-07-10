@@ -10,7 +10,7 @@ import { EagerErrorBoundary } from "../../../components/errors";
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
-  isFetching: boolean;
+  releaseDataIsFetching: boolean;
 };
 
 /**
@@ -19,13 +19,13 @@ type Props = {
  *
  * @param releaseKey the unique key referring to this release
  * @param releaseData the information about this release
- * @param isFetching
+ * @param releaseDataIsFetching
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({
   releaseData,
   releaseKey,
-  isFetching,
+  releaseDataIsFetching,
 }) => {
   const isAllowMutateActivation = releaseData.roleInRelease == "Administrator";
 
@@ -65,7 +65,9 @@ export const InformationBox: React.FC<Props> = ({
     <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
       <button
         className="btn-success btn-lg btn grow"
-        disabled={releaseIsActivated || mutationInProgress || isFetching}
+        disabled={
+          releaseIsActivated || mutationInProgress || releaseDataIsFetching
+        }
         onClick={() =>
           activateMutation.mutate(
             { releaseKey },
@@ -77,7 +79,9 @@ export const InformationBox: React.FC<Props> = ({
       </button>
       <button
         className="btn-warning btn-lg btn grow"
-        disabled={!releaseIsActivated || mutationInProgress || isFetching}
+        disabled={
+          !releaseIsActivated || mutationInProgress || releaseDataIsFetching
+        }
         onClick={() =>
           deactivateMutation.mutate(
             { releaseKey },
@@ -95,7 +99,7 @@ export const InformationBox: React.FC<Props> = ({
       {error && <EagerErrorBoundary error={error} />}
 
       <div className="grid grid-cols-2 gap-4 overflow-x-auto">
-        {releaseIsActivated && !isFetching && (
+        {releaseIsActivated && !releaseDataIsFetching && (
           <div className="alert alert-success col-span-2 shadow-lg">
             <div>
               <span>Data sharing is activated for this release</span>

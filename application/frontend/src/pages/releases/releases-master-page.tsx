@@ -81,7 +81,7 @@ export const ReleasesMasterPage: React.FC = () => {
     // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
     // it is ok because in that case we never actually use this masterOutletContext..
     releaseData: releaseQuery.data!,
-    isFetching: releaseQuery.isFetching,
+    releaseDataIsFetching: releaseQuery.isFetching,
   };
 
   const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as

@@ -14,7 +14,8 @@ import { FEATURE_RELEASE_CONSENT_DISPLAY } from "@umccr/elsa-constants";
  * specific release.
  */
 export const ReleasesDetailSubPage: React.FC = () => {
-  const { releaseKey, releaseData, isFetching } = useReleasesMasterData();
+  const { releaseKey, releaseData, releaseDataIsFetching } =
+    useReleasesMasterData();
 
   const { features } = useEnvRelay();
 
@@ -27,7 +28,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
       <InformationBox
         releaseKey={releaseKey}
         releaseData={releaseData}
-        isFetching={isFetching}
+        releaseDataIsFetching={releaseDataIsFetching}
       />
 
       <CasesBox
