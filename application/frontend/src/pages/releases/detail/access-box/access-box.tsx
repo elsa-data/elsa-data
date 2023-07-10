@@ -24,7 +24,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const { sharers } = useLoggedInUserConfigRelay()!;
 
   // the settings come from the backend on login and tell us what is fundamentally enabled
-  // in the system
+  // in the system - if something is not enabled in the config system then we WILL NEVER SHOW IT
   const objectSigningSetting = sharers.find(
     isDiscriminate("type", "object-signing")
   );
@@ -34,50 +34,60 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
     isDiscriminate("type", "aws-access-point")
   );
 
-  // there can theoretically be a disconnect between what is enabled in the database and what is actually
-  // working... from the researcher perspective we require *both*. That is, if someone enables object signing
-  // for a release - and then reboots Elsa Data with object signing switched off in the config - that disabled setting will disable
+  // there can theoretically be a disconnect between what is enabled in
+  // the database (i.e. releaseData.dataSharing*)
+  // and what is actually working... from the researcher perspective we require *both*.
+  // That is, if someone enables object signing
+  // for a release - and then reboots Elsa Data with object signing switched
+  // off in the config - that disabled setting will disable
   // it from the perspective of the researcher here
   const dataSharingObjectSigning =
+    !!objectSigningSetting &&
     !!releaseData.dataSharingObjectSigning &&
     !objectSigningSetting?.notWorkingReason;
   const dataSharingCopyOut =
-    !!releaseData.dataSharingCopyOut && !copyOutSetting?.notWorkingReason;
+    !!copyOutSetting &&
+    !!releaseData.dataSharingCopyOut &&
+    !copyOutSetting?.notWorkingReason;
   const dataSharingHtsget =
-    !!releaseData.dataSharingHtsget && !htsgetSetting?.notWorkingReason;
+    !!htsgetSetting &&
+    !!releaseData.dataSharingHtsget &&
+    !htsgetSetting?.notWorkingReason;
   const dataSharingAwsAccessPoint =
+    !!awsAccessPointSetting &&
     !!releaseData.dataSharingAwsAccessPoint &&
     !awsAccessPointSetting?.notWorkingReason;
   // const dataSharingGcpStorageIam = !!releaseData.dataSharingGcpStorageIam;
 
   const tabHeadings: string[] = ["Manifest"];
 
-  if (objectSigningSetting) tabHeadings.push("Object Signing");
-  if (copyOutSetting) tabHeadings.push("Copy Out");
-  if (htsgetSetting) tabHeadings.push("htsget");
-  if (awsAccessPointSetting) tabHeadings.push("AWS Access Point");
+  if (dataSharingObjectSigning) tabHeadings.push("Object Signing");
+  if (dataSharingCopyOut) tabHeadings.push("Copy Out");
+  if (dataSharingHtsget) tabHeadings.push("htsget");
+  if (dataSharingAwsAccessPoint) tabHeadings.push("AWS Access Point");
   // if (dataSharingGcpStorageIam) tabHeadings.push("GCP Storage IAM");
 
   return (
     <Box heading="Access Data" applyIsDisabledStyle={!releaseData.activation}>
       <VerticalTabs tabHeadings={tabHeadings}>
         <ManifestForm releaseKey={releaseKey} releaseData={releaseData} />
-        {objectSigningSetting && (
+        {dataSharingObjectSigning && (
           <ObjectSigningForm
             releaseKey={releaseKey}
             releaseData={releaseData}
+            objectSigningSetting={objectSigningSetting}
           />
         )}
-        {copyOutSetting && (
+        {dataSharingCopyOut && (
           <CopyOutForm releaseKey={releaseKey} releaseData={releaseData} />
         )}
-        {htsgetSetting && (
+        {dataSharingHtsget && (
           <HtsgetForm
             releaseKey={releaseKey}
             htsgetUrl={releaseData.dataSharingHtsget?.url || ""}
           />
         )}
-        {awsAccessPointSetting && (
+        {dataSharingAwsAccessPoint && (
           <AwsAccessPointForm
             releaseKey={releaseKey}
             releaseData={releaseData}
