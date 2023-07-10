@@ -47,9 +47,9 @@ Additionally, Elsa's database does not store sensitive data. It primarily stores
 specific genomic datasets, including subject IDs that do not identify specific individuals.
 
 For file encryption, to ensure the security of active presigned URL files, we encrypt them with a
-randomly generated UUID, which is stored in the database. This prevents participants from storing
-unencrypted presigned URLs locally. Participants can obtain the password for accessing these files
-through the application. Currently, the password is stored as a string as the purpose of this
+random 12 characters string, which is stored in the database. This prevents participants from
+storing unencrypted presigned URLs locally. Participants can obtain the password for accessing these
+files through the application. Currently, the password is stored as a string as the purpose of this
 feature is solely to protect unencrypted files stored on local devices.
 
 ### 3. Injection
