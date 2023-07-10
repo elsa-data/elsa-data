@@ -42,7 +42,7 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
       s3Client,
       SMARTIE_FAKE_BUCKET,
       SMARTIE_FAKE_KEY,
-      join(__dirname, "..", "..", "datasets", "Smartie")
+      join(__dirname, "..", "..", "..", "datasets", "Smartie")
     );
 
     // register the dataset in the database

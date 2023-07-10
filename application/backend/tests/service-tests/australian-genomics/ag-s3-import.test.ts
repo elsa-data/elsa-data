@@ -62,9 +62,9 @@ const s3ClientMock = mockClient(S3Client);
 let edgedbClient: edgedb.Client;
 let user: AuthenticatedUser;
 
-jest.mock("../../src/business/services/aws/aws-helper", () => ({
+jest.mock("../../../src/business/services/aws/aws-helper", () => ({
   __esModule: true,
-  ...jest.requireActual("../../src/business/services/aws/aws-helper"),
+  ...jest.requireActual("../../../src/business/services/aws/aws-helper"),
 }));
 
 describe("AWS s3 client", () => {

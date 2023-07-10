@@ -6,7 +6,7 @@ import {
   findDatabaseSpecimenIds,
   findPatientExpected,
   findSpecimen,
-} from "./utils";
+} from "../utils";
 import { ReleaseSpecimenType } from "@umccr/elsa-types";
 import { beforeEachCommon } from "./releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
