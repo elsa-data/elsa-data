@@ -22,6 +22,7 @@ import {
 import { Logger } from "pino";
 import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
+import { generateZipPassword } from "../../../helpers/passwords";
 
 @injectable()
 export class RedcapImportApplicationService {
@@ -293,9 +294,10 @@ NOTE: at time of application - this can subsequently be altered - see User Manag
 ${roleTable.join("\n")}
 
 `,
+          // until enabled by AG - this is essentially ignored
           applicationCoded: e.insert(e.release.ApplicationCoded, {
-            studyAgreesToPublish: true,
-            studyIsNotCommercial: true,
+            studyAgreesToPublish: false,
+            studyIsNotCommercial: false,
             diseasesOfStudy: makeEmptyCodeArray(),
             countriesInvolved: makeEmptyCodeArray(),
             studyType: studyType,
@@ -304,12 +306,18 @@ ${roleTable.join("\n")}
           datasetIndividualUrisOrderPreference: [""],
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
+          // default to nothing and make them switch this on
+          // TODO alternatively - pick these settings out of the CSV
           isAllowedReadData: false,
           isAllowedVariantData: false,
           isAllowedPhenotypeData: false,
+          // given our AG data is normally S3 - and until we have a better mechanism - we default this to S3
+          isAllowedS3Data: true,
+          isAllowedGSData: false,
+          isAllowedR2Data: false,
           releaseKey,
           // for the moment we fix this to a known secret
-          releasePassword: "abcd",
+          releasePassword: generateZipPassword(),
           datasetUris: e.literal(
             e.array(e.str),
             Object.keys(resourceToDatasetMap)

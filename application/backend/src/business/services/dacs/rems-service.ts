@@ -21,6 +21,7 @@ import {
   ReleaseViewError,
 } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
+import { generateZipPassword } from "../../../helpers/passwords";
 
 @injectable()
 export class RemsService {
@@ -220,7 +221,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           datasetSpecimenUrisOrderPreference: [""],
           datasetCaseUrisOrderPreference: [""],
           releaseKey: getNextReleaseKey(this.settings.releaseKeyPrefix),
-          releasePassword: randomUUID(),
+          releasePassword: generateZipPassword(),
           datasetUris: e.literal(
             e.array(e.str),
             Object.keys(resourceToDatasetMap)

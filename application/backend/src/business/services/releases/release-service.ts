@@ -46,8 +46,9 @@ import { Executor } from "edgedb";
 import {
   ReleaseCreateError,
   ReleaseViewError,
-} from "../../exceptions/release-authorisation";
-import { UserData } from "../../data/user-data";
+} from "../exceptions/release-authorisation";
+import { UserData } from "../data/user-data";
+import { generateZipPassword } from "../../helpers/passwords";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -205,7 +206,7 @@ ${release.applicantEmailAddresses}
           beaconQuery: {},
         }),
         releaseKey: releaseKey,
-        releasePassword: randomUUID(),
+        releasePassword: generateZipPassword(),
         datasetUris: release.datasetUris,
         datasetCaseUrisOrderPreference: [],
         datasetSpecimenUrisOrderPreference: [],
