@@ -1,8 +1,8 @@
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { AuditEventService } from "../../src/business/services/audit-event-service";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { AuditEventService } from "../../../src/business/services/audit-event-service";
 import * as edgedb from "edgedb";
-import { registerTypes } from "../test-dependency-injection.common";
-import { beforeEachCommon } from "./user.common";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { beforeEachCommon } from "../user.common";
 import { addSeconds } from "date-fns";
 
 let existingUser: AuthenticatedUser;

@@ -1,15 +1,15 @@
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { Client } from "edgedb";
 import assert from "assert";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { beforeEachCommon } from "./dataset.common";
-import { registerTypes } from "../test-dependency-injection.common";
-import { DatasetService } from "../../src/business/services/dataset-service";
-import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { DatasetService } from "../../../src/business/services/dataset-service";
+import { TENG_URI } from "../../../src/test-data/dataset/insert-test-data-10g";
 import {
   insert10C,
   TENC_URI,
-} from "../../src/test-data/dataset/insert-test-data-10c";
-import { Client } from "edgedb";
-import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
+} from "../../../src/test-data/dataset/insert-test-data-10c";
+import { TENF_URI } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";
 
 let edgeDbClient: Client;
 let datasetService: DatasetService;

@@ -30,7 +30,13 @@ export interface IQueryEgressRecordsProvider {
   }): Promise<ReleaseEgressRecords[]>;
 }
 
-const getLatestEgressRecordUpdate = async (
+/**
+ * The function will fetch the last egress timestamp update from Db
+ * @param tx
+ * @param releaseKey
+ * @returns Date on when last query timestamp
+ */
+export const getLatestEgressRecordUpdate = async (
   tx: Transaction,
   releaseKey: string
 ): Promise<Date> => {
@@ -93,17 +99,4 @@ export const updateDataEgressRecordByReleaseKey = async ({
     releaseKey,
     lastQueryTimestamp: endQueryDate,
   });
-
-  // await this.recordCloudTrailLake({
-  //   lakeResponse: s3CloudTrailLogs as CloudTrailLakeResponseType[],
-  //   releaseKey: releaseKey,
-  //   description: recordDescription,
-  //   user: user,
-  // });
-
-  // Bring it to the service latyer
-  // await releaseLastUpdatedReset(this.edgeDbClient, {
-  //   releaseKey: releaseKey,
-  //   lastUpdatedSubjectId: user.subjectId,
-  // });
 };

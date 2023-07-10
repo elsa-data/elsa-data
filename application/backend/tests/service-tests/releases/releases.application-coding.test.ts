@@ -1,9 +1,9 @@
 import { Client, createClient } from "edgedb";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { findDatabaseRelease } from "./utils";
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "../test-dependency-injection.common";
-import { ReleaseService } from "../../src/business/services/releases/release-service";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { ReleaseService } from "../../../src/business/services/releases/release-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;

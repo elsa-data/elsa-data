@@ -1,9 +1,9 @@
 import { createClient } from "edgedb";
-import { blankTestData } from "../../src/test-data/util/blank-test-data";
-import { insert10G } from "../../src/test-data/dataset/insert-test-data-10g";
-import e from "../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { insert10F } from "../../src/test-data/dataset/insert-test-data-10f";
+import { blankTestData } from "../../../src/test-data/util/blank-test-data";
+import { insert10G } from "../../../src/test-data/dataset/insert-test-data-10g";
+import e from "../../../dbschema/edgeql-js";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { insert10F } from "../../../src/test-data/dataset/insert-test-data-10f";
 import { DependencyContainer } from "tsyringe";
 
 /**

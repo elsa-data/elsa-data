@@ -1,18 +1,18 @@
-import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "../test-dependency-injection.common";
+import { beforeEachCommon } from "../releases/releases.common";
+import { registerTypes } from "../../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
-import { findSpecimenQuery } from "../../src/test-data/util/test-data-helpers";
+import { findSpecimenQuery } from "../../../src/test-data/util/test-data-helpers";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
-} from "../../src/test-data/dataset/insert-test-data-10f-simpsons";
-import { JUDY_SPECIMEN } from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { ReleaseService } from "../../src/business/services/releases/release-service";
-import { ReleaseSelectionService } from "../../src/business/services/releases/release-selection-service";
-import { ReleaseActivationService } from "../../src/business/services/releases/release-activation-service";
+} from "../../../src/test-data/dataset/insert-test-data-10f-simpsons";
+import { JUDY_SPECIMEN } from "../../../src/test-data/dataset/insert-test-data-10f-jetsons";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { ManifestService } from "../../../src/business/services/manifests/manifest-service";
+import { ReleaseService } from "../../../src/business/services/releases/release-service";
+import { ReleaseSelectionService } from "../../../src/business/services/releases/release-selection-service";
+import { ReleaseActivationService } from "../../../src/business/services/releases/release-activation-service";
 import _ from "lodash";
 
 const testContainer = registerTypes();

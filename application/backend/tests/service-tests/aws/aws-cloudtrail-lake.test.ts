@@ -1,16 +1,16 @@
-import e from "../../dbschema/edgeql-js";
-import { registerTypes } from "../test-dependency-injection.common";
+import e from "../../../dbschema/edgeql-js";
+import { registerTypes } from "../../test-dependency-injection.common";
 import { Client } from "edgedb";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "../releases/releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
-import { ElsaSettings } from "../../src/config/elsa-settings";
-import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
-import { TENG_AWS_EVENT_DATA_STORE_ID } from "../test-elsa-settings.common";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { NotAuthorisedUpdateDataEgressRecords } from "../../src/business/exceptions/audit-authorisation";
-import { AwsCloudTrailLakeService } from "../../src/business/services/aws/aws-cloudtrail-lake-service";
-import { AwsEnabledServiceMock } from "./client-mocks";
-import { IPLookupService } from "../../src/business/services/ip-lookup-service";
+import { ElsaSettings } from "../../../src/config/elsa-settings";
+import { TENG_URI } from "../../../src/test-data/dataset/insert-test-data-10g";
+import { TENG_AWS_EVENT_DATA_STORE_ID } from "../../test-elsa-settings.common";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { NotAuthorisedUpdateDataEgressRecords } from "../../../src/business/exceptions/audit-authorisation";
+import { AwsCloudTrailLakeService } from "../../../src/business/services/aws/aws-cloudtrail-lake-service";
+import { AwsEnabledServiceMock } from "../client-mocks";
+import { IPLookupService } from "../../../src/business/services/ip-lookup-service";
 
 const testContainer = registerTypes();
 

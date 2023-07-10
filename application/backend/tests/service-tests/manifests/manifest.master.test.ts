@@ -1,9 +1,9 @@
-import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "../test-dependency-injection.common";
 import { Client } from "edgedb";
-import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { ReleaseService } from "../../src/business/services/releases/release-service";
+import { beforeEachCommon } from "../releases/releases.common";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { ManifestService } from "../../../src/business/services/manifests/manifest-service";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { ReleaseService } from "../../../src/business/services/releases/release-service";
 
 let edgeDbClient: Client;
 let testReleaseKey: string;

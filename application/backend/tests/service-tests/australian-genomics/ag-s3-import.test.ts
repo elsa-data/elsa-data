@@ -1,18 +1,18 @@
 import {
   S3IndexApplicationService,
   FileGroupType,
-} from "../../src/business/services/australian-genomics/s3-index-import-service";
+} from "../../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   File,
   ArtifactEnum,
   insertArtifactBamQuery,
-} from "../../src/business/db/lab-queries";
-import { fileByUrlQuery } from "../../src/business/db/storage-queries";
-import { blankTestData } from "../../src/test-data/util/blank-test-data";
+} from "../../../src/business/db/lab-queries";
+import { fileByUrlQuery } from "../../../src/business/db/storage-queries";
+import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 import {
   S3_URL_PREFIX,
   MOCK_STORAGE_PREFIX_URL,
@@ -44,17 +44,17 @@ import {
   MOCK_4_STUDY_ID_1,
   MOCK_4_CARDIAC_VCF_FILENAME,
 } from "./ag.common";
-import * as awsHelper from "../../src/business/services/aws/aws-helper";
+import * as awsHelper from "../../../src/business/services/aws/aws-helper";
 import {
   getMd5FromChecksumsArray,
   makeSystemlessIdentifierArray,
   makeEmptyIdentifierArray,
-} from "../../src/business/db/helper";
-import { registerTypes } from "../test-dependency-injection.common";
-import { DatasetService } from "../../src/business/services/dataset-service";
-import { storage } from "../../dbschema/interfaces";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { beforeEachCommon } from "./user.common";
+} from "../../../src/business/db/helper";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { DatasetService } from "../../../src/business/services/dataset-service";
+import { storage } from "../../../dbschema/interfaces";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { beforeEachCommon } from "../user.common";
 
 const testContainer = registerTypes();
 

@@ -1,6 +1,6 @@
-import { registerTypes } from "../test-dependency-injection.common";
-import { AwsDiscoveryService } from "../../src/business/services/aws/aws-discovery-service";
-import { AwsEnabledServiceMock } from "./client-mocks";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { AwsDiscoveryService } from "../../../src/business/services/aws/aws-discovery-service";
+import { AwsEnabledServiceMock } from "../client-mocks";
 import {
   DiscoverInstancesCommand,
   ServiceDiscoveryClient,

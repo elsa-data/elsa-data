@@ -1,5 +1,5 @@
-import { registerTypes } from "../test-dependency-injection.common";
-import { AuditEventTimedService } from "../../src/business/services/audit-event-timed-service";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { AuditEventTimedService } from "../../../src/business/services/audit-event-timed-service";
 import fn = jest.fn;
 
 let auditEventTimedService: AuditEventTimedService;

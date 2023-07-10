@@ -1,15 +1,15 @@
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import assert from "assert";
 import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "../test-dependency-injection.common";
-import { ReleaseService } from "../../src/business/services/releases/release-service";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { ReleaseService } from "../../../src/business/services/releases/release-service";
 import { Client } from "edgedb";
-import { ReleaseParticipationService } from "../../src/business/services/releases/release-participation-service";
+import { ReleaseParticipationService } from "../../../src/business/services/releases/release-participation-service";
 import _ from "lodash";
 import {
   ReleaseParticipationExistError,
   ReleaseParticipationPermissionError,
-} from "../../src/business/exceptions/release-participation";
+} from "../../../src/business/exceptions/release-participation";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;

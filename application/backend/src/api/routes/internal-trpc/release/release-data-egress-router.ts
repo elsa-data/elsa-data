@@ -17,7 +17,7 @@ export const releaseDataEgressRouter = router({
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
       const { releaseKey } = input;
-      await ctx.releaseDataEgressService.updateDataEgressRecordByReleaseKey(
+      await ctx.releaseDataEgressService.updateDataEgressRecordsByReleaseKey(
         user,
         releaseKey
       );

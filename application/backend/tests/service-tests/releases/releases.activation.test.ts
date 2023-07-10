@@ -1,16 +1,16 @@
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { beforeEachCommon } from "./releases.common";
-import { ReleaseService } from "../../src/business/services/releases/release-service";
-import { registerTypes } from "../test-dependency-injection.common";
+import { ReleaseService } from "../../../src/business/services/releases/release-service";
+import { registerTypes } from "../../test-dependency-injection.common";
 import assert from "assert";
 import { Client } from "edgedb";
-import e from "../../dbschema/edgeql-js";
+import e from "../../../dbschema/edgeql-js";
 import {
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
-} from "../../src/business/exceptions/release-activation";
-import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { ReleaseActivationService } from "../../src/business/services/releases/release-activation-service";
+} from "../../../src/business/exceptions/release-activation";
+import { ManifestService } from "../../../src/business/services/manifests/manifest-service";
+import { ReleaseActivationService } from "../../../src/business/services/releases/release-activation-service";
 
 let edgeDbClient: Client;
 let releaseService: ReleaseService;

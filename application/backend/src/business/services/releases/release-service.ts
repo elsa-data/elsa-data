@@ -13,13 +13,9 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
 import { getNextReleaseKey } from "../../db/release-queries";
-import {
-  ReleaseActivationPermissionError,
-  ReleaseNoEditingWhilstActivatedError,
-} from "../../exceptions/release-activation";
+import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
 import { ElsaSettings } from "../../../config/elsa-settings";
-import { randomUUID } from "crypto";
 import { format } from "date-fns";
 import {
   applyHtsgetRestriction,
@@ -46,9 +42,9 @@ import { Executor } from "edgedb";
 import {
   ReleaseCreateError,
   ReleaseViewError,
-} from "../exceptions/release-authorisation";
-import { UserData } from "../data/user-data";
-import { generateZipPassword } from "../../helpers/passwords";
+} from "../../exceptions/release-authorisation";
+import { UserData } from "../../data/user-data";
+import { generateZipPassword } from "../../../helpers/passwords";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {

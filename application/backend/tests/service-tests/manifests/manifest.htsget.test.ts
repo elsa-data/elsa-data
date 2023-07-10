@@ -1,22 +1,22 @@
-import { beforeEachCommon } from "./releases.common";
-import { registerTypes } from "../test-dependency-injection.common";
+import { beforeEachCommon } from "../releases/releases.common";
+import { registerTypes } from "../../test-dependency-injection.common";
 import { Client } from "edgedb";
-import { THOUSAND_GENOMES_SYSTEM } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
-import { ManifestService } from "../../src/business/services/manifests/manifest-service";
-import { ReleaseService } from "../../src/business/services/releases/release-service";
-import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { transformMasterManifestToHtsgetManifest } from "../../src/business/services/manifests/htsget/manifest-htsget-helper";
+import { THOUSAND_GENOMES_SYSTEM } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";
+import { ManifestService } from "../../../src/business/services/manifests/manifest-service";
+import { ReleaseService } from "../../../src/business/services/releases/release-service";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { transformMasterManifestToHtsgetManifest } from "../../../src/business/services/manifests/htsget/manifest-htsget-helper";
 import {
   ManifestHtsgetEndpointNotEnabled,
   ManifestHtsgetNotAllowed,
-} from "../../src/business/exceptions/manifest-htsget";
+} from "../../../src/business/exceptions/manifest-htsget";
 import {
   getHtsgetSetting,
   ManifestHtsgetService,
   S3ManifestHtsgetService,
-} from "../../src/business/services/manifests/htsget/manifest-htsget-service";
-import { ReleaseActivationService } from "../../src/business/services/releases/release-activation-service";
-import { ElsaSettings } from "../../src/config/elsa-settings";
+} from "../../../src/business/services/manifests/htsget/manifest-htsget-service";
+import { ReleaseActivationService } from "../../../src/business/services/releases/release-activation-service";
+import { ElsaSettings } from "../../../src/config/elsa-settings";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   HeadObjectCommand,
@@ -25,8 +25,8 @@ import {
 } from "@aws-sdk/client-s3";
 import { Logger } from "pino";
 import { addSeconds } from "date-fns";
-import { createTestElsaSettings } from "../test-elsa-settings.common";
-import { AwsEnabledServiceMock } from "./client-mocks";
+import { createTestElsaSettings } from "../../test-elsa-settings.common";
+import { AwsEnabledServiceMock } from "../client-mocks";
 import assert from "node:assert";
 
 const testContainer = registerTypes();
