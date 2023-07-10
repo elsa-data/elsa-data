@@ -10,6 +10,7 @@ import { EagerErrorBoundary } from "../../../components/errors";
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
+  isFetching: boolean;
 };
 
 /**
@@ -18,11 +19,13 @@ type Props = {
  *
  * @param releaseKey the unique key referring to this release
  * @param releaseData the information about this release
+ * @param isFetching
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({
   releaseData,
   releaseKey,
+  isFetching,
 }) => {
   const isAllowMutateActivation = releaseData.roleInRelease == "Administrator";
 
@@ -52,14 +55,17 @@ export const InformationBox: React.FC<Props> = ({
 
   // some handy state booleans
   const mutationInProgress =
-    activateMutation.isLoading || deactivateMutation.isLoading;
+    activateMutation.isLoading ||
+    activateMutation.isPaused ||
+    deactivateMutation.isLoading ||
+    deactivateMutation.isPaused;
   const releaseIsActivated = !!releaseData.activation;
 
   const ActivateDeactivateButtonRow = () => (
     <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
       <button
         className="btn-success btn-lg btn grow"
-        disabled={releaseIsActivated || mutationInProgress}
+        disabled={releaseIsActivated || mutationInProgress || isFetching}
         onClick={() =>
           activateMutation.mutate(
             { releaseKey },
@@ -71,7 +77,7 @@ export const InformationBox: React.FC<Props> = ({
       </button>
       <button
         className="btn-warning btn-lg btn grow"
-        disabled={!releaseIsActivated || mutationInProgress}
+        disabled={!releaseIsActivated || mutationInProgress || isFetching}
         onClick={() =>
           deactivateMutation.mutate(
             { releaseKey },
@@ -89,7 +95,7 @@ export const InformationBox: React.FC<Props> = ({
       {error && <EagerErrorBoundary error={error} />}
 
       <div className="grid grid-cols-2 gap-4 overflow-x-auto">
-        {releaseIsActivated && (
+        {releaseIsActivated && !isFetching && (
           <div className="alert alert-success col-span-2 shadow-lg">
             <div>
               <span>Data sharing is activated for this release</span>
