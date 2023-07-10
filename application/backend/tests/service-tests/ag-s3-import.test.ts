@@ -67,6 +67,25 @@ jest.mock("../../src/business/services/aws/aws-helper", () => ({
   ...jest.requireActual("../../src/business/services/aws/aws-helper"),
 }));
 
+type ExternalIdentifiersType = {
+  externalIdentifiers: { system: string; value: string }[] | null;
+};
+const sortFirstExternalId = (
+  arr: ExternalIdentifiersType[]
+): ExternalIdentifiersType[] => {
+  return arr.sort((a, b) => {
+    if (a.externalIdentifiers === null) {
+      return 1;
+    }
+    if (b.externalIdentifiers === null) {
+      return -1;
+    }
+    return a.externalIdentifiers[0].value > b.externalIdentifiers[0].value
+      ? 1
+      : -1;
+  });
+};
+
 describe("AWS s3 client", () => {
   beforeAll(async () => {});
 
@@ -505,18 +524,20 @@ describe("AWS s3 client", () => {
       },
     ];
     expect(totalFileList).toEqual(expect.arrayContaining(expected));
-
     const totalDatasetPatient = await e
       .select(e.dataset.DatasetPatient, () => ({
         externalIdentifiers: true,
       }))
       .run(edgedbClient);
+
     expect(totalDatasetPatient.length).toEqual(3);
-    expect(totalDatasetPatient).toEqual([
-      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
-      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
-      { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_3 }] },
-    ]);
+    expect(sortFirstExternalId(totalDatasetPatient)).toEqual(
+      sortFirstExternalId([
+        { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
+        { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_3 }] },
+        { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
+      ])
+    );
   });
 
   it("Test User Audit Event", async () => {
