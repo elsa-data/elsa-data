@@ -106,8 +106,15 @@ template please visit https://github.com/umccr/elsa-data-aws-deploy.
 
 ### 6. Vulnerable and Outdated Component
 
-On our repository, we currently have set up a [dependabot](https://github.com/dependabot) to notify
-for any alarming version of the library used in the project.
+We prioritize the careful selection of libraries used in this repository, primarily focusing on open
+source projects that provide transparency through their underlying code. Furthermore, we have taken
+additional measures to enhance security. We have integrated [Dependabot](https://github.com/dependabot)
+into our repository, which automatically detects and addresses any vulnerabilities found in the
+versions of dependencies used.
+
+In addition to dependency vulnerability management, we have configured the [CodeQL](https://codeql.github.com/docs/codeql-overview/about-codeql/)
+analyzer as part of our GitHub actions. This enables automated security checks, including the
+identification of bugs, errors, and potential threats, with every update made to the repository
 
 ### 7. Identification and Authentication Failures
 
@@ -148,7 +155,14 @@ track egress costs.
 
 ### 10. Server-Side Request Forgery (SSRF)
 
-WIP
+In Elsa, we do not have url fetched input from the user and we try to minimize the fetch of external links
+and aim for the software to operate without any outgoing network calls. Unfortunately certain
+framework components, such as the login mechanism
+(CILogon), does require network calls. However, we closely monitor any egress coming out of Elsa to
+ensure it remains minimal and necessary.
+
+To further enhance our security measures, we implement a CodeQL analyzer, as described in (section 6)[###-6-Vulnerable-and-Outdated-Component],
+to detect any egress calls and identify potential vulnerabilities in the codebase.
 
 ### 11. Cross-Site Request Forgery (CSRF)
 
