@@ -22,7 +22,6 @@ type Props = {
  * @constructor
  */
 export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
-  const queryClient = useQueryClient();
   const utils = trpc.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
@@ -30,10 +29,10 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const releasePatchMutate = useMutation(
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // whenever we do a patch mutations of our release - our API returns the complete updated
-      // state of the *whole* release - and we can use that data to replace the stored react-query state
-      onSuccess: (result: ReleaseTypeLocal) => {
-        utils.releaseRouter.getSpecificRelease.invalidate();
+      // whenever we do a patch mutations of our release we need to invalidate our trpc state
+      // to force a refresh
+      onSuccess: async (result: ReleaseTypeLocal) => {
+        await utils.releaseRouter.getSpecificRelease.invalidate();
       },
       onError: (e) => {
         console.log(e);
@@ -91,8 +90,7 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
             }
           >
             {isLoading && <span className="loading loading-spinner" />}
-            {"Save" +
-              (!releaseData.activation ? " (Release Must Be Active)" : "")}
+            {"Save"}
           </button>
         </div>
       </div>
