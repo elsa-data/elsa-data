@@ -44,7 +44,7 @@ export const releaseRouter = router({
     }),
   getReleasePassword: internalProcedure
     .input(inputReleaseKeySingle)
-    .mutation(async ({ input, ctx }) => {
+    .query(async ({ input, ctx }) => {
       const { user } = ctx;
       const { releaseKey } = input;
 
