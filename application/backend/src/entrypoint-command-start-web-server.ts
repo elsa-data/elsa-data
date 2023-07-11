@@ -125,8 +125,9 @@ export async function startJobQueue(config: ElsaConfigurationType) {
   });
 
   // If specified for auto-update egress records
-  const cronExpressionInterval =
-    config.feature?.enableDataEgressViewer?.cronExpression;
+  const cronExpressionInterval = config.datasetEgress?.updateInterval;
+
+  console.log("the datasetEgress ", JSON.stringify(config.datasetEgress));
   if (cronExpressionInterval) {
     const jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.ts";
 

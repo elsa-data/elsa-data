@@ -6,9 +6,6 @@
   feature: {
     enableConsentDisplay: true,
     enableCohortConstructor: true,
-    enableDataEgressViewer: {
-      isEnabled: true,
-      updateInterval: "0 6 * * *", // 6am
-    },
+    enableDataEgressViewer: true,
   },
 }
