@@ -29,6 +29,13 @@ const casesQuerySchema = inputReleaseKeySingle
     })
   );
 
+const specimensMutateSchema = inputReleaseKeySingle.merge(
+  z.object({
+    op: z.literal("remove").or(z.literal("add")),
+    value: z.array(z.string()),
+  })
+);
+
 /**
  * RPC for release
  */
@@ -67,8 +74,6 @@ export const releaseRouter = router({
         q
       );
 
-      if (!pagedResult) return null;
-
       // unlike our normal paged results - we are also going to send down some extra summary
       // information for display
       //  so we will create a type for that on the fly
@@ -77,6 +82,22 @@ export const releaseRouter = router({
       } = { totalBytes: 0, ...pagedResult };
 
       return pagedResultPlus;
+    }),
+  updateReleaseSpecimens: internalProcedure
+    .input(specimensMutateSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey, op, value } = input;
+
+      if (op === "add")
+        await ctx.releaseSelectionService.setSelected(user, releaseKey, value);
+
+      if (op === "remove")
+        await ctx.releaseSelectionService.setUnselected(
+          user,
+          releaseKey,
+          value
+        );
     }),
   getReleasePassword: internalProcedure
     .input(inputReleaseKeySingle)

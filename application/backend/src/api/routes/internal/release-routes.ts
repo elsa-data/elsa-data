@@ -110,15 +110,6 @@ export const releaseRoutes = async (
         switch (op.op) {
           case "add":
             switch (op.path) {
-              case "/specimens":
-                reply.send(
-                  await releaseSelectionService.setSelected(
-                    authenticatedUser,
-                    releaseKey,
-                    op.value
-                  )
-                );
-                return;
               case "/applicationCoded/diseases":
                 reply.send(
                   await releaseService.addDiseaseToApplicationCoded(
@@ -147,15 +138,6 @@ export const releaseRoutes = async (
 
           case "remove":
             switch (op.path) {
-              case "/specimens":
-                reply.send(
-                  await releaseSelectionService.setUnselected(
-                    authenticatedUser,
-                    releaseKey,
-                    op.value
-                  )
-                );
-                return;
               case "/applicationCoded/diseases":
                 reply.send(
                   await releaseService.removeDiseaseFromApplicationCoded(

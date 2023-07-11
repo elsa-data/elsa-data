@@ -1,24 +1,17 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faDna,
-  faF,
-  faFemale,
-  faM,
-  faMale,
-  faQuestion,
-} from "@fortawesome/free-solid-svg-icons";
+import { faDna } from "@fortawesome/free-solid-svg-icons";
 import { ReleasePatientType } from "@umccr/elsa-types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import classNames from "classnames";
 import { ConsentPopup } from "./consent-popup";
-import { axiosPatchOperationMutationFn } from "../../queries";
-import { ReleaseTypeLocal } from "../../shared-types";
-import { faCircle } from "@fortawesome/free-regular-svg-icons";
 
 type Props = {
   releaseKey: string;
   patients: ReleasePatientType[];
+
+  // a mutator that can alter the value of selected specimens
+  // optional as for some users this functionality is not provided (i.e. read only)
+  specimenMutate: any;
 
   // whether to show checkboxes or not - though we note there are other fields
   // which control whether the checkboxes are enabled or not - this is just whether
@@ -42,6 +35,7 @@ type Props = {
  *
  * @param releaseKey
  * @param patients
+ * @param specimenMutate the mutator that can set specimens on and off in response to checkbox changes
  * @param showCheckboxes
  * @param onCheckboxClicked
  * @param releaseIsActivated
@@ -52,25 +46,12 @@ type Props = {
 export const PatientsFlexRow: React.FC<Props> = ({
   releaseKey,
   patients,
+  specimenMutate,
   showCheckboxes,
   onCheckboxClicked,
   releaseIsActivated,
   showConsent,
 }) => {
-  const queryClient = useQueryClient();
-
-  // a mutator that can alter any field set up using our REST PATCH mechanism
-  // the argument to the mutator needs to be a single ReleasePatchOperationType operation
-  const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    {
-      // we want to trigger the refresh of the entire release page
-      // TODO can we optimise this to just invalidate the cases?
-      onSuccess: async (result: ReleaseTypeLocal) =>
-        await queryClient.invalidateQueries(),
-    }
-  );
-
   const onSelectChange = async (
     ce: React.ChangeEvent<HTMLInputElement>,
     id: string
@@ -81,18 +62,20 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
     if (onCheckboxClicked !== undefined) onCheckboxClicked();
 
-    if (ce.target.checked) {
-      releasePatchMutate.mutate({
-        op: "add",
-        path: "/specimens",
-        value: [id],
-      });
-    } else {
-      releasePatchMutate.mutate({
-        op: "remove",
-        path: "/specimens",
-        value: [id],
-      });
+    if (specimenMutate) {
+      if (ce.target.checked) {
+        specimenMutate.mutate({
+          releaseKey: releaseKey,
+          op: "add",
+          value: [id],
+        });
+      } else {
+        specimenMutate.mutate({
+          op: "remove",
+          releaseKey: releaseKey,
+          value: [id],
+        });
+      }
     }
   };
 
@@ -112,7 +95,8 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
     // the select/unselect operation can be a bit complex on the backend - so we want to give visual feedback
     // as the operation applies
-    if (releasePatchMutate.isLoading) patientClasses.push("opacity-50");
+    if (specimenMutate && specimenMutate.isLoading)
+      patientClasses.push("opacity-50");
 
     // at these sizes on screen the icons are barely distinguishable but whatever
     if (patient.sexAtBirth === "male") {

@@ -45,6 +45,11 @@ export const BoxPaginator: React.FC<Props> = (props) => {
     props.rowCount
   );
 
+  const textSearchInProgress =
+    props.isLoading === true &&
+    !!props.currentSearchText &&
+    props.currentSearchText.trim().length > 0;
+
   return (
     <div className="border-b bg-gray-50 px-4 py-3 text-right sm:px-6">
       <>
@@ -81,13 +86,12 @@ export const BoxPaginator: React.FC<Props> = (props) => {
         <div className="hidden h-10 sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div
             className={classNames("mr-8 min-w-[200px]", {
-              "animate-pulse rounded-full bg-gray-200":
-                props.isLoading === true,
+              "animate-pulse rounded-full bg-gray-200": textSearchInProgress,
             })}
           >
             <p
               className={classNames("text-left text-sm text-gray-700", {
-                invisible: props.isLoading === true,
+                invisible: textSearchInProgress,
               })}
             >
               Showing <span className="font-medium">{from}</span> to{" "}
@@ -113,8 +117,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
             className={classNames(
               "ml-8 flex min-w-[250px] items-center justify-end",
               {
-                "animate-pulse rounded-full bg-gray-200":
-                  props.isLoading === true,
+                "animate-pulse rounded-full bg-gray-200": textSearchInProgress,
               }
             )}
           >
@@ -126,7 +129,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               middlePagesSiblingCount={1}
               className={classNames(
                 "relative z-0 inline-flex -space-x-px text-sm text-gray-700",
-                { invisible: props.isLoading === true }
+                { invisible: textSearchInProgress }
               )}
               truncableText="..."
               truncableClassName="w-10 px-0.5 text-center"

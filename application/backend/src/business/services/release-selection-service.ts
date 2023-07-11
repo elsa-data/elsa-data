@@ -36,7 +36,7 @@ import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 /**
  * The release selection service handles CRUD operations on the list of items
  * that are 'selected' for a given release. That is, the cases/patients
- * and specimens that a administrator has authorised to be released.
+ * and specimens that an administrator has authorised to be released.
  */
 @injectable()
 export class ReleaseSelectionService extends ReleaseBaseService {
@@ -82,7 +82,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     limit: number,
     offset: number,
     identifierSearchText?: string
-  ): Promise<PagedResult<ReleaseCaseType> | null> {
+  ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
@@ -195,9 +195,15 @@ export class ReleaseSelectionService extends ReleaseBaseService {
 
     const pageCases = await caseSearchQuery.run(this.edgeDbClient);
 
-    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
+    // on complete query fail we return an empty results (not sure if/when this can happen but I wanted to
+    // stop returning null as nothing downstream handled it)
+    if (!pageCases)
+      return {
+        data: [],
+        total: 0,
+      };
 
-    if (!pageCases) return null;
+    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
 
     const caseCountQuery = e.count(
       e.select(e.dataset.DatasetCase, (dsc) => ({
