@@ -73,6 +73,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
 
     throw new TRPCError({
       code: "UNAUTHORIZED",
+      message: "Unauthorised/User session has expired",
     });
   }
   ctx.req.log.trace(authedUser, `isCookieSessionAuthed: user details`);
