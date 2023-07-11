@@ -8,7 +8,10 @@ import {
 import {
   inputPaginationParameter,
   inputReleaseKeySingle,
+  unorderedInputPaginationParameter,
 } from "../input-schemas-common";
+import { PagedResult } from "../../../helpers/pagination-helpers";
+import { ReleaseCaseType } from "@umccr/elsa-types";
 
 const htsgetRestriction = z.object({
   restriction: z.union([
@@ -17,6 +20,14 @@ const htsgetRestriction = z.object({
     z.literal("Achromatopsia"),
   ]),
 });
+
+const casesQuerySchema = inputReleaseKeySingle
+  .merge(unorderedInputPaginationParameter)
+  .merge(
+    z.object({
+      q: z.optional(z.string().trim()),
+    })
+  );
 
 /**
  * RPC for release
@@ -41,6 +52,31 @@ export const releaseRouter = router({
       const { releaseKey } = input;
 
       return await ctx.releaseService.get(user, releaseKey);
+    }),
+  getReleaseCases: internalProcedure
+    .input(casesQuerySchema)
+    .query(async ({ input, ctx }) => {
+      const { user, pageSize } = ctx;
+      const { releaseKey, page, q } = input;
+
+      const pagedResult = await ctx.releaseSelectionService.getCases(
+        user,
+        releaseKey,
+        pageSize,
+        calculateOffset(page, pageSize),
+        q
+      );
+
+      if (!pagedResult) return null;
+
+      // unlike our normal paged results - we are also going to send down some extra summary
+      // information for display
+      //  so we will create a type for that on the fly
+      const pagedResultPlus: PagedResult<ReleaseCaseType> & {
+        totalBytes: number;
+      } = { totalBytes: 0, ...pagedResult };
+
+      return pagedResultPlus;
     }),
   getReleasePassword: internalProcedure
     .input(inputReleaseKeySingle)

@@ -20,8 +20,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
 }) => {
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
 
-  const getFilePasswordMutate =
-    trpc.releaseRouter.getReleasePassword.useMutation({});
+  const getFilePasswordMutate = trpc.release.getReleasePassword.useMutation({});
 
   const [isPassInClipboard, setIsPassInClipboard] = useState<boolean>(false);
 

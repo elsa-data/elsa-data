@@ -14,6 +14,7 @@ import { handleTotalCountHeaders } from "../../../../helpers/paging-helper";
 import { axiosPatchOperationMutationFn } from "../../queries";
 import { Table } from "../../../../components/tables";
 import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
+import { trpc } from "../../../../helpers/trpc";
 
 type Props = {
   releaseKey: string;
@@ -67,7 +68,18 @@ export const CasesBox: React.FC<Props> = ({
     else return undefined;
   };
 
-  const dataQuery = useQuery(
+  const dataQuery = trpc.release.getReleaseCases.useQuery(
+    {
+      releaseKey: releaseKey,
+      page: currentPage,
+      q: searchText,
+    },
+    {
+      keepPreviousData: true,
+    }
+  );
+
+  /*const dataQuery = useQuery(
     ["releases-cases", currentPage, searchText, releaseKey],
     async () => {
       const urlParams = new URLSearchParams();
@@ -85,7 +97,7 @@ export const CasesBox: React.FC<Props> = ({
       });
     },
     { keepPreviousData: true }
-  );
+  );*/
 
   const queryClient = useQueryClient();
 
@@ -123,15 +135,15 @@ export const CasesBox: React.FC<Props> = ({
   // this horrible little piece of logic is used to make rowspans where we have a common
   // dataset shared by rows
   // our cases are always ordered by dataset - so that is why this will generally work
-  if (dataQuery.isSuccess) {
+  if (dataQuery.isSuccess && dataQuery.data && dataQuery.data.data) {
     let currentDataset = "not a dataset";
     let currentSpanRow = -1;
 
-    for (let r = 0; r < dataQuery.data.length; r++) {
-      if (dataQuery.data[r].fromDatasetUri !== currentDataset) {
-        // if we have changed from the previous - then its a new span..
+    for (let r = 0; r < dataQuery.data.data.length; r++) {
+      if (dataQuery.data.data[r].fromDatasetUri !== currentDataset) {
+        // if we have changed from the previous - then it's a new span...
         currentSpanRow = r;
-        currentDataset = dataQuery.data[r].fromDatasetUri;
+        currentDataset = dataQuery.data.data[r].fromDatasetUri;
 
         rowSpans.push(1);
       } else {
@@ -192,13 +204,14 @@ export const CasesBox: React.FC<Props> = ({
               <EagerErrorBoundary error={dataQuery.error} />
             )}
 
-            {dataQuery.isLoading && (
+            {dataQuery.isFetching && (
               <div className={classNames(baseMessageDivClasses)}>
                 Loading...
               </div>
             )}
             {dataQuery.data &&
-              dataQuery.data.length === 0 &&
+              dataQuery.data.data &&
+              dataQuery.data.data.length === 0 &&
               !makeUseableSearchText(searchText) && (
                 <div className={classNames(baseMessageDivClasses)}>
                   <p>
@@ -207,7 +220,8 @@ export const CasesBox: React.FC<Props> = ({
                 </div>
               )}
             {dataQuery.data &&
-              dataQuery.data.length === 0 &&
+              dataQuery.data.data &&
+              dataQuery.data.data.length === 0 &&
               makeUseableSearchText(searchText) && (
                 <div className={classNames(baseMessageDivClasses)}>
                   <p>
@@ -216,110 +230,115 @@ export const CasesBox: React.FC<Props> = ({
                   </p>
                 </div>
               )}
-            {dataQuery.data && dataQuery.data.length > 0 && (
-              <>
-                <div
-                  className={releasePatchMutate.isLoading ? "opacity-50" : ""}
-                >
-                  {isEditable && (
-                    <div className="flex flex-wrap items-center border-b py-4">
-                      <label>
-                        <div className="inline-block w-12 text-center">
-                          <IndeterminateCheckbox
-                            className="checkbox-accent"
-                            disabled={
-                              releasePatchMutate.isLoading || releaseIsActivated
-                            }
-                            indeterminate={isSelectAllIndeterminate}
-                            onChange={onSelectAllChange}
-                          />
-                        </div>
-                        Select All
-                      </label>
-                    </div>
-                  )}
-                  <Table
-                    additionalTableClassName="text-left text-sm text-gray-500"
-                    tableBody={dataQuery.data.map((row, rowIndex) => {
-                      return (
-                        <tr key={row.id} className="border-b">
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "w-12",
-                              "text-center"
-                            )}
-                          >
+            {dataQuery.data &&
+              dataQuery.data.data &&
+              dataQuery.data.data.length > 0 && (
+                <>
+                  <div
+                    className={releasePatchMutate.isLoading ? "opacity-50" : ""}
+                  >
+                    {isEditable && (
+                      <div className="flex flex-wrap items-center border-b py-4">
+                        <label>
+                          <div className="inline-block w-12 text-center">
                             <IndeterminateCheckbox
-                              disabled={true}
-                              checked={row.nodeStatus === "selected"}
-                              indeterminate={row.nodeStatus === "indeterminate"}
-                            />
-                          </td>
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "text-left",
-                              "w-40"
-                            )}
-                          >
-                            <div className="flex space-x-1">
-                              <span>{row.externalId}</span>
-                              {showConsent && row.customConsent && (
-                                <ConsentPopup
-                                  releaseKey={releaseKey}
-                                  nodeId={row.id}
-                                />
-                              )}
-                            </div>
-                          </td>
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "text-left",
-                              "pr-4"
-                            )}
-                          >
-                            <PatientsFlexRow
-                              releaseKey={releaseKey}
-                              releaseIsActivated={releaseIsActivated}
-                              patients={row.patients}
-                              showCheckboxes={isEditable}
-                              onCheckboxClicked={() =>
-                                setIsSelectAllIndeterminate(true)
+                              className="checkbox-accent"
+                              disabled={
+                                releasePatchMutate.isLoading ||
+                                releaseIsActivated
                               }
-                              showConsent={showConsent}
+                              indeterminate={isSelectAllIndeterminate}
+                              onChange={onSelectAllChange}
                             />
-                          </td>
-                          {/* if we only have one dataset - then we don't show this column at all */}
-                          {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
-                          {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
+                          </div>
+                          Select All
+                        </label>
+                      </div>
+                    )}
+                    <Table
+                      additionalTableClassName="text-left text-sm text-gray-500"
+                      tableBody={dataQuery.data.data.map((row, rowIndex) => {
+                        return (
+                          <tr key={row.id} className="border-b">
                             <td
                               className={classNames(
                                 baseColumnClasses,
-                                "w-10",
-                                "px-2",
-                                "border-l",
-                                "border-l-red-500"
+                                "w-12",
+                                "text-center"
                               )}
-                              rowSpan={
-                                rowSpans[rowIndex] === 1
-                                  ? undefined
-                                  : rowSpans[rowIndex]
-                              }
                             >
-                              <div className="w-6">
-                                {datasetMap.get(row.fromDatasetUri)}
+                              <IndeterminateCheckbox
+                                disabled={true}
+                                checked={row.nodeStatus === "selected"}
+                                indeterminate={
+                                  row.nodeStatus === "indeterminate"
+                                }
+                              />
+                            </td>
+                            <td
+                              className={classNames(
+                                baseColumnClasses,
+                                "text-left",
+                                "w-40"
+                              )}
+                            >
+                              <div className="flex space-x-1">
+                                <span>{row.externalId}</span>
+                                {showConsent && row.customConsent && (
+                                  <ConsentPopup
+                                    releaseKey={releaseKey}
+                                    nodeId={row.id}
+                                  />
+                                )}
                               </div>
                             </td>
-                          )}
-                        </tr>
-                      );
-                    })}
-                  />
-                </div>
-              </>
-            )}
+                            <td
+                              className={classNames(
+                                baseColumnClasses,
+                                "text-left",
+                                "pr-4"
+                              )}
+                            >
+                              <PatientsFlexRow
+                                releaseKey={releaseKey}
+                                releaseIsActivated={releaseIsActivated}
+                                patients={row.patients}
+                                showCheckboxes={isEditable}
+                                onCheckboxClicked={() =>
+                                  setIsSelectAllIndeterminate(true)
+                                }
+                                showConsent={showConsent}
+                              />
+                            </td>
+                            {/* if we only have one dataset - then we don't show this column at all */}
+                            {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                            {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
+                              <td
+                                className={classNames(
+                                  baseColumnClasses,
+                                  "w-10",
+                                  "px-2",
+                                  "border-l",
+                                  "border-l-red-500"
+                                )}
+                                rowSpan={
+                                  rowSpans[rowIndex] === 1
+                                    ? undefined
+                                    : rowSpans[rowIndex]
+                                }
+                              >
+                                <div className="w-6">
+                                  {datasetMap.get(row.fromDatasetUri)}
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    />
+                  </div>
+                </>
+              )}
           </>
         </DisabledInputWrapper>
       </div>

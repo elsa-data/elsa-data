@@ -37,7 +37,7 @@ export const releaseRoutes = async (
   );
   const manifestService = _opts.container.resolve(ManifestService);
 
-  fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
+  /*fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
     "/releases/:rid/cases",
     {},
     async function (request, reply) {
@@ -56,7 +56,7 @@ export const releaseRoutes = async (
 
       sendPagedResult(reply, cases);
     }
-  );
+  );*/
 
   fastify.get<{
     Params: { rid: string; nid: string };

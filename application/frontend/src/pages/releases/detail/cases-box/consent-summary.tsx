@@ -65,7 +65,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
   if (consentId) {
     consentQuery = trpc.datasetRouter.getDatasetConsent.useQuery({ consentId });
   } else {
-    consentQuery = trpc.releaseRouter.getReleaseConsent.useQuery({
+    consentQuery = trpc.release.getReleaseConsent.useQuery({
       releaseKey: releaseKey ?? "",
       nodeId: nodeId ?? "",
     });

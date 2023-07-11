@@ -39,9 +39,9 @@ export const HtsgetAccordionContent: React.FC<
   );
 
   const applyHtsgetRestriction =
-    trpc.releaseRouter.applyHtsgetRestriction.useMutation();
+    trpc.release.applyHtsgetRestriction.useMutation();
   const removeHtsgetRestriction =
-    trpc.releaseRouter.removeHtsgetRestriction.useMutation();
+    trpc.release.removeHtsgetRestriction.useMutation();
 
   type HtsgetRestrictionProps = {
     releaseKey: string;
