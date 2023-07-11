@@ -24,7 +24,7 @@ import { ReleaseSelectionService } from "../../business/services/releases/releas
 import { DacService } from "../../business/services/dacs/dac-service";
 import { AuditEventService } from "../../business/services/audit-event-service";
 import { SharerService } from "../../business/services/sharer-service";
-import { NotAuthorisedCredentials } from "../errors/authentication-error";
+import { NOT_AUTHORISED_MESSAGE } from "../errors/authentication-error";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -74,7 +74,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
 
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: new NotAuthorisedCredentials().message,
+      message: NOT_AUTHORISED_MESSAGE,
     });
   }
   ctx.req.log.trace(authedUser, `isCookieSessionAuthed: user details`);
