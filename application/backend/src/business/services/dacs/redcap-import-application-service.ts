@@ -9,7 +9,7 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import {
   ApplicationUser,
   checkValidApplicationUser,

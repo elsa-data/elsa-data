@@ -13,7 +13,7 @@ import { AuditEventService } from "../audit-event-service";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import {
   correctAccessPointTemplateOutputs,
   createAccessPointTemplateFromReleaseFileEntries,
@@ -56,21 +56,12 @@ export class AwsAccessPointService {
    * @param user
    * @param releaseKey
    */
-  public async getInstalledAccessPointResources(
-    user: AuthenticatedUser,
-    releaseKey: string
-  ): Promise<{
+  public async getInstalledAccessPointResources(releaseKey: string): Promise<{
     stackName: string;
     stackId: string;
     bucketNameMap: { [x: string]: string };
   } | null> {
     await this.awsEnabledService.enabledGuard();
-
-    const { userRole } =
-      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
-        user,
-        releaseKey
-      );
 
     const releaseStackName =
       AwsAccessPointService.getReleaseStackName(releaseKey);
@@ -117,6 +108,12 @@ export class AwsAccessPointService {
     releaseKey: string,
     tsvColumns: string[]
   ) {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
     await this.awsEnabledService.enabledGuard();
     // find all the files encompassed by this release as a flat array of S3 URLs
     // noting that these files will be S3 paths that
@@ -128,7 +125,6 @@ export class AwsAccessPointService {
     );
 
     const stackResources = await this.getInstalledAccessPointResources(
-      user,
       releaseKey
     );
 

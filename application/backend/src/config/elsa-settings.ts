@@ -8,6 +8,7 @@ import { BrandingType } from "./config-schema-branding";
 import { OidcType } from "./config-schema-oidc";
 import { HttpHostingType } from "./config-schema-http-hosting";
 import { FeatureType } from "./config-schema-feature";
+import { DataEgressConfigType } from "./config-schema-data-egress";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -27,6 +28,9 @@ export type ElsaSettings = {
 
   // selectively switch on/off functionality
   feature?: FeatureType;
+
+  // Feature configurations
+  dataEgressConfig?: DataEgressConfigType;
 
   // details that are required if running in AWS
   aws?: {

@@ -2,7 +2,7 @@ import * as edgedb from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { RedcapImportApplicationService } from "../../src/business/services/dacs/redcap-import-application-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import { beforeEachCommon } from "./releases.common";
+import { beforeEachCommon } from "./commons/releases.common";
 import { registerTypes } from "../test-dependency-injection.common";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { UserService } from "../../src/business/services/user-service";

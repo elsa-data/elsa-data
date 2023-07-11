@@ -7,7 +7,7 @@ import { ReleaseDetailType, ReleasePreviousJobType } from "@umccr/elsa-types";
 import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import { Transaction } from "edgedb/dist/transaction";
 import { AuditEventService } from "../audit-event-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";

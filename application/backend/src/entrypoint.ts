@@ -30,7 +30,7 @@ import {
 import { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
 import { AuditEventService } from "./business/services/audit-event-service";
-import { ReleaseActivationService } from "./business/services/release-activation-service";
+import { ReleaseActivationService } from "./business/services/releases/release-activation-service";
 import { getFeaturesEnabled } from "./features";
 
 // some Node wide synchronous initialisations

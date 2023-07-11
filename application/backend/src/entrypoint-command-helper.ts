@@ -5,6 +5,9 @@ import {
 } from "./config/config-schema";
 import { bootstrapSettings } from "./bootstrap-settings";
 import { getMetaConfig } from "./config/config-load";
+import { AuthenticatedUser } from "./business/authenticated-user";
+import { Client } from "edgedb";
+import e from "../dbschema/edgeql-js";
 
 export type EntrypointCommandHelper = {
   command: string;

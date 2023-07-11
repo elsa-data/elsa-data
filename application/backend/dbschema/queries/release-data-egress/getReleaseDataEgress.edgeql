@@ -26,6 +26,8 @@ select {
         fileUrl,
         fileSize,
       }
+      order by
+        .occurredDateTime desc
       offset
        <optional int64>$offset
       limit
