@@ -32,7 +32,7 @@ type Props = {
   isAllowEdit: boolean;
 
   // whether the table is being viewed by someone with permissions to view it despite being inactive
-  isAllowView: boolean;
+  isAllowAdminView: boolean;
 
   // whether to show any consent iconography/popups
   showConsent: boolean;
@@ -44,7 +44,7 @@ export const CasesBox: React.FC<Props> = ({
   datasetMap,
   pageSize,
   isAllowEdit,
-  isAllowView,
+  isAllowAdminView,
   showConsent,
 }) => {
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
@@ -153,7 +153,7 @@ export const CasesBox: React.FC<Props> = ({
 
   // if they cannot edit cases AND the release is not activated then effectively there is nothing
   // they can do yet... so we give them some instructions informing them of that
-  if (!releaseIsActivated && !isAllowEdit && !isAllowView)
+  if (!releaseIsActivated && !isAllowEdit && !isAllowAdminView)
     return (
       <Box heading="Cases">
         <div className="prose max-w-none">
@@ -288,7 +288,7 @@ export const CasesBox: React.FC<Props> = ({
                               releaseKey={releaseKey}
                               releaseIsActivated={releaseIsActivated}
                               patients={row.patients}
-                              showCheckboxes={isAllowEdit || isAllowView}
+                              showCheckboxes={isAllowEdit || isAllowAdminView}
                               onCheckboxClicked={() =>
                                 setIsSelectAllIndeterminate(true)
                               }

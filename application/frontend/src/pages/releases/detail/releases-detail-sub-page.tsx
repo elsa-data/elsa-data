@@ -35,7 +35,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         releaseKey={releaseKey}
         datasetMap={releaseData.datasetMap}
         isAllowEdit={releaseData.permissionEditSelections ?? false}
-        isAllowView={releaseData.permissionViewSelections ?? false}
+        isAllowAdminView={releaseData.permissionViewSelections ?? false}
         pageSize={pageSize}
         releaseIsActivated={releaseIsActivated}
         showConsent={features.has(FEATURE_RELEASE_CONSENT_DISPLAY)}
