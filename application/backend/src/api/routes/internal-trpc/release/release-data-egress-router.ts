@@ -12,12 +12,12 @@ import {
  * RPC for release Data Egress Records
  */
 export const releaseDataEgressRouter = router({
-  syncDataEgress: internalProcedure
+  updateDataEgressRecord: internalProcedure
     .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
       const { releaseKey } = input;
-      await ctx.releaseDataEgressService.syncDataEgressByReleaseKey(
+      await ctx.releaseDataEgressService.updateDataEgressRecordsByReleaseKey(
         user,
         releaseKey
       );

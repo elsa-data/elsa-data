@@ -5,7 +5,7 @@ import { getReleaseInfo } from "../helpers";
 import { ReleaseDetailType } from "@umccr/elsa-types";
 import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
 import {
   CloudFormationClient,

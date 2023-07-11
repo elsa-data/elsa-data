@@ -12,12 +12,12 @@ export class NotAuthorisedViewAudits extends Base7807Error {
   }
 }
 
-export class NotAuthorisedSyncDataEgressRecords extends Base7807Error {
+export class NotAuthorisedUpdateDataEgressRecords extends Base7807Error {
   constructor() {
     super(
-      "Unauthorised attempt to sync data egress records",
+      "Unauthorised attempt to update data egress records",
       403,
-      `User do not have the permission to sync data egress records.`
+      `User do not have the permission to update data egress records.`
     );
   }
 }

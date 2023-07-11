@@ -81,7 +81,7 @@ select {
       )
     )
     order by
-        .totalDataEgressInBytes desc
+        .fileUrl asc
     offset
        <optional int64>$offset
     limit

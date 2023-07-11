@@ -1,0 +1,7 @@
+{
+  // A configuration for the dataset egress record feature
+
+  datasetEgress: {
+    updateInterval: "0 6 * * *", // 6am
+  },
+}

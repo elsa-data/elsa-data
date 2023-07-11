@@ -222,8 +222,8 @@ export const CasesBox: React.FC<Props> = ({
                 <div className={specimenMutate.isLoading ? "opacity-50" : ""}>
                   {isEditable && (
                     <div className="flex flex-wrap items-center border-b py-4">
-                      <label>
-                        <div className="inline-block w-12 text-center">
+                      <label className="flex items-center">
+                        <div className="flex w-12 items-center justify-center">
                           <IndeterminateCheckbox
                             className="checkbox-accent"
                             disabled={
