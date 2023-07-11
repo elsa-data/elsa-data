@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import {
   DuoLimitationCodedType,
-  ReleaseCaseType,
   ReleaseManualSchema,
   ReleaseManualType,
   ReleasePatchOperationsSchema,
@@ -9,16 +8,12 @@ import {
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
 } from "@umccr/elsa-types";
-import {
-  authenticatedRouteOnEntryHelper,
-  sendPagedResult,
-} from "../../api-internal-routes";
+import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/releases/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
-import { ReleaseParticipationService } from "../../../business/services/releases/release-participation-service";
 import { ReleaseSelectionService } from "../../../business/services/releases/release-selection-service";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
 
@@ -37,27 +32,6 @@ export const releaseRoutes = async (
   );
   const manifestService = _opts.container.resolve(ManifestService);
 
-  /*fastify.get<{ Params: { rid: string }; Reply: ReleaseCaseType[] }>(
-    "/releases/:rid/cases",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser, pageSize, page, q } =
-        authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-
-      const cases = await releaseSelectionService.getCases(
-        authenticatedUser,
-        releaseKey,
-        pageSize,
-        (page - 1) * pageSize,
-        q
-      );
-
-      sendPagedResult(reply, cases);
-    }
-  );*/
-
   fastify.get<{
     Params: { rid: string; nid: string };
     Reply: DuoLimitationCodedType[];
@@ -72,8 +46,6 @@ export const releaseRoutes = async (
       releaseKey,
       nodeId
     );
-
-    request.log.debug(r);
 
     reply.send(r);
   });
