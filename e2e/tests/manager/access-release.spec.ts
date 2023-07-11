@@ -30,7 +30,7 @@ test("Download AWS PresignedUrl ZIP files", async ({ page }) => {
   await download.saveAs(zipPath);
 
   const stream = Seven.extract(zipPath, dirPath, {
-    password: "abcd",
+    password: "ABCDEFGHIJKL",
   });
   stream.on("data", (sevenData: { file: string } & Record<string, string>) => {
     const extractedPath = `${dirPath}${sevenData.file}`;

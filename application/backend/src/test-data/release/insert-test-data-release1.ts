@@ -111,7 +111,7 @@ export async function insertRelease1(
         gcpStorageIamEnabled: true,
         copyOutEnabled: true,
       }),
-      releasePassword: "abcd", // pragma: allowlist secret
+      releasePassword: "ABCDEFGHIJKL", // pragma: allowlist secret
       datasetUris: datasetUris,
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],

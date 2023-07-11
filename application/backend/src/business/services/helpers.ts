@@ -3,6 +3,7 @@ import { Executor } from "edgedb";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UserService } from "./user-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
+import { Transaction } from "edgedb/dist/transaction";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate
@@ -51,7 +52,7 @@ export async function doRoleInReleaseCheck(
  * @param releaseKey the release to load
  */
 export async function getReleaseInfo(
-  edgeDbClient: Executor,
+  edgeDbClient: Executor | Transaction,
   releaseKey: string
 ) {
   // the base (id only) query that will give us just the release
