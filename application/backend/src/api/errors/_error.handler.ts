@@ -36,6 +36,7 @@ A problem details object can have the following members:
 
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 import { Base7807Error, Base7807Response } from "@umccr/elsa-types/error-types";
+import { NotAuthorisedCredentials } from "./authentication-error";
 
 export function ErrorHandler(
   error: Error,
@@ -70,7 +71,7 @@ export function ErrorHandler(
         (error as any).code == "FST_CSRF_MISSING_SECRET" ||
         (error as any).code == "FST_CSRF_INVALID_TOKEN"
       ) {
-        problemResponse.title = "Expired/Invalid CSRF Token";
+        problemResponse.title = new NotAuthorisedCredentials().message;
         problemResponse.status = 401;
         problemResponse.detail = error.message;
       } else {
