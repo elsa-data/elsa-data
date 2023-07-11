@@ -66,6 +66,13 @@ export function ErrorHandler(
         problemResponse.status = 400;
         problemResponse.detail = error.message;
         problemResponse["validation-errors"] = (error as any).validation;
+      } else if (
+        (error as any).code == "FST_CSRF_MISSING_SECRET" ||
+        (error as any).code == "FST_CSRF_INVALID_TOKEN"
+      ) {
+        problemResponse.title = "Expired/Invalid CSRF Token";
+        problemResponse.status = 401;
+        problemResponse.detail = error.message;
       } else {
         if (error.message) {
           problemResponse.detail = error.message;
@@ -77,7 +84,6 @@ export function ErrorHandler(
       "Undefined error object encountered in Fastify error handler - responded with generic 500 error"
     );
   }
-
   // we can't allow a non-error status to come through this code-path - and if we get one - we have to report this
   // as an internal error
   if (problemResponse.status !== undefined && problemResponse.status < 400) {

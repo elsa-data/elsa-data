@@ -26,7 +26,13 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
             removeCookie(USER_SUBJECT_COOKIE_NAME);
 
             const body = await res?.json();
-            const message = body.length > 0 ? body[0]?.error?.message : "";
+
+            // This to grab the layout if the error comes from a 'TRPCError'
+            let message = body.length > 0 ? body[0]?.error?.message : "";
+
+            // Error could also come from a standard Fastify Error
+            if (!message) message = body.title ?? body.detail;
+
             show({
               description: message,
             });
