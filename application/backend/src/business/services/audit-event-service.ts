@@ -798,7 +798,8 @@ export class AuditEventService {
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
-    finishFunc: (a: U) => Promise<V>
+    finishFunc: (a: U) => Promise<V>,
+    isResultSecureString?: boolean
   ) {
     return this.transactionalAuditPattern(
       user,
@@ -807,7 +808,8 @@ export class AuditEventService {
       actionDescription,
       initFunc,
       transFunc,
-      finishFunc
+      finishFunc,
+      isResultSecureString
     );
   }
 
@@ -974,7 +976,8 @@ export class AuditEventService {
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
-    finishFunc: (a: U) => Promise<V>
+    finishFunc: (a: U) => Promise<V>,
+    isResultSecureString?: boolean
   ) {
     return await this.auditPattern(
       async (start) => {
@@ -1000,7 +1003,8 @@ export class AuditEventService {
         });
 
         return await finishFunc(transResult);
-      }
+      },
+      isResultSecureString
     );
   }
 
@@ -1022,7 +1026,8 @@ export class AuditEventService {
     ) => Promise<void>,
     tryFn: (
       completeAuditFn: (details: any, executor: Executor) => Promise<void>
-    ) => Promise<R>
+    ) => Promise<R>,
+    isDetailSecretString?: boolean
   ): Promise<R> {
     // Is this refactor getting out of hand?
     const auditEventStart = new Date();
@@ -1030,13 +1035,18 @@ export class AuditEventService {
 
     try {
       return await tryFn(async (details, executor) => {
+        // Hide if details is secure string
+        const hiddenString = isDetailSecretString
+          ? details.slice(0, 4).padEnd(details.length, "*")
+          : null;
+
         await completeAuditFn.call(
           this,
           auditEventId,
           OUTCOME_SUCCESS,
           auditEventStart,
           new Date(),
-          details,
+          hiddenString ?? details,
           executor
         );
       });

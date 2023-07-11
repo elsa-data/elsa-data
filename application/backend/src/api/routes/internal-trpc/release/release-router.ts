@@ -48,18 +48,7 @@ export const releaseRouter = router({
       const { user } = ctx;
       const { releaseKey } = input;
 
-      return await ctx.auditEventService.transactionalReadInReleaseAuditPattern(
-        user,
-        releaseKey,
-        `Access the release password: ${releaseKey}`,
-        async () => {},
-        async (tx, a) => {
-          return await ctx.releaseService.getPassword(user, releaseKey);
-        },
-        async (p) => {
-          return p;
-        }
-      );
+      return await ctx.releaseService.getPassword(user, releaseKey);
     }),
   getReleaseConsent: internalProcedure
     .input(inputReleaseKeySingle.merge(z.object({ nodeId: z.string() })))
