@@ -65,7 +65,7 @@ export async function insertRelease5(
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
       releaseKey: `R005`,
-      releasePassword: "abcd", // pragma: allowlist secret
+      releasePassword: "ABCDEFGHIJKL", // pragma: allowlist secret
       selectedSpecimens: e.set(),
       isAllowedReadData: true,
       isAllowedVariantData: true,

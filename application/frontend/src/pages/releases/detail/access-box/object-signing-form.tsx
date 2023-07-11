@@ -19,16 +19,22 @@ export const ObjectSigningForm: React.FC<Props> = ({
   releaseData,
 }) => {
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
+  const [isViewPassword, setIsViewPassword] = useState<boolean>(false);
 
-  const getFilePasswordMutate =
-    trpc.releaseRouter.getReleasePassword.useMutation({});
+  const getFilePasswordQuery = trpc.releaseRouter.getReleasePassword.useQuery(
+    {
+      releaseKey,
+    },
+    {
+      enabled: isViewPassword,
+    }
+  );
 
   const [isPassInClipboard, setIsPassInClipboard] = useState<boolean>(false);
-
   return (
     <div className="prose">
-      {getFilePasswordMutate.isError && (
-        <EagerErrorBoundary error={getFilePasswordMutate.error} />
+      {getFilePasswordQuery.isError && (
+        <EagerErrorBoundary error={getFilePasswordQuery.error} />
       )}
       {isPrepareDownload && (
         <Alert
@@ -49,30 +55,29 @@ export const ObjectSigningForm: React.FC<Props> = ({
             </p>
           </article>
           <span className="flex w-full items-center">
-            {getFilePasswordMutate.data ? (
+            {getFilePasswordQuery.data ? (
               <textarea
                 disabled
                 className="input-bordered input !m-0 w-full overflow-hidden break-words"
-              >
-                {getFilePasswordMutate.data}
-              </textarea>
+                value={getFilePasswordQuery.data}
+              />
             ) : (
               <input
                 disabled
                 type={"password"}
                 className="input-bordered input !m-0 w-full break-words"
-                value={"1234"}
+                value={"123456789012"}
               />
             )}
 
-            {getFilePasswordMutate.isLoading ? (
+            {getFilePasswordQuery.isLoading && isViewPassword ? (
               <span className="loading loading-spinner ml-4" />
-            ) : getFilePasswordMutate.data ? (
+            ) : getFilePasswordQuery.data ? (
               <button
                 className="btn-table-action-navigate"
                 onClick={async () => {
                   await navigator.clipboard.writeText(
-                    getFilePasswordMutate.data!
+                    getFilePasswordQuery.data!
                   );
                   setIsPassInClipboard(true);
                   setTimeout(() => {
@@ -86,7 +91,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
               <button
                 className="btn-table-action-navigate"
                 onClick={() => {
-                  getFilePasswordMutate.mutate({ releaseKey });
+                  setIsViewPassword(true);
                 }}
               >
                 View

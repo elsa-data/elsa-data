@@ -21,6 +21,7 @@ import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
+import { getReleaseInfo } from "../helpers";
 
 @injectable()
 export class ManifestService {
@@ -212,7 +213,8 @@ export class ManifestService {
       return buf;
     }
 
-    const password = await this.releaseService.getPassword(user, releaseKey);
+    const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseKey);
+    const password = releaseInfo.releasePassword;
 
     // create archive and specify method of encryption and password
     let archive = archiver.create("zip-encrypted", {

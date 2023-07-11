@@ -253,13 +253,25 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    if (userRole !== "Member" && userRole !== "Manager") {
-      throw new ReleaseViewError(releaseKey);
-    }
+    return await this.auditEventService.transactionalReadInReleaseAuditPattern(
+      user,
+      releaseKey,
+      `Access the release password: ${releaseKey}`,
+      async () => {
+        if (userRole !== "Member" && userRole !== "Manager") {
+          throw new ReleaseViewError(releaseKey);
+        }
+      },
 
-    const { releaseInfo } = await getReleaseInfo(this.edgeDbClient, releaseKey);
-
-    return releaseInfo.releasePassword;
+      async (tx, a) => {
+        const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
+        return releaseInfo.releasePassword;
+      },
+      async (p) => {
+        return p;
+      },
+      true
+    );
   }
 
   /**
