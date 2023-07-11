@@ -12,6 +12,7 @@ import { EagerErrorBoundary } from "../../../../components/errors";
 import { Table } from "../../../../components/tables";
 import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
 import { trpc } from "../../../../helpers/trpc";
+import { IsLoadingDivIcon } from "../../../../components/is-loading-div";
 
 type Props = {
   releaseKey: string;
@@ -32,6 +33,9 @@ type Props = {
   // whether to show any consent iconography/popups
   showConsent: boolean;
 };
+
+const checkUseableSearchText = (t: string | undefined) =>
+  !isEmpty(t) && !isEmpty(trim(t));
 
 /**
  * From an array of cases - this returns of rowSpan values for each row - if
@@ -82,12 +86,13 @@ export const CasesBox: React.FC<Props> = ({
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
-
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   // a text input which changes the behaviour of the control to being a search result
   const [searchText, setSearchText] = useState("");
+
+  // we are going to get the UI to behave quite differently if we are in the process of searching v not searching
+  const isUseableSearchText = checkUseableSearchText(searchText);
 
   const onSearchTextChange = (text: string) => {
     setCurrentPage(1);
@@ -95,7 +100,7 @@ export const CasesBox: React.FC<Props> = ({
   };
 
   const makeUseableSearchText = (t: string | undefined) => {
-    if (!isEmpty(t) && !isEmpty(trim(t))) return trim(t);
+    if (checkUseableSearchText(t)) return trim(t);
     else return undefined;
   };
 
@@ -142,6 +147,24 @@ export const CasesBox: React.FC<Props> = ({
     }
   };
 
+  let casesCount = 0,
+    specimensCount = 0;
+
+  if (casesQueryData) {
+    casesQueryData.forEach((c) => {
+      if (c.nodeStatus !== "unselected") {
+        casesCount++;
+        c.patients.forEach((p) => {
+          if (p.nodeStatus !== "unselected") {
+            p.specimens.forEach((s) => {
+              if (s.nodeStatus === "selected") specimensCount++;
+            });
+          }
+        });
+      }
+    });
+  }
+
   const rowSpans = casesQueryData ? calculateRowSpans(casesQueryData) : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
@@ -154,7 +177,7 @@ export const CasesBox: React.FC<Props> = ({
   if (!releaseIsActivated && !isEditable)
     return (
       <Box heading="Cases">
-        <div className="prose max-w-none">
+        <div className="prose max-w-none text-sm">
           <p>
             Once a release is created - the data owners and stewards must go
             through a process of setting up the exact set of data which will be
@@ -175,6 +198,8 @@ export const CasesBox: React.FC<Props> = ({
       applyIsActivatedLockedStyle={isEditable && releaseIsActivated}
     >
       <div className={classNames("flex flex-col")}>
+        {casesQuery.isError && <EagerErrorBoundary error={casesQuery.error} />}
+
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
@@ -190,18 +215,14 @@ export const CasesBox: React.FC<Props> = ({
           isInputDisabled={!isEditable || releaseIsActivated}
         >
           <>
-            {casesQuery.isError && (
-              <EagerErrorBoundary error={casesQuery.error} />
-            )}
-
             {casesQuery.isLoading && (
               <div className={classNames(baseMessageDivClasses)}>
-                Loading...
+                <p>{isUseableSearchText ? "Searching..." : "Loading..."}</p>
               </div>
             )}
             {casesQueryData &&
               casesQueryData.length === 0 &&
-              !makeUseableSearchText(searchText) && (
+              !isUseableSearchText && (
                 <div className={classNames(baseMessageDivClasses)}>
                   <p>
                     There are no cases visible in the dataset(s) of this release
@@ -210,7 +231,7 @@ export const CasesBox: React.FC<Props> = ({
               )}
             {casesQueryData &&
               casesQueryData.length === 0 &&
-              makeUseableSearchText(searchText) && (
+              isUseableSearchText && (
                 <div className={classNames(baseMessageDivClasses)}>
                   <p>
                     Searching for the identifier <b>{searchText}</b> returned no
@@ -219,106 +240,123 @@ export const CasesBox: React.FC<Props> = ({
                 </div>
               )}
             {casesQueryData && casesQueryData.length > 0 && (
-              <>
-                <div className={specimenMutate.isLoading ? "opacity-50" : ""}>
-                  {isEditable && (
-                    <div className="flex flex-wrap items-center border-b py-4">
-                      <label className="flex items-center">
-                        <div className="flex w-12 items-center justify-center">
+              <div className={specimenMutate.isLoading ? "opacity-50" : ""}>
+                <Table
+                  additionalTableClassName="text-left text-sm text-gray-500"
+                  tableBody={casesQueryData.map((row, rowIndex) => {
+                    return (
+                      <tr key={row.id} className="border-b">
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "w-12",
+                            "text-center"
+                          )}
+                        >
                           <IndeterminateCheckbox
-                            className="checkbox-accent"
-                            disabled={
-                              specimenMutate.isLoading || releaseIsActivated
-                            }
-                            indeterminate={isSelectAllIndeterminate}
-                            onChange={onSelectAllChange}
+                            disabled={true}
+                            checked={row.nodeStatus === "selected"}
+                            indeterminate={row.nodeStatus === "indeterminate"}
                           />
-                        </div>
-                        Select All
-                      </label>
-                    </div>
-                  )}
-                  <Table
-                    additionalTableClassName="text-left text-sm text-gray-500"
-                    tableBody={casesQueryData.map((row, rowIndex) => {
-                      return (
-                        <tr key={row.id} className="border-b">
+                        </td>
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "text-left",
+                            "w-40"
+                          )}
+                        >
+                          <div className="flex space-x-1">
+                            <span>{row.externalId}</span>
+                            {showConsent && row.customConsent && (
+                              <ConsentPopup
+                                releaseKey={releaseKey}
+                                nodeId={row.id}
+                              />
+                            )}
+                          </div>
+                        </td>
+                        <td
+                          className={classNames(
+                            baseColumnClasses,
+                            "text-left",
+                            "pr-4"
+                          )}
+                        >
+                          <PatientsFlexRow
+                            releaseKey={releaseKey}
+                            releaseIsActivated={releaseIsActivated}
+                            patients={row.patients}
+                            showCheckboxes={isEditable}
+                            onCheckboxClicked={() =>
+                              setIsSelectAllIndeterminate(true)
+                            }
+                            showConsent={showConsent}
+                          />
+                        </td>
+                        {/* if we only have one dataset - then we don't show this column at all */}
+                        {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                        {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
                           <td
                             className={classNames(
                               baseColumnClasses,
-                              "w-12",
-                              "text-center"
+                              "w-10",
+                              "px-2",
+                              "border-l",
+                              "border-l-red-500"
                             )}
+                            rowSpan={
+                              rowSpans[rowIndex] === 1
+                                ? undefined
+                                : rowSpans[rowIndex]
+                            }
                           >
-                            <IndeterminateCheckbox
-                              disabled={true}
-                              checked={row.nodeStatus === "selected"}
-                              indeterminate={row.nodeStatus === "indeterminate"}
-                            />
-                          </td>
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "text-left",
-                              "w-40"
-                            )}
-                          >
-                            <div className="flex space-x-1">
-                              <span>{row.externalId}</span>
-                              {showConsent && row.customConsent && (
-                                <ConsentPopup
-                                  releaseKey={releaseKey}
-                                  nodeId={row.id}
-                                />
-                              )}
+                            <div className="w-6">
+                              {datasetMap.get(row.fromDatasetUri)}
                             </div>
                           </td>
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "text-left",
-                              "pr-4"
-                            )}
-                          >
-                            <PatientsFlexRow
-                              releaseKey={releaseKey}
-                              releaseIsActivated={releaseIsActivated}
-                              patients={row.patients}
-                              showCheckboxes={isEditable}
-                              onCheckboxClicked={() =>
-                                setIsSelectAllIndeterminate(true)
-                              }
-                              showConsent={showConsent}
-                            />
-                          </td>
-                          {/* if we only have one dataset - then we don't show this column at all */}
-                          {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
-                          {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
-                            <td
-                              className={classNames(
-                                baseColumnClasses,
-                                "w-10",
-                                "px-2",
-                                "border-l",
-                                "border-l-red-500"
-                              )}
-                              rowSpan={
-                                rowSpans[rowIndex] === 1
-                                  ? undefined
-                                  : rowSpans[rowIndex]
-                              }
-                            >
-                              <div className="w-6">
-                                {datasetMap.get(row.fromDatasetUri)}
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      );
-                    })}
-                  />
-                </div>
-              </>
+                        )}
+                      </tr>
+                    );
+                  })}
+                />
+                {/* a status line here provides some
+                      select all/none + a status line
+                      this does not apply during a text search as all/none/stats
+                      don't have the same meaning when the result is filtered by a text box
+                      */}
+                {isEditable && !isUseableSearchText && (
+                  <div className="flex flex-row justify-between border-t-2 py-4">
+                    <label className="flex items-center">
+                      <div className="flex w-12 items-center justify-center">
+                        <IndeterminateCheckbox
+                          className="checkbox-accent"
+                          disabled={
+                            specimenMutate.isLoading || releaseIsActivated
+                          }
+                          indeterminate={isSelectAllIndeterminate}
+                          onChange={onSelectAllChange}
+                        />
+                      </div>
+                      Select All
+                    </label>
+                    <span>
+                      {casesQuery.isFetching && <IsLoadingDivIcon size="xs" />}
+                    </span>
+                    {casesCount === 0 && (
+                      <span>0 cases/specimens selected</span>
+                    )}
+                    {casesCount > 0 && (
+                      <span>
+                        {" "}
+                        {casesCount} case{casesCount > 1 && "s"} with{" "}
+                        {specimensCount} specimen{specimensCount > 1 && "s"} in
+                        total selected
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </>
         </DisabledInputWrapper>

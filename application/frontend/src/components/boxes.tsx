@@ -14,7 +14,12 @@ type BoxProps = {
 /**
  * The apply isDisabled has a higher precedence that the "applyIsActivatedLockedStyle"
  *
+ * @param heading
+ * @param applyIsActivatedLockedStyle
+ * @param applyIsDisabledStyle
+ * @param applyIsDisabledMessage
  * @param applyIsDisabledAllInput is a boolean and will disable all form of inputs except for `select`. Do take note if you have a table paginator as part of the children
+ * @param children
  */
 export const Box: React.FC<PropsWithChildren<BoxProps>> = ({
   heading,
