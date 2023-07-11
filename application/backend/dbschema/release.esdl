@@ -221,8 +221,15 @@ module release {
         #
         link release := .<dataEgressRecord[is release::Release];
 
+        # Unique Id for this record
+        # This is useful to check if this record has exist before inserting a new one 
+        # (so the insertion can be idempotent)
+        required property egressId -> str {
+            constraint exclusive
+        };
+
         # Additional release details
-        property auditId -> str;
+        property auditId -> str; # To track when it is generated
         property description -> str;
         required property occurredDateTime -> datetime;
 

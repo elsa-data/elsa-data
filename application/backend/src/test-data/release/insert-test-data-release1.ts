@@ -198,8 +198,11 @@ export async function insertRelease1(
  */
 export const makeSyntheticDataEgressRecord = async () => {
   const makeDataEgressLog = async (fileUrl: string) => {
+    const random = `${fileUrl}-${new Date().toISOString()}`;
+
     return {
       auditId: "0f8e7694-d1eb-11ed-afa1-0242ac120002",
+      egressId: random,
       occurredDateTime: e.datetime(new Date()),
       description: "Accessed via pre-signed URL",
 

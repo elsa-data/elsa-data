@@ -3,7 +3,7 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ElsaSettings } from "../../../config/elsa-settings";
-import { ReleaseService } from "../release-service";
+import { ReleaseService } from "../releases/release-service";
 import { DacType } from "../../../config/config-schema-dac";
 import _ from "lodash";
 import { RemsService } from "./rems-service";

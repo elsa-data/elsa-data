@@ -14,12 +14,12 @@ import {
   sendPagedResult,
 } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
-import { ReleaseService } from "../../../business/services/release-service";
+import { ReleaseService } from "../../../business/services/releases/release-service";
 import { AwsAccessPointService } from "../../../business/services/aws/aws-access-point-service";
 import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
-import { ReleaseParticipationService } from "../../../business/services/release-participation-service";
-import { ReleaseSelectionService } from "../../../business/services/release-selection-service";
+import { ReleaseParticipationService } from "../../../business/services/releases/release-participation-service";
+import { ReleaseSelectionService } from "../../../business/services/releases/release-selection-service";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
 
 export const releaseRoutes = async (
