@@ -109,7 +109,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   oidc: {
     issuer: ciLogonIssuer,
     clientId: "12345",
-    clientSecret: "ABCDEFGHIJKL" as any, // pragma: allowlist secret
+    clientSecret: "abcd" as any, // pragma: allowlist secret
   },
   ontoFhirUrl: "https://onto.example.com/fhir",
   mondoSystem: {
