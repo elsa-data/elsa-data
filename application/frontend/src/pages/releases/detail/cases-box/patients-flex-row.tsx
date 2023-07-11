@@ -4,14 +4,11 @@ import { faDna } from "@fortawesome/free-solid-svg-icons";
 import { ReleasePatientType } from "@umccr/elsa-types";
 import classNames from "classnames";
 import { ConsentPopup } from "./consent-popup";
+import { trpc } from "../../../../helpers/trpc";
 
 type Props = {
   releaseKey: string;
   patients: ReleasePatientType[];
-
-  // a mutator that can alter the value of selected specimens
-  // optional as for some users this functionality is not provided (i.e. read only)
-  specimenMutate: any;
 
   // whether to show checkboxes or not - though we note there are other fields
   // which control whether the checkboxes are enabled or not - this is just whether
@@ -35,7 +32,6 @@ type Props = {
  *
  * @param releaseKey
  * @param patients
- * @param specimenMutate the mutator that can set specimens on and off in response to checkbox changes
  * @param showCheckboxes
  * @param onCheckboxClicked
  * @param releaseIsActivated
@@ -46,12 +42,21 @@ type Props = {
 export const PatientsFlexRow: React.FC<Props> = ({
   releaseKey,
   patients,
-  specimenMutate,
   showCheckboxes,
   onCheckboxClicked,
   releaseIsActivated,
   showConsent,
 }) => {
+  const trpcUtils = trpc.useContext();
+
+  const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
+    onSuccess: async () =>
+      // once we've altered the selection set we want to invalidate this releases cases queries
+      await trpcUtils.release.getReleaseCases.invalidate({
+        releaseKey: releaseKey,
+      }),
+  });
+
   const onSelectChange = async (
     ce: React.ChangeEvent<HTMLInputElement>,
     id: string
@@ -62,20 +67,18 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
     if (onCheckboxClicked !== undefined) onCheckboxClicked();
 
-    if (specimenMutate) {
-      if (ce.target.checked) {
-        specimenMutate.mutate({
-          releaseKey: releaseKey,
-          op: "add",
-          value: [id],
-        });
-      } else {
-        specimenMutate.mutate({
-          op: "remove",
-          releaseKey: releaseKey,
-          value: [id],
-        });
-      }
+    if (ce.target.checked) {
+      specimenMutate.mutate({
+        releaseKey: releaseKey,
+        op: "add",
+        value: [id],
+      });
+    } else {
+      specimenMutate.mutate({
+        op: "remove",
+        releaseKey: releaseKey,
+        value: [id],
+      });
     }
   };
 

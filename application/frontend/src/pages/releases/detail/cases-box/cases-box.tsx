@@ -80,8 +80,6 @@ export const CasesBox: React.FC<Props> = ({
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
     useState<boolean>(true);
 
-  // const [isLoading, setIsLoading] = useState<boolean>(false);
-
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -92,7 +90,6 @@ export const CasesBox: React.FC<Props> = ({
   const [searchText, setSearchText] = useState("");
 
   const onSearchTextChange = (text: string) => {
-    // setIsLoading(true);
     setCurrentPage(1);
     setSearchText(text);
   };
@@ -115,12 +112,16 @@ export const CasesBox: React.FC<Props> = ({
     }
   );
 
-  const casesData = casesQuery.data?.data;
+  const casesQueryData = casesQuery.data?.data;
 
-  const queryClient = useQueryClient();
+  const trpcUtils = trpc.useContext();
 
   const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
-    onSuccess: async () => await queryClient.invalidateQueries(),
+    onSuccess: async () =>
+      // once we've altered the selection set we want to invalidate this releases cases queries
+      await trpcUtils.release.getReleaseCases.invalidate({
+        releaseKey: releaseKey,
+      }),
   });
 
   const onSelectAllChange = async (ce: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,7 +142,7 @@ export const CasesBox: React.FC<Props> = ({
     }
   };
 
-  const rowSpans = casesData ? calculateRowSpans(casesData) : [];
+  const rowSpans = casesQueryData ? calculateRowSpans(casesQueryData) : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
@@ -198,8 +199,8 @@ export const CasesBox: React.FC<Props> = ({
                 Loading...
               </div>
             )}
-            {casesData &&
-              casesData.length === 0 &&
+            {casesQueryData &&
+              casesQueryData.length === 0 &&
               !makeUseableSearchText(searchText) && (
                 <div className={classNames(baseMessageDivClasses)}>
                   <p>
@@ -207,8 +208,8 @@ export const CasesBox: React.FC<Props> = ({
                   </p>
                 </div>
               )}
-            {casesData &&
-              casesData.length === 0 &&
+            {casesQueryData &&
+              casesQueryData.length === 0 &&
               makeUseableSearchText(searchText) && (
                 <div className={classNames(baseMessageDivClasses)}>
                   <p>
@@ -217,7 +218,7 @@ export const CasesBox: React.FC<Props> = ({
                   </p>
                 </div>
               )}
-            {casesData && casesData.length > 0 && (
+            {casesQueryData && casesQueryData.length > 0 && (
               <>
                 <div className={specimenMutate.isLoading ? "opacity-50" : ""}>
                   {isEditable && (
@@ -239,7 +240,7 @@ export const CasesBox: React.FC<Props> = ({
                   )}
                   <Table
                     additionalTableClassName="text-left text-sm text-gray-500"
-                    tableBody={casesData.map((row, rowIndex) => {
+                    tableBody={casesQueryData.map((row, rowIndex) => {
                       return (
                         <tr key={row.id} className="border-b">
                           <td
@@ -282,7 +283,6 @@ export const CasesBox: React.FC<Props> = ({
                             <PatientsFlexRow
                               releaseKey={releaseKey}
                               releaseIsActivated={releaseIsActivated}
-                              specimenMutate={specimenMutate}
                               patients={row.patients}
                               showCheckboxes={isEditable}
                               onCheckboxClicked={() =>
