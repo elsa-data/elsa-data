@@ -34,7 +34,8 @@ export const ReleasesDetailSubPage: React.FC = () => {
       <CasesBox
         releaseKey={releaseKey}
         datasetMap={releaseData.datasetMap}
-        isEditable={releaseData.permissionEditSelections || false}
+        isAllowEdit={releaseData.permissionEditSelections ?? false}
+        isAllowView={releaseData.permissionViewSelections ?? false}
         pageSize={pageSize}
         releaseIsActivated={releaseIsActivated}
         showConsent={features.has(FEATURE_RELEASE_CONSENT_DISPLAY)}
@@ -44,7 +45,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         <FurtherRestrictionsBox
           releaseKey={releaseKey}
           releaseData={releaseData}
-          isAllowEdit={releaseData.permissionEditSelections || false}
+          isAllowEdit={releaseData.permissionEditSelections ?? false}
         />
       )}
 
@@ -52,7 +53,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         <SharerControlBox
           releaseKey={releaseKey}
           releaseData={releaseData}
-          isAllowEdit={releaseData.permissionEditSelections || false}
+          isAllowEdit={releaseData.permissionEditSelections ?? false}
         />
       )}
 
