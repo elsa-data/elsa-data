@@ -108,6 +108,9 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
     fetchConsent();
   }, [duosCode]);
 
+  if (consentQuery.isLoading)
+    return <span className="loading loading-spinner" />;
+
   return (
     <div className="space-y-4">
       {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
