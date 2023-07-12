@@ -1,9 +1,9 @@
-import React, { SyntheticEvent, useState } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileContract } from "@fortawesome/free-solid-svg-icons";
 
 import ConsentSummary from "./consent-summary";
-import { ToolTip } from "../../../../components/tooltip";
+import classNames from "classnames";
 
 type Props = {
   releaseKey?: string;
@@ -21,25 +21,33 @@ type Props = {
  */
 export const ConsentPopup: React.FC<Props> = (props) => {
   const [isConsentHover, setIsConsentHover] = useState(false);
+  const [isFetchConsent, setIsFetchConsent] = useState(false);
 
   return (
-    <div className="dropdown-hover dropdown">
-      <label
-        tabIndex={0}
-        onMouseOver={() => {
-          setIsConsentHover(true);
-        }}
-        onMouseOut={() => {
-          setIsConsentHover(false);
-        }}
-      >
+    <div
+      className="dropdown-hover dropdown"
+      onMouseOver={() => {
+        setIsConsentHover(true);
+        setIsFetchConsent(true);
+      }}
+      onMouseOut={() => {
+        setIsConsentHover(false);
+      }}
+    >
+      <label tabIndex={0}>
         <FontAwesomeIcon className={`cursor-pointer`} icon={faFileContract} />
       </label>
       <ul
         tabIndex={0}
-        className="dropdown-content !fixed min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg"
+        // className="dropdown-content min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg block"
+        className={classNames(
+          "dropdown-content block min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg",
+          {
+            hidden: !isConsentHover,
+          }
+        )}
       >
-        {isConsentHover && <ConsentSummary {...props} />}
+        {isFetchConsent && <ConsentSummary {...props} />}
       </ul>
     </div>
   );
