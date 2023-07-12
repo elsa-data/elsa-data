@@ -6,7 +6,8 @@ html
             |
             | #{notification}
             |
-            | Time
-            | #{time}
-            |
+            if (typeof(time) !== "undefined")
+                | Time
+                | #{time}
+                |
             | - #{fromName}
