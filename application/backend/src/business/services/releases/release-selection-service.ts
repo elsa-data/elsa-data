@@ -9,7 +9,7 @@ import {
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { isObjectLike, isSafeInteger } from "lodash";
+import { isEmpty, isObjectLike, isSafeInteger } from "lodash";
 import {
   createPagedResult,
   PagedResult,
@@ -29,7 +29,10 @@ import {
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
-import { releaseGetSpecimenToDataSetCrossLinks } from "../../../../dbschema/queries";
+import {
+  releaseGetSpecimenToDataSetCrossLinks,
+  releaseSelectionGetCases,
+} from "../../../../dbschema/queries";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
@@ -91,7 +94,17 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     const isAllowedViewAllCases =
       userRole === "Administrator" || userRole === "AdminView";
 
-    const {
+    console.debug(`->${identifierSearchText}<-`);
+
+    const casesResult = await releaseSelectionGetCases(this.edgeDbClient, {
+      releaseKey: releaseKey,
+      query: isEmpty(identifierSearchText) ? undefined : identifierSearchText,
+      isAllowedViewAllCases: isAllowedViewAllCases,
+    });
+
+    console.debug(JSON.stringify(casesResult, null, 2));
+
+    /*const {
       releaseAllDatasetCasesQuery,
       releaseSelectedSpecimensQuery,
       releaseSelectedCasesQuery,
@@ -222,7 +235,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     // single query
     const selectedCountQuery = e.count(releaseSelectedSpecimensQuery);
 
-    const selectedCount = await selectedCountQuery.run(this.edgeDbClient);
+    const selectedCount = await selectedCountQuery.run(this.edgeDbClient); */
 
     // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
 
@@ -291,16 +304,17 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     };
 
     const paged = createPagedResult<ReleaseCaseType>(
-      pageCases.map((pc) =>
+      casesResult.data.map((pc) =>
         createCaseMap(pc as unknown as dataset.DatasetCase)
       ),
-      countCases
+      casesResult.total
     );
 
     // extend our paged result with some extra information
     return {
       ...paged,
-      totalSelectedSpecimens: selectedCount,
+      totalSelectedSpecimens: casesResult.totalSelectedSpecimens,
+      totalSpecimens: casesResult.totalSpecimens,
     };
   }
 

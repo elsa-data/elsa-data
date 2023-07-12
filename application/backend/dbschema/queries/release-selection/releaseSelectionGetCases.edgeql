@@ -25,20 +25,21 @@ with
           isSelected := .id in release.selectedSpecimens.id
         } filter (isAllowedViewAllCases OR
                .id in release.selectedSpecimens.id)
-      } filter (isAllowedViewAllCases OR
-               .specimens in release.selectedSpecimens)
+      } filter (isAllowedViewAllCases OR .specimens in release.selectedSpecimens)
     }
     filter
-            ( not exists(<optional str>$q) OR  contains ( {
-                str_upper(array_unpack(.externalIdentifiers).value),
-                str_upper(array_unpack(.patients.externalIdentifiers).value),
-                str_upper(array_unpack(.patients.specimens.externalIdentifiers).value)
-
-              } , <optional str>$q) )
+            .dataset in datasets
             AND
-            .dataset in datasets AND
-             (isAllowedViewAllCases OR
-              .patients.specimens in release.selectedSpecimens)
+            (isAllowedViewAllCases OR .patients.specimens in release.selectedSpecimens)
+            AND
+            (
+              # if we are doing a text search and we want to find those identifiers
+              # else our IN query will fail when $query is not present - and that means we want just want it succeed
+              (<optional str>$query IN
+                 (array_unpack(.externalIdentifiers).value union
+                 array_unpack(.patients.externalIdentifiers).value union
+                 array_unpack(.patients.specimens.externalIdentifiers).value)) ?? true
+            )
   ),
 
 select {
@@ -46,7 +47,7 @@ select {
   totalSelectedSpecimens := count(release.selectedSpecimens),
   totalSpecimens := count(cases.patients.specimens),
   data := (
-      select (cases) {
+      select cases {
         *,
         patients: { *, specimens: { * }},
         dataset: { * }
