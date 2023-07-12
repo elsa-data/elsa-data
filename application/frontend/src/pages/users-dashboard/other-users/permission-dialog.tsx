@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
 import {
-  UserPermissionType,
-  UserSummaryType,
-} from "@umccr/elsa-types/schemas-users";
-import { ALLOWED_CHANGE_USER_PERMISSION } from "@umccr/elsa-constants";
+  ALLOWED_CHANGE_USER_PERMISSION,
+  ALLOWED_CREATE_NEW_RELEASE,
+  ALLOWED_DATASET_UPDATE,
+  ALLOWED_OVERALL_ADMIN_VIEW,
+} from "@umccr/elsa-constants";
 import {
   EagerErrorBoundary,
   ErrorBoundary,
@@ -21,7 +23,7 @@ import { useUiAllowed } from "../../../hooks/ui-allowed";
 import { useQueryClient } from "@tanstack/react-query";
 import _ from "lodash";
 import { Alert } from "../../../components/alert";
-import classNames from "classnames";
+import { decodeAllowedDescription } from "../users-dashboard-page";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -47,21 +49,21 @@ const permissionOptionProperties: {
   description?: string;
 }[] = [
   {
-    title: "Allow user to create and become a release administrator.",
+    title: decodeAllowedDescription(ALLOWED_CREATE_NEW_RELEASE),
     key: "isAllowedCreateRelease",
   },
   {
-    title: "Allow user to update/refresh dataset index.",
+    title: decodeAllowedDescription(ALLOWED_DATASET_UPDATE),
     key: "isAllowedRefreshDatasetIndex",
   },
   {
-    title: "Allow user to view as an app administrator.",
+    title: decodeAllowedDescription(ALLOWED_OVERALL_ADMIN_VIEW),
     description:
       "Will be able to view all Datasets, Releases, and Audit Events.",
     key: "isAllowedOverallAdministratorView",
   },
   {
-    title: "Allow user to change other user's permissions.",
+    title: decodeAllowedDescription(ALLOWED_CHANGE_USER_PERMISSION),
     description: "It can only be modified within the app configuration.",
     key: "isAllowedChangeUserPermission",
     disabled: true,
