@@ -4,8 +4,9 @@ html
         p
             | Hi #{name},
             |
-            | #{notification}
-            |
+            block notification
+                | #{notification}
+                |
             if (typeof(time) !== "undefined")
                 | Time
                 | #{time}
