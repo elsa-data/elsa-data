@@ -4,7 +4,7 @@ import classNames from "classnames";
 export type ToolTipProps = {
   trigger: ReactNode;
   applyCSS?: string;
-  description: ReactNode;
+  description: string;
 };
 
 /**
