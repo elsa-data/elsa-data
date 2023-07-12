@@ -9,6 +9,10 @@ import {
 } from "@umccr/elsa-types/schemas-users";
 import { useCookies } from "react-cookie";
 import {
+  ALLOWED_CHANGE_USER_PERMISSION,
+  ALLOWED_CREATE_NEW_RELEASE,
+  ALLOWED_DATASET_UPDATE,
+  ALLOWED_OVERALL_ADMIN_VIEW,
   USER_NAME_COOKIE_NAME,
   USER_SUBJECT_COOKIE_NAME,
 } from "@umccr/elsa-constants";
@@ -24,6 +28,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../../../components/tables";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
+import { ToolTip } from "../../../components/tooltip";
+import { decodeAllowedDescription } from "../users-dashboard-page";
 
 const permissionIconProperties: {
   key: UserPermissionType;
@@ -31,24 +37,24 @@ const permissionIconProperties: {
   icon: JSX.Element;
 }[] = [
   {
-    title: "Allow user to create and become a release administrator.",
-    key: "isAllowedCreateRelease",
-    icon: <FontAwesomeIcon icon={faFolderPlus} />,
+    title: decodeAllowedDescription(ALLOWED_CHANGE_USER_PERMISSION),
+    key: "isAllowedChangeUserPermission",
+    icon: <FontAwesomeIcon icon={faUsersGear} />,
   },
   {
-    title: "Allow user to update/refresh dataset index.",
-    key: "isAllowedRefreshDatasetIndex",
-    icon: <FontAwesomeIcon icon={faArrowsRotate} />,
-  },
-  {
-    title: "Allow user to view as an app administrator.",
+    title: decodeAllowedDescription(ALLOWED_OVERALL_ADMIN_VIEW),
     key: "isAllowedOverallAdministratorView",
     icon: <FontAwesomeIcon icon={faUsersViewfinder} />,
   },
   {
-    title: "Allow user to change other user's permissions.",
-    key: "isAllowedChangeUserPermission",
-    icon: <FontAwesomeIcon icon={faUsersGear} />,
+    title: decodeAllowedDescription(ALLOWED_DATASET_UPDATE),
+    key: "isAllowedRefreshDatasetIndex",
+    icon: <FontAwesomeIcon icon={faArrowsRotate} />,
+  },
+  {
+    title: decodeAllowedDescription(ALLOWED_CREATE_NEW_RELEASE),
+    key: "isAllowedCreateRelease",
+    icon: <FontAwesomeIcon icon={faFolderPlus} />,
   },
 ];
 
@@ -162,9 +168,12 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
             {permissionIconProperties.map((prop) => (
               <React.Fragment key={prop.key}>
                 {row[prop.key] && (
-                  <span key={prop.key} className="mx-1" title={prop.title}>
-                    {prop.icon}
-                  </span>
+                  <ToolTip
+                    key={prop.key}
+                    applyCSS={"tooltip-left mx-1"}
+                    trigger={prop.icon}
+                    description={prop.title}
+                  />
                 )}
               </React.Fragment>
             ))}
