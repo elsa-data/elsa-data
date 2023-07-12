@@ -1,6 +1,5 @@
 import React, { ReactNode, useState } from "react";
 import { ReleaseCaseType } from "@umccr/elsa-types";
-import { useQueryClient } from "@tanstack/react-query";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
@@ -73,6 +72,26 @@ function calculateRowSpans(cases: ReleaseCaseType[]) {
   return rowSpans;
 }
 
+/**
+ * The cases box is the primary display/editor for which cases/patients and specimens are
+ * contained in a release.
+ *
+ * It has multiple levels of functionality depending on the user and other factors
+ * - editing selections
+ * - viewing cases
+ * - searching for cases
+ *
+ * All in all - it's a bit complex!
+ *
+ * @param releaseKey the release key
+ * @param releaseIsActivated whether the release is activated (i.e. locked)
+ * @param datasetMap a map of datasets URIs to icons
+ * @param pageSize the page size of the table
+ * @param isAllowEdit if the user is allowed to edit the specimens included
+ * @param isAllowAdminView if the user is allowed an administrator read-only view of these cases
+ * @param showConsent whether consent feature is enabled at all - if not enabled don't do _any_ consent UI
+ * @constructor
+ */
 export const CasesBox: React.FC<Props> = ({
   releaseKey,
   releaseIsActivated,
@@ -83,14 +102,20 @@ export const CasesBox: React.FC<Props> = ({
   showConsent,
 }) => {
   // a quasi state for just the UI that tracks if we think the entire set is checked or unchecked
-  // (basically we are guessing it is indeterminate unless we get a strong signal via button press
-  // that everything is cleared or set)
+  // (basically we are guessing it is indeterminate after any selection activity - unless
+  // we get a strong signal via button press that everything is cleared or set)
   const [isSelectAllIndeterminate, setIsSelectAllIndeterminate] =
     useState<boolean>(true);
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
+  const [currentTotalCases, setCurrentTotalCases] = useState<number>(1);
+
+  // just a helper for the UI which we get from our cases query as a bonus
+  // TODO get from the backend the currentTotalSpecimens - and then use
+  //      that to derive real select all/unselect all state rather than the pseudo SelectAllIndeterminate
+  const [currentSelectedSpecimens, setCurrentSelectedSpecimens] =
+    useState<number>(0);
 
   // a text input which changes the behaviour of the control to being a search result
   const [searchText, setSearchText] = useState("");
@@ -103,11 +128,6 @@ export const CasesBox: React.FC<Props> = ({
     setSearchText(text);
   };
 
-  const makeUseableSearchText = (t: string | undefined) => {
-    if (checkUseableSearchText(t)) return trim(t);
-    else return undefined;
-  };
-
   const casesQuery = trpc.release.getReleaseCases.useQuery(
     {
       releaseKey: releaseKey,
@@ -116,7 +136,8 @@ export const CasesBox: React.FC<Props> = ({
     },
     {
       onSuccess: (res) => {
-        setCurrentTotal(res.total);
+        setCurrentTotalCases(res.total);
+        setCurrentSelectedSpecimens(res.totalSelectedSpecimens);
       },
     }
   );
@@ -127,7 +148,7 @@ export const CasesBox: React.FC<Props> = ({
 
   const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
     onSuccess: async () =>
-      // once we've altered the selection set we want to invalidate this releases cases queries
+      // once we've altered the selection set we want to invalidate the cases queries *just* of this release
       await trpcUtils.release.getReleaseCases.invalidate({
         releaseKey: releaseKey,
       }),
@@ -140,35 +161,20 @@ export const CasesBox: React.FC<Props> = ({
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "add",
+        // note that this empty array is a special marker to indicate to "select all"
         value: [],
       });
     } else {
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "remove",
+        // note that this empty array is a special marker to indicate to "unselect all"
         value: [],
       });
     }
   };
 
-  let casesCount = 0,
-    specimensCount = 0;
-
-  if (casesQueryData) {
-    casesQueryData.forEach((c) => {
-      if (c.nodeStatus !== "unselected") {
-        casesCount++;
-        c.patients.forEach((p) => {
-          if (p.nodeStatus !== "unselected") {
-            p.specimens.forEach((s) => {
-              if (s.nodeStatus === "selected") specimensCount++;
-            });
-          }
-        });
-      }
-    });
-  }
-
+  // row spans help us with our UI column that displays the 'dataset' icon for each case
   const rowSpans = casesQueryData ? calculateRowSpans(casesQueryData) : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
@@ -176,7 +182,7 @@ export const CasesBox: React.FC<Props> = ({
   const baseMessageDivClasses =
     "min-h-[10em] w-full flex items-center justify-center";
 
-  // if they cannot edit cases AND the release is not activated then effectively there is nothing
+  // if they cannot edit/admin view cases AND the release is not activated then effectively there is nothing
   // they can do yet... so we give them some instructions informing them of that
   if (!releaseIsActivated && !isAllowEdit && !isAllowAdminView)
     return (
@@ -208,7 +214,7 @@ export const CasesBox: React.FC<Props> = ({
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
-          rowCount={currentTotal}
+          rowCount={currentTotalCases}
           rowsPerPage={pageSize}
           rowWord="cases"
           currentSearchText={searchText}
@@ -325,40 +331,43 @@ export const CasesBox: React.FC<Props> = ({
                     );
                   })}
                 />
-                {/* a status line here provides some
-                      select all/none + a status line
-                      this does not apply during a text search as all/none/stats
-                      don't have the same meaning when the result is filtered by a text box
+                {/* a status line here provides some select all/none + a status line
+                      - this does not apply during a text search as all/none/stats
+                        don't have the same meaning when the result is filtered by a text box
+                      - if you are just a member/manager then there is no distinction between "selected"
+                        and what you can see - so the status line is not helpful - so we don't show at all  
                       */}
-                {isAllowEdit && !isUseableSearchText && (
+                {!isUseableSearchText && (isAllowEdit || isAllowAdminView) && (
                   <div className="flex flex-row justify-between border-t-2 py-4">
-                    <label className="flex items-center">
-                      <div className="flex w-12 items-center justify-center">
-                        <IndeterminateCheckbox
-                          className="checkbox-accent"
-                          disabled={
-                            specimenMutate.isLoading || releaseIsActivated
-                          }
-                          indeterminate={isSelectAllIndeterminate}
-                          onChange={onSelectAllChange}
-                        />
-                      </div>
-                      Select All
-                    </label>
+                    {
+                      <label className="flex items-center">
+                        <div className="flex w-12 items-center justify-center">
+                          <IndeterminateCheckbox
+                            className="checkbox-accent"
+                            // we _can_ be showing this just with admin view permissions
+                            // so we need to disable unless we are allowed to edit
+                            disabled={
+                              specimenMutate.isLoading ||
+                              releaseIsActivated ||
+                              !isAllowEdit
+                            }
+                            indeterminate={isSelectAllIndeterminate}
+                            onChange={onSelectAllChange}
+                          />
+                        </div>
+                        Select All
+                      </label>
+                    }
+                    {/* experimental fetching loader - only enable if still hunting load bugs
                     <span>
                       {casesQuery.isFetching && <IsLoadingDivIcon size="xs" />}
                     </span>
-                    {casesCount === 0 && (
-                      <span>0 cases/specimens selected</span>
-                    )}
-                    {casesCount > 0 && (
-                      <span>
-                        {" "}
-                        {casesCount} case{casesCount > 1 && "s"} with{" "}
-                        {specimensCount} specimen{specimensCount > 1 && "s"} in
-                        total selected
-                      </span>
-                    )}
+                    */}
+                    {/* status span */}
+                    <span>
+                      {currentSelectedSpecimens} specimen
+                      {currentSelectedSpecimens !== 1 && "s"} in total selected
+                    </span>
                   </div>
                 )}
               </div>

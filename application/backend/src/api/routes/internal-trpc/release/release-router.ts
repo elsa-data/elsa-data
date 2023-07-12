@@ -66,22 +66,13 @@ export const releaseRouter = router({
       const { user, pageSize } = ctx;
       const { releaseKey, page, q } = input;
 
-      const pagedResult = await ctx.releaseSelectionService.getCases(
+      return await ctx.releaseSelectionService.getCases(
         user,
         releaseKey,
         pageSize,
         calculateOffset(page, pageSize),
         q
       );
-
-      // unlike our normal paged results - we are also going to send down some extra summary
-      // information for display
-      //  so we will create a type for that on the fly
-      const pagedResultPlus: PagedResult<ReleaseCaseType> & {
-        totalBytes: number;
-      } = { totalBytes: 0, ...pagedResult };
-
-      return pagedResultPlus;
     }),
   updateReleaseSpecimens: internalProcedure
     .input(specimensMutateSchema)

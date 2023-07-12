@@ -204,9 +204,10 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       return {
         data: [],
         total: 0,
+        totalSelectedSpecimens: 0,
       };
 
-    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
+    // count the total for our paging support
 
     const caseCountQuery = e.count(
       e.select(e.dataset.DatasetCase, (dsc) => ({
@@ -215,6 +216,15 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     );
 
     const countCases = await caseCountQuery.run(this.edgeDbClient);
+
+    // count the number selected for use in the UI
+    // once we move the above queries into EdgeQl we should be able to do all of this in one
+    // single query
+    const selectedCountQuery = e.count(releaseSelectedSpecimensQuery);
+
+    const selectedCount = await selectedCountQuery.run(this.edgeDbClient);
+
+    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
 
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
@@ -280,12 +290,18 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       };
     };
 
-    return createPagedResult(
+    const paged = createPagedResult<ReleaseCaseType>(
       pageCases.map((pc) =>
         createCaseMap(pc as unknown as dataset.DatasetCase)
       ),
       countCases
     );
+
+    // extend our paged result with some extra information
+    return {
+      ...paged,
+      totalSelectedSpecimens: selectedCount,
+    };
   }
 
   /**
