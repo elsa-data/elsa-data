@@ -32,7 +32,7 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
       // whenever we do a patch mutations of our release we need to invalidate our trpc state
       // to force a refresh
       onSuccess: async (result: ReleaseTypeLocal) => {
-        await utils.releaseRouter.getSpecificRelease.invalidate();
+        await utils.release.getSpecificRelease.invalidate();
       },
       onError: (e) => {
         console.log(e);

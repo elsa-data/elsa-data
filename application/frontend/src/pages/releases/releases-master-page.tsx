@@ -44,7 +44,7 @@ export const ReleasesMasterPage: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const releaseQuery = trpc.releaseRouter.getSpecificRelease.useQuery(
+  const releaseQuery = trpc.release.getSpecificRelease.useQuery(
     { releaseKey },
     {
       onError: (error: any) => setError({ error, isSuccess: false }),

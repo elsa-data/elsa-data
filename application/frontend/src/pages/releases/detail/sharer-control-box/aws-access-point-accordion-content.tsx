@@ -27,7 +27,7 @@ export const AwsAccessPointAccordionContent: React.FC<
   const utils = trpc.useContext();
 
   const onSuccess = async () => {
-    await utils.releaseRouter.getSpecificRelease.invalidate({
+    await utils.release.getSpecificRelease.invalidate({
       releaseKey: props.releaseKey,
     });
     // once we have started the copy out and invalidated the release state - our next render
