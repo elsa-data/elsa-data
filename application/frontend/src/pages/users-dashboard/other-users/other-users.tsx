@@ -37,14 +37,9 @@ const permissionIconProperties: {
   icon: JSX.Element;
 }[] = [
   {
-    title: decodeAllowedDescription(ALLOWED_CREATE_NEW_RELEASE),
-    key: "isAllowedCreateRelease",
-    icon: <FontAwesomeIcon icon={faFolderPlus} />,
-  },
-  {
-    title: decodeAllowedDescription(ALLOWED_DATASET_UPDATE),
-    key: "isAllowedRefreshDatasetIndex",
-    icon: <FontAwesomeIcon icon={faArrowsRotate} />,
+    title: decodeAllowedDescription(ALLOWED_CHANGE_USER_PERMISSION),
+    key: "isAllowedChangeUserPermission",
+    icon: <FontAwesomeIcon icon={faUsersGear} />,
   },
   {
     title: decodeAllowedDescription(ALLOWED_OVERALL_ADMIN_VIEW),
@@ -52,9 +47,14 @@ const permissionIconProperties: {
     icon: <FontAwesomeIcon icon={faUsersViewfinder} />,
   },
   {
-    title: decodeAllowedDescription(ALLOWED_CHANGE_USER_PERMISSION),
-    key: "isAllowedChangeUserPermission",
-    icon: <FontAwesomeIcon icon={faUsersGear} />,
+    title: decodeAllowedDescription(ALLOWED_DATASET_UPDATE),
+    key: "isAllowedRefreshDatasetIndex",
+    icon: <FontAwesomeIcon icon={faArrowsRotate} />,
+  },
+  {
+    title: decodeAllowedDescription(ALLOWED_CREATE_NEW_RELEASE),
+    key: "isAllowedCreateRelease",
+    icon: <FontAwesomeIcon icon={faFolderPlus} />,
   },
 ];
 
