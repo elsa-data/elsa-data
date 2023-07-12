@@ -21,7 +21,6 @@ type Props = {
  */
 export const ConsentPopup: React.FC<Props> = (props) => {
   const [isConsentHover, setIsConsentHover] = useState(false);
-  console.log("isConsentHover", isConsentHover);
 
   return (
     <div className="dropdown-hover dropdown">
