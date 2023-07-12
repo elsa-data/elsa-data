@@ -58,26 +58,6 @@ export const releaseRoutes = async (
     }
   );
 
-  fastify.get<{
-    Params: { rid: string; nid: string };
-    Reply: DuoLimitationCodedType[];
-  }>("/releases/:rid/consent/:nid", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
-    const nodeId = request.params.nid;
-
-    const r = await releaseSelectionService.getNodeConsent(
-      authenticatedUser,
-      releaseKey,
-      nodeId
-    );
-
-    request.log.debug(r);
-
-    reply.send(r);
-  });
-
   /**
    * The main route for altering fields in a release. Normally the UI component for the
    * field is tied to a mutator which makes the corresponding patch operation.
