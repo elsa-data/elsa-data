@@ -51,7 +51,8 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
       if (errCode === 401) {
         removeCookie(USER_SUBJECT_COOKIE_NAME);
 
-        const errMessage = err?.response?.data?.detail;
+        const errMessage =
+          err?.response?.data?.title ?? err?.response?.data?.detail;
         show({
           description: errMessage,
         });
