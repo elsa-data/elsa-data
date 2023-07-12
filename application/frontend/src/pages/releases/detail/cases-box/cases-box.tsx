@@ -175,6 +175,7 @@ export const CasesBox: React.FC<Props> = ({
     <Box
       heading="Cases"
       applyIsActivatedLockedStyle={isAllowEdit && releaseIsActivated}
+      applyIsDisabledStyle={!isAllowEdit && isAllowAdminView}
     >
       <div className={classNames("flex flex-col")}>
         <BoxPaginator
