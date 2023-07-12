@@ -26,6 +26,7 @@ import { trpcRoutes } from "./api/api-trpc-routes";
 import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
 import * as fs from "fs";
 import * as mime from "mime-types";
+import { getDocumentTitle } from "./helpers/branding";
 
 export class App {
   public readonly server: FastifyInstance;
@@ -303,8 +304,7 @@ export class App {
       dataAttributes = dataAttributes + `\t\t${k}="${escapeHtml(v)}"\n`;
     };
 
-    const brandName = this.settings.branding?.brandName;
-    const documentTitle = brandName ? `Elsa Data – ${brandName}` : "Elsa Data";
+    const documentTitle = getDocumentTitle(this.settings);
 
     // these are env variables set in the solution deployment stack - probably via Cloud Formation parameters but also
     // locally they can be set just by shell env variables

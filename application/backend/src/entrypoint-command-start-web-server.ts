@@ -65,7 +65,7 @@ export async function startWebServer(
   const server = await app.setupServer();
 
   const mailService = dc.resolve(MailService);
-  mailService.setup();
+  await mailService.setup();
 
   const ipLookupService = dc.resolve(IPLookupService);
   await ipLookupService.setup();

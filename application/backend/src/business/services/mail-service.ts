@@ -6,7 +6,7 @@ import Mail from "nodemailer/lib/mailer";
 import { Logger } from "pino";
 import { AuditEventService } from "./audit-event-service";
 import * as edgedb from "edgedb";
-import { MailTransporterUndefined } from "../exceptions/mail";
+import { AwsEnabledService } from "./aws/aws-enabled-service";
 
 @injectable()
 export class MailService {
@@ -18,14 +18,19 @@ export class MailService {
     @inject("SESClient") private readonly ses: aws.SES,
     @inject("Logger") private readonly logger: Logger,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService
+    private readonly auditLogService: AuditEventService,
+    @inject(AwsEnabledService)
+    private readonly awsEnabledService: AwsEnabledService
   ) {}
 
   /**
    * Setup the mail service.
    */
-  public setup() {
-    if (this.settings.mailer?.mode === "SES") {
+  public async setup() {
+    if (
+      this.settings.mailer?.mode === "SES" &&
+      (await this.awsEnabledService.isEnabled())
+    ) {
       this.transporter = createTransport(
         {
           SES: { ses: this.ses, aws },
@@ -79,16 +84,16 @@ export class MailService {
    * Send email.
    */
   public async sendMail(mail: Mail.Options): Promise<any> {
-    if (this.transporter === undefined) {
-      throw new MailTransporterUndefined();
-    }
-
     const tryCount = 3;
     let [result, tried] = [undefined, 0];
     try {
       [result, tried] = await this.retry(
         async () => {
-          return await this.transporter?.sendMail(mail);
+          if (this.transporter === undefined) {
+            return undefined;
+          }
+
+          return await this.transporter.sendMail(mail);
         },
         tryCount,
         "sending mail"
