@@ -115,7 +115,7 @@ export async function bootstrapSettings(
     serviceDiscoveryNamespace:
       _.get(config, "serviceDiscoveryNamespace") ?? "elsa-data",
     httpHosting: _.get(config, "httpHosting"),
-    mailer: config.mailer ? _.get(config, "mailer") : undefined,
+    emailer: config.emailer ? _.get(config, "emailer") : undefined,
     oidc: await oidcConfigurationToSettings(
       isDevelopment || isLocalhost,
       config.oidc

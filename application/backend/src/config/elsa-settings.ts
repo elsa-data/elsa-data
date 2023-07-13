@@ -3,7 +3,7 @@ import { LoggerOptions } from "pino";
 import { DacType } from "./config-schema-dac";
 import { DatasetType } from "./config-schema-dataset";
 import { SharerType } from "./config-schema-sharer";
-import { MailerType } from "./config-schema-mailer";
+import { EmailerType } from "./config-schema-emailer";
 import { BrandingType } from "./config-schema-branding";
 import { OidcType } from "./config-schema-oidc";
 import { HttpHostingType } from "./config-schema-http-hosting";
@@ -86,7 +86,7 @@ export type ElsaSettings = {
 
   sharers: SharerType[];
 
-  mailer?: MailerType;
+  emailer?: EmailerType;
 
   branding?: BrandingType & { logoUriRelative?: string };
 

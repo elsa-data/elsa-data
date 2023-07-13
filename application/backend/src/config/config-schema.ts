@@ -3,7 +3,7 @@ import { Sensitive } from "./config-schema-sensitive";
 import { DacSchema } from "./config-schema-dac";
 import { DatasetSchema } from "./config-schema-dataset";
 import { SharerSchema } from "./config-schema-sharer";
-import { MailerSchema } from "./config-schema-mailer";
+import { EmailerSchema } from "./config-schema-emailer";
 import { BrandingSchema } from "./config-schema-branding";
 import { OidcSchema } from "./config-schema-oidc";
 import { HttpHostingSchema } from "./config-schema-http-hosting";
@@ -122,7 +122,7 @@ export const configZodDefinition = z.object({
       "An array defining the sharing mechanisms which are to be enabled from this instance"
     ),
   // if present, a mailer is being configured and if not present, then the mailer does not start
-  mailer: z.optional(MailerSchema),
+  emailer: z.optional(EmailerSchema),
   ipLookup: z.optional(
     z.object({
       maxMindDbPath: z

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const MailerCommon = {
+const EmailerCommon = {
   from: z
     .string()
     .describe(
@@ -9,6 +9,7 @@ const MailerCommon = {
     ),
   templateDictionary: z
     .record(z.string())
+    .default({})
     .describe(
       "A dictionary of template values that will be replaced in the pug email templates. This will override" +
         "the default values passed to locals object in the email template, or add new values if the different templates are used."
@@ -21,7 +22,7 @@ const MailerCommon = {
     ),
 };
 
-const MailerSES = z.object({
+const EmailerSES = z.object({
   mode: z.literal("SES"),
   maxConnections: z
     .optional(z.number().positive().int())
@@ -29,10 +30,10 @@ const MailerSES = z.object({
   sendingRate: z
     .optional(z.number().positive().int())
     .describe("Optional number of messages to send when using SES"),
-  ...MailerCommon,
+  ...EmailerCommon,
 });
 
-const MailerSMTP = z.object({
+const EmailerSMTP = z.object({
   mode: z.literal("SMTP"),
   options: z
     .any()
@@ -40,12 +41,12 @@ const MailerSMTP = z.object({
       "These are passed to the nodemailer createTransport function using the options property: " +
         "https://nodemailer.com/smtp/#general-options"
     ),
-  ...MailerCommon,
+  ...EmailerCommon,
 });
 
-export const MailerSchema = z.discriminatedUnion("mode", [
-  MailerSES,
-  MailerSMTP,
+export const EmailerSchema = z.discriminatedUnion("mode", [
+  EmailerSES,
+  EmailerSMTP,
 ]);
 
-export type MailerType = z.infer<typeof MailerSchema>;
+export type EmailerType = z.infer<typeof EmailerSchema>;

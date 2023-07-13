@@ -28,21 +28,21 @@ export class EmailService {
    */
   public async setup() {
     if (
-      this.settings.mailer?.mode === "SES" &&
+      this.settings.emailer?.mode === "SES" &&
       (await this.awsEnabledService.isEnabled())
     ) {
       this.transporter = createTransport(
         {
           SES: { ses: this.ses, aws },
-          maxConnections: this.settings.mailer.maxConnections,
-          sendingRate: this.settings.mailer.sendingRate,
+          maxConnections: this.settings.emailer.maxConnections,
+          sendingRate: this.settings.emailer.sendingRate,
         },
-        this.settings.mailer.defaults
+        this.settings.emailer.defaults
       );
-    } else if (this.settings.mailer?.mode === "SMTP") {
+    } else if (this.settings.emailer?.mode === "SMTP") {
       this.transporter = createTransport(
-        this.settings.mailer.options,
-        this.settings.mailer.defaults
+        this.settings.emailer.options,
+        this.settings.emailer.defaults
       );
     }
 
@@ -88,10 +88,10 @@ export class EmailService {
   public mergeLocals(locals?: Record<string, string>): Record<string, string> {
     const localsReturned = locals !== undefined ? locals : {};
 
-    if (this.settings.mailer?.templateDictionary !== undefined) {
+    if (this.settings.emailer?.templateDictionary !== undefined) {
       return Object.assign(
         localsReturned,
-        this.settings.mailer.templateDictionary
+        this.settings.emailer.templateDictionary
       );
     } else {
       return localsReturned;
@@ -109,7 +109,7 @@ export class EmailService {
     to: string,
     locals?: Record<string, string>
   ) {
-    if (this.settings.mailer?.from === undefined) {
+    if (this.settings.emailer?.from === undefined) {
       return;
     }
 
@@ -130,7 +130,7 @@ export class EmailService {
           locals: this.mergeLocals(locals),
         });
       },
-      this.settings.mailer.from,
+      this.settings.emailer.from,
       to
     );
   }

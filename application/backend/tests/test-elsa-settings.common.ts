@@ -36,7 +36,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       secret: "XYZ Is the Text That is A certain length" as any, // pragma: allowlist secret
     },
   },
-  mailer: undefined,
+  emailer: undefined,
   sharers: [
     {
       id: "htsget-umccr",
