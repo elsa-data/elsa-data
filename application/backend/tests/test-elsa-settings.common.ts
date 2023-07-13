@@ -139,6 +139,8 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     sourceFrontEndDirect: false,
     allowTestRoutes: true,
     allowTestUsers: true,
+    mockAwsCloud: false,
+    sendEmails: false,
   },
   releaseKeyPrefix: "R",
 });

@@ -163,13 +163,7 @@ export async function bootstrapSettings(
       uri: "http://snomed.info/sct",
       oid: "2.16.840.1.113883.6.96",
     },
-    devTesting: isDevelopment
-      ? {
-          allowTestUsers: true,
-          allowTestRoutes: true,
-          sourceFrontEndDirect: true,
-        }
-      : undefined,
+    devTesting: isDevelopment ? _.get(config, "devTesting") : undefined,
     ipLookup: _.get(config, "ipLookup.maxMindDbPath")
       ? {
           maxMindDbPath: _.get(config, "ipLookup.maxMindDbPath"),

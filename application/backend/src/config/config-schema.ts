@@ -9,6 +9,7 @@ import { OidcSchema } from "./config-schema-oidc";
 import { HttpHostingSchema } from "./config-schema-http-hosting";
 import { FeatureSchema } from "./config-schema-feature";
 import { DataEgressConfigSchema } from "./config-schema-data-egress";
+import { DevTestingSchema } from "./config-schema-dev";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
@@ -132,21 +133,7 @@ export const configZodDefinition = z.object({
         ),
     })
   ),
-  devTesting: z.optional(
-    z.object({
-      allowTestUsers: z
-        .boolean()
-        .describe(
-          "If test users should be allowed, including various techniques used to adjust user sessions"
-        ),
-      allowTestRoutes: z.boolean().describe("If test routes should be added"),
-      mockAwsCloud: z
-        .boolean()
-        .describe(
-          "If we should replace the AWS cloud clients with ones that always returns mock values"
-        ),
-    })
-  ),
+  devTesting: DevTestingSchema,
   branding: z.optional(BrandingSchema),
 });
 

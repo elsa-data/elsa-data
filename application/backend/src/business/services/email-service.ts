@@ -119,6 +119,7 @@ export class EmailService {
           message: {
             from,
           },
+          send: this.settings.devTesting?.sendEmails,
           transport: transport,
         });
 
@@ -147,6 +148,7 @@ export class EmailService {
     from: string,
     to: string
   ): Promise<any> {
+    // Not sure that there's much point trying to send an email more than once, but I could be wrong.
     const tryCount = 1;
     let [result, tried] = [undefined, 0];
     try {

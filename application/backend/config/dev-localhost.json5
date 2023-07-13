@@ -68,8 +68,9 @@
     // we have a permanent tmp bucket with a generous expiry lifespan shared for localhost dev
     tempBucket: "elsa-data-tmp",
   },
-  mailer: {
+  emailer: {
     mode: "SES",
+    from: "Elsa Data <no-reply@umccr.org>",
   },
   "+superAdmins": [
     {
@@ -80,5 +81,6 @@
     allowTestUsers: true,
     allowTestRoutes: true,
     mockAwsCloud: true,
+    sendEmails: false,
   },
 }

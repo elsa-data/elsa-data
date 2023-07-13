@@ -9,6 +9,7 @@ import { OidcType } from "./config-schema-oidc";
 import { HttpHostingType } from "./config-schema-http-hosting";
 import { FeatureType } from "./config-schema-feature";
 import { DataEgressConfigType } from "./config-schema-data-egress";
+import { DevTestingType } from "./config-schema-dev";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -66,14 +67,7 @@ export type ElsaSettings = {
   // dev/testing settings that can be specified as long as the NODE_ENV is development
   // if NODE_ENV is production then this the presence of any configuration leading to this
   // will fail to launch
-  devTesting?: {
-    // whether to source the frontend build direct from the dev build location
-    sourceFrontEndDirect: boolean;
-
-    allowTestUsers: boolean;
-
-    allowTestRoutes: boolean;
-  };
+  devTesting?: DevTestingType;
 
   // pass through directly from configuration - eventually we want to pass everything through
   // directly and essentially remove ElsaSettings as a type
