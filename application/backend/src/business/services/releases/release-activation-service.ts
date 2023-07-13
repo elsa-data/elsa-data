@@ -18,6 +18,7 @@ import { Logger } from "pino";
 import { ManifestService } from "../manifests/manifest-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { EmailService } from "../email-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -35,7 +36,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
     auditEventTimedService: AuditEventTimedService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(UserService) userService: UserService,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
+    @inject(EmailService) private readonly emailService: EmailService
   ) {
     super(
       settings,
@@ -63,7 +65,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+    await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Activated Release",
@@ -72,7 +74,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
           throw new ReleaseActivationPermissionError(releaseKey);
         }
       },
-      async (tx, a) => {
+      async (tx, _) => {
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
@@ -122,7 +124,16 @@ export class ReleaseActivationService extends ReleaseBaseService {
           manifestCases: casesConstructed,
         };
       },
-      async (a) => {}
+      async (_) => {}
+    );
+
+    // I think emails should be part of a different transaction, but I could be wrong.
+    await this.emailService.sendEmailTemplate(
+      "release/release-activated",
+      user.email,
+      {
+        releaseKey,
+      }
     );
   }
 
@@ -139,7 +150,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+    await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Deactivated release",
@@ -148,7 +159,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
           throw new ReleaseActivationPermissionError(releaseKey);
         }
       },
-      async (tx, a) => {
+      async (tx, _) => {
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
@@ -168,7 +179,16 @@ export class ReleaseActivationService extends ReleaseBaseService {
           }))
           .run(tx);
       },
-      async (a) => {}
+      async (_) => {}
+    );
+
+    // I think emails should be part of a different transaction, but I could be wrong.
+    await this.emailService.sendEmailTemplate(
+      "release/release-deactivated",
+      user.email,
+      {
+        releaseKey,
+      }
     );
   }
 }

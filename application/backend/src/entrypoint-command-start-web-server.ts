@@ -6,7 +6,7 @@ import path from "path";
 import { sleep } from "edgedb/dist/utils";
 import { DatasetService } from "./business/services/dataset-service";
 import { getServices } from "./di-helpers";
-import { MailService } from "./business/services/mail-service";
+import { EmailService } from "./business/services/email-service";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
@@ -64,7 +64,7 @@ export async function startWebServer(
   const app = new App(dc, settings, logger, features);
   const server = await app.setupServer();
 
-  const mailService = dc.resolve(MailService);
+  const mailService = dc.resolve(EmailService);
   await mailService.setup();
 
   const ipLookupService = dc.resolve(IPLookupService);

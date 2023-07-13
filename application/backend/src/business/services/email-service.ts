@@ -2,7 +2,6 @@ import { inject, injectable } from "tsyringe";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
-import Mail from "nodemailer/lib/mailer";
 import { Logger } from "pino";
 import { AuditEventService } from "./audit-event-service";
 import * as edgedb from "edgedb";
@@ -10,7 +9,7 @@ import { AwsEnabledService } from "./aws/aws-enabled-service";
 import Email from "email-templates";
 
 @injectable()
-export class MailService {
+export class EmailService {
   private transporter?: Transporter;
 
   constructor(
@@ -105,7 +104,7 @@ export class MailService {
    * @param locals
    * @param to
    */
-  public async sendMailTemplate(
+  public async sendEmailTemplate(
     template: string,
     to: string,
     locals?: Record<string, string>
@@ -114,7 +113,7 @@ export class MailService {
       return;
     }
 
-    return await this.sendMail(
+    return await this.sendEmail(
       async (transport, from, to) => {
         const email = new Email({
           message: {
@@ -139,7 +138,7 @@ export class MailService {
   /**
    * Send an email with an audit event and retry functionality.
    */
-  public async sendMail(
+  public async sendEmail(
     sendFn: (
       transporter: Transporter,
       from: string,
@@ -148,7 +147,7 @@ export class MailService {
     from: string,
     to: string
   ): Promise<any> {
-    const tryCount = 3;
+    const tryCount = 1;
     let [result, tried] = [undefined, 0];
     try {
       [result, tried] = await this.retry(
