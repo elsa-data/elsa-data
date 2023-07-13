@@ -133,6 +133,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
       user.email,
       {
         releaseKey,
+        name: user.displayName,
+        fromName: this.settings.mailer?.from ?? "",
       }
     );
   }
@@ -188,6 +190,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
       user.email,
       {
         releaseKey,
+        name: user.displayName,
+        fromName: this.settings.mailer?.from ?? "",
       }
     );
   }
