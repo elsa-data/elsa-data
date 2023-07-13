@@ -27,6 +27,10 @@ export class MailService {
    * Setup the mail service.
    */
   public async setup() {
+    if (this.settings.mailer?.from === undefined) {
+      return;
+    }
+
     if (
       this.settings.mailer?.mode === "SES" &&
       (await this.awsEnabledService.isEnabled())

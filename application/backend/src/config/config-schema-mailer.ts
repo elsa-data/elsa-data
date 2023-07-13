@@ -2,9 +2,28 @@ import { z } from "zod";
 
 const MailerCommon = {
   from: z
-    .optional(z.string())
-    .default("no-reply")
-    .describe("What the `from` field will be when sending a system email."),
+    .optional(
+      z
+        .object({
+          domain: z.string().describe("The domain name of the email address."),
+          fromName: z
+            .string()
+            .default("no-reply")
+            .describe("The name of the email address."),
+          displayName: z
+            .string()
+            .default("Elsa Data")
+            .describe("The name that gets displayed before the email address."),
+        })
+        .required()
+    )
+    .describe("Defines the email address that Elsa uses to send emails."),
+  templateDictionary: z
+    .record(z.string())
+    .describe(
+      "A dictionary of template values that will be replaced in the pug email templates. This will override" +
+        "the default values passed to locals object in the email template, or add new values if the different templates are used."
+    ),
   defaults: z
     .optional(z.any())
     .describe(
