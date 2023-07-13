@@ -7,6 +7,7 @@ import { Logger } from "pino";
 import { AuditEventService } from "./audit-event-service";
 import * as edgedb from "edgedb";
 import { AwsEnabledService } from "./aws/aws-enabled-service";
+import Email from "email-templates";
 
 @injectable()
 export class MailService {
@@ -27,10 +28,6 @@ export class MailService {
    * Setup the mail service.
    */
   public async setup() {
-    if (this.settings.mailer?.from === undefined) {
-      return;
-    }
-
     if (
       this.settings.mailer?.mode === "SES" &&
       (await this.awsEnabledService.isEnabled())
@@ -52,7 +49,7 @@ export class MailService {
 
     this.transporter?.verify((error, _) => {
       if (error) {
-        this.logger.error(error, `Failed to setup mail server`);
+        this.logger.error(error, "Failed to setup mail server");
       } else {
         this.logger.info("Mail server ready");
       }
@@ -85,9 +82,72 @@ export class MailService {
   }
 
   /**
-   * Send email.
+   * Merge locals with the template dictionary from settings. Overwrites the defaults
+   * locals with the template dictionary values.
+   * @param locals
    */
-  public async sendMail(mail: Mail.Options): Promise<any> {
+  public mergeLocals(locals?: Record<string, string>): Record<string, string> {
+    const localsReturned = locals !== undefined ? locals : {};
+
+    if (this.settings.mailer?.templateDictionary !== undefined) {
+      return Object.assign(
+        localsReturned,
+        this.settings.mailer.templateDictionary
+      );
+    } else {
+      return localsReturned;
+    }
+  }
+
+  /**
+   * Send an email using a template.
+   * @param template
+   * @param locals
+   * @param to
+   */
+  public async sendMailTemplate(
+    template: string,
+    to: string,
+    locals?: Record<string, string>
+  ) {
+    if (this.settings.mailer?.from === undefined) {
+      return;
+    }
+
+    return await this.sendMail(
+      async (transport, from, to) => {
+        const email = new Email({
+          message: {
+            from,
+          },
+          transport: transport,
+        });
+
+        return await email.send({
+          template: template,
+          message: {
+            to,
+          },
+          locals: this.mergeLocals(locals),
+        });
+      },
+      this.settings.mailer.from,
+      to
+    );
+  }
+
+  /**
+   * Send an email with an audit event and retry functionality.
+   */
+  public async sendMail(
+    sendFn: (
+      transporter: Transporter,
+      from: string,
+      to: string
+    ) => Promise<any>,
+    from: string,
+    to: string
+  ): Promise<any> {
     const tryCount = 3;
     let [result, tried] = [undefined, 0];
     try {
@@ -97,7 +157,7 @@ export class MailService {
             return undefined;
           }
 
-          return await this.transporter.sendMail(mail);
+          return await sendFn(this.transporter, from, to);
         },
         tryCount,
         "sending mail"
@@ -107,8 +167,8 @@ export class MailService {
         "E",
         "Email sent",
         {
-          from: mail.from,
-          to: mail.to,
+          from,
+          to,
           tryCount,
         },
         8,
@@ -120,8 +180,8 @@ export class MailService {
       "E",
       "Email sent",
       {
-        from: mail.from,
-        to: mail.to,
+        from,
+        to,
         tryCount: tried,
       },
       0,

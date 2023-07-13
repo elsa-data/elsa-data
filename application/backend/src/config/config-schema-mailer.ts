@@ -2,22 +2,11 @@ import { z } from "zod";
 
 const MailerCommon = {
   from: z
-    .optional(
-      z
-        .object({
-          domain: z.string().describe("The domain name of the email address."),
-          fromName: z
-            .string()
-            .default("no-reply")
-            .describe("The name of the email address."),
-          displayName: z
-            .string()
-            .default("Elsa Data")
-            .describe("The name that gets displayed before the email address."),
-        })
-        .required()
-    )
-    .describe("Defines the email address that Elsa uses to send emails."),
+    .string()
+    .describe(
+      "Defines the email address that Elsa uses to send emails. Can be formatted with a display name" +
+        'E.g. "Elsa Data" <no-reply@example.com>'
+    ),
   templateDictionary: z
     .record(z.string())
     .describe(
