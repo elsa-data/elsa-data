@@ -13,17 +13,17 @@ export const DevTestingSchema = z.optional(
         .boolean()
         .default(true)
         .describe(
-          "If test users should be allowed, including various techniques used to adjust user sessions"
+          "If test users should be allowed, including various techniques used to adjust user sessions."
         ),
       allowTestRoutes: z
         .boolean()
         .default(true)
-        .describe("If test routes should be added"),
+        .describe("If test routes should be added."),
       mockAwsCloud: z
         .boolean()
         .default(false)
         .describe(
-          "If we should replace the AWS cloud clients with ones that always returns mock values"
+          "If we should replace the AWS cloud clients with ones that always returns mock values."
         ),
       sendEmails: z
         .boolean()
@@ -33,7 +33,7 @@ export const DevTestingSchema = z.optional(
         ),
     })
     .describe(
-      "Sets the dev config options. Should have an effect if `NODE_ENV=development` is also set."
+      "Sets the dev config options. Should only have an effect if `NODE_ENV=development` is also set."
     )
 );
 
