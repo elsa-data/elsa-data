@@ -10,20 +10,13 @@ import { OtherUsers } from "./other-users/other-users";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { PersonalDetailsBox } from "./personal-details-box/personal-details-box";
 
-export function decodeAllowedDescription(allowed: string) {
-  switch (allowed) {
-    case ALLOWED_CHANGE_USER_PERMISSION:
-      return "Allowed to change other user's permission.";
-    case ALLOWED_CREATE_NEW_RELEASE:
-      return "Allowed to create and become a release administrator.";
-    case ALLOWED_OVERALL_ADMIN_VIEW:
-      return "Allowed to view as an app administrator.";
-    case ALLOWED_DATASET_UPDATE:
-      return "Allowed to update/refresh dataset index.";
-    default:
-      return `Unknown 'allowed' code ->${allowed}<-`;
-  }
-}
+export const CHANGE_USER_PERMISSION_DESC =
+  "Allowed to change other user's permission.";
+export const CREATE_NEW_RELEASE_DESC =
+  "Allowed to create and become a release administrator.";
+export const OVERALL_ADMIN_VIEW_DESC =
+  "Allowed to view as an app administrator.";
+export const DATASET_UPDATE_DESC = "Allowed to update/refresh dataset index.";
 
 export const UsersDashboardPage: React.FC = () => {
   const pageSize = usePageSizer();
@@ -40,8 +33,8 @@ export const UsersDashboardPage: React.FC = () => {
 
   return (
     <div className="flex flex-col space-y-4">
-      <PersonalDetailsBox />
-      {canSeeOtherUsers && <OtherUsers pageSize={pageSize} />}
+      {/* <PersonalDetailsBox /> */}
+      {/* {canSeeOtherUsers && <OtherUsers pageSize={pageSize} />} */}
     </div>
   );
 };

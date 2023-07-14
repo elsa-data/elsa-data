@@ -3,11 +3,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCookies } from "react-cookie";
 import { httpBatchLink } from "@trpc/client";
 import { trpc } from "../helpers/trpc";
-import {
-  CSRF_TOKEN_COOKIE_NAME,
-  USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
 import { useShowAlert } from "./show-alert-provider";
+import axios, { AxiosRequestConfig } from "axios";
 
 export const TRPCProvider: React.FC<Props> = (props: Props) => {
   const queryClient = new QueryClient({});
@@ -23,7 +21,7 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
 
           const errCode = res.status;
           if (errCode === 401) {
-            removeCookie(USER_SUBJECT_COOKIE_NAME);
+            removeCookie(CSRF_TOKEN_COOKIE_NAME);
 
             const body = await res?.json();
 
@@ -48,6 +46,42 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
       }),
     ],
   });
+
+  // Removing Cookie when token is no longer valid when using Axios (by 401 Status Code Response).
+  axios.interceptors.response.use(
+    (res) => res,
+    (err) => {
+      const errCode = err?.response?.status;
+      if (errCode === 401) {
+        removeCookie(CSRF_TOKEN_COOKIE_NAME);
+
+        const errMessage =
+          err?.response?.data?.title ?? err?.response?.data?.detail;
+        show({
+          description: errMessage,
+        });
+      }
+
+      return Promise.reject(err);
+    }
+  );
+
+  axios.interceptors.request.use(
+    (config: AxiosRequestConfig) => {
+      // we want to send CSRF token with all our internal API requests
+      if (config.url && config.url.startsWith("/")) {
+        if (config.headers) {
+          config.headers["csrf-token"] = cookies[CSRF_TOKEN_COOKIE_NAME];
+        } else {
+          config["headers"] = { "csrf-token": cookies[CSRF_TOKEN_COOKIE_NAME] };
+        }
+      }
+      return config;
+    },
+    (err) => {
+      return Promise.reject(err);
+    }
+  );
 
   return (
     <>

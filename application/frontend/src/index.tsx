@@ -64,14 +64,14 @@ if (rootElement != null) {
           {/* we use session cookies for auth and use this provider to make them easily available */}
           <CookiesProvider>
             <ShowAlert>
-              <LoggedInUserProvider>
-                <TRPCProvider>
+              <TRPCProvider>
+                <LoggedInUserProvider>
                   {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
                   <LoggedInUserConfigRelayProvider>
                     <IndexRouter features={fea} />
                   </LoggedInUserConfigRelayProvider>
-                </TRPCProvider>
-              </LoggedInUserProvider>
+                </LoggedInUserProvider>
+              </TRPCProvider>
             </ShowAlert>
           </CookiesProvider>
         </EnvRelayProvider>

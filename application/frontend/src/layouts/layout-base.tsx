@@ -12,9 +12,7 @@ type Props = {};
 
 // https://github.com/tailwindtoolbox/Admin-Template-Day
 
-export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
-  children,
-}) => {
+export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
   const [isMenuBarOpen, setIsMenuBarOpen] = useState<boolean>(false);
 
   const navLink = (
@@ -42,10 +40,8 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
     );
   };
 
-  const loggedInUser = useLoggedInUser();
-
+  const userObject = useLoggedInUser();
   const uiAllowed = useUiAllowed();
-
   const envRelay = useEnvRelay();
 
   return (
@@ -87,9 +83,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                   />
                 )}
               </div>
-              {loggedInUser && (
+              {userObject && (
                 <div className="my-1.5">
-                  <LayoutBaseHeaderUser user={loggedInUser} />
+                  <LayoutBaseHeaderUser user={userObject} />
                 </div>
               )}
             </div>
@@ -118,7 +114,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
               }`}
               id="nav-content"
             >
-              {loggedInUser ? (
+              {userObject ? (
                 <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:space-x-12 lg:pb-0">
                   <li className="my-2 md:my-0">
                     {navLink(
@@ -190,9 +186,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = ({
                 />
               </div> */}
             </div>
-            {loggedInUser && (
+            {userObject && (
               <div className="my-1.5 hidden lg:inline-block">
-                <LayoutBaseHeaderUser user={loggedInUser} />
+                <LayoutBaseHeaderUser user={userObject} />
               </div>
             )}
           </div>

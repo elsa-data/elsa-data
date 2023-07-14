@@ -13,7 +13,10 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import { NotAuthorisedEditUserManagement } from "../exceptions/user";
+import {
+  NotAuthorisedEditUserManagement,
+  NotAuthorisedViewUserManagement,
+} from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
   potentialUserGetByEmail,
@@ -60,6 +63,35 @@ export class UserService {
     }
 
     return false;
+  }
+  /**
+   * Get its own authenticated user
+   */
+  public async getOwnUser(user: AuthenticatedUser): Promise<UserSummaryType> {
+    const currentUser = await userGetByDbId(this.edgeDbClient, {
+      dbId: user.dbId,
+    });
+
+    if (!currentUser) throw new NotAuthorisedViewUserManagement();
+
+    return {
+      id: currentUser.id,
+      subjectIdentifier: currentUser.subjectId,
+      email: currentUser.email,
+      displayName: currentUser.displayName,
+      lastLogin: currentUser.lastLoginDateTime,
+
+      // Write Access
+      isAllowedChangeUserPermission: this.isConfiguredSuperAdmin(
+        currentUser.subjectId
+      ),
+      isAllowedRefreshDatasetIndex: currentUser.isAllowedRefreshDatasetIndex,
+      isAllowedCreateRelease: currentUser.isAllowedCreateRelease,
+
+      // Read Access
+      isAllowedOverallAdministratorView:
+        currentUser.isAllowedOverallAdministratorView,
+    };
   }
 
   /**

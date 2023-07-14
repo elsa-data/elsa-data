@@ -8,14 +8,6 @@ import {
   UserSummaryType,
 } from "@umccr/elsa-types/schemas-users";
 import { useCookies } from "react-cookie";
-import {
-  ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASE,
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
-  USER_NAME_COOKIE_NAME,
-  USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-constants";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { PermissionDialog } from "./permission-dialog";
@@ -29,7 +21,12 @@ import {
 import { Table } from "../../../components/tables";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
 import { ToolTip } from "../../../components/tooltip";
-import { decodeAllowedDescription } from "../users-dashboard-page";
+import {
+  CHANGE_USER_PERMISSION_DESC,
+  CREATE_NEW_RELEASE_DESC,
+  DATASET_UPDATE_DESC,
+  OVERALL_ADMIN_VIEW_DESC,
+} from "../users-dashboard-page";
 
 const permissionIconProperties: {
   key: UserPermissionType;
@@ -37,22 +34,22 @@ const permissionIconProperties: {
   icon: JSX.Element;
 }[] = [
   {
-    title: decodeAllowedDescription(ALLOWED_CHANGE_USER_PERMISSION),
+    title: CHANGE_USER_PERMISSION_DESC,
     key: "isAllowedChangeUserPermission",
     icon: <FontAwesomeIcon icon={faUsersGear} />,
   },
   {
-    title: decodeAllowedDescription(ALLOWED_OVERALL_ADMIN_VIEW),
+    title: OVERALL_ADMIN_VIEW_DESC,
     key: "isAllowedOverallAdministratorView",
     icon: <FontAwesomeIcon icon={faUsersViewfinder} />,
   },
   {
-    title: decodeAllowedDescription(ALLOWED_DATASET_UPDATE),
+    title: DATASET_UPDATE_DESC,
     key: "isAllowedRefreshDatasetIndex",
     icon: <FontAwesomeIcon icon={faArrowsRotate} />,
   },
   {
-    title: decodeAllowedDescription(ALLOWED_CREATE_NEW_RELEASE),
+    title: CREATE_NEW_RELEASE_DESC,
     key: "isAllowedCreateRelease",
     icon: <FontAwesomeIcon icon={faFolderPlus} />,
   },
@@ -77,11 +74,6 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   // very briefly whilst the first page is downloaded we estimate that we have only one entry
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const [cookies] = useCookies<any>([
-    USER_SUBJECT_COOKIE_NAME,
-    USER_NAME_COOKIE_NAME,
-  ]);
-
   const usersQuery = trpc.user.getUsers.useQuery(
     {
       page: currentPage,
@@ -96,12 +88,6 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
       },
     }
   );
-
-  const usersWithoutMe = usersQuery?.data?.data
-    ? usersQuery.data.data.filter(
-        (u) => u.subjectIdentifier !== cookies[USER_SUBJECT_COOKIE_NAME]
-      )
-    : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900";
 
@@ -185,7 +171,7 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
   };
 
   return (
-    <Box heading="Other Users">
+    <Box heading="All Users">
       <div className="flex flex-col">
         {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
@@ -193,14 +179,14 @@ export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
           <>
             <Table
               tableHead={createHeaders()}
-              tableBody={createRows(usersWithoutMe)}
+              tableBody={createRows(usersQuery?.data?.data ?? [])}
             />
             <BoxPaginator
               currentPage={currentPage}
               setPage={(n) => setCurrentPage(n)}
-              rowCount={currentTotal - 1}
+              rowCount={currentTotal}
               rowsPerPage={pageSize}
-              rowWord="other users"
+              rowWord="all users"
             />
           </>
         )}

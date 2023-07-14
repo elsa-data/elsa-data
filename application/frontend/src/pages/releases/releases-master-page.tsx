@@ -15,8 +15,8 @@ import {
   Millisecond,
 } from "../../helpers/datetime-helper";
 import { useCookies } from "react-cookie";
-import { USER_SUBJECT_COOKIE_NAME } from "@umccr/elsa-constants";
 import { IsLoadingDiv } from "../../components/is-loading-div";
+import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -28,14 +28,14 @@ export const ReleasesMasterPage: React.FC = () => {
   const REFRESH_JOB_STATUS_MS = 5000;
   const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
+  const user = useLoggedInUser();
+
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
   if (!releaseKey)
     throw new Error(
       `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`
     );
-
-  const [cookies] = useCookies<any>([USER_SUBJECT_COOKIE_NAME]);
 
   const [error, setError] = useState<ErrorState>({
     error: null,
@@ -99,7 +99,7 @@ export const ReleasesMasterPage: React.FC = () => {
         {releaseQuery.isSuccess && (
           <>
             {differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&
-              lastUpdatedSubjectId !== cookies[USER_SUBJECT_COOKIE_NAME] && (
+              lastUpdatedSubjectId !== user?.subjectIdentifier && (
                 <Alert
                   key={`${lastUpdated} ${lastUpdatedSubjectId}`}
                   icon={<TriangleExclamationIcon />}

@@ -37,6 +37,7 @@ import {
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
+import { useEnvRelay } from "./providers/env-relay-provider";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -75,9 +76,9 @@ export function IndexRouter({ features }: IndexRouterProps) {
   const ProtectedRoute: React.FC<{ redirectPath: string }> = ({
     redirectPath,
   }) => {
-    const user = useLoggedInUser();
+    const userObject = useLoggedInUser();
 
-    if (!user) {
+    if (!userObject) {
       return <Navigate to={redirectPath} replace />;
     }
 

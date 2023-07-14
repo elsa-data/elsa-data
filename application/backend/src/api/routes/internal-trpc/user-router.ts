@@ -13,6 +13,10 @@ export const inputChangeUserPermission = z.object({
 });
 
 export const userRouter = router({
+  getOwnUser: internalProcedure.query(async ({ ctx }) => {
+    const { user } = ctx;
+    return await ctx.userService.getOwnUser(user);
+  }),
   getUsers: internalProcedure
     .input(inputPaginationParameter)
     .query(async ({ input, ctx }) => {

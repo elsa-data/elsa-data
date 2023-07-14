@@ -16,8 +16,8 @@ export const LayoutBaseHeaderUser: React.FC<Props> = ({ user }) => {
       heading={
         <>
           <span className="whitespace-nowrap">{user.displayName}</span>
-          {user.displayEmail && (
-            <span className="ml-2 font-mono">{user.displayEmail}</span>
+          {user.displayName && (
+            <span className="ml-2 font-mono">{user.email}</span>
           )}
         </>
       }
