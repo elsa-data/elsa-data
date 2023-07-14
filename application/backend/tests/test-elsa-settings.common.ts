@@ -36,7 +36,14 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       secret: "XYZ Is the Text That is A certain length" as any, // pragma: allowlist secret
     },
   },
-  emailer: undefined,
+  emailer: {
+    mode: "SES",
+    from: {
+      name: "Elsa Data",
+      address: "no-reply@example.com",
+    },
+    templateDictionary: {},
+  },
   sharers: [
     {
       id: "htsget-umccr",
@@ -140,7 +147,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     allowTestRoutes: true,
     allowTestUsers: true,
     mockAwsCloud: false,
-    sendEmails: false,
+    sendEmails: true,
   },
   releaseKeyPrefix: "R",
 });
