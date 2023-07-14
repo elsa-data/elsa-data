@@ -19,6 +19,7 @@ import { ManifestService } from "../manifests/manifest-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { EmailService } from "../email-service";
+import { ReleaseParticipationService } from "./release-participation-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -37,7 +38,9 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(UserService) userService: UserService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient,
-    @inject(EmailService) private readonly emailService: EmailService
+    @inject(EmailService) private readonly emailService: EmailService,
+    @inject(ReleaseParticipationService)
+    private readonly releaseParticipationService: ReleaseParticipationService
   ) {
     super(
       settings,
@@ -48,6 +51,40 @@ export class ReleaseActivationService extends ReleaseBaseService {
       auditEventTimedService,
       cfnClient
     );
+  }
+
+  /**
+   * Emails all participants when the release is activated or deactivated.
+   * @param user
+   * @param releaseKey
+   * @param template
+   */
+  public async emailAllParticipants(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    template: string
+  ) {
+    // I think emails should not be part of the activation/deactivation transaction, but I could be wrong.
+    const participants = await this.releaseParticipationService.getParticipants(
+      user,
+      releaseKey
+    );
+
+    if (participants.data !== undefined) {
+      await Promise.all(
+        participants.data.map(async (participant) => {
+          await this.emailService.sendEmailTemplate(
+            template,
+            participant.email,
+            {
+              releaseKey,
+              name: participant.displayName ?? "",
+              fromName: this.settings.emailer?.from.name ?? "",
+            }
+          );
+        })
+      );
+    }
   }
 
   /**
@@ -127,15 +164,10 @@ export class ReleaseActivationService extends ReleaseBaseService {
       async (_) => {}
     );
 
-    // I think emails should be part of a different transaction, but I could be wrong.
-    await this.emailService.sendEmailTemplate(
-      "release/release-activated",
-      user.email,
-      {
-        releaseKey,
-        name: user.displayName,
-        fromName: this.settings.emailer?.from.name ?? "",
-      }
+    await this.emailAllParticipants(
+      user,
+      releaseKey,
+      "release/release-activated"
     );
   }
 
@@ -184,15 +216,10 @@ export class ReleaseActivationService extends ReleaseBaseService {
       async (_) => {}
     );
 
-    // I think emails should be part of a different transaction, but I could be wrong.
-    await this.emailService.sendEmailTemplate(
-      "release/release-deactivated",
-      user.email,
-      {
-        releaseKey,
-        name: user.displayName,
-        fromName: this.settings.emailer?.from.name ?? "",
-      }
+    await this.emailAllParticipants(
+      user,
+      releaseKey,
+      "release/release-deactivated"
     );
   }
 }
