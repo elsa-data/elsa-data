@@ -70,7 +70,10 @@
   },
   emailer: {
     mode: "SES",
-    from: "Elsa Data <no-reply@umccr.org>",
+    from: {
+      name: "Elsa Data",
+      address: "no-reply@umccr.org",
+    },
   },
   "+superAdmins": [
     {

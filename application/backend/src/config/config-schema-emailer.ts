@@ -2,10 +2,13 @@ import { z } from "zod";
 
 const EmailerCommon = {
   from: z
-    .string()
+    .object({
+      name: z.string().describe("The display name of the from address."),
+      address: z.string().describe("The from email address."),
+    })
+    .required()
     .describe(
-      "Defines the email address that Elsa uses to send emails. Can be formatted with a display name" +
-        'E.g. "Elsa Data" <no-reply@example.com>'
+      "Defines the email address and display name that Elsa uses to send emails."
     ),
   templateDictionary: z
     .record(z.string())

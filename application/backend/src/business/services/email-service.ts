@@ -7,6 +7,7 @@ import { AuditEventService } from "./audit-event-service";
 import * as edgedb from "edgedb";
 import { AwsEnabledService } from "./aws/aws-enabled-service";
 import Email from "email-templates";
+import { Address } from "nodemailer/lib/mailer";
 
 @injectable()
 export class EmailService {
@@ -142,10 +143,10 @@ export class EmailService {
   public async sendEmail(
     sendFn: (
       transporter: Transporter,
-      from: string,
+      from: Address,
       to: string
     ) => Promise<any>,
-    from: string,
+    from: Address,
     to: string
   ): Promise<any> {
     // Not sure that there's much point trying to send an email more than once, but I could be wrong.
