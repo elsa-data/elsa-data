@@ -14,16 +14,6 @@ import { StringUnion } from "./typebox-helpers";
 export const ReleasePatchOperationSchema = Type.Union([
   Type.Object({
     op: Type.Literal("add"),
-    path: Type.Literal("/specimens"),
-    value: Type.Array(Type.String()),
-  }),
-  Type.Object({
-    op: Type.Literal("remove"),
-    path: Type.Literal("/specimens"),
-    value: Type.Array(Type.String()),
-  }),
-  Type.Object({
-    op: Type.Literal("add"),
     path: Type.Literal("/applicationCoded/diseases"),
     value: CodingSchema,
   }),

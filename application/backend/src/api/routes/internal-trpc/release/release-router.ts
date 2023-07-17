@@ -8,7 +8,10 @@ import {
 import {
   inputPaginationParameter,
   inputReleaseKeySingle,
+  unorderedInputPaginationParameter,
 } from "../input-schemas-common";
+import { PagedResult } from "../../../helpers/pagination-helpers";
+import { ReleaseCaseType } from "@umccr/elsa-types";
 
 const htsgetRestriction = z.object({
   restriction: z.union([
@@ -17,6 +20,21 @@ const htsgetRestriction = z.object({
     z.literal("Achromatopsia"),
   ]),
 });
+
+const casesQuerySchema = inputReleaseKeySingle
+  .merge(unorderedInputPaginationParameter)
+  .merge(
+    z.object({
+      q: z.optional(z.string().trim()),
+    })
+  );
+
+const specimensMutateSchema = inputReleaseKeySingle.merge(
+  z.object({
+    op: z.literal("remove").or(z.literal("add")),
+    value: z.array(z.string()),
+  })
+);
 
 /**
  * RPC for release
@@ -41,6 +59,36 @@ export const releaseRouter = router({
       const { releaseKey } = input;
 
       return await ctx.releaseService.get(user, releaseKey);
+    }),
+  getReleaseCases: internalProcedure
+    .input(casesQuerySchema)
+    .query(async ({ input, ctx }) => {
+      const { user, pageSize } = ctx;
+      const { releaseKey, page, q } = input;
+
+      return await ctx.releaseSelectionService.getCases(
+        user,
+        releaseKey,
+        pageSize,
+        calculateOffset(page, pageSize),
+        q
+      );
+    }),
+  updateReleaseSpecimens: internalProcedure
+    .input(specimensMutateSchema)
+    .mutation(async ({ input, ctx }) => {
+      const { user } = ctx;
+      const { releaseKey, op, value } = input;
+
+      if (op === "add")
+        await ctx.releaseSelectionService.setSelected(user, releaseKey, value);
+
+      if (op === "remove")
+        await ctx.releaseSelectionService.setUnselected(
+          user,
+          releaseKey,
+          value
+        );
     }),
   getReleasePassword: internalProcedure
     .input(inputReleaseKeySingle)

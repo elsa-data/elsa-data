@@ -50,9 +50,6 @@ beforeEach(async () => {
     await beforeEachCommon(testContainer));
 });
 
-/**
- *
- */
 it("get all case level information from a release as a administrator", async () => {
   const pagedResult = await releaseSelectionService.getCases(
     superAdminUser,
@@ -88,6 +85,9 @@ it("get all case level information from a release as a administrator", async () 
   // expect nothing in the duck family to be selected
   expect(findSpecimen(pagedResult.data, "HG90")?.nodeStatus).toBe("unselected");
   expect(findSpecimen(pagedResult.data, "HG91")?.nodeStatus).toBe("unselected");
+
+  // expect an accurate count of actual total selected as well
+  expect(pagedResult.totalSelectedSpecimens).toBe(7);
 });
 
 /**

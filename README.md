@@ -2,9 +2,9 @@
 
 **Genomic data sharing support software ("let the data go")**
 
-Elsa Data is a software stack that helps provide data custodians and researchers
-with a collaborative space in which manage the sharing of approved genomic
-data sets.
+Elsa Data is a software stack that provides data custodians and researchers
+with a collaborative space in which they can manage the sharing and access to
+genomic data sets.
 
 Elsa Data can ingest approved applications from a variety of sources
 (REMS, RedCap, manual) and then creates a shared _release_ - a specific web portal area

@@ -26,7 +26,7 @@ export const CopyOutAccordionContent: React.FC<
 
   const copyOutTriggerMutate = trpc.releaseJob.startCopyOut.useMutation({
     onSuccess: async () => {
-      await utils.releaseRouter.getSpecificRelease.invalidate({
+      await utils.release.getSpecificRelease.invalidate({
         releaseKey: props.releaseKey,
       });
       // once we have started the copy out and invalidated the release state - our next render

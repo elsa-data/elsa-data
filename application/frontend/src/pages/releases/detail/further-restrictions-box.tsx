@@ -33,7 +33,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       onSuccess: (result: ReleaseTypeLocal) =>
         // we need to cross over into TRPC world to invalidate its cache
         // eventually we should move this PATCH to TRPC too
-        utils.releaseRouter.getSpecificRelease.invalidate({
+        utils.release.getSpecificRelease.invalidate({
           releaseKey: releaseKey,
         }),
     }

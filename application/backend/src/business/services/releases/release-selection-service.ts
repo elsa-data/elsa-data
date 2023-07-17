@@ -36,7 +36,7 @@ import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 /**
  * The release selection service handles CRUD operations on the list of items
  * that are 'selected' for a given release. That is, the cases/patients
- * and specimens that a administrator has authorised to be released.
+ * and specimens that an administrator has authorised to be released.
  */
 @injectable()
 export class ReleaseSelectionService extends ReleaseBaseService {
@@ -82,7 +82,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     limit: number,
     offset: number,
     identifierSearchText?: string
-  ): Promise<PagedResult<ReleaseCaseType> | null> {
+  ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey
@@ -198,9 +198,16 @@ export class ReleaseSelectionService extends ReleaseBaseService {
 
     const pageCases = await caseSearchQuery.run(this.edgeDbClient);
 
-    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
+    // on complete query fail we return an empty results (not sure if/when this can happen but I wanted to
+    // stop returning null as nothing downstream handled it)
+    if (!pageCases)
+      return {
+        data: [],
+        total: 0,
+        totalSelectedSpecimens: 0,
+      };
 
-    if (!pageCases) return null;
+    // count the total for our paging support
 
     const caseCountQuery = e.count(
       e.select(e.dataset.DatasetCase, (dsc) => ({
@@ -209,6 +216,15 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     );
 
     const countCases = await caseCountQuery.run(this.edgeDbClient);
+
+    // count the number selected for use in the UI
+    // once we move the above queries into EdgeQl we should be able to do all of this in one
+    // single query
+    const selectedCountQuery = e.count(releaseSelectedSpecimensQuery);
+
+    const selectedCount = await selectedCountQuery.run(this.edgeDbClient);
+
+    // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
 
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
@@ -274,12 +290,18 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       };
     };
 
-    return createPagedResult(
+    const paged = createPagedResult<ReleaseCaseType>(
       pageCases.map((pc) =>
         createCaseMap(pc as unknown as dataset.DatasetCase)
       ),
       countCases
     );
+
+    // extend our paged result with some extra information
+    return {
+      ...paged,
+      totalSelectedSpecimens: selectedCount,
+    };
   }
 
   /**

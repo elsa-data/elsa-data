@@ -49,7 +49,7 @@ export const SharerControlBox: React.FC<Props> = ({
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
       onSuccess: async () =>
-        await utils.releaseRouter.getSpecificRelease.invalidate({
+        await utils.release.getSpecificRelease.invalidate({
           releaseKey: releaseKey,
         }),
     }

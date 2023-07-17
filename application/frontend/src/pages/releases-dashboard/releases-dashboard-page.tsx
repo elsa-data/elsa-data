@@ -18,7 +18,7 @@ export const ReleasesDashboardPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const releaseQuery = trpc.releaseRouter.getAllRelease.useQuery(
+  const releaseQuery = trpc.release.getAllRelease.useQuery(
     {
       page: currentPage,
     },

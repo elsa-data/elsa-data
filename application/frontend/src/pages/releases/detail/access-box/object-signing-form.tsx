@@ -21,7 +21,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
   const [isViewPassword, setIsViewPassword] = useState<boolean>(false);
 
-  const getFilePasswordQuery = trpc.releaseRouter.getReleasePassword.useQuery(
+  const getFilePasswordQuery = trpc.release.getReleasePassword.useQuery(
     {
       releaseKey,
     },

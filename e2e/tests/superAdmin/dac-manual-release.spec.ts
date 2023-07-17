@@ -63,24 +63,35 @@ test("A release can be created manually which has selectable cases", async ({
   // Add some cases to the release
   const t9 = await page.getByText("T908765");
   await t9.click();
-  await expect.poll(async () => t9.isChecked(), { timeout: 30000 }).toBe(true);
+  await expect
+    .poll(async () => t9.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
 
   const t6 = await page.getByText("T657567");
   await t6.click();
-  await expect.poll(async () => t6.isChecked(), { timeout: 30000 }).toBe(true);
+  await expect
+    .poll(async () => t6.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
 
   const na2 = await page.getByText("NA24143");
   await na2.click();
-  await expect.poll(async () => na2.isChecked(), { timeout: 30000 }).toBe(true);
+  await expect
+    .poll(async () => na2.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
 
   // we need for the AWS S3 to be selected in order that our release
   // has actual files to release
   {
     const s3 = await page.getByText("AWS S3");
+
+    // expected to start false (this could easily change if we change the logic so don't be surprised if
+    // it fails here and we instead change the test)
+    expect(await s3.isChecked()).toBeFalsy();
+
     await s3.click();
     await expect
       .poll(async () => s3.isChecked(), { timeout: 30000 })
-      .toBe(true);
+      .toBeTruthy();
   }
 
   // Activate the release
