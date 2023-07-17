@@ -9,11 +9,7 @@ import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { generators } from "openid-client";
 import { AuditEventService } from "../business/services/audit-event-service";
-import {
-  cookieForBackend,
-  cookieForUI,
-  createUserAllowedCookie,
-} from "./helpers/cookie-helpers";
+import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 import { AuthenticatedUser } from "../business/authenticated-user";

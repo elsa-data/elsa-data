@@ -26,11 +26,7 @@ import {
   TEST_SUBJECT_4_DISPLAY,
   TEST_SUBJECT_4_EMAIL,
 } from "../test-data/user/insert-user4";
-import {
-  cookieForBackend,
-  cookieForUI,
-  createUserAllowedCookie,
-} from "./helpers/cookie-helpers";
+import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { AuthenticatedUser } from "../business/authenticated-user";
 
