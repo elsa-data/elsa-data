@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
 import { DatasetCaseType } from "@umccr/elsa-types";

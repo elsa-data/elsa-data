@@ -1,6 +1,6 @@
-import React, { ReactNode } from "react";
+import React, { useCallback, useState, ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import {
@@ -13,6 +13,8 @@ import { axiosPatchOperationMutationFn } from "../queries";
 import { trpc } from "../../../helpers/trpc";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { ReleaseSizeType } from "@umccr/elsa-types";
 
 const formatBytes = (bytes: number | undefined): string => {
   if (bytes === undefined) return "?? B";
@@ -109,6 +111,16 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
     />
   );
 
+  const [releaseSize, setReleaseSize] = useState<
+    "unknown" | "loading" | ReleaseSizeType
+  >("unknown");
+
+  const onPressComputeSize = useCallback(async () => {
+    setReleaseSize("loading");
+    const response = await axios.get(`/api/releases/${releaseKey}/size`);
+    setReleaseSize(response.data);
+  }, [releaseKey]);
+
   return (
     <Box
       heading="Access Control"
@@ -173,10 +185,21 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
             </div>
           </div>
           <div className="flex items-end justify-end gap-x-5">
-            <button type="button" className="btn-normal w-fit">
+            <button
+              type="button"
+              disabled={releaseSize === "loading"}
+              className="btn-normal w-fit"
+              onClick={onPressComputeSize}
+            >
               Compute Release Size
             </button>
-            <Stats stats={undefined} />
+            <Stats
+              stats={
+                releaseSize === "unknown" || releaseSize === "loading"
+                  ? undefined
+                  : releaseSize
+              }
+            />
           </div>
         </RightDiv>
       </RhSection>

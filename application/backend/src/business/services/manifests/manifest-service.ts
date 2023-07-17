@@ -17,7 +17,10 @@ import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../releases/release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
+import {
+  ObjectStoreRecordKey,
+  ReleaseSizeType,
+} from "@umccr/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
@@ -94,6 +97,27 @@ export class ManifestService {
     });
 
     return transformDbManifestToMasterManifest(manifest);
+  }
+
+  public async computeReleaseSize(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ): Promise<ReleaseSizeType> {
+    // TODO
+    return { numBytes: 42, numFiles: 420 };
+
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (!(userRole === "Administrator" || userRole === "AdminView")) {
+      throw new ReleaseViewError(releaseKey);
+    }
+
+    // TODO
+    return { numBytes: 42, numFiles: 420 };
   }
 
   public async getActiveTsvManifest(

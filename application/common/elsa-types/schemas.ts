@@ -61,6 +61,13 @@ export const ReleasePresignResponseSchema = Type.Object({
   files: Type.Array(Type.String()),
 });
 
+export const ReleaseSizeSchema = Type.Object({
+  numFiles: Type.Number(),
+  numBytes: Type.Number(),
+});
+
+export type ReleaseSizeType = Static<typeof ReleaseSizeSchema>;
+
 export type FileRecordHeaderType = typeof ObjectStoreRecordKey[number];
 export type ReleasePresignRequestType = Static<
   typeof ReleasePresignRequestSchema

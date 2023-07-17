@@ -7,6 +7,7 @@ import {
   ReleasePatchOperationsType,
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
+  ReleaseSizeType,
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
@@ -359,6 +360,19 @@ export const releaseRoutes = async (
       manifest.pipe(reply.raw);
     }
   );
+
+  fastify.get<{
+    Params: { rid: string };
+    Reply: ReleaseSizeType;
+  }>("/releases/:rid/size", {}, async function (request, reply) {
+    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+    const releaseKey = request.params.rid;
+
+    reply.send(
+      await manifestService.computeReleaseSize(authenticatedUser, releaseKey)
+    );
+  });
 
   fastify.post<{
     Body?: ReleasePresignRequestType;
