@@ -11,6 +11,46 @@ import {
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import { axiosPatchOperationMutationFn } from "../queries";
 import { trpc } from "../../../helpers/trpc";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFile } from "@fortawesome/free-solid-svg-icons";
+
+const formatBytes = (bytes: number | undefined): string => {
+  if (bytes === undefined) return "?? B";
+  if (!+bytes) return "0 B";
+
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(0))} ${sizes[i]}`;
+};
+
+const Stats = ({
+  stats,
+}: {
+  stats:
+    | {
+        numFiles: number;
+        numBytes: number;
+      }
+    | undefined;
+}) => {
+  const { numFiles = undefined, numBytes = undefined } = stats ?? {};
+
+  return (
+    <div className="stats mt-5 shadow">
+      <div className="stat">
+        <div className="stat-figure text-accent">
+          <FontAwesomeIcon icon={faFile} size="2xl" className="ml-2" />
+        </div>
+        <div className="stat-title">Release Size</div>
+        <div className="stat-value">{formatBytes(numBytes)}</div>
+        <div className="stat-desc">{numFiles ?? "??"} Files</div>
+      </div>
+    </div>
+  );
+};
 
 type Props = {
   releaseKey: string;
@@ -131,6 +171,12 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
                 )}
               </RhChecks>
             </div>
+          </div>
+          <div className="flex items-end justify-end gap-x-5">
+            <button type="button" className="btn-normal w-fit">
+              Compute Release Size
+            </button>
+            <Stats stats={undefined} />
           </div>
         </RightDiv>
       </RhSection>
