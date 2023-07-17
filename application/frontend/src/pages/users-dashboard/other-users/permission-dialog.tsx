@@ -124,7 +124,7 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
 
         await utils.user.getUsers.invalidate();
 
-        // If the logged-in user change, refresh the ownUser
+        // If the logged-in user change change its own permission
         if (loggedInUser?.subjectIdentifier === user.subjectIdentifier)
           await utils.user.getOwnUser.invalidate();
       },
@@ -132,7 +132,10 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
   );
 
   const onSave = useCallback(() => {
-    changeUserPermissionMutate.mutate({ userEmail: user.email, ...input });
+    changeUserPermissionMutate.mutate({
+      userSubjectId: user.subjectIdentifier,
+      ...input,
+    });
   }, [changeUserPermissionMutate.mutate, input]);
   const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
 

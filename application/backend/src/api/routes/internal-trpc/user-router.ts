@@ -6,7 +6,7 @@ import { inputPaginationParameter } from "./input-schemas-common";
  * RPC for user permission
  */
 export const inputChangeUserPermission = z.object({
-  userEmail: z.string(),
+  userSubjectId: z.string(),
   isAllowedRefreshDatasetIndex: z.boolean(),
   isAllowedCreateRelease: z.boolean(),
   isAllowedOverallAdministratorView: z.boolean(),
@@ -32,7 +32,7 @@ export const userRouter = router({
   changeUserPermission: internalProcedure
     .input(inputChangeUserPermission)
     .mutation(async ({ input, ctx }) => {
-      await ctx.userService.changePermission(ctx.user, input.userEmail, {
+      await ctx.userService.changePermission(ctx.user, input.userSubjectId, {
         isAllowedCreateRelease: input.isAllowedCreateRelease,
         isAllowedOverallAdministratorView:
           input.isAllowedOverallAdministratorView,

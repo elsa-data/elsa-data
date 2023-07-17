@@ -155,13 +155,12 @@ export class UserService {
 
   /**
    * @param user
-   * @param targetEmail
+   * @param targetSubjectId
    * @param permission
    */
   public async changePermission(
     user: AuthenticatedUser,
-    // TODO change this to subjectId (if this is possible?)
-    targetEmail: string,
+    targetSubjectId: string,
     permission: ChangeablePermission
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
@@ -169,7 +168,7 @@ export class UserService {
 
     await e
       .update(e.permission.User, (u) => ({
-        filter: e.op(e.str(targetEmail), "=", u.email),
+        filter: e.op(e.str(targetSubjectId), "=", u.subjectId),
         set: {
           isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
           isAllowedCreateRelease: permission.isAllowedCreateRelease,
