@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "../../../components/boxes";
 
-import { PermissionDialog } from "../other-users/permission-dialog";
+import { PermissionDialog } from "../all-users/permission-dialog";
 import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 import {
   CHANGE_USER_PERMISSION_DESC,

@@ -1,5 +1,5 @@
 import React from "react";
-import { OtherUsers } from "./other-users/other-users";
+import { AllUsers } from "./all-users/all-users";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { PersonalDetailsBox } from "./personal-details-box/personal-details-box";
 import { useLoggedInUser } from "../../providers/logged-in-user-provider";
@@ -19,7 +19,7 @@ export const UsersDashboardPage: React.FC = () => {
   return (
     <div className="flex flex-col space-y-4">
       <PersonalDetailsBox />
-      {canSeeOtherUsers && <OtherUsers pageSize={pageSize} />}
+      {canSeeOtherUsers && <AllUsers pageSize={pageSize} />}
     </div>
   );
 };

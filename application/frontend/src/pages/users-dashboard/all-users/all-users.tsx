@@ -67,7 +67,7 @@ type Props = {
  * @param pageSize
  * @constructor
  */
-export const OtherUsers: React.FC<Props> = ({ pageSize }) => {
+export const AllUsers: React.FC<Props> = ({ pageSize }) => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
