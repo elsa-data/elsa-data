@@ -4,8 +4,6 @@ import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
 import { ErrorBoundary, OfflineAlert } from "../components/errors";
 import { LayoutBaseFooter } from "./layout-base-footer";
-import { useUiAllowed } from "../hooks/ui-allowed";
-import { ALLOWED_CREATE_NEW_RELEASE } from "@umccr/elsa-constants";
 import { useEnvRelay } from "../providers/env-relay-provider";
 
 type Props = {};
@@ -40,8 +38,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
     );
   };
 
-  const userObject = useLoggedInUser();
-  const uiAllowed = useUiAllowed();
+  const user = useLoggedInUser();
   const envRelay = useEnvRelay();
 
   return (
@@ -83,9 +80,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                   />
                 )}
               </div>
-              {userObject && (
+              {user && (
                 <div className="my-1.5">
-                  <LayoutBaseHeaderUser user={userObject} />
+                  <LayoutBaseHeaderUser user={user} />
                 </div>
               )}
             </div>
@@ -114,7 +111,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
               }`}
               id="nav-content"
             >
-              {userObject ? (
+              {user ? (
                 <ul className="list-reset flex-1 items-center px-4 pb-4 md:px-0 lg:flex lg:space-x-12 lg:pb-0">
                   <li className="my-2 md:my-0">
                     {navLink(
@@ -134,7 +131,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       "hover:border-primary-focus"
                     )}
                   </li>
-                  {uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE) && (
+                  {user.isAllowedCreateRelease && (
                     <li className="my-2 md:my-0">
                       {navLink(
                         "/dac",
@@ -186,9 +183,9 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                 />
               </div> */}
             </div>
-            {userObject && (
+            {user && (
               <div className="my-1.5 hidden lg:inline-block">
-                <LayoutBaseHeaderUser user={userObject} />
+                <LayoutBaseHeaderUser user={user} />
               </div>
             )}
           </div>

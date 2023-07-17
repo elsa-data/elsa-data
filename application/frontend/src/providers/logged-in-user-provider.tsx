@@ -41,11 +41,12 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
     enabled: !!isLoggedIn,
   });
 
-  const val = ownUserQuery.data
-    ? {
-        ...ownUserQuery.data,
-      }
-    : null;
+  const val =
+    isLoggedIn && ownUserQuery.data
+      ? {
+          ...ownUserQuery.data,
+        }
+      : null;
 
   if (isLoggedIn && ownUserQuery.isLoading)
     return (

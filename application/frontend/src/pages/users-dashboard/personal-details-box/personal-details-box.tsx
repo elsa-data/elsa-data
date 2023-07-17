@@ -8,7 +8,7 @@ import {
   CREATE_NEW_RELEASE_DESC,
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
-} from "../users-dashboard-page";
+} from "../text-helper";
 
 type Props = {};
 
@@ -56,10 +56,11 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
               <li className="mt-2">{CREATE_NEW_RELEASE_DESC}</li>
             )}
 
+            {/* If no permission specific permission is given */}
             {!userObject?.isAllowedChangeUserPermission &&
               !userObject?.isAllowedOverallAdministratorView &&
               !userObject?.isAllowedRefreshDatasetIndex &&
-              userObject?.isAllowedCreateRelease && (
+              !userObject?.isAllowedCreateRelease && (
                 <li className="mt-2" key={"no permissions"}>
                   No specific permissions.
                 </li>

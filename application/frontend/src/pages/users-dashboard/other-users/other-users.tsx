@@ -26,7 +26,7 @@ import {
   CREATE_NEW_RELEASE_DESC,
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
-} from "../users-dashboard-page";
+} from "../text-helper";
 
 const permissionIconProperties: {
   key: UserPermissionType;

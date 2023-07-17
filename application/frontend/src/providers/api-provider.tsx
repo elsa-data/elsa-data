@@ -7,9 +7,18 @@ import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
 import { useShowAlert } from "./show-alert-provider";
 import axios, { AxiosRequestConfig } from "axios";
 
-export const TRPCProvider: React.FC<Props> = (props: Props) => {
-  const queryClient = new QueryClient({});
-  const [cookies, _setCookie, removeCookie] = useCookies<any>();
+export const APIProvider: React.FC<Props> = (props: Props) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  const [cookies, _setCookie, removeCookie] = useCookies<any>([
+    CSRF_TOKEN_COOKIE_NAME,
+  ]);
   const { show } = useShowAlert();
 
   const trpcClient = trpc.createClient({
@@ -18,18 +27,23 @@ export const TRPCProvider: React.FC<Props> = (props: Props) => {
         url: "/api/trpc",
         async fetch(url, options) {
           const res = await fetch(url, { ...options });
+          const body = await res?.clone().json();
 
           const errCode = res.status;
-          if (errCode === 401) {
+          const trpcErrCode =
+            body?.length > 0
+              ? body[0]?.error?.data?.base7807ErrorRes?.status
+              : 500;
+
+          if (errCode === 401 || trpcErrCode === 401) {
+            // Error could also come from a standard Fastify Error or TRPC error
+
+            // TRPC error
+            let message = body?.length > 0 ? body[0]?.error?.message : "";
+            // Fastify Error
+            if (!message) message = body?.title ?? body?.detail;
+
             removeCookie(CSRF_TOKEN_COOKIE_NAME);
-
-            const body = await res?.json();
-
-            // This to grab the layout if the error comes from a 'TRPCError'
-            let message = body.length > 0 ? body[0]?.error?.message : "";
-
-            // Error could also come from a standard Fastify Error
-            if (!message) message = body.title ?? body.detail;
 
             show({
               description: message,

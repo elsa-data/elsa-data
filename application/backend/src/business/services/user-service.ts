@@ -15,7 +15,7 @@ import {
 } from "../db/audit-log-queries";
 import {
   NotAuthorisedEditUserManagement,
-  NotAuthorisedViewUserManagement,
+  NotAuthorisedGetOwnUser,
 } from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
@@ -72,7 +72,7 @@ export class UserService {
       dbId: user.dbId,
     });
 
-    if (!currentUser) throw new NotAuthorisedViewUserManagement();
+    if (!currentUser) throw new NotAuthorisedGetOwnUser(user.subjectId);
 
     return {
       id: currentUser.id,

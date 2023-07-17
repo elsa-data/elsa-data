@@ -14,17 +14,16 @@ import ConsentSummary from "../releases/detail/cases-box/consent-summary";
 import { trpc } from "../../helpers/trpc";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { isNil } from "lodash";
-import { useUiAllowed } from "../../hooks/ui-allowed";
-import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { Table } from "../../components/tables";
+import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 
 type DatasetsSpecificPageParams = {
   datasetUri: string;
 };
 
 export const DatasetsDetailPage: React.FC = () => {
-  const uiAllowed = useUiAllowed();
+  const user = useLoggedInUser();
   const queryClient = useQueryClient();
 
   const { datasetUri: encodedDatasetUri } =
@@ -100,7 +99,7 @@ export const DatasetsDetailPage: React.FC = () => {
                 <div className="flex items-center	justify-between">
                   <div>Dataset</div>
 
-                  {uiAllowed.has(ALLOWED_DATASET_UPDATE) && (
+                  {user?.isAllowedRefreshDatasetIndex && (
                     <button
                       className="btn-outline btn-xs btn ml-2"
                       onClick={() => datasetMutate.mutate({ datasetUri })}

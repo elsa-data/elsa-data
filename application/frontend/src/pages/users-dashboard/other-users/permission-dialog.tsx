@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
-import { ALLOWED_CHANGE_USER_PERMISSION } from "@umccr/elsa-constants";
 import {
   EagerErrorBoundary,
   ErrorBoundary,
@@ -9,21 +8,16 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { trpc } from "../../../helpers/trpc";
-import {
-  faCheck,
-  faSpinner,
-  faUserGear,
-} from "@fortawesome/free-solid-svg-icons";
-import { useQueryClient } from "@tanstack/react-query";
+import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import { Alert } from "../../../components/alert";
+import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 import {
   CHANGE_USER_PERMISSION_DESC,
   CREATE_NEW_RELEASE_DESC,
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
-} from "../users-dashboard-page";
-import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
+} from "../text-helper";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -89,11 +83,11 @@ type UserProps = {
 };
 
 export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
-  const userObject = useLoggedInUser();
+  const loggedInUser = useLoggedInUser();
   const utils = trpc.useContext();
 
   // Some boolean values for component to show or not
-  const isEditingAllowed = userObject?.isAllowedChangeUserPermission;
+  const isEditingAllowed = loggedInUser?.isAllowedChangeUserPermission;
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isEditingMode, setIsEditingMode] = useState<boolean>(false);
 
@@ -125,10 +119,14 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
         setIsEditingMode(false);
       },
       onError: (error: any) => setError({ error, isSuccess: false }),
-      onSuccess: () => {
+      onSuccess: async () => {
         setError({ error: null, isSuccess: true });
-        utils.user.getOwnUser.invalidate();
-        utils.user.getUsers.invalidate();
+
+        await utils.user.getUsers.invalidate();
+
+        // If the logged-in user change, refresh the ownUser
+        if (loggedInUser?.subjectIdentifier === user.subjectIdentifier)
+          await utils.user.getOwnUser.invalidate();
       },
     }
   );
