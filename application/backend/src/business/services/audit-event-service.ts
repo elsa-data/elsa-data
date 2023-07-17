@@ -380,12 +380,16 @@ export class AuditEventService {
    * @param actionDescription
    * @param start
    * @param executor the EdgeDb execution context (either client or transaction)
+   * @param details
+   * @param inProgress
    */
   public async startSystemAuditEvent(
     actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date(),
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
+    details: any = { errorMessage: "Audit entry not completed" },
+    inProgress: boolean = true,
   ): Promise<string> {
     return (
       await insertSystemAuditEvent(executor, {
@@ -393,8 +397,8 @@ export class AuditEventService {
         actionDescription,
         occurredDateTime: start,
         outcome: 8,
-        details: { errorMessage: "Audit entry not completed" },
-        inProgress: true,
+        details,
+        inProgress,
       })
     ).id;
   }
@@ -908,7 +912,9 @@ export class AuditEventService {
     actionDescription: string,
     tryFunc: (
       completeAudit: (details: any, executor: Executor) => Promise<void>
-    ) => Promise<T>
+    ) => Promise<T>,
+    startDetails: any = { errorMessage: "Audit entry not completed" },
+    inProgress: boolean = true,
   ): Promise<T> {
     return this.auditPattern(
       async (start) => {
@@ -916,7 +922,9 @@ export class AuditEventService {
           "E",
           actionDescription,
           start,
-          this.edgeDbClient
+          this.edgeDbClient,
+          startDetails,
+          inProgress
         );
       },
       this.completeSystemAuditEvent,

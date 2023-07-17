@@ -149,10 +149,11 @@ export class EmailService {
     from: Address,
     to: string
   ): Promise<any> {
-    // Not sure that there's much point trying to send an email more than once, but I could be wrong.
-    const tryCount = 1;
-    let [result, tried] = [undefined, 0];
-    try {
+    return await this.auditLogService.systemAuditEventPattern("Email sent", async (completeAuditFn) => {
+      // Not sure that there's much point trying to send an email more than once, but I could be wrong.
+      const tryCount = 1;
+      let [result, tried] = [undefined, 0];
+
       [result, tried] = await this.retry(
         async () => {
           if (this.transporter === undefined) {
@@ -164,32 +165,17 @@ export class EmailService {
         tryCount,
         "sending mail"
       );
-    } catch (err) {
-      await this.auditLogService.createSystemAuditEvent(
-        "E",
-        "Email sent",
-        {
-          from,
-          to,
-          tryCount,
-        },
-        8,
-        this.edgeDbClient
-      );
-    }
 
-    await this.auditLogService.createSystemAuditEvent(
-      "E",
-      "Email sent",
-      {
+      await completeAuditFn({
         from,
         to,
         tryCount: tried,
-      },
-      0,
-      this.edgeDbClient
-    );
+      }, this.edgeDbClient);
 
-    return result;
+      return result;
+    }, {
+      from,
+      to,
+    }, false);
   }
 }
