@@ -7,11 +7,11 @@ export const DatasetLayout: React.FC = () => {
   const user = useLoggedInUser();
 
   if (
-    user?.isAllowedRefreshDatasetIndex &&
+    user?.isAllowedRefreshDatasetIndex ||
     user?.isAllowedOverallAdministratorView
   ) {
-    return <Navigate to="/not-found" replace />;
+    return <Outlet />;
   }
 
-  return <Outlet />;
+  return <Navigate to="/not-found" replace />;
 };

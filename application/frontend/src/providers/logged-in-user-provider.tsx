@@ -40,7 +40,6 @@ export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
   const ownUserQuery = trpc.user.getOwnUser.useQuery(undefined, {
     enabled: !!isLoggedIn,
   });
-
   const val =
     isLoggedIn && ownUserQuery.data
       ? {
