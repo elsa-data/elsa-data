@@ -15,7 +15,7 @@ import { AuditEventTimedService } from "./business/services/audit-event-timed-se
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { S3 } from "./business/services/cloud-storage-service";
 import { IPLookupService } from "./business/services/ip-lookup-service";
-import { MailService } from "./business/services/mail-service";
+import { EmailService } from "./business/services/email-service";
 
 /**
  * Register singleton instances of all services that should be singleton.
@@ -43,7 +43,7 @@ export function bootstrapDependencyInjectionSingletonServices(
   dc.registerSingleton(ManifestService);
   dc.registerSingleton(PresignedUrlService);
   dc.registerSingleton(IPLookupService);
-  dc.registerSingleton(MailService);
+  dc.registerSingleton(EmailService);
 
   dc.registerSingleton<AuditEventTimedService>(
     "ReleaseAuditTimedService",

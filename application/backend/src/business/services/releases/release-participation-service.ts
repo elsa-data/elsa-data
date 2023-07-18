@@ -64,8 +64,8 @@ export class ReleaseParticipationService extends ReleaseBaseService {
   public async getParticipants(
     user: AuthenticatedUser,
     releaseKey: string,
-    limit: number,
-    offset: number
+    limit?: number,
+    offset?: number
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,

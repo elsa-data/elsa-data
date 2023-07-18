@@ -18,6 +18,8 @@ import { Logger } from "pino";
 import { ManifestService } from "../manifests/manifest-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { EmailService } from "../email-service";
+import { ReleaseParticipationService } from "./release-participation-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -35,7 +37,10 @@ export class ReleaseActivationService extends ReleaseBaseService {
     auditEventTimedService: AuditEventTimedService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(UserService) userService: UserService,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
+    @inject(EmailService) private readonly emailService: EmailService,
+    @inject(ReleaseParticipationService)
+    private readonly releaseParticipationService: ReleaseParticipationService
   ) {
     super(
       settings,
@@ -46,6 +51,40 @@ export class ReleaseActivationService extends ReleaseBaseService {
       auditEventTimedService,
       cfnClient
     );
+  }
+
+  /**
+   * Emails all participants when the release is activated or deactivated.
+   * @param user
+   * @param releaseKey
+   * @param template
+   */
+  public async emailAllParticipants(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    template: string
+  ) {
+    // I think emails should not be part of the activation/deactivation transaction, but I could be wrong.
+    const participants = await this.releaseParticipationService.getParticipants(
+      user,
+      releaseKey
+    );
+
+    if (participants.data !== undefined) {
+      await Promise.all(
+        participants.data.map(async (participant) => {
+          await this.emailService.sendEmailTemplate(
+            template,
+            participant.email,
+            {
+              releaseKey,
+              name: participant.displayName ?? "",
+              fromName: this.settings.emailer?.from.name ?? "",
+            }
+          );
+        })
+      );
+    }
   }
 
   /**
@@ -63,7 +102,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+    await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Activated Release",
@@ -72,7 +111,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
           throw new ReleaseActivationPermissionError(releaseKey);
         }
       },
-      async (tx, a) => {
+      async (tx, _) => {
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
@@ -122,7 +161,13 @@ export class ReleaseActivationService extends ReleaseBaseService {
           manifestCases: casesConstructed,
         };
       },
-      async (a) => {}
+      async (_) => {}
+    );
+
+    await this.emailAllParticipants(
+      user,
+      releaseKey,
+      "release/release-activated"
     );
   }
 
@@ -139,7 +184,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       releaseKey
     );
 
-    return this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+    await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
       "Deactivated release",
@@ -148,7 +193,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
           throw new ReleaseActivationPermissionError(releaseKey);
         }
       },
-      async (tx, a) => {
+      async (tx, _) => {
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
@@ -168,7 +213,13 @@ export class ReleaseActivationService extends ReleaseBaseService {
           }))
           .run(tx);
       },
-      async (a) => {}
+      async (_) => {}
+    );
+
+    await this.emailAllParticipants(
+      user,
+      releaseKey,
+      "release/release-deactivated"
     );
   }
 }

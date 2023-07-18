@@ -3,7 +3,7 @@ import { Sensitive } from "./config-schema-sensitive";
 import { DacSchema } from "./config-schema-dac";
 import { DatasetSchema } from "./config-schema-dataset";
 import { SharerSchema } from "./config-schema-sharer";
-import { MailerSchema } from "./config-schema-mailer";
+import { EmailerSchema } from "./config-schema-emailer";
 import { BrandingSchema } from "./config-schema-branding";
 import { OidcSchema } from "./config-schema-oidc";
 
