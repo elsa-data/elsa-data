@@ -19,7 +19,7 @@ export class EmailService {
     @inject("SESClient") private readonly ses: aws.SES,
     @inject("Logger") private readonly logger: Logger,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService,
+    private readonly auditEventService: AuditEventService,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
@@ -124,6 +124,8 @@ export class EmailService {
           transport: transport,
         });
 
+        this.logger.debug(`Sent email: ${email}`);
+
         return await email.send({
           template: template,
           message: {
@@ -149,33 +151,41 @@ export class EmailService {
     from: Address,
     to: string
   ): Promise<any> {
-    return await this.auditLogService.systemAuditEventPattern("Email sent", async (completeAuditFn) => {
-      // Not sure that there's much point trying to send an email more than once, but I could be wrong.
-      const tryCount = 1;
-      let [result, tried] = [undefined, 0];
+    return await this.auditEventService.systemAuditEventPattern(
+      "Email sent",
+      async (completeAuditFn) => {
+        // Not sure that there's much point trying to send an email more than once, but I could be wrong.
+        const tryCount = 1;
 
-      [result, tried] = await this.retry(
-        async () => {
-          if (this.transporter === undefined) {
-            return undefined;
-          }
+        let [result, tried] = await this.retry(
+          async () => {
+            if (this.transporter === undefined) {
+              return undefined;
+            }
 
-          return await sendFn(this.transporter, from, to);
-        },
-        tryCount,
-        "sending mail"
-      );
+            return await sendFn(this.transporter, from, to);
+          },
+          tryCount,
+          "sending mail"
+        );
 
-      await completeAuditFn({
+        await completeAuditFn(
+          {
+            from,
+            to,
+            tryCount: tried,
+          },
+          this.edgeDbClient
+        );
+
+        return result;
+      },
+      {
         from,
         to,
-        tryCount: tried,
-      }, this.edgeDbClient);
-
-      return result;
-    }, {
-      from,
-      to,
-    }, false);
+      },
+      false,
+      4
+    );
   }
 }
