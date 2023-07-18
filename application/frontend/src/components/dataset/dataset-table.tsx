@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { fileSize, oxford } from "humanize-plus";
 import { isNil } from "lodash";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
 import { trpc } from "../../helpers/trpc";

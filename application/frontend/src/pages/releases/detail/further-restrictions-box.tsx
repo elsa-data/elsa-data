@@ -15,18 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { ReleaseSizeType } from "@umccr/elsa-types";
-
-const formatBytes = (bytes: number | undefined): string => {
-  if (bytes === undefined) return "?? B";
-  if (!+bytes) return "0 B";
-
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(0))} ${sizes[i]}`;
-};
+import { fileSize } from "humanize-plus";
 
 const Stats = ({
   stats,
@@ -47,7 +36,9 @@ const Stats = ({
           <FontAwesomeIcon icon={faFile} size="2xl" className="ml-2" />
         </div>
         <div className="stat-title">Release Size</div>
-        <div className="stat-value">{formatBytes(numBytes)}</div>
+        <div className="stat-value">
+          {numBytes === undefined ? "?? B" : fileSize(numBytes)}
+        </div>
         <div className="stat-desc">{numFiles ?? "??"} Files</div>
       </div>
     </div>
