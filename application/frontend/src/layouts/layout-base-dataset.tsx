@@ -1,20 +1,17 @@
 import React from "react";
 import { Navigate, Outlet, redirect } from "react-router-dom";
-import { useUiAllowed } from "../hooks/ui-allowed";
-import {
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
-} from "@umccr/elsa-constants";
+
+import { useLoggedInUser } from "../providers/logged-in-user-provider";
 
 export const DatasetLayout: React.FC = () => {
-  const uiAllowed = useUiAllowed();
+  const user = useLoggedInUser();
 
   if (
-    !uiAllowed.has(ALLOWED_DATASET_UPDATE) &&
-    !uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW)
+    user?.isAllowedRefreshDatasetIndex ||
+    user?.isAllowedOverallAdministratorView
   ) {
-    return <Navigate to="/not-found" replace />;
+    return <Outlet />;
   }
 
-  return <Outlet />;
+  return <Navigate to="/not-found" replace />;
 };

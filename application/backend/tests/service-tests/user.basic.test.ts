@@ -96,7 +96,7 @@ it("SuperAdmin change other user permission", async () => {
     "test@example.com"
   );
 
-  await newUserService.changePermission(existingUser, "test@example.com", {
+  await newUserService.changePermission(existingUser, "http://test.com", {
     isAllowedCreateRelease: true,
     isAllowedOverallAdministratorView: true,
     isAllowedRefreshDatasetIndex: true,
@@ -120,7 +120,7 @@ it("normal user change attempt change permission", async () => {
   );
   const newAuthedUser = new AuthenticatedUser(newUser);
   await expect(async () => {
-    await userService.changePermission(newAuthedUser, "test@example.com", {
+    await userService.changePermission(newAuthedUser, "http://test.com", {
       isAllowedCreateRelease: true,
       isAllowedOverallAdministratorView: true,
       isAllowedRefreshDatasetIndex: true,

@@ -1,7 +1,6 @@
 import * as edgedb from "edgedb";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-helpers";
-import { createUserAllowedCookie } from "../helpers/cookie-helpers";
 import { DependencyContainer } from "tsyringe";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../../business/services/user-service";
@@ -81,41 +80,6 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
 
   // Parse pagination from req
   const pageSize = currentPageSize(ctx.req);
-
-  /*
-  DISABLED - WE NO LONGER STORE ANY PERMISSIONS IN THE SESSION - SO THERE IS NO SENSE IN WHICH THEY
-  CAN GET OUT OF SYNC
-  WHAT CAN GET OUT OF SYNC THOUGH IS THE UI COOKIES - CAN WE CHECK THAT??
-  // Checking cookie with Db
-  const dbUser = await userService.getDbUser(authedUser);
-  if (!dbUser) {
-    ctx.req.log.error(
-      "isDbAuthed: no user data was present in database so failing authentication"
-    );
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-    });
-  }
-
-  // Checking cookie permissions
-
-  const dbPermission = createUserAllowedCookie(
-    userService.isConfiguredSuperAdmin(dbUser.subjectId),
-    dbUser
-  );
-  const sessionPermission = createUserAllowedCookie(
-    userService.isConfiguredSuperAdmin(authedUser.subjectId),
-    authedUser
-  );
-  if (dbPermission != sessionPermission) {
-    ctx.req.log.error(
-      "isCookieDataUpdated: cookie permissions do not match with Db so failing authentication"
-    );
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "User permissions have changed, please try logging back in!",
-    });
-  } */
 
   const { edgeDbClient, settings, logger } = getServices(ctx.container);
 

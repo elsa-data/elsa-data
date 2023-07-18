@@ -13,22 +13,19 @@ import { ToolTip } from "../tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import { Table } from "../tables";
-import {
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
-} from "@umccr/elsa-constants";
-import { useUiAllowed } from "../../hooks/ui-allowed";
+import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 
 const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 const baseMessageDivClasses =
   "min-h-[10em] w-full flex items-center justify-center";
 
 export const DatasetTable: React.FC = ({}) => {
+  const user = useLoggedInUser();
   const navigate = useNavigate();
-  const uiAllowed = useUiAllowed();
+
   const allowDatasetView =
-    uiAllowed.has(ALLOWED_DATASET_UPDATE) ||
-    uiAllowed.has(ALLOWED_OVERALL_ADMIN_VIEW);
+    user?.isAllowedRefreshDatasetIndex ||
+    user?.isAllowedOverallAdministratorView;
 
   // Pagination Variables
   const pageSize = usePageSizer();

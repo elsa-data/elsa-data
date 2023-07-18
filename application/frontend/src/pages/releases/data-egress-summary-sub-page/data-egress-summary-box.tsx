@@ -6,17 +6,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRotate, faX } from "@fortawesome/free-solid-svg-icons";
 import { trpc } from "../../../helpers/trpc";
 import { EagerErrorBoundary } from "../../../components/errors";
-import { useUiAllowed } from "../../../hooks/ui-allowed";
-import { ALLOWED_DATASET_UPDATE } from "@umccr/elsa-constants";
 import { Alert } from "../../../components/alert";
+import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 
 export const DataEgressSummaryBox = ({
   releaseKey,
 }: {
   releaseKey: string;
 }) => {
+  const user = useLoggedInUser();
+
   const [isSummaryView, setIsSummaryView] = useState<boolean>(true);
-  const uiAllowed = useUiAllowed();
   const utils = trpc.useContext();
 
   const updateReleaseEgressRecordMutate =
@@ -34,7 +34,7 @@ export const DataEgressSummaryBox = ({
           <div>Data Egress Details</div>
 
           {/* Button for update data egress records */}
-          {uiAllowed.has(ALLOWED_DATASET_UPDATE) && (
+          {user?.isAllowedRefreshDatasetIndex && (
             <button
               className="btn-outline btn-xs btn ml-2"
               disabled={updateReleaseEgressRecordMutate.isLoading}

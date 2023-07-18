@@ -9,7 +9,7 @@ import { CookiesProvider } from "react-cookie";
 import { LoggedInUserProvider } from "./providers/logged-in-user-provider";
 import { ErrorBoundary } from "./components/errors";
 import { IndexRouter } from "./index-router";
-import { TRPCProvider } from "./providers/trpc-provider";
+import { APIProvider } from "./providers/api-provider";
 import { isString } from "lodash";
 import { LoggedInUserConfigRelayProvider } from "./providers/logged-in-user-config-relay-provider";
 import ShowAlert from "./providers/show-alert-provider";
@@ -64,14 +64,14 @@ if (rootElement != null) {
           {/* we use session cookies for auth and use this provider to make them easily available */}
           <CookiesProvider>
             <ShowAlert>
-              <LoggedInUserProvider>
-                <TRPCProvider>
+              <APIProvider>
+                <LoggedInUserProvider>
                   {/* the config relay gives us values from the backend that were dependent on the logged-in user */}
                   <LoggedInUserConfigRelayProvider>
                     <IndexRouter features={fea} />
                   </LoggedInUserConfigRelayProvider>
-                </TRPCProvider>
-              </LoggedInUserProvider>
+                </LoggedInUserProvider>
+              </APIProvider>
             </ShowAlert>
           </CookiesProvider>
         </EnvRelayProvider>

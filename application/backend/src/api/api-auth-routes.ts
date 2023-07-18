@@ -1,11 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import {
-  CSRF_TOKEN_COOKIE_NAME,
-  USER_ALLOWED_COOKIE_NAME,
-  USER_EMAIL_COOKIE_NAME,
-  USER_NAME_COOKIE_NAME,
-  USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
 import {
   SESSION_TOKEN_PRIMARY,
   SESSION_USER_DB_OBJECT,
@@ -15,11 +9,7 @@ import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { generators } from "openid-client";
 import { AuditEventService } from "../business/services/audit-event-service";
-import {
-  cookieForBackend,
-  cookieForUI,
-  createUserAllowedCookie,
-} from "./helpers/cookie-helpers";
+import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 import { AuthenticatedUser } from "../business/authenticated-user";
@@ -99,11 +89,6 @@ export const apiAuthRoutes = async (
     }
     // delete all the backend session cookies
     request.session.delete();
-
-    reply.clearCookie(USER_SUBJECT_COOKIE_NAME);
-    reply.clearCookie(USER_NAME_COOKIE_NAME);
-    reply.clearCookie(USER_EMAIL_COOKIE_NAME);
-    reply.clearCookie(USER_ALLOWED_COOKIE_NAME);
   };
 
   fastify.post("/logout", async (request, reply) => {
@@ -203,35 +188,8 @@ export const callbackRoutes = async (
     );
     cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
 
-    // these cookies however are available to React - PURELY for UI/display purposes
-    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, dbUser.subjectId);
-    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, dbUser.displayName);
-    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, dbUser.email);
-
-    const userAllowedCookieString = createUserAllowedCookie(
-      userService.isConfiguredSuperAdmin(dbUser.subjectId),
-      {
-        isAllowedCreateRelease: dbUser.isAllowedCreateRelease,
-        isAllowedRefreshDatasetIndex: dbUser.isAllowedRefreshDatasetIndex,
-        isAllowedOverallAdministratorView:
-          dbUser.isAllowedOverallAdministratorView,
-      }
-    );
-
-    cookieForUI(
-      request,
-      reply,
-      USER_ALLOWED_COOKIE_NAME,
-      userAllowedCookieString
-    );
-
     // CSRF Token passed as cookie
-    cookieForUI(
-      request,
-      reply,
-      CSRF_TOKEN_COOKIE_NAME,
-      await reply.generateCsrf()
-    );
+    cookieForUI(request, reply, CSRF_TOKEN_COOKIE_NAME, reply.generateCsrf());
 
     reply.redirect("/");
   });

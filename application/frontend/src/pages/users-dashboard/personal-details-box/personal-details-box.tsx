@@ -1,45 +1,19 @@
 import React from "react";
 import { Box } from "../../../components/boxes";
-import { useCookies } from "react-cookie";
+
+import { PermissionDialog } from "../all-users/permission-dialog";
+import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 import {
-  ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASE,
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
-  USER_EMAIL_COOKIE_NAME,
-  USER_NAME_COOKIE_NAME,
-  USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-constants";
-import { useUiAllowed } from "../../../hooks/ui-allowed";
-import { PermissionDialog } from "../other-users/permission-dialog";
-import { decodeAllowedDescription } from "../users-dashboard-page";
+  CHANGE_USER_PERMISSION_DESC,
+  CREATE_NEW_RELEASE_DESC,
+  DATASET_UPDATE_DESC,
+  OVERALL_ADMIN_VIEW_DESC,
+} from "../text-helper";
 
 type Props = {};
 
 export const PersonalDetailsBox: React.FC<Props> = ({}) => {
-  const [cookies] = useCookies<any>([
-    USER_SUBJECT_COOKIE_NAME,
-    USER_NAME_COOKIE_NAME,
-    USER_EMAIL_COOKIE_NAME,
-  ]);
-
-  // we could also make an API endpoint - and return back information that only the server
-  // has "about you".. things like "here are all the releases you are involved with"..
-  const uiAllowed = useUiAllowed();
-
-  const userObject = {
-    displayName: cookies[USER_NAME_COOKIE_NAME],
-    email: cookies[USER_EMAIL_COOKIE_NAME],
-    subjectIdentifier: cookies[USER_SUBJECT_COOKIE_NAME],
-    isAllowedChangeUserPermission: uiAllowed.has(
-      ALLOWED_CHANGE_USER_PERMISSION
-    ),
-    isAllowedCreateRelease: uiAllowed.has(ALLOWED_CREATE_NEW_RELEASE),
-    isAllowedRefreshDatasetIndex: uiAllowed.has(ALLOWED_DATASET_UPDATE),
-    isAllowedOverallAdministratorView: uiAllowed.has(
-      ALLOWED_OVERALL_ADMIN_VIEW
-    ),
-  };
+  const userObject = useLoggedInUser();
 
   const Heading = () => (
     <div className="flex">
@@ -52,36 +26,45 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
       <div className="flex w-full flex-col sm:flex-row">
         <div className="card rounded-box grid flex-grow">
           <h3 className="font-medium">Name</h3>
-          <p>{cookies[USER_NAME_COOKIE_NAME]}</p>
+          <p>{userObject?.displayName}</p>
           <br />
 
           <h3 className="font-medium">Email</h3>
-          <p>{cookies[USER_EMAIL_COOKIE_NAME]}</p>
+          <p>{userObject?.displayName}</p>
           <br />
 
           <h3 className="font-medium">Subject Identifier</h3>
-          <p>{cookies[USER_SUBJECT_COOKIE_NAME]}</p>
+          <p>{userObject?.subjectIdentifier}</p>
         </div>
         <div className="divider divider-vertical sm:divider-horizontal" />
         <div className="card rounded-box flex-grow">
           <div className="flex">
             <h3 className="font-medium">Permissions</h3>
-            <div>
-              <PermissionDialog user={userObject} />
-            </div>
+            <div>{userObject && <PermissionDialog user={userObject} />}</div>
           </div>
           <ul className="list-inside list-disc">
-            {uiAllowed.size !== 0 ? (
-              Array.from(uiAllowed.values()).map((v) => (
-                <li className="mt-2" key={v}>
-                  {decodeAllowedDescription(v)}
-                </li>
-              ))
-            ) : (
-              <li className="mt-2" key={"no permissions"}>
-                No specific permissions.
-              </li>
+            {userObject?.isAllowedChangeUserPermission && (
+              <li className="mt-2">{CHANGE_USER_PERMISSION_DESC}</li>
             )}
+            {userObject?.isAllowedOverallAdministratorView && (
+              <li className="mt-2">{OVERALL_ADMIN_VIEW_DESC}</li>
+            )}
+            {userObject?.isAllowedRefreshDatasetIndex && (
+              <li className="mt-2">{DATASET_UPDATE_DESC}</li>
+            )}
+            {userObject?.isAllowedCreateRelease && (
+              <li className="mt-2">{CREATE_NEW_RELEASE_DESC}</li>
+            )}
+
+            {/* If no permission specific permission is given */}
+            {!userObject?.isAllowedChangeUserPermission &&
+              !userObject?.isAllowedOverallAdministratorView &&
+              !userObject?.isAllowedRefreshDatasetIndex &&
+              !userObject?.isAllowedCreateRelease && (
+                <li className="mt-2" key={"no permissions"}>
+                  No specific permissions.
+                </li>
+              )}
           </ul>
         </div>
       </div>

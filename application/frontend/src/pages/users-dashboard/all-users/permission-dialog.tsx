@@ -1,12 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
 import {
-  ALLOWED_CHANGE_USER_PERMISSION,
-  ALLOWED_CREATE_NEW_RELEASE,
-  ALLOWED_DATASET_UPDATE,
-  ALLOWED_OVERALL_ADMIN_VIEW,
-} from "@umccr/elsa-constants";
-import {
   EagerErrorBoundary,
   ErrorBoundary,
   ErrorState,
@@ -14,16 +8,16 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { trpc } from "../../../helpers/trpc";
-import {
-  faCheck,
-  faSpinner,
-  faUserGear,
-} from "@fortawesome/free-solid-svg-icons";
-import { useUiAllowed } from "../../../hooks/ui-allowed";
-import { useQueryClient } from "@tanstack/react-query";
+import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import { Alert } from "../../../components/alert";
-import { decodeAllowedDescription } from "../users-dashboard-page";
+import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
+import {
+  CHANGE_USER_PERMISSION_DESC,
+  CREATE_NEW_RELEASE_DESC,
+  DATASET_UPDATE_DESC,
+  OVERALL_ADMIN_VIEW_DESC,
+} from "../text-helper";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -49,21 +43,21 @@ const permissionOptionProperties: {
   description?: string;
 }[] = [
   {
-    title: decodeAllowedDescription(ALLOWED_CREATE_NEW_RELEASE),
+    title: CREATE_NEW_RELEASE_DESC,
     key: "isAllowedCreateRelease",
   },
   {
-    title: decodeAllowedDescription(ALLOWED_DATASET_UPDATE),
+    title: DATASET_UPDATE_DESC,
     key: "isAllowedRefreshDatasetIndex",
   },
   {
-    title: decodeAllowedDescription(ALLOWED_OVERALL_ADMIN_VIEW),
+    title: OVERALL_ADMIN_VIEW_DESC,
     description:
       "Will be able to view all Datasets, Releases, and Audit Events.",
     key: "isAllowedOverallAdministratorView",
   },
   {
-    title: decodeAllowedDescription(ALLOWED_CHANGE_USER_PERMISSION),
+    title: CHANGE_USER_PERMISSION_DESC,
     description: "It can only be modified within the app configuration.",
     key: "isAllowedChangeUserPermission",
     disabled: true,
@@ -89,13 +83,11 @@ type UserProps = {
 };
 
 export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
-  const queryClient = useQueryClient();
-
-  // Check if user allowed to do some editing
-  const uiAllowed = useUiAllowed();
-  const isEditingAllowed = uiAllowed.has(ALLOWED_CHANGE_USER_PERMISSION);
+  const loggedInUser = useLoggedInUser();
+  const utils = trpc.useContext();
 
   // Some boolean values for component to show or not
+  const isEditingAllowed = loggedInUser?.isAllowedChangeUserPermission;
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isEditingMode, setIsEditingMode] = useState<boolean>(false);
 
@@ -125,17 +117,25 @@ export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
     {
       onSettled: async () => {
         setIsEditingMode(false);
-        await queryClient.invalidateQueries();
       },
       onError: (error: any) => setError({ error, isSuccess: false }),
-      onSuccess: () => {
+      onSuccess: async () => {
         setError({ error: null, isSuccess: true });
+
+        await utils.user.getUsers.invalidate();
+
+        // If the logged-in user change change its own permission
+        if (loggedInUser?.subjectIdentifier === user.subjectIdentifier)
+          await utils.user.getOwnUser.invalidate();
       },
     }
   );
 
   const onSave = useCallback(() => {
-    changeUserPermissionMutate.mutate({ userEmail: user.email, ...input });
+    changeUserPermissionMutate.mutate({
+      userSubjectId: user.subjectIdentifier,
+      ...input,
+    });
   }, [changeUserPermissionMutate.mutate, input]);
   const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
 
