@@ -13,7 +13,6 @@ import { axiosPatchOperationMutationFn } from "../queries";
 import { trpc } from "../../../helpers/trpc";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
 import { ReleaseSizeType } from "@umccr/elsa-types";
 import { fileSize } from "humanize-plus";
 
@@ -72,6 +71,21 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
     }
   );
 
+  const [releaseSize, setReleaseSize] = useState<
+    "unknown" | "loading" | ReleaseSizeType
+  >("unknown");
+
+  const releaseSizeQuery = trpc.manifest.getReleaseSize.useQuery(
+    { releaseKey },
+    { enabled: false }
+  );
+
+  const onPressComputeSize = useCallback(async () => {
+    setReleaseSize("loading");
+    const result = await releaseSizeQuery.refetch();
+    setReleaseSize(result.data ? result.data : "unknown");
+  }, [releaseKey]);
+
   const isAllowedCheck = (
     label: ReactNode,
     path:
@@ -101,16 +115,6 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       }}
     />
   );
-
-  const [releaseSize, setReleaseSize] = useState<
-    "unknown" | "loading" | ReleaseSizeType
-  >("unknown");
-
-  const onPressComputeSize = useCallback(async () => {
-    setReleaseSize("loading");
-    const response = await axios.get(`/api/releases/${releaseKey}/size`);
-    setReleaseSize(response.data);
-  }, [releaseKey]);
 
   return (
     <Box

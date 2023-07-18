@@ -361,19 +361,6 @@ export const releaseRoutes = async (
     }
   );
 
-  fastify.get<{
-    Params: { rid: string };
-    Reply: ReleaseSizeType;
-  }>("/releases/:rid/size", {}, async function (request, reply) {
-    const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-    const releaseKey = request.params.rid;
-
-    reply.send(
-      await manifestService.computeReleaseSize(authenticatedUser, releaseKey)
-    );
-  });
-
   fastify.post<{
     Body?: ReleasePresignRequestType;
     Params: { rid: string };
