@@ -103,9 +103,6 @@ export class ManifestService {
     user: AuthenticatedUser,
     releaseKey: string
   ): Promise<ReleaseSizeType> {
-    // TODO
-    return { numBytes: 42, numFiles: 420 };
-
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
@@ -116,8 +113,52 @@ export class ManifestService {
       throw new ReleaseViewError(releaseKey);
     }
 
-    // TODO
-    return { numBytes: 42, numFiles: 420 };
+    const masterManifest: ManifestMasterType = await this.createMasterManifest(
+      this.edgeDbClient,
+      releaseKey
+    );
+
+    const numBytes = masterManifest.specimenList.reduce(
+      (acc, cur) =>
+        acc +
+        cur.artifacts.reduce(
+          (acc_, cur_) =>
+            acc_ +
+            (cur_?.bclFile?.size ?? 0) +
+            (cur_?.forwardFile?.size ?? 0) +
+            (cur_?.reverseFile?.size ?? 0) +
+            (cur_?.bamFile?.size ?? 0) +
+            (cur_?.baiFile?.size ?? 0) +
+            (cur_?.cramFile?.size ?? 0) +
+            (cur_?.craiFile?.size ?? 0) +
+            (cur_?.vcfFile?.size ?? 0) +
+            (cur_?.tbiFile?.size ?? 0),
+          0
+        ),
+      0
+    );
+
+    const numFiles = masterManifest.specimenList.reduce(
+      (acc, cur) =>
+        acc +
+        cur.artifacts.reduce(
+          (acc_, cur_) =>
+            acc_ +
+            (cur_?.bclFile?.size ? 1 : 0) +
+            (cur_?.forwardFile?.size ? 1 : 0) +
+            (cur_?.reverseFile?.size ? 1 : 0) +
+            (cur_?.bamFile?.size ? 1 : 0) +
+            (cur_?.baiFile?.size ? 1 : 0) +
+            (cur_?.cramFile?.size ? 1 : 0) +
+            (cur_?.craiFile?.size ? 1 : 0) +
+            (cur_?.vcfFile?.size ? 1 : 0) +
+            (cur_?.tbiFile?.size ? 1 : 0),
+          0
+        ),
+      0
+    );
+
+    return { numBytes, numFiles };
   }
 
   public async getActiveTsvManifest(
