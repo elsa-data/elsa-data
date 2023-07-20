@@ -135,6 +135,7 @@ COPY --from=edgedb-builder /usr/bin/edgedb /a/
 COPY --from=edgedb-builder /build/dbschema/migrations/ /a/dbschema/migrations/
 COPY --from=app-builder /build/backend/config/ /a/config/
 COPY --from=app-builder /build/backend/locales/ /a/locales/
+COPY --from=app-builder /build/backend/emails/ /a/emails/
 
 # bring in any node_modules incompatible with bundling (including dependencies of these modules too)
 COPY --from=app-builder /build/backend/node_modules/node-gyp-build/ /a/node_modules/node-gyp-build/

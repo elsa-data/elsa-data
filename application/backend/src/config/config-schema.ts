@@ -3,12 +3,13 @@ import { Sensitive } from "./config-schema-sensitive";
 import { DacSchema } from "./config-schema-dac";
 import { DatasetSchema } from "./config-schema-dataset";
 import { SharerSchema } from "./config-schema-sharer";
-import { MailerSchema } from "./config-schema-mailer";
+import { EmailerSchema } from "./config-schema-emailer";
 import { BrandingSchema } from "./config-schema-branding";
 import { OidcSchema } from "./config-schema-oidc";
 import { HttpHostingSchema } from "./config-schema-http-hosting";
 import { FeatureSchema } from "./config-schema-feature";
 import { DataEgressConfigSchema } from "./config-schema-data-egress";
+import { DevTestingSchema } from "./config-schema-dev";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
@@ -122,7 +123,7 @@ export const configZodDefinition = z.object({
       "An array defining the sharing mechanisms which are to be enabled from this instance"
     ),
   // if present, a mailer is being configured and if not present, then the mailer does not start
-  mailer: z.optional(MailerSchema),
+  emailer: z.optional(EmailerSchema),
   ipLookup: z.optional(
     z.object({
       maxMindDbPath: z
@@ -132,21 +133,7 @@ export const configZodDefinition = z.object({
         ),
     })
   ),
-  devTesting: z.optional(
-    z.object({
-      allowTestUsers: z
-        .boolean()
-        .describe(
-          "If test users should be allowed, including various techniques used to adjust user sessions"
-        ),
-      allowTestRoutes: z.boolean().describe("If test routes should be added"),
-      mockAwsCloud: z
-        .boolean()
-        .describe(
-          "If we should replace the AWS cloud clients with ones that always returns mock values"
-        ),
-    })
-  ),
+  devTesting: DevTestingSchema,
   branding: z.optional(BrandingSchema),
 });
 

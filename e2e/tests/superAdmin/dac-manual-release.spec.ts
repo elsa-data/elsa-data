@@ -25,7 +25,6 @@ test("A release can be created manually which has selectable cases", async ({
 
   await page.locator("#datasetSelector > div").getByText("10C").click();
   await page.locator("#datasetSelector > div").getByText("10F").click();
-
   await page.locator("#datasetSelector > div").getByText("10G").click();
 
   await page.keyboard.press("Escape");

@@ -1,5 +1,18 @@
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 
+export class NotAuthorisedGetOwnUser extends Base7807Error {
+  constructor(subjectId?: string) {
+    super(
+      "Unauthorised attempt to use with this credential",
+      // Using 401, so user get kicked to the login page
+      401,
+      `User is unable to read its own user information${
+        subjectId ? ` subjectId: '${subjectId}'` : ""
+      }.`
+    );
+  }
+}
+
 export class NotAuthorisedViewUserManagement extends Base7807Error {
   constructor(subjectId?: string) {
     super(

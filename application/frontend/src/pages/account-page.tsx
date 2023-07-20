@@ -1,7 +1,6 @@
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
-  USER_ALLOWED_COOKIE_NAME,
 } from "@umccr/elsa-constants";
 import React from "react";
 import { useCookies } from "react-cookie";
@@ -25,7 +24,6 @@ const PageSizeSetting = () => {
 
   const [cookies, setCookie, removeCookie] = useCookies<any>([
     UI_PAGE_SIZE_COOKIE_NAME,
-    USER_ALLOWED_COOKIE_NAME,
   ]);
 
   const pageSizeFromCookie = parseInt(cookies[UI_PAGE_SIZE_COOKIE_NAME]);

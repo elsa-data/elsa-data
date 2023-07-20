@@ -1,6 +1,6 @@
-import React, { ReactNode } from "react";
+import React, { useCallback, useState, ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import {
@@ -11,6 +11,38 @@ import {
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import { axiosPatchOperationMutationFn } from "../queries";
 import { trpc } from "../../../helpers/trpc";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFile } from "@fortawesome/free-solid-svg-icons";
+import { ReleaseSizeType } from "@umccr/elsa-types";
+import { fileSize } from "humanize-plus";
+
+const Stats = ({
+  stats,
+}: {
+  stats:
+    | {
+        numFiles: number;
+        numBytes: number;
+      }
+    | undefined;
+}) => {
+  const { numFiles = undefined, numBytes = undefined } = stats ?? {};
+
+  return (
+    <div className="stats mt-5 shadow">
+      <div className="stat">
+        <div className="stat-figure text-accent">
+          <FontAwesomeIcon icon={faFile} size="2xl" className="ml-2" />
+        </div>
+        <div className="stat-title">Release Size</div>
+        <div className="stat-value">
+          {numBytes === undefined ? "?? B" : fileSize(numBytes)}
+        </div>
+        <div className="stat-desc">{numFiles ?? "??"} Files</div>
+      </div>
+    </div>
+  );
+};
 
 type Props = {
   releaseKey: string;
@@ -38,6 +70,21 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
         }),
     }
   );
+
+  const [releaseSize, setReleaseSize] = useState<
+    "unknown" | "loading" | ReleaseSizeType
+  >("unknown");
+
+  const releaseSizeQuery = trpc.manifest.getReleaseSize.useQuery(
+    { releaseKey },
+    { enabled: false }
+  );
+
+  const onPressComputeSize = useCallback(async () => {
+    setReleaseSize("loading");
+    const result = await releaseSizeQuery.refetch();
+    setReleaseSize(result.data ? result.data : "unknown");
+  }, [releaseKey]);
 
   const isAllowedCheck = (
     label: ReactNode,
@@ -131,6 +178,23 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
                 )}
               </RhChecks>
             </div>
+          </div>
+          <div className="flex items-end justify-end gap-x-5">
+            <button
+              type="button"
+              disabled={releaseSize === "loading"}
+              className="btn-normal w-fit"
+              onClick={onPressComputeSize}
+            >
+              Compute Release Size
+            </button>
+            <Stats
+              stats={
+                releaseSize === "unknown" || releaseSize === "loading"
+                  ? undefined
+                  : releaseSize
+              }
+            />
           </div>
         </RightDiv>
       </RhSection>

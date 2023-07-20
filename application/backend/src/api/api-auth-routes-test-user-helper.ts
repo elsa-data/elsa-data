@@ -1,11 +1,5 @@
 import { FastifyInstance } from "fastify";
-import {
-  CSRF_TOKEN_COOKIE_NAME,
-  USER_ALLOWED_COOKIE_NAME,
-  USER_EMAIL_COOKIE_NAME,
-  USER_NAME_COOKIE_NAME,
-  USER_SUBJECT_COOKIE_NAME,
-} from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
 import {
   SESSION_TOKEN_PRIMARY,
   SESSION_USER_DB_OBJECT,
@@ -32,11 +26,7 @@ import {
   TEST_SUBJECT_4_DISPLAY,
   TEST_SUBJECT_4_EMAIL,
 } from "../test-data/user/insert-user4";
-import {
-  cookieForBackend,
-  cookieForUI,
-  createUserAllowedCookie,
-} from "./helpers/cookie-helpers";
+import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { AuthenticatedUser } from "../business/authenticated-user";
 
@@ -150,18 +140,6 @@ const addTestUserRoute = (
       "Thiswouldneedtobearealbearertokenforexternaldata"
     );
     cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
-
-    // these cookies however are available to React - PURELY for UI/display purposes
-    cookieForUI(request, reply, USER_SUBJECT_COOKIE_NAME, dbUser.subjectId);
-    cookieForUI(request, reply, USER_NAME_COOKIE_NAME, dbUser.displayName);
-    cookieForUI(request, reply, USER_EMAIL_COOKIE_NAME, dbUser.email);
-
-    const allowed = createUserAllowedCookie(
-      userService.isConfiguredSuperAdmin(dbUser.subjectId),
-      dbUser
-    );
-
-    cookieForUI(request, reply, USER_ALLOWED_COOKIE_NAME, allowed);
 
     // CSRF Token passed as cookie
     cookieForUI(request, reply, CSRF_TOKEN_COOKIE_NAME, reply.generateCsrf());

@@ -13,7 +13,10 @@ import {
   addUserAuditEventPermissionChange,
   addUserAuditEventToReleaseQuery,
 } from "../db/audit-log-queries";
-import { NotAuthorisedEditUserManagement } from "../exceptions/user";
+import {
+  NotAuthorisedEditUserManagement,
+  NotAuthorisedGetOwnUser,
+} from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
   potentialUserGetByEmail,
@@ -60,6 +63,35 @@ export class UserService {
     }
 
     return false;
+  }
+  /**
+   * Get its own authenticated user
+   */
+  public async getOwnUser(user: AuthenticatedUser): Promise<UserSummaryType> {
+    const currentUser = await userGetByDbId(this.edgeDbClient, {
+      dbId: user.dbId,
+    });
+
+    if (!currentUser) throw new NotAuthorisedGetOwnUser(user.subjectId);
+
+    return {
+      id: currentUser.id,
+      subjectIdentifier: currentUser.subjectId,
+      email: currentUser.email,
+      displayName: currentUser.displayName,
+      lastLogin: currentUser.lastLoginDateTime,
+
+      // Write Access
+      isAllowedChangeUserPermission: this.isConfiguredSuperAdmin(
+        currentUser.subjectId
+      ),
+      isAllowedRefreshDatasetIndex: currentUser.isAllowedRefreshDatasetIndex,
+      isAllowedCreateRelease: currentUser.isAllowedCreateRelease,
+
+      // Read Access
+      isAllowedOverallAdministratorView:
+        currentUser.isAllowedOverallAdministratorView,
+    };
   }
 
   /**
@@ -123,13 +155,12 @@ export class UserService {
 
   /**
    * @param user
-   * @param targetEmail
+   * @param targetSubjectId
    * @param permission
    */
   public async changePermission(
     user: AuthenticatedUser,
-    // TODO change this to subjectId (if this is possible?)
-    targetEmail: string,
+    targetSubjectId: string,
     permission: ChangeablePermission
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
@@ -137,7 +168,7 @@ export class UserService {
 
     await e
       .update(e.permission.User, (u) => ({
-        filter: e.op(e.str(targetEmail), "=", u.email),
+        filter: e.op(e.str(targetSubjectId), "=", u.subjectId),
         set: {
           isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
           isAllowedCreateRelease: permission.isAllowedCreateRelease,

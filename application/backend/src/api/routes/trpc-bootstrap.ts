@@ -1,7 +1,6 @@
 import * as edgedb from "edgedb";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-helpers";
-import { createUserAllowedCookie } from "../helpers/cookie-helpers";
 import { DependencyContainer } from "tsyringe";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../../business/services/user-service";
@@ -23,6 +22,7 @@ import { S3IndexApplicationService } from "../../business/services/australian-ge
 import { ReleaseSelectionService } from "../../business/services/releases/release-selection-service";
 import { DacService } from "../../business/services/dacs/dac-service";
 import { AuditEventService } from "../../business/services/audit-event-service";
+import { ManifestService } from "../../business/services/manifests/manifest-service";
 import { SharerService } from "../../business/services/sharer-service";
 import { NOT_AUTHORISED_MESSAGE } from "../errors/authentication-error";
 
@@ -82,41 +82,6 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   // Parse pagination from req
   const pageSize = currentPageSize(ctx.req);
 
-  /*
-  DISABLED - WE NO LONGER STORE ANY PERMISSIONS IN THE SESSION - SO THERE IS NO SENSE IN WHICH THEY
-  CAN GET OUT OF SYNC
-  WHAT CAN GET OUT OF SYNC THOUGH IS THE UI COOKIES - CAN WE CHECK THAT??
-  // Checking cookie with Db
-  const dbUser = await userService.getDbUser(authedUser);
-  if (!dbUser) {
-    ctx.req.log.error(
-      "isDbAuthed: no user data was present in database so failing authentication"
-    );
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-    });
-  }
-
-  // Checking cookie permissions
-
-  const dbPermission = createUserAllowedCookie(
-    userService.isConfiguredSuperAdmin(dbUser.subjectId),
-    dbUser
-  );
-  const sessionPermission = createUserAllowedCookie(
-    userService.isConfiguredSuperAdmin(authedUser.subjectId),
-    authedUser
-  );
-  if (dbPermission != sessionPermission) {
-    ctx.req.log.error(
-      "isCookieDataUpdated: cookie permissions do not match with Db so failing authentication"
-    );
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "User permissions have changed, please try logging back in!",
-    });
-  } */
-
   const { edgeDbClient, settings, logger } = getServices(ctx.container);
 
   // now that we have authenticated we can inject the user globally into our db client
@@ -138,6 +103,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       datasetService: ctx.container.resolve(DatasetService),
       userService: userService,
       auditEventService: ctx.container.resolve(AuditEventService),
+      manifestService: ctx.container.resolve(ManifestService),
       releaseService: ctx.container.resolve(ReleaseService),
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(

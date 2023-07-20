@@ -29,7 +29,6 @@ import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-das
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit-events-sub-page";
 import { JobsSubPage } from "./pages/releases/jobs-sub-page/jobs-sub-page";
-import { useUiAllowed } from "./hooks/ui-allowed";
 import { DatasetLayout } from "./layouts/layout-base-dataset";
 import { DacLayout } from "./layouts/layout-base-dac";
 import {
@@ -75,9 +74,9 @@ export function IndexRouter({ features }: IndexRouterProps) {
   const ProtectedRoute: React.FC<{ redirectPath: string }> = ({
     redirectPath,
   }) => {
-    const user = useLoggedInUser();
+    const userObject = useLoggedInUser();
 
-    if (!user) {
+    if (!userObject) {
       return <Navigate to={redirectPath} replace />;
     }
 
@@ -216,10 +215,3 @@ export function IndexRouter({ features }: IndexRouterProps) {
 
   return <RouterProvider router={router} />;
 }
-
-// Redirection component
-const IsDatasetAllowed = () => {
-  const uiAllowed = useUiAllowed();
-
-  return <></>;
-};
