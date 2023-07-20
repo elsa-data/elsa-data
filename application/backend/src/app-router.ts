@@ -6,6 +6,7 @@ import { releaseDataEgressRouter } from "./api/routes/internal-trpc/release/rele
 import { releaseParticipantRouter } from "./api/routes/internal-trpc/release/release-participant-router";
 import { testRouter } from "./api/routes/internal-trpc/test-router";
 import { datasetRouter } from "./api/routes/internal-trpc/dataset-router";
+import { manifestRouter } from "./api/routes/internal-trpc/manifest-routes";
 import { releaseRouter } from "./api/routes/internal-trpc/release/release-router";
 import { dacRouter } from "./api/routes/internal-trpc/dac-router";
 import { auditEventRouter } from "./api/routes/internal-trpc/audit-event-router";
@@ -15,6 +16,7 @@ export const appRouter = router({
   dac: dacRouter,
   auditEventRouter: auditEventRouter,
   datasetRouter: datasetRouter,
+  manifest: manifestRouter,
   release: releaseRouter,
   releaseActivation: releaseActivationRouter,
   releaseDataEgress: releaseDataEgressRouter,

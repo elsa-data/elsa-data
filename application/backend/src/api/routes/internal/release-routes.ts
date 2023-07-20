@@ -7,6 +7,7 @@ import {
   ReleasePatchOperationsType,
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
+  ReleaseSizeType,
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";

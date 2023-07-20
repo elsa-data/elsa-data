@@ -22,6 +22,7 @@ import { S3IndexApplicationService } from "../../business/services/australian-ge
 import { ReleaseSelectionService } from "../../business/services/releases/release-selection-service";
 import { DacService } from "../../business/services/dacs/dac-service";
 import { AuditEventService } from "../../business/services/audit-event-service";
+import { ManifestService } from "../../business/services/manifests/manifest-service";
 import { SharerService } from "../../business/services/sharer-service";
 import { NOT_AUTHORISED_MESSAGE } from "../errors/authentication-error";
 
@@ -102,6 +103,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       datasetService: ctx.container.resolve(DatasetService),
       userService: userService,
       auditEventService: ctx.container.resolve(AuditEventService),
+      manifestService: ctx.container.resolve(ManifestService),
       releaseService: ctx.container.resolve(ReleaseService),
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(

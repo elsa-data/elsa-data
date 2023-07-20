@@ -17,7 +17,10 @@ import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../releases/release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
+import {
+  ObjectStoreRecordKey,
+  ReleaseSizeType,
+} from "@umccr/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
@@ -94,6 +97,68 @@ export class ManifestService {
     });
 
     return transformDbManifestToMasterManifest(manifest);
+  }
+
+  public async computeReleaseSize(
+    user: AuthenticatedUser,
+    releaseKey: string
+  ): Promise<ReleaseSizeType> {
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (!(userRole === "Administrator" || userRole === "AdminView")) {
+      throw new ReleaseViewError(releaseKey);
+    }
+
+    const masterManifest: ManifestMasterType = await this.createMasterManifest(
+      this.edgeDbClient,
+      releaseKey
+    );
+
+    const numBytes = masterManifest.specimenList.reduce(
+      (acc, cur) =>
+        acc +
+        cur.artifacts.reduce(
+          (acc_, cur_) =>
+            acc_ +
+            (cur_?.bclFile?.size ?? 0) +
+            (cur_?.forwardFile?.size ?? 0) +
+            (cur_?.reverseFile?.size ?? 0) +
+            (cur_?.bamFile?.size ?? 0) +
+            (cur_?.baiFile?.size ?? 0) +
+            (cur_?.cramFile?.size ?? 0) +
+            (cur_?.craiFile?.size ?? 0) +
+            (cur_?.vcfFile?.size ?? 0) +
+            (cur_?.tbiFile?.size ?? 0),
+          0
+        ),
+      0
+    );
+
+    const numFiles = masterManifest.specimenList.reduce(
+      (acc, cur) =>
+        acc +
+        cur.artifacts.reduce(
+          (acc_, cur_) =>
+            acc_ +
+            (cur_?.bclFile?.size ? 1 : 0) +
+            (cur_?.forwardFile?.size ? 1 : 0) +
+            (cur_?.reverseFile?.size ? 1 : 0) +
+            (cur_?.bamFile?.size ? 1 : 0) +
+            (cur_?.baiFile?.size ? 1 : 0) +
+            (cur_?.cramFile?.size ? 1 : 0) +
+            (cur_?.craiFile?.size ? 1 : 0) +
+            (cur_?.vcfFile?.size ? 1 : 0) +
+            (cur_?.tbiFile?.size ? 1 : 0),
+          0
+        ),
+      0
+    );
+
+    return { numBytes, numFiles };
   }
 
   public async getActiveTsvManifest(
