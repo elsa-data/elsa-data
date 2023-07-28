@@ -32,25 +32,25 @@ import { AuthenticatedUser } from "../business/authenticated-user";
 
 const ALL_TEST_SUBJECT = [
   {
-    subject_id: TEST_SUBJECT_1,
+    subjectId: TEST_SUBJECT_1,
     name: TEST_SUBJECT_1_DISPLAY,
     email: TEST_SUBJECT_1_EMAIL,
     bypassPath: "/login-bypass-1",
   },
   {
-    subject_id: TEST_SUBJECT_2,
+    subjectId: TEST_SUBJECT_2,
     name: TEST_SUBJECT_2_DISPLAY,
     email: TEST_SUBJECT_2_EMAIL,
     bypassPath: "/login-bypass-2",
   },
   {
-    subject_id: TEST_SUBJECT_3,
+    subjectId: TEST_SUBJECT_3,
     name: TEST_SUBJECT_3_DISPLAY,
     email: TEST_SUBJECT_3_EMAIL,
     bypassPath: "/login-bypass-3",
   },
   {
-    subject_id: TEST_SUBJECT_4,
+    subjectId: TEST_SUBJECT_4,
     name: TEST_SUBJECT_4_DISPLAY,
     email: TEST_SUBJECT_4_EMAIL,
     bypassPath: "/login-bypass-4",
@@ -78,7 +78,7 @@ export async function addTestUserRoutesAndActualUsers(
 
   for (const subjectProp of ALL_TEST_SUBJECT) {
     const subject = await userService.upsertUserForLogin(
-      subjectProp.subject_id,
+      subjectProp.subjectId,
       subjectProp.name,
       subjectProp.email
     );
@@ -92,7 +92,7 @@ export async function addTestUserRoutesAndActualUsers(
       fastify,
       opts.container,
       subjectProp.bypassPath,
-      subjectProp.subject_id,
+      subjectProp.subjectId,
       subjectProp.name,
       subjectProp.email
     );

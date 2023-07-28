@@ -20,7 +20,7 @@ export async function insertRelease6(
 
   const insertRelease6 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      lastUpdatedSubjectId: releaseAdministrator[0].subjectId,
       applicationDacTitle: "A Working Release of Smartie Data",
       applicationDacDetails: "The Smartie study",
       applicationDacIdentifier: makeSystemlessIdentifier("12345"),

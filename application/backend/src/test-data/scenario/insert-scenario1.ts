@@ -80,7 +80,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   const userService = dc.resolve(UserService);
 
   const datasetAdministratorUser = await userService.getBySubjectId(
-    datasetAdministrator.subject_id
+    datasetAdministrator.subjectId
   );
 
   if (!datasetAdministratorUser)
