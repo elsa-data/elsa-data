@@ -125,7 +125,7 @@ function DisplayDownloadStatus({
     return (
       <ToolTip
         trigger={
-          <div className="badge badge-warning whitespace-pre">{`suspended`}</div>
+          <div className="badge badge-error whitespace-pre">{`suspended`}</div>
         }
         description={"File is no longer active for sharing"}
       />
