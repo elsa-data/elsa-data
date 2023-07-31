@@ -23,9 +23,7 @@ export default function ShowAlert(props: { children: React.ReactNode }) {
     <CtxProvider value={{ show: handleIsShowing }}>
       {isShowing && (
         <>
-          <div
-            className={`pointer-events-none absolute z-20 h-full w-full backdrop-blur	`}
-          />
+          <div className={`absolute z-20 h-full w-full backdrop-blur`} />
           <div className="absolute z-[21] flex w-full justify-center">
             <Alert
               icon={<TriangleExclamationIcon />}
