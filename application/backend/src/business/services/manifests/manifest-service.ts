@@ -25,6 +25,7 @@ import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
 import { getReleaseInfo } from "../helpers";
+import { ReleaseActivatedNothingError } from "../../exceptions/release-activation";
 
 @injectable()
 export class ManifestService {
@@ -113,10 +114,19 @@ export class ManifestService {
       throw new ReleaseViewError(releaseKey);
     }
 
-    const masterManifest: ManifestMasterType = await this.createMasterManifest(
-      this.edgeDbClient,
-      releaseKey
-    );
+    let masterManifest: ManifestMasterType;
+    try {
+      masterManifest = await this.createMasterManifest(
+        this.edgeDbClient,
+        releaseKey
+      );
+    } catch (e) {
+      if (e instanceof ReleaseActivatedNothingError) {
+        return { numBytes: 0, numFiles: 0 };
+      } else {
+        throw e;
+      }
+    }
 
     const numBytes = masterManifest.specimenList.reduce(
       (acc, cur) =>
