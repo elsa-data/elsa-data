@@ -86,8 +86,29 @@ select {
       detailsAsPrettyString := to_str(.details, 'pretty')[0 : m] if exists(.details) else "",
       detailsWereTruncated := exists(.details) and m >= 0 and len(to_str(.details, 'pretty')) >= m
     }
-    # WIP need to add some dynamism here to allow order fields
-    order by .occurredDateTime desc
+    order by (
+      <str>.updatedDateTime if <str>$orderByProperty = "updatedDateTime" and <str>$orderByDirection = "asc" else
+      <str>.actionCategory if <str>$orderByProperty = "actionCategory" and <str>$orderByDirection = "asc" else
+      <str>.actionDescription if <str>$orderByProperty = "actionDescription" and <str>$orderByDirection = "asc" else
+      <str>.details if <str>$orderByProperty = "details" and <str>$orderByDirection = "asc" else
+      <str>.occurredDateTime if <str>$orderByProperty = "occuredDateTime" and <str>$orderByDirection = "asc" else
+      <str>.occurredDuration if <str>$orderByProperty = "occurredDuration" and <str>$orderByDirection = "asc" else
+      <str>.outcome if <str>$orderByProperty = "outcome" and <str>$orderByDirection = "asc" else
+      <str>.recordedDateTime if <str>$orderByProperty = "recordedDateTime" and <str>$orderByDirection = "asc" else
+      <str>.inProgress if <str>$orderByProperty = "inProgress" and <str>$orderByDirection = "asc" else
+      ""
+    ) asc then (
+      <str>.updatedDateTime if <str>$orderByProperty = "updatedDateTime" and <str>$orderByDirection = "desc" else
+      <str>.actionCategory if <str>$orderByProperty = "actionCategory" and <str>$orderByDirection = "desc" else
+      <str>.actionDescription if <str>$orderByProperty = "actionDescription" and <str>$orderByDirection = "desc" else
+      <str>.details if <str>$orderByProperty = "details" and <str>$orderByDirection = "desc" else
+      <str>.occurredDateTime if <str>$orderByProperty = "occuredDateTime" and <str>$orderByDirection = "desc" else
+      <str>.occurredDuration if <str>$orderByProperty = "occurredDuration" and <str>$orderByDirection = "desc" else
+      <str>.outcome if <str>$orderByProperty = "outcome" and <str>$orderByDirection = "desc" else
+      <str>.recordedDateTime if <str>$orderByProperty = "recordedDateTime" and <str>$orderByDirection = "desc" else
+      <str>.inProgress if <str>$orderByProperty = "inProgress" and <str>$orderByDirection = "desc" else
+      ""
+    )
     offset <optional int64>$offset
     limit  <optional int64>$limit)
 }
