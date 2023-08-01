@@ -14,14 +14,6 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import {
-  auditLogFullForIdQuery,
-  countAuditLogEntriesForReleaseQuery,
-  countAuditLogEntriesForSystemQuery,
-  pageableAuditEventsQuery,
-  pageableAuditLogEntriesForReleaseQuery,
-  pageableAuditLogEntriesForSystemQuery,
-} from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
@@ -39,7 +31,6 @@ import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
 import { Logger } from "pino";
 import { UserData } from "../data/user-data";
-import { ReleaseCreateError } from "../exceptions/release-authorisation";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -479,30 +470,26 @@ export class AuditEventService {
   ): Promise<PagedResult<AuditEventType> | null> {
     await this.checkIsAllowedViewAuditEvents(user, releaseKey, executor);
 
-    const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
-      executor,
-      { releaseKey }
-    );
-
-    const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
-      releaseKey,
+    const { total, data } = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
       limit,
       offset,
       orderByProperty,
-      orderAscending
-    ).run(executor);
+      orderAscending,
+      filterTypes: ["release"],
+    });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      pageOfEntries.flatMap((entry) =>
+      data.flatMap((entry) =>
         !entry.inProgress
           ? [
               {
                 objectId: entry.id,
-                whoId: entry.whoId,
+                whoId: entry.whoSubjectId,
                 whoDisplayName: entry.whoDisplayName,
                 actionCategory: entry.actionCategory,
                 actionDescription: entry.actionDescription,
@@ -516,7 +503,7 @@ export class AuditEventService {
             ]
           : []
       ),
-      totalEntries
+      total
     );
   }
 
@@ -552,28 +539,26 @@ export class AuditEventService {
       await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
     }
 
-    const { count, entries } = pageableAuditEventsQuery(
-      filter.filter((value) => value !== "all"),
-      filter.includes("all") ? "all" : [user.dbId],
+    const { total, data } = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
       limit,
       offset,
-      true,
       orderByProperty,
-      orderAscending
-    );
+      orderAscending,
+      filterTypes: filter,
+    });
 
-    const length = await count.run(executor);
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${length}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      (await entries.run(executor)).flatMap((entry) =>
+      data.flatMap((entry) =>
         !entry.inProgress
           ? [
               {
                 objectId: entry.id,
-                whoId: entry.whoId,
+                whoId: entry.whoSubjectId,
                 whoDisplayName: entry.whoDisplayName,
                 actionCategory: entry.actionCategory,
                 actionDescription: entry.actionDescription,
@@ -588,34 +573,36 @@ export class AuditEventService {
             ]
           : []
       ),
-      length
+      total
     );
   }
 
   public async getSystemEntries(
+    user: AuthenticatedUser,
     limit: number,
     offset: number,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
     executor: Executor = this.edgeDbClient
   ): Promise<PagedResult<AuditEventType> | null> {
-    const totalEntries = await countAuditLogEntriesForSystemQuery.run(executor);
+    // Only admin view users should be able to view system audit events.
+    await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
 
-    const pageOfEntries = await pageableAuditLogEntriesForSystemQuery(
+    const { total, data } = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
       limit,
       offset,
-      true,
-      true,
       orderByProperty,
-      orderAscending
-    ).run(executor);
+      orderAscending,
+      filterTypes: ["system"],
+    });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      pageOfEntries.flatMap((entry) =>
+      data.flatMap((entry) =>
         !entry.inProgress
           ? [
               {
@@ -634,7 +621,7 @@ export class AuditEventService {
             ]
           : []
       ),
-      totalEntries
+      total
     );
   }
 
@@ -668,23 +655,26 @@ export class AuditEventService {
   ): Promise<AuditEventFullType | null> {
     await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
 
-    const entry = await auditLogFullForIdQuery(id).run(executor);
+    const entry = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
+      filterAuditEventDbId: id,
+    });
 
-    if (!entry) {
+    if (!entry || !entry.data) {
       return null;
     } else {
       return {
-        objectId: entry.id,
-        whoId: entry.whoId,
-        whoDisplayName: entry.whoDisplayName,
-        actionCategory: entry.actionCategory,
-        actionDescription: entry.actionDescription,
-        recordedDateTime: entry.recordedDateTime,
-        updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime,
-        occurredDuration: entry.occurredDuration?.toString(),
-        outcome: entry.outcome,
-        details: entry.details,
+        objectId: entry.data[0].id,
+        whoId: entry.data[0].whoSubjectId,
+        whoDisplayName: entry.data[0].whoDisplayName,
+        actionCategory: entry.data[0].actionCategory,
+        actionDescription: entry.data[0].actionDescription,
+        recordedDateTime: entry.data[0].recordedDateTime,
+        updatedDateTime: entry.data[0].updatedDateTime,
+        occurredDateTime: entry.data[0].occurredDateTime,
+        occurredDuration: entry.data[0].occurredDuration?.toString(),
+        outcome: entry.data[0].outcome,
+        details: entry.data[0].detailsAsPrettyString,
       };
     }
   }

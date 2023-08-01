@@ -39,6 +39,7 @@ it("audit system instant", async () => {
   );
 
   const events = await auditEventService.getSystemEntries(
+    existingUser,
     1000,
     0,
     "occurredDateTime",
@@ -67,6 +68,7 @@ it("audit system instant with create function", async () => {
   );
 
   const events = await auditEventService.getSystemEntries(
+    existingUser,
     1000,
     0,
     "occurredDateTime",
@@ -107,6 +109,7 @@ it("audit system duration", async () => {
   );
 
   const events = await auditEventService.getSystemEntries(
+    existingUser,
     1000,
     0,
     "occurredDateTime",
@@ -137,6 +140,7 @@ it("get in progress system entries", async () => {
   );
 
   const events = await auditEventService.getSystemEntries(
+    existingUser,
     1000,
     0,
     "occurredDateTime",

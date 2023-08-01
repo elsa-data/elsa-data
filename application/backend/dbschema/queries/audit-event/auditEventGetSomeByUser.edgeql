@@ -14,6 +14,11 @@ with
   # specified defaults to -1 which effectively gets the whole string
   m := <optional int64>$detailsMaxLength if exists(<optional int64>$detailsMaxLength) else -1,
 
+  # What to order the results by. Defaults to `occurredDateTime`.
+  orderByProperty := <optional str>$orderByProperty,
+  # Whether to order the properties in ascending order. Defaults to `false`, ordering by descending order.
+  orderAscending := <optional bool>$orderAscending ?? false,
+
   # the user asking for audit entries
   u := assert_single((
     select permission::User {
@@ -44,9 +49,9 @@ with
         # ELSE return all
         (.id = <optional uuid>$filterAuditEventDbId if exists(<optional uuid>$filterAuditEventDbId) else
            (
-             (.isSystemAuditEvent and contains(<optional array<str>>$filterTypes,'system')) or
-             (.isUserAuditEvent and contains(<optional array<str>>$filterTypes,'user')) or
-             (.isReleaseAuditEvent and contains(<optional array<str>>$filterTypes,'release'))
+             (.isSystemAuditEvent and contains(<optional array<str>>$filterTypes, 'system')) or
+             (.isUserAuditEvent and contains(<optional array<str>>$filterTypes, 'user')) or
+             (.isReleaseAuditEvent and contains(<optional array<str>>$filterTypes, 'release'))
            ) if exists(<optional array<str>>$filterTypes) else
              true
         )
@@ -57,14 +62,14 @@ with
         and
         # and whether we have been filter above or not, we always need to filter by visibility rules
         (
-           # if the user is an admin viewer they can see
-           (u.isAllowedOverallAdministratorView) or
+           # if the user is an admin viewer and wants to see all events
+           (u.isAllowedOverallAdministratorView and contains(<optional array<str>>$filterTypes, 'all')) or
            # if the user created the event they can see
            (u ?= .user) or
            # if the user is participating in a release that this is an event of they can see
            ((.release in u.releaseParticipant) ?? false)
         )
-  )
+  ),
 
 select {
   total := count(e),
@@ -77,6 +82,7 @@ select {
       occurredDateTime,
       occurredDuration,
       outcome,
+      inProgress,
       isSystemAuditEvent,
       isUserAuditEvent,
       whoSubjectId,
@@ -84,31 +90,32 @@ select {
       isReleaseAuditEvent,
       releaseId := .release.id,
       detailsAsPrettyString := to_str(.details, 'pretty')[0 : m] if exists(.details) else "",
-      detailsWereTruncated := exists(.details) and m >= 0 and len(to_str(.details, 'pretty')) >= m
+      detailsWereTruncated := exists(.details) and m >= 0 and len(to_str(.details, 'pretty')) >= m,
+      hasDetails := exists(.details)
     }
     order by (
-      <str>.updatedDateTime if <str>$orderByProperty = "updatedDateTime" and <str>$orderByDirection = "asc" else
-      <str>.actionCategory if <str>$orderByProperty = "actionCategory" and <str>$orderByDirection = "asc" else
-      <str>.actionDescription if <str>$orderByProperty = "actionDescription" and <str>$orderByDirection = "asc" else
-      <str>.details if <str>$orderByProperty = "details" and <str>$orderByDirection = "asc" else
-      <str>.occurredDateTime if <str>$orderByProperty = "occuredDateTime" and <str>$orderByDirection = "asc" else
-      <str>.occurredDuration if <str>$orderByProperty = "occurredDuration" and <str>$orderByDirection = "asc" else
-      <str>.outcome if <str>$orderByProperty = "outcome" and <str>$orderByDirection = "asc" else
-      <str>.recordedDateTime if <str>$orderByProperty = "recordedDateTime" and <str>$orderByDirection = "asc" else
-      <str>.inProgress if <str>$orderByProperty = "inProgress" and <str>$orderByDirection = "asc" else
+      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and <str>orderAscending = "true" else
+      <str>.actionCategory if orderByProperty = "actionCategory" and <str>orderAscending = "true" else
+      <str>.actionDescription if orderByProperty = "actionDescription" and <str>orderAscending = "true" else
+      <str>.details if orderByProperty = "details" and <str>orderAscending = "true" else
+      <str>.occurredDateTime if orderByProperty = "occuredDateTime" and <str>orderAscending = "true" else
+      <str>.occurredDuration if orderByProperty = "occurredDuration" and <str>orderAscending = "true" else
+      <str>.outcome if orderByProperty = "outcome" and <str>orderAscending = "true" else
+      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and <str>orderAscending = "true" else
+      <str>.inProgress if orderByProperty = "inProgress" and <str>orderAscending = "true" else
       ""
     ) asc then (
-      <str>.updatedDateTime if <str>$orderByProperty = "updatedDateTime" and <str>$orderByDirection = "desc" else
-      <str>.actionCategory if <str>$orderByProperty = "actionCategory" and <str>$orderByDirection = "desc" else
-      <str>.actionDescription if <str>$orderByProperty = "actionDescription" and <str>$orderByDirection = "desc" else
-      <str>.details if <str>$orderByProperty = "details" and <str>$orderByDirection = "desc" else
-      <str>.occurredDateTime if <str>$orderByProperty = "occuredDateTime" and <str>$orderByDirection = "desc" else
-      <str>.occurredDuration if <str>$orderByProperty = "occurredDuration" and <str>$orderByDirection = "desc" else
-      <str>.outcome if <str>$orderByProperty = "outcome" and <str>$orderByDirection = "desc" else
-      <str>.recordedDateTime if <str>$orderByProperty = "recordedDateTime" and <str>$orderByDirection = "desc" else
-      <str>.inProgress if <str>$orderByProperty = "inProgress" and <str>$orderByDirection = "desc" else
-      ""
-    )
+      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and <str>orderAscending = "false" else
+      <str>.actionCategory if orderByProperty = "actionCategory" and <str>orderAscending = "false" else
+      <str>.actionDescription if orderByProperty = "actionDescription" and <str>orderAscending = "false" else
+      <str>.details if orderByProperty = "details" and <str>orderAscending = "false" else
+      <str>.occurredDateTime if orderByProperty = "occuredDateTime" and <str>orderAscending = "false" else
+      <str>.occurredDuration if orderByProperty = "occurredDuration" and <str>orderAscending = "false" else
+      <str>.outcome if orderByProperty = "outcome" and <str>orderAscending = "false" else
+      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and <str>orderAscending = "false" else
+      <str>.inProgress if orderByProperty = "inProgress" and <str>orderAscending = "false" else
+      <str>.occurredDateTime
+    ) desc
     offset <optional int64>$offset
     limit  <optional int64>$limit)
 }
