@@ -19,7 +19,7 @@ import { insert10F } from "../../src/test-data/dataset/insert-test-data-10f";
 
 const testContainer = registerTypes();
 
-describe("edgedb release queries tests", () => {
+describe("edgedb egress-release query tests", () => {
   let edgeDbClient: Client;
   let release3: { id: string };
   let adminUserObj: UserObject;
@@ -54,7 +54,7 @@ describe("edgedb release queries tests", () => {
     release3 = await insertRelease3(testContainer, releaseProps);
   });
 
-  it("test when release never been actived", async () => {
+  it("test when release has never been activated", async () => {
     const dataEgressSummaryResult = await getReleaseDataEgressSummary(
       edgeDbClient,
       {
@@ -98,10 +98,10 @@ describe("edgedb release queries tests", () => {
       expect(rec.isActive).toBe(true);
     }
 
-    // Testing when release had been activated
+    // Testing when release no longer active
 
-    // We expect all file record that is/was part of the release is here,
-    // but the isActive status is set to `false`
+    // We expect all file record that was part of the activated release is here,
+    // but the isActive status will to `false`
 
     await releaseActivationService.deactivateRelease(
       adminAuthUser,
