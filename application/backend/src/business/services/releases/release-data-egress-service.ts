@@ -126,6 +126,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
         fileSize: v.fileSize ?? 0,
         totalDataEgressInBytes: v.totalDataEgressInBytes ?? 0,
         lastOccurredDateTime: v.lastOccurredDateTime,
+        isActive: v.isActive,
       })),
       dataEgressSummaryResult.total
     );

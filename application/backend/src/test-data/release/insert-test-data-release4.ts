@@ -20,7 +20,7 @@ export async function insertRelease4(
 
   const insertRelease4 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      lastUpdatedSubjectId: releaseAdministrator[0].subjectId,
       applicationDacTitle: "A Working Release of 10G Data",
       applicationDacDetails:
         "A release that has all working/matching files in S3 - so can do actual sharing",

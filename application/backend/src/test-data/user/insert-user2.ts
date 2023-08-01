@@ -16,7 +16,7 @@ export async function insertUser2(
 ): Promise<UserObject> {
   const { edgeDbClient } = getServices(dc);
 
-  await e
+  const userDb = await e
     .insert(e.permission.User, {
       subjectId: TEST_SUBJECT_2,
       displayName: TEST_SUBJECT_2_DISPLAY,
@@ -40,7 +40,8 @@ export async function insertUser2(
     .run(edgeDbClient);
 
   return {
-    subject_id: TEST_SUBJECT_2,
+    dbId: userDb.id,
+    subjectId: TEST_SUBJECT_2,
     email: TEST_SUBJECT_2_EMAIL,
     name: TEST_SUBJECT_2_DISPLAY,
   };

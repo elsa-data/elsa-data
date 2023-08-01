@@ -59,7 +59,7 @@ export async function insertRelease1(
 
   const insertRelease1 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      lastUpdatedSubjectId: releaseAdministrator[0].subjectId,
       applicationDacTitle: "A Study of Lots of Test Data",
       applicationDacIdentifier: makeIdentifierTuple(
         "https://rems.australiangenomics.org.au",
@@ -90,7 +90,7 @@ export async function insertRelease1(
       releaseKey: RELEASE_KEY_1,
       activation: e.insert(e.release.Activation, {
         activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
-        activatedById: releaseAdministrator[0].subject_id,
+        activatedById: releaseAdministrator[0].subjectId,
         activatedByDisplayName: releaseAdministrator[0].name,
         manifest: e.json({}),
         manifestEtag: "123456",
@@ -98,7 +98,7 @@ export async function insertRelease1(
       previouslyActivated: e.set(
         e.insert(e.release.Activation, {
           activatedAt: e.datetime(new Date(2022, 6, 7)),
-          activatedById: releaseAdministrator[0].subject_id,
+          activatedById: releaseAdministrator[0].subjectId,
           activatedByDisplayName: releaseAdministrator[0].name,
           manifest: e.json({}),
           manifestEtag: "abcdef",
@@ -165,7 +165,7 @@ export async function insertRelease1(
       filter: e.op(r.releaseKey, "=", RELEASE_KEY_1),
       set: {
         activation: e.insert(e.release.Activation, {
-          activatedById: releaseAdministrator[0].subject_id,
+          activatedById: releaseAdministrator[0].subjectId,
           activatedByDisplayName: releaseAdministrator[0].name,
           manifest: e.json(masterManifest),
           manifestEtag: "0123",

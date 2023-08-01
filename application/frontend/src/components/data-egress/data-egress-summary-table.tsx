@@ -7,6 +7,8 @@ import { formatLocalDateTime } from "../../helpers/datetime-helper";
 import { trpc } from "../../helpers/trpc";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { Table } from "../tables";
+import classNames from "classnames";
+import { ToolTip } from "../tooltip";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },
@@ -83,6 +85,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
                       <DisplayDownloadStatus
                         downloadedSize={row["totalDataEgressInBytes"]}
                         fileSize={row["fileSize"]}
+                        isSuspended={!row.isActive}
                       />
                     ) : (
                       ""
@@ -112,11 +115,22 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
 function DisplayDownloadStatus({
   downloadedSize,
   fileSize,
+  isSuspended,
 }: {
   downloadedSize: number;
   fileSize: number;
+  isSuspended: boolean;
 }) {
-  if (downloadedSize > fileSize) {
+  if (isSuspended) {
+    return (
+      <ToolTip
+        trigger={
+          <div className="badge badge-error whitespace-pre">{`suspended`}</div>
+        }
+        description={"File is no longer active for sharing"}
+      />
+    );
+  } else if (downloadedSize > fileSize) {
     return (
       <div className="badge badge-warning whitespace-pre">{`multiple-download`}</div>
     );
