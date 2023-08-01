@@ -1,33 +1,27 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable } from "tsyringe";
-import { isEmpty, isNil } from "lodash";
+import {AuthenticatedUser} from "../authenticated-user";
+import {inject, injectable} from "tsyringe";
+import {isEmpty, isNil} from "lodash";
+import {createPagedResult, PagedResult,} from "../../api/helpers/pagination-helpers";
+import {UserSummaryType} from "@umccr/elsa-types/schemas-users";
+import {ElsaSettings} from "../../config/elsa-settings";
+import {NotAuthorisedEditUserManagement, NotAuthorisedGetOwnUser,} from "../exceptions/user";
 import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
-import { ElsaSettings } from "../../config/elsa-settings";
-import {
-  addUserAuditEventPermissionChange,
-  addUserAuditEventToReleaseQuery,
-} from "../db/audit-log-queries";
-import {
-  NotAuthorisedEditUserManagement,
-  NotAuthorisedGetOwnUser,
-} from "../exceptions/user";
-import {
+  auditEventUserAddedToRelease,
+  auditEventUserPermissionsChanged,
   potentialUserDeleteByEmail,
   potentialUserGetByEmail,
+  releaseGetKeyByDbId,
+  releaseParticipantAddUser,
   userGetAllByUser,
   userGetByDbId,
   userGetBySubjectId,
+  userUpdatePermissions,
 } from "../../../dbschema/queries";
-import { IPLookupService, LocationType } from "./ip-lookup-service";
-import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
-import { UserData } from "../data/user-data";
-import { NotAuthorisedToControlJob } from "./jobs/job-service";
+import {IPLookupService, LocationType} from "./ip-lookup-service";
+import {ReleaseParticipantRoleType} from "@umccr/elsa-types";
+import {UserData} from "../data/user-data";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -166,24 +160,22 @@ export class UserService {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
       throw new NotAuthorisedEditUserManagement();
 
-    await e
-      .update(e.permission.User, (u) => ({
-        filter: e.op(e.str(targetSubjectId), "=", u.subjectId),
-        set: {
-          isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
-          isAllowedCreateRelease: permission.isAllowedCreateRelease,
-          isAllowedOverallAdministratorView:
-            permission.isAllowedOverallAdministratorView,
-          userAuditEvent: {
-            "+=": addUserAuditEventPermissionChange(
-              user.subjectId,
-              user.displayName,
-              permission
-            ),
-          },
-        },
-      }))
-      .run(this.edgeDbClient);
+    await this.edgeDbClient.transaction(async (tx) => {
+      await userUpdatePermissions(tx, {
+        userDbId: user.dbId,
+        isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: permission.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView:
+          permission.isAllowedOverallAdministratorView,
+      });
+
+      await auditEventUserPermissionsChanged(tx, {
+        userDbId: user.dbId,
+        whoId: user.subjectId,
+        whoDisplayName: user.displayName,
+        permission,
+      });
+    });
   }
 
   /**
@@ -342,34 +334,23 @@ export class UserService {
     whoDisplayName: string
   ) {
     await client.transaction(async (tx) => {
-      const release = await e
-        .select(e.release.Release, (r) => ({
-          releaseKey: true,
-          filter_single: { id: r.id },
-        }))
-        .run(tx);
+      const { releaseKey } = await releaseGetKeyByDbId(tx, {
+        dbId: releaseUuid,
+      });
 
-      await e
-        .update(e.permission.User, (u) => ({
-          filter: e.op(e.uuid(userDbId), "=", u.id),
-          set: {
-            releaseParticipant: {
-              "+=": e.select(e.release.Release, (r) => ({
-                filter: e.op(e.uuid(releaseUuid), "=", r.id),
-                "@role": e.str(role),
-              })),
-            },
-            userAuditEvent: {
-              "+=": addUserAuditEventToReleaseQuery(
-                whoId,
-                whoDisplayName,
-                role,
-                release?.releaseKey
-              ),
-            },
-          },
-        }))
-        .run(tx);
+      await releaseParticipantAddUser(tx, {
+        userUuid: userDbId,
+        role,
+        releaseKey,
+      });
+
+      await auditEventUserAddedToRelease(tx, {
+        userDbId,
+        whoId,
+        whoDisplayName,
+        role,
+        releaseKey,
+      });
     });
   }
 

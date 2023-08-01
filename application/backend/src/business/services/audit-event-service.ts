@@ -1,20 +1,17 @@
 import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import {Executor} from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable } from "tsyringe";
-import { differenceInSeconds, sub } from "date-fns";
+import {AuthenticatedUser} from "../authenticated-user";
+import {inject, injectable} from "tsyringe";
+import {differenceInSeconds, sub} from "date-fns";
 import {
   AuditEventDetailsType,
   AuditEventFullType,
   AuditEventType,
   RouteValidation,
 } from "@umccr/elsa-types/schemas-audit";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import { ElsaSettings } from "../../config/elsa-settings";
+import {createPagedResult, PagedResult,} from "../../api/helpers/pagination-helpers";
+import {ElsaSettings} from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
   auditEventGetMostRecent,
@@ -25,12 +22,12 @@ import {
   releaseGetBoundaryInfo,
   releaseLastUpdatedReset,
 } from "../../../dbschema/queries";
-import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
-import { Transaction } from "edgedb/dist/transaction";
+import {NotAuthorisedViewAudits} from "../exceptions/audit-authorisation";
+import {Transaction} from "edgedb/dist/transaction";
+import {Logger} from "pino";
+import {UserData} from "../data/user-data";
 import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
-import { Logger } from "pino";
-import { UserData } from "../data/user-data";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -373,6 +370,7 @@ export class AuditEventService {
    * @param executor the EdgeDb execution context (either client or transaction)
    * @param details
    * @param inProgress
+   * @param outcome
    */
   public async startSystemAuditEvent(
     actionCategory: ActionType,
@@ -489,7 +487,7 @@ export class AuditEventService {
           ? [
               {
                 objectId: entry.id,
-                whoId: entry.whoSubjectId,
+                whoId: entry.whoId,
                 whoDisplayName: entry.whoDisplayName,
                 actionCategory: entry.actionCategory,
                 actionDescription: entry.actionDescription,
@@ -558,7 +556,7 @@ export class AuditEventService {
           ? [
               {
                 objectId: entry.id,
-                whoId: entry.whoSubjectId,
+                whoId: entry.whoId,
                 whoDisplayName: entry.whoDisplayName,
                 actionCategory: entry.actionCategory,
                 actionDescription: entry.actionDescription,
@@ -638,8 +636,9 @@ export class AuditEventService {
       detailsMaxLength: end,
     });
 
-    if (!entry) return null;
-    if (!entry.data) return null;
+    if (!entry || !entry.data || entry.data.length === 0) {
+      return null;
+    }
 
     return {
       objectId: entry.data[0].id,
@@ -660,12 +659,12 @@ export class AuditEventService {
       filterAuditEventDbId: id,
     });
 
-    if (!entry || !entry.data) {
+    if (!entry || !entry.data || entry.data.length === 0) {
       return null;
     } else {
       return {
         objectId: entry.data[0].id,
-        whoId: entry.data[0].whoSubjectId,
+        whoId: entry.data[0].whoId,
         whoDisplayName: entry.data[0].whoDisplayName,
         actionCategory: entry.data[0].actionCategory,
         actionDescription: entry.data[0].actionDescription,
@@ -730,12 +729,12 @@ export class AuditEventService {
     user: AuthenticatedUser,
     releaseKey: string,
     delay: Duration,
-    occuredDateTime: Date,
+    occurredDateTime: Date,
     executor: Executor = this.edgeDbClient
   ): Promise<string | null> {
     let recentAuditEvents = await auditEventGetMostRecent(executor, {
       whoId: user.subjectId,
-      since: sub(occuredDateTime, delay),
+      since: sub(occurredDateTime, delay),
       releaseKey,
     });
 
@@ -747,7 +746,7 @@ export class AuditEventService {
         `Viewed release: ${releaseKey}`,
         undefined,
         0,
-        occuredDateTime,
+        occurredDateTime,
         executor
       );
     }
@@ -786,6 +785,7 @@ export class AuditEventService {
    * @param initFunc
    * @param transFunc
    * @param finishFunc
+   * @param isResultSecureString
    */
   public async transactionalReadInReleaseAuditPattern<T, U, V>(
     user: AuthenticatedUser,
@@ -969,6 +969,7 @@ export class AuditEventService {
    * @param initFunc
    * @param transFunc
    * @param finishFunc
+   * @param isResultSecureString
    */
   protected async transactionalAuditPattern<T, U, V>(
     user: AuthenticatedUser,

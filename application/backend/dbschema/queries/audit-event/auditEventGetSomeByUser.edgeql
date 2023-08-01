@@ -18,6 +18,7 @@ with
   orderByProperty := <optional str>$orderByProperty,
   # Whether to order the properties in ascending order. Defaults to `false`, ordering by descending order.
   orderAscending := <optional bool>$orderAscending ?? false,
+  filterAuditEventDbId := <optional uuid>$filterAuditEventDbId,
 
   # the user asking for audit entries
   u := assert_single((
@@ -40,14 +41,14 @@ with
       isReleaseAuditEvent := exists([is audit::ReleaseAuditEvent]),
       release := assert_single([is audit::ReleaseAuditEvent].release_),
       user := assert_single([is audit::UserAuditEvent].user_),
-      whoSubjectId := assert_single([is audit::UserAuditEvent].whoId),
-      whoDisplayName := assert_single([is audit::UserAuditEvent].whoDisplayName),
+      whoId := assert_single([is audit::OwnedAuditEvent].whoId),
+      whoDisplayName := assert_single([is audit::OwnedAuditEvent].whoDisplayName),
     }
     filter
         # a special filter clause that can optionally pin point a single entry if passed in $filterAuditEventDbId
         # OR filter by audit event type if passed in $filterTypes
         # ELSE return all
-        (.id = <optional uuid>$filterAuditEventDbId if exists(<optional uuid>$filterAuditEventDbId) else
+        (.id = <uuid>filterAuditEventDbId if exists(filterAuditEventDbId) else
            (
              (.isSystemAuditEvent and contains(<optional array<str>>$filterTypes, 'system')) or
              (.isUserAuditEvent and contains(<optional array<str>>$filterTypes, 'user')) or
@@ -62,8 +63,11 @@ with
         and
         # and whether we have been filter above or not, we always need to filter by visibility rules
         (
-           # if the user is an admin viewer and wants to see all events
-           (u.isAllowedOverallAdministratorView and contains(<optional array<str>>$filterTypes, 'all')) or
+           # if the user is an admin viewer and wants to see all events OR we are getting a single audit event.
+           (
+             u.isAllowedOverallAdministratorView if exists(filterAuditEventDbId) else
+             u.isAllowedOverallAdministratorView and contains(<optional array<str>>$filterTypes, 'all')
+           ) or
            # if the user created the event they can see
            (u ?= .user) or
            # if the user is participating in a release that this is an event of they can see
@@ -85,7 +89,7 @@ select {
       inProgress,
       isSystemAuditEvent,
       isUserAuditEvent,
-      whoSubjectId,
+      whoId,
       whoDisplayName,
       isReleaseAuditEvent,
       releaseId := .release.id,
@@ -98,22 +102,26 @@ select {
       <str>.actionCategory if orderByProperty = "actionCategory" and <str>orderAscending = "true" else
       <str>.actionDescription if orderByProperty = "actionDescription" and <str>orderAscending = "true" else
       <str>.details if orderByProperty = "details" and <str>orderAscending = "true" else
-      <str>.occurredDateTime if orderByProperty = "occuredDateTime" and <str>orderAscending = "true" else
+      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and <str>orderAscending = "true" else
       <str>.occurredDuration if orderByProperty = "occurredDuration" and <str>orderAscending = "true" else
       <str>.outcome if orderByProperty = "outcome" and <str>orderAscending = "true" else
       <str>.recordedDateTime if orderByProperty = "recordedDateTime" and <str>orderAscending = "true" else
       <str>.inProgress if orderByProperty = "inProgress" and <str>orderAscending = "true" else
+      <str>.whoId if orderByProperty = "whoId" and <str>orderAscending = "true" else
+      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and <str>orderAscending = "true" else
       ""
     ) asc then (
       <str>.updatedDateTime if orderByProperty = "updatedDateTime" and <str>orderAscending = "false" else
       <str>.actionCategory if orderByProperty = "actionCategory" and <str>orderAscending = "false" else
       <str>.actionDescription if orderByProperty = "actionDescription" and <str>orderAscending = "false" else
       <str>.details if orderByProperty = "details" and <str>orderAscending = "false" else
-      <str>.occurredDateTime if orderByProperty = "occuredDateTime" and <str>orderAscending = "false" else
+      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and <str>orderAscending = "false" else
       <str>.occurredDuration if orderByProperty = "occurredDuration" and <str>orderAscending = "false" else
       <str>.outcome if orderByProperty = "outcome" and <str>orderAscending = "false" else
       <str>.recordedDateTime if orderByProperty = "recordedDateTime" and <str>orderAscending = "false" else
       <str>.inProgress if orderByProperty = "inProgress" and <str>orderAscending = "false" else
+      <str>.whoId if orderByProperty = "whoId" and <str>orderAscending = "false" else
+      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and <str>orderAscending = "false" else
       <str>.occurredDateTime
     ) desc
     offset <optional int64>$offset
