@@ -63,11 +63,8 @@ with
         and
         # and whether we have been filter above or not, we always need to filter by visibility rules
         (
-           # if the user is an admin viewer and wants to see all events OR we are getting a single audit event.
-           (
-             u.isAllowedOverallAdministratorView if exists(filterAuditEventDbId) else
-             u.isAllowedOverallAdministratorView and contains(<optional array<str>>$filterTypes, 'all')
-           ) or
+           # if the user is an admin viewer they can see
+           (u.isAllowedOverallAdministratorView) or
            # if the user created the event they can see
            (u ?= .user) or
            # if the user is participating in a release that this is an event of they can see

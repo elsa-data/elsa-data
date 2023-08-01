@@ -1,17 +1,20 @@
 import * as edgedb from "edgedb";
-import {Executor} from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import {AuthenticatedUser} from "../authenticated-user";
-import {inject, injectable} from "tsyringe";
-import {differenceInSeconds, sub} from "date-fns";
+import { AuthenticatedUser } from "../authenticated-user";
+import { inject, injectable } from "tsyringe";
+import { differenceInSeconds, sub } from "date-fns";
 import {
   AuditEventDetailsType,
   AuditEventFullType,
   AuditEventType,
   RouteValidation,
 } from "@umccr/elsa-types/schemas-audit";
-import {createPagedResult, PagedResult,} from "../../api/helpers/pagination-helpers";
-import {ElsaSettings} from "../../config/elsa-settings";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
+import { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
   auditEventGetMostRecent,
@@ -22,10 +25,10 @@ import {
   releaseGetBoundaryInfo,
   releaseLastUpdatedReset,
 } from "../../../dbschema/queries";
-import {NotAuthorisedViewAudits} from "../exceptions/audit-authorisation";
-import {Transaction} from "edgedb/dist/transaction";
-import {Logger} from "pino";
-import {UserData} from "../data/user-data";
+import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
+import { Transaction } from "edgedb/dist/transaction";
+import { Logger } from "pino";
+import { UserData } from "../data/user-data";
 import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
 

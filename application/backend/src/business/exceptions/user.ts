@@ -34,3 +34,13 @@ export class NotAuthorisedEditUserManagement extends Base7807Error {
     );
   }
 }
+
+export class NonExistentUser extends Base7807Error {
+  constructor(subjectId: string) {
+    super(
+      "user does not exist",
+      500,
+      `user with subject id ${subjectId} does not exist`
+    );
+  }
+}

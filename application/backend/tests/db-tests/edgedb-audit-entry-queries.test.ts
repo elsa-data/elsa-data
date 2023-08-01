@@ -1,9 +1,14 @@
 import { Client, createClient } from "edgedb";
 import e from "../../dbschema/edgeql-js";
 import { blankTestData } from "../../src/test-data/util/blank-test-data";
-import { insertRelease2 } from "../../src/test-data/release/insert-test-data-release2";
+import {
+  insertRelease2,
+  RELEASE2_RELEASE_IDENTIFIER,
+} from "../../src/test-data/release/insert-test-data-release2";
 import {
   auditEventGetSomeByUser,
+  auditEventUserAddedToRelease,
+  auditEventUserPermissionsChanged,
   insertSystemAuditEvent,
   insertUserAuditEvent,
 } from "../../dbschema/queries";
@@ -65,9 +70,7 @@ describe("edgedb audit entry tests", () => {
     release = await insertRelease2(testContainer, releaseProps);
 
     releaseAuditEvent = (await e
-      .assert_single(
-        e.select(e.audit.ReleaseAuditEvent, (rae) => ({ id: true }))
-      )
+      .assert_single(e.select(e.audit.ReleaseAuditEvent, (_) => ({ id: true })))
       .run(edgeDbClient))!;
 
     if (!releaseAuditEvent)
@@ -342,5 +345,70 @@ describe("edgedb audit entry tests", () => {
       expect(result).toBeTruthy();
       expect(result.total).toBe(0);
     }
+  });
+
+  it("it should be possible to sort the returned audit events", async () => {
+    const result = await auditEventGetSomeByUser(edgeDbClient, {
+      userDbId: user3IsAdmin.id,
+      orderByProperty: "actionDescription",
+      orderAscending: true,
+    });
+
+    expect(result).toBeTruthy();
+    expect(result.total).toBe(3);
+
+    expect(result.data[0].id).toBe(releaseAuditEvent.id);
+    expect(result.data[1].id).toBe(systemAuditEvent.id);
+    expect(result.data[2].id).toBe(userViewAuditEvent.id);
+  });
+
+  it("audit event user added to release", async () => {
+    await auditEventUserAddedToRelease(edgeDbClient, {
+      userDbId: user3IsAdmin.id,
+      whoId: SUBJECT_ID_3,
+      whoDisplayName: SUBJECT_DISPLAY_NAME_3,
+      role: "Administrator",
+      releaseKey: RELEASE2_RELEASE_IDENTIFIER,
+    });
+
+    const user = await e
+      .select(e.permission.User, (_) => ({
+        id: true,
+        userAuditEvent: {
+          details: true,
+        },
+        filter_single: { id: e.uuid(user3IsAdmin.id) },
+      }))
+      .run(edgeDbClient);
+
+    expect(user).toBeDefined();
+    expect(user!.userAuditEvent[0].details).toStrictEqual({
+      role: "Administrator",
+      releaseKey: "R002",
+    });
+  });
+
+  it("audit event permissions changed", async () => {
+    await auditEventUserPermissionsChanged(edgeDbClient, {
+      userDbId: user3IsAdmin.id,
+      whoId: SUBJECT_ID_3,
+      whoDisplayName: SUBJECT_DISPLAY_NAME_3,
+      permission: { permission: "permission" },
+    });
+
+    const user = await e
+      .select(e.permission.User, (_) => ({
+        id: true,
+        userAuditEvent: {
+          details: true,
+        },
+        filter_single: { id: e.uuid(user3IsAdmin.id) },
+      }))
+      .run(edgeDbClient);
+
+    expect(user).toBeDefined();
+    expect(user!.userAuditEvent[0].details).toStrictEqual({
+      permission: "permission",
+    });
   });
 });

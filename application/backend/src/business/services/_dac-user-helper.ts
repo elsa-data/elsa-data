@@ -1,4 +1,4 @@
-import {Executor} from "edgedb";
+import { Executor } from "edgedb";
 import _ from "lodash";
 import e from "../../../dbschema/edgeql-js";
 import {

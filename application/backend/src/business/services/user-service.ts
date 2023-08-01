@@ -1,12 +1,19 @@
 import * as edgedb from "edgedb";
 import e from "../../../dbschema/edgeql-js";
-import {AuthenticatedUser} from "../authenticated-user";
-import {inject, injectable} from "tsyringe";
-import {isEmpty, isNil} from "lodash";
-import {createPagedResult, PagedResult,} from "../../api/helpers/pagination-helpers";
-import {UserSummaryType} from "@umccr/elsa-types/schemas-users";
-import {ElsaSettings} from "../../config/elsa-settings";
-import {NotAuthorisedEditUserManagement, NotAuthorisedGetOwnUser,} from "../exceptions/user";
+import { AuthenticatedUser } from "../authenticated-user";
+import { inject, injectable } from "tsyringe";
+import { isEmpty, isNil } from "lodash";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
+import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
+import { ElsaSettings } from "../../config/elsa-settings";
+import {
+  NonExistentUser,
+  NotAuthorisedEditUserManagement,
+  NotAuthorisedGetOwnUser,
+} from "../exceptions/user";
 import {
   auditEventUserAddedToRelease,
   auditEventUserPermissionsChanged,
@@ -19,9 +26,9 @@ import {
   userGetBySubjectId,
   userUpdatePermissions,
 } from "../../../dbschema/queries";
-import {IPLookupService, LocationType} from "./ip-lookup-service";
-import {ReleaseParticipantRoleType} from "@umccr/elsa-types";
-import {UserData} from "../data/user-data";
+import { IPLookupService, LocationType } from "./ip-lookup-service";
+import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
+import { UserData } from "../data/user-data";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -161,8 +168,16 @@ export class UserService {
       throw new NotAuthorisedEditUserManagement();
 
     await this.edgeDbClient.transaction(async (tx) => {
+      const targetUser = await userGetBySubjectId(tx, {
+        subjectId: targetSubjectId,
+      });
+
+      if (targetUser === undefined || targetUser === null) {
+        throw new NonExistentUser(targetSubjectId);
+      }
+
       await userUpdatePermissions(tx, {
-        userDbId: user.dbId,
+        userDbId: targetUser.id,
         isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
         isAllowedCreateRelease: permission.isAllowedCreateRelease,
         isAllowedOverallAdministratorView:
