@@ -225,7 +225,7 @@ ${release.applicantEmailAddresses}
 
     await this.userService.registerRoleInRelease(
       user,
-      releaseRow.id,
+      releaseKey,
       "Administrator"
     );
 
