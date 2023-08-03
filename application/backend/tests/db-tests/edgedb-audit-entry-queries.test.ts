@@ -373,7 +373,8 @@ describe("edgedb audit entry tests", () => {
       whoDisplayName: userAdmin!.displayName,
       actionDescription: "description",
       details: {
-        details: "details",
+        role: "Administrator",
+        releaseKey: "R002",
       },
     });
 
