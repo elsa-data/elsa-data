@@ -1,62 +1,86 @@
-with
+# returns a pageable set of "cases" from the given release - where those cases contain
+# specimen that is selected
+# alternatively can work to return all "cases"
+
+WITH
+  # the release key
+  paramReleaseKey := <str>$releaseKey,
+
+  # if true then this query should return all the cases, otherwise only those containing selected specimens
+  paramIsAllowedViewAllCases := <bool>$isAllowedViewAllCases,
+
+  # if present, a string that must match a case/patient/specimen identifier (case insensitive)
+  # in order that the case is returned
+  paramQuery := <optional str>$query,
+
+  # if present, use as a paging offset
+  paramOffset := <optional int64>$offset,
+
+  # if present, use as a paging limit
+  paramLimit := <optional int64>$limit,
+
+  #######
+
   # the release we are looking at
-  release := assert_single((select release::Release filter .releaseKey =  <str>$releaseKey)),
+  release := assert_single((SELECT release::Release FILTER .releaseKey = paramReleaseKey)),
 
   # the datasets of the release
-  datasets := (select dataset::Dataset filter .uri in array_unpack(release.datasetUris)),
-
-  isAllowedViewAllCases := <bool>$isAllowedViewAllCases,
+  datasets := (SELECT dataset::Dataset FILTER .uri IN array_unpack(release.datasetUris)),
 
   # cases
-  cases := (select dataset::DatasetCase {
-      *,
-      consent: {
-        id,
-      },
+  cases := (
+    SELECT dataset::DatasetCase {
       dataset: {
-        *
+        consent: { },
       },
+      consent: { },
       patients: {
-        *,
         consent: { },
         specimens: {
-          *,
           consent: { },
-          isSelected := .id in release.selectedSpecimens.id
-        } filter (isAllowedViewAllCases OR
-               .id in release.selectedSpecimens.id)
-      } filter (isAllowedViewAllCases OR .specimens in release.selectedSpecimens)
+          isSelected := .id IN release.selectedSpecimens.id
+        } FILTER (paramIsAllowedViewAllCases OR .id IN release.selectedSpecimens.id)
+      } FILTER (paramIsAllowedViewAllCases OR .specimens IN release.selectedSpecimens)
     }
-    filter
-            .dataset in datasets
-            AND
-            (isAllowedViewAllCases OR .patients.specimens in release.selectedSpecimens)
-            AND
-            (
-              # if we are doing a text search and we want to find those identifiers
-              # else our IN query will fail when $query is not present - and that means we want just want it succeed
-              (<optional str>$query IN
-                 (array_unpack(.externalIdentifiers).value union
-                 array_unpack(.patients.externalIdentifiers).value union
-                 array_unpack(.patients.specimens.externalIdentifiers).value)) ?? true
-            )
+    FILTER
+      .dataset IN datasets
+      AND
+      (paramIsAllowedViewAllCases OR .patients.specimens IN release.selectedSpecimens)
+      AND
+      (
+        # if we are doing a text search and we want to find those identifiers using query IN
+        # else
+        # our IN query will fail when 'paramQuery' is not present - and that means we want just return true (i.e success)
+        (paramQuery IN
+           (array_unpack(.externalIdentifiers).value UNION
+            array_unpack(.patients.externalIdentifiers).value UNION
+            array_unpack(.patients.specimens.externalIdentifiers).value)) ?? true
+      )
   ),
 
-select {
+SELECT {
   total := count(cases),
   totalSelectedSpecimens := count(release.selectedSpecimens),
   totalSpecimens := count(cases.patients.specimens),
   data := (
-      select cases {
+      SELECT cases {
         *,
-        patients: { *, specimens: { * }},
-        dataset: { * }
+        dataset: { *,
+                   consent: { * } },
+        consent: { * },
+        patients: { *,
+                    consent: { * },
+                    specimens: { *,
+                                 consent: { * }
+                               }
+                  },
       }
-      order by
-        .dataset.uri ASC then .id ASC
-      offset
-       <optional int64>$offset
-      limit
-       <optional int64>$limit
+      ORDER BY
+        .dataset.uri ASC THEN
+        .id ASC
+      OFFSET
+        paramOffset
+      LIMIT
+        paramLimit
   )
 }
