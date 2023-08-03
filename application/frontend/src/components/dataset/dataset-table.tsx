@@ -78,10 +78,9 @@ export const DatasetTable: React.FC = ({}) => {
               {/* Is not in Config Icon */}
               <td className={classNames(baseColumnClasses, "text-left")}>
                 {!row.isInConfig && (
-                  <ToolTip
-                    trigger={<FontAwesomeIcon icon={faTriangleExclamation} />}
-                    description={`Missing dataset configuration`}
-                  />
+                  <span title={`Missing dataset configuration`}>
+                    <FontAwesomeIcon icon={faTriangleExclamation} />
+                  </span>
                 )}
               </td>
 

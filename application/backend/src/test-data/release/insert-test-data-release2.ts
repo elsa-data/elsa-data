@@ -26,7 +26,7 @@ export async function insertRelease2(
 
   const insertRelease2 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      lastUpdatedSubjectId: releaseAdministrator[0].subjectId,
       applicationDacTitle: RELEASE2_APPLICATION_DAC_TITLE,
       applicationDacDetails: RELEASE2_APPLICATION_DAC_DETAILS,
       applicationDacIdentifier: makeSystemlessIdentifier("XYZ"),
@@ -58,7 +58,7 @@ export async function insertRelease2(
           actionDescription: "Created Release",
           outcome: 0,
           whoDisplayName: releaseProps.releaseAdministrator[0].name,
-          whoId: releaseProps.releaseAdministrator[0].subject_id,
+          whoId: releaseProps.releaseAdministrator[0].subjectId,
           occurredDateTime: e.datetime_current(),
           inProgress: false,
         })

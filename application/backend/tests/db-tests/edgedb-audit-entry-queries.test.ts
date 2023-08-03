@@ -51,7 +51,7 @@ describe("edgedb audit entry tests", () => {
     const releaseProps = {
       releaseAdministrator: [
         {
-          subject_id: TEST_SUBJECT_3,
+          subjectId: TEST_SUBJECT_3,
           email: TEST_SUBJECT_3_EMAIL,
           name: TEST_SUBJECT_3_DISPLAY,
         },

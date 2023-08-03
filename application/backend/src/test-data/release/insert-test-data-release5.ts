@@ -20,7 +20,7 @@ export async function insertRelease5(
 
   const insertRelease5 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      lastUpdatedSubjectId: releaseAdministrator[0].subjectId,
       applicationDacTitle: "A Working Release of Data on Google Storage",
       applicationDacDetails:
         "A release that has all working/matching files in Google Storage - so can do actual sharing",

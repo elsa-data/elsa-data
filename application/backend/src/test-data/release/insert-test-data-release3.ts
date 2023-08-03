@@ -7,6 +7,8 @@ import {
 } from "../util/test-data-helpers";
 import { InsertReleaseProps, insertRole } from "./helpers";
 
+export const RELEASE3_RELEASE_IDENTIFIER = "R003";
+
 export async function insertRelease3(
   dc: DependencyContainer,
   releaseProps: InsertReleaseProps
@@ -21,7 +23,7 @@ export async function insertRelease3(
   // appear in any queries
   const insertRelease3 = await e
     .insert(e.release.Release, {
-      lastUpdatedSubjectId: releaseAdministrator[0].subject_id,
+      lastUpdatedSubjectId: releaseAdministrator[0].subjectId,
       applicationDacTitle: "An Invisible Study",
       applicationDacIdentifier: makeSystemlessIdentifier("DEF"),
       applicationDacDetails: "",
@@ -59,7 +61,7 @@ export async function insertRelease3(
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
-      releaseKey: "R003",
+      releaseKey: RELEASE3_RELEASE_IDENTIFIER,
       selectedSpecimens: e.set(),
       isAllowedReadData: true,
       isAllowedVariantData: true,

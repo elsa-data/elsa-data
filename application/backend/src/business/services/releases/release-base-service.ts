@@ -73,7 +73,9 @@ export abstract class ReleaseBaseService {
       }
 
       case "Manager": {
-        return ["Manager", "Member"];
+        // issue-441: For now, only admin can modify release participants
+        // return ["Manager", "Member"];
+        return null;
       }
 
       case "Member": {
