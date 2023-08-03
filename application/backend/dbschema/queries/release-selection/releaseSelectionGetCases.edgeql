@@ -1,6 +1,6 @@
 # returns a pageable set of "cases" from the given release - where those cases contain
-# specimen that is selected
-# alternatively can work to return all "cases"
+# any case where a child specimen is selected - or alternatively can
+# work to return all "cases"
 
 WITH
   # the release key
