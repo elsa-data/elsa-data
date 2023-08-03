@@ -40,7 +40,19 @@ export const DacRedcapAustralianGenomicsCsvSchema = z.object({
     .string()
     .min(1)
     .describe(
-      "The system URI used for creating release identifiers from this DAC - should be globally unique"
+      "The system URI used for creating the release identifier from this DAC - should be globally unique"
+    ),
+  identifierValueColumnHeader: z
+    .string()
+    .min(1)
+    .describe(
+      "The column header name of the column with an integer uniquely identifying each row - this will be fed as input into the release key printf"
+    ),
+  releaseKeyPrintf: z
+    .string()
+    .min(1)
+    .describe(
+      "A printf compatible string that is used for taking Redcap ids and converting into the release key (identifier value) - must have one %d"
     ),
   csvFlagshipDatasets: z
     .record(z.string().min(1), z.string().min(1))

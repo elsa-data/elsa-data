@@ -23,6 +23,8 @@ import { Logger } from "pino";
 import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
+import { printf } from "fast-printf";
+import { isInteger } from "lodash";
 
 @injectable()
 export class RedcapImportApplicationService {
@@ -75,7 +77,17 @@ export class RedcapImportApplicationService {
     // we haven't already created a release for them
     // TODO that we have the corresponding datasets for the CSV columns we see
     for (const possibleApplication of csvAsJson || []) {
-      if (!currentReleaseKeys.has(possibleApplication.daf_num)) {
+      const possibleApplicationAsJsonObject: any = possibleApplication;
+
+      const releaseNumber = parseInt(
+        possibleApplicationAsJsonObject[
+          dacConfiguration.identifierValueColumnHeader
+        ]
+      );
+
+      if (!isInteger(releaseNumber)) continue;
+
+      if (!currentReleaseKeys.has(releaseNumber.toString())) {
         results.push(possibleApplication);
       }
     }
@@ -164,11 +176,26 @@ export class RedcapImportApplicationService {
         "No datasets that exist in this Elsa Data instance were applied for by this application CSV"
       );
 
-    // note we create the release key *outside* the transaction but it will never be used if
-    // the transaction aborts (which is fine)
-    const releaseKey = await getNextReleaseKey(
-      this.settings.releaseKeyPrefix
-    ).run(this.edgeDbClient);
+    // the release number is the unique number in the redcap database describing each row
+    // we use this number in a variety of places
+    const releaseNumber = parseInt(
+      csvAsJsonObject[dacConfiguration.identifierValueColumnHeader]
+    );
+
+    if (!isInteger(releaseNumber))
+      throw new Error(
+        `Column '${
+          dacConfiguration.identifierValueColumnHeader
+        }' was not an integer - its value was ${
+          csvAsJsonObject[dacConfiguration.identifierValueColumnHeader]
+        }`
+      );
+
+    // for Redcap releases - we can create the release key direct from the unique release number
+    // THIS REQUIRES THE DACS TO BE CONFIGURED WITH UNIQUE RELEASE KEY PRINTFS - BUT THIS CAN BE DEALT WITH
+    // AT A DOCUMENTATION LEVEL
+    // our transaction will fail if this release key is already in use
+    const releaseKey = printf(dacConfiguration.releaseKeyPrintf, releaseNumber);
 
     // start our transactional create
     const newRelease = await this.edgeDbClient.transaction(async (t) => {
@@ -250,7 +277,7 @@ export class RedcapImportApplicationService {
           lastUpdatedSubjectId: user.subjectId,
           applicationDacIdentifier: e.tuple({
             system: dacConfiguration.identifierSystem,
-            value: e.str(csvAsJson.daf_num),
+            value: e.str(releaseNumber.toString()),
           }),
           applicationDacTitle:
             csvAsJson.daf_project_title || "Untitled in Redcap",
@@ -262,9 +289,9 @@ This application was sourced from Australian Genomics Redcap on ${format(
             "dd/MM/yyyy"
           )}.
 
-The identifier for this application in the source is
+The unique number for this application in the source Redcap instance is
 
-${csvAsJson.daf_num}
+${releaseNumber}
 
 ### Summary
 
@@ -316,7 +343,6 @@ ${roleTable.join("\n")}
           isAllowedGSData: false,
           isAllowedR2Data: false,
           releaseKey,
-          // for the moment we fix this to a known secret
           releasePassword: generateZipPassword(),
           datasetUris: e.literal(
             e.array(e.str),
