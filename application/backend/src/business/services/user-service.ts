@@ -15,11 +15,8 @@ import {
   NotAuthorisedGetOwnUser,
 } from "../exceptions/user";
 import {
-  auditEventUserAddedToRelease,
-  auditEventUserPermissionsChanged,
   potentialUserDeleteByEmail,
   potentialUserGetByEmail,
-  releaseGetKeyByDbId,
   releaseParticipantAddUser,
   userGetAllByUser,
   userGetByDbId,
@@ -29,6 +26,7 @@ import {
 import { IPLookupService, LocationType } from "./ip-lookup-service";
 import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 import { UserData } from "../data/user-data";
+import { AuditEventService } from "./audit-event-service";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -47,7 +45,9 @@ export class UserService {
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
-    @inject(UserData) private readonly userData: UserData
+    @inject(UserData) private readonly userData: UserData,
+    @inject(AuditEventService)
+    private readonly auditEventService: AuditEventService
   ) {}
 
   /**
@@ -177,19 +177,19 @@ export class UserService {
       }
 
       await userUpdatePermissions(tx, {
-        userDbId: targetUser.id,
+        subjectId: targetUser.subjectId,
         isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
         isAllowedCreateRelease: permission.isAllowedCreateRelease,
         isAllowedOverallAdministratorView:
           permission.isAllowedOverallAdministratorView,
       });
 
-      await auditEventUserPermissionsChanged(tx, {
-        userDbId: user.dbId,
-        whoId: user.subjectId,
-        whoDisplayName: user.displayName,
+      await this.auditEventService.updateUserPermissionsChanged(
+        user.subjectId,
+        user.displayName,
         permission,
-      });
+        this.edgeDbClient
+      );
     });
   }
 
@@ -300,7 +300,7 @@ export class UserService {
 
     // there is no way to get the upsert to also return the other db fields so we
     // have to requery if we want to return a full authenticated user here
-    if (dbUser != null) {
+    if (dbUser !== null) {
       const newOrUpdatedUser = await this.userData.getDbUserByDbId(
         this.edgeDbClient,
         dbUser.id
@@ -319,21 +319,22 @@ export class UserService {
    * aborts with an exception.
    *
    * @param user
-   * @param releaseUuid
+   * @param releaseKey
    * @param role
    */
   public async registerRoleInRelease(
     user: AuthenticatedUser,
-    releaseUuid: string,
+    releaseKey: string,
     role: ReleaseParticipantRoleType
   ) {
     await UserService.addUserToReleaseWithRole(
       this.edgeDbClient,
-      releaseUuid,
+      releaseKey,
       user.dbId,
       role,
       user.subjectId,
-      user.displayName
+      user.displayName,
+      this.auditEventService
     );
   }
 
@@ -342,30 +343,27 @@ export class UserService {
    */
   public static async addUserToReleaseWithRole(
     client: edgedb.Client,
-    releaseUuid: string,
+    releaseKey: string,
     userDbId: string,
     role: string,
-    whoId: string,
-    whoDisplayName: string
+    subjectId: string,
+    whoDisplayName: string,
+    auditEventService: AuditEventService
   ) {
     await client.transaction(async (tx) => {
-      const { releaseKey } = await releaseGetKeyByDbId(tx, {
-        dbId: releaseUuid,
-      });
-
       await releaseParticipantAddUser(tx, {
         userUuid: userDbId,
         role,
         releaseKey,
       });
 
-      await auditEventUserAddedToRelease(tx, {
-        userDbId,
-        whoId,
+      await auditEventService.updateUserAddedToRelease(
+        subjectId,
         whoDisplayName,
         role,
         releaseKey,
-      });
+        client
+      );
     });
   }
 

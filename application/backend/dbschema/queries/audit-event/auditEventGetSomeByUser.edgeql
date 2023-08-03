@@ -95,30 +95,30 @@ select {
       hasDetails := exists(.details)
     }
     order by (
-      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and <str>orderAscending = "true" else
-      <str>.actionCategory if orderByProperty = "actionCategory" and <str>orderAscending = "true" else
-      <str>.actionDescription if orderByProperty = "actionDescription" and <str>orderAscending = "true" else
-      <str>.details if orderByProperty = "details" and <str>orderAscending = "true" else
-      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and <str>orderAscending = "true" else
-      <str>.occurredDuration if orderByProperty = "occurredDuration" and <str>orderAscending = "true" else
-      <str>.outcome if orderByProperty = "outcome" and <str>orderAscending = "true" else
-      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and <str>orderAscending = "true" else
-      <str>.inProgress if orderByProperty = "inProgress" and <str>orderAscending = "true" else
-      <str>.whoId if orderByProperty = "whoId" and <str>orderAscending = "true" else
-      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and <str>orderAscending = "true" else
+      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and orderAscending else
+      <str>.actionCategory if orderByProperty = "actionCategory" and orderAscending else
+      <str>.actionDescription if orderByProperty = "actionDescription" and orderAscending else
+      <str>.details if orderByProperty = "details" and orderAscending else
+      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and orderAscending else
+      <str>.occurredDuration if orderByProperty = "occurredDuration" and orderAscending else
+      <str>.outcome if orderByProperty = "outcome" and orderAscending else
+      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and orderAscending else
+      <str>.inProgress if orderByProperty = "inProgress" and orderAscending else
+      <str>.whoId if orderByProperty = "whoId" and orderAscending else
+      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and orderAscending else
       ""
     ) asc then (
-      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and <str>orderAscending = "false" else
-      <str>.actionCategory if orderByProperty = "actionCategory" and <str>orderAscending = "false" else
-      <str>.actionDescription if orderByProperty = "actionDescription" and <str>orderAscending = "false" else
-      <str>.details if orderByProperty = "details" and <str>orderAscending = "false" else
-      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and <str>orderAscending = "false" else
-      <str>.occurredDuration if orderByProperty = "occurredDuration" and <str>orderAscending = "false" else
-      <str>.outcome if orderByProperty = "outcome" and <str>orderAscending = "false" else
-      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and <str>orderAscending = "false" else
-      <str>.inProgress if orderByProperty = "inProgress" and <str>orderAscending = "false" else
-      <str>.whoId if orderByProperty = "whoId" and <str>orderAscending = "false" else
-      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and <str>orderAscending = "false" else
+      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and not orderAscending else
+      <str>.actionCategory if orderByProperty = "actionCategory" and not orderAscending else
+      <str>.actionDescription if orderByProperty = "actionDescription" and not orderAscending else
+      <str>.details if orderByProperty = "details" and not orderAscending else
+      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and not orderAscending else
+      <str>.occurredDuration if orderByProperty = "occurredDuration" and not orderAscending else
+      <str>.outcome if orderByProperty = "outcome" and not orderAscending else
+      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and not orderAscending else
+      <str>.inProgress if orderByProperty = "inProgress" and not orderAscending else
+      <str>.whoId if orderByProperty = "whoId" and not orderAscending else
+      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and not orderAscending else
       <str>.occurredDateTime
     ) desc
     offset <optional int64>$offset

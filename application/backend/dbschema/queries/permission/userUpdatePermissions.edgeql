@@ -1,7 +1,7 @@
 # Update the permissions of a user.
 with
   # The database id of the user.
-  userDbId := <uuid>$userDbId,
+  subjectId := <str>$subjectId,
   # Update the refresh dataset index permission.
   isAllowedRefreshDatasetIndex := <bool>$isAllowedRefreshDatasetIndex,
   # Update the create release permission.
@@ -11,7 +11,7 @@ with
   
 module permission
 update User
-filter .id = <uuid>$userDbId
+filter .subjectId = subjectId
 set {
   isAllowedRefreshDatasetIndex := isAllowedRefreshDatasetIndex,
   isAllowedCreateRelease := isAllowedCreateRelease,

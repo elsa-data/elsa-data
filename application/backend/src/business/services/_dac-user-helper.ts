@@ -2,11 +2,11 @@ import { Executor } from "edgedb";
 import _ from "lodash";
 import e from "../../../dbschema/edgeql-js";
 import {
-  auditEventUserAddedToRelease,
   potentialUserGetByEmail,
   releaseParticipantAddUser,
   userGetByEmail,
 } from "../../../dbschema/queries";
+import { AuditEventService } from "./audit-event-service";
 
 export type Role = "Manager" | "Member";
 
@@ -53,7 +53,8 @@ export const insertPotentialOrReal = async (
   au: ApplicationUser,
   role: Role,
   releaseId: string,
-  releaseKey: string
+  releaseKey: string,
+  auditEventService: AuditEventService
 ) => {
   // Find if user had logged in to elsa
   const dbUser = await userGetByEmail(executor, {
@@ -70,13 +71,12 @@ export const insertPotentialOrReal = async (
       releaseKey,
     });
 
-    await auditEventUserAddedToRelease(executor, {
-      userDbId: dbUser.id,
-      whoId: dbUser.subjectId,
-      whoDisplayName: dbUser.displayName,
+    await auditEventService.updateUserAddedToRelease(
+      dbUser.subjectId,
+      dbUser.displayName,
       role,
-      releaseKey,
-    });
+      releaseKey
+    );
   } else if (potentialDbUser) {
     // Adding a role to an existing potentialUser record.
     await e

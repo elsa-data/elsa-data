@@ -17,8 +17,10 @@ import { UserService } from "../../src/business/services/user-service";
 import { releaseGetAllByUser } from "../../dbschema/queries";
 import { registerTypes } from "../test-dependency-injection.common";
 import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
+import { AuditEventService } from "../../src/business/services/audit-event-service";
 
 const testContainer = registerTypes();
+let auditEventService: AuditEventService;
 
 describe("edgedb release queries tests", () => {
   let edgeDbClient: Client;
@@ -26,6 +28,10 @@ describe("edgedb release queries tests", () => {
   let release2: { id: string };
   let release3: { id: string };
   let release4: { id: string };
+
+  let releaseKey2: string;
+  let releaseKey3: string;
+  let releaseKey4: string;
 
   beforeAll(async () => {
     edgeDbClient = createClient({});
@@ -53,6 +59,23 @@ describe("edgedb release queries tests", () => {
     release2 = await insertRelease2(testContainer, releaseProps);
     release3 = await insertRelease3(testContainer, releaseProps);
     release4 = await insertRelease4(testContainer, releaseProps);
+
+    const getReleaseKey = async (id: string): Promise<string> => {
+      const release = await e
+        .select(e.release.Release, (_) => ({
+          releaseKey: true,
+          filter_single: { id },
+        }))
+        .run(edgeDbClient);
+
+      return release!.releaseKey;
+    };
+
+    releaseKey2 = await getReleaseKey(release2.id);
+    releaseKey3 = await getReleaseKey(release3.id);
+    releaseKey4 = await getReleaseKey(release4.id);
+
+    auditEventService = testContainer.resolve(AuditEventService);
   });
 
   async function createTestUser() {
@@ -70,20 +93,22 @@ describe("edgedb release queries tests", () => {
 
     await UserService.addUserToReleaseWithRole(
       edgeDbClient,
-      release2.id,
+      releaseKey2,
       testUserInsert.id,
       "Manager",
       "id1",
-      "name1"
+      "name1",
+      auditEventService
     );
 
     await UserService.addUserToReleaseWithRole(
       edgeDbClient,
-      release3.id,
+      releaseKey3,
       testUserInsert.id,
       "Administrator",
       "id2",
-      "name2"
+      "name2",
+      auditEventService
     );
 
     // and we don't add them into release 4 at all
@@ -133,29 +158,32 @@ describe("edgedb release queries tests", () => {
 
     await UserService.addUserToReleaseWithRole(
       edgeDbClient,
-      release2.id,
+      releaseKey2,
       testUserInsert.id,
       "Manager",
       "id1",
-      "name1"
+      "name1",
+      auditEventService
     );
 
     await UserService.addUserToReleaseWithRole(
       edgeDbClient,
-      release3.id,
+      releaseKey3,
       testUserInsert.id,
       "Administrator",
       "id2",
-      "name2"
+      "name2",
+      auditEventService
     );
 
     await UserService.addUserToReleaseWithRole(
       edgeDbClient,
-      release4.id,
+      releaseKey4,
       testUserInsert.id,
       "Member",
       "id3",
-      "name3"
+      "name3",
+      auditEventService
     );
 
     {

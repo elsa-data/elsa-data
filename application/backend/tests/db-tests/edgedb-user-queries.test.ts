@@ -13,7 +13,7 @@ beforeEach(async () => {
 
 it("test the change permission query", async () => {
   await userUpdatePermissions(edgeDbClient, {
-    userDbId: existingUser.dbId,
+    subjectId: existingUser.subjectId,
     isAllowedCreateRelease: false,
     isAllowedOverallAdministratorView: false,
     isAllowedRefreshDatasetIndex: false,

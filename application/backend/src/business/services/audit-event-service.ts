@@ -24,6 +24,7 @@ import {
   insertUserAuditEvent,
   releaseGetBoundaryInfo,
   releaseLastUpdatedReset,
+  updateUserAuditEvents,
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
@@ -123,7 +124,7 @@ export class AuditEventService {
       inProgress: true,
     });
 
-    await this.updateRelease(releaseKey, auditEvent, executor, user);
+    await this.updateRelease(releaseKey, auditEvent, executor);
 
     await releaseLastUpdatedReset(executor, {
       releaseKey: releaseKey,
@@ -136,8 +137,7 @@ export class AuditEventService {
   private async updateRelease(
     releaseKey: string,
     auditEvent: { id: string },
-    executor: Executor,
-    user: AuthenticatedUser
+    executor: Executor
   ) {
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
@@ -225,7 +225,7 @@ export class AuditEventService {
       details,
     });
 
-    await this.updateRelease(releaseKey, auditEvent, executor, user);
+    await this.updateRelease(releaseKey, auditEvent, executor);
 
     return auditEvent.id;
   }
@@ -679,6 +679,46 @@ export class AuditEventService {
         details: entry.data[0].detailsAsPrettyString,
       };
     }
+  }
+
+  /**
+   * Add audit event when a user is added to a release.
+   */
+  public async updateUserAddedToRelease(
+    subjectId: string,
+    whoDisplayName: string,
+    role: string,
+    releaseKey: string,
+    executor: Executor = this.edgeDbClient
+  ) {
+    return updateUserAuditEvents(executor, {
+      subjectId,
+      whoDisplayName,
+      actionDescription: "Add user to release",
+      details: {
+        role,
+        releaseKey,
+      },
+    });
+  }
+
+  /**
+   * Add audit event when a user's permission is changed.
+   */
+  public async updateUserPermissionsChanged(
+    subjectId: string,
+    whoDisplayName: string,
+    permission: any,
+    executor: Executor = this.edgeDbClient
+  ) {
+    return updateUserAuditEvents(executor, {
+      subjectId,
+      whoDisplayName,
+      actionDescription: "Change user permission",
+      details: {
+        permission,
+      },
+    });
   }
 
   /**
