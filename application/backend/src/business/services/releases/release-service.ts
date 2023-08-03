@@ -1,4 +1,5 @@
 import * as edgedb from "edgedb";
+import { Executor } from "edgedb";
 import e from "../../../../dbschema/edgeql-js";
 import {
   ReleaseDetailType,
@@ -6,12 +7,11 @@ import {
   ReleaseSummaryType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../../authenticated-user";
-import _ from "lodash";
 import { PagedResult } from "../../../api/helpers/pagination-helpers";
 import { getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
-import { UserRoleInRelease, ReleaseBaseService } from "./release-base-service";
+import { ReleaseBaseService, UserRoleInRelease } from "./release-base-service";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
@@ -22,11 +22,7 @@ import {
   releaseGetAllByUser,
   removeHtsgetRestriction,
 } from "../../../../dbschema/queries";
-import {
-  auditFailure,
-  auditReleaseUpdateStart,
-  auditSuccess,
-} from "../../../audit-helpers";
+import { auditReleaseUpdateStart, auditSuccess } from "../../../audit-helpers";
 import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";
 import { jobAsBadgeLabel } from "../jobs/job-helpers";
@@ -38,7 +34,6 @@ import {
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
-import { Executor } from "edgedb";
 import {
   ReleaseCreateError,
   ReleaseViewError,
@@ -223,13 +218,14 @@ ${release.applicantEmailAddresses}
         r,
         r.role,
         releaseRow.id,
-        releaseKey
+        releaseKey,
+        this.auditEventService
       );
     }
 
     await this.userService.registerRoleInRelease(
       user,
-      releaseRow.id,
+      releaseKey,
       "Administrator"
     );
 

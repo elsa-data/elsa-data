@@ -6,6 +6,7 @@ import {
   auditEventGetSomeByUser,
   insertSystemAuditEvent,
   insertUserAuditEvent,
+  updateUserAuditEvents,
 } from "../../dbschema/queries";
 import { registerTypes } from "../test-dependency-injection.common";
 import {
@@ -65,9 +66,7 @@ describe("edgedb audit entry tests", () => {
     release = await insertRelease2(testContainer, releaseProps);
 
     releaseAuditEvent = (await e
-      .assert_single(
-        e.select(e.audit.ReleaseAuditEvent, (rae) => ({ id: true }))
-      )
+      .assert_single(e.select(e.audit.ReleaseAuditEvent, (_) => ({ id: true })))
       .run(edgeDbClient))!;
 
     if (!releaseAuditEvent)
@@ -342,5 +341,57 @@ describe("edgedb audit entry tests", () => {
       expect(result).toBeTruthy();
       expect(result.total).toBe(0);
     }
+  });
+
+  it("it should be possible to sort the returned audit events", async () => {
+    const result = await auditEventGetSomeByUser(edgeDbClient, {
+      userDbId: user3IsAdmin.id,
+      orderByProperty: "actionDescription",
+      orderAscending: true,
+    });
+
+    expect(result).toBeTruthy();
+    expect(result.total).toBe(3);
+
+    expect(result.data[0].id).toBe(releaseAuditEvent.id);
+    expect(result.data[1].id).toBe(systemAuditEvent.id);
+    expect(result.data[2].id).toBe(userViewAuditEvent.id);
+  });
+
+  it("update user audit events query.", async () => {
+    const userAdmin = await e
+      .select(e.permission.User, (_) => ({
+        ...e.permission.User["*"],
+        filter_single: { id: user3IsAdmin.id },
+      }))
+      .run(edgeDbClient);
+
+    expect(userAdmin).toBeDefined();
+
+    await updateUserAuditEvents(edgeDbClient, {
+      subjectId: userAdmin!.subjectId,
+      whoDisplayName: userAdmin!.displayName,
+      actionDescription: "description",
+      details: {
+        role: "Administrator",
+        releaseKey: "R002",
+      },
+    });
+
+    const updatedUser = await e
+      .select(e.permission.User, (_) => ({
+        id: true,
+        userAuditEvent: {
+          details: true,
+        },
+        filter_single: { id: e.uuid(user3IsAdmin.id) },
+      }))
+      .run(edgeDbClient);
+
+    expect(updatedUser).toBeDefined();
+    expect(updatedUser!.userAuditEvent[0].details).toStrictEqual({
+      role: "Administrator",
+      releaseKey: "R002",
+    });
   });
 });

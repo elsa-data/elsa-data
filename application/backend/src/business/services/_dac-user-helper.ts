@@ -1,11 +1,12 @@
 import { Executor } from "edgedb";
 import _ from "lodash";
 import e from "../../../dbschema/edgeql-js";
-import { addUserAuditEventToReleaseQuery } from "../db/audit-log-queries";
 import {
   potentialUserGetByEmail,
+  releaseParticipantAddUser,
   userGetByEmail,
 } from "../../../dbschema/queries";
+import { AuditEventService } from "./audit-event-service";
 
 export type Role = "Manager" | "Member";
 
@@ -52,7 +53,8 @@ export const insertPotentialOrReal = async (
   au: ApplicationUser,
   role: Role,
   releaseId: string,
-  releaseKey: string
+  releaseKey: string,
+  auditEventService: AuditEventService
 ) => {
   // Find if user had logged in to elsa
   const dbUser = await userGetByEmail(executor, {
@@ -63,28 +65,18 @@ export const insertPotentialOrReal = async (
   });
 
   if (dbUser) {
-    // Adding a role link into an existing user.
-    await e
-      .update(e.permission.User, (u) => ({
-        filter: e.op(e.uuid(dbUser.id), "=", u.id),
-        set: {
-          releaseParticipant: {
-            "+=": e.select(e.release.Release, (r) => ({
-              filter: e.op(e.uuid(releaseId), "=", r.id),
-              "@role": e.str(role),
-            })),
-          },
-          userAuditEvent: {
-            "+=": addUserAuditEventToReleaseQuery(
-              dbUser.subjectId,
-              dbUser.displayName,
-              role,
-              releaseKey
-            ),
-          },
-        },
-      }))
-      .run(executor);
+    await releaseParticipantAddUser(executor, {
+      userUuid: dbUser.id,
+      role,
+      releaseKey,
+    });
+
+    await auditEventService.updateUserAddedToRelease(
+      dbUser.subjectId,
+      dbUser.displayName,
+      role,
+      releaseKey
+    );
   } else if (potentialDbUser) {
     // Adding a role to an existing potentialUser record.
     await e

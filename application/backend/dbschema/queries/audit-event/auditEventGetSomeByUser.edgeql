@@ -14,6 +14,12 @@ with
   # specified defaults to -1 which effectively gets the whole string
   m := <optional int64>$detailsMaxLength if exists(<optional int64>$detailsMaxLength) else -1,
 
+  # What to order the results by. Defaults to `occurredDateTime`.
+  orderByProperty := <optional str>$orderByProperty,
+  # Whether to order the properties in ascending order. Defaults to `false`, ordering by descending order.
+  orderAscending := <optional bool>$orderAscending ?? false,
+  filterAuditEventDbId := <optional uuid>$filterAuditEventDbId,
+
   # the user asking for audit entries
   u := assert_single((
     select permission::User {
@@ -35,18 +41,18 @@ with
       isReleaseAuditEvent := exists([is audit::ReleaseAuditEvent]),
       release := assert_single([is audit::ReleaseAuditEvent].release_),
       user := assert_single([is audit::UserAuditEvent].user_),
-      whoSubjectId := assert_single([is audit::UserAuditEvent].whoId),
-      whoDisplayName := assert_single([is audit::UserAuditEvent].whoDisplayName),
+      whoId := assert_single([is audit::OwnedAuditEvent].whoId),
+      whoDisplayName := assert_single([is audit::OwnedAuditEvent].whoDisplayName),
     }
     filter
         # a special filter clause that can optionally pin point a single entry if passed in $filterAuditEventDbId
         # OR filter by audit event type if passed in $filterTypes
         # ELSE return all
-        (.id = <optional uuid>$filterAuditEventDbId if exists(<optional uuid>$filterAuditEventDbId) else
+        (.id = <uuid>filterAuditEventDbId if exists(filterAuditEventDbId) else
            (
-             (.isSystemAuditEvent and contains(<optional array<str>>$filterTypes,'system')) or
-             (.isUserAuditEvent and contains(<optional array<str>>$filterTypes,'user')) or
-             (.isReleaseAuditEvent and contains(<optional array<str>>$filterTypes,'release'))
+             (.isSystemAuditEvent and contains(<optional array<str>>$filterTypes, 'system')) or
+             (.isUserAuditEvent and contains(<optional array<str>>$filterTypes, 'user')) or
+             (.isReleaseAuditEvent and contains(<optional array<str>>$filterTypes, 'release'))
            ) if exists(<optional array<str>>$filterTypes) else
              true
         )
@@ -64,7 +70,7 @@ with
            # if the user is participating in a release that this is an event of they can see
            ((.release in u.releaseParticipant) ?? false)
         )
-  )
+  ),
 
 select {
   total := count(e),
@@ -77,17 +83,44 @@ select {
       occurredDateTime,
       occurredDuration,
       outcome,
+      inProgress,
       isSystemAuditEvent,
       isUserAuditEvent,
-      whoSubjectId,
+      whoId,
       whoDisplayName,
       isReleaseAuditEvent,
       releaseId := .release.id,
       detailsAsPrettyString := to_str(.details, 'pretty')[0 : m] if exists(.details) else "",
-      detailsWereTruncated := exists(.details) and m >= 0 and len(to_str(.details, 'pretty')) >= m
+      detailsWereTruncated := exists(.details) and m >= 0 and len(to_str(.details, 'pretty')) >= m,
+      hasDetails := exists(.details)
     }
-    # WIP need to add some dynamism here to allow order fields
-    order by .occurredDateTime desc
+    order by (
+      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and orderAscending else
+      <str>.actionCategory if orderByProperty = "actionCategory" and orderAscending else
+      <str>.actionDescription if orderByProperty = "actionDescription" and orderAscending else
+      <str>.details if orderByProperty = "details" and orderAscending else
+      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and orderAscending else
+      <str>.occurredDuration if orderByProperty = "occurredDuration" and orderAscending else
+      <str>.outcome if orderByProperty = "outcome" and orderAscending else
+      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and orderAscending else
+      <str>.inProgress if orderByProperty = "inProgress" and orderAscending else
+      <str>.whoId if orderByProperty = "whoId" and orderAscending else
+      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and orderAscending else
+      ""
+    ) asc then (
+      <str>.updatedDateTime if orderByProperty = "updatedDateTime" and not orderAscending else
+      <str>.actionCategory if orderByProperty = "actionCategory" and not orderAscending else
+      <str>.actionDescription if orderByProperty = "actionDescription" and not orderAscending else
+      <str>.details if orderByProperty = "details" and not orderAscending else
+      <str>.occurredDateTime if orderByProperty = "occurredDateTime" and not orderAscending else
+      <str>.occurredDuration if orderByProperty = "occurredDuration" and not orderAscending else
+      <str>.outcome if orderByProperty = "outcome" and not orderAscending else
+      <str>.recordedDateTime if orderByProperty = "recordedDateTime" and not orderAscending else
+      <str>.inProgress if orderByProperty = "inProgress" and not orderAscending else
+      <str>.whoId if orderByProperty = "whoId" and not orderAscending else
+      <str>.whoDisplayName if orderByProperty = "whoDisplayName" and not orderAscending else
+      <str>.occurredDateTime
+    ) desc
     offset <optional int64>$offset
     limit  <optional int64>$limit)
 }
