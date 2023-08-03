@@ -9,7 +9,7 @@ import {
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { isObjectLike, isSafeInteger } from "lodash";
+import { isEmpty, isObjectLike, isSafeInteger } from "lodash";
 import {
   createPagedResult,
   PagedResult,
@@ -29,7 +29,10 @@ import {
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
-import { releaseGetSpecimenToDataSetCrossLinks } from "../../../../dbschema/queries";
+import {
+  releaseGetSpecimenToDataSetCrossLinks,
+  releaseSelectionGetCases,
+} from "../../../../dbschema/queries";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 
@@ -91,140 +94,18 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     const isAllowedViewAllCases =
       userRole === "Administrator" || userRole === "AdminView";
 
-    const {
-      releaseAllDatasetCasesQuery,
-      releaseSelectedSpecimensQuery,
-      releaseSelectedCasesQuery,
-      datasetUriToIdMap,
-    } = await getReleaseInfo(this.edgeDbClient, releaseKey);
-
-    const datasetIdSet =
-      datasetUriToIdMap.size > 0
-        ? e.set(...datasetUriToIdMap.values())
-        : e.cast(e.uuid, e.set());
-
-    // we actually have to switch off the type inference (any and any) - because this ends
-    // up so complex is breaks the typescript type inference depth calculations
-    // (revisit on new version of tsc)
-    const makeFilter = (dsc: $scopify<$DatasetCase>): any => {
-      if (identifierSearchText) {
-        // note that we are looking into *all* the identifiers for the case
-        // BUT we are only filtering at the case level. i.e. when searching
-        // by identifiers we are looking to identify at a case level - for a case
-        // the includes the identifier *anywhere* (case/patient/specimen)
-        return e.op(
-          e.contains(
-            identifierSearchText!.toUpperCase(),
-            e.set(
-              e.str_upper(e.array_unpack(dsc.externalIdentifiers).value),
-              e.str_upper(
-                e.array_unpack(dsc.patients.externalIdentifiers).value
-              ),
-              e.str_upper(
-                e.array_unpack(dsc.patients.specimens.externalIdentifiers).value
-              )
-            )
-          ),
-          "and",
-          e.op(
-            e.op(dsc.dataset.id, "in", datasetIdSet),
-            "and",
-            e.op(
-              e.bool(isAllowedViewAllCases),
-              "or",
-              e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-            )
-          )
-        );
-      } else {
-        // with no identifier text to search for we can return a simpler filter
-        return e.op(
-          e.op(dsc.dataset.id, "in", datasetIdSet),
-          "and",
-          e.op(
-            e.bool(isAllowedViewAllCases),
-            "or",
-            e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery)
-          )
-        );
-      }
-    };
-
-    // TODO: when the 1.0.0 EdgeDb javascript client is released we will refactor this into using
-    // e.shape()
-    // at the moment we have literally just duplicated the query for count() v select()
-
-    const caseSearchQuery = e.select(e.dataset.DatasetCase, (dsc) => ({
-      ...e.dataset.DatasetCase["*"],
-      consent: true,
-      dataset: {
-        ...e.dataset.Dataset["*"],
-      },
-      patients: (p) => ({
-        ...e.dataset.DatasetPatient["*"],
-        consent: true,
-        filter: e.op(
-          e.bool(isAllowedViewAllCases),
-          "or",
-          e.op(p.specimens, "in", releaseSelectedSpecimensQuery)
-        ),
-        specimens: (s) => ({
-          ...e.dataset.DatasetSpecimen["*"],
-          consent: true,
-          isSelected: e.op(s, "in", releaseSelectedSpecimensQuery),
-          filter: e.op(
-            e.bool(isAllowedViewAllCases),
-            "or",
-            e.op(s, "in", releaseSelectedSpecimensQuery)
-          ),
-        }),
-      }),
-      // our cases should only be those from the datasets of this release and those appropriate for the user
-      filter: makeFilter(dsc),
-      // paging
-      limit: isSafeInteger(limit) ? e.int64(limit!) : undefined,
-      offset: isSafeInteger(offset) ? e.int64(offset!) : undefined,
-      order_by: [
-        {
-          expression: dsc.dataset.uri,
-          direction: e.ASC,
-        },
-        {
-          expression: dsc.id,
-          direction: e.ASC,
-        },
-      ],
-    }));
-
-    const pageCases = await caseSearchQuery.run(this.edgeDbClient);
-
-    // on complete query fail we return an empty results (not sure if/when this can happen but I wanted to
-    // stop returning null as nothing downstream handled it)
-    if (!pageCases)
-      return {
-        data: [],
-        total: 0,
-        totalSelectedSpecimens: 0,
-      };
-
-    // count the total for our paging support
-
-    const caseCountQuery = e.count(
-      e.select(e.dataset.DatasetCase, (dsc) => ({
-        filter: makeFilter(dsc),
-      }))
-    );
-
-    const countCases = await caseCountQuery.run(this.edgeDbClient);
-
-    // count the number selected for use in the UI
-    // once we move the above queries into EdgeQl we should be able to do all of this in one
-    // single query
-    const selectedCountQuery = e.count(releaseSelectedSpecimensQuery);
-
-    const selectedCount = await selectedCountQuery.run(this.edgeDbClient);
+    const casesResult = await releaseSelectionGetCases(this.edgeDbClient, {
+      releaseKey: releaseKey,
+      isAllowedViewAllCases: isAllowedViewAllCases,
+      // it is important that we pass in undefined to mean "don't do a search"... passing in anything else
+      // means that it just does a search matching on the empty string which is not the same thing
+      query: isEmpty(identifierSearchText) ? undefined : identifierSearchText,
+      limit: limit,
+      offset: offset,
+    });
 
     // we need to construct the result hierarchies, including computing the checkbox at intermediate nodes
+    // (intermediate nodes can be "indeterminate" meaning that the children nodes are neither all selected nor all unselected)
 
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
@@ -291,16 +172,17 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     };
 
     const paged = createPagedResult<ReleaseCaseType>(
-      pageCases.map((pc) =>
+      casesResult.data.map((pc) =>
         createCaseMap(pc as unknown as dataset.DatasetCase)
       ),
-      countCases
+      casesResult.total
     );
 
     // extend our paged result with some extra information
     return {
       ...paged,
-      totalSelectedSpecimens: selectedCount,
+      totalSelectedSpecimens: casesResult.totalSelectedSpecimens,
+      totalSpecimens: casesResult.totalSpecimens,
     };
   }
 
