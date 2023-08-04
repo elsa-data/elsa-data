@@ -8,7 +8,6 @@ import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { UserService } from "../../src/business/services/user-service";
 import { DacRedcapAustralianGenomicsCsvType } from "../../src/config/config-schema-dac";
 import { TENG_URI } from "../../src/test-data/dataset/insert-test-data-10g";
-import { SMARTIE_URI } from "../../src/test-data/dataset/insert-test-data-smartie";
 import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 
 const testContainer = registerTypes();
@@ -20,6 +19,8 @@ const configDac: DacRedcapAustralianGenomicsCsvType = {
   type: "redcap-australian-genomics-csv",
   description: "A description",
   identifierSystem: "https://redcap-server.com",
+  identifierValueColumnHeader: "daf_num",
+  releaseKeyPrintf: "REL%02d",
   csvFlagshipDatasets: {
     daf_type_research___hmb: TENF_URI,
     daf_flagships_rd___nmd: TENG_URI,
@@ -41,7 +42,7 @@ describe("Redcap Import for AG", () => {
     const userService = testContainer.resolve(UserService);
 
     const app = {
-      ...sampleApplication1,
+      ...sampleApplication2,
       daf_type_research___hmb: "1",
       // this maps to our 10g dataset
       daf_flagships_rd___nmd: "1",
@@ -58,15 +59,18 @@ describe("Redcap Import for AG", () => {
       daf_data_house_site1: "1",
     };
 
-    await redcapImportService.startNewRelease(
+    const rk = await redcapImportService.startNewRelease(
       allowedAdministratorUser,
       configDac,
       app
     );
 
+    expect(rk).toBe("REL02");
+
     const potentialCount = await e
       .count(e.permission.PotentialUser)
       .run(edgedbClient);
+
     expect(potentialCount).toBe(2);
   });
 
@@ -82,7 +86,7 @@ describe("Redcap Import for AG", () => {
     );
 
     const app = {
-      ...sampleApplication1,
+      ...sampleApplication2,
       daf_type_research___hmb: "1",
       // this maps to our 10g dataset
       daf_flagships_rd___nmd: "1",
@@ -120,8 +124,8 @@ describe("Redcap Import for AG", () => {
   });
 });
 
-const sampleApplication1 = {
-  daf_num: "SAMPLE1",
+const sampleApplication2 = {
+  daf_num: "2",
   application_date_hid: "1/1/2022",
   daf_hrec_approve: "1",
   daf_ethics_letter: "file.pdf",
