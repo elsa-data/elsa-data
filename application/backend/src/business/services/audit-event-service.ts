@@ -14,14 +14,6 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import {
-  auditLogFullForIdQuery,
-  countAuditLogEntriesForReleaseQuery,
-  countAuditLogEntriesForSystemQuery,
-  pageableAuditEventsQuery,
-  pageableAuditLogEntriesForReleaseQuery,
-  pageableAuditLogEntriesForSystemQuery,
-} from "../db/audit-log-queries";
 import { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
@@ -32,14 +24,14 @@ import {
   insertUserAuditEvent,
   releaseGetBoundaryInfo,
   releaseLastUpdatedReset,
+  updateUserAuditEvents,
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "edgedb/dist/transaction";
-import AuditEvent = interfaces.audit.AuditEvent;
-import ActionType = interfaces.audit.ActionType;
 import { Logger } from "pino";
 import { UserData } from "../data/user-data";
-import { ReleaseCreateError } from "../exceptions/release-authorisation";
+import AuditEvent = interfaces.audit.AuditEvent;
+import ActionType = interfaces.audit.ActionType;
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -132,7 +124,7 @@ export class AuditEventService {
       inProgress: true,
     });
 
-    await this.updateRelease(releaseKey, auditEvent, executor, user);
+    await this.updateRelease(releaseKey, auditEvent, executor);
 
     await releaseLastUpdatedReset(executor, {
       releaseKey: releaseKey,
@@ -145,8 +137,7 @@ export class AuditEventService {
   private async updateRelease(
     releaseKey: string,
     auditEvent: { id: string },
-    executor: Executor,
-    user: AuthenticatedUser
+    executor: Executor
   ) {
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
@@ -234,7 +225,7 @@ export class AuditEventService {
       details,
     });
 
-    await this.updateRelease(releaseKey, auditEvent, executor, user);
+    await this.updateRelease(releaseKey, auditEvent, executor);
 
     return auditEvent.id;
   }
@@ -382,6 +373,7 @@ export class AuditEventService {
    * @param executor the EdgeDb execution context (either client or transaction)
    * @param details
    * @param inProgress
+   * @param outcome
    */
   public async startSystemAuditEvent(
     actionCategory: ActionType,
@@ -479,25 +471,21 @@ export class AuditEventService {
   ): Promise<PagedResult<AuditEventType> | null> {
     await this.checkIsAllowedViewAuditEvents(user, releaseKey, executor);
 
-    const totalEntries = await countAuditLogEntriesForReleaseQuery.run(
-      executor,
-      { releaseKey }
-    );
-
-    const pageOfEntries = await pageableAuditLogEntriesForReleaseQuery(
-      releaseKey,
+    const { total, data } = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
       limit,
       offset,
       orderByProperty,
-      orderAscending
-    ).run(executor);
+      orderAscending,
+      filterTypes: ["release"],
+    });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      pageOfEntries.flatMap((entry) =>
+      data.flatMap((entry) =>
         !entry.inProgress
           ? [
               {
@@ -516,7 +504,7 @@ export class AuditEventService {
             ]
           : []
       ),
-      totalEntries
+      total
     );
   }
 
@@ -552,23 +540,21 @@ export class AuditEventService {
       await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
     }
 
-    const { count, entries } = pageableAuditEventsQuery(
-      filter.filter((value) => value !== "all"),
-      filter.includes("all") ? "all" : [user.dbId],
+    const { total, data } = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
       limit,
       offset,
-      true,
       orderByProperty,
-      orderAscending
-    );
+      orderAscending,
+      filterTypes: filter,
+    });
 
-    const length = await count.run(executor);
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${length}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      (await entries.run(executor)).flatMap((entry) =>
+      data.flatMap((entry) =>
         !entry.inProgress
           ? [
               {
@@ -588,34 +574,36 @@ export class AuditEventService {
             ]
           : []
       ),
-      length
+      total
     );
   }
 
   public async getSystemEntries(
+    user: AuthenticatedUser,
     limit: number,
     offset: number,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
     executor: Executor = this.edgeDbClient
   ): Promise<PagedResult<AuditEventType> | null> {
-    const totalEntries = await countAuditLogEntriesForSystemQuery.run(executor);
+    // Only admin view users should be able to view system audit events.
+    await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
 
-    const pageOfEntries = await pageableAuditLogEntriesForSystemQuery(
+    const { total, data } = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
       limit,
       offset,
-      true,
-      true,
       orderByProperty,
-      orderAscending
-    ).run(executor);
+      orderAscending,
+      filterTypes: ["system"],
+    });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${totalEntries}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
     );
 
     return createPagedResult(
-      pageOfEntries.flatMap((entry) =>
+      data.flatMap((entry) =>
         !entry.inProgress
           ? [
               {
@@ -634,7 +622,7 @@ export class AuditEventService {
             ]
           : []
       ),
-      totalEntries
+      total
     );
   }
 
@@ -651,8 +639,9 @@ export class AuditEventService {
       detailsMaxLength: end,
     });
 
-    if (!entry) return null;
-    if (!entry.data) return null;
+    if (!entry || !entry.data || entry.data.length === 0) {
+      return null;
+    }
 
     return {
       objectId: entry.data[0].id,
@@ -668,25 +657,68 @@ export class AuditEventService {
   ): Promise<AuditEventFullType | null> {
     await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
 
-    const entry = await auditLogFullForIdQuery(id).run(executor);
+    const entry = await auditEventGetSomeByUser(executor, {
+      userDbId: user.dbId,
+      filterAuditEventDbId: id,
+    });
 
-    if (!entry) {
+    if (!entry || !entry.data || entry.data.length === 0) {
       return null;
     } else {
       return {
-        objectId: entry.id,
-        whoId: entry.whoId,
-        whoDisplayName: entry.whoDisplayName,
-        actionCategory: entry.actionCategory,
-        actionDescription: entry.actionDescription,
-        recordedDateTime: entry.recordedDateTime,
-        updatedDateTime: entry.updatedDateTime,
-        occurredDateTime: entry.occurredDateTime,
-        occurredDuration: entry.occurredDuration?.toString(),
-        outcome: entry.outcome,
-        details: entry.details,
+        objectId: entry.data[0].id,
+        whoId: entry.data[0].whoId,
+        whoDisplayName: entry.data[0].whoDisplayName,
+        actionCategory: entry.data[0].actionCategory,
+        actionDescription: entry.data[0].actionDescription,
+        recordedDateTime: entry.data[0].recordedDateTime,
+        updatedDateTime: entry.data[0].updatedDateTime,
+        occurredDateTime: entry.data[0].occurredDateTime,
+        occurredDuration: entry.data[0].occurredDuration?.toString(),
+        outcome: entry.data[0].outcome,
+        details: entry.data[0].detailsAsPrettyString,
       };
     }
+  }
+
+  /**
+   * Add audit event when a user is added to a release.
+   */
+  public async updateUserAddedToRelease(
+    subjectId: string,
+    whoDisplayName: string,
+    role: string,
+    releaseKey: string,
+    executor: Executor = this.edgeDbClient
+  ) {
+    return updateUserAuditEvents(executor, {
+      subjectId,
+      whoDisplayName,
+      actionDescription: "Add user to release",
+      details: {
+        role,
+        releaseKey,
+      },
+    });
+  }
+
+  /**
+   * Add audit event when a user's permission is changed.
+   */
+  public async updateUserPermissionsChanged(
+    subjectId: string,
+    whoDisplayName: string,
+    permission: any,
+    executor: Executor = this.edgeDbClient
+  ) {
+    return updateUserAuditEvents(executor, {
+      subjectId,
+      whoDisplayName,
+      actionDescription: "Change user permission",
+      details: {
+        permission,
+      },
+    });
   }
 
   /**
@@ -740,12 +772,12 @@ export class AuditEventService {
     user: AuthenticatedUser,
     releaseKey: string,
     delay: Duration,
-    occuredDateTime: Date,
+    occurredDateTime: Date,
     executor: Executor = this.edgeDbClient
   ): Promise<string | null> {
     let recentAuditEvents = await auditEventGetMostRecent(executor, {
       whoId: user.subjectId,
-      since: sub(occuredDateTime, delay),
+      since: sub(occurredDateTime, delay),
       releaseKey,
     });
 
@@ -757,7 +789,7 @@ export class AuditEventService {
         `Viewed release: ${releaseKey}`,
         undefined,
         0,
-        occuredDateTime,
+        occurredDateTime,
         executor
       );
     }
@@ -796,6 +828,7 @@ export class AuditEventService {
    * @param initFunc
    * @param transFunc
    * @param finishFunc
+   * @param isResultSecureString
    */
   public async transactionalReadInReleaseAuditPattern<T, U, V>(
     user: AuthenticatedUser,
@@ -979,6 +1012,7 @@ export class AuditEventService {
    * @param initFunc
    * @param transFunc
    * @param finishFunc
+   * @param isResultSecureString
    */
   protected async transactionalAuditPattern<T, U, V>(
     user: AuthenticatedUser,

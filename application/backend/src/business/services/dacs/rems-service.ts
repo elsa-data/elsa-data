@@ -4,18 +4,13 @@ import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
 import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
-import { randomUUID } from "crypto";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { isEmpty } from "lodash";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseService } from "../releases/release-service";
-import {
-  DacRedcapAustralianGenomicsCsvType,
-  DacRemsType,
-} from "../../../config/config-schema-dac";
+import { DacRemsType } from "../../../config/config-schema-dac";
 import {
   ReleaseCreateError,
   ReleaseViewError,
@@ -167,22 +162,23 @@ export class RemsService {
       // const memberToUserMap: { [uri: string]: string } = {};
 
       const newRelease = await e
-        .insert(e.release.Release, {
-          created: e.datetime_current(),
-          lastUpdatedSubjectId: user.subjectId,
-          applicationDacIdentifier: e.tuple({
-            system: remsUrl,
-            value: e.str(remsId.toString()),
-          }),
-          applicationDacTitle:
-            application["application/description"] || "Untitled in REMS",
-          applicationDacDetails: `
+        .select(
+          e.insert(e.release.Release, {
+            created: e.datetime_current(),
+            lastUpdatedSubjectId: user.subjectId,
+            applicationDacIdentifier: e.tuple({
+              system: remsUrl,
+              value: e.str(remsId.toString()),
+            }),
+            applicationDacTitle:
+              application["application/description"] || "Untitled in REMS",
+            applicationDacDetails: `
 #### Source
 
 This application was sourced from ${remsUrl} on ${format(
-            new Date(),
-            "dd/MM/yyyy"
-          )}.
+              new Date(),
+              "dd/MM/yyyy"
+            )}.
           
 The identifier for this application in REMS is
 
@@ -206,50 +202,55 @@ ${application["application/created"]}
 ${JSON.stringify(application["application/applicant"], null, 2)}
 ~~~
 `,
-          applicationCoded: e.insert(e.release.ApplicationCoded, {
-            studyAgreesToPublish: true,
-            studyIsNotCommercial: true,
-            diseasesOfStudy: makeEmptyCodeArray(),
-            countriesInvolved: makeEmptyCodeArray(),
-            studyType: "HMB",
-            beaconQuery: {},
+            applicationCoded: e.insert(e.release.ApplicationCoded, {
+              studyAgreesToPublish: true,
+              studyIsNotCommercial: true,
+              diseasesOfStudy: makeEmptyCodeArray(),
+              countriesInvolved: makeEmptyCodeArray(),
+              studyType: "HMB",
+              beaconQuery: {},
+            }),
+            isAllowedReadData: false,
+            isAllowedVariantData: false,
+            isAllowedPhenotypeData: false,
+            datasetIndividualUrisOrderPreference: [""],
+            datasetSpecimenUrisOrderPreference: [""],
+            datasetCaseUrisOrderPreference: [""],
+            releaseKey: getNextReleaseKey(this.settings.releaseKeyPrefix),
+            releasePassword: generateZipPassword(),
+            datasetUris: e.literal(
+              e.array(e.str),
+              Object.keys(resourceToDatasetMap)
+            ),
+            dataSharingConfiguration: e.insert(
+              e.release.DataSharingConfiguration,
+              {}
+            ),
+            // NOTE: this is slightly non-standard as the audit event here is not created as part of the
+            // audit service - however this allows us to make it all a single db operation
+            // make sure the audit code here keeps in sync with the basic add audit event
+            releaseAuditLog: e.set(
+              e.insert(e.audit.ReleaseAuditEvent, {
+                actionCategory: "C",
+                actionDescription: "Created Release",
+                outcome: 0,
+                whoDisplayName: user.displayName,
+                whoId: user.subjectId,
+                occurredDateTime: e.datetime_current(),
+                inProgress: false,
+              })
+            ),
           }),
-          isAllowedReadData: false,
-          isAllowedVariantData: false,
-          isAllowedPhenotypeData: false,
-          datasetIndividualUrisOrderPreference: [""],
-          datasetSpecimenUrisOrderPreference: [""],
-          datasetCaseUrisOrderPreference: [""],
-          releaseKey: getNextReleaseKey(this.settings.releaseKeyPrefix),
-          releasePassword: generateZipPassword(),
-          datasetUris: e.literal(
-            e.array(e.str),
-            Object.keys(resourceToDatasetMap)
-          ),
-          dataSharingConfiguration: e.insert(
-            e.release.DataSharingConfiguration,
-            {}
-          ),
-          // NOTE: this is slightly non-standard as the audit event here is not created as part of the
-          // audit service - however this allows us to make it all a single db operation
-          // make sure the audit code here keeps in sync with the basic add audit event
-          releaseAuditLog: e.set(
-            e.insert(e.audit.ReleaseAuditEvent, {
-              actionCategory: "C",
-              actionDescription: "Created Release",
-              outcome: 0,
-              whoDisplayName: user.displayName,
-              whoId: user.subjectId,
-              occurredDateTime: e.datetime_current(),
-              inProgress: false,
-            })
-          ),
-        })
+          (_) => ({
+            id: true,
+            releaseKey: true,
+          })
+        )
         .run(this.edgeDbClient);
 
       await this.userService.registerRoleInRelease(
         user,
-        newRelease.id,
+        newRelease.releaseKey,
         "Administrator"
       );
 

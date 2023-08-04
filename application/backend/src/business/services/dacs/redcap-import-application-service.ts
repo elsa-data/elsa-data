@@ -15,16 +15,14 @@ import {
   checkValidApplicationUser,
   insertPotentialOrReal,
 } from "../_dac-user-helper";
-import {
-  DacRedcapAustralianGenomicsCsvType,
-  DacType,
-} from "../../../config/config-schema-dac";
+import { DacRedcapAustralianGenomicsCsvType } from "../../../config/config-schema-dac";
 import { Logger } from "pino";
 import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
 import { printf } from "fast-printf";
 import { isInteger } from "lodash";
+import { AuditEventService } from "../audit-event-service";
 
 @injectable()
 export class RedcapImportApplicationService {
@@ -34,7 +32,9 @@ export class RedcapImportApplicationService {
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,
     @inject(UserData) private readonly userData: UserData,
-    @inject(ReleaseService) private readonly releaseService: ReleaseService
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditEventService)
+    private readonly auditEventService: AuditEventService
   ) {}
 
   /**
@@ -374,11 +374,19 @@ ${roleTable.join("\n")}
         manager,
         manager.role,
         newRelease.id,
-        releaseKey
+        releaseKey,
+        this.auditEventService
       );
 
       for (const r of otherResearchers) {
-        await insertPotentialOrReal(t, r, r.role, newRelease.id, releaseKey);
+        await insertPotentialOrReal(
+          t,
+          r,
+          r.role,
+          newRelease.id,
+          releaseKey,
+          this.auditEventService
+        );
       }
 
       return newRelease;
@@ -387,7 +395,7 @@ ${roleTable.join("\n")}
     // TODO: move this inside the transaction once we have a 'transactionable' version of this service method
     await this.userService.registerRoleInRelease(
       user,
-      newRelease.id,
+      releaseKey,
       "Administrator"
     );
 

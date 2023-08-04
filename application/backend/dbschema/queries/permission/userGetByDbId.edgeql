@@ -5,5 +5,4 @@ select assert_single(
         }
         filter .id = <uuid>$dbId
   )
-)
-
+);
