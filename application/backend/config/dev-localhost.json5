@@ -41,6 +41,8 @@
       type: "redcap-australian-genomics-csv",
       description: "Australian Genomics Redcap DAC",
       identifierSystem: "https://redcap.mcri.edu.au",
+      identifierValueColumnHeader: "daf_num",
+      releaseKeyPrintf: "DAR%04d",
       csvFlagshipDatasets: {
         daf_flagships_rd___1: "urn:example:elsa-data-demo-dataset-smartie",
         daf_flagships_rd___2: "urn:fdc:umccr.org:2022:dataset/10g",
