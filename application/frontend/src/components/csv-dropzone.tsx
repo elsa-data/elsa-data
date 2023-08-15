@@ -94,7 +94,7 @@ export const CsvDropzone: React.FC<Props> = ({
   return (
     <>
       <div {...getRootProps()} className="flex flex-col items-start gap-6">
-        <div className="flex h-32 w-60 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-400 bg-gray-200 p-12 hover:bg-gray-100">
+        <div className="flex h-36 w-80 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-400 bg-gray-200 p-12 hover:bg-gray-100">
           <input {...getInputProps()} />
           {children}
         </div>
