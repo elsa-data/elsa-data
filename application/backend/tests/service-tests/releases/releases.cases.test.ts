@@ -24,7 +24,10 @@ import {
   JUDY_SPECIMEN,
 } from "../../../src/test-data/dataset/insert-test-data-10f-jetsons";
 import { ReleaseSelectionService } from "../../../src/business/services/releases/release-selection-service";
-import { ReleaseSelectionDatasetMismatchError } from "../../../src/business/exceptions/release-selection";
+import {
+  ReleaseSelectionCrossLinkedIdentifierError,
+  ReleaseSelectionNonExistentIdentifierError,
+} from "../../../src/business/exceptions/release-selection";
 import { TN_1_SPECIMEN_TUMOUR } from "../../../src/test-data/dataset/insert-test-data-10c";
 
 let edgeDbClient: Client;
@@ -323,7 +326,7 @@ it("pass in specimen ids that are not valid", async () => {
       // whilst this looks vaguely like an edgedb id it will never match
       ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
     );
-  }).rejects.toThrow(ReleaseSelectionDatasetMismatchError);
+  }).rejects.toThrow(ReleaseSelectionNonExistentIdentifierError);
 
   // a slightly more difficult one where we pass in a valid specimen id - but the
   // specimen id belongs to a dataset not in our release
@@ -333,7 +336,7 @@ it("pass in specimen ids that are not valid", async () => {
       testReleaseKey,
       await findDatabaseSpecimenIds(edgeDbClient, [TN_1_SPECIMEN_TUMOUR])
     );
-  }).rejects.toThrow(ReleaseSelectionDatasetMismatchError);
+  }).rejects.toThrow(ReleaseSelectionCrossLinkedIdentifierError);
 });
 
 /*it("test paging", async () => {
