@@ -28,10 +28,14 @@ export const BART_SPECIMEN = "NA24385";
 export const HOMER_SPECIMEN = "NA24149";
 export const MARGE_SPECIMEN = "NA24143";
 
+export const BART_PATIENT_SYSTEMLESS = "BART";
 export const BART_PATIENT_1KGP = "HG002";
 export const BART_PATIENT_PGP = "huAA53E0";
+
+export const HOMER_PATIENT_SYSTEMLESS = "HOMER";
 export const HOMER_PATIENT_1KGP = "HG003";
 export const HOMER_PATIENT_PGP = "hu6E4515";
+
 export const MARGE_PATIENT_1KGP = "HG004";
 export const MARGE_PATIENT_PGP = "hu8E87A9";
 
@@ -73,7 +77,7 @@ export async function makeSimpsonsTrio(dc: DependencyContainer) {
     ],
     // Male	45 YR	White
     {
-      "": ["BART", "BARTHOLOMEW"],
+      "": [BART_PATIENT_SYSTEMLESS, "BARTHOLOMEW"],
       [THOUSAND_GENOMES_SYSTEM]: BART_PATIENT_1KGP,
       [PGP_SYSTEM]: BART_PATIENT_PGP,
     },
@@ -137,7 +141,7 @@ export async function makeSimpsonsTrio(dc: DependencyContainer) {
     [],
     // Male	90 YR	White	Unknown
     {
-      "": "HOMER",
+      "": HOMER_PATIENT_SYSTEMLESS,
       [THOUSAND_GENOMES_SYSTEM]: HOMER_PATIENT_1KGP,
       [PGP_SYSTEM]: HOMER_PATIENT_PGP,
     },
