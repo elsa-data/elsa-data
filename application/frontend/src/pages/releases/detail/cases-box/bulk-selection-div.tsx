@@ -1,12 +1,10 @@
 import React, { useCallback, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Box } from "../../../components/boxes";
-import { trpc } from "../../../helpers/trpc";
-import { CsvDropzone } from "../../../components/csv-dropzone";
+import { trpc } from "../../../../helpers/trpc";
+import { CsvDropzone } from "../../../../components/csv-dropzone";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
-import { EagerErrorBoundary } from "../../../components/errors";
+import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
@@ -14,7 +12,7 @@ type Props = {
   releaseIsActivated: boolean;
 };
 
-export const BulkSelectionBox: React.FC<Props> = ({
+export const BulkSelectionDiv: React.FC<Props> = ({
   releaseKey,
   isAllowEdit,
   releaseIsActivated,
@@ -41,22 +39,23 @@ export const BulkSelectionBox: React.FC<Props> = ({
         return;
       }
 
-      await specimenMutate.mutate({ releaseKey, op, value });
+      specimenMutate.mutate({ releaseKey, op, value });
     },
     [releaseKey, specimenMutate]
   );
 
-  const onParseSelectCsv = useCallback(onParseCsv("add"), [onParseCsv]);
-  const onParseUnselectCsv = useCallback(onParseCsv("remove"), [onParseCsv]);
+  const onParseSelectCsv = useCallback(onParseCsv("add"), [
+    onParseCsv,
+    isAllowEdit,
+  ]);
+  const onParseUnselectCsv = useCallback(onParseCsv("remove"), [
+    onParseCsv,
+    isAllowEdit,
+  ]);
 
   return (
-    <Box
-      heading="Bulk Selection"
-      applyIsDisabledStyle={!isAllowEdit}
-      applyIsDisabledAllInput={!isAllowEdit}
-      applyIsActivatedLockedStyle={isAllowEdit && releaseIsActivated}
-    >
-      <div className="flex justify-evenly">
+    <>
+      <div className="flex flex-wrap space-x-2">
         <CsvDropzone
           onDrop={onDrop}
           onParseCsv={onParseSelectCsv}
@@ -93,6 +92,6 @@ export const BulkSelectionBox: React.FC<Props> = ({
           <EagerErrorBoundary error={new Error(parseError)} />
         </div>
       )}
-    </Box>
+    </>
   );
 };

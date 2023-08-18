@@ -33,6 +33,7 @@ import {
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import {
   releaseGetSpecimenIds,
+  releaseGetSpecimensByDbIdsAndExternalIdentifiers,
   releaseSelectionGetCases,
 } from "../../../../dbschema/queries";
 import { AuditEventTimedService } from "../audit-event-timed-service";
@@ -279,7 +280,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
    *
    * @param user the user attempting the changes
    * @param releaseKey the release id of the release to alter
-   * @param ids the IDs from datasets of our release, or an empty list if the
+   * @param identifiers the IDs from datasets of our release, or an empty list if the
    *        status should be applied to all specimens in the release. The IDs
    *        could be external patient IDs, or external specimen IDs.
    * @param statusToSet the status to set i.e. selected = true means shared,
@@ -328,13 +329,17 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         // to the datasets in our release
         // we need to do this to prevent our list of valid shared specimens from being
         // infected with edgedb nodes from datasets that are not actually in our release
-        const specimenIds = await releaseGetSpecimenIds(tx, {
-          releaseKey,
-          identifiers,
-        });
+        const specimenIds =
+          await releaseGetSpecimensByDbIdsAndExternalIdentifiers(tx, {
+            releaseKey: releaseKey,
+            dbIds: identifiers,
+            externalIdentifierValues: identifiers,
+          });
+
+        // @Christian for finishing.. just matching to the new query or altering the new query to do what you want here
 
         // Ways for the given specimen IDs to be invalid
-        const nonExistentIdentifiers = specimenIds.flatMap((id) =>
+        /*const nonExistentIdentifiers = specimenIds.flatMap((id) =>
           id.internalIdentifiers.length < 1 ? [id.identifier] : []
         );
         const ambiguousIdentifiers = specimenIds.flatMap((id) =>
@@ -359,11 +364,9 @@ export class ReleaseSelectionService extends ReleaseBaseService {
           throw new ReleaseSelectionCrossLinkedIdentifierError(
             releaseKey,
             crossLinkedIdentifiers
-          );
+          ); */
 
-        const internalIdentifiers = specimenIds.flatMap(
-          (id) => id.internalIdentifiers
-        );
+        const internalIdentifiers = specimenIds.specimens.map((s) => s.id);
 
         if (statusToSet) {
           // add specimens to the selected set

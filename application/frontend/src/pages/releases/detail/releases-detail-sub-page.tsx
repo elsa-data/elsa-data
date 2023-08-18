@@ -1,7 +1,6 @@
 import React from "react";
 import { CasesBox } from "./cases-box/cases-box";
 import { InformationBox } from "./information-box";
-import { BulkSelectionBox } from "./bulk-selection-box";
 import { FurtherRestrictionsBox } from "./further-restrictions-box";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { useReleasesMasterData } from "../releases-types";
@@ -40,12 +39,6 @@ export const ReleasesDetailSubPage: React.FC = () => {
         pageSize={pageSize}
         releaseIsActivated={releaseIsActivated}
         showConsent={features.has(FEATURE_RELEASE_CONSENT_DISPLAY)}
-      />
-
-      <BulkSelectionBox
-        releaseKey={releaseKey}
-        isAllowEdit={releaseData.permissionEditSelections ?? false}
-        releaseIsActivated={releaseIsActivated}
       />
 
       {releaseData.permissionViewSelections && (

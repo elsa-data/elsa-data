@@ -11,7 +11,7 @@ import { EagerErrorBoundary } from "../../../../components/errors";
 import { Table } from "../../../../components/tables";
 import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
 import { trpc } from "../../../../helpers/trpc";
-import { IsLoadingDivIcon } from "../../../../components/is-loading-div";
+import { BulkSelectionDiv } from "./bulk-selection-div";
 
 type Props = {
   releaseKey: string;
@@ -338,37 +338,45 @@ export const CasesBox: React.FC<Props> = ({
                         and what you can see - so the status line is not helpful - so we don't show at all  
                       */}
                 {!isUseableSearchText && (isAllowEdit || isAllowAdminView) && (
-                  <div className="flex flex-row justify-between border-t-2 py-4">
-                    {
-                      <label className="flex items-center">
-                        <div className="flex w-12 items-center justify-center">
-                          <IndeterminateCheckbox
-                            className="checkbox-accent"
-                            // we _can_ be showing this just with admin view permissions
-                            // so we need to disable unless we are allowed to edit
-                            disabled={
-                              specimenMutate.isLoading ||
-                              releaseIsActivated ||
-                              !isAllowEdit
-                            }
-                            indeterminate={isSelectAllIndeterminate}
-                            onChange={onSelectAllChange}
-                          />
-                        </div>
-                        Select All
-                      </label>
-                    }
-                    {/* experimental fetching loader - only enable if still hunting load bugs
+                  <>
+                    <div className="flex flex-row justify-between border-t-2 py-4">
+                      {
+                        <label className="flex items-center">
+                          <div className="flex w-12 items-center justify-center">
+                            <IndeterminateCheckbox
+                              className="checkbox-accent"
+                              // we _can_ be showing this just with admin view permissions
+                              // so we need to disable unless we are allowed to edit
+                              disabled={
+                                specimenMutate.isLoading ||
+                                releaseIsActivated ||
+                                !isAllowEdit
+                              }
+                              indeterminate={isSelectAllIndeterminate}
+                              onChange={onSelectAllChange}
+                            />
+                          </div>
+                          Select All
+                        </label>
+                      }
+                      {/* experimental fetching loader - only enable if still hunting load bugs
                     <span>
                       {casesQuery.isFetching && <IsLoadingDivIcon size="xs" />}
                     </span>
                     */}
-                    {/* status span */}
-                    <span>
-                      {currentSelectedSpecimens} specimen
-                      {currentSelectedSpecimens !== 1 && "s"} in total selected
-                    </span>
-                  </div>
+                      {/* status span */}
+                      <span>
+                        {currentSelectedSpecimens} specimen
+                        {currentSelectedSpecimens !== 1 && "s"} in total
+                        selected
+                      </span>
+                    </div>
+                    <BulkSelectionDiv
+                      releaseKey={releaseKey}
+                      isAllowEdit={isAllowEdit}
+                      releaseIsActivated={releaseIsActivated}
+                    />
+                  </>
                 )}
               </div>
             )}
