@@ -201,15 +201,13 @@ it("node status changes as leaves are selected and unselected", async () => {
     );
   }
 
-  await releaseSelectionService.setSelected(
-    superAdminUser,
-    testReleaseKey,
-    await findDatabaseSpecimenIds(edgeDbClient, [
+  await releaseSelectionService.setSelected(superAdminUser, testReleaseKey, {
+    dbIds: await findDatabaseSpecimenIds(edgeDbClient, [
       "HG00097",
       ELROY_SPECIMEN,
       GEORGE_SPECIMEN,
-    ])
-  );
+    ]),
+  });
 
   {
     const afterSetResult = await releaseSelectionService.getCases(
@@ -250,11 +248,12 @@ it("node status changes as leaves are selected and unselected", async () => {
     );
   }
 
-  await releaseSelectionService.setUnselected(
-    superAdminUser,
-    testReleaseKey,
-    await findDatabaseSpecimenIds(edgeDbClient, [BART_SPECIMEN, HOMER_SPECIMEN])
-  );
+  await releaseSelectionService.setUnselected(superAdminUser, testReleaseKey, {
+    dbIds: await findDatabaseSpecimenIds(edgeDbClient, [
+      BART_SPECIMEN,
+      HOMER_SPECIMEN,
+    ]),
+  });
 
   {
     const afterUnsetResult = await releaseSelectionService.getCases(
@@ -303,24 +302,16 @@ it("(un-)selects all when setSelectedStatus is passed selectAll", async () => {
     return specimens;
   };
 
-  await releaseSelectionService.setSelected(
-    superAdminUser,
-    testReleaseKey,
-    [],
-    [],
-    true
-  );
+  await releaseSelectionService.setSelected(superAdminUser, testReleaseKey, {
+    selectAll: true,
+  });
   expect(
     (await allSpecimens_()).every((s) => s.nodeStatus === "selected")
   ).toBe(true);
 
-  await releaseSelectionService.setUnselected(
-    superAdminUser,
-    testReleaseKey,
-    [],
-    [],
-    true
-  );
+  await releaseSelectionService.setUnselected(superAdminUser, testReleaseKey, {
+    selectAll: true,
+  });
   expect(
     (await allSpecimens_()).every((s) => s.nodeStatus === "unselected")
   ).toBe(true);
@@ -332,18 +323,18 @@ it("pass in specimen ids that are not valid", async () => {
       superAdminUser,
       testReleaseKey,
       // whilst this looks vaguely like an edgedb id it will never match
-      ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+      { dbIds: ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"] }
     );
   }).rejects.toThrow(ReleaseSelectionNonExistentIdentifierError);
 
   // a slightly more difficult one where we pass in a valid specimen id - but the
   // specimen id belongs to a dataset not in our release
   await expect(async () => {
-    await releaseSelectionService.setSelected(
-      superAdminUser,
-      testReleaseKey,
-      await findDatabaseSpecimenIds(edgeDbClient, [TN_1_SPECIMEN_TUMOUR])
-    );
+    await releaseSelectionService.setSelected(superAdminUser, testReleaseKey, {
+      dbIds: await findDatabaseSpecimenIds(edgeDbClient, [
+        TN_1_SPECIMEN_TUMOUR,
+      ]),
+    });
   }).rejects.toThrow(ReleaseSelectionCrossLinkedIdentifierError);
 });
 

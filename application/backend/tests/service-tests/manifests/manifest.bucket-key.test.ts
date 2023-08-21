@@ -42,9 +42,7 @@ beforeEach(async () => {
   await releaseSelectionService.setUnselected(
     allowedAdministratorUser,
     testReleaseKey,
-    [],
-    [],
-    true
+    { selectAll: true }
   );
 
   const bart = await findSpecimenQuery(BART_SPECIMEN).run(edgeDbClient);
@@ -58,7 +56,7 @@ beforeEach(async () => {
   await releaseSelectionService.setSelected(
     allowedAdministratorUser,
     testReleaseKey,
-    [bart.id, homer.id, judy.id]
+    { dbIds: [bart.id, homer.id, judy.id] }
   );
 
   // assert a release state with limited inclusions

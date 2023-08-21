@@ -258,37 +258,25 @@ export class ReleaseSelectionService extends ReleaseBaseService {
   public async setSelected(
     user: AuthenticatedUser,
     releaseKey: string,
-    dbIds: string[] = [],
-    externalIdentifierValues: string[] = [],
-    selectAll: boolean = false
+    args:
+      | { dbIds: string[] }
+      | { externalIdentifierValues: string[] }
+      | { selectAll: true }
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
-    return await this.setSelectedStatus(
-      user,
-      true,
-      releaseKey,
-      dbIds,
-      externalIdentifierValues,
-      selectAll
-    );
+    return await this.setSelectedStatus(user, true, releaseKey, args);
   }
 
   public async setUnselected(
     user: AuthenticatedUser,
     releaseKey: string,
-    dbIds: string[] = [],
-    externalIdentifierValues: string[] = [],
-    selectAll: boolean = false
+    args:
+      | { dbIds: string[] }
+      | { externalIdentifierValues: string[] }
+      | { selectAll: true }
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
-    return await this.setSelectedStatus(
-      user,
-      false,
-      releaseKey,
-      dbIds,
-      externalIdentifierValues,
-      selectAll
-    );
+    return await this.setSelectedStatus(user, false, releaseKey, args);
   }
 
   /**
@@ -310,12 +298,20 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     user: AuthenticatedUser,
     statusToSet: boolean,
     releaseKey: string,
-    dbIds: string[] = [],
-    externalIdentifierValues: string[] = [],
-    selectAll: boolean = false
+    args:
+      | { dbIds: string[] }
+      | { externalIdentifierValues: string[] }
+      | { selectAll: true }
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    const { dbIds, externalIdentifierValues, selectAll } = {
+      dbIds: [],
+      externalIdentifierValues: [],
+      selectAll: false,
+      ...args,
+    };
 
     let actionDescription;
 

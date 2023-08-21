@@ -161,17 +161,13 @@ export const CasesBox: React.FC<Props> = ({
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "add",
-        dbIds: [],
-        externalIdentifierValues: [],
-        selectAll: true,
+        args: { selectAll: true },
       });
     } else {
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "remove",
-        dbIds: [],
-        externalIdentifierValues: [],
-        selectAll: true,
+        args: { selectAll: true },
       });
     }
   };
@@ -182,9 +178,7 @@ export const CasesBox: React.FC<Props> = ({
     await specimenMutate.mutate({
       op: "add",
       releaseKey: releaseKey,
-      dbIds: [],
-      externalIdentifierValues,
-      selectAll: false,
+      args: { externalIdentifierValues },
     });
   };
 
@@ -194,9 +188,7 @@ export const CasesBox: React.FC<Props> = ({
     await specimenMutate.mutate({
       op: "remove",
       releaseKey: releaseKey,
-      dbIds: [],
-      externalIdentifierValues,
-      selectAll: false,
+      args: { externalIdentifierValues },
     });
   };
 
