@@ -284,7 +284,7 @@ it("node status changes as leaves are selected and unselected", async () => {
   }
 });
 
-it("(un-)selects all when setSelectedStatus is passed an empty list", async () => {
+it("(un-)selects all when setSelectedStatus is passed selectAll", async () => {
   const allSpecimens_ = async (): Promise<ReleaseSpecimenType[]> => {
     const result = await releaseSelectionService.getCases(
       superAdminUser,
@@ -303,7 +303,13 @@ it("(un-)selects all when setSelectedStatus is passed an empty list", async () =
     return specimens;
   };
 
-  await releaseSelectionService.setSelected(superAdminUser, testReleaseKey, []);
+  await releaseSelectionService.setSelected(
+    superAdminUser,
+    testReleaseKey,
+    [],
+    [],
+    true
+  );
   expect(
     (await allSpecimens_()).every((s) => s.nodeStatus === "selected")
   ).toBe(true);
@@ -311,7 +317,9 @@ it("(un-)selects all when setSelectedStatus is passed an empty list", async () =
   await releaseSelectionService.setUnselected(
     superAdminUser,
     testReleaseKey,
-    []
+    [],
+    [],
+    true
   );
   expect(
     (await allSpecimens_()).every((s) => s.nodeStatus === "unselected")
