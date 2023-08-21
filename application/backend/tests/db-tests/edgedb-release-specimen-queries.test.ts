@@ -110,6 +110,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [bartSpecimenDbId],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(1);
@@ -124,6 +125,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [bartPatientDbId],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(1);
@@ -138,6 +140,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [simpsonsCaseDbId],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(3);
@@ -162,6 +165,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         externalIdentifierValues: [BART_SPECIMEN],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(1);
@@ -180,6 +184,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         externalIdentifierValues: [BART_PATIENT_1KGP],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(1);
@@ -198,6 +203,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         externalIdentifierValues: [SIMPSONS_CASE],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(3);
@@ -223,6 +229,7 @@ describe("edgedb release specimen query tests", () => {
         dbIds: [],
         // lowercase the id
         externalIdentifierValues: [SIMPSONS_CASE.toLowerCase()],
+        selectAll: false,
       });
 
     // our expectation is that for this query case must match
@@ -239,6 +246,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [charlesCaseDbId],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(0);
@@ -254,6 +262,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [charlesPatientDbId],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(0);
@@ -269,6 +278,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: [charlesSpecimenDbId],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(0);
@@ -284,6 +294,7 @@ describe("edgedb release specimen query tests", () => {
         releaseKey: RELEASE_KEY_1,
         dbIds: ["4da8d9d1-ca33-48f4-a1fd-986d5fe1d13c"],
         externalIdentifierValues: [],
+        selectAll: false,
       });
 
     expect(specimensResult.specimens).toHaveLength(0);
@@ -305,6 +316,7 @@ describe("edgedb release specimen query tests", () => {
           "4da8d9d1-ca33-48f4-a1fd-986d5fe1d13c",
         ],
         externalIdentifierValues: ["ELROY", "donald"],
+        selectAll: false,
       });
 
     // all the simpsons + elroy
