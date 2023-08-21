@@ -20,6 +20,7 @@ import {
   releaseParticipantAddUser,
   userGetAllByUser,
   userGetByDbId,
+  userGetByEmail,
   userGetBySubjectId,
   userUpdatePermissions,
 } from "../../../dbschema/queries";
@@ -190,6 +191,42 @@ export class UserService {
         permission,
         this.edgeDbClient
       );
+    });
+  }
+
+  /**
+   * Return true if the given subjectId or email exists in this Elsa Data
+   * instance - which implies that we will let them log in.
+   *
+   * They can exist as a User, a PotentialUser, or are listed as a super
+   * admin in the configuration.
+   *
+   * @param subjectId
+   * @param email
+   */
+  public async existsForLogin(
+    subjectId: string,
+    email: string
+  ): Promise<boolean> {
+    const isSuper = this.settings.superAdmins.find(
+      (sa) => sa.sub === subjectId
+    );
+
+    // if the users subject id is listed in the super admins then they are allowed to login
+    if (isSuper) return true;
+
+    return await this.edgeDbClient.transaction(async (tx) => {
+      const actualDbUser = await userGetByEmail(tx, {
+        email: email,
+      });
+
+      if (actualDbUser) return true;
+
+      const potentialDbUser = await potentialUserGetByEmail(tx, {
+        email: email,
+      });
+
+      return !!potentialDbUser;
     });
   }
 

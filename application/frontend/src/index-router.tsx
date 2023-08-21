@@ -36,6 +36,7 @@ import {
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
+import { NOT_AUTHORISED_ROUTE_PART } from "@umccr/elsa-constants/constants-routes";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -142,7 +143,16 @@ export function IndexRouter({ features }: IndexRouterProps) {
             />
           }
         />
-        <Route path={`/not-authorised`} element={<NotAuthorisedPage />} />
+
+        {/* these 'public' routes are used by the OIDC flow to redirect if there is some
+             reason the idP login works but we don't want to allow them into Elsa itself */}
+        <Route
+          path={`/${NOT_AUTHORISED_ROUTE_PART}`}
+          element={<NotAuthorisedPage />}
+        >
+          {/* some extra specific routes can give extra information to clarify the reason */}
+          <Route path="*" element={<NotAuthorisedPage />} />
+        </Route>
 
         {/* a protected hierarchy of routes - user must be logged in */}
         <Route path={`/`} element={<ProtectedRoute redirectPath="/login" />}>

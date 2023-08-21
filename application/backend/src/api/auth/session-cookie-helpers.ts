@@ -53,10 +53,6 @@ export function getAuthenticatedUserFromSecureSession(
   // cannot return authenticated user if no session cookie has been created
   if (!sessionDbObject) return null;
 
-  // possibly there are other checks we want to make
-  //const sessionTokenPrimary = request.session.get(SESSION_TOKEN_PRIMARY);
-  //if (!sessionTokenPrimary || !sessionDbObject) {
-  //  return null }
-
+  // create a strongly typed object from the session data
   return new AuthenticatedUser(sessionDbObject);
 }

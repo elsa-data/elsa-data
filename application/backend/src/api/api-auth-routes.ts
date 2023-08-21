@@ -13,6 +13,12 @@ import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 import { AuthenticatedUser } from "../business/authenticated-user";
+import {
+  DATABASE_FAIL_ROUTE_PART,
+  NO_EMAIL_OR_NAME_ROUTE_PART,
+  NO_SUBJECT_ID_ROUTE_PART,
+  NOT_AUTHORISED_ROUTE_PART,
+} from "@umccr/elsa-constants/constants-routes";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
   if (!settings.oidc || !settings.oidc.issuer)
@@ -44,7 +50,6 @@ export const apiAuthRoutes = async (
 ) => {
   const { logger, edgeDbClient, settings } = getServices(opts.container);
 
-  const userService = opts.container.resolve(UserService);
   const auditLogService = opts.container.resolve(AuditEventService);
 
   const client = createClient(settings, opts.redirectUri);
@@ -58,7 +63,7 @@ export const apiAuthRoutes = async (
     // cookieForBackend(request, reply, "nonce", nonce);
 
     const redirectUrl = client.authorizationUrl({
-      scope: "openid email profile", //  org.cilogon.userinfo
+      scope: "openid email profile",
       // nonce: nonce,
       // state: "ABCD",
     });
@@ -147,12 +152,29 @@ export const callbackRoutes = async (
 
     const idClaims = tokenSet.claims();
 
-    if (!idClaims.name || !idClaims.email) {
-      // TODO work out what we are doing about errors here
-      reply.redirect("/missing-name-or-email");
+    if (!idClaims.sub) {
+      // this should never happen - id claims will always include a subject
+      reply.redirect(
+        `/${NOT_AUTHORISED_ROUTE_PART}/${NO_SUBJECT_ID_ROUTE_PART}`
+      );
       return;
     }
 
+    if (!idClaims.name || !idClaims.email) {
+      reply.redirect(
+        `/${NOT_AUTHORISED_ROUTE_PART}/${NO_EMAIL_OR_NAME_ROUTE_PART}`
+      );
+      return;
+    }
+
+    // unless we have seen this subject or email in the system - we want to deny them any login/JWT
+    if (!(await userService.existsForLogin(idClaims.sub, idClaims.email))) {
+      reply.redirect(`/${NOT_AUTHORISED_ROUTE_PART}`);
+      return;
+    }
+
+    // now we know they are a user worthy of some login privileges - we upsert our record of them
+    // (this could include promoting a potential user to an actual user)
     const dbUser = await userService.upsertUserForLogin(
       idClaims.sub,
       idClaims.name,
@@ -163,8 +185,9 @@ export const callbackRoutes = async (
     );
 
     if (!dbUser) {
-      // TODO: redirect to a static error page?
-      reply.redirect("/error");
+      reply.redirect(
+        `/${NOT_AUTHORISED_ROUTE_PART}/${DATABASE_FAIL_ROUTE_PART}`
+      );
       return;
     }
 
@@ -173,20 +196,23 @@ export const callbackRoutes = async (
       `authRoutes: Login OIDC callback event`
     );
 
-    const authUser = new AuthenticatedUser(dbUser);
-
     // the secure session token is HTTP only - so its existence can't even be tracked in
     // the React code - it is made available to the backend that can use it as a
     // real access token
-    // we also make available a copy of the Authenticated user database object so
-    // we can recreate AuthenticatedUsers on every API call without hitting the database
     cookieForBackend(
       request,
       reply,
       SESSION_TOKEN_PRIMARY,
       tokenSet.access_token!
     );
-    cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
+    // we also make available a copy of the Authenticated user database object so
+    // we can rehydrate the AuthenticatedUser in each session
+    cookieForBackend(
+      request,
+      reply,
+      SESSION_USER_DB_OBJECT,
+      new AuthenticatedUser(dbUser).asJson()
+    );
 
     // CSRF Token passed as cookie
     cookieForUI(request, reply, CSRF_TOKEN_COOKIE_NAME, reply.generateCsrf());
