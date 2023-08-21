@@ -42,7 +42,9 @@ beforeEach(async () => {
   await releaseSelectionService.setUnselected(
     allowedAdministratorUser,
     testReleaseKey,
-    []
+    [],
+    [],
+    true
   );
 
   const bart = await findSpecimenQuery(BART_SPECIMEN).run(edgeDbClient);
