@@ -26,13 +26,11 @@ import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";
 import {
   ReleaseSelectionNonExistentIdentifierError,
-  ReleaseSelectionAmbiguousIdentifierError,
   ReleaseSelectionCrossLinkedIdentifierError,
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import {
-  releaseGetSpecimenIds,
   releaseGetSpecimensByDbIdsAndExternalIdentifiers,
   releaseSelectionGetCases,
 } from "../../../../dbschema/queries";
@@ -260,19 +258,37 @@ export class ReleaseSelectionService extends ReleaseBaseService {
   public async setSelected(
     user: AuthenticatedUser,
     releaseKey: string,
-    ids: string[] = []
+    dbIds: string[] = [],
+    externalIdentifierValues: string[] = [],
+    selectAll: boolean = false
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
-    return await this.setSelectedStatus(user, true, releaseKey, ids);
+    return await this.setSelectedStatus(
+      user,
+      true,
+      releaseKey,
+      dbIds,
+      externalIdentifierValues,
+      selectAll
+    );
   }
 
   public async setUnselected(
     user: AuthenticatedUser,
     releaseKey: string,
-    ids: string[] = []
+    dbIds: string[] = [],
+    externalIdentifierValues: string[] = [],
+    selectAll: boolean = false
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
-    return await this.setSelectedStatus(user, false, releaseKey, ids);
+    return await this.setSelectedStatus(
+      user,
+      false,
+      releaseKey,
+      dbIds,
+      externalIdentifierValues,
+      selectAll
+    );
   }
 
   /**
@@ -296,21 +312,23 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     user: AuthenticatedUser,
     statusToSet: boolean,
     releaseKey: string,
-    identifiers: string[] = []
+    dbIds: string[] = [],
+    externalIdentifierValues: string[] = [],
+    selectAll: boolean = false
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
     let actionDescription;
 
-    if (identifiers.length > 0) {
-      actionDescription = statusToSet
-        ? "Set Selected Specimens"
-        : "Unset Selected Specimens";
-    } else {
+    if (selectAll) {
       actionDescription = statusToSet
         ? "Select All Specimens"
         : "Unselect All Specimens";
+    } else {
+      actionDescription = statusToSet
+        ? "Set Selected Specimens"
+        : "Unset Selected Specimens";
     }
 
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -331,40 +349,23 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         // infected with edgedb nodes from datasets that are not actually in our release
         const specimenIds =
           await releaseGetSpecimensByDbIdsAndExternalIdentifiers(tx, {
-            releaseKey: releaseKey,
-            dbIds: identifiers,
-            externalIdentifierValues: identifiers,
+            releaseKey,
+            dbIds,
+            externalIdentifierValues,
+            selectAll,
           });
 
-        // @Christian for finishing.. just matching to the new query or altering the new query to do what you want here
-
-        // Ways for the given specimen IDs to be invalid
-        /*const nonExistentIdentifiers = specimenIds.flatMap((id) =>
-          id.internalIdentifiers.length < 1 ? [id.identifier] : []
-        );
-        const ambiguousIdentifiers = specimenIds.flatMap((id) =>
-          id.internalIdentifiers.length > 1 ? [id.identifier] : []
-        );
-        const crossLinkedIdentifiers = specimenIds.flatMap((id) =>
-          id.hasCrossLink ? [id.identifier] : []
-        );
-
-        // we abort early here - if anything is wrong we change nothing at all
-        if (nonExistentIdentifiers.length > 0)
+        if (specimenIds.invalidDbIds.length)
           throw new ReleaseSelectionNonExistentIdentifierError(
-            nonExistentIdentifiers
+            specimenIds.invalidDbIds
           );
 
-        if (ambiguousIdentifiers.length > 0)
-          throw new ReleaseSelectionAmbiguousIdentifierError(
-            ambiguousIdentifiers
-          );
-
-        if (crossLinkedIdentifiers.length > 0)
-          throw new ReleaseSelectionCrossLinkedIdentifierError(
-            releaseKey,
-            crossLinkedIdentifiers
-          ); */
+        if (
+          specimenIds.crossLinkedSpecimenCount ||
+          specimenIds.crossLinkedPatientCount ||
+          specimenIds.crossLinkedCaseCount
+        )
+          throw new ReleaseSelectionCrossLinkedIdentifierError();
 
         const internalIdentifiers = specimenIds.specimens.map((s) => s.id);
 
@@ -403,8 +404,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         }
 
         return {
-          affectedSpecimens:
-            identifiers.length > 0 ? internalIdentifiers : ["*"],
+          affectedSpecimens: selectAll ? internalIdentifiers : ["*"],
         };
       },
       async () => {

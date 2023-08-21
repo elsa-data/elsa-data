@@ -40,6 +40,7 @@ async function parseCsv<T extends File>(
       error: (error) => {
         return reject([error]);
       },
+      delimiter: ",",
       skipEmptyLines: "greedy",
     });
   });

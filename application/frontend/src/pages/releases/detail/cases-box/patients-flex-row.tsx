@@ -71,13 +71,17 @@ export const PatientsFlexRow: React.FC<Props> = ({
       specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "add",
-        value: [id],
+        dbIds: [id],
+        externalIdentifierValues: [],
+        selectAll: false,
       });
     } else {
       specimenMutate.mutate({
         op: "remove",
         releaseKey: releaseKey,
-        value: [id],
+        dbIds: [id],
+        externalIdentifierValues: [],
+        selectAll: false,
       });
     }
   };

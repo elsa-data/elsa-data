@@ -161,17 +161,43 @@ export const CasesBox: React.FC<Props> = ({
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "add",
-        // note that this empty array is a special marker to indicate to "select all"
-        value: [],
+        dbIds: [],
+        externalIdentifierValues: [],
+        selectAll: true,
       });
     } else {
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "remove",
-        // note that this empty array is a special marker to indicate to "unselect all"
-        value: [],
+        dbIds: [],
+        externalIdentifierValues: [],
+        selectAll: true,
       });
     }
+  };
+
+  const onParseSelectCsv = async (externalIdentifierValues: string[]) => {
+    setIsSelectAllIndeterminate(true);
+
+    await specimenMutate.mutate({
+      op: "add",
+      releaseKey: releaseKey,
+      dbIds: [],
+      externalIdentifierValues,
+      selectAll: false,
+    });
+  };
+
+  const onParseUnselectCsv = async (externalIdentifierValues: string[]) => {
+    setIsSelectAllIndeterminate(true);
+
+    await specimenMutate.mutate({
+      op: "remove",
+      releaseKey: releaseKey,
+      dbIds: [],
+      externalIdentifierValues,
+      selectAll: false,
+    });
   };
 
   // row spans help us with our UI column that displays the 'dataset' icon for each case
@@ -373,8 +399,9 @@ export const CasesBox: React.FC<Props> = ({
                     </div>
                     <BulkSelectionDiv
                       releaseKey={releaseKey}
-                      isAllowEdit={isAllowEdit}
                       releaseIsActivated={releaseIsActivated}
+                      onParseSelectCsv={onParseSelectCsv}
+                      onParseUnselectCsv={onParseUnselectCsv}
                     />
                   </>
                 )}

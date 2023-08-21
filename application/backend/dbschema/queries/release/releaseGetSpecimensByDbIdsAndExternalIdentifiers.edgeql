@@ -18,6 +18,8 @@ WITH
   # a list external identifiers (from either cases, patients or specimens)
   paramExternalIdentifiers := array_unpack(<array<str>>$externalIdentifierValues),
 
+  paramSelectAll := <bool>$selectAll,
+
   #######
 
   # the release we are looking at
@@ -55,8 +57,10 @@ WITH
   patientsWithIdentifiers := (SELECT dataset::DatasetPatient FILTER .dataset IN datasets AND
                                                                     array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers),
   casesWithIdentifiers := (SELECT dataset::DatasetCase FILTER .dataset IN datasets AND
-                                                              array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers)
+                                                              array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers),
 
+  # Will be all specimens if $selectAll == true
+  maybeAllSpecimens := (SELECT dataset::DatasetSpecimen FILTER .dataset IN datasets AND paramSelectAll)
 
 SELECT {
   invalidDbIds := (SELECT dbIdsNotValid),
@@ -71,7 +75,8 @@ SELECT {
                        specimensFromDatasets UNION
                        casesWithIdentifiers.patients.specimens UNION
                        patientsWithIdentifiers.specimens UNION
-                       specimensWithIdentifiers
+                       specimensWithIdentifiers UNION
+                       maybeAllSpecimens
                )
 }
 

@@ -32,7 +32,9 @@ const casesQuerySchema = inputReleaseKeySingle
 const specimensMutateSchema = inputReleaseKeySingle.merge(
   z.object({
     op: z.literal("remove").or(z.literal("add")),
-    value: z.array(z.string()),
+    dbIds: z.array(z.string()),
+    externalIdentifierValues: z.array(z.string()),
+    selectAll: z.boolean(),
   })
 );
 
@@ -78,16 +80,25 @@ export const releaseRouter = router({
     .input(specimensMutateSchema)
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
-      const { releaseKey, op, value } = input;
+      const { releaseKey, op, dbIds, externalIdentifierValues, selectAll } =
+        input;
 
       if (op === "add")
-        await ctx.releaseSelectionService.setSelected(user, releaseKey, value);
+        await ctx.releaseSelectionService.setSelected(
+          user,
+          releaseKey,
+          dbIds,
+          externalIdentifierValues,
+          selectAll
+        );
 
       if (op === "remove")
         await ctx.releaseSelectionService.setUnselected(
           user,
           releaseKey,
-          value
+          dbIds,
+          externalIdentifierValues,
+          selectAll
         );
     }),
   getReleasePassword: internalProcedure

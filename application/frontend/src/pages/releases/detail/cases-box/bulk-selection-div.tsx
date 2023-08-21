@@ -5,33 +5,31 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { EagerErrorBoundary } from "../../../../components/errors";
+import classNames from "classnames";
+
+type ParseCallback = (identifiers: string[]) => void;
 
 type Props = {
   releaseKey: string;
-  isAllowEdit: boolean;
   releaseIsActivated: boolean;
+  onParseSelectCsv: ParseCallback;
+  onParseUnselectCsv: ParseCallback;
 };
 
 export const BulkSelectionDiv: React.FC<Props> = ({
   releaseKey,
-  isAllowEdit,
   releaseIsActivated,
+  onParseSelectCsv,
+  onParseUnselectCsv,
 }) => {
   const [parseError, setParseError] = useState<string>("");
 
-  const trpcUtils = trpc.useContext();
+  const onDrop = useCallback(() => {
+    setParseError("");
+  }, []);
 
-  const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
-    onSuccess: async () =>
-      // once we've altered the selection set we want to invalidate the cases
-      // queries *just* of this release
-      await trpcUtils.release.getReleaseCases.invalidate({ releaseKey }),
-  });
-
-  const onDrop = useCallback(() => setParseError(""), []);
-
-  const onParseCsv = useCallback(
-    (op: "add" | "remove") => async (parsed: Record<string, string>[]) => {
+  const _onParseCsv = useCallback(
+    (cb: ParseCallback) => async (parsed: Record<string, string>[]) => {
       const value = parsed.map((row) => row["specimen_id"]).filter(Boolean);
 
       if (!value) {
@@ -39,26 +37,20 @@ export const BulkSelectionDiv: React.FC<Props> = ({
         return;
       }
 
-      specimenMutate.mutate({ releaseKey, op, value });
+      cb(value);
     },
-    [releaseKey, specimenMutate]
+    []
   );
 
-  const onParseSelectCsv = useCallback(onParseCsv("add"), [
-    onParseCsv,
-    isAllowEdit,
-  ]);
-  const onParseUnselectCsv = useCallback(onParseCsv("remove"), [
-    onParseCsv,
-    isAllowEdit,
-  ]);
+  const _onParseSelectCsv = _onParseCsv(onParseSelectCsv);
+  const _onParseUnselectCsv = _onParseCsv(onParseUnselectCsv);
 
   return (
     <>
       <div className="flex flex-wrap space-x-2">
         <CsvDropzone
           onDrop={onDrop}
-          onParseCsv={onParseSelectCsv}
+          onParseCsv={_onParseSelectCsv}
           onError={setParseError}
         >
           <div className="flex flex-row items-center">
@@ -73,7 +65,7 @@ export const BulkSelectionDiv: React.FC<Props> = ({
         </CsvDropzone>
         <CsvDropzone
           onDrop={onDrop}
-          onParseCsv={onParseUnselectCsv}
+          onParseCsv={_onParseUnselectCsv}
           onError={setParseError}
         >
           <div className="flex flex-row items-center">
