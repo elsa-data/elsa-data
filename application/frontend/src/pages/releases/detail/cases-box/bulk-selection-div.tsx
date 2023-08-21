@@ -14,6 +14,7 @@ type Props = {
   releaseIsActivated: boolean;
   onParseSelectCsv: ParseCallback;
   onParseUnselectCsv: ParseCallback;
+  disabled: boolean;
 };
 
 export const BulkSelectionDiv: React.FC<Props> = ({
@@ -21,6 +22,7 @@ export const BulkSelectionDiv: React.FC<Props> = ({
   releaseIsActivated,
   onParseSelectCsv,
   onParseUnselectCsv,
+  disabled,
 }) => {
   const [parseError, setParseError] = useState<string>("");
 
@@ -52,6 +54,7 @@ export const BulkSelectionDiv: React.FC<Props> = ({
           onDrop={onDrop}
           onParseCsv={_onParseSelectCsv}
           onError={setParseError}
+          disabled={disabled}
         >
           <div className="flex flex-row items-center">
             <FontAwesomeIcon icon={faCheckSquare} className="fa-2xl p-2" />
@@ -67,6 +70,7 @@ export const BulkSelectionDiv: React.FC<Props> = ({
           onDrop={onDrop}
           onParseCsv={_onParseUnselectCsv}
           onError={setParseError}
+          disabled={disabled}
         >
           <div className="flex flex-row items-center">
             <FontAwesomeIcon icon={faSquare} className="fa-2xl p-2" />

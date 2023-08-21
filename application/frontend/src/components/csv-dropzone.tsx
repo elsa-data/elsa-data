@@ -53,6 +53,7 @@ type Props = React.PropsWithChildren<{
     | null
     | undefined;
   onError: (err: string) => void;
+  disabled?: boolean;
 }>;
 
 export const CsvDropzone: React.FC<Props> = ({
@@ -60,6 +61,7 @@ export const CsvDropzone: React.FC<Props> = ({
   onDrop,
   onParseCsv,
   onError,
+  disabled = false,
 }) => {
   const _onDrop = useCallback(
     (acceptedFiles: File[], filesRejected: FileRejection[]) => {
@@ -94,7 +96,10 @@ export const CsvDropzone: React.FC<Props> = ({
 
   return (
     <>
-      <div {...getRootProps()} className="flex flex-col items-start gap-6">
+      <div
+        {...(disabled ? {} : getRootProps())}
+        className="flex flex-col items-start gap-6"
+      >
         <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-400 bg-gray-200 p-4 hover:bg-gray-100">
           <input {...getInputProps()} />
           {children}

@@ -402,6 +402,7 @@ export const CasesBox: React.FC<Props> = ({
                       releaseIsActivated={releaseIsActivated}
                       onParseSelectCsv={onParseSelectCsv}
                       onParseUnselectCsv={onParseUnselectCsv}
+                      disabled={specimenMutate.isLoading}
                     />
                   </>
                 )}
