@@ -77,11 +77,6 @@
       address: "no-reply@umccr.org",
     },
   },
-  "+superAdmins": [
-    {
-      sub: "http://subject1.com",
-    },
-  ],
   devTesting: {
     allowTestUsers: true,
     allowTestRoutes: true,
