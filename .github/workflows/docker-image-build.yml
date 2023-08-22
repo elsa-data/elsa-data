@@ -55,13 +55,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Image
-        id: build-image
+      - name: Build and Push
+        id: build-push
         uses: docker/build-push-action@v4.1.1
         with:
           context: application
-          push: false
-          outputs: type=oci,dest=/tmp/image.tar
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
@@ -70,19 +69,19 @@ jobs:
             ELSA_DATA_BUILT=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             ELSA_DATA_REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
 
-      - name: Import image in containerd
+      - name: Pull image in containerd
         run: |
-          sudo ctr i import --digests --all-platforms /tmp/image.tar
+          IMAGE_BUILT=${{ fromJSON(steps.build-push.outputs.metadata)['image.name'] }}
+          sudo ctr i pull $IMAGE_BUILT
 
-      - name: Push image with containerd
-        run: |
-          IMAGE_BUILT=${{ fromJSON(steps.build-image.outputs.metadata)['image.name'] }}
-          sudo ctr i push --user "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" $IMAGE_BUILT
+      #- name: Push image with containerd
+      ##  run: |
+      #    IMAGE_BUILT=${{ fromJSON(steps.build-image.outputs.metadata)['image.name'] }}
+      #    sudo ctr i push --user "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" $IMAGE_BUILT
 
       - name: Soci Index
         run: |
-          IMAGE_BUILT=${{ fromJSON(steps.build-image.outputs.metadata)['image.name'] }}
-          echo $IMAGE_BUILT
+          IMAGE_BUILT=${{ fromJSON(steps.build-push.outputs.metadata)['image.name'] }}
           sudo $HOME/.soci/soci create $IMAGE_BUILT
           sudo $HOME/.soci/soci push --user ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} $IMAGE_BUILT
         working-directory: application/backend
