@@ -69,7 +69,8 @@ jobs:
 
       - name: Soci Index
         run: |
-          echo ${{ fromJSON(steps.build-push.outputs.metadata) }}
-          sudo $HOME/.soci/soci create ghcr.io/${{ github.repository }}/${{ steps.build-push.imageid }}
-          sudo $HOME/.soci/soci push --user ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} ghcr.io/${{ github.repository }}/${{ steps.build-push.imageid }}
+          IMAGE_BUILT=${{ fromJSON(steps.build-push.outputs.metadata)['image.name'] }}
+          echo $IMAGE_BUILT
+          sudo $HOME/.soci/soci create $IMAGE_BUILT
+          sudo $HOME/.soci/soci push --user ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} $IMAGE_BUILT
         working-directory: application/backend
