@@ -108,7 +108,13 @@ export const DatasetTable: React.FC = ({}) => {
               </td>
 
               {/* Last Modified */}
-              <td className={classNames(baseColumnClasses, "text-left")}>
+              <td
+                className={classNames(
+                  baseColumnClasses,
+                  "text-left",
+                  "whitespace-nowrap"
+                )}
+              >
                 {row.updatedDateTime
                   ? formatLocalDateTime(String(row.updatedDateTime))
                   : ""}

@@ -89,7 +89,7 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
     }
   );
 
-  const baseColumnClasses = "py-4 font-medium text-gray-900";
+  const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
   const createHeaders = () => {
     return (
@@ -114,7 +114,7 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
     return data.map((row, rowIndex) => {
       return (
         <tr key={rowIndex} className="border-b pl-2 pr-2">
-          <td className={classNames(baseColumnClasses, "text-left", "w-auto")}>
+          <td className={classNames(baseColumnClasses, "text-left")}>
             {row.displayName}
           </td>
 
@@ -123,7 +123,6 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "text-left",
               "pl-4",
-              "w-auto",
               "font-normal"
             )}
           >
@@ -133,7 +132,6 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
           <td
             className={classNames(
               baseColumnClasses,
-              "w-40",
               "text-left",
               "pr-4",
               "font-normal"
@@ -147,7 +145,6 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
               baseColumnClasses,
               "text-right",
               "pl-4",
-              "w-auto",
               "font-normal"
             )}
           >
