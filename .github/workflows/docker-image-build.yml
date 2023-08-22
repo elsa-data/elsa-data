@@ -57,8 +57,8 @@ jobs:
         uses: docker/build-push-action@v4.1.1
         with:
           context: application
-          # we want it built into the docker system, so we can soci it
-          load: true
+          push: false
+          outputs: type=oci,dest=/tmp/image.tar
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
@@ -69,7 +69,7 @@ jobs:
 
       - name: Soci Index
         run: |
-          echo ${{ fromJSON(steps.meta.outputs.metadata)['image.name'] }}
+          echo ${{ fromJSON(steps.build-push.outputs.metadata) }}
           sudo $HOME/.soci/soci create ghcr.io/${{ github.repository }}/${{ steps.build-push.imageid }}
           sudo $HOME/.soci/soci push --user ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} ghcr.io/${{ github.repository }}/${{ steps.build-push.imageid }}
         working-directory: application/backend
