@@ -28,10 +28,14 @@ import {
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import { AppRouter } from "../../src/app-router";
 import { FastifyInstance } from "fastify";
+import {
+  CSRF_TOKEN_COOKIE_NAME,
+  SECURE_COOKIE_NAME,
+} from "@umccr/elsa-constants";
 
 const testReleaseKey = "R0001";
-const authCookieName = "elsa-data-id-and-bearer-tokens";
-const csrfCookieName = "elsa-data-csrf-token";
+const authCookieName = SECURE_COOKIE_NAME;
+const csrfCookieName = CSRF_TOKEN_COOKIE_NAME;
 const csrfHeaderName = "csrf-token";
 
 /**

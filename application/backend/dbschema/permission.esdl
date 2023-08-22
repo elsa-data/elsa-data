@@ -16,9 +16,18 @@ module permission {
             readonly := true;
         }
 
-        # if we have display name information we should fill it in
+        # if we have display name information we should fill it in - but if we do not have this
+        # information this should be left empty and the email will be used in its place
         #
         property displayName -> str;
+
+        # we record the created time for the potential users to help if we want to clear
+        # up old/unused users (if a user never logs in, their potential user is never upgraded to a user)
+        #
+        required property createdDateTime -> datetime {
+            default := datetime_current();
+            readonly := true;
+        }
 
         # whether this user will become a participant of a release when they login
 
@@ -31,6 +40,21 @@ module permission {
             # (in general releases won't be deleted anyway)
             #
             on target delete allow;
+        }
+
+        # whether this user will be given extra rights when they first login
+        # (keep the name of these in sync with User)
+
+        required property futureIsAllowedRefreshDatasetIndex -> bool {
+           default := false;
+        };
+
+        required property futureIsAllowedCreateRelease -> bool {
+            default := false;
+        };
+
+        required property futureIsAllowedOverallAdministratorView -> bool {
+            default := false;
         }
     }
 

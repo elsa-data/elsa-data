@@ -32,6 +32,10 @@ import pino, { Logger } from "pino";
 import { AuditEventService } from "./business/services/audit-event-service";
 import { ReleaseActivationService } from "./business/services/releases/release-activation-service";
 import { getFeaturesEnabled } from "./features";
+import {
+  ADD_USER_COMMAND,
+  commandAddUser,
+} from "./entrypoint-command-add-user";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -157,6 +161,15 @@ bootstrapGlobalSynchronous();
         todo.push(async () => commandAddScenario(dc, parseInt(c.args[0])));
         break;
 
+      case ADD_USER_COMMAND:
+        if (c.args.length != 1)
+          console.error(
+            `Command ${ADD_USER_COMMAND} requires a single email address argument indicating a user who should be able to login`
+          );
+
+        todo.push(async () => commandAddUser(dc, c.args[0].trim()));
+        break;
+
       case DB_BLANK_COMMAND:
         todo.push(async () => commandDbBlank());
         break;
@@ -211,6 +224,7 @@ function printHelpText() {
   console.log(
     `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
   );
+  console.log(`${ADD_USER_COMMAND} <email> - add the user to allow login`);
   // TODO implement some guards on destructive operations
   // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
 }

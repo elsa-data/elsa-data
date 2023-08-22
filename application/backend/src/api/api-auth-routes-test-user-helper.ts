@@ -1,9 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
-import {
-  SESSION_TOKEN_PRIMARY,
-  SESSION_USER_DB_OBJECT,
-} from "./auth/session-cookie-constants";
+import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./auth/session-cookie-constants";
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import {
@@ -26,7 +23,10 @@ import {
   TEST_SUBJECT_4_DISPLAY,
   TEST_SUBJECT_4_EMAIL,
 } from "../test-data/user/insert-user4";
-import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
+import {
+  cookieBackendSessionSetKeyValue,
+  cookieForUI,
+} from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { AuthenticatedUser } from "../business/authenticated-user";
 
@@ -133,13 +133,19 @@ const addTestUserRoute = (
 
     const authUser = new AuthenticatedUser(dbUser);
 
-    cookieForBackend(
+    // WIP - not currently used
+    // cookieBackendSessionSetKeyValue(
+    //  request,
+    //  reply,
+    //  SESSION_TOKEN_PRIMARY,
+    //  "Thiswouldneedtobearealbearertokenforexternaldata"
+    //);
+    cookieBackendSessionSetKeyValue(
       request,
       reply,
-      SESSION_TOKEN_PRIMARY,
-      "Thiswouldneedtobearealbearertokenforexternaldata"
+      SESSION_USER_DB_OBJECT_KEY_NAME,
+      authUser.asJson()
     );
-    cookieForBackend(request, reply, SESSION_USER_DB_OBJECT, authUser.asJson());
 
     // CSRF Token passed as cookie
     cookieForUI(request, reply, CSRF_TOKEN_COOKIE_NAME, reply.generateCsrf());

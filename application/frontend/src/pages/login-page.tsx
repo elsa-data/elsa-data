@@ -10,8 +10,8 @@ export const LoginPage: React.FC<Props> = ({ showDevTestLogin }) => {
   return (
     <div className="relative">
       <form action="/auth/login" method="POST" id="loginTriggerForm">
-        <button className="btn-normal" type="submit">
-          Log in via CILogon
+        <button className="btn-neutral btn" type="submit">
+          Log in
         </button>
       </form>
       {showDevTestLogin && (
@@ -42,7 +42,7 @@ export const LoginPage: React.FC<Props> = ({ showDevTestLogin }) => {
                 action="/auth/login-bypass-3"
                 method="POST"
               >
-                <button className="btn-info btn" type="submit">
+                <button className="btn-secondary btn" type="submit">
                   Log in (test user 3 - Manager)
                 </button>
               </form>
@@ -51,7 +51,7 @@ export const LoginPage: React.FC<Props> = ({ showDevTestLogin }) => {
                 action="/auth/login-bypass-4"
                 method="POST"
               >
-                <button className="btn-neutral btn" type="submit">
+                <button className="btn-accent btn" type="submit">
                   Log in (test user 4 - Member)
                 </button>
               </form>
