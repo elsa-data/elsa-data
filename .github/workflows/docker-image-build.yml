@@ -59,8 +59,6 @@ jobs:
           context: application
           # we want it built into the docker system, so we can soci it
           load: true
-          # we want the underlying docker image push to the registry (soci index sent later)
-          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
