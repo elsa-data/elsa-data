@@ -34,6 +34,11 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
+      - name: Install soci
+        uses: lerentis/soci-installer@v1.0.1
+        with:
+          soci-release: "v0.3.0"
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -48,9 +53,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v3
+        id: build-push
+        uses: docker/build-push-action@v4.1.1
         with:
           context: application
+          # we want it built into the docker system, so we can soci it
+          load: true
+          # we want the underlying docker image push to the registry (soci index sent later)
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -59,3 +68,10 @@ jobs:
             ELSA_DATA_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
             ELSA_DATA_BUILT=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             ELSA_DATA_REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+
+      - name: Soci Index
+        run: |
+          echo ${{ steps.build-push.imageid }}
+          sudo soci create ghcr.io/${{ github.repository }}/${{ steps.build-push.imageid }}
+          sudo soci push --user ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }} ghcr.io/${{ github.repository }}/${{ steps.build-push.imageid }}
+        working-directory: application/backend
