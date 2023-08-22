@@ -41,19 +41,19 @@ export const ReleasesDashboardPage: React.FC = () => {
         {releaseQuery.isLoading && <IsLoadingDiv />}
 
         {releaseQuery.isSuccess && queryData?.length === 0 && (
-          <>
-            <p className="prose">
+          <article className="prose max-w-none">
+            <p>
               This page normally shows any releases that you are involved in.
               Currently the system thinks you are not involved in any releases -
               if this is wrong, please contact the project manager or CI/Manager
               of your project and ask them to check that you are listed as a
               participant of a release.
             </p>
-            <p className="prose">
+            <p>
               Until this is corrected there is very little functionality enabled
               for you.
             </p>
-          </>
+          </article>
         )}
         {releaseQuery.isSuccess && queryData && queryData?.length > 0 && (
           <>

@@ -1,24 +1,34 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
 import {
-  SESSION_TOKEN_PRIMARY,
-  SESSION_USER_DB_OBJECT,
+  SESSION_OIDC_NONCE_KEY_NAME,
+  SESSION_OIDC_STATE_KEY_NAME,
+  SESSION_USER_DB_OBJECT_KEY_NAME,
 } from "./auth/session-cookie-constants";
 import { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
-import { generators } from "openid-client";
+import { errors, generators, TokenSet } from "openid-client";
 import { AuditEventService } from "../business/services/audit-event-service";
-import { cookieForBackend, cookieForUI } from "./helpers/cookie-helpers";
+import {
+  cookieBackendSessionSetKeyValue,
+  cookieForUI,
+} from "./helpers/cookie-helpers";
 import { getServices } from "../di-helpers";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 import { AuthenticatedUser } from "../business/authenticated-user";
 import {
   DATABASE_FAIL_ROUTE_PART,
+  FLOW_FAIL_ROUTE_PART,
   NO_EMAIL_OR_NAME_ROUTE_PART,
   NO_SUBJECT_ID_ROUTE_PART,
   NOT_AUTHORISED_ROUTE_PART,
 } from "@umccr/elsa-constants/constants-routes";
+
+/**
+ * Make this match the Typescript filename - for logging
+ */
+const FILENAME_FOR_LOGGING = "api-auth-routes";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
   if (!settings.oidc || !settings.oidc.issuer)
@@ -34,7 +44,7 @@ function createClient(settings: ElsaSettings, redirectUri: string) {
 }
 
 /**
- * Register all routes directly to do with the authz systems.
+ * Register all routes that initiate actions in the authz systems.
  *
  * @param fastify the fastify instance
  * @param opts options for establishing this route
@@ -58,15 +68,38 @@ export const apiAuthRoutes = async (
   // it constructs the appropriate auth url (as known to the backend only)
   // and sends it back to the client as a redirect to start the oidc flow
   fastify.post("/login", async (request, reply) => {
+    // before changing please read https://danielfett.de/2020/05/16/pkce-vs-nonce-equivalent-or-not/
+    // note though we are using state rather than the newer PKCE
+
+    // save a nonce and state
     const nonce = generators.nonce();
+    const state = generators.state();
+    cookieBackendSessionSetKeyValue(
+      request,
+      reply,
+      SESSION_OIDC_STATE_KEY_NAME,
+      state
+    );
+    cookieBackendSessionSetKeyValue(
+      request,
+      reply,
+      SESSION_OIDC_NONCE_KEY_NAME,
+      nonce
+    );
 
-    // cookieForBackend(request, reply, "nonce", nonce);
-
-    const redirectUrl = client.authorizationUrl({
+    const oidcParams = {
       scope: "openid email profile",
-      // nonce: nonce,
-      // state: "ABCD",
-    });
+      nonce: nonce,
+      state: state,
+    };
+
+    const redirectUrl = client.authorizationUrl(oidcParams);
+
+    logger.info(
+      { ...oidcParams, redirectUrl },
+      `${FILENAME_FOR_LOGGING}: OIDC flow start`
+    );
+
     reply.redirect(redirectUrl);
   });
 
@@ -77,7 +110,7 @@ export const apiAuthRoutes = async (
     reply: FastifyReply,
     auditDetails: any = null
   ) => {
-    const dbUser = request.session.get(SESSION_USER_DB_OBJECT);
+    const dbUser = request.session.get(SESSION_USER_DB_OBJECT_KEY_NAME);
 
     if (dbUser !== undefined) {
       auditLogService.createUserAuditEvent(
@@ -132,10 +165,9 @@ export const callbackRoutes = async (
     includeTestUsers: boolean;
   }
 ) => {
-  const settings = opts.container.resolve<ElsaSettings>("Settings");
+  const { settings } = getServices(opts.container);
   const userService = opts.container.resolve(UserService);
 
-  // TODO persist the client/flow info somehow - so we can use nonces, state etc
   const client = createClient(settings, opts.redirectUri);
 
   // the cb (callback) route is the route that is redirected to as part of the OIDC flow
@@ -145,10 +177,44 @@ export const callbackRoutes = async (
     // extract raw params from the request
     const params = client.callbackParams(request.raw);
 
+    const state = request.session.get(SESSION_OIDC_STATE_KEY_NAME);
+    const nonce = request.session.get(SESSION_OIDC_NONCE_KEY_NAME);
+
+    request.log.info(
+      { ...params, stateFromSession: state, nonceFromSession: nonce },
+      `${FILENAME_FOR_LOGGING}: OIDC flow callback parameters`
+    );
+
+    let tokenSet: TokenSet;
+
     // process the callback in the oidc-client library
-    const tokenSet = await client.callback(opts.redirectUri, params, {
-      // nonce: request.session.get("nonce"),
-    });
+    try {
+      tokenSet = await client.callback(opts.redirectUri, params, {
+        state: state,
+        nonce: nonce,
+        // we know we are doing a code flow, so we can insist on fields in the callback required for code
+        response_type: "code",
+      });
+    } catch (err: unknown) {
+      request.log.error(
+        err,
+        `${FILENAME_FOR_LOGGING}: OIDC flow callback processing failure`
+      );
+
+      if (err instanceof errors.RPError) {
+        // if we want to log specific details
+      }
+
+      // redirect to a page for the user to give them some indication of where this failed but no
+      // details (we are not sure what details the err object itself might leak that we don't want that exposed)
+      reply.redirect(`/${NOT_AUTHORISED_ROUTE_PART}/${FLOW_FAIL_ROUTE_PART}`);
+      return;
+    }
+
+    request.log.info(
+      tokenSet,
+      `${FILENAME_FOR_LOGGING}: OIDC flow callback tokenSet`
+    );
 
     const idClaims = tokenSet.claims();
 
@@ -192,25 +258,28 @@ export const callbackRoutes = async (
     }
 
     request.log.info(
-      { resolvedUser: dbUser, oidcParams: params, oidcTokens: tokenSet },
-      `authRoutes: Login OIDC callback event`
+      { resolvedUser: dbUser },
+      `${FILENAME_FOR_LOGGING}: OIDC flow callback user`
     );
 
     // the secure session token is HTTP only - so its existence can't even be tracked in
     // the React code - it is made available to the backend that can use it as a
     // real access token
-    cookieForBackend(
+    // NOTE we do not currently use this access token for anything so it is disabled
+    //cookieBackendSessionSetKeyValue(
+    //  request,
+    //  reply,
+    //  SESSION_TOKEN_PRIMARY,
+    //  tokenSet.access_token!
+    //);
+
+    // we also make available a copy of the Authenticated user database object so that
+    // we can rehydrate the AuthenticatedUser in each API call
+    cookieBackendSessionSetKeyValue(
       request,
       reply,
-      SESSION_TOKEN_PRIMARY,
-      tokenSet.access_token!
-    );
-    // we also make available a copy of the Authenticated user database object so
-    // we can rehydrate the AuthenticatedUser in each session
-    cookieForBackend(
-      request,
-      reply,
-      SESSION_USER_DB_OBJECT,
+      // the existence of this key in the session state is the definition of being "logged in"
+      SESSION_USER_DB_OBJECT_KEY_NAME,
       new AuthenticatedUser(dbUser).asJson()
     );
 

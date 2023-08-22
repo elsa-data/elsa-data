@@ -1,12 +1,14 @@
 import React from "react";
-import { useMatches } from "react-router-dom";
+import { useMatches, useNavigate } from "react-router-dom";
 import {
   DATABASE_FAIL_ROUTE_PART,
+  FLOW_FAIL_ROUTE_PART,
   NO_EMAIL_OR_NAME_ROUTE_PART,
   NO_SUBJECT_ID_ROUTE_PART,
 } from "@umccr/elsa-constants/constants-routes";
 
 export const NotAuthorisedPage: React.FC = () => {
+  const navigate = useNavigate();
   const matches = useMatches();
 
   // some crappy logic that allows us to redirect to /not-authorised/blah
@@ -43,6 +45,15 @@ export const NotAuthorisedPage: React.FC = () => {
           </span>
         </div>
       )}
+      {extraPath === FLOW_FAIL_ROUTE_PART && (
+        <div className="alert alert-error">
+          <span>
+            Login flow backend encountered an error so login process was
+            aborted.
+          </span>
+          <span>Details of the error have been logged in the system logs.</span>
+        </div>
+      )}
       {extraPath === DATABASE_FAIL_ROUTE_PART && (
         <div className="alert alert-error">
           <span>
@@ -66,6 +77,16 @@ export const NotAuthorisedPage: React.FC = () => {
         To log in as a completely different user you may need to clear your
         CILogon state by visiting{" "}
         <a href="https://cilogon.org/logout">the CILogon logout page</a>.
+      </p>
+      <p>
+        <button
+          className="btn-neutral btn"
+          onClick={async () => {
+            navigate(`/login`);
+          }}
+        >
+          Return to Login Page
+        </button>
       </p>
     </article>
   );
