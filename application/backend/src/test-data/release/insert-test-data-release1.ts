@@ -44,7 +44,7 @@ Ethics form XYZ.
 | 4 | 5 |
 `;
 
-const RELEASE_KEY_1 = "R001";
+export const RELEASE_KEY_1 = "R001";
 
 export async function insertRelease1(
   dc: DependencyContainer,

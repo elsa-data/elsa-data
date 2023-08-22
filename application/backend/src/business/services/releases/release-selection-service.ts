@@ -25,12 +25,13 @@ import { $scopify } from "../../../../dbschema/edgeql-js/typesystem";
 import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";
 import {
-  ReleaseSelectionDatasetMismatchError,
+  ReleaseSelectionNonExistentIdentifierError,
+  ReleaseSelectionCrossLinkedIdentifierError,
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import {
-  releaseGetSpecimenToDataSetCrossLinks,
+  releaseGetSpecimensByDbIdsAndExternalIdentifiers,
   releaseSelectionGetCases,
 } from "../../../../dbschema/queries";
 import { AuditEventTimedService } from "../audit-event-timed-service";
@@ -257,53 +258,71 @@ export class ReleaseSelectionService extends ReleaseBaseService {
   public async setSelected(
     user: AuthenticatedUser,
     releaseKey: string,
-    specimenIds: string[] = []
+    args:
+      | { dbIds: string[] }
+      | { externalIdentifierValues: string[] }
+      | { selectAll: true }
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
-    return await this.setSelectedStatus(user, true, releaseKey, specimenIds);
+    return await this.setSelectedStatus(user, true, releaseKey, args);
   }
 
   public async setUnselected(
     user: AuthenticatedUser,
     releaseKey: string,
-    specimenIds: string[] = []
+    args:
+      | { dbIds: string[] }
+      | { externalIdentifierValues: string[] }
+      | { selectAll: true }
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
-    return await this.setSelectedStatus(user, false, releaseKey, specimenIds);
+    return await this.setSelectedStatus(user, false, releaseKey, args);
   }
 
   /**
    * A mega function that handles altering the sharing status of a dataset node associated with our 'release'.
    *
    * @param user the user attempting the changes
+   * @param statusToSet the status to set i.e. selected = true means shared,
+   *        selected = false means not shared
    * @param releaseKey the release id of the release to alter
-   * @param specimenIds the edgedb ids of specimens from datasets of our release, or an empty list if the status should be applied to all specimens in the release
-   * @param statusToSet the status to set i.e. selected = true means shared, selected = false means not shared
+   * @param dbIds a list of EdgeDB uuids, each identifying a patient, case, or specimen
+   * @param externalIdentifierValues a list of external identifiers, each identifying a patient, case, or specimen
+   * @param selectAll whether to apply the given `statusToSet` to all identifiers associated with the release
    *
-   * TODO: make this work with any node - not just specimen nodes (i.e. setStatus of patient)
-   *
-   * This function is responsible for ensuring the passed in identifiers are valid - so it makes sure
-   * that all specimen ids are from datasets that are in this release.
+   * This function is responsible for ensuring the passed in identifiers are
+   * valid - so it makes sure that all specimen ids are from datasets that are
+   * in this release.
    */
   private async setSelectedStatus(
     user: AuthenticatedUser,
     statusToSet: boolean,
     releaseKey: string,
-    specimenIds: string[] = []
+    args:
+      | { dbIds: string[] }
+      | { externalIdentifierValues: string[] }
+      | { selectAll: true }
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
+    const { dbIds, externalIdentifierValues, selectAll } = {
+      dbIds: [],
+      externalIdentifierValues: [],
+      selectAll: false,
+      ...args,
+    };
+
     let actionDescription;
 
-    if (specimenIds && specimenIds.length > 0) {
-      actionDescription = statusToSet
-        ? "Set Selected Specimens"
-        : "Unset Selected Specimens";
-    } else {
+    if (selectAll) {
       actionDescription = statusToSet
         ? "Select All Specimens"
         : "Unselect All Specimens";
+    } else {
+      actionDescription = statusToSet
+        ? "Set Selected Specimens"
+        : "Unset Selected Specimens";
     }
 
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -322,49 +341,27 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         // to the datasets in our release
         // we need to do this to prevent our list of valid shared specimens from being
         // infected with edgedb nodes from datasets that are not actually in our release
-        const specimenDatasetLinks =
-          await releaseGetSpecimenToDataSetCrossLinks(tx, {
-            releaseKey: releaseKey,
-            specimenIds:
-              specimenIds && specimenIds.length > 0 ? specimenIds : undefined,
+        const specimenIds =
+          await releaseGetSpecimensByDbIdsAndExternalIdentifiers(tx, {
+            releaseKey,
+            dbIds,
+            externalIdentifierValues,
+            selectAll,
           });
 
-        // interestingly - if passed in a UUID that is *not even an EdgeDb object* - the
-        // UUID doesn't appear in the cross-links result at all
-        // and given that we take these Ids direct from the APIs - we can't trust that
-        // people won't attempt something like this
-        // so we are going to do some work to establish exactly what ended up where
-        const validSpecimenIds =
-          specimenDatasetLinks && specimenDatasetLinks.valid
-            ? specimenDatasetLinks.valid.map((scl) => scl.id)
-            : [];
-        const crossLinkedSpecimenIds =
-          specimenDatasetLinks && specimenDatasetLinks.crossLinked
-            ? specimenDatasetLinks.crossLinked.map((scl) => scl.id)
-            : [];
-        const invalidSpecimenIds: string[] = [];
-
-        const recognisedSpecimenIds = new Set(
-          validSpecimenIds.concat(crossLinkedSpecimenIds)
-        );
-
-        // look for anything passed into us that ended up nowhere in the edgedb query result
-        for (const sid of specimenIds) {
-          if (!recognisedSpecimenIds.has(sid)) {
-            invalidSpecimenIds.push(sid);
-          }
-        }
-
-        // we abort early here - if anything is wrong we change nothing at all
-        if (
-          !specimenDatasetLinks ||
-          crossLinkedSpecimenIds.length > 0 ||
-          invalidSpecimenIds.length > 0
-        )
-          throw new ReleaseSelectionDatasetMismatchError(
-            releaseKey,
-            crossLinkedSpecimenIds.concat(invalidSpecimenIds)
+        if (specimenIds.invalidDbIds.length)
+          throw new ReleaseSelectionNonExistentIdentifierError(
+            specimenIds.invalidDbIds
           );
+
+        if (
+          specimenIds.crossLinkedSpecimenCount ||
+          specimenIds.crossLinkedPatientCount ||
+          specimenIds.crossLinkedCaseCount
+        )
+          throw new ReleaseSelectionCrossLinkedIdentifierError();
+
+        const internalIdentifiers = specimenIds.specimens.map((s) => s.id);
 
         if (statusToSet) {
           // add specimens to the selected set
@@ -381,7 +378,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
                 },
               }))
             )
-            .run(tx, { ids: validSpecimenIds });
+            .run(tx, { ids: internalIdentifiers });
         } else {
           // remove specimens from the selected set
           await e
@@ -397,12 +394,11 @@ export class ReleaseSelectionService extends ReleaseBaseService {
                 },
               }))
             )
-            .run(tx, { ids: validSpecimenIds });
+            .run(tx, { ids: internalIdentifiers });
         }
 
         return {
-          affectedSpecimens:
-            specimenIds && specimenIds.length > 0 ? validSpecimenIds : ["*"],
+          affectedSpecimens: selectAll ? internalIdentifiers : ["*"],
         };
       },
       async () => {

@@ -11,7 +11,7 @@ import { EagerErrorBoundary } from "../../../../components/errors";
 import { Table } from "../../../../components/tables";
 import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
 import { trpc } from "../../../../helpers/trpc";
-import { IsLoadingDivIcon } from "../../../../components/is-loading-div";
+import { BulkSelectionDiv } from "./bulk-selection-div";
 
 type Props = {
   releaseKey: string;
@@ -161,17 +161,35 @@ export const CasesBox: React.FC<Props> = ({
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "add",
-        // note that this empty array is a special marker to indicate to "select all"
-        value: [],
+        args: { selectAll: true },
       });
     } else {
       await specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "remove",
-        // note that this empty array is a special marker to indicate to "unselect all"
-        value: [],
+        args: { selectAll: true },
       });
     }
+  };
+
+  const onParseSelectCsv = async (externalIdentifierValues: string[]) => {
+    setIsSelectAllIndeterminate(true);
+
+    await specimenMutate.mutate({
+      op: "add",
+      releaseKey: releaseKey,
+      args: { externalIdentifierValues },
+    });
+  };
+
+  const onParseUnselectCsv = async (externalIdentifierValues: string[]) => {
+    setIsSelectAllIndeterminate(true);
+
+    await specimenMutate.mutate({
+      op: "remove",
+      releaseKey: releaseKey,
+      args: { externalIdentifierValues },
+    });
   };
 
   // row spans help us with our UI column that displays the 'dataset' icon for each case
@@ -338,37 +356,47 @@ export const CasesBox: React.FC<Props> = ({
                         and what you can see - so the status line is not helpful - so we don't show at all  
                       */}
                 {!isUseableSearchText && (isAllowEdit || isAllowAdminView) && (
-                  <div className="flex flex-row justify-between border-t-2 py-4">
-                    {
-                      <label className="flex items-center">
-                        <div className="flex w-12 items-center justify-center">
-                          <IndeterminateCheckbox
-                            className="checkbox-accent"
-                            // we _can_ be showing this just with admin view permissions
-                            // so we need to disable unless we are allowed to edit
-                            disabled={
-                              specimenMutate.isLoading ||
-                              releaseIsActivated ||
-                              !isAllowEdit
-                            }
-                            indeterminate={isSelectAllIndeterminate}
-                            onChange={onSelectAllChange}
-                          />
-                        </div>
-                        Select All
-                      </label>
-                    }
-                    {/* experimental fetching loader - only enable if still hunting load bugs
+                  <>
+                    <div className="flex flex-row justify-between border-t-2 py-4">
+                      {
+                        <label className="flex items-center">
+                          <div className="flex w-12 items-center justify-center">
+                            <IndeterminateCheckbox
+                              className="checkbox-accent"
+                              // we _can_ be showing this just with admin view permissions
+                              // so we need to disable unless we are allowed to edit
+                              disabled={
+                                specimenMutate.isLoading ||
+                                releaseIsActivated ||
+                                !isAllowEdit
+                              }
+                              indeterminate={isSelectAllIndeterminate}
+                              onChange={onSelectAllChange}
+                            />
+                          </div>
+                          Select All
+                        </label>
+                      }
+                      {/* experimental fetching loader - only enable if still hunting load bugs
                     <span>
                       {casesQuery.isFetching && <IsLoadingDivIcon size="xs" />}
                     </span>
                     */}
-                    {/* status span */}
-                    <span>
-                      {currentSelectedSpecimens} specimen
-                      {currentSelectedSpecimens !== 1 && "s"} in total selected
-                    </span>
-                  </div>
+                      {/* status span */}
+                      <span>
+                        {currentSelectedSpecimens} specimen
+                        {currentSelectedSpecimens !== 1 && "s"} in total
+                        selected
+                      </span>
+                    </div>
+                    <BulkSelectionDiv
+                      releaseKey={releaseKey}
+                      releaseIsActivated={releaseIsActivated}
+                      onParseSelectCsv={onParseSelectCsv}
+                      onParseUnselectCsv={onParseUnselectCsv}
+                      disabled={specimenMutate.isLoading}
+                    />
+                  </>
                 )}
               </div>
             )}

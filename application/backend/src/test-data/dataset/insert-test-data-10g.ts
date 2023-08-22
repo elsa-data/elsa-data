@@ -16,6 +16,10 @@ export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
 
 export const TENG_DESCRIPTION = "UMCCR 10G";
 
+export const CHARLES_CASE_SYSTEMLESS = "SINGLETONCHARLES";
+export const CHARLES_PATIENT_SYSTEMLESS = "CHARLES";
+export const CHARLES_SPECIMEN_SYSTEMLESS = "HG00096";
+
 /**
  * The 10G dataset is a subset of the 1000 genomes data but artificially put into a structure
  * to test specific areas of data sharing.
@@ -310,10 +314,10 @@ type MasterRareDiseaseCase = {
  */
 const masterCases10g: MasterRareDiseaseCase[] = [
   {
-    caseId: "SINGLETONCHARLES",
-    patientId: "CHARLES",
+    caseId: CHARLES_CASE_SYSTEMLESS,
+    patientId: CHARLES_PATIENT_SYSTEMLESS,
     patientSexAtBirth: "male",
-    specimenId: "HG00096",
+    specimenId: CHARLES_SPECIMEN_SYSTEMLESS,
     bamSize: 51808533335,
     bamEtag: "bfce3cfa4f0265866fae8f7a653cca95-3089", // pragma: allowlist secret
     bamMd5: "63f2b3c6b87c66d114f1e9bae8c35091", // pragma: allowlist secret

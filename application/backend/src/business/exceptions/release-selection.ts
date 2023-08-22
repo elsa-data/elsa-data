@@ -10,12 +10,18 @@ export class ReleaseSelectionPermissionError extends Base7807Error {
   }
 }
 
-export class ReleaseSelectionDatasetMismatchError extends Base7807Error {
-  constructor(releaseKey: string, specimenIds: string[]) {
+export class ReleaseSelectionNonExistentIdentifierError extends Base7807Error {
+  constructor(identifiers: string[]) {
     super(
-      "The specimens that were requested for selection are not specimens that are from a dataset included in this release",
+      "Identifier(s) refers to zero specimens",
       400,
-      `The release with id '${releaseKey}' does not contain the specimens with ids '${specimenIds}' in its datasets`
+      `The following identifier(s) refer no specimens: ${identifiers}`
     );
+  }
+}
+
+export class ReleaseSelectionCrossLinkedIdentifierError extends Base7807Error {
+  constructor() {
+    super("Identifiers are cross-linked", 400);
   }
 }
