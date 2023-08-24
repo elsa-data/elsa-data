@@ -210,7 +210,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                       role,
                       email,
                       displayName,
-                      subjectIdentifier,
+                      subjectId,
                       lastLogin,
                       canBeRemoved,
                       canBeRoleAltered,
@@ -222,7 +222,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                           <div>
                             <div
                               className="font-bold"
-                              title={subjectIdentifier || undefined}
+                              title={subjectId || undefined}
                             >
                               {displayName}
                             </div>

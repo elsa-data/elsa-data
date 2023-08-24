@@ -65,7 +65,7 @@ export class AuditEventService {
   /**
    *
    * @param user
-   * @param releaseKey?
+   * @param releaseKey
    * @param executor the EdgeDb execution context (either client or transaction)
    * @returns
    */
@@ -162,7 +162,7 @@ export class AuditEventService {
    * @param outcome
    * @param start
    * @param end
-   * @param details?
+   * @param details
    * @param executor the EdgeDb execution context (either client or transaction)
    */
   public async completeReleaseAuditEvent(
@@ -295,7 +295,7 @@ export class AuditEventService {
    * @param whoDisplayName
    * @param actionCategory
    * @param actionDescription
-   * @param details??
+   * @param details
    * @param outcome
    * @param occurredDateTime
    * @param executor the EdgeDb execution context (either client or transaction)
@@ -401,7 +401,7 @@ export class AuditEventService {
    *
    * @param actionCategory
    * @param actionDescription
-   * @param details?
+   * @param details
    * @param outcome
    * @param executor the EdgeDb execution context (either client or transaction)
    */
@@ -626,11 +626,11 @@ export class AuditEventService {
     );
   }
 
-  public async getEntryDetails(
+  public async getEventDetails(
     user: AuthenticatedUser,
     id: string,
     start: number,
-    end: number,
+    end?: number,
     executor: Executor = this.edgeDbClient
   ): Promise<AuditEventDetailsType | null> {
     const entry = await auditEventGetSomeByUser(executor, {
@@ -819,7 +819,7 @@ export class AuditEventService {
   }
 
   /**
-   * Perform our standard audit pattern for a create to a release
+   * Perform our standard audit pattern for a read to a release
    * including transactions and try/catch.
    *
    * @param user

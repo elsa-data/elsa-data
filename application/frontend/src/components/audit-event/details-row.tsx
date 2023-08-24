@@ -1,19 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { AuditEventDetailsType } from "@umccr/elsa-types";
 import { EagerErrorBoundary } from "../errors";
 import React from "react";
-import classNames from "classnames";
 import { useNavigate } from "react-router-dom";
-import { faSnowflake } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IsLoadingDivIcon } from "../is-loading-div";
-
-/**
- * Maximum character length of details rendered in log box.
- */
-// Allow this to be set somewhere?
-export const MAXIMUM_DETAIL_LENGTH = 1000;
+import { trpc } from "../../helpers/trpc";
 
 /**
  * Props for the details row.
@@ -29,17 +18,8 @@ export type DetailsRowProps = {
  * The details row shown when clicking on a row in an audit event table.
  */
 export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
-  const navigate = useNavigate();
-
-  const detailsQuery = useQuery(
-    [`audit-event-details`, objectId],
-    async () => {
-      return await axios
-        .get<AuditEventDetailsType | null>(
-          `/api/audit-event/truncated-details?id=${objectId}&start=0&end=${MAXIMUM_DETAIL_LENGTH}`
-        )
-        .then((response) => response.data);
-    },
+  const detailsQuery = trpc.auditEventRouter.getAuditEventDetails.useQuery(
+    { id: objectId },
     { keepPreviousData: true }
   );
 

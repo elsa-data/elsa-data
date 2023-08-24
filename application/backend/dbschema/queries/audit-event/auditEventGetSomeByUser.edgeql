@@ -11,8 +11,8 @@
 
 with
   # an optional parameter defining the max length of details to return as a 'pretty' string - if not
-  # specified defaults to -1 which effectively gets the whole string
-  m := <optional int64>$detailsMaxLength if exists(<optional int64>$detailsMaxLength) else -1,
+  # specified this fetches the entire string.
+  m := <optional int64>$detailsMaxLength,
 
   # What to order the results by. Defaults to `occurredDateTime`.
   orderByProperty := <optional str>$orderByProperty,
@@ -90,8 +90,12 @@ select {
       whoDisplayName,
       isReleaseAuditEvent,
       releaseId := .release.id,
-      detailsAsPrettyString := to_str(.details, 'pretty')[0 : m] if exists(.details) else "",
-      detailsWereTruncated := exists(.details) and m >= 0 and len(to_str(.details, 'pretty')) >= m,
+      detailsAsPrettyString := (
+        to_str(.details, 'pretty')[0:m] if exists(m) else to_str(.details, 'pretty')
+      ) if exists(.details) else "",
+      detailsWereTruncated := exists(.details) and (
+        len(to_str(.details, 'pretty')) >= m if exists(m) else false
+      ),
       hasDetails := exists(.details)
     }
     order by (
