@@ -23,6 +23,15 @@ export const inputFilter = z.object({
 });
 
 /**
+ * A Zod object for getting the audit event details
+ */
+export const inputAuditEventDetails = z.object({
+  id: z.string(),
+  start: z.number().default(0),
+  end: z.number().optional(),
+});
+
+/**
  * tRPC router for audit events
  */
 export const auditEventRouter = router({
@@ -57,6 +66,18 @@ export const auditEventRouter = router({
           input.orderByProperty as keyof AuditEvent,
           input.orderAscending
         )) ?? { data: [], total: 0 }
+      );
+    }),
+  getAuditEventDetails: internalProcedure
+    .input(inputAuditEventDetails)
+    .query(async ({ input, ctx }) => {
+      const { user } = ctx;
+
+      return await ctx.auditEventService.getEventDetails(
+        user,
+        input.id,
+        input.start,
+        input.end
       );
     }),
 });

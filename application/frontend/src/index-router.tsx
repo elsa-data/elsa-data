@@ -1,11 +1,11 @@
 import React from "react";
 import {
+  createBrowserRouter,
+  createRoutesFromElements,
   Navigate,
   Outlet,
   Route,
   RouterProvider,
-  createBrowserRouter,
-  createRoutesFromElements,
   useLocation,
 } from "react-router-dom";
 import "./index.css";
@@ -24,7 +24,6 @@ import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
 import { DataEgressSummarySubPage } from "./pages/releases/data-egress-summary-sub-page/data-egress-summary-sub-page";
 import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";
 import { DatasetsDetailPage } from "./pages/datasets-detail/datasets-detail-page";
-import { AuditEventDetailedPage } from "./components/audit-event/audit-event-detailed-page";
 import { AuditEventsPage } from "./pages/audit-events-dashboard/audit-events-dashboard-page";
 import { ReleasesUserManagementPage } from "./pages/releases/user-management-page/releases-user-management-page";
 import { AuditEventsSubPage } from "./pages/releases/audit-events-sub-page/audit-events-sub-page";
@@ -171,7 +170,7 @@ export function IndexRouter({ features }: IndexRouterProps) {
               // to navigate sideways to our siblings
               handle={{
                 siblingItems: releaseChildren
-                  .map((c, i) => ({
+                  .map((c, _) => ({
                     id: c.path,
                     to: `./${c.path}`,
                     text: c.text,

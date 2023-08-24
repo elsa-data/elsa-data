@@ -9,7 +9,6 @@ import {
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { isEmpty, isString, trim } from "lodash";
-import { auditEventRoutes } from "./routes/internal/audit-event-routes";
 import { ElsaSettings } from "../config/elsa-settings";
 import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
 
@@ -134,7 +133,6 @@ export const apiInternalRoutes = async (
       allowTestCookieEquals: opts.allowTestCookieEquals,
     };
 
-    fastify.register(auditEventRoutes, routeOpts);
     fastify.register(releaseRoutes, routeOpts);
   });
 };
