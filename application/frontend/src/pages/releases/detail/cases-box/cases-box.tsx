@@ -154,6 +154,15 @@ export const CasesBox: React.FC<Props> = ({
       }),
   });
 
+  const onChangeCasesCheckbox =
+    (externalId: string, nextState: boolean) => async () => {
+      await specimenMutate.mutate({
+        op: nextState ? "add" : "remove",
+        releaseKey: releaseKey,
+        args: { externalIdentifierValues: [externalId] },
+      });
+    };
+
   const onSelectAllChange = async (ce: React.ChangeEvent<HTMLInputElement>) => {
     setIsSelectAllIndeterminate(false);
 
@@ -282,28 +291,30 @@ export const CasesBox: React.FC<Props> = ({
                             "text-center"
                           )}
                         >
-                          <IndeterminateCheckbox
-                            disabled={true}
-                            checked={row.nodeStatus === "selected"}
-                            indeterminate={row.nodeStatus === "indeterminate"}
-                          />
-                        </td>
-                        <td
-                          className={classNames(
-                            baseColumnClasses,
-                            "text-left",
-                            "w-40"
-                          )}
-                        >
-                          <div className="flex space-x-1">
-                            <span>{row.externalId}</span>
-                            {showConsent && row.customConsent && (
-                              <ConsentPopup
-                                releaseKey={releaseKey}
-                                nodeId={row.id}
-                              />
-                            )}
-                          </div>
+                          <label className="flex cursor-pointer space-x-4">
+                            <IndeterminateCheckbox
+                              disabled={
+                                specimenMutate.isLoading ||
+                                releaseIsActivated ||
+                                !isAllowEdit
+                              }
+                              checked={row.nodeStatus === "selected"}
+                              indeterminate={row.nodeStatus === "indeterminate"}
+                              onChange={onChangeCasesCheckbox(
+                                row.externalId,
+                                row.nodeStatus !== "selected"
+                              )}
+                            />
+                            <div className="flex space-x-1">
+                              <span>{row.externalId}</span>
+                              {showConsent && row.customConsent && (
+                                <ConsentPopup
+                                  releaseKey={releaseKey}
+                                  nodeId={row.id}
+                                />
+                              )}
+                            </div>
+                          </label>
                         </td>
                         <td
                           className={classNames(
