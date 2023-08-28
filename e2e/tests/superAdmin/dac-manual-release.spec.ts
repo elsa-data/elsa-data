@@ -78,6 +78,24 @@ test("A release can be created manually which has selectable cases", async ({
     .poll(async () => na2.isChecked(), { timeout: 30000 })
     .toBeTruthy();
 
+  const nas = await page.getByText("SIMPSONS");
+  const nab = await page.getByText("NA24385"); // bart
+  const nah = await page.getByText("NA24149"); // homer
+  const nam = await page.getByText("NA24143"); // marge
+  await nas.click();
+  await expect
+    .poll(async () => nas.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
+  await expect
+    .poll(async () => nab.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
+  await expect
+    .poll(async () => nah.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
+  await expect
+    .poll(async () => nam.isChecked(), { timeout: 30000 })
+    .toBeTruthy();
+
   // we need for the AWS S3 to be selected in order that our release
   // has actual files to release
   {
