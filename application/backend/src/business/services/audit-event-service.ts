@@ -32,6 +32,7 @@ import { Logger } from "pino";
 import { UserData } from "../data/user-data";
 import AuditEvent = interfaces.audit.AuditEvent;
 import ActionType = interfaces.audit.ActionType;
+import { Base7807Error } from "@umccr/elsa-types";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;
@@ -1096,20 +1097,44 @@ export class AuditEventService {
         );
       });
     } catch (error) {
-      // TODO possibly better breakdown of the details of the error
-      const errorString =
-        error instanceof Error ? error.message : String(error);
+      const base7807error = error instanceof Base7807Error ? error : undefined;
+      const errorDetails = base7807error
+        ? base7807error.toResponse()
+        : String(error);
 
+      // Will be returning Minor failure if error is base7807 and has a status code of 4XX.
+      // This will assume that the error is caused by the user (payload/permissions).
+      if (base7807error) {
+        const errorResponse = base7807error.toResponse();
+
+        if (
+          errorResponse.status &&
+          errorResponse.status >= 400 &&
+          errorResponse.status < 500
+        ) {
+          await completeAuditFn.call(
+            this,
+            auditEventId,
+            OUTCOME_MINOR_FAILURE,
+            auditEventStart,
+            new Date(),
+            { error: errorResponse },
+            this.edgeDbClient
+          );
+          throw error;
+        }
+      }
+
+      // Other error will throw a serious error
       await completeAuditFn.call(
         this,
         auditEventId,
-        OUTCOME_SUCCESS,
+        OUTCOME_SERIOUS_FAILURE,
         auditEventStart,
         new Date(),
-        { error: errorString },
+        { error: errorDetails },
         this.edgeDbClient
       );
-
       throw error;
     }
   }
