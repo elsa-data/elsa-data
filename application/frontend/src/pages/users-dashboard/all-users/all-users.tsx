@@ -10,7 +10,7 @@ import {
 import { useCookies } from "react-cookie";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
-import { PermissionDialog } from "./permission-dialog";
+import { EditPermissionDialog } from "./edit-permission-dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowsRotate,
@@ -160,7 +160,7 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
                 )}
               </React.Fragment>
             ))}
-            <PermissionDialog user={row} />
+            <EditPermissionDialog user={row} />
           </td>
         </tr>
       );

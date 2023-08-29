@@ -82,7 +82,9 @@ type UserProps = {
   isAllowedOverallAdministratorView: boolean;
 };
 
-export const PermissionDialog: React.FC<{ user: UserProps }> = ({ user }) => {
+export const EditPermissionDialog: React.FC<{ user: UserProps }> = ({
+  user,
+}) => {
   const loggedInUser = useLoggedInUser();
   const utils = trpc.useContext();
 

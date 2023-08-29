@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "../../../components/boxes";
 
-import { PermissionDialog } from "../all-users/permission-dialog";
+import { EditPermissionDialog } from "../all-users/edit-permission-dialog";
 import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
 import {
   CHANGE_USER_PERMISSION_DESC,
@@ -40,7 +40,9 @@ export const PersonalDetailsBox: React.FC<Props> = ({}) => {
         <div className="card rounded-box flex-grow">
           <div className="flex">
             <h3 className="font-medium">Permissions</h3>
-            <div>{userObject && <PermissionDialog user={userObject} />}</div>
+            <div>
+              {userObject && <EditPermissionDialog user={userObject} />}
+            </div>
           </div>
           <ul className="list-inside list-disc">
             {userObject?.isAllowedChangeUserPermission && (
