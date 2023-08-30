@@ -44,3 +44,13 @@ export class NonExistentUser extends Base7807Error {
     );
   }
 }
+
+export class UserExist extends Base7807Error {
+  constructor(email: string) {
+    super(
+      "user does exist",
+      500,
+      `user with email ${email} exist in the system`
+    );
+  }
+}

@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowsRotate,
   faFolderPlus,
+  faUserPlus,
   faUsersGear,
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
@@ -26,7 +27,8 @@ import {
   CREATE_NEW_RELEASE_DESC,
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
-} from "../text-helper";
+} from "../helper";
+import { InvitePotentialUser } from "./invite-potential-user";
 
 const permissionIconProperties: {
   key: UserPermissionType;
@@ -167,8 +169,19 @@ export const AllUsers: React.FC<Props> = ({ pageSize }) => {
     });
   };
 
+  const BoxHeading = (): JSX.Element => {
+    return (
+      <div className="flex w-full flex-row items-center justify-between">
+        <div>All Users</div>
+        <div>
+          <InvitePotentialUser />
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <Box heading="All Users">
+    <Box heading={<BoxHeading />}>
       <div className="flex flex-col">
         {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 

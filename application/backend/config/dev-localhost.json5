@@ -83,4 +83,9 @@
     mockAwsCloud: true,
     sendEmails: false,
   },
+  superAdmins: [
+    {
+      sub: "http://subject1.com",
+    },
+  ],
 }

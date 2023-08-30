@@ -5,8 +5,8 @@ import { inputPaginationParameter } from "./input-schemas-common";
 /**
  * RPC for user permission
  */
-export const inputChangeUserPermission = z.object({
-  userSubjectId: z.string(),
+
+export const inputUserPermission = z.object({
   isAllowedRefreshDatasetIndex: z.boolean(),
   isAllowedCreateRelease: z.boolean(),
   isAllowedOverallAdministratorView: z.boolean(),
@@ -30,7 +30,7 @@ export const userRouter = router({
       );
     }),
   changeUserPermission: internalProcedure
-    .input(inputChangeUserPermission)
+    .input(inputUserPermission.merge(z.object({ userSubjectId: z.string() })))
     .mutation(async ({ input, ctx }) => {
       await ctx.userService.changePermission(ctx.user, input.userSubjectId, {
         isAllowedCreateRelease: input.isAllowedCreateRelease,
@@ -38,5 +38,22 @@ export const userRouter = router({
           input.isAllowedOverallAdministratorView,
         isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
       });
+    }),
+
+  addPotentialUser: internalProcedure
+    .input(
+      inputUserPermission.merge(z.object({ newPotentialUserEmail: z.string() }))
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.userService.addPotentialUser(
+        ctx.user,
+        input.newPotentialUserEmail,
+        {
+          isAllowedCreateRelease: input.isAllowedCreateRelease,
+          isAllowedOverallAdministratorView:
+            input.isAllowedOverallAdministratorView,
+          isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
+        }
+      );
     }),
 });

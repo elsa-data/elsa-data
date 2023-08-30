@@ -8,7 +8,7 @@ import {
   CREATE_NEW_RELEASE_DESC,
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
-} from "../text-helper";
+} from "../helper";
 
 type Props = {};
 

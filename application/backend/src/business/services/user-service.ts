@@ -13,10 +13,12 @@ import {
   NonExistentUser,
   NotAuthorisedEditUserManagement,
   NotAuthorisedGetOwnUser,
+  UserExist,
 } from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
   potentialUserGetByEmail,
+  potentialUserInsert,
   releaseParticipantAddUser,
   userGetAllByUser,
   userGetByDbId,
@@ -190,6 +192,63 @@ export class UserService {
         user.displayName,
         permission,
         this.edgeDbClient
+      );
+    });
+  }
+
+  public async addPotentialUser(
+    user: AuthenticatedUser,
+    newPotentialUserEmail: string,
+    permission: ChangeablePermission
+  ): Promise<void> {
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedEditUserManagement();
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      // We need to check if the potential email exist
+      const potentialUser = await potentialUserGetByEmail(tx, {
+        email: newPotentialUserEmail,
+      });
+      const activeUser = await userGetByEmail(tx, {
+        email: newPotentialUserEmail,
+      });
+      if (!!potentialUser || !!activeUser) {
+        throw new UserExist(newPotentialUserEmail);
+      }
+
+      // If it made this far, we need to insert new potentialUser
+      const start = new Date();
+      const aeId = await this.auditEventService.startUserAuditEvent(
+        user.subjectId,
+        user.displayName,
+        user.dbId,
+        "E",
+        `Add a potential user: ${newPotentialUserEmail}`,
+        start,
+        tx
+      );
+
+      await potentialUserInsert(tx, {
+        email: newPotentialUserEmail,
+        isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: permission.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView:
+          permission.isAllowedOverallAdministratorView,
+      });
+
+      await this.auditEventService.completeUserAuditEvent(
+        aeId,
+        0,
+        start,
+        new Date(),
+        {
+          email: newPotentialUserEmail,
+          isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+          isAllowedCreateRelease: permission.isAllowedCreateRelease,
+          isAllowedOverallAdministratorView:
+            permission.isAllowedOverallAdministratorView,
+        },
+        tx
       );
     });
   }

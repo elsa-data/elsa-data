@@ -12,12 +12,7 @@ import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import { Alert } from "../../../components/alert";
 import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
-import {
-  CHANGE_USER_PERMISSION_DESC,
-  CREATE_NEW_RELEASE_DESC,
-  DATASET_UPDATE_DESC,
-  OVERALL_ADMIN_VIEW_DESC,
-} from "../text-helper";
+import { PERMISSION_OPTIONS } from "../helper";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -33,34 +28,6 @@ const userInfoProperties: { label: string; key: userKey }[] = [
   {
     label: "Subject Identifier",
     key: "subjectIdentifier",
-  },
-];
-
-const permissionOptionProperties: {
-  key: UserPermissionType;
-  disabled?: boolean;
-  title: string;
-  description?: string;
-}[] = [
-  {
-    title: CREATE_NEW_RELEASE_DESC,
-    key: "isAllowedCreateRelease",
-  },
-  {
-    title: DATASET_UPDATE_DESC,
-    key: "isAllowedRefreshDatasetIndex",
-  },
-  {
-    title: OVERALL_ADMIN_VIEW_DESC,
-    description:
-      "Will be able to view all Datasets, Releases, and Audit Events.",
-    key: "isAllowedOverallAdministratorView",
-  },
-  {
-    title: CHANGE_USER_PERMISSION_DESC,
-    description: "It can only be modified within the app configuration.",
-    key: "isAllowedChangeUserPermission",
-    disabled: true,
   },
 ];
 
@@ -237,7 +204,7 @@ export const EditPermissionDialog: React.FC<{ user: UserProps }> = ({
                     />
                   )}
 
-                  {permissionOptionProperties.map((o, index) => {
+                  {PERMISSION_OPTIONS.map((o, index) => {
                     const disabledClassName =
                       (o.disabled || !isEditingAllowed) && "!text-gray-500";
 
