@@ -17,13 +17,25 @@ export const userRouter = router({
     const { user } = ctx;
     return await ctx.userService.getOwnUser(user);
   }),
-  getUsers: internalProcedure
+  getActiveUsers: internalProcedure
     .input(inputPaginationParameter)
     .query(async ({ input, ctx }) => {
       const { user, pageSize } = ctx;
       const { page = 1 } = input;
 
-      return await ctx.userService.getUsers(
+      return await ctx.userService.getActiveUsers(
+        user,
+        pageSize,
+        calculateOffset(page, pageSize)
+      );
+    }),
+  getPotentialUsers: internalProcedure
+    .input(inputPaginationParameter)
+    .query(async ({ input, ctx }) => {
+      const { user, pageSize } = ctx;
+      const { page = 1 } = input;
+
+      return await ctx.userService.getPotentialUsers(
         user,
         pageSize,
         calculateOffset(page, pageSize)

@@ -4,15 +4,15 @@ import {
   EagerErrorBoundary,
   ErrorBoundary,
   ErrorState,
-} from "../../../components/errors";
+} from "../../../../components/errors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SelectDialogBase } from "../../../components/select-dialog-base";
-import { trpc } from "../../../helpers/trpc";
+import { SelectDialogBase } from "../../../../components/select-dialog-base";
+import { trpc } from "../../../../helpers/trpc";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
-import { Alert } from "../../../components/alert";
-import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
-import { PERMISSION_OPTIONS } from "../helper";
+import { Alert } from "../../../../components/alert";
+import { useLoggedInUser } from "../../../../providers/logged-in-user-provider";
+import { PERMISSION_OPTIONS } from "../../helper";
 
 // Column for User Information
 type userKey = "email" | "displayName" | "subjectIdentifier";
@@ -91,7 +91,7 @@ export const EditPermissionDialog: React.FC<{ user: UserProps }> = ({
       onSuccess: async () => {
         setError({ error: null, isSuccess: true });
 
-        await utils.user.getUsers.invalidate();
+        await utils.user.getActiveUsers.invalidate();
 
         // If the logged-in user change change its own permission
         if (loggedInUser?.subjectIdentifier === user.subjectIdentifier)

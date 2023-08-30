@@ -7,7 +7,10 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
+import {
+  PotentialUserSummaryType,
+  UserSummaryType,
+} from "@umccr/elsa-types/schemas-users";
 import { ElsaSettings } from "../../config/elsa-settings";
 import {
   NonExistentUser,
@@ -17,6 +20,7 @@ import {
 } from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
+  potentialUserGetAllByUser,
   potentialUserGetByEmail,
   potentialUserInsert,
   releaseParticipantAddUser,
@@ -99,7 +103,8 @@ export class UserService {
   }
 
   /**
-   * Get all the users. Users always have permission to make this call, but
+   * Get all the users that has logged in to the system.
+   * Users always have permission to make this call, but
    * will be limited in which records are returned to them if they do
    * not have broader permissions than an ordinary user.
    *
@@ -107,7 +112,7 @@ export class UserService {
    * @param limit
    * @param offset
    */
-  public async getUsers(
+  public async getActiveUsers(
     user: AuthenticatedUser,
     limit: number,
     offset: number
@@ -139,6 +144,39 @@ export class UserService {
     );
   }
 
+  /**
+   * Get potential user that has been invited to log in to the system.
+   *
+   * @param user the user making the call
+   * @param limit
+   * @param offset
+   */
+  public async getPotentialUsers(
+    user: AuthenticatedUser,
+    limit: number,
+    offset: number
+  ): Promise<PagedResult<PotentialUserSummaryType>> {
+    const { total, data } = await potentialUserGetAllByUser(this.edgeDbClient, {
+      userDbId: user.dbId,
+      isSuperAdmin: this.isConfiguredSuperAdmin(user.subjectId),
+      offset: offset,
+      limit: limit,
+    });
+
+    return createPagedResult(
+      data.map((a) => ({
+        id: a.id,
+        email: a.email,
+        displayName: a.displayName ?? "",
+        createdDateTime: a.createdDateTime,
+
+        isAllowedRefreshDatasetIndex: a.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: a.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
+      })),
+      total
+    );
+  }
   /**
    * Get a user from our database when given just a subject id. Returns null
    * if the user with that subjectId is not in the database.

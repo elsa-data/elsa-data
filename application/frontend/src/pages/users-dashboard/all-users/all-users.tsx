@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { trpc } from "../../../helpers/trpc";
-import classNames from "classnames";
 import { Box } from "../../../components/boxes";
 import { BoxPaginator } from "../../../components/box-paginator";
 import {
@@ -10,7 +8,7 @@ import {
 import { useCookies } from "react-cookie";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { EagerErrorBoundary } from "../../../components/errors";
-import { EditPermissionDialog } from "./edit-permission-dialog";
+import { EditPermissionDialog } from "./components/edit-permission-dialog";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowsRotate,
@@ -19,18 +17,18 @@ import {
   faUsersGear,
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
-import { Table } from "../../../components/tables";
-import { IsLoadingDiv } from "../../../components/is-loading-div";
-import { ToolTip } from "../../../components/tooltip";
 import {
   CHANGE_USER_PERMISSION_DESC,
   CREATE_NEW_RELEASE_DESC,
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
 } from "../helper";
-import { InvitePotentialUser } from "./invite-potential-user";
+import { InvitePotentialUser } from "./components/invite-potential-user";
+import { ActiveUserTable } from "./components/active-user-table";
+import { PotentialUser } from "../../../../../backend/dbschema/edgeql-js/modules/permission";
+import { PotentialUserTable } from "./components/potential-user-table";
 
-const permissionIconProperties: {
+export const permissionIconProperties: {
   key: UserPermissionType;
   title: string;
   icon: JSX.Element;
@@ -57,152 +55,23 @@ const permissionIconProperties: {
   },
 ];
 
-type Props = {
-  // the (max) number of users shown on any single page
-  pageSize: number;
-};
+type Props = {};
 
 /**
- * A box containing all the users in the database that are *not* the logged in user
- * (whose details are displayed elsewhere).
+ * A box containing all the users in the database.
  *
  * @param pageSize
  * @constructor
  */
-export const AllUsers: React.FC<Props> = ({ pageSize }) => {
-  // our internal state for which page we are on
-  const [currentPage, setCurrentPage] = useState<number>(1);
-
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
-
-  const usersQuery = trpc.user.getUsers.useQuery(
-    {
-      page: currentPage,
-    },
-    {
-      keepPreviousData: true,
-      onSuccess: (res) => {
-        if (!res) return undefined;
-
-        // use the total
-        setCurrentTotal(res.total);
-      },
-    }
-  );
-
-  const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
-
-  const createHeaders = () => {
-    return (
-      <tr>
-        <th scope="col" className="table-cell">
-          Name
-        </th>
-        <th scope="col" className="table-cell">
-          Email
-        </th>
-        <th scope="col" className="table-cell">
-          Last Logged In
-        </th>
-        <th scope="col" className="table-cell text-right">
-          Permissions
-        </th>
-      </tr>
-    );
-  };
-
-  const createRows = (data: UserSummaryType[]) => {
-    return data.map((row, rowIndex) => {
-      return (
-        <tr key={rowIndex} className="border-b pl-2 pr-2">
-          <td className={classNames(baseColumnClasses, "text-left")}>
-            {row.displayName}
-          </td>
-
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "text-left",
-              "pl-4",
-              "font-normal"
-            )}
-          >
-            {row.email}
-          </td>
-
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "text-left",
-              "pr-4",
-              "font-normal"
-            )}
-          >
-            {formatLocalDateTime(row.lastLogin as string | undefined)}
-          </td>
-
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "text-right",
-              "pl-4",
-              "font-normal"
-            )}
-          >
-            {permissionIconProperties.map((prop) => (
-              <React.Fragment key={prop.key}>
-                {row[prop.key] && (
-                  <ToolTip
-                    key={prop.key}
-                    applyCSS={"tooltip-left mx-1"}
-                    trigger={prop.icon}
-                    description={prop.title}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-            <EditPermissionDialog user={row} />
-          </td>
-        </tr>
-      );
-    });
-  };
-
+export const AllUsers: React.FC<Props> = () => {
   const BoxHeading = (): JSX.Element => {
-    return (
-      <div className="flex w-full flex-row items-center justify-between">
-        <div>All Users</div>
-        <div>
-          <InvitePotentialUser />
-        </div>
-      </div>
-    );
+    return <div>All Users</div>;
   };
 
   return (
     <Box heading={<BoxHeading />}>
-      <div className="flex flex-col">
-        {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
-
-        {usersQuery.isSuccess && (
-          <>
-            <Table
-              tableHead={createHeaders()}
-              tableBody={createRows(usersQuery?.data?.data ?? [])}
-            />
-            <BoxPaginator
-              currentPage={currentPage}
-              setPage={(n) => setCurrentPage(n)}
-              rowCount={currentTotal}
-              rowsPerPage={pageSize}
-              rowWord="all users"
-            />
-          </>
-        )}
-
-        {usersQuery.isLoading && <IsLoadingDiv />}
-      </div>
+      <PotentialUserTable />
+      <ActiveUserTable />
     </Box>
   );
 };

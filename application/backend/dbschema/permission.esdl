@@ -45,15 +45,15 @@ module permission {
         # whether this user will be given extra rights when they first login
         # (keep the name of these in sync with User)
 
-        required property futureIsAllowedRefreshDatasetIndex -> bool {
+        required property isAllowedRefreshDatasetIndex -> bool {
            default := false;
         };
 
-        required property futureIsAllowedCreateRelease -> bool {
+        required property isAllowedCreateRelease -> bool {
             default := false;
         };
 
-        required property futureIsAllowedOverallAdministratorView -> bool {
+        required property isAllowedOverallAdministratorView -> bool {
             default := false;
         }
     }

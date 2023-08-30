@@ -5,13 +5,16 @@ import {
   faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { EagerErrorBoundary, ErrorBoundary } from "../../../components/errors";
-import { SelectDialogBase } from "../../../components/select-dialog-base";
-import { PERMISSION_OPTIONS } from "../helper";
-import { trpc } from "../../../helpers/trpc";
+import {
+  EagerErrorBoundary,
+  ErrorBoundary,
+} from "../../../../components/errors";
+import { SelectDialogBase } from "../../../../components/select-dialog-base";
+import { PERMISSION_OPTIONS } from "../../helper";
+import { trpc } from "../../../../helpers/trpc";
 import classNames from "classnames";
-import { isValidEmail } from "../../../helpers/utils";
-import { Alert } from "../../../components/alert";
+import { isValidEmail } from "../../../../helpers/utils";
+import { Alert } from "../../../../components/alert";
 
 const INIT_POTENTIAL_USER = {
   potentialUserEmail: "",
@@ -22,6 +25,8 @@ const INIT_POTENTIAL_USER = {
 };
 
 export const InvitePotentialUser = () => {
+  const utils = trpc.useContext();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [input, setInput] = useState(INIT_POTENTIAL_USER);
@@ -33,11 +38,7 @@ export const InvitePotentialUser = () => {
   // Editing/Mutation Purposes
   const invitePotentialUser = trpc.user.addPotentialUser.useMutation({
     onSuccess: async () => {
-      // setError({ error: null, isSuccess: true });
-      // await utils.user.getUsers.invalidate();
-      // // If the logged-in user change change its own permission
-      // if (loggedInUser?.subjectIdentifier === user.subjectIdentifier)
-      //   await utils.user.getOwnUser.invalidate();
+      utils.user.getPotentialUsers.invalidate();
     },
   });
 
@@ -70,7 +71,7 @@ export const InvitePotentialUser = () => {
           setIsDialogOpen((p) => !p);
         }}
       >
-        <FontAwesomeIcon icon={faUserPlus} />
+        <FontAwesomeIcon size="sm" icon={faUserPlus} />
       </button>
 
       <ErrorBoundary>
@@ -182,15 +183,6 @@ export const InvitePotentialUser = () => {
                         permissions they will have.
                       </p>
                     </div>
-
-                    {/*
-
-                  {!isEditingAllowed && (
-                    <div className="w-full bg-amber-100 py-2 text-center text-xs">
-                      You are only allowed to view this section.
-                    </div>
-                  )}
-                   */}
 
                     {PERMISSION_OPTIONS.map((o, index) => {
                       const disabledClassName = o.disabled && "!text-gray-500";

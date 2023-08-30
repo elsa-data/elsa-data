@@ -6,7 +6,6 @@ import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 
 export const UsersDashboardPage: React.FC = () => {
   const user = useLoggedInUser();
-  const pageSize = usePageSizer();
 
   // in the first instance - we need to decide if the user can see other users
   // at all... we give this right to the overall admins (they can _view_ everything) - but
@@ -19,7 +18,7 @@ export const UsersDashboardPage: React.FC = () => {
   return (
     <div className="flex flex-col space-y-4">
       <PersonalDetailsBox />
-      {canSeeOtherUsers && <AllUsers pageSize={pageSize} />}
+      {canSeeOtherUsers && <AllUsers />}
     </div>
   );
 };

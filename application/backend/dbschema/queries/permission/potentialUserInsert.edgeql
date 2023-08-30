@@ -1,6 +1,6 @@
 insert permission::PotentialUser {
   email := <str>$email,
-  futureIsAllowedRefreshDatasetIndex := <bool>$isAllowedRefreshDatasetIndex,
-  futureIsAllowedCreateRelease := <bool>$isAllowedCreateRelease,
-  futureIsAllowedOverallAdministratorView := <bool>$isAllowedOverallAdministratorView,
+  isAllowedRefreshDatasetIndex := <bool>$isAllowedRefreshDatasetIndex,
+  isAllowedCreateRelease := <bool>$isAllowedCreateRelease,
+  isAllowedOverallAdministratorView := <bool>$isAllowedOverallAdministratorView,
 }
