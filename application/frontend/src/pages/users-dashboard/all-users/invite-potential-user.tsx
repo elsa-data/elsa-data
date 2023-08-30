@@ -1,28 +1,38 @@
 import React, { useCallback, useRef, useState } from "react";
-import { faSpinner, faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faSpinner,
+  faUserPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ErrorBoundary } from "../../../components/errors";
+import { EagerErrorBoundary, ErrorBoundary } from "../../../components/errors";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { PERMISSION_OPTIONS } from "../helper";
 import { trpc } from "../../../helpers/trpc";
 import classNames from "classnames";
 import { isValidEmail } from "../../../helpers/utils";
+import { Alert } from "../../../components/alert";
+
+const INIT_POTENTIAL_USER = {
+  potentialUserEmail: "",
+  isAllowedRefreshDatasetIndex: false,
+  isAllowedCreateRelease: false,
+  isAllowedOverallAdministratorView: false,
+  isAllowedChangeUserPermission: false,
+};
 
 export const InvitePotentialUser = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const [input, setInput] = useState({
-    potentialUserEmail: "",
-    isAllowedRefreshDatasetIndex: false,
-    isAllowedCreateRelease: false,
-    isAllowedOverallAdministratorView: false,
-    isAllowedChangeUserPermission: false,
-  });
+  const [input, setInput] = useState(INIT_POTENTIAL_USER);
+  const resetInput = useCallback(() => {
+    setInput(INIT_POTENTIAL_USER);
+    invitePotentialUser.reset();
+  }, []);
 
   // Editing/Mutation Purposes
-  const changeUserPermissionMutate = trpc.user.addPotentialUser.useMutation({
+  const invitePotentialUser = trpc.user.addPotentialUser.useMutation({
     onSuccess: async () => {
-      console.log("IAM D");
       // setError({ error: null, isSuccess: true });
       // await utils.user.getUsers.invalidate();
       // // If the logged-in user change change its own permission
@@ -36,10 +46,10 @@ export const InvitePotentialUser = () => {
     setIsDialogOpen(false);
   };
 
-  const isLoadingMutate = changeUserPermissionMutate.isLoading;
+  const isLoadingMutate = invitePotentialUser.isLoading;
 
   const onInvite = useCallback(() => {
-    changeUserPermissionMutate.mutate({
+    invitePotentialUser.mutate({
       newPotentialUserEmail: input.potentialUserEmail,
       isAllowedCreateRelease: input.isAllowedCreateRelease,
       isAllowedOverallAdministratorView:
@@ -55,7 +65,10 @@ export const InvitePotentialUser = () => {
     <>
       <button
         className="btn-sm btn-circle btn"
-        onClick={() => setIsDialogOpen((p) => !p)}
+        onClick={() => {
+          resetInput();
+          setIsDialogOpen((p) => !p);
+        }}
       >
         <FontAwesomeIcon icon={faUserPlus} />
       </button>
@@ -69,7 +82,11 @@ export const InvitePotentialUser = () => {
             <>
               <button
                 type="button"
-                disabled={isLoadingMutate || !isPotentialEmailValid}
+                disabled={
+                  isLoadingMutate ||
+                  !isPotentialEmailValid ||
+                  invitePotentialUser.isSuccess
+                }
                 className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
                 onClick={onInvite}
               >
@@ -97,111 +114,121 @@ export const InvitePotentialUser = () => {
                   to log in.
                 </p>
               </div>
-
-              <div className="mt-4 flex w-full flex-col">
-                <div className="card rounded-box flex-grow ">
-                  <h3 className="font-semibold">User Details</h3>
-                  <p className="prose mt-2 text-sm text-gray-500">
-                    We require the email to match in order to add it to our
-                    authorized logging list.
-                  </p>
-                  <div className="mt-1">
-                    <label className="label">
-                      <span className="label-text text-sm font-medium">
-                        {`Email`}
-                      </span>
-                    </label>
-                    <input
-                      value={input["potentialUserEmail"]}
-                      type="text"
-                      className={classNames("input input-sm !m-0 w-full ", {
-                        "border-slate-400": !isPotentialEmailExist,
-                        "input-error":
-                          isPotentialEmailExist && !isPotentialEmailValid,
-                        "input-accent":
-                          isPotentialEmailExist && isPotentialEmailValid,
-                      })}
-                      onChange={(e) =>
-                        setInput((p) => ({
-                          ...p,
-                          potentialUserEmail: e.target.value,
-                        }))
-                      }
-                    />
-                    {isPotentialEmailExist && !isPotentialEmailValid && (
-                      <label className="label">
-                        <span className="label-text-alt text-red-400">
-                          Invalid email
-                        </span>
-                      </label>
-                    )}
+              {invitePotentialUser.isSuccess ? (
+                <div className="mt-4">
+                  <Alert
+                    description={`Successfully invite: ${input.potentialUserEmail}`}
+                    icon={<FontAwesomeIcon icon={faCheck} />}
+                    additionalAlertClassName={
+                      "alert-success bg-green-200 text-xs py-1"
+                    }
+                  />
+                  <div
+                    onClick={resetInput}
+                    className="mt-4 flex cursor-pointer justify-center underline underline-offset-2"
+                  >
+                    Invite more
                   </div>
                 </div>
-
-                <div className="card rounded-box flex-grow">
-                  <div className="mt-8 mb-2 flex  flex-col">
-                    <h3 className="font-semibold">User Permission</h3>
+              ) : (
+                <div className="mt-4 flex w-full flex-col">
+                  {invitePotentialUser.isError && (
+                    <EagerErrorBoundary error={invitePotentialUser.error} />
+                  )}
+                  <div className="card rounded-box flex-grow ">
+                    <h3 className="font-semibold">User Details</h3>
                     <p className="prose mt-2 text-sm text-gray-500">
-                      When inviting a new user, you can configure the initial
-                      permissions they will have.
+                      We require the email to match in order to add it to our
+                      authorized logging list.
                     </p>
+                    <div className="mt-1">
+                      <label className="label">
+                        <span className="label-text text-sm font-medium">
+                          {`Email`}
+                        </span>
+                      </label>
+                      <input
+                        value={input["potentialUserEmail"]}
+                        type="text"
+                        className={classNames("input input-sm !m-0 w-full ", {
+                          "border-slate-400": !isPotentialEmailExist,
+                          "input-error":
+                            isPotentialEmailExist && !isPotentialEmailValid,
+                          "input-accent":
+                            isPotentialEmailExist && isPotentialEmailValid,
+                        })}
+                        onChange={(e) =>
+                          setInput((p) => ({
+                            ...p,
+                            potentialUserEmail: e.target.value,
+                          }))
+                        }
+                      />
+                      {isPotentialEmailExist && !isPotentialEmailValid && (
+                        <label className="label">
+                          <span className="label-text-alt text-red-400">
+                            Invalid email
+                          </span>
+                        </label>
+                      )}
+                    </div>
                   </div>
 
-                  {/* {!error.isSuccess && (
-                    <EagerErrorBoundary error={error.error} />
-                  )}
+                  <div className="card rounded-box flex-grow">
+                    <div className="mt-8 mb-2 flex  flex-col">
+                      <h3 className="font-semibold">User Permission</h3>
+                      <p className="prose mt-2 text-sm text-gray-500">
+                        When inviting a new user, you can configure the initial
+                        permissions they will have.
+                      </p>
+                    </div>
+
+                    {/*
 
                   {!isEditingAllowed && (
                     <div className="w-full bg-amber-100 py-2 text-center text-xs">
                       You are only allowed to view this section.
                     </div>
                   )}
-                  {changeUserPermissionMutate.isSuccess && (
-                    <Alert
-                      description={"Permissions changed successfully."}
-                      icon={<FontAwesomeIcon icon={faCheck} />}
-                      additionalAlertClassName={
-                        "alert-success bg-green-200 text-xs py-1"
-                      }
-                    />
-                  )} */}
+                   */}
 
-                  {PERMISSION_OPTIONS.map((o, index) => {
-                    const disabledClassName = o.disabled && "!text-gray-500";
+                    {PERMISSION_OPTIONS.map((o, index) => {
+                      const disabledClassName = o.disabled && "!text-gray-500";
 
-                    return (
-                      <label
-                        key={index}
-                        className={`my-2 flex content-center items-center pl-2 text-left text-gray-800 ${disabledClassName}`}
-                      >
-                        <input
-                          disabled={o.disabled}
-                          className="checkbox checkbox-sm mr-2 h-3 w-3 cursor-pointer rounded-sm"
-                          type="checkbox"
-                          value={o.key}
-                          checked={input[o.key]}
-                          onChange={() => {
-                            const newChange: Record<string, boolean> = {};
-                            newChange[o.key] = !input[o.key];
-                            setInput((p) => ({
-                              ...p,
-                              ...newChange,
-                            }));
-                          }}
-                        />
-                        <div className="text-sm">
-                          <div className="font-medium">{o.title}</div>
-                          {o.description && (
-                            <div className="text-xs text-gray-500">
-                              {o.description}
-                            </div>
-                          )}
-                        </div>
-                      </label>
-                    );
-                  })}
+                      return (
+                        <label
+                          key={index}
+                          className={`my-2 flex content-center items-center pl-2 text-left text-gray-800 ${disabledClassName}`}
+                        >
+                          <input
+                            disabled={o.disabled}
+                            className="checkbox checkbox-sm mr-2 h-3 w-3 cursor-pointer rounded-sm"
+                            type="checkbox"
+                            value={o.key}
+                            checked={input[o.key]}
+                            onChange={() => {
+                              const newChange: Record<string, boolean> = {};
+                              newChange[o.key] = !input[o.key];
+                              setInput((p) => ({
+                                ...p,
+                                ...newChange,
+                              }));
+                            }}
+                          />
+                          <div className="text-sm">
+                            <div className="font-medium">{o.title}</div>
+                            {o.description && (
+                              <div className="text-xs text-gray-500">
+                                {o.description}
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           }
           initialFocus={cancelButtonRef}
