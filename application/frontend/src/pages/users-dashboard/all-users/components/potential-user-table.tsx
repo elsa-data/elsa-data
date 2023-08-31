@@ -8,7 +8,6 @@ import { BoxPaginator } from "../../../../components/box-paginator";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { IsLoadingDiv } from "../../../../components/is-loading-div";
 import { Table } from "../../../../components/tables";
-import { EditPermissionDialog } from "./edit-permission-dialog";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { ToolTip } from "../../../../components/tooltip";
 import { trpc } from "../../../../helpers/trpc";
@@ -25,6 +24,7 @@ import {
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
 import { InvitePotentialUser } from "./invite-potential-user";
+import { EditPotentialUserPermissionDialog } from "./edit-potential-user-permission-dialog";
 
 export const permissionIconProperties: {
   key:
@@ -145,6 +145,16 @@ export const PotentialUserTable = () => {
                 )}
               </React.Fragment>
             ))}
+            <EditPotentialUserPermissionDialog
+              user={{
+                email: row.email,
+                isAllowedChangeUserPermission: false,
+                isAllowedCreateRelease: row.isAllowedCreateRelease,
+                isAllowedRefreshDatasetIndex: row.isAllowedRefreshDatasetIndex,
+                isAllowedOverallAdministratorView:
+                  row.isAllowedOverallAdministratorView,
+              }}
+            />
           </td>
         </tr>
       );
@@ -154,12 +164,16 @@ export const PotentialUserTable = () => {
   return (
     <div className="flex flex-col">
       <div className="my-2 flex w-full flex-row items-center justify-between">
-        <h2 className="mb-2 font-medium">Potential User</h2>
-
+        <h2 className="my-2 font-medium">Potential User</h2>
         <div>
           <InvitePotentialUser />
         </div>
       </div>
+      <p className="mb-4 text-sm text-gray-500">
+        {`This table shows users who have been invited but haven't logged in yet. Only those in 
+          this list can log in. Only release administrator and person who has the right to change 
+          other people permissions can send invitations to this list.`}
+      </p>
       {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
       {usersQuery.isSuccess && (

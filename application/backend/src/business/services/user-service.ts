@@ -23,6 +23,7 @@ import {
   potentialUserGetAllByUser,
   potentialUserGetByEmail,
   potentialUserInsert,
+  potentialUserUpdatePermissions,
   releaseParticipantAddUser,
   userGetAllByUser,
   userGetByDbId,
@@ -200,7 +201,7 @@ export class UserService {
    * @param targetSubjectId
    * @param permission
    */
-  public async changePermission(
+  public async changeActiveUserPermission(
     user: AuthenticatedUser,
     targetSubjectId: string,
     permission: ChangeablePermission
@@ -226,14 +227,64 @@ export class UserService {
       });
 
       await this.auditEventService.updateUserPermissionsChanged(
+        "active",
         user.subjectId,
         user.displayName,
-        permission,
+        {
+          activeUser: {
+            email: targetUser.email,
+          },
+          permission,
+        },
         this.edgeDbClient
       );
     });
   }
 
+  /**
+   * @param user
+   * @param targetPotentialUserEmail
+   * @param permission
+   */
+  public async changePotentialUserPermission(
+    user: AuthenticatedUser,
+    targetPotentialUserEmail: string,
+    permission: ChangeablePermission
+  ): Promise<void> {
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedEditUserManagement();
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      const targetPU = await potentialUserGetByEmail(tx, {
+        email: targetPotentialUserEmail,
+      });
+
+      if (!targetPU) {
+        throw new NonExistentUser(targetPotentialUserEmail);
+      }
+
+      await potentialUserUpdatePermissions(tx, {
+        email: targetPU.email,
+        isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: permission.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView:
+          permission.isAllowedOverallAdministratorView,
+      });
+
+      await this.auditEventService.updateUserPermissionsChanged(
+        "potential",
+        user.subjectId,
+        user.displayName,
+        {
+          potentialUser: {
+            email: targetPotentialUserEmail,
+          },
+          permission,
+        },
+        this.edgeDbClient
+      );
+    });
+  }
   public async addPotentialUser(
     user: AuthenticatedUser,
     newPotentialUserEmail: string,

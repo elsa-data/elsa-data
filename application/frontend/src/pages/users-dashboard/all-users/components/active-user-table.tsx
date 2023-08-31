@@ -8,7 +8,7 @@ import { BoxPaginator } from "../../../../components/box-paginator";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { IsLoadingDiv } from "../../../../components/is-loading-div";
 import { Table } from "../../../../components/tables";
-import { EditPermissionDialog } from "./edit-permission-dialog";
+import { EditActiveUserPermissionDialog } from "./edit-active-user-permission-dialog";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { ToolTip } from "../../../../components/tooltip";
 import { trpc } from "../../../../helpers/trpc";
@@ -116,7 +116,7 @@ export const ActiveUserTable = () => {
                 )}
               </React.Fragment>
             ))}
-            <EditPermissionDialog user={row} />
+            <EditActiveUserPermissionDialog user={row} />
           </td>
         </tr>
       );
@@ -126,6 +126,10 @@ export const ActiveUserTable = () => {
   return (
     <div className="flex flex-col">
       <h2 className="my-2 font-medium">Active User</h2>
+
+      <p className="prose mb-4 text-sm text-gray-500">
+        {`This table will display a list of logged-in users along with their permissions.`}
+      </p>
       {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
       {usersQuery.isSuccess && (

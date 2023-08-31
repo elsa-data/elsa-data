@@ -41,15 +41,35 @@ export const userRouter = router({
         calculateOffset(page, pageSize)
       );
     }),
-  changeUserPermission: internalProcedure
+  changeActiveUserPermission: internalProcedure
     .input(inputUserPermission.merge(z.object({ userSubjectId: z.string() })))
     .mutation(async ({ input, ctx }) => {
-      await ctx.userService.changePermission(ctx.user, input.userSubjectId, {
-        isAllowedCreateRelease: input.isAllowedCreateRelease,
-        isAllowedOverallAdministratorView:
-          input.isAllowedOverallAdministratorView,
-        isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
-      });
+      await ctx.userService.changeActiveUserPermission(
+        ctx.user,
+        input.userSubjectId,
+        {
+          isAllowedCreateRelease: input.isAllowedCreateRelease,
+          isAllowedOverallAdministratorView:
+            input.isAllowedOverallAdministratorView,
+          isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
+        }
+      );
+    }),
+  changePotentialUserPermission: internalProcedure
+    .input(
+      inputUserPermission.merge(z.object({ potentialUserEmail: z.string() }))
+    )
+    .mutation(async ({ input, ctx }) => {
+      await ctx.userService.changePotentialUserPermission(
+        ctx.user,
+        input.potentialUserEmail,
+        {
+          isAllowedCreateRelease: input.isAllowedCreateRelease,
+          isAllowedOverallAdministratorView:
+            input.isAllowedOverallAdministratorView,
+          isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
+        }
+      );
     }),
 
   addPotentialUser: internalProcedure

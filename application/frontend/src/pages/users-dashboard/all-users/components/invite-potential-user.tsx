@@ -10,11 +10,12 @@ import {
   ErrorBoundary,
 } from "../../../../components/errors";
 import { SelectDialogBase } from "../../../../components/select-dialog-base";
-import { PERMISSION_OPTIONS } from "../../helper";
 import { trpc } from "../../../../helpers/trpc";
 import classNames from "classnames";
 import { isValidEmail } from "../../../../helpers/utils";
 import { Alert } from "../../../../components/alert";
+import { UserPermissionsInput } from "../../../../components/user/user-permissions-input";
+import { useLoggedInUser } from "../../../../providers/logged-in-user-provider";
 
 const INIT_POTENTIAL_USER = {
   potentialUserEmail: "",
@@ -26,6 +27,9 @@ const INIT_POTENTIAL_USER = {
 
 export const InvitePotentialUser = () => {
   const utils = trpc.useContext();
+
+  const loggedInUser = useLoggedInUser();
+  const isEditingAllowed = loggedInUser?.isAllowedChangeUserPermission;
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -86,7 +90,8 @@ export const InvitePotentialUser = () => {
                 disabled={
                   isLoadingMutate ||
                   !isPotentialEmailValid ||
-                  invitePotentialUser.isSuccess
+                  invitePotentialUser.isSuccess ||
+                  !isEditingAllowed
                 }
                 className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
                 onClick={onInvite}
@@ -139,8 +144,7 @@ export const InvitePotentialUser = () => {
                   <div className="card rounded-box flex-grow ">
                     <h3 className="font-semibold">User Details</h3>
                     <p className="prose mt-2 text-sm text-gray-500">
-                      We require the email to match in order to add it to our
-                      authorized logging list.
+                      {`We require the email to match in order to add it to our authorized logging list.`}
                     </p>
                     <div className="mt-1">
                       <label className="label">
@@ -149,6 +153,7 @@ export const InvitePotentialUser = () => {
                         </span>
                       </label>
                       <input
+                        disabled={!isEditingAllowed}
                         value={input["potentialUserEmail"]}
                         type="text"
                         className={classNames("input input-sm !m-0 w-full ", {
@@ -161,7 +166,7 @@ export const InvitePotentialUser = () => {
                         onChange={(e) =>
                           setInput((p) => ({
                             ...p,
-                            potentialUserEmail: e.target.value,
+                            potentialUserEmail: e.target.value.trim(), // .trim() for trailing spaces
                           }))
                         }
                       />
@@ -184,40 +189,16 @@ export const InvitePotentialUser = () => {
                       </p>
                     </div>
 
-                    {PERMISSION_OPTIONS.map((o, index) => {
-                      const disabledClassName = o.disabled && "!text-gray-500";
-
-                      return (
-                        <label
-                          key={index}
-                          className={`my-2 flex content-center items-center pl-2 text-left text-gray-800 ${disabledClassName}`}
-                        >
-                          <input
-                            disabled={o.disabled}
-                            className="checkbox checkbox-sm mr-2 h-3 w-3 cursor-pointer rounded-sm"
-                            type="checkbox"
-                            value={o.key}
-                            checked={input[o.key]}
-                            onChange={() => {
-                              const newChange: Record<string, boolean> = {};
-                              newChange[o.key] = !input[o.key];
-                              setInput((p) => ({
-                                ...p,
-                                ...newChange,
-                              }));
-                            }}
-                          />
-                          <div className="text-sm">
-                            <div className="font-medium">{o.title}</div>
-                            {o.description && (
-                              <div className="text-xs text-gray-500">
-                                {o.description}
-                              </div>
-                            )}
-                          </div>
-                        </label>
-                      );
-                    })}
+                    <UserPermissionsInput
+                      isDisabled={!isEditingAllowed}
+                      permissionProps={input}
+                      onPermissionChange={(newChange) => {
+                        setInput((p) => ({
+                          ...p,
+                          ...newChange,
+                        }));
+                      }}
+                    />
                   </div>
                 </div>
               )}

@@ -1,19 +1,10 @@
 import React, { useState } from "react";
 import { Box } from "../../../components/boxes";
-import { BoxPaginator } from "../../../components/box-paginator";
-import {
-  UserPermissionType,
-  UserSummaryType,
-} from "@umccr/elsa-types/schemas-users";
-import { useCookies } from "react-cookie";
-import { formatLocalDateTime } from "../../../helpers/datetime-helper";
-import { EagerErrorBoundary } from "../../../components/errors";
-import { EditPermissionDialog } from "./components/edit-permission-dialog";
+import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowsRotate,
   faFolderPlus,
-  faUserPlus,
   faUsersGear,
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
@@ -23,10 +14,14 @@ import {
   DATASET_UPDATE_DESC,
   OVERALL_ADMIN_VIEW_DESC,
 } from "../helper";
-import { InvitePotentialUser } from "./components/invite-potential-user";
 import { ActiveUserTable } from "./components/active-user-table";
-import { PotentialUser } from "../../../../../backend/dbschema/edgeql-js/modules/permission";
 import { PotentialUserTable } from "./components/potential-user-table";
+import classNames from "classnames";
+
+enum UserTableType {
+  ACTIVE,
+  POTENTIAL,
+}
 
 export const permissionIconProperties: {
   key: UserPermissionType;
@@ -64,14 +59,39 @@ type Props = {};
  * @constructor
  */
 export const AllUsers: React.FC<Props> = () => {
+  const [userTableView, setUserTableView] = useState<UserTableType>(
+    UserTableType.ACTIVE
+  );
+
   const BoxHeading = (): JSX.Element => {
-    return <div>All Users</div>;
+    return <div>Users</div>;
   };
 
   return (
     <Box heading={<BoxHeading />}>
-      <PotentialUserTable />
-      <ActiveUserTable />
+      <div className="tabs">
+        <a
+          onClick={() => setUserTableView(UserTableType.ACTIVE)}
+          className={classNames("tab-lifted tab", {
+            "tab-active": userTableView == UserTableType.ACTIVE,
+          })}
+        >
+          Active
+        </a>
+        <a
+          onClick={() => setUserTableView(UserTableType.POTENTIAL)}
+          className={classNames("tab-lifted tab", {
+            "tab-active": userTableView == UserTableType.POTENTIAL,
+          })}
+        >
+          Potential
+        </a>
+      </div>
+      {userTableView == UserTableType.ACTIVE ? (
+        <ActiveUserTable />
+      ) : (
+        <PotentialUserTable />
+      )}
     </Box>
   );
 };

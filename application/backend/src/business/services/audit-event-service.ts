@@ -706,18 +706,17 @@ export class AuditEventService {
    * Add audit event when a user's permission is changed.
    */
   public async updateUserPermissionsChanged(
+    targetUserType: "potential" | "active",
     subjectId: string,
     whoDisplayName: string,
-    permission: any,
+    details: any,
     executor: Executor = this.edgeDbClient
   ) {
     return updateUserAuditEvents(executor, {
       subjectId,
       whoDisplayName,
-      actionDescription: "Change user permission",
-      details: {
-        permission,
-      },
+      actionDescription: `Change ${targetUserType} user permission`,
+      details,
     });
   }
 
