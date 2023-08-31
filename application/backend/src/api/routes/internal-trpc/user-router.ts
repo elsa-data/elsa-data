@@ -88,4 +88,13 @@ export const userRouter = router({
         }
       );
     }),
+
+  removePotentialUser: internalProcedure
+    .input(z.object({ potentialUserEmail: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await ctx.userService.removePotentialUser(
+        ctx.user,
+        input.potentialUserEmail
+      );
+    }),
 });

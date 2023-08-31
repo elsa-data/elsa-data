@@ -16,7 +16,8 @@ import {
   NonExistentUser,
   NotAuthorisedEditUserManagement,
   NotAuthorisedGetOwnUser,
-  UserExist,
+  UserEmailExist,
+  UserEmailNotExist,
 } from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
@@ -302,7 +303,7 @@ export class UserService {
         email: newPotentialUserEmail,
       });
       if (!!potentialUser || !!activeUser) {
-        throw new UserExist(newPotentialUserEmail);
+        throw new UserEmailExist(newPotentialUserEmail);
       }
 
       // If it made this far, we need to insert new potentialUser
@@ -336,6 +337,52 @@ export class UserService {
           isAllowedCreateRelease: permission.isAllowedCreateRelease,
           isAllowedOverallAdministratorView:
             permission.isAllowedOverallAdministratorView,
+        },
+        tx
+      );
+    });
+  }
+
+  public async removePotentialUser(
+    user: AuthenticatedUser,
+    potentialUserEmail: string
+  ): Promise<void> {
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedEditUserManagement();
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      // We need to check if the potential email exist
+      const potentialUser = await potentialUserGetByEmail(tx, {
+        email: potentialUserEmail,
+      });
+
+      if (!potentialUser) {
+        throw new UserEmailNotExist(potentialUserEmail);
+      }
+
+      // If it made this far, we need to insert new potentialUser
+      const start = new Date();
+      const aeId = await this.auditEventService.startUserAuditEvent(
+        user.subjectId,
+        user.displayName,
+        user.dbId,
+        "E",
+        `Remove a potential user: ${potentialUserEmail}`,
+        start,
+        tx
+      );
+
+      await potentialUserDeleteByEmail(tx, {
+        email: potentialUserEmail,
+      });
+
+      await this.auditEventService.completeUserAuditEvent(
+        aeId,
+        0,
+        start,
+        new Date(),
+        {
+          email: potentialUserEmail,
         },
         tx
       );

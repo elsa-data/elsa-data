@@ -1,8 +1,5 @@
 import React, { useState } from "react";
-import {
-  PotentialUserSummaryType,
-  UserPermissionType,
-} from "@umccr/elsa-types/schemas-users";
+import { PotentialUserSummaryType } from "@umccr/elsa-types/schemas-users";
 import classNames from "classnames";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { EagerErrorBoundary } from "../../../../components/errors";
@@ -25,6 +22,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { InvitePotentialUser } from "./invite-potential-user";
 import { EditPotentialUserPermissionDialog } from "./edit-potential-user-permission-dialog";
+import { useLoggedInUser } from "../../../../providers/logged-in-user-provider";
+import ConfirmDialog from "../../../../components/confirmation-dialog";
 
 export const permissionIconProperties: {
   key:
@@ -60,13 +59,19 @@ export const permissionIconProperties: {
 export const PotentialUserTable = () => {
   const pageSize = usePageSizer();
 
+  const loggedInUser = useLoggedInUser();
+  const utils = trpc.useContext();
+
+  // Some boolean values for component to show or not
+  const isEditingAllowed = !!loggedInUser?.isAllowedChangeUserPermission;
+
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   // very briefly whilst the first page is downloaded we estimate that we have only one entry
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const usersQuery = trpc.user.getPotentialUsers.useQuery(
+  const potentialUsersQuery = trpc.user.getPotentialUsers.useQuery(
     {
       page: currentPage,
     },
@@ -80,6 +85,12 @@ export const PotentialUserTable = () => {
       },
     }
   );
+
+  const removePotentialUserMutate = trpc.user.removePotentialUser.useMutation({
+    onSuccess: async () => {
+      await utils.user.getPotentialUsers.invalidate();
+    },
+  });
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
@@ -155,6 +166,25 @@ export const PotentialUserTable = () => {
                   row.isAllowedOverallAdministratorView,
               }}
             />
+            {isEditingAllowed && (
+              <>
+                <span className="opacity-50">{`|`}</span>
+                <ConfirmDialog
+                  openButtonLabel={`remove`}
+                  openButtonClassName={classNames("btn-table-action-danger", {
+                    "btn-disabled": removePotentialUserMutate.isLoading,
+                  })}
+                  onConfirmButtonLabel={"Remove"}
+                  dialogTitle={`Remove Potential User Confirmation`}
+                  dialogContent={`Are you sure you want to remove "${row.email}"?`}
+                  onConfirm={() => {
+                    removePotentialUserMutate.mutate({
+                      potentialUserEmail: row.email,
+                    });
+                  }}
+                />
+              </>
+            )}
           </td>
         </tr>
       );
@@ -171,16 +201,21 @@ export const PotentialUserTable = () => {
       </div>
       <p className="mb-4 text-sm text-gray-500">
         {`This table shows users who have been invited but haven't logged in yet. Only those in 
-          this list can log in. Only release administrator and person who has the right to change 
-          other people permissions can send invitations to this list.`}
+          this list can log in. Invitations can only be sent by release administrators and 
+          individuals who has the right to change other people permissions.`}
       </p>
-      {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
+      {potentialUsersQuery.isError && (
+        <EagerErrorBoundary error={potentialUsersQuery.error} />
+      )}
+      {removePotentialUserMutate.isError && (
+        <EagerErrorBoundary error={removePotentialUserMutate.error} />
+      )}
 
-      {usersQuery.isSuccess && (
+      {potentialUsersQuery.isSuccess && (
         <>
           <Table
             tableHead={createHeaders()}
-            tableBody={createRows(usersQuery?.data?.data ?? [])}
+            tableBody={createRows(potentialUsersQuery?.data?.data ?? [])}
           />
           <BoxPaginator
             currentPage={currentPage}
@@ -192,7 +227,7 @@ export const PotentialUserTable = () => {
         </>
       )}
 
-      {usersQuery.isLoading && <IsLoadingDiv />}
+      {potentialUsersQuery.isLoading && <IsLoadingDiv />}
     </div>
   );
 };
