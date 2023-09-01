@@ -1,0 +1,45 @@
+{
+  "id": "56c8c059-d707-410c-b056-7314eb477c9c",
+  "subject": {
+    "id": "PERSONA",
+    "sex": "MALE"
+  },
+  "files": [
+    {
+      "uri": "file:/PERSONA.bam",
+      "fileAttributes": {
+        "type": "aligned_read"
+      }
+    },
+    {
+      "uri": "file:/PERSONA_vep.vcf.gz",
+      "fileAttributes": {
+        "type": "variant"
+      }
+    },
+    {
+      "uri": "file:/NEXTSEQ_ABCD_PERSONA_R1.fastq.gz",
+      "fileAttributes": {
+        "type": "read"
+      }
+    },
+    {
+      "uri": "file:/NEXTSEQ_ABCD_PERSONA_R2.fastq.gz",
+      "fileAttributes": {
+        "type": "read"
+      }
+    }
+  ],
+  "metaData": {
+    "createdBy": "hand",
+    "resources": [
+      {
+        "id": "petermac",
+        "name": "Peter Macallum URNO",
+        "url": "https://petermacallum.org",
+        "namespacePrefix": "pmac"
+      }
+    ],
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "8d47c889-f3f9-4820-8b10-84150650f1a8",
+  "subject": {
+    "id": "PERSONA",
+    "consents": [
+      {
+        "code": "DUO:0000006",
+        "modifiers": [
+          {
+            "code": "DUO:0000045"
+          }
+        ]
+      }
+    ]
+  }
+}

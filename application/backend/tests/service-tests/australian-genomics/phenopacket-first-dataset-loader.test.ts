@@ -1,15 +1,9 @@
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { PhenopacketFirstDatasetImportService } from "../../../src/business/services/australian-genomics/phenopacket-first-dataset-import-service";
-import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 import { resolve } from "path";
 
 let pfService: PhenopacketFirstDatasetImportService;
-let testReleaseKey: string;
-
-let superAdminUser: AuthenticatedUser;
-let allowedManagerUser: AuthenticatedUser;
-let notAllowedUser: AuthenticatedUser;
 
 const testContainer = registerTypes();
 

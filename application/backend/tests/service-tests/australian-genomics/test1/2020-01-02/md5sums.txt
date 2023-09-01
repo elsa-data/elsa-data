@@ -1,0 +1,9 @@
+b071b9d89e02ec7cd9f1d8b342775fd5  A.consentpacket.json
+0ee30f4e7b6518128c3c8aba99c9ab64  A.phenopacket.json
+7fc56270e7a70fa81a5935b72eacbe29  NEXTSEQ_ABCD_PERSONA_R1.fastq.gz
+9d5ed678fe57bcca610140957afab571  NEXTSEQ_ABCD_PERSONA_R2.fastq.gz
+7fc56270e7a70fa81a5935b72eacbe29  PERSONA.bam
+9d5ed678fe57bcca610140957afab571  PERSONA.bam.bai
+0d61f8370cad1d412f80b84d143e1257  PERSONA_vep.vcf.gz
+f623e75af30e62bbd73d6df5b50bb7b5  PERSONA_vep.vcf.gz.tbi
+d41d8cd98f00b204e9800998ecf8427e  md5sums.txt

@@ -1,3 +1,6 @@
+/*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
+import * as $protobuf from "protobufjs/minimal";
+
 // Common aliases
 const $Reader = $protobuf.Reader,
   $Writer = $protobuf.Writer,
@@ -9840,6 +9843,12 @@ export const org = ($root.org = (() => {
                 new $root.org.phenopackets.schema.v2.core.Interpretation();
               if (object.id != null) message.id = String(object.id);
               switch (object.progressStatus) {
+                default:
+                  if (typeof object.progressStatus === "number") {
+                    message.progressStatus = object.progressStatus;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_PROGRESS":
                 case 0:
                   message.progressStatus = 0;
@@ -9904,7 +9913,10 @@ export const org = ($root.org = (() => {
                 object.progressStatus =
                   options.enums === String
                     ? $root.org.phenopackets.schema.v2.core.Interpretation
-                        .ProgressStatus[message.progressStatus]
+                        .ProgressStatus[message.progressStatus] === undefined
+                      ? message.progressStatus
+                      : $root.org.phenopackets.schema.v2.core.Interpretation
+                          .ProgressStatus[message.progressStatus]
                     : message.progressStatus;
               if (
                 message.diagnosis != null &&
@@ -10600,6 +10612,12 @@ export const org = ($root.org = (() => {
                   object.subjectOrBiosampleId
                 );
               switch (object.interpretationStatus) {
+                default:
+                  if (typeof object.interpretationStatus === "number") {
+                    message.interpretationStatus = object.interpretationStatus;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_STATUS":
                 case 0:
                   message.interpretationStatus = 0;
@@ -10678,7 +10696,12 @@ export const org = ($root.org = (() => {
                     ? $root.org.phenopackets.schema.v2.core
                         .GenomicInterpretation.InterpretationStatus[
                         message.interpretationStatus
-                      ]
+                      ] === undefined
+                      ? message.interpretationStatus
+                      : $root.org.phenopackets.schema.v2.core
+                          .GenomicInterpretation.InterpretationStatus[
+                          message.interpretationStatus
+                        ]
                     : message.interpretationStatus;
               if (message.gene != null && message.hasOwnProperty("gene")) {
                 object.gene =
@@ -11048,6 +11071,15 @@ export const org = ($root.org = (() => {
               let message =
                 new $root.org.phenopackets.schema.v2.core.VariantInterpretation();
               switch (object.acmgPathogenicityClassification) {
+                default:
+                  if (
+                    typeof object.acmgPathogenicityClassification === "number"
+                  ) {
+                    message.acmgPathogenicityClassification =
+                      object.acmgPathogenicityClassification;
+                    break;
+                  }
+                  break;
                 case "NOT_PROVIDED":
                 case 0:
                   message.acmgPathogenicityClassification = 0;
@@ -11074,6 +11106,13 @@ export const org = ($root.org = (() => {
                   break;
               }
               switch (object.therapeuticActionability) {
+                default:
+                  if (typeof object.therapeuticActionability === "number") {
+                    message.therapeuticActionability =
+                      object.therapeuticActionability;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_ACTIONABILITY":
                 case 0:
                   message.therapeuticActionability = 0;
@@ -11131,7 +11170,12 @@ export const org = ($root.org = (() => {
                     ? $root.org.phenopackets.schema.v2.core
                         .AcmgPathogenicityClassification[
                         message.acmgPathogenicityClassification
-                      ]
+                      ] === undefined
+                      ? message.acmgPathogenicityClassification
+                      : $root.org.phenopackets.schema.v2.core
+                          .AcmgPathogenicityClassification[
+                          message.acmgPathogenicityClassification
+                        ]
                     : message.acmgPathogenicityClassification;
               if (
                 message.therapeuticActionability != null &&
@@ -11142,7 +11186,12 @@ export const org = ($root.org = (() => {
                     ? $root.org.phenopackets.schema.v2.core
                         .TherapeuticActionability[
                         message.therapeuticActionability
-                      ]
+                      ] === undefined
+                      ? message.therapeuticActionability
+                      : $root.org.phenopackets.schema.v2.core
+                          .TherapeuticActionability[
+                          message.therapeuticActionability
+                        ]
                     : message.therapeuticActionability;
               if (
                 message.variationDescriptor != null &&
@@ -11664,6 +11713,12 @@ export const org = ($root.org = (() => {
                   );
               }
               switch (object.sex) {
+                default:
+                  if (typeof object.sex === "number") {
+                    message.sex = object.sex;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_SEX":
                 case 0:
                   message.sex = 0;
@@ -11682,6 +11737,12 @@ export const org = ($root.org = (() => {
                   break;
               }
               switch (object.karyotypicSex) {
+                default:
+                  if (typeof object.karyotypicSex === "number") {
+                    message.karyotypicSex = object.karyotypicSex;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_KARYOTYPE":
                 case 0:
                   message.karyotypicSex = 0;
@@ -11810,7 +11871,10 @@ export const org = ($root.org = (() => {
               if (message.sex != null && message.hasOwnProperty("sex"))
                 object.sex =
                   options.enums === String
-                    ? $root.org.phenopackets.schema.v2.core.Sex[message.sex]
+                    ? $root.org.phenopackets.schema.v2.core.Sex[message.sex] ===
+                      undefined
+                      ? message.sex
+                      : $root.org.phenopackets.schema.v2.core.Sex[message.sex]
                     : message.sex;
               if (
                 message.karyotypicSex != null &&
@@ -11820,7 +11884,11 @@ export const org = ($root.org = (() => {
                   options.enums === String
                     ? $root.org.phenopackets.schema.v2.core.KaryotypicSex[
                         message.karyotypicSex
-                      ]
+                      ] === undefined
+                      ? message.karyotypicSex
+                      : $root.org.phenopackets.schema.v2.core.KaryotypicSex[
+                          message.karyotypicSex
+                        ]
                     : message.karyotypicSex;
               if (message.gender != null && message.hasOwnProperty("gender"))
                 object.gender =
@@ -12138,6 +12206,12 @@ export const org = ($root.org = (() => {
               let message =
                 new $root.org.phenopackets.schema.v2.core.VitalStatus();
               switch (object.status) {
+                default:
+                  if (typeof object.status === "number") {
+                    message.status = object.status;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_STATUS":
                 case 0:
                   message.status = 0;
@@ -12199,7 +12273,10 @@ export const org = ($root.org = (() => {
                   options.enums === String
                     ? $root.org.phenopackets.schema.v2.core.VitalStatus.Status[
                         message.status
-                      ]
+                      ] === undefined
+                      ? message.status
+                      : $root.org.phenopackets.schema.v2.core.VitalStatus
+                          .Status[message.status]
                     : message.status;
               if (
                 message.timeOfDeath != null &&
@@ -13433,6 +13510,12 @@ export const org = ($root.org = (() => {
                 }
               }
               switch (object.drugType) {
+                default:
+                  if (typeof object.drugType === "number") {
+                    message.drugType = object.drugType;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_DRUG_TYPE":
                 case 0:
                   message.drugType = 0;
@@ -13515,7 +13598,11 @@ export const org = ($root.org = (() => {
                   options.enums === String
                     ? $root.org.phenopackets.schema.v2.core.DrugType[
                         message.drugType
-                      ]
+                      ] === undefined
+                      ? message.drugType
+                      : $root.org.phenopackets.schema.v2.core.DrugType[
+                          message.drugType
+                        ]
                     : message.drugType;
               if (
                 message.cumulativeDose != null &&
@@ -14688,6 +14775,12 @@ export const org = ($root.org = (() => {
                   );
               }
               switch (object.regimenStatus) {
+                default:
+                  if (typeof object.regimenStatus === "number") {
+                    message.regimenStatus = object.regimenStatus;
+                    break;
+                  }
+                  break;
                 case "UNKNOWN_STATUS":
                 case 0:
                   message.regimenStatus = 0;
@@ -14770,7 +14863,10 @@ export const org = ($root.org = (() => {
                 object.regimenStatus =
                   options.enums === String
                     ? $root.org.phenopackets.schema.v2.core.TherapeuticRegimen
-                        .RegimenStatus[message.regimenStatus]
+                        .RegimenStatus[message.regimenStatus] === undefined
+                      ? message.regimenStatus
+                      : $root.org.phenopackets.schema.v2.core.TherapeuticRegimen
+                          .RegimenStatus[message.regimenStatus]
                     : message.regimenStatus;
               return object;
             };
@@ -16621,6 +16717,12 @@ export const org = ($root.org = (() => {
                 if (object.maternalId != null)
                   message.maternalId = String(object.maternalId);
                 switch (object.sex) {
+                  default:
+                    if (typeof object.sex === "number") {
+                      message.sex = object.sex;
+                      break;
+                    }
+                    break;
                   case "UNKNOWN_SEX":
                   case 0:
                     message.sex = 0;
@@ -16639,6 +16741,12 @@ export const org = ($root.org = (() => {
                     break;
                 }
                 switch (object.affectedStatus) {
+                  default:
+                    if (typeof object.affectedStatus === "number") {
+                      message.affectedStatus = object.affectedStatus;
+                      break;
+                    }
+                    break;
                   case "MISSING":
                   case 0:
                     message.affectedStatus = 0;
@@ -16699,7 +16807,11 @@ export const org = ($root.org = (() => {
                 if (message.sex != null && message.hasOwnProperty("sex"))
                   object.sex =
                     options.enums === String
-                      ? $root.org.phenopackets.schema.v2.core.Sex[message.sex]
+                      ? $root.org.phenopackets.schema.v2.core.Sex[
+                          message.sex
+                        ] === undefined
+                        ? message.sex
+                        : $root.org.phenopackets.schema.v2.core.Sex[message.sex]
                       : message.sex;
                 if (
                   message.affectedStatus != null &&
@@ -16708,7 +16820,10 @@ export const org = ($root.org = (() => {
                   object.affectedStatus =
                     options.enums === String
                       ? $root.org.phenopackets.schema.v2.core.Pedigree.Person
-                          .AffectedStatus[message.affectedStatus]
+                          .AffectedStatus[message.affectedStatus] === undefined
+                        ? message.affectedStatus
+                        : $root.org.phenopackets.schema.v2.core.Pedigree.Person
+                            .AffectedStatus[message.affectedStatus]
                       : message.affectedStatus;
                 return object;
               };
@@ -18419,6 +18534,12 @@ export const org = ($root.org = (() => {
               }
             }
             switch (object.moleculeContext) {
+              default:
+                if (typeof object.moleculeContext === "number") {
+                  message.moleculeContext = object.moleculeContext;
+                  break;
+                }
+                break;
               case "unspecified_molecule_context":
               case 0:
                 message.moleculeContext = 0;
@@ -18562,7 +18683,11 @@ export const org = ($root.org = (() => {
                 options.enums === String
                   ? $root.org.ga4gh.vrsatile.v1.MoleculeContext[
                       message.moleculeContext
-                    ]
+                    ] === undefined
+                    ? message.moleculeContext
+                    : $root.org.ga4gh.vrsatile.v1.MoleculeContext[
+                        message.moleculeContext
+                      ]
                   : message.moleculeContext;
             if (
               message.structuralType != null &&
@@ -29063,3 +29188,5 @@ export const google = ($root.google = (() => {
 
   return google;
 })());
+
+export { $root as default };

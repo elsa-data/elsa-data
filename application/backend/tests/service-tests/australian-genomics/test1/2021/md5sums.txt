@@ -1,0 +1,9 @@
+7fc56270e7a70fa81a5935b72eacbe29  BART.bam
+9d5ed678fe57bcca610140957afab571  BART.bam.bai
+7fc56270e7a70fa81a5935b72eacbe29  HOMER.bam
+9d5ed678fe57bcca610140957afab571  HOMER.bam.bai
+7fc56270e7a70fa81a5935b72eacbe29  MARGE.bam
+9d5ed678fe57bcca610140957afab571  MARGE.bam.bai
+0d61f8370cad1d412f80b84d143e1257  SIMPSONS.joint-called.vcf.gz
+782b905f623002648590817490dea5df  SIMPSONS.phenopacket.json
+d41d8cd98f00b204e9800998ecf8427e  md5sums.txt

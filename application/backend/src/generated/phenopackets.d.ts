@@ -1,4 +1,5 @@
 import * as $protobuf from "protobufjs";
+import Long = require("long");
 /** Namespace org. */
 export namespace org {
   /** Namespace phenopackets. */

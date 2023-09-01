@@ -111,7 +111,7 @@
     "patch-package": "6.4.7",
     "pino": "8.11.0",
     "pino-pretty": "9.4.0",
-    "protobufjs": "7.2.4",
+    "protobufjs": "7.2.5",
     "pug": "^3.0.2",
     "qs": "6.11.0",
     "randomstring": "1.2.3",

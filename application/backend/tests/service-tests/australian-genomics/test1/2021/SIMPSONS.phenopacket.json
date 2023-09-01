@@ -1,0 +1,70 @@
+{
+  "id": "SIMPSONS",
+  "proband": {
+    "subject": {
+      "id": "BART",
+      "sex": "MALE"
+    },
+    "files": [
+      {
+        "uri": "file:/BART.bam",
+        "fileAttributes": {
+          "type": "aligned_read"
+        }
+      }
+    ]
+  },
+  "relatives": [
+    {
+      "subject": {
+        "id": "HOMER",
+        "sex": "MALE"
+      },
+      "files": [
+        {
+          "uri": "file:/HOMER.bam",
+          "fileAttributes": {
+            "type": "aligned_read"
+          }
+        }
+      ]
+    },
+    {
+      "subject": {
+        "id": "MARGE",
+        "sex": "FEMALE"
+      },
+      "files": [
+        {
+          "uri": "file:/MARGE.bam",
+          "fileAttributes": {
+            "type": "aligned_read"
+          }
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "uri": "file:/SIMPSONS.joint-called.vcf.gz",
+      "fileAttributes": {
+        "EDAM:data_0006": "EDAM:data_3498",
+        "EDAM:format_1915": "EDAM:format_3016"
+      }
+    }
+  ],
+  "metaData": {
+    "createdBy": "hand",
+    "resources": [
+      {
+        "id": "edam",
+        "name": "EDAM",
+        "url": "http://edamontology.org",
+        "version": "1.25",
+        "namespacePrefix": "EDAM",
+        "iriPrefix": "http://edamontology.org/"
+      }
+    ],
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}
