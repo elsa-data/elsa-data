@@ -4,6 +4,7 @@ import { getServices } from "./di-helpers";
 import { insert10G, TENG_URI } from "./test-data/dataset/insert-test-data-10g";
 import { TENF_URI } from "./test-data/dataset/insert-test-data-10f-helpers";
 import { insert10F } from "./test-data/dataset/insert-test-data-10f";
+import { S3IndexApplicationService } from "./business/services/australian-genomics/s3-index-import-service";
 
 export const SYNC_DATASETS_COMMAND = "sync-datasets";
 
@@ -18,8 +19,8 @@ export async function commandSyncDatasets(
   dc: DependencyContainer,
   datasetUriArray: string[]
 ): Promise<number> {
-  const { settings } = getServices(dc);
-  const datasetsService = dc.resolve(DatasetService);
+  const { settings, logger } = getServices(dc);
+  const agIndexService = dc.resolve(S3IndexApplicationService);
 
   // no point in doing a dataset twice so put into a set
   const datasetUriSet = new Set<string>(datasetUriArray);
@@ -31,16 +32,22 @@ export async function commandSyncDatasets(
       if (configuredDataset.uri === datasetUri) {
         didLoad = true;
 
-        console.log(
+        logger.info(
           `Starting sync for ->${datasetUri}<- using loader ${configuredDataset.loader}`
         );
 
         switch (configuredDataset.loader) {
-          case "australian-genomics-directories-demo":
-            break;
           case "australian-genomics-directories":
+            // TODO not important really as there are other mechanisms to trigger this
+            // need to break this functionality out from the service and have it as a directly
+            // executable code.. OR introduce a user where to perform it
+            // await agIndexService.syncWithDatabaseFromDatasetUri(datasetUri, user, "australian-genomics-directories");
             break;
           case "dev":
+            // I guess we could restrict this loader to literally dev only (we could do a check here) - but this
+            // whole code section is
+            // only executable by system administrators - and I guess they might have a good
+            // reason to do this in prod(?) - so no check for now
             switch (configuredDataset.uri) {
               case TENG_URI:
                 await insert10G(dc);
@@ -49,7 +56,7 @@ export async function commandSyncDatasets(
                 await insert10F(dc);
                 break;
               default:
-                console.log(
+                logger.error(
                   `Dataset URI ${
                     (configuredDataset.uri as any).loader
                   } is not a dev dataset`
@@ -57,7 +64,7 @@ export async function commandSyncDatasets(
             }
             break;
           default:
-            console.log(
+            logger.error(
               `Loader type ${(configuredDataset as any).loader} not known`
             );
         }
@@ -65,7 +72,7 @@ export async function commandSyncDatasets(
     }
 
     if (!didLoad) {
-      console.log(
+      logger.warn(
         `Did not perform a sync for ->${datasetUri}<- as it was not listed in the configuration`
       );
     }
