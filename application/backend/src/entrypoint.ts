@@ -36,6 +36,10 @@ import {
   ADD_USER_COMMAND,
   commandAddUser,
 } from "./entrypoint-command-add-user";
+import {
+  commandSyncDatasets,
+  SYNC_DATASETS_COMMAND,
+} from "./entrypoint-command-sync-datasets";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -180,6 +184,10 @@ bootstrapGlobalSynchronous();
 
       case DELETE_DATASETS_COMMAND:
         todo.push(async () => commandDeleteDataset(dc, c.args));
+        break;
+
+      case SYNC_DATASETS_COMMAND:
+        todo.push(async () => commandSyncDatasets(dc, c.args));
         break;
 
       default:

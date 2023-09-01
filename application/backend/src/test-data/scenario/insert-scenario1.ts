@@ -110,7 +110,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   }
 
   {
-    // this shouldn't be necessary - the synchronise service should upset this from the config files
+    // this shouldn't be necessary - the synchronise service should upsert this from the config files
     await e
       .insert(e.dataset.Dataset, {
         uri: TENG_URI,

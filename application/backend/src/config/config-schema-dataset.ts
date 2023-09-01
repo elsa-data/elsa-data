@@ -77,9 +77,25 @@ export const DatasetAustralianGenomicsDirectoriesDemoSchema = z.object({
   ),
 });
 
+/**
+ * A dataset whose loader is baked into the source code. These are not general
+ * purpose loaders and are only for use in development.
+ */
+export const DatasetDevSchema = z.object({
+  uri: z
+    .string()
+    .describe(
+      "A globally unique URI representing the identifier for the dataset"
+    ),
+  name: z.string().describe("Friendly name of the dataset"),
+  description: z.string().describe("A brief description of the dataset"),
+  loader: z.literal("dev"),
+});
+
 export const DatasetSchema = z.discriminatedUnion("loader", [
   DatasetAustralianGenomicsDirectoriesSchema,
   DatasetAustralianGenomicsDirectoriesDemoSchema,
+  DatasetDevSchema,
 ]);
 
 export type DatasetType = z.infer<typeof DatasetSchema>;
