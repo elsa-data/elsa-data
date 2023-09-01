@@ -11,6 +11,18 @@ export const dacRouter = router({
 
     return ctx.dacService.getConfigured(user);
   }),
+  detectNewQuery: internalProcedure
+    .input(
+      z.object({
+        dacId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { user } = ctx;
+
+      // the DAC service will map the operation onto the correct actual specific DAC service (via dacId and the config)
+      return ctx.dacService.detectNew(user, input.dacId, {});
+    }),
   detectNew: internalProcedure
     .input(
       z.object({

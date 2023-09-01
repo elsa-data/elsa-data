@@ -34,6 +34,7 @@ export const RemsDacTriggerDiv: React.FC<Props> = ({ dacId, dacRemsUrl }) => {
       <RemsDacDialog
         showing={showingRemsDialog}
         cancelShowing={() => setShowingRemsDialog(false)}
+        dacId={dacId}
       />
     </>
   );
