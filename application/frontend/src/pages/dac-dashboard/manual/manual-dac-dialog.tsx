@@ -10,6 +10,7 @@ import { ErrorBoundary } from "../../../components/errors";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
 import Select from "react-select";
 import { useLoggedInUserConfigRelay } from "../../../providers/logged-in-user-config-relay-provider";
+import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
 type Props = {
   showing: boolean;
@@ -74,23 +75,15 @@ export const ManualDacDialog: React.FC<Props> = ({
         cancelShowing={cancelShowing}
         title="Create Release Manually"
         buttons={
-          <>
-            <button
-              type="button"
-              className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={handleSubmit(() => createNewReleaseMutate.mutate())}
-            >
-              Create
-            </button>
-            <button
-              type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={() => cancelShowing()}
-              ref={cancelButtonRef}
-            >
-              Cancel
-            </button>{" "}
-          </>
+          <SuccessCancelButtons
+            isLoading={createNewReleaseMutate.isLoading}
+            isSuccessDisabled={createNewReleaseMutate.isLoading}
+            successButtonLabel={"Create"}
+            onSuccess={handleSubmit(() => createNewReleaseMutate.mutate())}
+            cancelButtonLabel={"Cancel"}
+            onCancel={cancelShowing}
+            cancelButtonRef={cancelButtonRef}
+          />
         }
         content={
           <>

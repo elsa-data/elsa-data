@@ -9,6 +9,7 @@ import {
   ReleaseParticipantRoleType,
   ReleaseParticipantType,
 } from "@umccr/elsa-types";
+import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
 type EditParticipantRoleDialogProps = {
   releaseKey: string;
@@ -62,39 +63,28 @@ export const EditParticipantRoleDialog: React.FC<
         cancelShowing={cancelButton}
         title="Participant Role Change"
         buttons={
-          <>
-            {isError && <EagerErrorBoundary error={error} />}
-            <button
-              type="button"
-              disabled={isLoading && !!newRole}
-              className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={() => {
-                if (newRole) {
-                  participantMutate.mutate({
-                    releaseKey: releaseKey,
-                    email: email,
-                    role: newRole,
-                  });
-                }
-              }}
-            >
-              {isLoading && (
-                <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-              )}
-              Save
-            </button>
-            <button
-              type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={cancelButton}
-              ref={cancelButtonRef}
-            >
-              Cancel
-            </button>
-          </>
+          <SuccessCancelButtons
+            isLoading={isLoading}
+            isSuccessDisabled={isLoading && !!newRole}
+            successButtonLabel={"Save"}
+            onSuccess={() => {
+              if (newRole) {
+                participantMutate.mutate({
+                  releaseKey: releaseKey,
+                  email: email,
+                  role: newRole,
+                });
+              }
+            }}
+            cancelButtonLabel={"Cancel"}
+            onCancel={cancelButton}
+            cancelButtonRef={cancelButtonRef}
+          />
         }
         content={
           <>
+            {isError && <EagerErrorBoundary error={error} />}
+
             <div className="prose mt-2">
               <p className="text-sm text-gray-500">
                 This will allow to alter participant role in this release.
