@@ -20,7 +20,7 @@ import classNames from "classnames";
 
 enum UserTableType {
   ACTIVE,
-  POTENTIAL,
+  INVITED,
 }
 
 export const permissionIconProperties: {
@@ -79,12 +79,12 @@ export const AllUsers: React.FC<Props> = () => {
           Active
         </a>
         <a
-          onClick={() => setUserTableView(UserTableType.POTENTIAL)}
+          onClick={() => setUserTableView(UserTableType.INVITED)}
           className={classNames("tab-lifted tab", {
-            "tab-active": userTableView == UserTableType.POTENTIAL,
+            "tab-active": userTableView == UserTableType.INVITED,
           })}
         >
-          Potential
+          Invited
         </a>
       </div>
       {userTableView == UserTableType.ACTIVE ? (

@@ -196,15 +196,16 @@ export const PotentialUserTable = () => {
   return (
     <div className="flex flex-col">
       <div className="my-2 flex w-full flex-row items-center justify-between">
-        <h2 className="my-2 font-medium">Potential User</h2>
+        <h2 className="my-2 font-medium">Invited User</h2>
         <div>
           <InvitePotentialUser />
         </div>
       </div>
       <p className="mb-4 text-sm text-gray-500">
-        {`This table shows users who have been invited but haven't logged in yet. Only those in 
-          this list can log in. Invitations can only be sent by release administrators and 
-          individuals who has the right to change other people permissions.`}
+        This table shows users who have been invited but haven't logged in yet.
+        Only those in this list can log in. Invitations can only be sent by
+        release administrators and individuals who has the right to change other
+        people permissions.
       </p>
       {removePotentialUserMutate.isSuccess && (
         <Alert
