@@ -17,6 +17,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowsRotate,
+  faCheck,
   faFolderPlus,
   faUsersViewfinder,
 } from "@fortawesome/free-solid-svg-icons";
@@ -24,6 +25,7 @@ import { InvitePotentialUser } from "./invite-potential-user";
 import { EditPotentialUserPermissionDialog } from "./edit-potential-user-permission-dialog";
 import { useLoggedInUser } from "../../../../providers/logged-in-user-provider";
 import ConfirmDialog from "../../../../components/confirmation-dialog";
+import { Alert } from "../../../../components/alert";
 
 export const permissionIconProperties: {
   key:
@@ -204,13 +206,21 @@ export const PotentialUserTable = () => {
           this list can log in. Invitations can only be sent by release administrators and 
           individuals who has the right to change other people permissions.`}
       </p>
+      {removePotentialUserMutate.isSuccess && (
+        <Alert
+          description={`Participant successfully removed.`}
+          icon={<FontAwesomeIcon icon={faCheck} />}
+          additionalAlertClassName={
+            "alert-success bg-green-200 text-xs py-1 mb-2"
+          }
+        />
+      )}
       {potentialUsersQuery.isError && (
         <EagerErrorBoundary error={potentialUsersQuery.error} />
       )}
       {removePotentialUserMutate.isError && (
         <EagerErrorBoundary error={removePotentialUserMutate.error} />
       )}
-
       {potentialUsersQuery.isSuccess && (
         <>
           <Table
@@ -226,7 +236,6 @@ export const PotentialUserTable = () => {
           />
         </>
       )}
-
       {potentialUsersQuery.isLoading && <IsLoadingDiv />}
     </div>
   );
