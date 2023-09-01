@@ -25,6 +25,22 @@ export const UserSummarySchema = Type.Object({
 
 export type UserSummaryType = Static<typeof UserSummarySchema>;
 
+export const PotentialUserSummarySchema = Type.Object({
+  id: Type.String(),
+
+  email: Type.String(),
+  displayName: Type.String(),
+  createdDateTime: Type.Optional(TypeDate),
+
+  isAllowedCreateRelease: Type.Boolean(),
+  isAllowedRefreshDatasetIndex: Type.Boolean(),
+  isAllowedOverallAdministratorView: Type.Boolean(),
+});
+
+export type PotentialUserSummaryType = Static<
+  typeof PotentialUserSummarySchema
+>;
+
 // User permissions type
 const permissionTypeArray = [
   "isAllowedChangeUserPermission",

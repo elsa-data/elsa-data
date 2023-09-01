@@ -10,7 +10,7 @@
     "migrate-db": "cd application/backend && edgedb migration create || true && edgedb migrate",
     "init-db": "cd application/backend && edgedb project init",
     "edgetypes": "cd application/backend && npm run edgetypes",
-    "frontend": "cd application/frontend && npm run build:dev",
+    "frontend": "cd application/frontend && npm run dev:build",
     "backend:watch:mac": "cd application/backend && npm run watch:mac",
     "backend:watch:linux": "cd application/backend && npm run watch:linux",
     "backend:watch:aws": "cd application/backend && npm run watch:aws",

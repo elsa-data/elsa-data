@@ -15,10 +15,7 @@ import { EditParticipantRoleDialog } from "./edit-participant-role-dialog";
 import ConfirmDialog from "../../../components/confirmation-dialog";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { BoxPaginator } from "../../../components/box-paginator";
-
-function checkEmail(email: string) {
-  return /\S+@\S+\.\S+/.test(email);
-}
+import { isValidEmail } from "../../../helpers/utils";
 
 /**
  * A page allowing the display/editing of users participating in a release.
@@ -70,14 +67,14 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] =
     useState<ReleaseParticipantRoleType>("Member");
-  const isValidEmail = newUserEmail == "" || checkEmail(newUserEmail);
+  const isEmailValid = newUserEmail == "" || isValidEmail(newUserEmail);
 
   const isLoading =
     addParticipantMutate.isLoading ||
     removeParticipantMutate.isLoading ||
     releaseParticipantsQuery.isLoading;
   const isAddButtonDisabled =
-    isLoading || newUserEmail.trim().length == 0 || !isValidEmail;
+    isLoading || newUserEmail.trim().length == 0 || !isEmailValid;
 
   const isError =
     releaseParticipantsQuery.isError ||
@@ -145,14 +142,14 @@ export const ReleasesUserManagementPage: React.FC = () => {
                     className={classNames(
                       `input-bordered input-accent input input-sm w-full`,
                       {
-                        "input-error": !isValidEmail,
-                        "input-accent": isValidEmail,
+                        "input-error": !isEmailValid,
+                        "input-accent": isEmailValid,
                       }
                     )}
                     value={newUserEmail}
                     onChange={(e) => setNewUserEmail(e.target.value)}
                   />
-                  {!isValidEmail && (
+                  {!isEmailValid && (
                     <label className="label">
                       <span className="label-text-alt text-red-400">
                         Invalid email
@@ -204,79 +201,77 @@ export const ReleasesUserManagementPage: React.FC = () => {
                     <th></th>
                   </tr>
                 }
-                tableBody={participantDataList.map(
-                  (row: ReleaseParticipantType, idx) => {
-                    const {
-                      role,
-                      email,
-                      displayName,
-                      subjectId,
-                      lastLogin,
-                      canBeRemoved,
-                      canBeRoleAltered,
-                    } = row;
+                tableBody={participantDataList.map((row: any, idx) => {
+                  const {
+                    role,
+                    email,
+                    displayName,
+                    subjectId,
+                    lastLogin,
+                    canBeRemoved,
+                    canBeRoleAltered,
+                  } = row;
 
-                    return (
-                      <tr key={idx}>
-                        <td>
-                          <div>
-                            <div
-                              className="font-bold"
-                              title={subjectId || undefined}
-                            >
-                              {displayName}
-                            </div>
-                            {email !== displayName && (
-                              <div className="text-sm opacity-50">{email}</div>
-                            )}
+                  return (
+                    <tr key={idx}>
+                      <td>
+                        <div>
+                          <div
+                            className="font-bold"
+                            title={subjectId || undefined}
+                          >
+                            {displayName}
                           </div>
-                        </td>
-                        <td>
-                          <div>{role}</div>
-                        </td>
-                        <td>
-                          {lastLogin
-                            ? formatLocalDateTime(lastLogin as string)
-                            : ""}
-                        </td>
-                        <td className="text-right">
-                          <>
-                            {role && canBeRoleAltered && (
-                              <EditParticipantRoleDialog
-                                releaseKey={releaseKey}
-                                releaseParticipant={row}
-                              />
-                            )}
+                          {email !== displayName && (
+                            <div className="text-sm opacity-50">{email}</div>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div>{role}</div>
+                      </td>
+                      <td>
+                        {lastLogin
+                          ? formatLocalDateTime(lastLogin as string)
+                          : ""}
+                      </td>
+                      <td className="text-right">
+                        <>
+                          {role && canBeRoleAltered && (
+                            <EditParticipantRoleDialog
+                              releaseKey={releaseKey}
+                              releaseParticipant={row}
+                            />
+                          )}
 
-                            {canBeRemoved && (
-                              <>
-                                <span className="opacity-50">{`|`}</span>
-                                <ConfirmDialog
-                                  openButtonLabel={`remove`}
-                                  openButtonClassName={classNames(
-                                    "btn-table-action-danger",
-                                    {
-                                      "btn-disabled": isLoading,
-                                    }
-                                  )}
-                                  onConfirmButtonLabel={"Remove"}
-                                  dialogTitle={`Remove Participant Confirmation`}
-                                  dialogContent={`Are you sure you want to remove "${email}" from this release?`}
-                                  onConfirm={() => {
-                                    removeParticipantMutate.mutate({
-                                      releaseKey,
-                                      email: email,
-                                    });
-                                  }}
-                                />
-                              </>
-                            )}
-                          </>
-                        </td>
-                      </tr>
-                    );
-                  }
-                )}
+                          {canBeRemoved && (
+                            <>
+                              <span className="opacity-50">{`|`}</span>
+                              <ConfirmDialog
+                                openButtonLabel={`remove`}
+                                openButtonClassName={classNames(
+                                  "btn-table-action-danger",
+                                  {
+                                    "btn-disabled": isLoading,
+                                  }
+                                )}
+                                onConfirmButtonLabel={"Remove"}
+                                dialogTitle={`Remove Participant Confirmation`}
+                                dialogContent={`Are you sure you want to remove "${email}" from this release?`}
+                                onConfirm={() => {
+                                  removeParticipantMutate.mutate({
+                                    releaseKey,
+                                    email: email,
+                                  });
+                                }}
+                              />
+                            </>
+                          )}
+                        </>
+                      </td>
+                    </tr>
+                  );
+                })}
               />
               <BoxPaginator
                 currentPage={currentPage}

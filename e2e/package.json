@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "build": "npm --prefix ../application/frontend run build:dev && npm --prefix ../application/backend run edgetypes",
+    "build": "npm --prefix ../application/frontend run dev:build && npm --prefix ../application/backend run edgetypes",
     "test": "npx playwright test --trace on"
   },
   "keywords": [],

@@ -7,16 +7,24 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import { UserSummaryType } from "@umccr/elsa-types/schemas-users";
+import {
+  PotentialUserSummaryType,
+  UserSummaryType,
+} from "@umccr/elsa-types/schemas-users";
 import { ElsaSettings } from "../../config/elsa-settings";
 import {
   NonExistentUser,
   NotAuthorisedEditUserManagement,
   NotAuthorisedGetOwnUser,
+  UserEmailExist,
+  UserEmailNotExist,
 } from "../exceptions/user";
 import {
   potentialUserDeleteByEmail,
+  potentialUserGetAllByUser,
   potentialUserGetByEmail,
+  potentialUserInsert,
+  potentialUserUpdatePermissions,
   releaseParticipantAddUser,
   userGetAllByUser,
   userGetByDbId,
@@ -97,7 +105,8 @@ export class UserService {
   }
 
   /**
-   * Get all the users. Users always have permission to make this call, but
+   * Get all the users that has logged in to the system.
+   * Users always have permission to make this call, but
    * will be limited in which records are returned to them if they do
    * not have broader permissions than an ordinary user.
    *
@@ -105,7 +114,7 @@ export class UserService {
    * @param limit
    * @param offset
    */
-  public async getUsers(
+  public async getActiveUsers(
     user: AuthenticatedUser,
     limit: number,
     offset: number
@@ -138,6 +147,39 @@ export class UserService {
   }
 
   /**
+   * Get potential user that has been invited to log in to the system.
+   *
+   * @param user the user making the call
+   * @param limit
+   * @param offset
+   */
+  public async getPotentialUsers(
+    user: AuthenticatedUser,
+    limit: number,
+    offset: number
+  ): Promise<PagedResult<PotentialUserSummaryType>> {
+    const { total, data } = await potentialUserGetAllByUser(this.edgeDbClient, {
+      userDbId: user.dbId,
+      isSuperAdmin: this.isConfiguredSuperAdmin(user.subjectId),
+      offset: offset,
+      limit: limit,
+    });
+
+    return createPagedResult(
+      data.map((a) => ({
+        id: a.id,
+        email: a.email,
+        displayName: a.displayName ?? "",
+        createdDateTime: a.createdDateTime,
+
+        isAllowedRefreshDatasetIndex: a.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: a.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
+      })),
+      total
+    );
+  }
+  /**
    * Get a user from our database when given just a subject id. Returns null
    * if the user with that subjectId is not in the database.
    *
@@ -160,7 +202,7 @@ export class UserService {
    * @param targetSubjectId
    * @param permission
    */
-  public async changePermission(
+  public async changeActiveUserPermission(
     user: AuthenticatedUser,
     targetSubjectId: string,
     permission: ChangeablePermission
@@ -186,10 +228,163 @@ export class UserService {
       });
 
       await this.auditEventService.updateUserPermissionsChanged(
+        "active",
         user.subjectId,
         user.displayName,
-        permission,
+        {
+          activeUser: {
+            email: targetUser.email,
+          },
+          permission,
+        },
         this.edgeDbClient
+      );
+    });
+  }
+
+  /**
+   * @param user
+   * @param targetPotentialUserEmail
+   * @param permission
+   */
+  public async changePotentialUserPermission(
+    user: AuthenticatedUser,
+    targetPotentialUserEmail: string,
+    permission: ChangeablePermission
+  ): Promise<void> {
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedEditUserManagement();
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      const targetPU = await potentialUserGetByEmail(tx, {
+        email: targetPotentialUserEmail,
+      });
+
+      if (!targetPU) {
+        throw new NonExistentUser(targetPotentialUserEmail);
+      }
+
+      await potentialUserUpdatePermissions(tx, {
+        email: targetPU.email,
+        isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: permission.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView:
+          permission.isAllowedOverallAdministratorView,
+      });
+
+      await this.auditEventService.updateUserPermissionsChanged(
+        "potential",
+        user.subjectId,
+        user.displayName,
+        {
+          potentialUser: {
+            email: targetPotentialUserEmail,
+          },
+          permission,
+        },
+        this.edgeDbClient
+      );
+    });
+  }
+  public async addPotentialUser(
+    user: AuthenticatedUser,
+    newPotentialUserEmail: string,
+    permission: ChangeablePermission
+  ): Promise<void> {
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedEditUserManagement();
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      // We need to check if the potential email exist
+      const potentialUser = await potentialUserGetByEmail(tx, {
+        email: newPotentialUserEmail,
+      });
+      const activeUser = await userGetByEmail(tx, {
+        email: newPotentialUserEmail,
+      });
+      if (!!potentialUser || !!activeUser) {
+        throw new UserEmailExist(newPotentialUserEmail);
+      }
+
+      // If it made this far, we need to insert new potentialUser
+      const start = new Date();
+      const aeId = await this.auditEventService.startUserAuditEvent(
+        user.subjectId,
+        user.displayName,
+        user.dbId,
+        "E",
+        `Add a potential user: ${newPotentialUserEmail}`,
+        start,
+        tx
+      );
+
+      await potentialUserInsert(tx, {
+        email: newPotentialUserEmail,
+        isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+        isAllowedCreateRelease: permission.isAllowedCreateRelease,
+        isAllowedOverallAdministratorView:
+          permission.isAllowedOverallAdministratorView,
+      });
+
+      await this.auditEventService.completeUserAuditEvent(
+        aeId,
+        0,
+        start,
+        new Date(),
+        {
+          email: newPotentialUserEmail,
+          isAllowedRefreshDatasetIndex: permission.isAllowedRefreshDatasetIndex,
+          isAllowedCreateRelease: permission.isAllowedCreateRelease,
+          isAllowedOverallAdministratorView:
+            permission.isAllowedOverallAdministratorView,
+        },
+        tx
+      );
+    });
+  }
+
+  public async removePotentialUser(
+    user: AuthenticatedUser,
+    potentialUserEmail: string
+  ): Promise<void> {
+    if (!this.isConfiguredSuperAdmin(user.subjectId))
+      throw new NotAuthorisedEditUserManagement();
+
+    await this.edgeDbClient.transaction(async (tx) => {
+      // We need to check if the potential email exist
+      const potentialUser = await potentialUserGetByEmail(tx, {
+        email: potentialUserEmail,
+      });
+
+      if (!potentialUser) {
+        throw new UserEmailNotExist(potentialUserEmail);
+      }
+
+      // If it made this far, we need to insert new potentialUser
+      const start = new Date();
+      const aeId = await this.auditEventService.startUserAuditEvent(
+        user.subjectId,
+        user.displayName,
+        user.dbId,
+        "E",
+        `Remove a potential user: ${potentialUserEmail}`,
+        start,
+        tx
+      );
+
+      await potentialUserDeleteByEmail(tx, {
+        email: potentialUserEmail,
+      });
+
+      await this.auditEventService.completeUserAuditEvent(
+        aeId,
+        0,
+        start,
+        new Date(),
+        {
+          email: potentialUserEmail,
+        },
+        tx
       );
     });
   }
@@ -267,9 +462,24 @@ export class UserService {
         email: email,
       });
 
+      // we are explicit here about our default permissions being "no permissions
+      const permissionToAdd = {
+        isAllowedOverallAdministratorView: false,
+        isAllowedCreateRelease: false,
+        isAllowedRefreshDatasetIndex: false,
+      };
+
       let releasesToAdd: any;
 
       if (potentialDbUser) {
+        // We should also upsert any permission assigned at the potential user
+        permissionToAdd.isAllowedOverallAdministratorView =
+          potentialDbUser.isAllowedOverallAdministratorView;
+        permissionToAdd.isAllowedCreateRelease =
+          potentialDbUser.isAllowedCreateRelease;
+        permissionToAdd.isAllowedRefreshDatasetIndex =
+          potentialDbUser.isAllowedRefreshDatasetIndex;
+
         // find all the 'default' settings (like releases they are part of) for the user
         releasesToAdd =
           potentialDbUser.futureReleaseParticipant &&
@@ -311,10 +521,7 @@ export class UserService {
           subjectId: subjectId,
           displayName: displayName,
           email: email,
-          // we are explicit here about our default permissions being "no permissions"
-          isAllowedOverallAdministratorView: false,
-          isAllowedCreateRelease: false,
-          isAllowedRefreshDatasetIndex: false,
+          ...permissionToAdd,
           releaseParticipant: e.select(e.release.Release, (r) => ({
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),
