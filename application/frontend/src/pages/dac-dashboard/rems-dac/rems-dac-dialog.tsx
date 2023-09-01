@@ -72,7 +72,7 @@ export const RemsDacDialog: React.FC<Props> = ({
                       // invalidate the keys so that going to the dashboard will be refreshed
                       queryClient.invalidateQueries().then(() => {
                         // bounce us to the details page for the release we just made
-                        navigate(`/releases/${newReleaseKey}`);
+                        navigate(`/releases/${newReleaseKey}/detail`);
                       });
 
                       // now close the dialog

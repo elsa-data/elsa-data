@@ -19,7 +19,12 @@ import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
 import { isEmpty, isInteger } from "lodash";
 import { Logger } from "pino";
-
+import {
+  ApplicationUser,
+  checkValidApplicationUser,
+  insertPotentialOrReal,
+} from "../_dac-user-helper";
+import { AuditEventService } from "../audit-event-service";
 @injectable()
 export class RemsService {
   constructor(
@@ -28,7 +33,9 @@ export class RemsService {
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,
     @inject(UserData) private readonly userData: UserData,
-    @inject(ReleaseService) private readonly releaseService: ReleaseService
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditEventService)
+    private readonly auditEventService: AuditEventService
   ) {}
 
   /**
@@ -183,9 +190,7 @@ export class RemsService {
         }
       }
 
-      // loop through the members (users) mapping to users that we know about
-      // TODO: create new users entries for those we don't know yet
-      // const memberToUserMap: { [uri: string]: string } = {};
+      const releaseKey = getNextReleaseKey(this.settings.releaseKeyPrefix);
 
       const newRelease = await e
         .select(
@@ -244,7 +249,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
             datasetIndividualUrisOrderPreference: [""],
             datasetSpecimenUrisOrderPreference: [""],
             datasetCaseUrisOrderPreference: [""],
-            releaseKey: getNextReleaseKey(this.settings.releaseKeyPrefix),
+            releaseKey: releaseKey,
             releasePassword: generateZipPassword(),
             datasetUris: e.literal(
               e.array(e.str),
@@ -275,6 +280,24 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           })
         )
         .run(this.edgeDbClient);
+
+      const applicant = application["application/applicant"];
+
+      if (applicant && applicant["email"]) {
+        const applicantAu: ApplicationUser = {
+          role: "Manager",
+          email: applicant["email"],
+          displayName: applicant["name"],
+        };
+        await insertPotentialOrReal(
+          t,
+          applicantAu,
+          "Manager",
+          newRelease.id,
+          newRelease.releaseKey,
+          this.auditEventService
+        );
+      }
 
       await this.userService.registerRoleInRelease(
         user,
