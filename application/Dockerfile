@@ -88,7 +88,7 @@ RUN : \
 
 RUN : \
   && cd frontend \
-  && npm run build:prod
+  && npm run prod:build
 
 RUN cd backend && node bundle-build.js
 
