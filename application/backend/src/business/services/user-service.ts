@@ -462,9 +462,24 @@ export class UserService {
         email: email,
       });
 
+      // we are explicit here about our default permissions being "no permissions
+      const permissionToAdd = {
+        isAllowedOverallAdministratorView: false,
+        isAllowedCreateRelease: false,
+        isAllowedRefreshDatasetIndex: false,
+      };
+
       let releasesToAdd: any;
 
       if (potentialDbUser) {
+        // We should also upsert any permission assigned at the potential user
+        permissionToAdd.isAllowedOverallAdministratorView =
+          potentialDbUser.isAllowedOverallAdministratorView;
+        permissionToAdd.isAllowedCreateRelease =
+          potentialDbUser.isAllowedCreateRelease;
+        permissionToAdd.isAllowedRefreshDatasetIndex =
+          potentialDbUser.isAllowedRefreshDatasetIndex;
+
         // find all the 'default' settings (like releases they are part of) for the user
         releasesToAdd =
           potentialDbUser.futureReleaseParticipant &&
@@ -506,10 +521,7 @@ export class UserService {
           subjectId: subjectId,
           displayName: displayName,
           email: email,
-          // we are explicit here about our default permissions being "no permissions"
-          isAllowedOverallAdministratorView: false,
-          isAllowedCreateRelease: false,
-          isAllowedRefreshDatasetIndex: false,
+          ...permissionToAdd,
           releaseParticipant: e.select(e.release.Release, (r) => ({
             filter: e.op(r.id, "in", releasesToAdd),
             "@role": e.str("Member"),
