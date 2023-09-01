@@ -7,6 +7,7 @@ import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../../../components/tables";
 import { trpc } from "../../../helpers/trpc";
+import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
 type Props = {
   showing: boolean;
@@ -95,52 +96,43 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
         </>
       }
       buttons={
-        <>
-          <button
-            type="button"
-            disabled={isNil(selectedRowIndex)}
-            className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
-            onClick={() => {
-              if (isNumber(selectedRowIndex))
-                createNewReleaseMutate.mutate(
-                  {
-                    dacId: dacId,
-                    dacData: possibleApplications[selectedRowIndex],
-                  },
-                  {
-                    onSuccess: (newReleaseKey) => {
-                      // invalidate the keys so that going to the dashboard will be refreshed
-                      queryClient
-                        .invalidateQueries(REACT_QUERY_RELEASE_KEYS.all)
-                        .then(() => {
-                          // bounce us to the details page for the release we just made
-                          navigate(`/releases/${newReleaseKey}/detail`);
-                        });
+        <SuccessCancelButtons
+          isLoading={createNewReleaseMutate.isLoading}
+          isSuccessDisabled={isNil(selectedRowIndex)}
+          successButtonLabel={"Add"}
+          onSuccess={() => {
+            if (isNumber(selectedRowIndex))
+              createNewReleaseMutate.mutate(
+                {
+                  dacId: dacId,
+                  dacData: possibleApplications[selectedRowIndex],
+                },
+                {
+                  onSuccess: (newReleaseKey) => {
+                    // invalidate the keys so that going to the dashboard will be refreshed
+                    queryClient
+                      .invalidateQueries(REACT_QUERY_RELEASE_KEYS.all)
+                      .then(() => {
+                        // bounce us to the details page for the release we just made
+                        navigate(`/releases/${newReleaseKey}/detail`);
+                      });
 
-                      // now close the dialog
-                      closeDialog();
-                    },
-                    onError: (err: any) =>
-                      setLastError(err?.response?.data?.detail),
-                  }
-                );
-              else {
-                // this should not be possible as the button is disabled whilst the row index is null
-                setLastError("Selected row index is null");
-              }
-            }}
-          >
-            Add
-          </button>
-          <button
-            type="button"
-            className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            onClick={() => closeDialog()}
-            ref={cancelButtonRef}
-          >
-            Cancel
-          </button>
-        </>
+                    // now close the dialog
+                    closeDialog();
+                  },
+                  onError: (err: any) =>
+                    setLastError(err?.response?.data?.detail),
+                }
+              );
+            else {
+              // this should not be possible as the button is disabled whilst the row index is null
+              setLastError("Selected row index is null");
+            }
+          }}
+          cancelButtonLabel={"Cancel"}
+          onCancel={closeDialog}
+          cancelButtonRef={cancelButtonRef}
+        />
       }
       errorMessage={lastError}
     />

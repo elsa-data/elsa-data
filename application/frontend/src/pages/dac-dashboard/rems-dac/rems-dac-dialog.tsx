@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../../../components/errors";
 import { Table } from "../../../components/tables";
 import { trpc } from "../../../helpers/trpc";
+import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
 type Props = {
   showing: boolean;
@@ -60,17 +61,19 @@ export const RemsDacDialog: React.FC<Props> = ({
         title={"Add Application"}
         buttons={
           <>
-            <button
-              type="button"
-              disabled={isNil(newId)}
-              className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={() => {
-                createNewReleaseMutate.mutate(
-                  { dacId: dacId, dacData: newId },
-                  {
-                    onSuccess: (newReleaseKey) => {
-                      // invalidate the keys so that going to the dashboard will be refreshed
-                      queryClient.invalidateQueries().then(() => {
+            <SuccessCancelButtons
+              isLoading={createNewReleaseMutate.isLoading}
+              isSuccessDisabled={
+                createNewReleaseMutate.isLoading || isNil(newId)
+              }
+              successButtonLabel={"Add"}
+              onSuccess={() => {
+                createNewReleaseMutate.mutate({ dacId: dacId, dacData: newId }, {
+                  onSuccess: (newReleaseKey) => {
+                    // invalidate the keys so that going to the dashboard will be refreshed
+                    queryClient
+                      .invalidateQueries()
+                      .then(() => {
                         // bounce us to the details page for the release we just made
                         navigate(`/releases/${newReleaseKey}/detail`);
                       });
@@ -83,17 +86,10 @@ export const RemsDacDialog: React.FC<Props> = ({
                   }
                 );
               }}
-            >
-              Add
-            </button>
-            <button
-              type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              onClick={() => cancelShowing()}
-              ref={cancelButtonRef}
-            >
-              Cancel
-            </button>{" "}
+              cancelButtonLabel={"Cancel"}
+              onCancel={cancelShowing}
+              cancelButtonRef={cancelButtonRef}
+            />
           </>
         }
         content={

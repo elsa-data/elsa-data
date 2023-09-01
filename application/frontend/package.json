@@ -5,12 +5,12 @@
   "scripts": {
     "//frontend": "Serves the frontend files up using a built in web server - but without the custom backend or APIs - this is generally not useable",
     "frontend": "vite serve",
-    "//build:dev": "Builds a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
-    "build:dev": "vite build --mode development",
-    "//watch:dev": "Watches the source and triggers a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
-    "watch:dev": "vite build --watch --mode development",
-    "//build:prod": "Builds a prod build in the ../backend/client/dist/ folder where it can be found by the production server",
-    "build:prod": "vite build --mode production"
+    "//dev:build": "Builds a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
+    "dev:build": "vite build --mode development",
+    "//dev:watch": "Watches the source and triggers a dev build in the ./frontend/build/ folder where it can be found by the backend in dev mode",
+    "dev:watch": "vite build --watch --mode development",
+    "//prod:build": "Builds a prod build in the ../backend/client/dist/ folder where it can be found by the production server",
+    "prod:build": "vite build --mode production"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "6.2.1",

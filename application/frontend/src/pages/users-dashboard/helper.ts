@@ -1,3 +1,5 @@
+import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
+
 export const CHANGE_USER_PERMISSION_DESC =
   "Allowed to change other user's permission.";
 export const CREATE_NEW_RELEASE_DESC =

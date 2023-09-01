@@ -99,7 +99,7 @@ jobs:
         working-directory: application/backend
 
       # build our React frontend
-      - run: npm run build:dev
+      - run: npm run dev:build
         working-directory: application/frontend
         env:
           # whilst ever we allow React warnings in dev we need to do this to switch off CI over strictness
