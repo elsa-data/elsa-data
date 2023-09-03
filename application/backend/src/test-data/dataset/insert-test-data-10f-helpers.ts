@@ -9,6 +9,8 @@ import { DuoLimitationCodedType } from "@umccr/elsa-types";
 
 export const TENF_URI = "urn:fdc:umccr.org:2022:dataset/10f";
 
+export const TENF_DESCRIPTION = "UMCCR 10F";
+
 export const GIAB_FAMILY_SYSTEM = "giabfamily";
 
 export const NIST_BIOSAMPLE_SYSTEM = "http://www.ncbi.nlm.nih.gov/biosample";

@@ -5,12 +5,7 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
 import { insertUser2 } from "../../src/test-data/user/insert-user2";
 import { insert10F } from "../../src/test-data/dataset/insert-test-data-10f";
-import {
-  CHARLES_CASE_SYSTEMLESS,
-  CHARLES_PATIENT_SYSTEMLESS,
-  CHARLES_SPECIMEN_SYSTEMLESS,
-  insert10G,
-} from "../../src/test-data/dataset/insert-test-data-10g";
+import { insert10G } from "../../src/test-data/dataset/insert-test-data-10g";
 import {
   insertRelease1,
   RELEASE_KEY_1,
@@ -29,6 +24,11 @@ import {
   SIMPSONS_CASE,
 } from "../../src/test-data/dataset/insert-test-data-10f-simpsons";
 import { ELROY_SPECIMEN } from "../../src/test-data/dataset/insert-test-data-10f-jetsons";
+import {
+  CHARLES_CASE_SYSTEMLESS,
+  CHARLES_PATIENT_SYSTEMLESS,
+  CHARLES_SPECIMEN_SYSTEMLESS,
+} from "../../src/test-data/dataset/teng-master-data";
 
 const testContainer = registerTypes();
 

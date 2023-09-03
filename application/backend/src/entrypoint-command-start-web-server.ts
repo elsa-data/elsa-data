@@ -14,6 +14,7 @@ import { constants } from "fs";
 import { access } from "fs/promises";
 import { IPLookupService } from "./business/services/ip-lookup-service";
 import { ElsaConfigurationType } from "./config/config-schema";
+import { insertScenario99 } from "./test-data/scenario/insert-scenario99";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
@@ -38,10 +39,12 @@ export async function startWebServer(
     if (process.env.NODE_ENV === "development") {
       logger.info(`Resetting the database to contain scenario ${scenario}`);
 
-      // TODO allow different scenarios to be inserted based on the value
       switch (scenario) {
         case 1:
           await insertScenario1(dc);
+          break;
+        case 99:
+          await insertScenario99(dc);
           break;
         default:
           break;
