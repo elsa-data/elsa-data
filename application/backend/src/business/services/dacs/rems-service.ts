@@ -17,37 +17,64 @@ import {
 } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
-
+import { isEmpty, isInteger } from "lodash";
+import { Logger } from "pino";
+import {
+  ApplicationUser,
+  checkValidApplicationUser,
+  insertPotentialOrReal,
+} from "../_dac-user-helper";
+import { AuditEventService } from "../audit-event-service";
 @injectable()
 export class RemsService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,
     @inject(UserData) private readonly userData: UserData,
-    @inject(ReleaseService) private readonly releaseService: ReleaseService
+    @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(AuditEventService)
+    private readonly auditEventService: AuditEventService
   ) {}
 
-  private async getRemsApplications(id: string) {
-    let applications: any[] = [];
-
-    for (const d of this.settings.dacs) {
-      if (d.id === id && d.type === "rems") {
-        applications = await axios
-          .get(`${d.url}/api/applications`, {
-            headers: {
-              accept: "application/json",
-              "x-rems-api-key": d.botKey,
-              "x-rems-user-id": d.botUser,
-            },
-          })
-          .then((a) => a.data);
-      }
-    }
-
-    return applications;
+  /**
+   * Make the API call to fetch active applications on a REMS instance.
+   *
+   * @param url
+   * @param botUser
+   * @param botKey
+   * @param applicationId if present, return just this single application rather than the set
+   * @private
+   */
+  private async getRemsApplications(
+    url: string,
+    botUser: string,
+    botKey: string,
+    applicationId?: number
+  ) {
+    return await axios
+      .get(
+        isInteger(applicationId)
+          ? `${url}/api/applications/${applicationId}`
+          : `${url}/api/applications`,
+        {
+          headers: {
+            accept: "application/json",
+            "x-rems-api-key": botKey,
+            "x-rems-user-id": botUser,
+          },
+        }
+      )
+      .then((a) => a.data);
   }
 
+  /**
+   * Return a list of possible completed applications at the given REMS instance.
+   *
+   * @param user
+   * @param dacConfiguration
+   */
   public async detectNewReleases(
     user: AuthenticatedUser,
     dacConfiguration: DacRemsType
@@ -56,7 +83,18 @@ export class RemsService {
 
     if (!dbUser.isAllowedCreateRelease) throw new ReleaseViewError();
 
-    /*const appData = await this.getRemsApplications("rems-hgpp");
+    this.logger.info(
+      `Looking for releases for REMS DAC ${dacConfiguration.id}`
+    );
+
+    // the application data from REMS
+    // TODO handle/filter the fact there may be *lots* of REMS applications
+    //      (in the early days of REMS we will get away with this)
+    const remsApplicationData = await this.getRemsApplications(
+      dacConfiguration.url,
+      dacConfiguration.botUser,
+      dacConfiguration.botKey
+    );
 
     // eventually we might need to put a date range on this but let's see if we can get away
     // with fetching all the release identifiers
@@ -67,17 +105,15 @@ export class RemsService {
           filter: e.op(
             r.applicationDacIdentifier.system,
             "=",
-            this.settings.remsUrl
+            dacConfiguration.url
           ),
         }))
         .applicationDacIdentifier.value.run(this.edgeDbClient)
     );
-         console.log(currentReleaseKeys);
-    */
 
     const newReleases: RemsApprovedApplicationType[] = [];
 
-    /*for (const application of []) {
+    for (const application of remsApplicationData ?? []) {
       if (application["application/state"] === "application.state/approved") {
         const applicant = application["application/applicant"];
         const remsId: number = application["application/id"];
@@ -88,7 +124,7 @@ export class RemsService {
         if (!isFinite(remsId)) continue;
 
         // if we've already turned this REMS application into a release - then skip
-        //if (currentReleaseKeys.has(remsId.toString())) continue;
+        if (currentReleaseKeys.has(remsId.toString())) continue;
 
         newReleases.push({
           // consider what date we want to actually put here...
@@ -100,7 +136,7 @@ export class RemsService {
           whoEmail: applicant?.email ?? "<no applicant email>",
         });
       }
-    } */
+    }
 
     return newReleases;
   }
@@ -114,20 +150,17 @@ export class RemsService {
 
     if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
-    /*const appData = await axios.get(
-      `${this.settings.remsUrl}/api/applications/${remsId}`,
-      {
-        headers: {
-          accept: "application/json",
-          "x-rems-api-key": this.settings.remsBotKey,
-          "x-rems-user-id": this.settings.remsBotUser,
-        },
-      }
+    this.logger.info(
+      `Attempting create for REMS entry ${remsId} for REMS DAC ${dacConfiguration.id}`
     );
- */
-    const application: any = {}; //appData.data;
 
-    const remsUrl = "https://rems";
+    // return the single application we are interested in from this REMS
+    const application = await this.getRemsApplications(
+      dacConfiguration.url,
+      dacConfiguration.botUser,
+      dacConfiguration.botKey,
+      remsId
+    );
 
     // TODO: some error checking here
 
@@ -157,9 +190,7 @@ export class RemsService {
         }
       }
 
-      // loop through the members (users) mapping to users that we know about
-      // TODO: create new users entries for those we don't know yet
-      // const memberToUserMap: { [uri: string]: string } = {};
+      const releaseKey = getNextReleaseKey(this.settings.releaseKeyPrefix);
 
       const newRelease = await e
         .select(
@@ -167,7 +198,7 @@ export class RemsService {
             created: e.datetime_current(),
             lastUpdatedSubjectId: user.subjectId,
             applicationDacIdentifier: e.tuple({
-              system: remsUrl,
+              system: dacConfiguration.url,
               value: e.str(remsId.toString()),
             }),
             applicationDacTitle:
@@ -175,7 +206,7 @@ export class RemsService {
             applicationDacDetails: `
 #### Source
 
-This application was sourced from ${remsUrl} on ${format(
+This application was sourced from ${dacConfiguration.url} on ${format(
               new Date(),
               "dd/MM/yyyy"
             )}.
@@ -186,7 +217,9 @@ The identifier for this application in REMS is
 ${remsId.toString()}
 ~~~
 
-See the [original application](${remsUrl}/application/${remsId}) ↪ in REMS (you may have to log in to REMS)                    
+See the [original application](${
+              dacConfiguration.url
+            }/application/${remsId}) ↪ in REMS (you may have to log in to REMS)                    
 
 #### Summary
 
@@ -216,7 +249,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
             datasetIndividualUrisOrderPreference: [""],
             datasetSpecimenUrisOrderPreference: [""],
             datasetCaseUrisOrderPreference: [""],
-            releaseKey: getNextReleaseKey(this.settings.releaseKeyPrefix),
+            releaseKey: releaseKey,
             releasePassword: generateZipPassword(),
             datasetUris: e.literal(
               e.array(e.str),
@@ -248,13 +281,31 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
         )
         .run(this.edgeDbClient);
 
+      const applicant = application["application/applicant"];
+
+      if (applicant && applicant["email"]) {
+        const applicantAu: ApplicationUser = {
+          role: "Manager",
+          email: applicant["email"],
+          displayName: applicant["name"],
+        };
+        await insertPotentialOrReal(
+          t,
+          applicantAu,
+          "Manager",
+          newRelease.id,
+          newRelease.releaseKey,
+          this.auditEventService
+        );
+      }
+
       await this.userService.registerRoleInRelease(
         user,
         newRelease.releaseKey,
         "Administrator"
       );
 
-      return newRelease.id;
+      return newRelease.releaseKey;
     });
 
     /*{

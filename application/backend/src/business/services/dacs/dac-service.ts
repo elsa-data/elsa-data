@@ -67,7 +67,8 @@ export class DacService {
               body
             );
           case "rems":
-            // WIP need to pass in data and fix rems service
+            // for detection for REMS there is no data to pass in... the service itself
+            // reaches out and makes the detect call
             return await this.remsService.detectNewReleases(user, d);
           case "manual":
             throw new Error(
@@ -93,14 +94,21 @@ export class DacService {
       if (d.id === id) {
         switch (d.type) {
           case "redcap-australian-genomics-csv":
+            // a redcap create takes in the body which is the single row of
+            // CSV data from redcap as a single JSON object
             return await this.redcapImportApplicationService.startNewRelease(
               user,
               d,
               body
             );
           case "rems":
-            // WIP need to pass in data and fix rems service
-            return await this.remsService.startNewRelease(user, d, body);
+            // creating a new REMS takes an application number
+            // we parse here before passing it into the service
+            return await this.remsService.startNewRelease(
+              user,
+              d,
+              parseInt(body)
+            );
           case "manual":
             return await this.releaseService.new(user, body);
           default:
