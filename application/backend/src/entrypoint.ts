@@ -3,7 +3,7 @@ import "reflect-metadata";
 
 import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
 import { bootstrapGlobalSynchronous } from "./bootstrap-global-synchronous";
-import { getCommands, getFromEnv } from "./entrypoint-command-helper";
+import { getCommands, getFromEnv } from "./entrypoint-helper";
 import {
   startJobQueue,
   startWebServer,
@@ -40,6 +40,11 @@ import {
   commandSyncDatasets,
   SYNC_DATASETS_COMMAND,
 } from "./entrypoint-command-sync-datasets";
+import {
+  commandDbCreate,
+  DB_CREATE_COMMAND,
+} from "./entrypoint-command-db-create";
+import { commandDbWipe, DB_WIPE_COMMAND } from "./entrypoint-command-db-wipe";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -178,8 +183,16 @@ bootstrapGlobalSynchronous();
         todo.push(async () => commandDbBlank());
         break;
 
+      case DB_CREATE_COMMAND:
+        todo.push(async () => commandDbCreate());
+        break;
+
       case DB_MIGRATE_COMMAND:
         todo.push(async () => commandDbMigrate());
+        break;
+
+      case DB_WIPE_COMMAND:
+        todo.push(async () => commandDbWipe());
         break;
 
       case DELETE_DATASETS_COMMAND:
@@ -229,10 +242,15 @@ function printHelpText() {
   // TODO implement some guards on destructive operations
   //      console.log(`${DB_BLANK_COMMAND} [hostname] - delete all data from the database, requires hostname to be specified if in production`);
   console.log(`${DB_MIGRATE_COMMAND} - migrate database schema`);
+  console.log(`${DB_CREATE_COMMAND} - create database if not existing`);
+  console.log(`${DB_WIPE_COMMAND} - wipe database content`);
   console.log(
     `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
   );
   console.log(`${ADD_USER_COMMAND} <email> - add the user to allow login`);
+  console.log(
+    `${SYNC_DATASETS_COMMAND} <datasetUri> [...datasetUri] - sync datasets of given URIs`
+  );
   // TODO implement some guards on destructive operations
   // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);
 }
