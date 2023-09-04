@@ -93,13 +93,30 @@ export async function getFromEnv(): Promise<{
   };
 }
 
-export async function executeEdgeCli(args: string[]) {
+/**
+ * Run the `edgedb` CLI command with the given arguments. Deletes a set of
+ * keys from the environment if need be.
+ *
+ * @param args
+ * @param deleteEnvKeys
+ */
+export async function executeEdgeCli(
+  args: string[],
+  deleteEnvKeys: string[] = []
+) {
   const execFilePromise = promisify(execFile);
 
   console.log(`Executing EdgeDb CLI`);
 
+  const newEnv = { ...process.env };
+
+  for (const ek of deleteEnvKeys ?? []) {
+    delete newEnv[ek];
+  }
+
   const promiseInvoke = execFilePromise("/a/edgedb", args, {
     maxBuffer: 1024 * 1024 * 64,
+    env: newEnv,
   });
 
   const { stdout, stderr } = await promiseInvoke;

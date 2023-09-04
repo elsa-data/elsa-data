@@ -19,7 +19,9 @@ export async function commandDbCreate(): Promise<number> {
   }
 
   try {
-    await executeEdgeCli(["database", "create", dbName]);
+    // we need to delete the EDGE DB database env variables - as the edge db CLI tries to connect
+    // to it before then trying to create it
+    await executeEdgeCli(["database", "create", dbName], ["EDGEDB_DATABASE"]);
 
     return 0;
   } catch (e) {
