@@ -8,8 +8,10 @@ import { getMetaConfig } from "./config/config-load";
 import { AuthenticatedUser } from "./business/authenticated-user";
 import { Client } from "edgedb";
 import e from "../dbschema/edgeql-js";
+import { promisify } from "util";
+import { execFile } from "child_process";
 
-export type EntrypointCommandHelper = {
+export type EntrypointHelper = {
   command: string;
   args: string[];
 };
@@ -19,7 +21,7 @@ export type EntrypointCommandHelper = {
  * multiple commands on a single argv separated by ";"
  * @param argv
  */
-export function getCommands(argv: string[]): EntrypointCommandHelper[] {
+export function getCommands(argv: string[]): EntrypointHelper[] {
   // we are looking to build a set of commands that this invoke of the entrypoint should
   // execute in order
   const commandStrings = [];
@@ -33,7 +35,7 @@ export function getCommands(argv: string[]): EntrypointCommandHelper[] {
     commandStrings.push(...semiSplit);
   }
 
-  const commands: EntrypointCommandHelper[] = [];
+  const commands: EntrypointHelper[] = [];
 
   for (const c of commandStrings) {
     // if the args have extra semicolons etc - which result in empty commands - we don't mind - just skip
@@ -89,4 +91,42 @@ export async function getFromEnv(): Promise<{
     // which we can't do here because we have a chicken/egg problem of constructing the logger first
     redactedConfig: JSON.parse(JSON.stringify(config)),
   };
+}
+
+/**
+ * Run the `edgedb` CLI command with the given arguments. Deletes a set of
+ * keys from the environment if need be.
+ *
+ * @param args
+ * @param deleteEnvKeys
+ */
+export async function executeEdgeCli(
+  args: string[],
+  deleteEnvKeys: string[] = []
+) {
+  const execFilePromise = promisify(execFile);
+
+  console.log(`Executing EdgeDb CLI`);
+
+  const newEnv = { ...process.env };
+
+  for (const ek of deleteEnvKeys ?? []) {
+    delete newEnv[ek];
+  }
+
+  const promiseInvoke = execFilePromise("/a/edgedb", args, {
+    maxBuffer: 1024 * 1024 * 64,
+    env: newEnv,
+  });
+
+  const { stdout, stderr } = await promiseInvoke;
+
+  console.log(`Error code = ${promiseInvoke.child.exitCode}`);
+
+  if (stdout) {
+    stdout.split("\n").forEach((l) => console.log(`stdout ${l}`));
+  }
+  if (stderr) {
+    stderr.split("\n").forEach((l) => console.log(`stderr ${l}`));
+  }
 }
