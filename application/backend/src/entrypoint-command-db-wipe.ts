@@ -13,7 +13,7 @@ export async function commandDbWipe(): Promise<number> {
   }
 
   try {
-    await executeEdgeCli(["database", "wipe"]);
+    await executeEdgeCli(["database", "wipe", "--non-interactive"]);
 
     return 0;
   } catch (e) {
