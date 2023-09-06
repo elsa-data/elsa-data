@@ -1,10 +1,11 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDna } from "@fortawesome/free-solid-svg-icons";
-import { ReleasePatientType } from "@umccr/elsa-types";
+import { ReleaseCaseType, ReleasePatientType } from "@umccr/elsa-types";
 import classNames from "classnames";
 import { ConsentPopup } from "./consent-popup";
 import { trpc } from "../../../../helpers/trpc";
+import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 
 type Props = {
   releaseKey: string;
@@ -23,6 +24,12 @@ type Props = {
   // whether to show any consent iconography/popups (until the consent feature is fully
   // bedded down we don't want it to appear at all)
   showConsent: boolean;
+
+  baseColumnClasses: string;
+
+  isAllowEdit: boolean;
+
+  row: ReleaseCaseType;
 };
 
 /**
@@ -46,6 +53,9 @@ export const PatientsFlexRow: React.FC<Props> = ({
   onCheckboxClicked,
   releaseIsActivated,
   showConsent,
+  baseColumnClasses,
+  isAllowEdit,
+  row,
 }) => {
   const trpcUtils = trpc.useContext();
 
@@ -56,6 +66,15 @@ export const PatientsFlexRow: React.FC<Props> = ({
         releaseKey: releaseKey,
       }),
   });
+
+  const onChangeCasesCheckbox =
+    (externalId: string, nextState: boolean) => async () => {
+      await specimenMutate.mutate({
+        op: nextState ? "add" : "remove",
+        releaseKey: releaseKey,
+        args: { externalIdentifierValues: [externalId] },
+      });
+    };
 
   const onSelectChange = async (
     ce: React.ChangeEvent<HTMLInputElement>,
@@ -171,10 +190,35 @@ export const PatientsFlexRow: React.FC<Props> = ({
   // TODO: possibly chose the number of grid columns based on the number of patients
 
   return (
-    <div className="grid min-w-max grid-flow-row-dense grid-cols-3 gap-2">
-      {patients.map((pat, index) => (
-        <React.Fragment key={index}>{patientDiv(pat)}</React.Fragment>
-      ))}
-    </div>
+    <>
+      <td className={classNames(baseColumnClasses, "w-12", "text-center")}>
+        <label className="flex cursor-pointer space-x-4">
+          <IndeterminateCheckbox
+            disabled={
+              specimenMutate.isLoading || releaseIsActivated || !isAllowEdit
+            }
+            checked={row.nodeStatus === "selected"}
+            indeterminate={row.nodeStatus === "indeterminate"}
+            onChange={onChangeCasesCheckbox(
+              row.externalId,
+              row.nodeStatus !== "selected"
+            )}
+          />
+          <div className="flex space-x-1">
+            <span>{row.externalId}</span>
+            {showConsent && row.customConsent && (
+              <ConsentPopup releaseKey={releaseKey} nodeId={row.id} />
+            )}
+          </div>
+        </label>
+      </td>
+      <td className={classNames(baseColumnClasses, "text-left", "pr-4")}>
+        <div className="grid min-w-max grid-flow-row-dense grid-cols-3 gap-2">
+          {patients.map((pat, index) => (
+            <React.Fragment key={index}>{patientDiv(pat)}</React.Fragment>
+          ))}
+        </div>
+      </td>
+    </>
   );
 };

@@ -142,7 +142,7 @@ export const CasesBox: React.FC<Props> = ({
     }
   );
 
-  const casesQueryData = casesQuery.data?.data;
+  const casesQueryData: ReleaseCaseType[] | undefined = casesQuery.data?.data;
 
   const trpcUtils = trpc.useContext();
 
@@ -153,15 +153,6 @@ export const CasesBox: React.FC<Props> = ({
         releaseKey: releaseKey,
       }),
   });
-
-  const onChangeCasesCheckbox =
-    (externalId: string, nextState: boolean) => async () => {
-      await specimenMutate.mutate({
-        op: nextState ? "add" : "remove",
-        releaseKey: releaseKey,
-        args: { externalIdentifierValues: [externalId] },
-      });
-    };
 
   const onSelectAllChange = async (ce: React.ChangeEvent<HTMLInputElement>) => {
     setIsSelectAllIndeterminate(false);
@@ -281,84 +272,45 @@ export const CasesBox: React.FC<Props> = ({
               <div className={specimenMutate.isLoading ? "opacity-50" : ""}>
                 <Table
                   additionalTableClassName="text-left text-sm text-gray-500"
-                  tableBody={casesQueryData.map((row, rowIndex) => {
-                    return (
-                      <tr key={row.id} className="border-b">
+                  tableBody={casesQueryData.map((row, rowIndex) => (
+                    <tr key={row.id} className="border-b">
+                      <PatientsFlexRow
+                        releaseKey={releaseKey}
+                        releaseIsActivated={releaseIsActivated}
+                        patients={row.patients}
+                        showCheckboxes={isAllowEdit || isAllowAdminView}
+                        onCheckboxClicked={() =>
+                          setIsSelectAllIndeterminate(true)
+                        }
+                        showConsent={showConsent}
+                        baseColumnClasses={baseColumnClasses}
+                        isAllowEdit={isAllowEdit}
+                        row={row}
+                      />
+                      {/* if we only have one dataset - then we don't show this column at all */}
+                      {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                      {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
                         <td
                           className={classNames(
                             baseColumnClasses,
-                            "w-12",
-                            "text-center"
+                            "w-10",
+                            "px-2",
+                            "border-l",
+                            "border-l-red-500"
                           )}
+                          rowSpan={
+                            rowSpans[rowIndex] === 1
+                              ? undefined
+                              : rowSpans[rowIndex]
+                          }
                         >
-                          <label className="flex cursor-pointer space-x-4">
-                            <IndeterminateCheckbox
-                              disabled={
-                                specimenMutate.isLoading ||
-                                releaseIsActivated ||
-                                !isAllowEdit
-                              }
-                              checked={row.nodeStatus === "selected"}
-                              indeterminate={row.nodeStatus === "indeterminate"}
-                              onChange={onChangeCasesCheckbox(
-                                row.externalId,
-                                row.nodeStatus !== "selected"
-                              )}
-                            />
-                            <div className="flex space-x-1">
-                              <span>{row.externalId}</span>
-                              {showConsent && row.customConsent && (
-                                <ConsentPopup
-                                  releaseKey={releaseKey}
-                                  nodeId={row.id}
-                                />
-                              )}
-                            </div>
-                          </label>
+                          <div className="w-6">
+                            {datasetMap.get(row.fromDatasetUri)}
+                          </div>
                         </td>
-                        <td
-                          className={classNames(
-                            baseColumnClasses,
-                            "text-left",
-                            "pr-4"
-                          )}
-                        >
-                          <PatientsFlexRow
-                            releaseKey={releaseKey}
-                            releaseIsActivated={releaseIsActivated}
-                            patients={row.patients}
-                            showCheckboxes={isAllowEdit || isAllowAdminView}
-                            onCheckboxClicked={() =>
-                              setIsSelectAllIndeterminate(true)
-                            }
-                            showConsent={showConsent}
-                          />
-                        </td>
-                        {/* if we only have one dataset - then we don't show this column at all */}
-                        {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
-                        {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
-                          <td
-                            className={classNames(
-                              baseColumnClasses,
-                              "w-10",
-                              "px-2",
-                              "border-l",
-                              "border-l-red-500"
-                            )}
-                            rowSpan={
-                              rowSpans[rowIndex] === 1
-                                ? undefined
-                                : rowSpans[rowIndex]
-                            }
-                          >
-                            <div className="w-6">
-                              {datasetMap.get(row.fromDatasetUri)}
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
+                      )}
+                    </tr>
+                  ))}
                 />
                 {/* a status line here provides some select all/none + a status line
                       - this does not apply during a text search as all/none/stats
