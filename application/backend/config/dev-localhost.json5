@@ -80,7 +80,7 @@
   devTesting: {
     allowTestUsers: true,
     allowTestRoutes: true,
-    mockAwsCloud: false,
+    mockAwsCloud: true,
     sendEmails: false,
   },
   superAdmins: [

@@ -4,7 +4,6 @@
   httpHosting: {
     session: {
       secret: "This is a session key string that we are just using", // pragma: allowlist secret
-
       salt: "16 Also a string",
     },
   },
