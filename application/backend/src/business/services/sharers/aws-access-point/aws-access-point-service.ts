@@ -8,6 +8,7 @@ import {
   CloudFormationClient,
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
+  Stack,
 } from "@aws-sdk/client-cloudformation";
 import { AuditEventService } from "../../audit-event-service";
 import { stringify } from "csv-stringify";
@@ -15,7 +16,7 @@ import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../../releases/release-service";
 import {
-  correctAccessPointTemplateOutputs,
+  correctAccessPointUrls,
   createAccessPointTemplateFromReleaseFileEntries,
 } from "./_access-point-template-helper";
 import { ElsaSettings } from "../../../../config/elsa-settings";
@@ -56,9 +57,10 @@ export class AwsAccessPointService {
    * @param releaseKey
    */
   public async getInstalledAccessPointResources(releaseKey: string): Promise<{
+    stack: Stack;
     stackName: string;
     stackId: string;
-    bucketNameMap: { [x: string]: string };
+    // bucketNameMap: { [x: string]: string };
   } | null> {
     await this.awsEnabledService.enabledGuard();
 
@@ -84,24 +86,12 @@ export class AwsAccessPointService {
 
     // TODO check stack status?? - should be complete_ok?
 
-    const outputs = correctAccessPointTemplateOutputs(releaseStack.Stacks[0]);
-
     return {
+      stack: releaseStack.Stacks[0],
       stackName: releaseStackName,
       stackId: releaseStack.Stacks[0].StackId!,
-      bucketNameMap: outputs,
+      // bucketNameMap: { },
     };
-  }
-
-  /**
-   * Restrict the
-   * @param manifest
-   * @private
-   */
-  private getS3ObjectsFromManifest(manifest: ManifestBucketKeyType) {
-    // our manifest can contain objects from other object stores - but obviously this access point
-    // mechanism only works with S3 objects
-    return manifest.objects.filter((o) => o.objectStoreProtocol === "s3");
   }
 
   /**
@@ -143,10 +133,15 @@ export class AwsAccessPointService {
         "Access point file list was requested but the release does not appear to have a current access point"
       );
 
+    const map = await correctAccessPointUrls(
+      stackResources.stack,
+      "843407916570"
+    );
+
     for (const o of bucketKeyManifest.objects) {
-      if (o.objectStoreBucket in stackResources.bucketNameMap) {
-        o.objectStoreBucket = stackResources.bucketNameMap[o.objectStoreBucket];
-        o.objectStoreUrl = `s3://${o.objectStoreBucket}/${o.objectStoreKey}`;
+      if (o.objectStoreUrl in map) {
+        o.objectStoreBucket = map[o.objectStoreUrl].objectStoreBucket;
+        o.objectStoreUrl = map[o.objectStoreUrl].objectStoreUrl;
       }
     }
 

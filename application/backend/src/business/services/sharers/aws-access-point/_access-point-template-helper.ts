@@ -1,7 +1,20 @@
-import { has } from "lodash";
+import { chunk, groupBy, size } from "lodash";
 import { randomBytes } from "crypto";
 import { Stack } from "@aws-sdk/client-cloudformation";
-import { ManifestBucketKeyObjectType } from "../../manifests/manifest-bucket-key-types";
+import {
+  KnownObjectProtocolsArray,
+  KnownObjectProtocolType,
+  ManifestBucketKeyObjectType,
+} from "../../manifests/manifest-bucket-key-types";
+import {
+  GetAccessPointPolicyCommand,
+  S3ControlClient,
+} from "@aws-sdk/client-s3-control";
+import { GetCallerIdentityCommand } from "@aws-sdk/client-sts";
+
+const NAME_SUFFIX = "Name";
+const ALIAS_SUFFIX = "Alias";
+const BUCKET_SUFFIX = "Bucket";
 
 export type AccessPointTemplateToSave = {
   root: boolean;
@@ -11,10 +24,12 @@ export type AccessPointTemplateToSave = {
   content: string;
 };
 
-type AccessPointEntry = {
-  objectStoreUrl: string;
-  objectStoreBucket: string;
-  objectStoreKey: string;
+// for access point work we are only interested in the following fields of our manifest objects
+type AccessPointEntry = Pick<
+  ManifestBucketKeyObjectType,
+  "objectStoreUrl" | "objectStoreBucket" | "objectStoreKey"
+> & {
+  accessPointUnique?: string;
 };
 
 function bucketNameAsResource(bucketName: string): string {
@@ -32,19 +47,235 @@ function resourceNameAsBucketName(resourceName: string): string {
  * to bucket "d-asdad-3423424sfsfs-s" as part of the access point.
  *
  * @param stack the top level Cloud Formation stack that we installed
+ * @param accountId the account id of where the stack/access points are installed
  */
-export function correctAccessPointTemplateOutputs(stack: Stack): {
-  [k: string]: string;
-} {
-  const outputs: { [k: string]: string } = {};
-
-  if (stack.Outputs) {
-    stack.Outputs.forEach((o) => {
-      outputs[resourceNameAsBucketName(o.OutputKey!)] = o.OutputValue!;
-    });
+export async function correctAccessPointUrls(
+  stack: Stack,
+  accountId: string
+): Promise<Record<string, AccessPointEntry>> {
+  if (!stack.Outputs) {
+    return {};
   }
 
-  return outputs;
+  const STACK_OUTPUT_VALUE_REGEX = new RegExp("^([^:]+):([^:]+):(.+)$");
+
+  const POLICY_RESOURCE_REGEX = new RegExp(
+    "^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):accesspoint/([^/]+)/object/(.*)\\*$"
+  );
+
+  const s3ControlClient = new S3ControlClient({});
+
+  const results: Record<string, AccessPointEntry> = {};
+
+  // there will be lots of outputs... each one ending in NAME_SUFFIX will point to the
+  // name of the corresponding access point
+  // the access point policy will tell us how to map files
+  for (const o of stack.Outputs) {
+    const stackOutputMatch = o.OutputValue!.match(STACK_OUTPUT_VALUE_REGEX);
+
+    if (!stackOutputMatch) {
+      throw new Error("Found stack output not matching our regex");
+    }
+
+    const accessPointUnique = o.OutputKey!;
+    const accessPointName = stackOutputMatch[1];
+    const accessPointAlias = stackOutputMatch[2];
+    const accessPointBucket = stackOutputMatch[3];
+
+    const policyResult = await s3ControlClient.send(
+      new GetAccessPointPolicyCommand({
+        AccountId: accountId,
+        Name: accessPointName,
+      })
+    );
+
+    if (policyResult.Policy) {
+      const policyObject = JSON.parse(policyResult.Policy);
+
+      // an example resource which we are mapping back to the original objects
+      // [
+      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz*",
+      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz.csi*",
+      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz*",
+      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz.csi*"
+      // ]
+
+      for (const stmt of policyObject["Statement"] ?? []) {
+        if (stmt["Action"] === "s3:GetObject") {
+          for (const res of stmt["Resource"] ?? []) {
+            const match = res.match(POLICY_RESOURCE_REGEX);
+            if (match) {
+              const originalS3 = `s3://${accessPointBucket}/${match[7]}`;
+
+              results[originalS3] = {
+                objectStoreUrl: `s3://${accessPointAlias}/${match[7]}`,
+                objectStoreBucket: accessPointAlias,
+                objectStoreKey: match[7],
+              };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  console.log(JSON.stringify(results, null, 2));
+
+  return results;
+}
+
+/**
+ * Create a policy statement for the given bucket and files.
+ *
+ * @param bucket
+ * @param fileSubset
+ * @param shareToAccountIds
+ * @param shareToVpcId
+ */
+function createPolicy(
+  bucket: string,
+  fileSubset: AccessPointEntry[],
+  shareToAccountIds: string[],
+  shareToVpcId?: string
+) {}
+
+/**
+ * Takes the file list and does various sanitising and chunking steps.
+ * Returns groups of objects that are not going be too big for a single
+ * policy statement - but which are also restricted to belonging
+ * to a single bucket.
+ *
+ * @param files
+ */
+function chunkIntoBiteSizes(files: ManifestBucketKeyObjectType[]) {
+  // unlike the file entries array which has other fields (like specimenId etc) - we only interested in
+  // the file entries
+  // with our limited subset of fields - we need duplicates to be removed
+  // (e.g. a trio VCF might have three ManifestBucketKeyObjectType (one for each person) - but we want to only list once)
+  const uniqueEntries: { [u: string]: AccessPointEntry } = {};
+
+  // I'd normally use a Set() here, but we want to not have to
+  // the objectStoreUrl -> objectStoreBucket,objectStoreKey logic again
+  files
+    // skip any entries that don't have a valid url and decomposed
+    .filter((v) => v.objectStoreUrl && v.objectStoreBucket && v.objectStoreKey)
+    // key by the objectStoreUrl therefore removing duplicates
+    .forEach((v) => {
+      uniqueEntries[v.objectStoreUrl] = {
+        objectStoreUrl: v.objectStoreUrl,
+        objectStoreBucket: v.objectStoreBucket,
+        objectStoreKey: v.objectStoreKey,
+      };
+    });
+
+  // any single access point can only have objects from one bucket - so we need to first
+  // split out into groups by bucket
+  const filesByBucket = groupBy(
+    Object.values(uniqueEntries),
+    "objectStoreBucket"
+  );
+
+  // each access points can only wrap a single bucket and is size limited to a policy
+  // statement of 20k - so we use some pretty broad logic to again chunk the entries for each bucket
+  // we also assign a new unique key for each of these groups - which we record against the individual
+  // object entries (we need this to reconcile stuff at the end)
+  const filesByGroup: { [unique: string]: AccessPointEntry[] } = {};
+
+  for (const [bucketName, bucketObjects] of Object.entries(filesByBucket)) {
+    for (const c of chunk(bucketObjects, 20)) {
+      // create a new unique id
+      const unique = randomBytes(8).toString("hex");
+
+      if (unique in filesByGroup) {
+        throw new Error(
+          "We got incredibly unlucky in that we generated an identical 8 byte random number"
+        );
+      }
+
+      for (const e of c) {
+        e.accessPointUnique = unique;
+      }
+
+      filesByGroup[unique] = c;
+    }
+  }
+
+  return filesByGroup;
+}
+
+/**
+ * Create an access point share resource that we can insert into
+ * a cloud formation template. For the given set of objects - assuming
+ * a few pre-conditions.
+ * - all objects are for the same bucket
+ * - there is a limited number of objects to keep policy < 20k
+ *
+ * If you are going to use this function then you need to have made
+ * all those pre-conditions - we are not checking them again here.
+ *
+ * @param groupUnique
+ * @param groupObjects
+ * @param shareToAccountIds
+ * @param shareToVpcId
+ */
+function createAccessPointResourceForCloudFormation(
+  groupUnique: string,
+  groupObjects: AccessPointEntry[],
+  shareToAccountIds: string[],
+  shareToVpcId?: string
+) {
+  if (groupObjects.length === 0)
+    throw new Error("Can't create an access point with no objects");
+
+  // our pre-condition is that all objects belong to the same bucket
+  // (our access point will fail if this is not true anyhow)
+  const bucketName = groupObjects[0].objectStoreBucket;
+
+  // note the subtle difference between the substitutions we want NodeJs to make versus the substitutions we want
+  // CloudFormation to make - ${} vs \${ }
+
+  // our Access Point policy statements MUST have the region and account
+
+  const r: any = {
+    Type: "AWS::S3::AccessPoint",
+    Properties: {
+      Bucket: bucketName,
+      Name: groupUnique,
+      Policy: {
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Action: ["s3:GetObject"],
+            Effect: "Allow",
+            Resource: groupObjects.map((o) => ({
+              "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${groupUnique}/object/${o.objectStoreKey}*`,
+            })),
+            Principal: {
+              AWS: shareToAccountIds.map((ac) => `arn:aws:iam::${ac}:root`),
+            },
+          },
+          {
+            Action: ["s3:ListBucket"],
+            Effect: "Allow",
+            Resource: {
+              "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${groupUnique}`,
+            },
+            Principal: {
+              AWS: shareToAccountIds.map((ac) => `arn:aws:iam::${ac}:root`),
+            },
+          },
+        ],
+      },
+    },
+  };
+
+  if (shareToVpcId) {
+    r.Properties["VpcConfiguration"] = {
+      VpcId: shareToVpcId,
+    };
+  }
+
+  return r;
 }
 
 /**
@@ -55,17 +286,15 @@ export function correctAccessPointTemplateOutputs(stack: Stack): {
  * @param templateBucket
  * @param templateRegion
  * @param releaseKey a friendly named identifier for the release
- * @param files
- * @param shareToAccountIds
- * @param shareToVpcId
- * @todo Does not account for splitting when templates grow too large - so is not suitable for long lists
- *       of files yet
+ * @param objects the list of S3 objects that we are sharing
+ * @param shareToAccountIds an array of account ids that the access point should share to
+ * @param shareToVpcId if present a specific VPC id that should be specified in the access point
  */
 export function createAccessPointTemplateFromReleaseFileEntries(
   templateBucket: string,
   templateRegion: string,
   releaseKey: string,
-  files: ManifestBucketKeyObjectType[],
+  objects: ManifestBucketKeyObjectType[],
   shareToAccountIds: string[],
   shareToVpcId?: string
 ): AccessPointTemplateToSave[] {
@@ -73,56 +302,35 @@ export function createAccessPointTemplateFromReleaseFileEntries(
 
   const results: AccessPointTemplateToSave[] = [];
 
-  // unlike the file entries array which has other fields (like specimenId etc) - we only interested in
-  // the file entries - and duplicates should be removed
-  // (e.g. a trio VCF might have three ManifestBucketKeyObjectType (one for each person) - but we want to only list once)
-  const uniqueEntries: { [u: string]: AccessPointEntry } = {};
-
-  // I'd normally use a Set() here but we want to not have to the S3Url -> S3Bucket,S3key logic again
-  files
-    // skip any entries that don't have a valid url and decomposed
-    .filter((v) => v.objectStoreUrl && v.objectStoreBucket && v.objectStoreKey)
-    // key by the s3url therefore removing duplicates
-    .forEach((v) => {
-      uniqueEntries[v.objectStoreUrl] = {
-        objectStoreUrl: v.objectStoreUrl,
-        objectStoreBucket: v.objectStoreBucket,
-        objectStoreKey: v.objectStoreKey,
-      };
-    });
-
-  // the access points can only wrap a single bucket - so we need to
-  // first group by bucket
-  const filesByBucket: { [bucket: string]: AccessPointEntry[] } = {};
-
-  for (const f of Object.values(uniqueEntries)) {
-    if (!has(filesByBucket, f.objectStoreBucket)) {
-      filesByBucket[f.objectStoreBucket] = [];
-    }
-
-    filesByBucket[f.objectStoreBucket].push(f);
-  }
+  const objectGroups = chunkIntoBiteSizes(objects);
 
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
   // (these end up going into a temporary bucket and are later removed)
   const stackId = randomBytes(8).toString("hex");
 
+  // the only limit we need to worry about for this is the 1MB cloud formation template limit
+  // - which will take *a lot* of nested stack to reach - so for the moment we are not tracking
+  // this.
+  // TODO also put a size limit checker on the root template
+  const rootStack: any = {
+    AWSTemplateFormatVersion: "2010-09-09",
+    Resources: {
+      // as we add nested stacks we will place them here
+    },
+    Outputs: {
+      // as we add nested stack we need to capture the outputs here
+    },
+  };
+
   let subStackCount = 0;
   let subStackCurrent: any = {};
   let subStackAccessPointName = "";
   let subStackStackName = "";
+  let subStackGroupUniques: string[] = [];
 
-  const rootStack: any = {
-    AWSTemplateFormatVersion: "2010-09-09",
-    Resources: {
-      // as we add nested stacks (for each access point) we will place them here
-    },
-    Outputs: {
-      // as we add nested stack (for each access point) we need to capture the outputs here
-    },
-  };
-
-  const closeStack = () => {
+  // declare that we are finished with the current substack and we want to add it into
+  // our parent
+  const closeSubStack = () => {
     // we are safe from calling close() before we have even started making substacks
     if (subStackCount > 0) {
       const templateHttps = `https://${templateBucket}.s3.${templateRegion}.amazonaws.com/${stackId}/${subStackAccessPointName}.template`;
@@ -133,11 +341,35 @@ export function createAccessPointTemplateFromReleaseFileEntries(
           TemplateURL: templateHttps,
         },
       };
-      rootStack.Outputs[subStackStackName] = {
-        Value: {
-          "Fn::GetAtt": [subStackStackName, "Outputs.S3AccessPointAlias"],
-        },
-      };
+      for (const g of subStackGroupUniques) {
+        rootStack.Outputs[g] = {
+          Value: {
+            "Fn::Join": [
+              ":",
+              [
+                {
+                  "Fn::GetAtt": [
+                    subStackStackName,
+                    `Outputs.${g}${NAME_SUFFIX}`,
+                  ],
+                },
+                {
+                  "Fn::GetAtt": [
+                    subStackStackName,
+                    `Outputs.${g}${ALIAS_SUFFIX}`,
+                  ],
+                },
+                {
+                  "Fn::GetAtt": [
+                    subStackStackName,
+                    `Outputs.${g}${BUCKET_SUFFIX}`,
+                  ],
+                },
+              ],
+            ],
+          },
+        };
+      }
 
       results.push({
         root: false,
@@ -149,109 +381,57 @@ export function createAccessPointTemplateFromReleaseFileEntries(
     }
   };
 
-  /**
-   * Add a new stack as an access point for files in the given bucket.
-   *
-   * @param bucketName
-   */
-  const addNewStack = (bucketName: string) => {
+  const addNewSubStack = () => {
     subStackCount++;
     subStackAccessPointName = `${releaseKey.toLowerCase()}-${subStackCount}`;
-    subStackStackName = bucketNameAsResource(bucketName);
+    subStackStackName = randomBytes(8).toString("hex");
+    subStackGroupUniques = [];
 
     subStackCurrent = {
       AWSTemplateFormatVersion: "2010-09-09",
-      Description: `S3 AccessPoint template for allowing access in bucket ${bucketName} to files released in release ${releaseKey}`,
-      Resources: {
-        S3AccessPoint: {
-          Type: "AWS::S3::AccessPoint",
-          Properties: {
-            Bucket: bucketName,
-            Name: subStackAccessPointName,
-            PublicAccessBlockConfiguration: {
-              BlockPublicAcls: true,
-              IgnorePublicAcls: true,
-              BlockPublicPolicy: true,
-              RestrictPublicBuckets: true,
-            },
-            Policy: {
-              Version: "2012-10-17",
-              Statement: [
-                {
-                  Action: ["s3:GetObject"],
-                  Effect: "Allow",
-                  Resource: [],
-                  Principal: {
-                    AWS: shareToAccountIds.map(
-                      (ac) => `arn:aws:iam::${ac}:root`
-                    ),
-                  },
-                },
-                {
-                  Action: ["s3:ListBucket"],
-                  Effect: "Allow",
-                  Resource: [],
-                  Principal: {
-                    AWS: shareToAccountIds.map(
-                      (ac) => `arn:aws:iam::${ac}:root`
-                    ),
-                  },
-                },
-              ],
-            },
-          },
-        },
-      },
-      Outputs: {
-        S3AccessPointAlias: {
-          Value: {
-            "Fn::GetAtt": ["S3AccessPoint", "Alias"],
-          },
-          Description: "Alias of the S3 access point.",
-        },
-      },
+      Description: `Elsa Data nested template for release ${releaseKey}`,
+      Resources: {},
+      Outputs: {},
     };
-
-    if (shareToVpcId) {
-      subStackCurrent.Resources.S3AccessPoint.Properties["VpcConfiguration"] = {
-        VpcId: shareToVpcId,
-      };
-    }
   };
 
-  // TODO reshape this loop/outer block to do a JSON.stringify() on each step - and if the size of the
-  //      serialized JSON becomes too large - then also close/add a new stack
+  addNewSubStack();
 
-  // Maximum size of a template body that you can pass in an Amazon S3 object for a
-  // CreateStack, UpdateStack, ValidateTemplate request with an Amazon S3 template URL.
-  // 1 MB
-
-  for (const bucket of Object.keys(filesByBucket)) {
-    closeStack();
-
-    addNewStack(bucket);
-
-    // note the subtle difference between the substitutions we want NodeJs to make versus the substitutions we want
-    // CloudFormation to make - ${} vs \${ }
-
-    // statement 0 is our GetObject statement
-    for (const file of filesByBucket[bucket]) {
-      subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[0].Resource.push(
-        {
-          "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${subStackAccessPointName}/object/${file.objectStoreKey}*`,
-        }
+  for (const [groupUnique, groupObjects] of Object.entries(objectGroups)) {
+    // create a new access point for this group and it into the current substack
+    subStackCurrent.Resources[groupUnique] =
+      createAccessPointResourceForCloudFormation(
+        groupUnique,
+        groupObjects,
+        shareToAccountIds,
+        shareToVpcId
       );
-    }
+    // from each stack we share outputs of each access point Alias and name and bucket
+    // we then collect these into the parent stack
+    subStackCurrent.Outputs[groupUnique + NAME_SUFFIX] = {
+      Value: {
+        "Fn::GetAtt": [groupUnique, "Name"],
+      },
+    };
+    subStackCurrent.Outputs[groupUnique + ALIAS_SUFFIX] = {
+      Value: {
+        "Fn::GetAtt": [groupUnique, "Alias"],
+      },
+    };
+    subStackCurrent.Outputs[groupUnique + BUCKET_SUFFIX] = {
+      Value: groupObjects[0].objectStoreBucket,
+    };
+    subStackGroupUniques.push(groupUnique);
 
-    // statement 1 is our ListBucket statement
-    subStackCurrent.Resources.S3AccessPoint.Properties.Policy.Statement[1].Resource.push(
-      {
-        "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${subStackAccessPointName}`,
-      }
-    );
+    // if too large - need to make another substack
+    if (size(subStackCurrent.Resources) > 50) {
+      closeSubStack();
+
+      addNewSubStack();
+    }
   }
 
-  closeStack();
+  closeSubStack();
 
   results.push({
     root: true,

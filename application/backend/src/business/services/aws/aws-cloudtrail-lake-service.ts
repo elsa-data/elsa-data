@@ -289,7 +289,8 @@ export class AwsCloudTrailLakeService {
             );
           }
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
-          const bucketNameMap = (
+          throw new Error("not implemented");
+          /*const bucketNameMap = (
             await this.awsAccessPointService.getInstalledAccessPointResources(
               releaseKey
             )
@@ -321,7 +322,7 @@ export class AwsCloudTrailLakeService {
                 })
               );
             }
-          }
+          }*/
         } else {
           this.logger.warn(
             `No matching query type for cloudTrailLake. ('${method}')`

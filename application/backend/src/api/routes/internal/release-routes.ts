@@ -385,6 +385,14 @@ export const releaseRoutes = async (
 
       const releaseKey = request.params.rid;
 
+      const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
+        authenticatedUser,
+        releaseKey,
+        presignHeaderArray
+      );
+
+      console.log(accessPointTsv);
+
       const manifest = await manifestService.getActiveTsvManifestAsString(
         presignedUrlService,
         authenticatedUser,

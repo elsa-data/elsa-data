@@ -65,7 +65,7 @@ const BLANK_DB_PROPS = [
  * @param dc
  */
 export async function insertScenario1(dc: DependencyContainer) {
-  const { logger, edgeDbClient } = getServices(dc);
+  const { logger, edgeDbClient, settings } = getServices(dc);
 
   // Clear all records if any before filling it up
   await blankTestData();
@@ -89,24 +89,28 @@ export async function insertScenario1(dc: DependencyContainer) {
   // Create datasets record
   const s3IndexService = dc.resolve(S3IndexApplicationService);
 
-  // the Smartie dataset is a super tiny dataset that actually exists in the filesystem
-  // but we proxy it to pretend it exists in a mocked AWS bucket
-  {
-    // this shouldn't be necessary - the synchronise service should upset this from the config files
-    await e
-      .insert(e.dataset.Dataset, {
-        uri: SMARTIE_URI,
-        externalIdentifiers: makeSystemlessIdentifierArray("Smartie"),
-        description: SMARTIE_DESCRIPTION,
-        cases: e.set(),
-      })
-      .run(edgeDbClient);
+  // because this dataset *only* exists as a set of mocks for AWS - if we actually want
+  // to do localhost dev in AWS (so no mocks) we need to not load this
+  if (settings.devTesting?.mockAwsCloud) {
+    // the Smartie dataset is a super tiny dataset that actually exists in the filesystem
+    // but we proxy it to pretend it exists in a mocked AWS bucket
+    {
+      // this shouldn't be necessary - the synchronise service should upset this from the config files
+      await e
+        .insert(e.dataset.Dataset, {
+          uri: SMARTIE_URI,
+          externalIdentifiers: makeSystemlessIdentifierArray("Smartie"),
+          description: SMARTIE_DESCRIPTION,
+          cases: e.set(),
+        })
+        .run(edgeDbClient);
 
-    await s3IndexService.syncWithDatabaseFromDatasetUri(
-      SMARTIE_URI,
-      datasetAdministratorUser,
-      "australian-genomics-directories"
-    );
+      await s3IndexService.syncWithDatabaseFromDatasetUri(
+        SMARTIE_URI,
+        datasetAdministratorUser,
+        "australian-genomics-directories"
+      );
+    }
   }
 
   {

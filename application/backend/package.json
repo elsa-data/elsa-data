@@ -46,6 +46,7 @@
     "@aws-sdk/client-cloudtrail": "3.409.0",
     "@aws-sdk/client-lambda": "3.409.0",
     "@aws-sdk/client-s3": "3.409.0",
+    "@aws-sdk/client-s3-control": "3.409.0",
     "@aws-sdk/client-secrets-manager": "3.409.0",
     "@aws-sdk/client-servicediscovery": "3.409.0",
     "@aws-sdk/client-ses": "3.409.0",
