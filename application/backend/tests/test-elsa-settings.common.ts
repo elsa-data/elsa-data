@@ -27,6 +27,8 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
   // TODO these settings have just been thrown in - and may need to be refined as testing gets
   //      more sophisticated
   deployedUrl: "http://localhost:3000",
+  deployedAwsAccount: "1234567890",
+  deployedAwsRegion: "an-westnorth-9",
   serviceDiscoveryNamespace: "elsa-data",
   httpHosting: {
     port: 3000,

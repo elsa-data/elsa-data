@@ -1,20 +1,11 @@
 import { chunk, groupBy, size } from "lodash";
 import { randomBytes } from "crypto";
 import { Stack } from "@aws-sdk/client-cloudformation";
-import {
-  KnownObjectProtocolsArray,
-  KnownObjectProtocolType,
-  ManifestBucketKeyObjectType,
-} from "../../manifests/manifest-bucket-key-types";
+import { ManifestBucketKeyObjectType } from "../../manifests/manifest-bucket-key-types";
 import {
   GetAccessPointPolicyCommand,
   S3ControlClient,
 } from "@aws-sdk/client-s3-control";
-import { GetCallerIdentityCommand } from "@aws-sdk/client-sts";
-
-const NAME_SUFFIX = "Name";
-const ALIAS_SUFFIX = "Alias";
-const BUCKET_SUFFIX = "Bucket";
 
 export type AccessPointTemplateToSave = {
   root: boolean;
@@ -25,26 +16,36 @@ export type AccessPointTemplateToSave = {
 };
 
 // for access point work we are only interested in the following fields of our manifest objects
-type AccessPointEntry = Pick<
+export type AccessPointEntry = Pick<
   ManifestBucketKeyObjectType,
   "objectStoreUrl" | "objectStoreBucket" | "objectStoreKey"
 > & {
   accessPointUnique?: string;
 };
 
-function bucketNameAsResource(bucketName: string): string {
-  return Buffer.from(bucketName, "ascii").toString("hex");
-}
+const NAME_SUFFIX = "Name";
+const ALIAS_SUFFIX = "Alias";
+const BUCKET_SUFFIX = "Bucket";
 
-function resourceNameAsBucketName(resourceName: string): string {
-  return new Buffer(resourceName, "hex").toString("ascii");
-}
+// these are not very rigorous - and possibly could be tightened (we assume some worst cases...)
+
+// the max size of any individual access point policy is 20k
+// given the max length of an object key = 1024 - we assume the (almost) worst
+// (I mean to be fair - by assuming the worst we ignore all the other bits that take up space in a policy)
+const OBJECTS_PER_ACCESS_POINT = 20;
+
+// the max size of any individual cloud formation is 1MB - and so access point (with policy) ~ 30k (say)
+// so lets put 30 in before switching to next stack
+const ACCESS_POINTS_PER_STACK = 30;
+
+// OTHER LIMIT WE *WILL* HIT
+// we can only have 200 outputs in a stack - but our parent stack needs an Output per access point
+// so 200 x OBJECTS_PER_ACCESS_POINT is the real fundamental limit
 
 /**
  * Decode the Outputs of one of our Access Point cloud formation templates
- * so that we return a map of "source bucket" -> "access point bucket".
- * i.e. a file that was originally in bucket "umccr-dev-10g" might be mapped
- * to bucket "d-asdad-3423424sfsfs-s" as part of the access point.
+ * so that we return a map of URLs to where they are now located
+ * via the access point.
  *
  * @param stack the top level Cloud Formation stack that we installed
  * @param accountId the account id of where the stack/access points are installed
@@ -94,12 +95,11 @@ export async function correctAccessPointUrls(
 
       // an example resource which we are mapping back to the original objects
       // [
-      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz*",
-      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz.csi*",
-      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz*",
-      //    "arn:aws:s3:ap-southeast-2:843407916570:accesspoint/9c7c106/object/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz.csi*"
+      //    "arn:aws:s3:ap-southeast-2:123407916570:accesspoint/9c7c106/object/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz*",
+      //    "arn:aws:s3:ap-southeast-2:123407916570:accesspoint/9c7c106/object/CHINESE/JETSONSHG002-HG003-HG004.joint.filter.vcf.gz.csi*",
+      //    "arn:aws:s3:ap-southeast-2:123407916570:accesspoint/9c7c106/object/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz*",
+      //    "arn:aws:s3:ap-southeast-2:123407916570:accesspoint/9c7c106/object/ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz.csi*"
       // ]
-
       for (const stmt of policyObject["Statement"] ?? []) {
         if (stmt["Action"] === "s3:GetObject") {
           for (const res of stmt["Resource"] ?? []) {
@@ -119,25 +119,8 @@ export async function correctAccessPointUrls(
     }
   }
 
-  console.log(JSON.stringify(results, null, 2));
-
   return results;
 }
-
-/**
- * Create a policy statement for the given bucket and files.
- *
- * @param bucket
- * @param fileSubset
- * @param shareToAccountIds
- * @param shareToVpcId
- */
-function createPolicy(
-  bucket: string,
-  fileSubset: AccessPointEntry[],
-  shareToAccountIds: string[],
-  shareToVpcId?: string
-) {}
 
 /**
  * Takes the file list and does various sanitising and chunking steps.
@@ -182,7 +165,7 @@ function chunkIntoBiteSizes(files: ManifestBucketKeyObjectType[]) {
   const filesByGroup: { [unique: string]: AccessPointEntry[] } = {};
 
   for (const [bucketName, bucketObjects] of Object.entries(filesByBucket)) {
-    for (const c of chunk(bucketObjects, 20)) {
+    for (const c of chunk(bucketObjects, OBJECTS_PER_ACCESS_POINT)) {
       // create a new unique id
       const unique = randomBytes(8).toString("hex");
 
@@ -406,6 +389,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
         shareToAccountIds,
         shareToVpcId
       );
+
     // from each stack we share outputs of each access point Alias and name and bucket
     // we then collect these into the parent stack
     subStackCurrent.Outputs[groupUnique + NAME_SUFFIX] = {
@@ -421,10 +405,11 @@ export function createAccessPointTemplateFromReleaseFileEntries(
     subStackCurrent.Outputs[groupUnique + BUCKET_SUFFIX] = {
       Value: groupObjects[0].objectStoreBucket,
     };
+
     subStackGroupUniques.push(groupUnique);
 
     // if too large - need to make another substack
-    if (size(subStackCurrent.Resources) > 50) {
+    if (size(subStackCurrent.Resources) >= ACCESS_POINTS_PER_STACK) {
       closeSubStack();
 
       addNewSubStack();

@@ -16,6 +16,7 @@ import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../../releases/release-service";
 import {
+  AccessPointEntry,
   correctAccessPointUrls,
   createAccessPointTemplateFromReleaseFileEntries,
 } from "./_access-point-template-helper";
@@ -60,7 +61,6 @@ export class AwsAccessPointService {
     stack: Stack;
     stackName: string;
     stackId: string;
-    // bucketNameMap: { [x: string]: string };
   } | null> {
     await this.awsEnabledService.enabledGuard();
 
@@ -90,8 +90,36 @@ export class AwsAccessPointService {
       stack: releaseStack.Stacks[0],
       stackName: releaseStackName,
       stackId: releaseStack.Stacks[0].StackId!,
-      // bucketNameMap: { },
     };
+  }
+
+  /**
+   * Returns the details of what file maps to what access point
+   * alias for an installed access point share.
+   *
+   * @param releaseKey
+   */
+  public async getInstalledAccessPointObjectMap(
+    releaseKey: string
+  ): Promise<Record<string, AccessPointEntry>> {
+    assert(
+      this.settings.deployedAwsAccount,
+      "There were no settings present for AWS account (are you running in AWS?)"
+    );
+
+    const stackResources = await this.getInstalledAccessPointResources(
+      releaseKey
+    );
+
+    if (!stackResources)
+      throw new Error(
+        "Access point file list was requested but the release does not appear to have a current access point"
+      );
+
+    return await correctAccessPointUrls(
+      stackResources.stack,
+      this.settings.deployedAwsAccount
+    );
   }
 
   /**
@@ -124,19 +152,7 @@ export class AwsAccessPointService {
       "Active manifest appeared to be null even though this release has been activated"
     );
 
-    const stackResources = await this.getInstalledAccessPointResources(
-      releaseKey
-    );
-
-    if (!stackResources)
-      throw new Error(
-        "Access point file list was requested but the release does not appear to have a current access point"
-      );
-
-    const map = await correctAccessPointUrls(
-      stackResources.stack,
-      "843407916570"
-    );
+    const map = await this.getInstalledAccessPointObjectMap(releaseKey);
 
     for (const o of bucketKeyManifest.objects) {
       if (o.objectStoreUrl in map) {

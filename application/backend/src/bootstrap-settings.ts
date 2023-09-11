@@ -5,6 +5,7 @@ import { ElsaConfigurationType } from "./config/config-schema";
 import * as path from "path";
 import { OidcType } from "./config/config-schema-oidc";
 import { SharerType } from "./config/config-schema-sharer";
+import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 
 /**
  * Enrich the raw OIDC configuration by creating an Issuer
@@ -75,6 +76,16 @@ export async function bootstrapSettings(
   }
 
   let deployedAwsRegion = process.env["AWS_REGION"];
+  let deployedAwsAccount = undefined;
+
+  // possibly this should be injected in at a deployment env level (ala deployedUrl)?
+  // note also that this is before any dependency checking does the AWS mocks
+  // so it is impervious to mocking (good / bad??)
+  try {
+    const stsClient = new STSClient({});
+    const us = await stsClient.send(new GetCallerIdentityCommand({}));
+    deployedAwsAccount = us.Account;
+  } catch (e) {}
 
   let loggerTransportTargets: any[] = _.get(config, "logger.transportTargets");
 
@@ -115,6 +126,7 @@ export async function bootstrapSettings(
   return {
     deployedUrl: deployedUrl,
     deployedAwsRegion: deployedAwsRegion,
+    deployedAwsAccount: deployedAwsAccount,
     serviceDiscoveryNamespace:
       _.get(config, "serviceDiscoveryNamespace") ?? "elsa-data",
     httpHosting: _.get(config, "httpHosting"),

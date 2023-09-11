@@ -289,14 +289,14 @@ export class AwsCloudTrailLakeService {
             );
           }
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
-          throw new Error("not implemented");
-          /*const bucketNameMap = (
-            await this.awsAccessPointService.getInstalledAccessPointResources(
+          const map =
+            await this.awsAccessPointService.getInstalledAccessPointObjectMap(
               releaseKey
-            )
-          )?.bucketNameMap;
+            );
 
-          const apAlias = bucketNameMap ? Object.values(bucketNameMap) : [];
+          const apAlias = new Set<string>(
+            Object.values(map).map((ape) => ape.objectStoreBucket)
+          );
 
           for (const a of apAlias) {
             const sqlQueryStatement = this.createSQLQueryByAccessPointAlias({
@@ -322,12 +322,11 @@ export class AwsCloudTrailLakeService {
                 })
               );
             }
-          }*/
+          }
         } else {
           this.logger.warn(
             `No matching query type for cloudTrailLake. ('${method}')`
           );
-          continue;
         }
       }
     }
