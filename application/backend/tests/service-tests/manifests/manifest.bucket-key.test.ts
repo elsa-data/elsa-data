@@ -13,7 +13,8 @@ import { ManifestService } from "../../../src/business/services/manifests/manife
 import { ReleaseService } from "../../../src/business/services/releases/release-service";
 import { ReleaseSelectionService } from "../../../src/business/services/releases/release-selection-service";
 import { ReleaseActivationService } from "../../../src/business/services/releases/release-activation-service";
-import _ from "lodash";
+import { sortBy } from "lodash";
+import { CHARLES_SPECIMEN_SYSTEMLESS } from "../../../src/test-data/dataset/teng-master-data";
 
 const testContainer = registerTypes();
 
@@ -48,15 +49,19 @@ beforeEach(async () => {
   const bart = await findSpecimenQuery(BART_SPECIMEN).run(edgeDbClient);
   const homer = await findSpecimenQuery(HOMER_SPECIMEN).run(edgeDbClient);
   const judy = await findSpecimenQuery(JUDY_SPECIMEN).run(edgeDbClient);
+  const charles = await findSpecimenQuery(CHARLES_SPECIMEN_SYSTEMLESS).run(
+    edgeDbClient
+  );
 
   assert(bart);
   assert(homer);
   assert(judy);
+  assert(charles);
 
   await releaseSelectionService.setSelected(
     allowedAdministratorUser,
     testReleaseKey,
-    { dbIds: [bart.id, homer.id, judy.id] }
+    { dbIds: [bart.id, homer.id, judy.id, charles.id] }
   );
 
   // assert a release state with limited inclusions
@@ -72,6 +77,7 @@ beforeEach(async () => {
     "isAllowedVariantData",
     true
   );
+  // NOTE we are enabling *both* S3 and GS (the 10g test data comes with both)
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
@@ -82,7 +88,7 @@ beforeEach(async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
-    false
+    true
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
@@ -106,11 +112,11 @@ it("test basic operation of bucket key manifest", async () => {
   assert(manifest);
   expect(manifest?.objects).not.toBeNull();
   assert(manifest.objects);
-  expect(manifest?.objects).toHaveLength(12);
+  expect(manifest?.objects).toHaveLength(20);
 
   {
     // we sort ourselves by url length to ensure we get the real files before the indexes
-    const bartBamArray = _.sortBy(
+    const bartBamArray = sortBy(
       manifest.objects.filter(
         (v) => v.specimenId === "NA24385" && v.objectType === "BAM"
       ),
@@ -132,7 +138,7 @@ it("test basic operation of bucket key manifest", async () => {
   }
 
   {
-    const bartVcfArray = _.sortBy(
+    const bartVcfArray = sortBy(
       manifest.objects.filter(
         (v) => v.specimenId === "NA24385" && v.objectType === "VCF"
       ),
@@ -153,4 +159,67 @@ it("test basic operation of bucket key manifest", async () => {
       "ASHKENAZIM/HG002-HG003-HG004.joint.filter.vcf.gz"
     );
   }
+});
+
+it("test filtering by protocol results in correct objects", async () => {
+  const manifest = await manifestService.getActiveBucketKeyManifest(
+    testReleaseKey,
+    ["gs"]
+  );
+
+  expect(manifest).not.toBeNull();
+  assert(manifest);
+  expect(manifest?.objects).not.toBeNull();
+  assert(manifest.objects);
+  expect(manifest?.objects).toHaveLength(4);
+
+  {
+    const charlesVcfArray = sortBy(
+      manifest.objects.filter(
+        (v) =>
+          v.specimenId === CHARLES_SPECIMEN_SYSTEMLESS && v.objectType === "VCF"
+      ),
+      (o) => o.objectStoreUrl.length
+    );
+
+    expect(charlesVcfArray).toHaveLength(2);
+    expect(charlesVcfArray[0].caseId).toBe("SINGLETONCHARLES");
+    expect(charlesVcfArray[0].patientId).toBe("CHARLES");
+    expect(charlesVcfArray[0].specimenId).toBe(CHARLES_SPECIMEN_SYSTEMLESS);
+    expect(charlesVcfArray[0].objectSize).toBe(425745911);
+    expect(charlesVcfArray[0].md5).toBe("54c76df2f55aa5a2450bd874bf488100"); // pragma: allowlist secret
+    expect(charlesVcfArray[0].objectStoreUrl).toBe(
+      "gs://10gbucket/HG00096/HG00096.hard-filtered.vcf.gz"
+    );
+    expect(charlesVcfArray[0].objectStoreBucket).toBe("10gbucket");
+    expect(charlesVcfArray[0].objectStoreKey).toBe(
+      "HG00096/HG00096.hard-filtered.vcf.gz"
+    );
+  }
+});
+
+it("test filtering by list of protocols", async () => {
+  const manifest = await manifestService.getActiveBucketKeyManifest(
+    testReleaseKey,
+    ["gs", "s3"]
+  );
+
+  expect(manifest).not.toBeNull();
+  assert(manifest);
+  expect(manifest?.objects).not.toBeNull();
+  assert(manifest.objects);
+  expect(manifest?.objects).toHaveLength(20);
+});
+
+it("test filtering by list of wildcard protocols", async () => {
+  const manifest = await manifestService.getActiveBucketKeyManifest(
+    testReleaseKey,
+    ["*"]
+  );
+
+  expect(manifest).not.toBeNull();
+  assert(manifest);
+  expect(manifest?.objects).not.toBeNull();
+  assert(manifest.objects);
+  expect(manifest?.objects).toHaveLength(20);
 });

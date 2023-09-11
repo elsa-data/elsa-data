@@ -10,7 +10,7 @@ import {
   StorageClass,
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
-import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
+import { sdkStreamMixin } from "@smithy/util-stream";
 
 /**
  * To an existing S3 mock client - we add specific Mock responses that will reflect

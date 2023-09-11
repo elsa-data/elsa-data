@@ -1,12 +1,6 @@
 import { inject, injectable } from "tsyringe";
-import { HttpRequest } from "@aws-sdk/protocol-http";
-import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
-import { parseUrl } from "@aws-sdk/url-parser";
-import { Hash } from "@aws-sdk/hash-node";
-import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../config/elsa-settings";
 import { IPresignedUrlProvider } from "./presigned-url-service";
-import assert from "assert";
 
 @injectable()
 export class CloudflarePresignedUrlService implements IPresignedUrlProvider {
@@ -25,7 +19,7 @@ export class CloudflarePresignedUrlService implements IPresignedUrlProvider {
   ): Promise<string> {
     throw new Error("not implemented");
 
-    assert(this.settings.cloudflare);
+    /*assert(this.settings.cloudflare);
 
     const s3ObjectUrl = parseUrl(`https://${bucket}.s3.amazonaws.com/${key}`);
     s3ObjectUrl.query = {
@@ -45,6 +39,6 @@ export class CloudflarePresignedUrlService implements IPresignedUrlProvider {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
       })
     );
-    return url;
+    return url; */
   }
 }
