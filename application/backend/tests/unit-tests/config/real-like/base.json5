@@ -9,7 +9,4 @@
       secret: "01234567890123456",
     },
   },
-  htsget: {
-    url: "https://htsget.elsa.dev.umccr.org",
-  },
 }

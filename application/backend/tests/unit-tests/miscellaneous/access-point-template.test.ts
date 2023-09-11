@@ -82,7 +82,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       ["123456789"]
     );
 
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(2);
     expect(result.filter((x) => x.root)).toHaveLength(1);
 
     {
