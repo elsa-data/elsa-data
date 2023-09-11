@@ -11,6 +11,7 @@ import { NotAuthorisedUpdateDataEgressRecords } from "../../../src/business/exce
 import { AwsCloudTrailLakeService } from "../../../src/business/services/aws/aws-cloudtrail-lake-service";
 import { AwsEnabledServiceMock } from "../client-mocks";
 import { IPLookupService } from "../../../src/business/services/ip-lookup-service";
+import { AwsAccessPointService } from "../../../src/business/services/sharers/aws-access-point/aws-access-point-service";
 
 const testContainer = registerTypes();
 
@@ -44,6 +45,7 @@ describe("Test CloudTrailLake Service", () => {
     const awsCloudTrailLakeService = testContainer.resolve(
       AwsCloudTrailLakeService
     );
+    const accessPointService = testContainer.resolve(AwsAccessPointService);
     const BUCKET_NAME = "umccr-10g-data-dev";
     const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
     const mockData = [
@@ -72,6 +74,12 @@ describe("Test CloudTrailLake Service", () => {
     jest
       .spyOn(awsCloudTrailLakeService, "queryCloudTrailLake")
       .mockImplementation(async () => mockData);
+
+    // we need to make sure the access point service doesn't actually hit real AWS
+    // so mock out the implementation to be empty map
+    jest
+      .spyOn(accessPointService, "getInstalledAccessPointObjectMap")
+      .mockImplementation(async (releaseKey: string) => ({}));
 
     const egressRecords = await awsCloudTrailLakeService.getNewEgressRecords({
       releaseKey: testReleaseKey,
