@@ -1,10 +1,10 @@
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { AuditEventService } from "./audit-event-service";
-import { SharerType } from "../../config/config-schema-sharer";
-import { AwsDiscoveryService } from "./aws/aws-discovery-service";
-import { AwsEnabledService } from "./aws/aws-enabled-service";
+import { ElsaSettings } from "../../../config/elsa-settings";
+import { AuditEventService } from "../audit-event-service";
+import { SharerType } from "../../../config/config-schema-sharer";
+import { AwsDiscoveryService } from "../aws/aws-discovery-service";
+import { AwsEnabledService } from "../aws/aws-enabled-service";
 
 export type SharerWithStatusType = SharerType & {
   notWorkingReason?: string;
@@ -23,6 +23,14 @@ export class SharerService {
     private readonly auditLogService: AuditEventService
   ) {}
 
+  /**
+   * For a given configured sharer - do checks on how well it is functioning
+   * in the actually deployed environment - and if needed return a message
+   * about the status.
+   *
+   * @param s
+   * @private
+   */
   private async checkSharerWorking(
     s: SharerType
   ): Promise<SharerWithStatusType> {
@@ -62,7 +70,7 @@ export class SharerService {
     }
   }
   /**
-   * All the sharers configured for use AND an extra boolean indicating
+   * Return all the sharers configured for use AND an extra boolean indicating
    * if they are functional in the current setup.
    *
    * @returns

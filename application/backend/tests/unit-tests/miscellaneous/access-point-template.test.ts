@@ -1,7 +1,7 @@
 import {
   AccessPointTemplateToSave,
   createAccessPointTemplateFromReleaseFileEntries,
-} from "../../../src/business/services/_access-point-template-helper";
+} from "../../../src/business/services/sharers/aws-access-point/_access-point-template-helper";
 import { ManifestBucketKeyObjectType } from "../../../src/business/services/manifests/manifest-bucket-key-types";
 
 describe("Creating Access Point CloudFormation Templates", () => {

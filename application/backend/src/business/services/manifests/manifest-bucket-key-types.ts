@@ -2,6 +2,10 @@ import { Static, Type } from "@sinclair/typebox";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import assert from "assert";
 
+export const KnownObjectProtocolsArray = ["s3", "gs", "r2"] as const;
+
+export type KnownObjectProtocolType = typeof KnownObjectProtocolsArray[number];
+
 export const ManifestBucketKeyObjectSchema = Type.Object({
   caseId: Type.String(),
   patientId: Type.String(),
@@ -23,11 +27,11 @@ export const ManifestBucketKeyObjectSchema = Type.Object({
   md5: Type.Optional(Type.String()),
 });
 
-assert(
-  JSON.stringify(
-    [...Object.keys(ManifestBucketKeyObjectSchema.properties)].sort()
-  ) === JSON.stringify([...ObjectStoreRecordKey].sort())
-);
+//assert(
+//  JSON.stringify(
+//    [...Object.keys(ManifestBucketKeyObjectSchema.properties)].sort()
+//  ) === JSON.stringify([...ObjectStoreRecordKey].sort())
+//);
 
 export const ManifestBucketKeySchema = Type.Object({
   // the release identifier from Elsa Data

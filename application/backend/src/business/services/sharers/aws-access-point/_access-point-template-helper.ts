@@ -1,7 +1,7 @@
 import { has } from "lodash";
 import { randomBytes } from "crypto";
 import { Stack } from "@aws-sdk/client-cloudformation";
-import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import { ManifestBucketKeyObjectType } from "../../manifests/manifest-bucket-key-types";
 
 export type AccessPointTemplateToSave = {
   root: boolean;
@@ -222,7 +222,8 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   // TODO reshape this loop/outer block to do a JSON.stringify() on each step - and if the size of the
   //      serialized JSON becomes too large - then also close/add a new stack
 
-  // Maximum size of a template body that you can pass in an Amazon S3 object for a CreateStack, UpdateStack, ValidateTemplate request with an Amazon S3 template URL.
+  // Maximum size of a template body that you can pass in an Amazon S3 object for a
+  // CreateStack, UpdateStack, ValidateTemplate request with an Amazon S3 template URL.
   // 1 MB
 
   for (const bucket of Object.keys(filesByBucket)) {

@@ -74,6 +74,8 @@ export async function bootstrapSettings(
       );
   }
 
+  let deployedAwsRegion = process.env["AWS_REGION"];
+
   let loggerTransportTargets: any[] = _.get(config, "logger.transportTargets");
 
   // grab the targets from our config - but default to a sensible default that just logs to stdout
@@ -112,6 +114,7 @@ export async function bootstrapSettings(
 
   return {
     deployedUrl: deployedUrl,
+    deployedAwsRegion: deployedAwsRegion,
     serviceDiscoveryNamespace:
       _.get(config, "serviceDiscoveryNamespace") ?? "elsa-data",
     httpHosting: _.get(config, "httpHosting"),

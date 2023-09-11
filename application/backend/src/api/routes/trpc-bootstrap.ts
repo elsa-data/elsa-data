@@ -14,7 +14,7 @@ import { JobCloudFormationDeleteService } from "../../business/services/jobs/job
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
 import { currentPageSize } from "../helpers/pagination-helpers";
 import { ReleaseDataEgressService } from "../../business/services/releases/release-data-egress-service";
-import { AwsAccessPointService } from "../../business/services/aws/aws-access-point-service";
+import { AwsAccessPointService } from "../../business/services/sharers/aws-access-point/aws-access-point-service";
 import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
 import { Base7807Error } from "@umccr/elsa-types/error-types";
 import { DatasetService } from "../../business/services/dataset-service";
@@ -23,7 +23,7 @@ import { ReleaseSelectionService } from "../../business/services/releases/releas
 import { DacService } from "../../business/services/dacs/dac-service";
 import { AuditEventService } from "../../business/services/audit-event-service";
 import { ManifestService } from "../../business/services/manifests/manifest-service";
-import { SharerService } from "../../business/services/sharer-service";
+import { SharerService } from "../../business/services/sharers/sharer-service";
 import { NOT_AUTHORISED_MESSAGE } from "../errors/authentication-error";
 
 /**
