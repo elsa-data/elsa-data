@@ -70,6 +70,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   return (
     <Box heading="Access Data" applyIsDisabledStyle={!releaseData.activation}>
       <VerticalTabs tabHeadings={tabHeadings}>
+        {/* manifest download is always present */}
         <ManifestForm releaseKey={releaseKey} releaseData={releaseData} />
         {dataSharingObjectSigning && (
           <ObjectSigningForm

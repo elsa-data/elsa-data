@@ -18,6 +18,13 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
   tabHeadings,
   children,
 }) => {
+  const definedChildren = React.Children.toArray(children);
+
+  if (definedChildren.length != tabHeadings.length)
+    throw new Error(
+      `Vertical tabs had mismatched children (${definedChildren.length}) and headers (${tabHeadings.length})`
+    );
+
   return (
     <div
       className={classNames(
@@ -54,7 +61,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
           ))}
         </Tab.List>
         <Tab.Panels className="w-full overflow-x-auto pl-4">
-          {React.Children.map(children, (child) => (
+          {definedChildren.map((child) => (
             <Tab.Panel>{child}</Tab.Panel>
           ))}
         </Tab.Panels>
