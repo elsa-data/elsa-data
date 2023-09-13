@@ -124,7 +124,8 @@ export abstract class ManifestHtsgetService {
         patientId: "PATIENT",
         specimenId: "SPECIMEN",
         artifactId: key,
-        objectStoreUrl: r.url,
+        // FIX
+        objectStoreUrl: `htsget://${"host"}/reads/${key}`,
         objectType: "BAM",
         objectStoreSigned: "",
         objectStoreKey: "",
