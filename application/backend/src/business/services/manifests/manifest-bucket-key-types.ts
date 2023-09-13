@@ -1,6 +1,4 @@
 import { Static, Type } from "@sinclair/typebox";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
-import assert from "assert";
 
 export const KnownObjectProtocolsArray = ["s3", "gs", "r2"] as const;
 
@@ -26,12 +24,6 @@ export const ManifestBucketKeyObjectSchema = Type.Object({
   // optional depending on what checksums have been entered
   md5: Type.Optional(Type.String()),
 });
-
-//assert(
-//  JSON.stringify(
-//    [...Object.keys(ManifestBucketKeyObjectSchema.properties)].sort()
-//  ) === JSON.stringify([...ObjectStoreRecordKey].sort())
-//);
 
 export const ManifestBucketKeySchema = Type.Object({
   // the release identifier from Elsa Data
