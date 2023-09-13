@@ -85,6 +85,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
         {dataSharingHtsget && (
           <HtsgetForm
             releaseKey={releaseKey}
+            releaseData={releaseData}
             htsgetUrl={releaseData.dataSharingHtsget?.url || ""}
           />
         )}

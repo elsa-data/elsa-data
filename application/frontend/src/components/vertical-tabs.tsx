@@ -61,8 +61,8 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
           ))}
         </Tab.List>
         <Tab.Panels className="w-full overflow-x-auto pl-4">
-          {definedChildren.map((child) => (
-            <Tab.Panel>{child}</Tab.Panel>
+          {definedChildren.map((child, idx) => (
+            <Tab.Panel key={idx}>{child}</Tab.Panel>
           ))}
         </Tab.Panels>
       </Tab.Group>
