@@ -25,8 +25,6 @@ import { Logger } from "pino";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import assert from "assert";
 import { ManifestService } from "../../manifests/manifest-service";
-import { ManifestMasterType } from "../../manifests/manifest-master-types";
-import { ManifestBucketKeyType } from "../../manifests/manifest-bucket-key-types";
 
 @injectable()
 export class AwsAccessPointService {
@@ -56,12 +54,11 @@ export class AwsAccessPointService {
    * minimum resources to detect this and immediately returns null for no stack).
    *
    * @param releaseKey
+   * @returns details of the installed access point or null if none is installed
    */
-  public async getInstalledAccessPointResources(releaseKey: string): Promise<{
-    stack: Stack;
-    stackName: string;
-    stackId: string;
-  } | null> {
+  public async getInstalledAccessPointResources(
+    releaseKey: string
+  ): Promise<Stack | null> {
     await this.awsEnabledService.enabledGuard();
 
     const releaseStackName =
@@ -84,18 +81,14 @@ export class AwsAccessPointService {
 
     if (!releaseStack.Stacks || releaseStack.Stacks.length != 1) return null;
 
-    // TODO check stack status?? - should be complete_ok?
-
-    return {
-      stack: releaseStack.Stacks[0],
-      stackName: releaseStackName,
-      stackId: releaseStack.Stacks[0].StackId!,
-    };
+    return releaseStack.Stacks[0];
   }
 
   /**
    * Returns the details of what file maps to what access point
-   * alias for an installed access point share.
+   * alias for an installed access point share. This makes numerous
+   * AWS calls to walk through all the cloud formation stacks and
+   * access point policies.
    *
    * @param releaseKey
    */
@@ -107,17 +100,17 @@ export class AwsAccessPointService {
       "There were no settings present for AWS account (are you running in AWS?)"
     );
 
-    const stackResources = await this.getInstalledAccessPointResources(
+    const stackInstalled = await this.getInstalledAccessPointResources(
       releaseKey
     );
 
-    if (!stackResources)
+    if (!stackInstalled)
       throw new Error(
         "Access point file list was requested but the release does not appear to have a current access point"
       );
 
     return await correctAccessPointUrls(
-      stackResources.stack,
+      stackInstalled,
       this.settings.deployedAwsAccount
     );
   }
@@ -131,16 +124,22 @@ export class AwsAccessPointService {
    * @param tsvColumns an array of column names that will be used to construct the TSV columns (matching order)
    * @returns a proposed filename and the content of a TSV
    */
-  public async getAccessPointFileList(
+  public async getAccessPointBucketKeyManifest(
     user: AuthenticatedUser,
     releaseKey: string,
     tsvColumns: string[]
   ) {
-    const { userRole } =
+    const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
         releaseKey
       );
+
+    if (!(userRole === "Manager" || userRole === "Member")) {
+      throw new ReleaseViewError(releaseKey);
+    }
+
+    if (!isActivated) throw new Error("needs to be activated");
 
     await this.awsEnabledService.enabledGuard();
 
@@ -265,11 +264,11 @@ export class AwsAccessPointService {
         releaseInfo.dataSharingAwsAccessPoint.vpcId
       );
 
+    this.logger.debug(accessPointTemplates, "created access point templates");
+
     // we've made the templates - but we need to save them to known locations in S3 so that we
     // can install them
     let rootTemplate;
-
-    this.logger.debug(accessPointTemplates, "created access point templates");
 
     for (const apt of accessPointTemplates) {
       await this.s3Client.send(

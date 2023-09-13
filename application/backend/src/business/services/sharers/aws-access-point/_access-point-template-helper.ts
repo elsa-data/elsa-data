@@ -365,8 +365,8 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   };
 
   const addNewSubStack = () => {
-    subStackCount++;
-    subStackAccessPointName = `${releaseKey.toLowerCase()}-${subStackCount}`;
+    //subStackCount++;
+    //subStackAccessPointName = `${releaseKey.toLowerCase()}-${subStackCount}`;
     subStackStackName = randomBytes(8).toString("hex");
     subStackGroupUniques = [];
 

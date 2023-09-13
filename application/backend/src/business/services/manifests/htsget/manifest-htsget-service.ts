@@ -24,6 +24,14 @@ import { AuditEventService } from "../../audit-event-service";
 import { ManifestService } from "../manifest-service";
 import { AwsS3Service } from "../../aws/aws-s3-service";
 import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
+import { AuthenticatedUser } from "../../../authenticated-user";
+import { ReleaseViewError } from "../../../exceptions/release-authorisation";
+import assert from "assert";
+import { stringify } from "csv-stringify";
+import { Readable } from "stream";
+import streamConsumers from "node:stream/consumers";
+import { ReleaseService } from "../../releases/release-service";
+import { ManifestBucketKeyObjectType } from "../manifest-bucket-key-types";
 
 export function getHtsgetSetting(
   settings: ElsaSettings
@@ -58,7 +66,8 @@ export abstract class ManifestHtsgetService {
     private readonly logger: Logger,
     private readonly cloudStorage: CloudStorage,
     private readonly auditLogService: AuditEventService,
-    private readonly manifestService: ManifestService
+    private readonly manifestService: ManifestService,
+    private readonly releaseService: ReleaseService
   ) {}
 
   public async getActiveHtsgetManifest(
@@ -72,6 +81,91 @@ export abstract class ManifestHtsgetService {
     if (!masterManifest) return null;
 
     return transformMasterManifestToHtsgetManifest(masterManifest);
+  }
+
+  /**
+   * Get the active htsget manifest but converted to a simple TSV
+   * with htsget URLs etc. This is for presentation to the
+   * researcher.
+   *
+   * @param user
+   * @param releaseKey
+   * @param tsvColumns
+   */
+  public async getActiveHtsgetManifestAsTsv(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    tsvColumns: string[]
+  ) {
+    const { userRole, isActivated } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey
+      );
+
+    if (!(userRole === "Manager" || userRole === "Member")) {
+      throw new ReleaseViewError(releaseKey);
+    }
+
+    if (!isActivated) throw new Error("needs to be activated");
+
+    const htsgetManifest = await this.getActiveHtsgetManifest(releaseKey);
+
+    if (!htsgetManifest) throw new Error("needs an active htsget manifest");
+
+    const tsvObjects: ManifestBucketKeyObjectType[] = [];
+
+    // TODO - better filling in of the TSV objects structure
+    //        might need cross referencing from the master manifest etc
+
+    for (const [key, r] of Object.entries(htsgetManifest.reads ?? {})) {
+      tsvObjects.push({
+        caseId: "CASE",
+        patientId: "PATIENT",
+        specimenId: "SPECIMEN",
+        artifactId: key,
+        objectStoreUrl: r.url,
+        objectType: "BAM",
+        objectStoreSigned: "",
+        objectStoreKey: "",
+        objectStoreBucket: "",
+        objectStoreProtocol: "htsget",
+        objectSize: 0,
+      });
+    }
+
+    // setup a TSV stream
+    const stringifyColumnOptions = [];
+
+    for (const header of tsvColumns) {
+      stringifyColumnOptions.push({
+        key: header,
+        header: header.toUpperCase(),
+      });
+    }
+    const stringifier = stringify({
+      header: true,
+      columns: stringifyColumnOptions,
+      delimiter: "\t",
+    });
+
+    const readableStream = Readable.from(tsvObjects);
+    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
+
+    const counter = await this.releaseService.getIncrementingCounter(
+      user,
+      releaseKey
+    );
+
+    const filename = `release-${releaseKey.replaceAll(
+      "-",
+      ""
+    )}-htsget-${counter}.tsv`;
+
+    return {
+      filename: filename,
+      content: buf,
+    };
   }
 
   async publishHtsgetManifestAuditFn(
@@ -195,7 +289,8 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
     @inject("Logger") logger: Logger,
     @inject(AwsS3Service) awsS3Service: AwsS3Service,
     @inject(AuditEventService) auditLogService: AuditEventService,
-    @inject(ManifestService) manifestService: ManifestService
+    @inject(ManifestService) manifestService: ManifestService,
+    @inject(ReleaseService) releaseService: ReleaseService
   ) {
     super(
       settings,
@@ -203,7 +298,8 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
       logger,
       awsS3Service,
       auditLogService,
-      manifestService
+      manifestService,
+      releaseService
     );
   }
 }
