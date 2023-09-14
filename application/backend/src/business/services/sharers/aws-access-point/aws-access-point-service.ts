@@ -18,7 +18,7 @@ import { ReleaseService } from "../../releases/release-service";
 import {
   AccessPointEntry,
   correctAccessPointUrls,
-  createAccessPointTemplateFromReleaseFileEntries,
+  createAccessPointTemplateFromObjects,
 } from "./_access-point-template-helper";
 import { ElsaSettings } from "../../../../config/elsa-settings";
 import { Logger } from "pino";
@@ -259,15 +259,15 @@ export class AwsAccessPointService {
 
     // make a (nested) CloudFormation templates that will expose only these
     // S3 files via an access point
-    const accessPointTemplates =
-      createAccessPointTemplateFromReleaseFileEntries(
-        this.settings.aws.tempBucket,
-        this.settings.deployedAwsRegion,
-        releaseKey,
-        bucketKeyManifest.objects,
-        [releaseInfo.dataSharingAwsAccessPoint.accountId],
-        releaseInfo.dataSharingAwsAccessPoint.vpcId
-      );
+    const accessPointTemplates = createAccessPointTemplateFromObjects(
+      this.logger,
+      this.settings.aws.tempBucket,
+      this.settings.deployedAwsRegion,
+      releaseKey,
+      bucketKeyManifest.objects,
+      [releaseInfo.dataSharingAwsAccessPoint.accountId],
+      releaseInfo.dataSharingAwsAccessPoint.vpcId
+    );
 
     this.logger.debug(accessPointTemplates, "created access point templates");
 
