@@ -28,6 +28,16 @@ import { ManifestService } from "../../manifests/manifest-service";
 
 @injectable()
 export class AwsAccessPointService {
+  /**
+   * Return the name of an access point cloudformation for the given release.
+   * This method defines the common convention used for these names.
+   *
+   * @param releaseKey
+   */
+  public static getReleaseStackName(releaseKey: string): string {
+    return `elsa-data-release-${releaseKey}`;
+  }
+
   constructor(
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
@@ -43,9 +53,6 @@ export class AwsAccessPointService {
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService
   ) {}
-  public static getReleaseStackName(releaseKey: string): string {
-    return `elsa-data-release-${releaseKey}`;
-  }
 
   /**
    * Returns the details from an installed access point stack for the given release
@@ -56,7 +63,7 @@ export class AwsAccessPointService {
    * @param releaseKey
    * @returns details of the installed access point or null if none is installed
    */
-  public async getInstalledAccessPointResources(
+  public async getInstalledAccessPoint(
     releaseKey: string
   ): Promise<Stack | null> {
     await this.awsEnabledService.enabledGuard();
@@ -100,9 +107,7 @@ export class AwsAccessPointService {
       "There were no settings present for AWS account (are you running in AWS?)"
     );
 
-    const stackInstalled = await this.getInstalledAccessPointResources(
-      releaseKey
-    );
+    const stackInstalled = await this.getInstalledAccessPoint(releaseKey);
 
     if (!stackInstalled)
       throw new Error(

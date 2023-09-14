@@ -354,6 +354,15 @@ export function createAccessPointTemplateFromReleaseFileEntries(
         };
       }
 
+      if (shareToVpcId)
+        rootStack.Outputs["VpcId"] = {
+          Value: shareToVpcId,
+        };
+
+      rootStack.Outputs["AccountIds"] = {
+        Value: shareToAccountIds.join(","),
+      };
+
       results.push({
         root: false,
         templateHttps: templateHttps,
