@@ -48,4 +48,4 @@ const permissionTypeArray = [
   "isAllowedCreateRelease",
   "isAllowedOverallAdministratorView",
 ] as const;
-export type UserPermissionType = typeof permissionTypeArray[number];
+export type UserPermissionType = (typeof permissionTypeArray)[number];

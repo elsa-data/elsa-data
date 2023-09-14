@@ -39,7 +39,7 @@ export const ReleaseParticipantRoleConst = [
   "Member",
 ] as const;
 export type ReleaseParticipantRoleType =
-  typeof ReleaseParticipantRoleConst[number];
+  (typeof ReleaseParticipantRoleConst)[number];
 export const ReleaseParticipantRole: ReleaseParticipantRoleType[] = [
   "AdminView",
   "Administrator",

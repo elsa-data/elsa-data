@@ -68,12 +68,12 @@ export const RemsDacDialog: React.FC<Props> = ({
               }
               successButtonLabel={"Add"}
               onSuccess={() => {
-                createNewReleaseMutate.mutate({ dacId: dacId, dacData: newId }, {
-                  onSuccess: (newReleaseKey) => {
-                    // invalidate the keys so that going to the dashboard will be refreshed
-                    queryClient
-                      .invalidateQueries()
-                      .then(() => {
+                createNewReleaseMutate.mutate(
+                  { dacId: dacId, dacData: newId },
+                  {
+                    onSuccess: (newReleaseKey) => {
+                      // invalidate the keys so that going to the dashboard will be refreshed
+                      queryClient.invalidateQueries().then(() => {
                         // bounce us to the details page for the release we just made
                         navigate(`/releases/${newReleaseKey}/detail`);
                       });
