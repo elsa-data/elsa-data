@@ -8,11 +8,10 @@ repos:
       - id: check-yaml
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
+    rev: v3.0.3
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier@2.8.1
           - prettier-plugin-tailwindcss
 
   - repo: https://github.com/yelp/detect-secrets

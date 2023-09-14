@@ -37,9 +37,7 @@ describe("TRPC authentication tests", () => {
         aArrayOfString: ["one", "two", "3"],
         aOptionalNumber: 42,
       });
-    }).rejects.toThrowError(
-      "The content-type of the response is not application/json"
-    );
+    }).rejects.toThrowError("Unable to transform response from server");
   });
 
   it("a TRPC call with no CSRF header will fail", async () => {
@@ -70,8 +68,6 @@ describe("TRPC authentication tests", () => {
         aArrayOfString: ["one", "two", "3"],
         aOptionalNumber: 42,
       });
-    }).rejects.toThrowError(
-      "The content-type of the response is not application/json"
-    );
+    }).rejects.toThrowError("Unable to transform response from server");
   });
 });

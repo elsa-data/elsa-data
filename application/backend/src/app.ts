@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, { FastifyBaseLogger, FastifyInstance } from "fastify";
 import fastifyStatic from "@fastify/static";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyFormBody from "@fastify/formbody";
@@ -51,7 +51,7 @@ export class App {
   constructor(
     private readonly dc: DependencyContainer,
     private readonly settings: ElsaSettings,
-    private readonly logger: Logger,
+    private readonly logger: FastifyBaseLogger,
     private readonly features: ReadonlySet<string>
   ) {
     // find where our website HTML is

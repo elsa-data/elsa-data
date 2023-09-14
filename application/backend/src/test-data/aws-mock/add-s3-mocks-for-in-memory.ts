@@ -36,7 +36,7 @@ export type AustralianGenomicsDirectoryStructure = {
  * @param directoryStructure the directory structure objects in memory
  */
 export async function addMocksForInMemory(
-  s3MockClient: AwsStub<ServiceInputTypes, ServiceOutputTypes>,
+  s3MockClient: AwsStub<ServiceInputTypes, ServiceOutputTypes, any>,
   mockBucket: string,
   mockKey: string,
   directoryStructure: AustralianGenomicsDirectoryStructure

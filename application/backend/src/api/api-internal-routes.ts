@@ -123,8 +123,11 @@ export const apiInternalRoutes = async (
 ) => {
   const userService = opts.container.resolve(UserService);
 
+  // the CSRF plugin types seem to not be compatible with fastify (types!) any more
+  // as a hack just changed to any
+  // will probably we good next update to CSRF plugin so can then remove any
   // We need to set this as `preHandler` as csrf token might be in the body request
-  fastify.addHook("preHandler", fastify.csrfProtection);
+  fastify.addHook("preHandler", fastify.csrfProtection as any);
 
   const authInternalHook = createSessionCookieRouteHook(userService);
 

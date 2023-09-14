@@ -22,7 +22,7 @@ import { sdkStreamMixin } from "@smithy/util-stream";
  * @param fileRoot the filesystem root to mirror
  */
 export async function addMocksForFileSystem(
-  s3MockClient: AwsStub<ServiceInputTypes, ServiceOutputTypes>,
+  s3MockClient: AwsStub<ServiceInputTypes, ServiceOutputTypes, any>,
   mockBucket: string,
   mockKey: string,
   fileRoot: string

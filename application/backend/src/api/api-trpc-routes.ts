@@ -21,7 +21,10 @@ export const trpcRoutes = async (
     trpcCreateContext: (opts: CreateFastifyContextOptions) => Promise<Context>;
   }
 ) => {
-  fastify.addHook("preHandler", fastify.csrfProtection);
+  // the CSRF plugin types seem to not be compatible with fastify (types!) any more
+  // as a hack just changed to any
+  // will probably we good next update to CSRF plugin so can then remove any
+  fastify.addHook("preHandler", fastify.csrfProtection as any);
 
   await fastify.register(fastifyTRPCPlugin, {
     trpcOptions: {

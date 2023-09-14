@@ -2,7 +2,8 @@ import { Static, Type } from "@sinclair/typebox";
 
 export const KnownObjectProtocolsArray = ["s3", "gs", "r2"] as const;
 
-export type KnownObjectProtocolType = typeof KnownObjectProtocolsArray[number];
+export type KnownObjectProtocolType =
+  (typeof KnownObjectProtocolsArray)[number];
 
 export const ManifestBucketKeyObjectSchema = Type.Object({
   caseId: Type.String(),
