@@ -1,42 +1,42 @@
-import { AuthenticatedUser } from "../../authenticated-user";
+import { AuthenticatedUser } from "../../../authenticated-user";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import * as edgedb from "edgedb";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "../user-service";
-import { AwsEnabledService } from "./aws-enabled-service";
+import { UserService } from "../../user-service";
+import { AwsEnabledService } from "../../aws/aws-enabled-service";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
   DescribeStacksCommandOutput,
+  Stack,
 } from "@aws-sdk/client-cloudformation";
-import { AuditEventService } from "../audit-event-service";
+import { AuditEventService } from "../../audit-event-service";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
-import { ReleaseService } from "../releases/release-service";
+import { ReleaseService } from "../../releases/release-service";
 import {
-  correctAccessPointTemplateOutputs,
+  AccessPointEntry,
+  correctAccessPointUrls,
   createAccessPointTemplateFromReleaseFileEntries,
-} from "../_access-point-template-helper";
-import { ElsaSettings } from "../../../config/elsa-settings";
+} from "./_access-point-template-helper";
+import { ElsaSettings } from "../../../../config/elsa-settings";
 import { Logger } from "pino";
-import { getAllFileRecords } from "../_release-file-list-helper";
-import { ReleaseViewError } from "../../exceptions/release-authorisation";
+import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import assert from "assert";
-
-// TODO we need to decide where we get the region from (running setting?) - or is it a config
-const REGION = "ap-southeast-2";
+import { ManifestService } from "../../manifests/manifest-service";
 
 @injectable()
 export class AwsAccessPointService {
   constructor(
+    @inject("Logger") private readonly logger: Logger,
+    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
-    @inject("Logger") private readonly logger: Logger,
-    @inject("Settings") private readonly settings: ElsaSettings,
+    @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject(UserService) private readonly userService: UserService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
@@ -53,14 +53,12 @@ export class AwsAccessPointService {
    * be used to test for the existence of a stack for the release (it uses the
    * minimum resources to detect this and immediately returns null for no stack).
    *
-   * @param user
    * @param releaseKey
+   * @returns details of the installed access point or null if none is installed
    */
-  public async getInstalledAccessPointResources(releaseKey: string): Promise<{
-    stackName: string;
-    stackId: string;
-    bucketNameMap: { [x: string]: string };
-  } | null> {
+  public async getInstalledAccessPointResources(
+    releaseKey: string
+  ): Promise<Stack | null> {
     await this.awsEnabledService.enabledGuard();
 
     const releaseStackName =
@@ -83,15 +81,38 @@ export class AwsAccessPointService {
 
     if (!releaseStack.Stacks || releaseStack.Stacks.length != 1) return null;
 
-    // TODO check stack status?? - should be complete_ok?
+    return releaseStack.Stacks[0];
+  }
 
-    const outputs = correctAccessPointTemplateOutputs(releaseStack.Stacks[0]);
+  /**
+   * Returns the details of what file maps to what access point
+   * alias for an installed access point share. This makes numerous
+   * AWS calls to walk through all the cloud formation stacks and
+   * access point policies.
+   *
+   * @param releaseKey
+   */
+  public async getInstalledAccessPointObjectMap(
+    releaseKey: string
+  ): Promise<Record<string, AccessPointEntry>> {
+    assert(
+      this.settings.deployedAwsAccount,
+      "There were no settings present for AWS account (are you running in AWS?)"
+    );
 
-    return {
-      stackName: releaseStackName,
-      stackId: releaseStack.Stacks[0].StackId!,
-      bucketNameMap: outputs,
-    };
+    const stackInstalled = await this.getInstalledAccessPointResources(
+      releaseKey
+    );
+
+    if (!stackInstalled)
+      throw new Error(
+        "Access point file list was requested but the release does not appear to have a current access point"
+      );
+
+    return await correctAccessPointUrls(
+      stackInstalled,
+      this.settings.deployedAwsAccount
+    );
   }
 
   /**
@@ -103,40 +124,39 @@ export class AwsAccessPointService {
    * @param tsvColumns an array of column names that will be used to construct the TSV columns (matching order)
    * @returns a proposed filename and the content of a TSV
    */
-  public async getAccessPointFileList(
+  public async getAccessPointBucketKeyManifest(
     user: AuthenticatedUser,
     releaseKey: string,
     tsvColumns: string[]
   ) {
-    const { userRole } =
+    const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
         releaseKey
       );
 
+    if (!(userRole === "Manager" || userRole === "Member")) {
+      throw new ReleaseViewError(releaseKey);
+    }
+
+    if (!isActivated) throw new Error("needs to be activated");
+
     await this.awsEnabledService.enabledGuard();
-    // find all the files encompassed by this release as a flat array of S3 URLs
-    // noting that these files will be S3 paths that
-    const filesArray = await getAllFileRecords(
-      this.edgeDbClient,
-      this.userService,
-      user,
-      releaseKey
+
+    const bucketKeyManifest =
+      await this.manifestService.getActiveBucketKeyManifest(releaseKey, ["s3"]);
+
+    assert(
+      bucketKeyManifest,
+      "Active manifest appeared to be null even though this release has been activated"
     );
 
-    const stackResources = await this.getInstalledAccessPointResources(
-      releaseKey
-    );
+    const map = await this.getInstalledAccessPointObjectMap(releaseKey);
 
-    if (!stackResources)
-      throw new Error(
-        "Access point file list was requested but the release does not appear to have a current access point"
-      );
-
-    for (const f of filesArray) {
-      if (f.objectStoreBucket in stackResources.bucketNameMap) {
-        f.objectStoreBucket = stackResources.bucketNameMap[f.objectStoreBucket];
-        f.objectStoreUrl = `s3://${f.objectStoreBucket}/${f.objectStoreKey}`;
+    for (const o of bucketKeyManifest.objects) {
+      if (o.objectStoreUrl in map) {
+        o.objectStoreBucket = map[o.objectStoreUrl].objectStoreBucket;
+        o.objectStoreUrl = map[o.objectStoreUrl].objectStoreUrl;
       }
     }
 
@@ -155,7 +175,7 @@ export class AwsAccessPointService {
       delimiter: "\t",
     });
 
-    const readableStream = Readable.from(filesArray);
+    const readableStream = Readable.from(bucketKeyManifest.objects);
     const buf = await streamConsumers.text(readableStream.pipe(stringifier));
 
     const counter = await this.releaseService.getIncrementingCounter(
@@ -189,7 +209,15 @@ export class AwsAccessPointService {
     // the AWS guard is switched on as this needs to write out to S3
     await this.awsEnabledService.enabledGuard();
 
-    assert(this.settings.aws);
+    // convince typescript that these are also valid
+    assert(
+      this.settings.aws,
+      "There were no settings present for AWS temporary buckets (are you running in AWS?)"
+    );
+    assert(
+      this.settings.deployedAwsRegion,
+      "There were no settings present for AWS region (are you running in AWS?)"
+    );
 
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
@@ -211,32 +239,36 @@ export class AwsAccessPointService {
         "There were no data sharing configuration settings for AWS Access Point saved for this release"
       );
 
-    // TODO use file manifest
-    // find all the files encompassed by this release as a flat array of S3 URLs
-    const filesArray = await getAllFileRecords(
-      this.edgeDbClient,
-      this.userService,
-      user,
-      releaseKey
+    const bucketKeyManifest =
+      await this.manifestService.getActiveBucketKeyManifest(releaseKey, ["s3"]);
+
+    assert(
+      bucketKeyManifest,
+      "Active manifest appeared to be null even though this release has been activated"
     );
 
+    if (bucketKeyManifest.objects.length === 0)
+      throw new Error(
+        "There were no S3 objects in the release so the AWS Access Point has not been installed"
+      );
+
     // make a (nested) CloudFormation templates that will expose only these
-    // files via an access point
+    // S3 files via an access point
     const accessPointTemplates =
       createAccessPointTemplateFromReleaseFileEntries(
         this.settings.aws.tempBucket,
-        REGION,
+        this.settings.deployedAwsRegion,
         releaseKey,
-        filesArray,
+        bucketKeyManifest.objects,
         [releaseInfo.dataSharingAwsAccessPoint.accountId],
         releaseInfo.dataSharingAwsAccessPoint.vpcId
       );
 
+    this.logger.debug(accessPointTemplates, "created access point templates");
+
     // we've made the templates - but we need to save them to known locations in S3 so that we
     // can install them
     let rootTemplate;
-
-    this.logger.debug(accessPointTemplates, "created access point templates");
 
     for (const apt of accessPointTemplates) {
       await this.s3Client.send(

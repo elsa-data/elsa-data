@@ -4,7 +4,7 @@ import { DacType } from "../../../backend/src/config/config-schema-dac";
 import { trpc } from "../helpers/trpc";
 import { useLoggedInUser } from "./logged-in-user-provider";
 import { SharerType } from "../../../backend/src/config/config-schema-sharer";
-import { SharerWithStatusType } from "../../../backend/src/business/services/sharer-service";
+import { SharerWithStatusType } from "../../../backend/src/business/services/sharers/sharer-service";
 
 export type LoggedInUserConfigRelay = {
   // the set of datasets currently available from the instance

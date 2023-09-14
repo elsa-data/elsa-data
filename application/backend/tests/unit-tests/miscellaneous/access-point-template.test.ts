@@ -1,7 +1,7 @@
 import {
   AccessPointTemplateToSave,
   createAccessPointTemplateFromReleaseFileEntries,
-} from "../../../src/business/services/_access-point-template-helper";
+} from "../../../src/business/services/sharers/aws-access-point/_access-point-template-helper";
 import { ManifestBucketKeyObjectType } from "../../../src/business/services/manifests/manifest-bucket-key-types";
 
 describe("Creating Access Point CloudFormation Templates", () => {
@@ -55,21 +55,19 @@ describe("Creating Access Point CloudFormation Templates", () => {
       "vpc-123456"
     );
 
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(1);
     expect(result.filter((x) => x.root)).toHaveLength(1);
 
     {
       const rootTemplateJson = getTemplateJson(result.filter((x) => x.root)[0]);
+
+      expect(rootTemplateJson).toBeDefined();
 
       expect(rootTemplateJson).toHaveProperty(
         "AWSTemplateFormatVersion",
         "2010-09-09"
       );
       expect(rootTemplateJson).toHaveProperty("Resources");
-
-      const onlySubStack = Object.values(rootTemplateJson.Resources)[0];
-
-      expect(onlySubStack).toHaveProperty("Type", "AWS::CloudFormation::Stack");
     }
   });
 
@@ -82,7 +80,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       ["123456789"]
     );
 
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(1);
     expect(result.filter((x) => x.root)).toHaveLength(1);
 
     {
@@ -98,4 +96,8 @@ describe("Creating Access Point CloudFormation Templates", () => {
   // TODO once we have any size splitting functionality (to prevent the templates getting too large for AWS)
   //      then we should do some extra unit testing detail - the testing is pretty basic at the moment because
   //      the templates will either work or not work (there isn't much logic)
+
+  // TODO addendum so now that size splitting has been implemented - these current tests are pretty useless
+  //      once we determine that access point is a viable mechanism - we should revisit with comprehensive
+  //      unit testsing of the construction process
 });

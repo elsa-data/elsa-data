@@ -52,7 +52,14 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
       {releasePatchMutate.isError && (
         <EagerErrorBoundary error={releasePatchMutate.error} />
       )}
-      <div className="prose flex flex-col">
+      <div className="prose-sm flex flex-col">
+        <p>
+          The copy out mechanism provides an administrator triggered mechanism
+          to bulk copy release objects into another bucket.
+        </p>
+
+        <div className="divider"></div>
+
         <label className="label">
           <span className="label-text">Destination for Copy Out</span>
         </label>

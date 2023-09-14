@@ -19,6 +19,12 @@ export type ElsaSettings = {
   // the URL by which this instance is found - used for generating email links and OIDC redirects etc
   deployedUrl: string;
 
+  // if deployed to AWS - the region and account the stack is running in
+  // many services need to know our deployed region/account in order to make sensible decisions about
+  // data egress etc
+  deployedAwsRegion?: string;
+  deployedAwsAccount?: string;
+
   // the namespace in which we should be doing service discovery for dynamic services
   serviceDiscoveryNamespace: string;
 

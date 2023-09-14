@@ -1,37 +1,27 @@
 import { FastifyInstance } from "fastify";
 import {
-  DuoLimitationCodedType,
   ReleaseManualSchema,
   ReleaseManualType,
   ReleasePatchOperationsSchema,
   ReleasePatchOperationsType,
-  ReleasePresignRequestSchema,
-  ReleasePresignRequestType,
-  ReleaseSizeType,
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/releases/release-service";
-import { AwsAccessPointService } from "../../../business/services/aws/aws-access-point-service";
-import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
-import { PresignedUrlService } from "../../../business/services/presigned-url-service";
-import { ReleaseSelectionService } from "../../../business/services/releases/release-selection-service";
-import { ManifestService } from "../../../business/services/manifests/manifest-service";
 
+/**
+ * The release routes are legacy REST routes that have not yet been moved to TRPC.
+ *
+ * Consider moving them when we can.
+ *
+ * @param fastify
+ * @param _opts
+ */
 export const releaseRoutes = async (
   fastify: FastifyInstance,
   _opts: { container: DependencyContainer }
 ) => {
-  const presignedUrlService = _opts.container.resolve(PresignedUrlService);
-  const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
-  const gcpStorageSharingService = _opts.container.resolve(
-    GcpStorageSharingService
-  );
   const releaseService = _opts.container.resolve(ReleaseService);
-  const releaseSelectionService = _opts.container.resolve(
-    ReleaseSelectionService
-  );
-  const manifestService = _opts.container.resolve(ManifestService);
 
   /**
    * The main route for altering fields in a release. Normally the UI component for the
@@ -61,6 +51,7 @@ export const releaseRoutes = async (
           "Due to our services not having transaction support we don't allow multiple operations in one PATCH"
         );
 
+      // as above - this is not really a for loop - this just deals with 1 PATCH operation - as all cases "return"
       for (const op of request.body) {
         switch (op.op) {
           case "add":
@@ -229,39 +220,7 @@ export const releaseRoutes = async (
     }
   );
 
-  fastify.post<{
-    Body: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>(
-    "/releases/:rid/cfn/manifest",
-    {
-      schema: {
-        body: ReleasePresignRequestSchema,
-      },
-    },
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const releaseKey = request.params.rid;
-      const presignHeaderArray = Array.isArray(request.body.presignHeader)
-        ? request.body.presignHeader
-        : [request.body.presignHeader];
-
-      const accessPointTsv = await awsAccessPointService.getAccessPointFileList(
-        authenticatedUser,
-        releaseKey,
-        presignHeaderArray
-      );
-
-      reply.header(
-        "Content-disposition",
-        `attachment; filename=${accessPointTsv.filename}`
-      );
-      reply.type("text/tab-separated-values");
-      reply.send(accessPointTsv.content);
-    }
-  );
-
+  // POST for create new release via "Manual" DAC
   fastify.post<{
     Body: ReleaseManualType;
     Reply: string;
@@ -276,6 +235,12 @@ export const releaseRoutes = async (
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
       reply.send(await releaseService.new(authenticatedUser, request.body));
     }
+  );
+
+  /* TEMPORARILY DISABLED - NEED TO RE-ENABLE FOR A PRODUCTION GCS BUILD - BUT ALSO PROBABLY NEEDS TO BE MOVED TO BACKGROUND JOB
+
+  const gcpStorageSharingService = _opts.container.resolve(
+    GcpStorageSharingService,
   );
 
   fastify.post<{
@@ -295,10 +260,10 @@ export const releaseRoutes = async (
         await gcpStorageSharingService.addUsers(
           authenticatedUser,
           releaseKey,
-          users
-        )
+          users,
+        ),
       );
-    }
+    },
   );
 
   fastify.post<{
@@ -318,93 +283,9 @@ export const releaseRoutes = async (
         await gcpStorageSharingService.deleteUsers(
           authenticatedUser,
           releaseKey,
-          users
-        )
+          users,
+        ),
       );
-    }
-  );
-
-  fastify.post<{
-    Body?: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>(
-    "/releases/:rid/tsv-manifest-archive",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const presignHeader = request.body?.presignHeader ?? [];
-      const presignHeaderArray = Array.isArray(presignHeader)
-        ? presignHeader
-        : [presignHeader];
-
-      const releaseKey = request.params.rid;
-
-      const manifest = await manifestService.getActiveTsvManifestAsArchive(
-        presignedUrlService,
-        authenticatedUser,
-        releaseKey,
-        presignHeaderArray
-      );
-
-      if (!manifest) {
-        reply.status(404).send();
-        return;
-      }
-
-      reply.raw.writeHead(200, {
-        "Content-Disposition": `attachment; filename=manifest-${releaseKey}.zip`,
-        "Content-Type": "application/octet-stream",
-      });
-
-      manifest.pipe(reply.raw);
-    }
-  );
-
-  fastify.post<{
-    Body?: ReleasePresignRequestType;
-    Params: { rid: string };
-  }>(
-    "/releases/:rid/tsv-manifest-plaintext",
-    {},
-    async function (request, reply) {
-      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
-
-      const presignHeader = request.body?.presignHeader ?? [];
-      const presignHeaderArray = Array.isArray(presignHeader)
-        ? presignHeader
-        : [presignHeader];
-
-      if (presignHeader.includes("objectStoreSigned")) {
-        // This would ideally be checked with an appropriate type for the request
-        // `Body`. But that'd involve defining a separate type almost identical
-        // to `ReleasePresignRequestType`, which is too repetitious for my taste.
-        reply.status(400).send();
-        return;
-      }
-
-      const releaseKey = request.params.rid;
-
-      const manifest = await manifestService.getActiveTsvManifestAsString(
-        presignedUrlService,
-        authenticatedUser,
-        releaseKey,
-        presignHeaderArray
-      );
-
-      if (!manifest) {
-        reply.status(404).send();
-        return;
-      }
-
-      reply
-        .status(200)
-        .header(
-          "Content-Disposition",
-          `attachment; filename=manifest-${releaseKey}.tsv`
-        )
-        .header("Content-Type", "text/tab-separated-values")
-        .send(manifest);
-    }
-  );
+    },
+  ); */
 };

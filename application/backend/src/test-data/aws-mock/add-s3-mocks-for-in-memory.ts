@@ -1,5 +1,3 @@
-import { promises as fs } from "fs";
-import { createHash } from "crypto";
 import { AwsStub } from "aws-sdk-client-mock";
 import {
   GetObjectCommand,
@@ -10,7 +8,7 @@ import {
   StorageClass,
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
-import { sdkStreamMixin } from "@aws-sdk/util-stream-node";
+import { sdkStreamMixin } from "@smithy/util-stream";
 
 export type AustralianGenomicsDirectoryStructureObject = {
   // the path of the object *within the overall dataset*.. i.e. "2010-01/mybam.bam"

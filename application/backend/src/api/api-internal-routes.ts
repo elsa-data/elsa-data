@@ -11,6 +11,7 @@ import { UserService } from "../business/services/user-service";
 import { isEmpty, isString, trim } from "lodash";
 import { ElsaSettings } from "../config/elsa-settings";
 import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
+import { manifestDownloadRoutes } from "./routes/internal/manifest-download-routes";
 
 type Opts = {
   container: DependencyContainer;
@@ -105,7 +106,10 @@ export function sendPagedResult<T>(
 
 /**
  * Defined a set of internal session/cookie authenticated
- * routes.
+ * routes. These are routes used only by the Elsa Data React
+ * front-end and are tied to its implementation (so they do
+ * not need to support legacy clients - they only need to support
+ * the current version).
  *
  * @param fastify
  * @param opts
@@ -134,5 +138,6 @@ export const apiInternalRoutes = async (
     };
 
     fastify.register(releaseRoutes, routeOpts);
+    fastify.register(manifestDownloadRoutes, routeOpts);
   });
 };

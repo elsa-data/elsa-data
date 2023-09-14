@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import {
   applyHtsgetRestriction,
   releaseGetAllByUser,
+  releaseGetCounterNext,
   removeHtsgetRestriction,
 } from "../../../../dbschema/queries";
 import { auditReleaseUpdateStart, auditSuccess } from "../../../audit-helpers";
@@ -285,23 +286,10 @@ ${release.applicantEmailAddresses}
       releaseKey
     );
 
-    const { releaseQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey
-    );
+    // this integer is actually global to the db - so we don't need specific
+    // permissions into a release...
 
-    // TODO: this doesn't actually autoincrement .. I can't work out the typescript syntax though
-    // (I'm not sure its implemented in edgedb yet AP 10 Aug)
-    const next = await e
-      .select(releaseQuery, (r) => ({
-        counter: true,
-      }))
-      .assert_single()
-      .run(this.edgeDbClient);
-
-    if (!next) throw new Error("Couldn't find");
-
-    return next.counter;
+    return await releaseGetCounterNext(this.edgeDbClient);
   }
 
   public async addDiseaseToApplicationCoded(

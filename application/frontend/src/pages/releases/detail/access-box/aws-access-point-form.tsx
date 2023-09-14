@@ -1,6 +1,7 @@
 import React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
+import { TsvDownloadDiv } from "./tsv-download-div";
 
 type Props = {
   releaseKey: string;
@@ -19,24 +20,38 @@ export const AwsAccessPointForm: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
-  const queryClient = useQueryClient();
-
   return (
-    <div>
-      <p>
-        Add button to download manifest.
-        <br />
-        {releaseData?.dataSharingAwsAccessPoint?.name}
-        <br />
-        {releaseData?.dataSharingAwsAccessPoint?.vpcId}
-        <br />
-        {releaseData?.dataSharingAwsAccessPoint?.accountId}
-        <br />
+    <>
+      <div className="prose-sm">
+        <p>
+          AWS access points allow the direct native sharing of S3 objects to
+          another AWS account/network.
+        </p>
+        {releaseData?.dataSharingAwsAccessPoint?.installed && (
+          <p>
+            This access point is shared to VPC{" "}
+            <span className="font-mono">
+              {releaseData?.dataSharingAwsAccessPoint?.vpcId}
+            </span>
+            . The VPC lives in AWS account{" "}
+            <span className="font-mono">
+              {releaseData?.dataSharingAwsAccessPoint?.accountId}
+            </span>
+            .
+          </p>
+        )}
+        {/*{releaseData?.dataSharingAwsAccessPoint?.name}
         {releaseData?.dataSharingAwsAccessPoint?.installed}
-        <br />
-        {releaseData?.dataSharingAwsAccessPoint?.installedStackArn}
-        <br />
-      </p>
-    </div>
+        {releaseData?.dataSharingAwsAccessPoint?.installedStackArn} */}
+      </div>
+
+      <div className="divider"></div>
+
+      <TsvDownloadDiv
+        actionUrl={`/api/releases/${releaseKey}/tsv-manifest-aws-access-point`}
+        releaseActivated={!!releaseData.activation}
+        fieldsToExclude={[]}
+      />
+    </>
   );
 };

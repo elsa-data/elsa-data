@@ -20,8 +20,8 @@
       type: "aws-access-point",
       allowedVpcs: {
         "UMCCR Nextflow Tower": {
-          accountId: "123456789012",
-          vpcId: "vpc-1234567",
+          accountId: "842385035780",
+          vpcId: "vpc-0ae1fbadcf21859f3",
         },
         "PeterMac Jupyter Notebook": {
           accountId: "012345678912",

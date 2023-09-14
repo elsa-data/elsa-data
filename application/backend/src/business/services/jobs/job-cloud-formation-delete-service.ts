@@ -12,7 +12,7 @@ import {
   DeleteStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
-import { AwsAccessPointService } from "../aws/aws-access-point-service";
+import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
 

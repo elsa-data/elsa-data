@@ -3,7 +3,7 @@ import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-servi
 import { AwsEnabledService } from "./business/services/aws/aws-enabled-service";
 import { AwsPresignedUrlService } from "./business/services/aws/aws-presigned-url-service";
 import { AwsS3Service } from "./business/services/aws/aws-s3-service";
-import { AwsAccessPointService } from "./business/services/aws/aws-access-point-service";
+import { AwsAccessPointService } from "./business/services/sharers/aws-access-point/aws-access-point-service";
 import { AwsCloudTrailLakeService } from "./business/services/aws/aws-cloudtrail-lake-service";
 import { GcpEnabledService } from "./business/services/gcp-enabled-service";
 import { GcpStorageSharingService } from "./business/services/gcp-storage-sharing-service";

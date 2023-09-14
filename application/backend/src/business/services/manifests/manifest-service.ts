@@ -8,6 +8,7 @@ import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
 import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
 import {
+  KnownObjectProtocolType,
   ManifestBucketKeyType,
   ManifestTsvBodyType,
 } from "./manifest-bucket-key-types";
@@ -305,14 +306,25 @@ export class ManifestService {
     return archive;
   }
 
+  /**
+   * Return the active manifest for the given release in a form
+   * that is basically a simple list of file objects.
+   *
+   * @param releaseKey
+   * @param filterByProtocol a list of protocol (s3, gs, r2) to allow in the output, or an array containing "*" to mean all protocols
+   */
   public async getActiveBucketKeyManifest(
-    releaseKey: string
+    releaseKey: string,
+    filterByProtocol: (KnownObjectProtocolType | "*")[] = ["*"]
   ): Promise<ManifestBucketKeyType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
 
     // TODO fix exceptions here
     if (!masterManifest) return null;
 
-    return transformMasterManifestToBucketKeyManifest(masterManifest);
+    return transformMasterManifestToBucketKeyManifest(
+      masterManifest,
+      filterByProtocol
+    );
   }
 }

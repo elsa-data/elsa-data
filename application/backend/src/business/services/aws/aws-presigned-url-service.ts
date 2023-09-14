@@ -1,10 +1,10 @@
 import { S3Client } from "@aws-sdk/client-s3";
 import { inject, injectable } from "tsyringe";
 import { AwsEnabledService } from "./aws-enabled-service";
-import { HttpRequest } from "@aws-sdk/protocol-http";
+import { HttpRequest } from "@smithy/protocol-http";
 import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
-import { parseUrl } from "@aws-sdk/url-parser";
-import { Hash } from "@aws-sdk/hash-node";
+import { parseUrl } from "@smithy/url-parser";
+import { Hash } from "@smithy/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { IPresignedUrlProvider } from "../presigned-url-service";

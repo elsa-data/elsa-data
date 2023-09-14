@@ -6,7 +6,7 @@ import {
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../../config/elsa-settings";
-import { AwsAccessPointService } from "./aws-access-point-service";
+import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { Logger } from "pino";
 import { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
 
@@ -289,13 +289,14 @@ export class AwsCloudTrailLakeService {
             );
           }
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
-          const bucketNameMap = (
-            await this.awsAccessPointService.getInstalledAccessPointResources(
+          const map =
+            await this.awsAccessPointService.getInstalledAccessPointObjectMap(
               releaseKey
-            )
-          )?.bucketNameMap;
+            );
 
-          const apAlias = bucketNameMap ? Object.values(bucketNameMap) : [];
+          const apAlias = new Set<string>(
+            Object.values(map).map((ape) => ape.objectStoreBucket)
+          );
 
           for (const a of apAlias) {
             const sqlQueryStatement = this.createSQLQueryByAccessPointAlias({
@@ -326,7 +327,6 @@ export class AwsCloudTrailLakeService {
           this.logger.warn(
             `No matching query type for cloudTrailLake. ('${method}')`
           );
-          continue;
         }
       }
     }
