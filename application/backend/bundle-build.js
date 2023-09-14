@@ -5,7 +5,11 @@ const esbuildPluginPino = require("esbuild-plugin-pino");
 build({
   platform: "node",
   target: "node18",
-  entryPoints: ["src/entrypoint.ts", "jobs/entrypoint-job-handler.ts"],
+  entryPoints: [
+    "src/entrypoint.ts",
+    "jobs/entrypoint-job-handler.ts",
+    "jobs/entrypoint-data-egress-update-handler.ts",
+  ],
   // NOTE these modules listed as externals must also be manually copied from the node_modules
   // in the actual Docker image building
   external: ["sodium-native", "node-gyp-build", "jsonpath"],
