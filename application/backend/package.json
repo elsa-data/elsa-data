@@ -30,7 +30,7 @@
     "//edgemigrate": "Brings the current db up to date",
     "edgemigrate": "edgedb migrate",
     "//edgetypes": "Generates Typescript classes that match the schema of the *current* project EdgeDb",
-    "edgetypes": "generate queries --file && generate edgeql-js && generate interfaces",
+    "edgetypes": "generate queries --file && generate edgeql-js --force-overwrite  && generate interfaces",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
     "test:blank": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.minimum node --loader ts-node/esm -r dotenv/config src/entrypoint.ts db-blank",
