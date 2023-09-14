@@ -124,7 +124,7 @@ export const apiInternalRoutes = async (
   const userService = opts.container.resolve(UserService);
 
   // We need to set this as `preHandler` as csrf token might be in the body request
-  fastify.addHook("preHandler", fastify.csrfProtection);
+  fastify.addHook("preHandler", fastify.csrfProtection as any);
 
   const authInternalHook = createSessionCookieRouteHook(userService);
 

@@ -21,7 +21,7 @@ export const trpcRoutes = async (
     trpcCreateContext: (opts: CreateFastifyContextOptions) => Promise<Context>;
   }
 ) => {
-  fastify.addHook("preHandler", fastify.csrfProtection);
+  fastify.addHook("preHandler", fastify.csrfProtection as any);
 
   await fastify.register(fastifyTRPCPlugin, {
     trpcOptions: {
