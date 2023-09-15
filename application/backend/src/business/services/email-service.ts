@@ -62,7 +62,7 @@ export class EmailService {
    * @param tryCount number of times to retry
    * @param errMsg error message
    */
-  public async retry(
+  private async retry(
     fn: () => Promise<any>,
     tryCount: number,
     errMsg: string
@@ -86,7 +86,7 @@ export class EmailService {
    * locals with the template dictionary values.
    * @param locals
    */
-  public mergeLocals(locals?: Record<string, string>): Record<string, string> {
+  private mergeLocals(locals?: Record<string, string>): Record<string, string> {
     const localsReturned = locals !== undefined ? locals : {};
 
     if (this.settings.emailer?.templateDictionary !== undefined) {
@@ -117,6 +117,9 @@ export class EmailService {
     return await this.sendEmail(
       async (transport, from, to) => {
         const email = new Email({
+          views: {
+            root: this.settings.emailer?.templateRootPath,
+          },
           message: {
             from,
           },
