@@ -1,4 +1,4 @@
-import { chunk, groupBy, size } from "lodash";
+import { chunk, groupBy, isEmpty, size } from "lodash";
 import { randomBytes } from "crypto";
 import { Stack } from "@aws-sdk/client-cloudformation";
 import { ManifestBucketKeyObjectType } from "../../manifests/manifest-bucket-key-types";
@@ -6,6 +6,7 @@ import {
   GetAccessPointPolicyCommand,
   S3ControlClient,
 } from "@aws-sdk/client-s3-control";
+import { Logger } from "pino";
 
 export type AccessPointTemplateToSave = {
   root: boolean;
@@ -22,6 +23,10 @@ export type AccessPointEntry = Pick<
 > & {
   accessPointUnique?: string;
 };
+
+const VPC_ID_KEY = "VpcId";
+
+const ACCOUNT_IDS_KEY = "AccountIds";
 
 const NAME_SUFFIX = "Name";
 const ALIAS_SUFFIX = "Alias";
@@ -74,8 +79,9 @@ export async function correctAccessPointUrls(
   for (const o of stack.Outputs) {
     const stackOutputMatch = o.OutputValue!.match(STACK_OUTPUT_VALUE_REGEX);
 
+    // we have a couple of other outputs of vpc etc that we want to ignore
     if (!stackOutputMatch) {
-      throw new Error("Found stack output not matching our regex");
+      continue;
     }
 
     const accessPointUnique = o.OutputKey!;
@@ -266,14 +272,16 @@ function createAccessPointResourceForCloudFormation(
  * and then installed. The templates will create an Access Point sharing the
  * release files to a specific account/vpc.
  *
- * @param templateBucket
- * @param templateRegion
+ * @param logger
+ * @param templateBucket the bucket where the template will eventually live
+ * @param templateRegion the region where the template will eventually be installed
  * @param releaseKey a friendly named identifier for the release
  * @param objects the list of S3 objects that we are sharing
  * @param shareToAccountIds an array of account ids that the access point should share to
  * @param shareToVpcId if present a specific VPC id that should be specified in the access point
  */
-export function createAccessPointTemplateFromReleaseFileEntries(
+export function createAccessPointTemplateFromObjects(
+  logger: Logger,
   templateBucket: string,
   templateRegion: string,
   releaseKey: string,
@@ -286,6 +294,13 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   const results: AccessPointTemplateToSave[] = [];
 
   const objectGroups = chunkIntoBiteSizes(objects);
+
+  logger.debug(objectGroups, "objects for access point template in groups");
+
+  if (isEmpty(objectGroups))
+    throw new Error(
+      "Cannot create an access point template if there are no objects"
+    );
 
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
   // (these end up going into a temporary bucket and are later removed)
@@ -315,7 +330,7 @@ export function createAccessPointTemplateFromReleaseFileEntries(
   // our parent
   const closeSubStack = () => {
     // we are safe from calling close() before we have even started making substacks
-    if (subStackCount > 0) {
+    if (!isEmpty(subStackCurrent.Resources)) {
       const templateHttps = `https://${templateBucket}.s3.${templateRegion}.amazonaws.com/${stackId}/${subStackAccessPointName}.template`;
 
       rootStack.Resources[subStackStackName] = {
@@ -353,6 +368,15 @@ export function createAccessPointTemplateFromReleaseFileEntries(
           },
         };
       }
+
+      if (shareToVpcId)
+        rootStack.Outputs[VPC_ID_KEY] = {
+          Value: shareToVpcId,
+        };
+
+      rootStack.Outputs[ACCOUNT_IDS_KEY] = {
+        Value: shareToAccountIds.join(","),
+      };
 
       results.push({
         root: false,

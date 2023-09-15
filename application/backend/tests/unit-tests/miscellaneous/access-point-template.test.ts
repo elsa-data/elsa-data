@@ -1,12 +1,14 @@
 import {
   AccessPointTemplateToSave,
-  createAccessPointTemplateFromReleaseFileEntries,
+  createAccessPointTemplateFromObjects,
 } from "../../../src/business/services/sharers/aws-access-point/_access-point-template-helper";
 import { ManifestBucketKeyObjectType } from "../../../src/business/services/manifests/manifest-bucket-key-types";
+import { pino } from "pino";
 
 describe("Creating Access Point CloudFormation Templates", () => {
   let singleBucketFiles: ManifestBucketKeyObjectType[];
   let dualBucketFiles: ManifestBucketKeyObjectType[];
+  const logger = pino({});
 
   const getTemplateJson = (apt: AccessPointTemplateToSave): any =>
     JSON.parse(apt.content);
@@ -46,7 +48,8 @@ describe("Creating Access Point CloudFormation Templates", () => {
   });
 
   it("Test Basic Creation of an Single Bucket Access Point Template", () => {
-    const result = createAccessPointTemplateFromReleaseFileEntries(
+    const result = createAccessPointTemplateFromObjects(
+      logger,
       "BUCKET",
       "REGION",
       "RELEASEID",
@@ -55,7 +58,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       "vpc-123456"
     );
 
-    expect(result).toHaveLength(1);
+    expect(result).toHaveLength(2);
     expect(result.filter((x) => x.root)).toHaveLength(1);
 
     {
@@ -72,7 +75,8 @@ describe("Creating Access Point CloudFormation Templates", () => {
   });
 
   it("Test Basic Creation of an Dual Bucket Access Point Template", () => {
-    const result = createAccessPointTemplateFromReleaseFileEntries(
+    const result = createAccessPointTemplateFromObjects(
+      logger,
       "BUCKET",
       "REGION",
       "RELEASEID",
@@ -80,7 +84,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       ["123456789"]
     );
 
-    expect(result).toHaveLength(1);
+    expect(result).toHaveLength(2);
     expect(result.filter((x) => x.root)).toHaveLength(1);
 
     {
