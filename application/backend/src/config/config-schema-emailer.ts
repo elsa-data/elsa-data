@@ -10,6 +10,11 @@ const EmailerCommon = {
     .describe(
       "Defines the email address and display name that Elsa uses to send emails."
     ),
+  templateRootPath: z
+    .optional(z.string())
+    .describe(
+      "The path to the root folder locating the tree of email templates. If left undefined this will resolve to an 'emails' folder in the current directory."
+    ),
   templateDictionary: z
     .record(z.string())
     .default({})
