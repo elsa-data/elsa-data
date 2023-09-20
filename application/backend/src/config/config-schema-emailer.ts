@@ -8,25 +8,30 @@ const EmailerCommon = {
     })
     .required()
     .describe(
-      "Defines the email address and display name that Elsa uses to send emails."
+      "Defines the email address and display name that Elsa uses to send emails.",
     ),
   templateRootPath: z
     .optional(z.string())
     .describe(
-      "The path to the root folder locating the tree of email templates. If left undefined this will resolve to an 'emails' folder in the current directory."
+      "The path to the root folder locating the tree of email templates. If left undefined this will resolve to an 'emails' folder in the current directory.",
+    ),
+  sendEmails: z
+    .optional(z.boolean())
+    .describe(
+      "Whether emails should actually be sent or if they are just built and rendered locally. If undefined, sends emails if NODE_ENV is not development.",
     ),
   templateDictionary: z
     .record(z.string())
     .default({})
     .describe(
       "A dictionary of template values that will be replaced in the pug email templates. This will override" +
-        "the default values passed to locals object in the email template, or add new values if the different templates are used."
+        "the default values passed to locals object in the email template, or add new values if the different templates are used.",
     ),
   defaults: z
     .optional(z.any())
     .describe(
       "Set defaults that get merged into every message object. " +
-        "These are passed directly to the nodemailer createTransport."
+        "These are passed directly to the nodemailer createTransport.",
     ),
 };
 
@@ -47,7 +52,7 @@ const EmailerSMTP = z.object({
     .any()
     .describe(
       "These are passed to the nodemailer createTransport function using the options property: " +
-        "https://nodemailer.com/smtp/#general-options"
+        "https://nodemailer.com/smtp/#general-options",
     ),
   ...EmailerCommon,
 });

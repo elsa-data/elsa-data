@@ -76,12 +76,12 @@
       name: "Elsa Data",
       address: "no-reply@umccr.org",
     },
+    sendEmails: false,
   },
   devTesting: {
     allowTestUsers: true,
     allowTestRoutes: true,
     mockAwsCloud: true,
-    sendEmails: false,
   },
   superAdmins: [
     {
