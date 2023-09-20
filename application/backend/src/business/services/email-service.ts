@@ -21,13 +21,18 @@ export class EmailService {
     @inject(AuditEventService)
     private readonly auditEventService: AuditEventService,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
   ) {}
 
   /**
    * Setup the mail service.
    */
   public async setup() {
+    if (this.settings.emailer === undefined) {
+      this.logger.info("emailer not set up");
+      return;
+    }
+
     if (
       this.settings.emailer?.mode === "SES" &&
       (await this.awsEnabledService.isEnabled())
@@ -38,12 +43,12 @@ export class EmailService {
           maxConnections: this.settings.emailer.maxConnections,
           sendingRate: this.settings.emailer.sendingRate,
         },
-        this.settings.emailer.defaults
+        this.settings.emailer.defaults,
       );
     } else if (this.settings.emailer?.mode === "SMTP") {
       this.transporter = createTransport(
         this.settings.emailer.options,
-        this.settings.emailer.defaults
+        this.settings.emailer.defaults,
       );
     }
 
@@ -65,7 +70,7 @@ export class EmailService {
   private async retry(
     fn: () => Promise<any>,
     tryCount: number,
-    errMsg: string
+    errMsg: string,
   ): Promise<[any, number]> {
     let err = undefined;
 
@@ -92,7 +97,7 @@ export class EmailService {
     if (this.settings.emailer?.templateDictionary !== undefined) {
       return Object.assign(
         localsReturned,
-        this.settings.emailer.templateDictionary
+        this.settings.emailer.templateDictionary,
       );
     } else {
       return localsReturned;
@@ -108,9 +113,9 @@ export class EmailService {
   public async sendEmailTemplate(
     template: string,
     to: string,
-    locals?: Record<string, string>
+    locals?: Record<string, string>,
   ) {
-    if (this.settings.emailer?.from === undefined) {
+    if (this.settings.emailer === undefined) {
       return;
     }
 
@@ -123,7 +128,12 @@ export class EmailService {
           message: {
             from,
           },
-          send: this.settings.devTesting?.sendEmails,
+          ...(this.settings.emailer?.sendEmails !== undefined && {
+            send: this.settings.emailer.sendEmails,
+          }),
+          ...(this.settings.emailer?.previewEmails !== undefined && {
+            preview: this.settings.emailer.previewEmails,
+          }),
           transport: transport,
         });
 
@@ -138,7 +148,7 @@ export class EmailService {
         });
       },
       this.settings.emailer.from,
-      to
+      to,
     );
   }
 
@@ -149,10 +159,10 @@ export class EmailService {
     sendFn: (
       transporter: Transporter,
       from: Address,
-      to: string
+      to: string,
     ) => Promise<any>,
     from: Address,
-    to: string
+    to: string,
   ): Promise<any> {
     return await this.auditEventService.systemAuditEventPattern(
       "Email sent",
@@ -169,7 +179,7 @@ export class EmailService {
             return await sendFn(this.transporter, from, to);
           },
           tryCount,
-          "sending mail"
+          "sending mail",
         );
 
         await completeAuditFn(
@@ -178,7 +188,7 @@ export class EmailService {
             to,
             tryCount: tried,
           },
-          this.edgeDbClient
+          this.edgeDbClient,
         );
 
         return result;
@@ -188,7 +198,7 @@ export class EmailService {
         to,
       },
       false,
-      4
+      4,
     );
   }
 }

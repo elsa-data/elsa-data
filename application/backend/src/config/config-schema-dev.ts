@@ -7,13 +7,13 @@ export const DevTestingSchema = z.optional(
         .boolean()
         .default(true)
         .describe(
-          "Whether to source the frontend build direct from the dev build location."
+          "Whether to source the frontend build direct from the dev build location.",
         ),
       allowTestUsers: z
         .boolean()
         .default(true)
         .describe(
-          "If test users should be allowed, including various techniques used to adjust user sessions."
+          "If test users should be allowed, including various techniques used to adjust user sessions.",
         ),
       allowTestRoutes: z
         .boolean()
@@ -23,18 +23,12 @@ export const DevTestingSchema = z.optional(
         .boolean()
         .default(false)
         .describe(
-          "If we should replace the AWS cloud clients with ones that always returns mock values."
-        ),
-      sendEmails: z
-        .boolean()
-        .default(false)
-        .describe(
-          "Whether emails should actually be sent or if they are just built and rendered locally."
+          "If we should replace the AWS cloud clients with ones that always returns mock values.",
         ),
     })
     .describe(
-      "Sets the dev config options. Should only have an effect if `NODE_ENV=development` is also set."
-    )
+      "Sets the dev config options. Should only have an effect if `NODE_ENV=development` is also set.",
+    ),
 );
 
 export type DevTestingType = z.infer<typeof DevTestingSchema>;

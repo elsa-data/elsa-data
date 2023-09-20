@@ -43,6 +43,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       address: "no-reply@example.com",
     },
     templateDictionary: {},
+    sendEmails: true,
   },
   sharers: [
     {
@@ -147,7 +148,6 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
     allowTestRoutes: true,
     allowTestUsers: true,
     mockAwsCloud: false,
-    sendEmails: true,
   },
   releaseKeyPrefix: "R",
 });
