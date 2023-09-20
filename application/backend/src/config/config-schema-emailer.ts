@@ -20,6 +20,11 @@ const EmailerCommon = {
     .describe(
       "Whether emails should actually be sent or if they are just built and rendered locally. If undefined, sends emails if NODE_ENV is not development.",
     ),
+  previewEmails: z
+    .optional(z.boolean())
+    .describe(
+      "Whether emails should be previewed. If undefined, previews emails if NODE_ENV is development.",
+    ),
   templateDictionary: z
     .record(z.string())
     .default({})

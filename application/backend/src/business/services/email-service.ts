@@ -131,6 +131,9 @@ export class EmailService {
           ...(this.settings.emailer?.sendEmails !== undefined && {
             send: this.settings.emailer.sendEmails,
           }),
+          ...(this.settings.emailer?.previewEmails !== undefined && {
+            preview: this.settings.emailer.previewEmails,
+          }),
           transport: transport,
         });
 
