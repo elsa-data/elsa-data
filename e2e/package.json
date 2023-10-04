@@ -2,20 +2,18 @@
   "name": "elsa-data-e2e",
   "version": "1.0.0",
   "description": "E2E test scripts for any deployment of Elsa Data",
-  "main": "index.js",
   "private": true,
   "scripts": {
     "build": "npm --prefix ../application/frontend run dev:build && npm --prefix ../application/backend run edgetypes",
     "test": "npx playwright test --trace on"
   },
-  "keywords": [],
   "author": "UMCCR",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.28.0",
-    "@types/node-7z": "^2.1.5"
+    "@playwright/test": "1.38.1",
+    "@types/node-7z": "2.1.6"
   },
   "dependencies": {
-    "node-7z": "^3.0.0"
+    "node-7z": "3.0.0"
   }
 }
