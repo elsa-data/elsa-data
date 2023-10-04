@@ -16,7 +16,7 @@ export const TENG_AWS_EVENT_DATA_STORE_ID = "10g-event-data-store-id";
 // even though our elsa settings are a factory - we don't want to have to do this work every
 // time as it has to go to the internet and discover the CIlogon OIDC settings
 const ciLogonIssuer = new Issuer({
-  issuer: "https://cilogon.org",
+  issuer: "https://test.cilogon.org",
 });
 
 /**

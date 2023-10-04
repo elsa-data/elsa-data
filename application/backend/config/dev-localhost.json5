@@ -3,7 +3,7 @@
   // should then overwrite these empty values
   // in the absence of setting these elsewhere - at least the system will start up - albeit with login problems!
   oidc: {
-    issuerUrl: "https://test.cilogon.org",
+    issuerUrl: "",
     clientId: "aclientid",
     clientSecret: "abc",
   },
