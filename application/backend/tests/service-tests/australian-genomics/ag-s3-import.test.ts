@@ -321,7 +321,6 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      user,
       "australian-genomics-directories"
     );
 
@@ -398,7 +397,6 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      user,
       "australian-genomics-directories"
     );
 
@@ -470,7 +468,6 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      user,
       "australian-genomics-directories"
     );
 
@@ -507,7 +504,6 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      user,
       "australian-genomics-directories"
     );
 
@@ -540,6 +536,9 @@ describe("AWS s3 client", () => {
     );
   });
 
+  /* No longer initiated by known user - so no user audit event..
+     possibly migrate to pure system event.. in which case this test is irrelevant anyhow..
+     but here as a reminder
   it("Test User Audit Event", async () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
     const datasetService = testContainer.resolve(DatasetService);
@@ -557,7 +556,6 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      user,
       "australian-genomics-directories"
     );
 
@@ -576,4 +574,5 @@ describe("AWS s3 client", () => {
     expect(userAuditEvent[0].whoDisplayName).toEqual(user.displayName);
     expect(userAuditEvent[0].actionCategory).toEqual("U");
   });
+   */
 });
