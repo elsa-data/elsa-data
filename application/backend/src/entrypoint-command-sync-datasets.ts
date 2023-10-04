@@ -22,7 +22,7 @@ export async function commandSyncDatasets(
   const { settings, logger } = getServices(dc);
   const agIndexService = dc.resolve(S3IndexApplicationService);
 
-  // no point in doing a dataset twice so put into a set
+  // no point in doing a dataset twice - even if the user lists them twice - so put the input into a set
   const datasetUriSet = new Set<string>(datasetUriArray);
 
   for (const datasetUri of datasetUriSet) {
@@ -38,10 +38,10 @@ export async function commandSyncDatasets(
 
         switch (configuredDataset.loader) {
           case "australian-genomics-directories":
-            // TODO not important really as there are other mechanisms to trigger this
-            // need to break this functionality out from the service and have it as a directly
-            // executable code.. OR introduce a user where to perform it
-            // await agIndexService.syncWithDatabaseFromDatasetUri(datasetUri, user, "australian-genomics-directories");
+            await agIndexService.syncWithDatabaseFromDatasetUri(
+              datasetUri,
+              "australian-genomics-directories"
+            );
             break;
           case "dev":
             // I guess we could restrict this loader to literally dev only (we could do a check here) - but this
