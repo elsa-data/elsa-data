@@ -124,7 +124,7 @@
     "temp": "0.9.4",
     "tsyringe": "4.8.0",
     "uuid": "9.0.1",
-    "zod": "3.22.2"
+    "zod": "3.22.3"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",
