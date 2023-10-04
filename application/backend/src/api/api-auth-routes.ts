@@ -31,8 +31,15 @@ import {
 const FILENAME_FOR_LOGGING = "api-auth-routes";
 
 function createClient(settings: ElsaSettings, redirectUri: string) {
-  if (!settings.oidc || !settings.oidc.issuer)
-    throw new Error("Cannot establish OIDC login without OIDC settings");
+  // we allow the absence of settings to silently go through - but will display
+  // a proper exception if the undefined BaseClient is attempted to be used in practice
+  if (
+    !settings.oidc ||
+    !settings.oidc.issuer ||
+    !settings.oidc.clientId ||
+    !settings.oidc.clientSecret
+  )
+    return undefined;
 
   return new settings.oidc.issuer.Client({
     client_id: settings.oidc.clientId,
@@ -68,6 +75,11 @@ export const apiAuthRoutes = async (
   // it constructs the appropriate auth url (as known to the backend only)
   // and sends it back to the client as a redirect to start the oidc flow
   fastify.post("/login", async (request, reply) => {
+    if (!client)
+      throw new Error(
+        "OIDC client not configured so cannot proceed with an OIDC login flow"
+      );
+
     // before changing please read https://danielfett.de/2020/05/16/pkce-vs-nonce-equivalent-or-not/
     // note though we are using state rather than the newer PKCE
 
@@ -174,6 +186,11 @@ export const callbackRoutes = async (
   // it expects a 'code' parameter on the URL and uses that to get a token set
   // from the OIDC flow
   fastify.get("/", async (request, reply) => {
+    if (!client)
+      throw new Error(
+        "OIDC client not configured so cannot proceed with an OIDC login flow"
+      );
+
     // extract raw params from the request
     const params = client.callbackParams(request.raw);
 

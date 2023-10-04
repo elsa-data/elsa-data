@@ -107,13 +107,12 @@ export async function insertScenario1(dc: DependencyContainer) {
 
       await s3IndexService.syncWithDatabaseFromDatasetUri(
         SMARTIE_URI,
-        datasetAdministratorUser,
         "australian-genomics-directories"
       );
     }
   }
 
-  {
+  /*  {
     // this shouldn't be necessary - the synchronise service should upsert this from the config files
     await e
       .insert(e.dataset.Dataset, {
@@ -129,10 +128,11 @@ export async function insertScenario1(dc: DependencyContainer) {
       datasetAdministratorUser,
       "australian-genomics-directories"
     );
-  }
+  } */
 
   const ten_f_uri = await insert10F(dc);
   const ten_c_uri = await insert10C(dc);
+  const ten_g_uri = await insert10G(dc);
   const gs_uri = await insertGs(dc);
 
   // Some blank DB records inserted to see how it looks like

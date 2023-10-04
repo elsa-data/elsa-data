@@ -40,30 +40,6 @@ export const datasetRouter = router({
       const { datasetUri, includeDeletedFile = false } = input;
       return await ctx.datasetService.get(user, datasetUri, includeDeletedFile);
     }),
-  updateDataset: internalProcedure
-    .input(inputSingleDatasetUri)
-    .mutation(async ({ input, ctx }) => {
-      const { user } = ctx;
-      const { datasetUri } = input;
-
-      // just to work out which service we want to use we ask about the loader for this URI
-      // NOTE we can do all this work without worrying about the calling user because
-      // the list of datasets URIs is already publicly available
-      // and then the loading service will do their own permission checks
-      const loader = ctx.datasetService.getLoaderFromFromDatasetUri(datasetUri);
-
-      switch (loader) {
-        case "australian-genomics-directories":
-          await ctx.agS3IndexService.syncWithDatabaseFromDatasetUri(
-            datasetUri,
-            user,
-            loader
-          );
-          break;
-        default:
-          throw Error(`Unknown dataset or loader for URI ${datasetUri}`);
-      }
-    }),
   getDatasetConsent: internalProcedure
     .input(
       z.object({

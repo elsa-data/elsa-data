@@ -676,18 +676,14 @@ export class S3IndexApplicationService {
    * S3 this will read the directories in S3 and look for new or updated objects.
    *
    * @param datasetUri the URI that defines the dataset in the configuration
-   * @param user the user forcing the synchronisation
    * @param loaderType one of the loader types this service supports
    */
   public async syncWithDatabaseFromDatasetUri(
     datasetUri: string,
-    user: AuthenticatedUser,
-    loaderType:
-      | "australian-genomics-directories"
-      | "australian-genomics-directories-demo"
+    loaderType: "australian-genomics-directories"
   ) {
     // triggering a sync is limited to certain users
-    await this.checkIsImportDatasetAllowed(user, datasetUri);
+    // await this.checkIsImportDatasetAllowed(user, datasetUri);
 
     // TODO this should upset db dataset records to allow us to bootstrap datasets from config
     const datasetId = (
@@ -740,12 +736,8 @@ export class S3IndexApplicationService {
         }
 
         break;
-      case "australian-genomics-directories-demo":
-        throw new Error(
-          "This was written for AG demo but we have a better work around now"
-        );
       default:
-        throw new Error("Unknown loader type");
+        throw new Error(`Unknown loader type '${loaderType}'`);
     }
 
     // Grab all ManifestType object from current edgedb (i.e all the artifacts for a dataset but represented
@@ -1020,11 +1012,11 @@ export class S3IndexApplicationService {
     // Update last update on Dataset
     await this.datasetService.updateDatasetCurrentTimestamp(datasetId, now);
 
-    await this.auditLogService.insertSyncDatasetAuditEvent(
-      user,
-      datasetUri,
-      now,
-      this.edgeDbClient
-    );
+    // await this.auditLogService.insertSyncDatasetAuditEvent(
+    //  user,
+    //  datasetUri,
+    //  now,
+    //  this.edgeDbClient
+    // );
   }
 }

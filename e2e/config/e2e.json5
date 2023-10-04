@@ -10,8 +10,8 @@
     },
   },
   oidc: {
-    issuerUrl: "https://test.cilogon.org",
-    clientId: "cilogon:/client_id/53eda5a561fa1d514dbdc94202b5bf9f",
+    issuerUrl: "",
+    clientId: "abcdef",
     clientSecret: "notavalidsecert", // pragma: allowlist secret
   },
   sharers: [

@@ -59,7 +59,6 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       SMARTIE_URI,
-      user,
       "australian-genomics-directories"
     );
 

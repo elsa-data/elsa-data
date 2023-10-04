@@ -22,21 +22,12 @@ type DatasetsSpecificPageParams = {
 };
 
 export const DatasetsDetailPage: React.FC = () => {
-  const user = useLoggedInUser();
-  const queryClient = useQueryClient();
-
   const { datasetUri: encodedDatasetUri } =
     useParams<DatasetsSpecificPageParams>();
   const datasetUri = decodeURIComponent(encodedDatasetUri ?? "").replaceAll(
     "[dot]",
     "."
   );
-
-  const datasetMutate = trpc.datasetRouter.updateDataset.useMutation({
-    onSettled: () => {
-      queryClient.invalidateQueries();
-    },
-  });
 
   const datasetQuery = trpc.datasetRouter.getSingleDataset.useQuery(
     {
@@ -70,9 +61,6 @@ export const DatasetsDetailPage: React.FC = () => {
         {datasetQuery.isError && (
           <EagerErrorBoundary error={datasetQuery.error} />
         )}
-        {datasetMutate.isError && !datasetQuery.isError && (
-          <EagerErrorBoundary error={datasetMutate.error} />
-        )}
 
         {data && (
           <>
@@ -97,18 +85,6 @@ export const DatasetsDetailPage: React.FC = () => {
               heading={
                 <div className="flex items-center	justify-between">
                   <div>Dataset</div>
-
-                  {user?.isAllowedRefreshDatasetIndex && (
-                    <button
-                      className="btn-outline btn-xs btn ml-2"
-                      onClick={() => datasetMutate.mutate({ datasetUri })}
-                    >
-                      <FontAwesomeIcon
-                        spin={datasetMutate.isLoading}
-                        icon={faRotate}
-                      />
-                    </button>
-                  )}
                 </div>
               }
             >

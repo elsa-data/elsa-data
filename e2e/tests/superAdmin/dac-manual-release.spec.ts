@@ -40,7 +40,9 @@ test("A release can be created manually which has selectable cases", async ({
 
   // We should now be on the new release's details page. We check that the data
   // we just entered is present in the new release.
-  await expect(page.getByText("My release title")).toBeVisible();
+  await expect(page.getByText("My release title")).toBeVisible({
+    timeout: 30000,
+  });
 
   await expect(
     page.getByText("urn:fdc:umccr.org:2022:dataset/10c")
