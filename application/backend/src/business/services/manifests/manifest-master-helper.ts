@@ -1,6 +1,9 @@
-import _ from "lodash";
 import { ManifestMasterType } from "./manifest-master-types";
-import { ReleaseActivatedNothingError } from "../../exceptions/release-activation";
+import {
+  ReleaseActivatedMismatchedExpectationsError,
+  ReleaseActivatedNothingError,
+} from "../../exceptions/release-activation";
+import { isString } from "lodash";
 
 const S3_PREFIX = "s3://";
 const GS_PREFIX = "gs://";
@@ -14,15 +17,19 @@ const R2_PREFIX = "r2://";
  * actual db query
  *
  * @param manifest the input manifest to be transformed
+ * @param throwExceptions exceptions are thrown in the process of creating
+ *                        an actual manifest - but there are cases where we want
+ *                        stats from the manifest and do not want to throw exceptions
  */
 export async function transformDbManifestToMasterManifest(
-  manifest: ManifestMasterType
+  manifest: ManifestMasterType,
+  throwExceptions: boolean = true
 ): Promise<ManifestMasterType> {
   // TODO prune/collapse externalIdentifiers if we had rules about how they need to be processed
 
   // tests artifact files for their cloud location against our sharing rules
   const matchLocation = (url?: string): boolean => {
-    if (_.isString(url)) {
+    if (isString(url)) {
       if (url.startsWith(S3_PREFIX) && manifest.releaseIsAllowedS3Data)
         return true;
       if (url.startsWith(GS_PREFIX) && manifest.releaseIsAllowedGSData)
@@ -34,15 +41,17 @@ export async function transformDbManifestToMasterManifest(
   };
 
   if (manifest.specimenList.length === 0) {
-    throw new ReleaseActivatedNothingError(
-      "No cases/patients/specimens selected"
-    );
+    if (throwExceptions)
+      throw new ReleaseActivatedNothingError(
+        "No cases/patients/specimens selected"
+      );
   }
 
   // note: in a working system this should not be possible - because selecting specimens is how the
   // cases become selected - and hence we would already have thrown an error
   if (manifest.caseTree.length === 0) {
-    throw new ReleaseActivatedNothingError("No cases selected");
+    if (throwExceptions)
+      throw new ReleaseActivatedNothingError("No cases selected");
   }
 
   // Check that at least some data types are enabled.
@@ -50,7 +59,8 @@ export async function transformDbManifestToMasterManifest(
     !manifest.releaseIsAllowedReadData &&
     !manifest.releaseIsAllowedVariantData
   ) {
-    throw new ReleaseActivatedNothingError("No data types enabled");
+    if (throwExceptions)
+      throw new ReleaseActivatedNothingError("No data types enabled");
   }
 
   // Check that at least some data locations are enabled.
@@ -59,7 +69,8 @@ export async function transformDbManifestToMasterManifest(
     !manifest.releaseIsAllowedGSData &&
     !manifest.releaseIsAllowedR2Data
   ) {
-    throw new ReleaseActivatedNothingError("No data locations enabled");
+    if (throwExceptions)
+      throw new ReleaseActivatedNothingError("No data locations enabled");
   }
 
   // we need to prune the manifest of all files that we should not be giving out access to
@@ -71,9 +82,9 @@ export async function transformDbManifestToMasterManifest(
   // downstream we should always be checking these ("if (a.bamFile)") - so once the generator typing
   // is fixed this should all just easily resolve here
 
-  for (const specimen of manifest.specimenList) {
+  for (const specimen of manifest.specimenList ?? []) {
     const allowedArtifacts = [];
-    for (const a of specimen.artifacts) {
+    for (const a of specimen.artifacts ?? []) {
       let removeBcl = true,
         removeFastq = true,
         removeBam = true,
@@ -144,7 +155,7 @@ export async function transformDbManifestToMasterManifest(
     specimen.artifacts = allowedArtifacts;
   }
 
-  checkArtifacts(manifest);
+  if (throwExceptions) checkArtifacts(manifest);
 
   return manifest;
 }
@@ -194,7 +205,7 @@ function checkArtifacts(manifest: ManifestMasterType) {
     );
 
     if (manifest.releaseIsAllowedReadData && artifacts.every(checkReadData)) {
-      throw new ReleaseActivatedNothingError(
+      throw new ReleaseActivatedMismatchedExpectationsError(
         "Read data is enabled but there are no read data artifacts"
       );
     }
@@ -203,7 +214,7 @@ function checkArtifacts(manifest: ManifestMasterType) {
       manifest.releaseIsAllowedVariantData &&
       artifacts.every(checkVariantData)
     ) {
-      throw new ReleaseActivatedNothingError(
+      throw new ReleaseActivatedMismatchedExpectationsError(
         "Variant data is enabled but there are no variant data artifacts"
       );
     }

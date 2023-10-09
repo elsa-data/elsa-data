@@ -21,12 +21,12 @@ const Stats = ({
 }: {
   stats:
     | {
-        numFiles: number;
+        numObjects: number;
         numBytes: number;
       }
     | undefined;
 }) => {
-  const { numFiles = undefined, numBytes = undefined } = stats ?? {};
+  const { numObjects = undefined, numBytes = undefined } = stats ?? {};
 
   return (
     <div className="stats mt-5 shadow">
@@ -38,7 +38,7 @@ const Stats = ({
         <div className="stat-value">
           {numBytes === undefined ? "?? B" : fileSize(numBytes)}
         </div>
-        <div className="stat-desc">{numFiles ?? "??"} Files</div>
+        <div className="stat-desc">{numObjects ?? "??"} Objects</div>
       </div>
     </div>
   );

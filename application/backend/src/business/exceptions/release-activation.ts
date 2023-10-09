@@ -50,3 +50,13 @@ export class ReleaseActivatedNothingError extends Base7807Error {
     );
   }
 }
+
+export class ReleaseActivatedMismatchedExpectationsError extends Base7807Error {
+  constructor(detail: string) {
+    super(
+      "Cannot activate this release because as currently configured a data type (e.g. reads) is being requested that would not actually be contained in the release",
+      undefined,
+      detail
+    );
+  }
+}
