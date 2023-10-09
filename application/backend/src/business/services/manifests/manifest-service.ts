@@ -27,12 +27,15 @@ import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
 import { getReleaseInfo } from "../helpers";
 import { ReleaseActivatedNothingError } from "../../exceptions/release-activation";
+import { PermissionService } from "../permission-service";
 
 @injectable()
 export class ManifestService {
   constructor(
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
+    @inject(PermissionService)
+    private readonly permissionService: PermissionService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService
   ) {}
@@ -172,7 +175,7 @@ export class ManifestService {
     return { numBytes, numFiles };
   }
 
-  public async getActiveTsvManifest(
+  private async getActiveTsvManifest(
     presignedUrlService: PresignedUrlService,
     releaseKey: string,
     auditId: string
@@ -201,9 +204,8 @@ export class ManifestService {
         releaseKey
       );
 
-    if (!(userRole === "Manager" || userRole === "Member")) {
+    if (!this.permissionService.canAccessData(userRole))
       throw new ReleaseViewError(releaseKey);
-    }
 
     if (!isActivated) throw new Error("needs to be activated");
 

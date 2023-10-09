@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
-import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
-import { IsLoadingDiv } from "../../../../components/is-loading-div";
 import { trpc } from "../../../../helpers/trpc";
 import { EagerErrorBoundary } from "../../../../components/errors";
 

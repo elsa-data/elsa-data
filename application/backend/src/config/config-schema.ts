@@ -10,6 +10,7 @@ import { HttpHostingSchema } from "./config-schema-http-hosting";
 import { FeatureSchema } from "./config-schema-feature";
 import { DataEgressConfigSchema } from "./config-schema-data-egress";
 import { DevTestingSchema } from "./config-schema-dev";
+import { PermissionSchema } from "./config-schema-permission";
 
 export const CONFIG_SOURCES_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_SOURCES`;
 export const CONFIG_FOLDERS_ENVIRONMENT_VAR = `ELSA_DATA_META_CONFIG_FOLDERS`;
@@ -36,6 +37,7 @@ export const configZodDefinition = z.object({
   oidc: z.optional(OidcSchema),
   feature: z.optional(FeatureSchema),
   datasetEgress: z.optional(DataEgressConfigSchema),
+  permission: z.optional(PermissionSchema),
   aws: z.optional(
     z.object({
       tempBucket: z

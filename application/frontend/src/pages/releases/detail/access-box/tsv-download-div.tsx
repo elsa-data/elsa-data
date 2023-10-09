@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import classNames from "classnames";
 import { CSRFInputToken } from "../../../../components/csrf-token";
 import { TsvColumnCheck } from "../../../../components/access-box";
-import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
 import { Alert } from "../../../../components/alert";
 
@@ -17,6 +15,13 @@ type Props = {
   fieldsToExclude: string[];
 };
 
+/**
+ * A div that displays checkboxes/buttons that allow a given TSV manifest to be
+ * downloaded.
+ *
+ * @param props
+ * @constructor
+ */
 export const TsvDownloadDiv: React.FC<Props> = (props) => {
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
 

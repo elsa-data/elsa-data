@@ -20,6 +20,7 @@ import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { EmailService } from "../email-service";
 import { ReleaseParticipationService } from "./release-participation-service";
+import { PermissionService } from "../permission-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -37,6 +38,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
     auditEventTimedService: AuditEventTimedService,
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(UserService) userService: UserService,
+    @inject(PermissionService) permissionService: PermissionService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient,
     @inject(EmailService) private readonly emailService: EmailService,
     @inject(ReleaseParticipationService)
@@ -49,6 +51,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       userService,
       auditEventService,
       auditEventTimedService,
+      permissionService,
       cfnClient
     );
   }

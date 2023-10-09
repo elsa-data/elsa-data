@@ -41,6 +41,7 @@ import {
 } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
+import { PermissionService } from "../permission-service";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -54,6 +55,7 @@ export class ReleaseService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
+    @inject(PermissionService) permissionService: PermissionService,
     @inject(UserData) private readonly userData: UserData,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
@@ -64,6 +66,7 @@ export class ReleaseService extends ReleaseBaseService {
       userService,
       auditEventService,
       auditEventTimedService,
+      permissionService,
       cfnClient
     );
   }

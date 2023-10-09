@@ -33,6 +33,7 @@ import {
   PagedResult,
 } from "../../../api/helpers/pagination-helpers";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { PermissionService } from "../permission-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -48,6 +49,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
+    @inject(PermissionService) permissionService: PermissionService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
@@ -57,6 +59,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       userService,
       auditEventService,
       auditEventTimedService,
+      permissionService,
       cfnClient
     );
   }

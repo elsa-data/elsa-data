@@ -20,6 +20,7 @@ import { IPLookupService, LocationType } from "../ip-lookup-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { UserData } from "../../data/user-data";
 import { updateDataEgressRecordByReleaseKey } from "./helpers/release-data-egress-helper";
+import { PermissionService } from "../permission-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -38,6 +39,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
+    @inject(PermissionService) permissionService: PermissionService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient,
     @inject(UserData) private readonly userData: UserData,
     @inject(IPLookupService) private readonly ipLookupService: IPLookupService
@@ -49,6 +51,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       userService,
       auditEventService,
       auditEventTimedService,
+      permissionService,
       cfnClient
     );
   }

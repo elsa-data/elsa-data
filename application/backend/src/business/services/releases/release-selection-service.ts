@@ -9,24 +9,19 @@ import {
   ReleaseSpecimenType,
 } from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { isEmpty, isObjectLike, isSafeInteger } from "lodash";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../../api/helpers/pagination-helpers";
+import { isEmpty, isObjectLike } from "lodash";
+import { createPagedResult } from "../../../api/helpers/pagination-helpers";
 import { collapseExternalIds, getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { $DatasetCase } from "../../../../dbschema/edgeql-js/modules/dataset";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { dataset } from "../../../../dbschema/interfaces";
-import { $scopify } from "../../../../dbschema/edgeql-js/typesystem";
 import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";
 import {
-  ReleaseSelectionNonExistentIdentifierError,
   ReleaseSelectionCrossLinkedIdentifierError,
+  ReleaseSelectionNonExistentIdentifierError,
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
@@ -36,6 +31,7 @@ import {
 } from "../../../../dbschema/queries";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { PermissionService } from "../permission-service";
 
 /**
  * The release selection service handles CRUD operations on the list of items
@@ -54,6 +50,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     @inject("ReleaseAuditTimedService")
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
+    @inject(PermissionService) permissionService: PermissionService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient
   ) {
     super(
@@ -63,6 +60,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       userService,
       auditEventService,
       auditEventTimedService,
+      permissionService,
       cfnClient
     );
   }

@@ -25,6 +25,7 @@ import { Logger } from "pino";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import assert from "assert";
 import { ManifestService } from "../../manifests/manifest-service";
+import { PermissionService } from "../../permission-service";
 
 @injectable()
 export class AwsAccessPointService {
@@ -48,6 +49,8 @@ export class AwsAccessPointService {
     @inject(ManifestService) private readonly manifestService: ManifestService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(UserService) private readonly userService: UserService,
+    @inject(PermissionService)
+    private readonly permissionService: PermissionService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
     @inject(AwsEnabledService)
@@ -140,9 +143,8 @@ export class AwsAccessPointService {
         releaseKey
       );
 
-    if (!(userRole === "Manager" || userRole === "Member")) {
+    if (!this.permissionService.canAccessData(userRole))
       throw new ReleaseViewError(releaseKey);
-    }
 
     if (!isActivated) throw new Error("needs to be activated");
 
