@@ -91,7 +91,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     );
 
     const isAllowedViewAllCases =
-      userRole === "Administrator" || userRole === "AdminView";
+      this.permissionService.canViewReleaseSelection(userRole);
 
     const casesResult = await releaseSelectionGetCases(this.edgeDbClient, {
       releaseKey: releaseKey,
@@ -198,10 +198,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     releaseKey: string,
     nodeId: string
   ): Promise<DuoLimitationCodedType[]> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
+    // to read consent we just need to a member of the release
+    await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
     const { datasetIdToUriMap } = await getReleaseInfo(
       this.edgeDbClient,
@@ -328,7 +326,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       releaseKey,
       actionDescription,
       async () => {
-        if (userRole != "Administrator")
+        if (!this.permissionService.canEditReleaseSelection(userRole))
           throw new ReleaseSelectionPermissionError(releaseKey);
 
         if (isActivated)

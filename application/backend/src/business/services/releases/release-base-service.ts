@@ -352,15 +352,17 @@ export abstract class ReleaseBaseService {
       // e.g. A manager cannot edit Administrator role.
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
-      // administrators can code/edit the release information
+      // we communicate these rules down to the front end so that we don't have to replicate
+      // the business logic in the frontend
+      // at the end of the day though - these rules need to be *enforced* by the backend APIs/services
       permissionViewSelections:
-        userRole === "Administrator" || userRole === "AdminView",
-      permissionEditSelections: userRole === "Administrator",
-      permissionEditApplicationCoded: userRole === "Administrator",
-      // by default only 'Manager' and 'Member' can access data,
-      // but we allow a config setting that extends this to admins too
-      // (there is no mechanism for "AdminView" people to obtain data)
+        this.permissionService.canViewReleaseSelection(userRole),
+      permissionEditSelections:
+        this.permissionService.canEditReleaseSelection(userRole),
+      permissionEditApplicationCoded:
+        this.permissionService.canEditReleaseApplicationCoding(userRole),
       permissionAccessData: this.permissionService.canAccessData(userRole),
+
       // data sharing objects
       dataSharingObjectSigning: releaseInfo.dataSharingConfiguration
         .objectSigningEnabled

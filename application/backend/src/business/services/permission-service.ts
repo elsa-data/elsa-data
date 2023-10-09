@@ -24,11 +24,26 @@ export class PermissionService {
    * @returns
    */
   public canAccessData(userRole: UserRoleInRelease): boolean {
+    // by default only 'Manager' and 'Member' can access data,
+    // but we allow a config setting that extends this to admins too
+    // (there is no mechanism for "AdminView" people to obtain data)
     return (
       userRole === "Manager" ||
       userRole === "Member" ||
       (!!this.settings.permission?.releaseAdministratorsCanAlsoAccessData &&
         userRole === "Administrator")
     );
+  }
+
+  public canViewReleaseSelection(userRole: UserRoleInRelease): boolean {
+    return userRole === "Administrator" || userRole === "AdminView";
+  }
+
+  public canEditReleaseSelection(userRole: UserRoleInRelease): boolean {
+    return userRole === "Administrator";
+  }
+
+  public canEditReleaseApplicationCoding(userRole: UserRoleInRelease): boolean {
+    return userRole === "Administrator";
   }
 }
