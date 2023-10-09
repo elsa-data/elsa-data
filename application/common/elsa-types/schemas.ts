@@ -62,7 +62,7 @@ export const ReleasePresignResponseSchema = Type.Object({
 });
 
 export const ReleaseSizeSchema = Type.Object({
-  numFiles: Type.Number(),
+  numObjects: Type.Number(),
   numBytes: Type.Number(),
 });
 

@@ -104,6 +104,14 @@ export class ManifestService {
     return transformDbManifestToMasterManifest(manifest);
   }
 
+  /**
+   * Return a summary of the actual amount of bytes and files that are included in
+   * the tentative "current" release. This in no way actually makes a real release
+   * manifest so we are less picky about rules like "variant data must be present if variants requested".
+   *
+   * @param user
+   * @param releaseKey
+   */
   public async computeReleaseSize(
     user: AuthenticatedUser,
     releaseKey: string
@@ -118,19 +126,19 @@ export class ManifestService {
       throw new ReleaseViewError(releaseKey);
     }
 
-    let masterManifest: ManifestMasterType;
-    try {
-      masterManifest = await this.createMasterManifest(
-        this.edgeDbClient,
-        releaseKey
-      );
-    } catch (e) {
-      if (e instanceof ReleaseActivatedNothingError) {
-        return { numBytes: 0, numFiles: 0 };
-      } else {
-        throw e;
+    const manifest = await releaseGetSpecimenTreeAndFileArtifacts(
+      this.edgeDbClient,
+      {
+        releaseKey: releaseKey,
       }
-    }
+    );
+
+    // we want to create the manifest just for stats purposes so we switch off exceptions (exceptions caused
+    // by there being no data for instance)
+    const masterManifest = await transformDbManifestToMasterManifest(
+      manifest,
+      false
+    );
 
     const numBytes = masterManifest.specimenList.reduce(
       (acc, cur) =>
@@ -152,7 +160,7 @@ export class ManifestService {
       0
     );
 
-    const numFiles = masterManifest.specimenList.reduce(
+    const numObjects = masterManifest.specimenList.reduce(
       (acc, cur) =>
         acc +
         cur.artifacts.reduce(
@@ -172,7 +180,7 @@ export class ManifestService {
       0
     );
 
-    return { numBytes, numFiles };
+    return { numBytes, numObjects };
   }
 
   private async getActiveTsvManifest(
