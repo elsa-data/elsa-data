@@ -9,10 +9,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { UserService } from "../user-service";
 import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
-import {
-  ReleaseCreateError,
-  ReleaseViewError,
-} from "../../exceptions/release-authorisation";
+import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
@@ -20,14 +17,13 @@ import {
   SharerAwsAccessPointType,
   SharerHtsgetType,
 } from "../../../config/config-schema-sharer";
-import { release } from "../../../../dbschema/interfaces";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
-  DescribeStacksCommandOutput,
 } from "@aws-sdk/client-cloudformation";
 import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
+import { PermissionService } from "../permission-service";
 
 export type UserRoleInRelease = ReleaseParticipantRoleType | "AdminView";
 
@@ -52,6 +48,7 @@ export abstract class ReleaseBaseService {
     protected readonly userService: UserService,
     protected readonly auditEventService: AuditEventService,
     protected readonly auditEventTimedService: AuditEventTimedService,
+    protected readonly permissionService: PermissionService,
     private readonly cfnClient: CloudFormationClient
   ) {}
 
@@ -355,13 +352,16 @@ export abstract class ReleaseBaseService {
       // e.g. A manager cannot edit Administrator role.
       rolesAllowedToAlterParticipant: this.getParticipantRoleOption(userRole),
 
-      // administrators can code/edit the release information
+      // we communicate these rules down to the front end so that we don't have to replicate
+      // the business logic in the frontend
+      // at the end of the day though - these rules need to be *enforced* by the backend APIs/services
       permissionViewSelections:
-        userRole === "Administrator" || userRole === "AdminView",
-      permissionEditSelections: userRole === "Administrator",
-      permissionEditApplicationCoded: userRole === "Administrator",
-      // Only 'Manager' and 'Member' can access data
-      permissionAccessData: userRole === "Manager" || userRole === "Member",
+        this.permissionService.canViewReleaseSelection(userRole),
+      permissionEditSelections:
+        this.permissionService.canEditReleaseSelection(userRole),
+      permissionEditApplicationCoded:
+        this.permissionService.canEditReleaseApplicationCoding(userRole),
+      permissionAccessData: this.permissionService.canAccessData(userRole),
 
       // data sharing objects
       dataSharingObjectSigning: releaseInfo.dataSharingConfiguration

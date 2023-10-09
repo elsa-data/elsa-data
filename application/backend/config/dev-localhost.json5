@@ -78,14 +78,17 @@
     },
     sendEmails: false,
   },
-  devTesting: {
-    allowTestUsers: true,
-    allowTestRoutes: true,
-    mockAwsCloud: true,
+  permission: {
+    releaseAdministratorsCanAlsoAccessData: true,
   },
   superAdmins: [
     {
       sub: "http://subject1.com",
     },
   ],
+  devTesting: {
+    allowTestUsers: true,
+    allowTestRoutes: true,
+    mockAwsCloud: true,
+  },
 }

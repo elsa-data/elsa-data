@@ -1,5 +1,4 @@
 import React from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { TsvDownloadDiv } from "./tsv-download-div";
 

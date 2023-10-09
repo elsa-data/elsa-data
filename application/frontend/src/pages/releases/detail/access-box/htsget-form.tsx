@@ -1,5 +1,4 @@
 import React from "react";
-import { CSRFInputToken } from "../../../../components/csrf-token";
 import { TsvDownloadDiv } from "./tsv-download-div";
 import { ReleaseTypeLocal } from "../../shared-types";
 
@@ -15,6 +14,7 @@ type Props = {
  *
  * @param releaseKey
  * @param releaseData
+ * @param htsgetUrl
  * @constructor
  */
 export const HtsgetForm: React.FC<Props> = ({

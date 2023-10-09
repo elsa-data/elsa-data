@@ -189,6 +189,7 @@ export async function bootstrapSettings(
       logoPath: logoPath,
       logoUriRelative: logoUriRelative,
     },
+    permission: _.get(config, "permission"),
     datasets: _.get(config, "datasets"),
     superAdmins: _.get(config, "superAdmins"),
   };

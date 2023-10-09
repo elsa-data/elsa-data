@@ -1,10 +1,5 @@
-import React, { useState } from "react";
-import classNames from "classnames";
-import { CSRFInputToken } from "../../../../components/csrf-token";
-import { TsvColumnCheck } from "../../../../components/access-box";
+import React from "react";
 import { ReleaseTypeLocal } from "../../shared-types";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
-import { Alert } from "../../../../components/alert";
 import { TsvDownloadDiv } from "./tsv-download-div";
 
 type Props = {

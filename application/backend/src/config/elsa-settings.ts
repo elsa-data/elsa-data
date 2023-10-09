@@ -10,6 +10,7 @@ import { HttpHostingType } from "./config-schema-http-hosting";
 import { FeatureType } from "./config-schema-feature";
 import { DataEgressConfigType } from "./config-schema-data-egress";
 import { DevTestingType } from "./config-schema-dev";
+import { PermissionType } from "./config-schema-permission";
 
 /**
  * The rich, well-typed settings for Elsa.
@@ -89,6 +90,8 @@ export type ElsaSettings = {
   emailer?: EmailerType;
 
   branding?: BrandingType & { logoUriRelative?: string };
+
+  permission?: PermissionType;
 
   ipLookup?: {
     maxMindDbPath?: string;

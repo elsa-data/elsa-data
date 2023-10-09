@@ -1,26 +1,15 @@
 import { FastifyInstance } from "fastify";
 import {
-  DuoLimitationCodedType,
-  ReleaseManualSchema,
-  ReleaseManualType,
-  ReleasePatchOperationsSchema,
-  ReleasePatchOperationsType,
   ReleasePresignRequestSchema,
   ReleasePresignRequestType,
-  ReleaseSizeType,
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/releases/release-service";
 import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
-import { GcpStorageSharingService } from "../../../business/services/gcp-storage-sharing-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
-import { ReleaseSelectionService } from "../../../business/services/releases/release-selection-service";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
-import {
-  ManifestHtsgetService,
-  S3ManifestHtsgetService,
-} from "../../../business/services/manifests/htsget/manifest-htsget-service";
+import { S3ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
 
 /**
  * We want to allow manifests to be downloaded with kind of native browser

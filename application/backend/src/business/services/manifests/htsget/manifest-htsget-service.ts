@@ -32,6 +32,7 @@ import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../../releases/release-service";
 import { ManifestBucketKeyObjectType } from "../manifest-bucket-key-types";
+import { PermissionService } from "../../permission-service";
 
 export function getHtsgetSetting(
   settings: ElsaSettings
@@ -67,7 +68,8 @@ export abstract class ManifestHtsgetService {
     private readonly cloudStorage: CloudStorage,
     private readonly auditLogService: AuditEventService,
     private readonly manifestService: ManifestService,
-    private readonly releaseService: ReleaseService
+    private readonly releaseService: ReleaseService,
+    private readonly permissionService: PermissionService
   ) {}
 
   public async getActiveHtsgetManifest(
@@ -103,9 +105,8 @@ export abstract class ManifestHtsgetService {
         releaseKey
       );
 
-    if (!(userRole === "Manager" || userRole === "Member")) {
+    if (!this.permissionService.canAccessData(userRole))
       throw new ReleaseViewError(releaseKey);
-    }
 
     if (!isActivated) throw new Error("needs to be activated");
 
@@ -291,7 +292,8 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
     @inject(AwsS3Service) awsS3Service: AwsS3Service,
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ManifestService) manifestService: ManifestService,
-    @inject(ReleaseService) releaseService: ReleaseService
+    @inject(ReleaseService) releaseService: ReleaseService,
+    @inject(PermissionService) permissionService: PermissionService
   ) {
     super(
       settings,
@@ -300,7 +302,8 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
       awsS3Service,
       auditLogService,
       manifestService,
-      releaseService
+      releaseService,
+      permissionService
     );
   }
 }
