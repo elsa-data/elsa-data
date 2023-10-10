@@ -166,8 +166,6 @@ export const AuditEventTable = ({
     manualSorting: true,
   });
 
-  if (isAnyAuditEventQueryFetching(dataQueries)) return <IsLoadingDiv />;
-
   // TODO Search and filtering functionality, refresh button, download audit log button
   return (
     <Box
@@ -177,110 +175,114 @@ export const AuditEventTable = ({
         </div>
       }
     >
-      <>
-        <div className="flex grow justify-end">
-          {filterElements && (
-            <div className="ml-2 flex content-center items-center">
-              <FilterElements
-                includeEvents={includeEvents}
-                setIncludeEvents={setIncludeEvents}
-                setCurrentPage={setCurrentPage}
-                setCurrentTotal={setCurrentTotal}
-                setUpdateData={setUpdateData}
-                showAdminView={showAdminView}
-              />
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col">
-          {error.isSuccess ? (
-            <Table
-              tableHead={table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      onClick={
-                        header.id === "hasDetails"
-                          ? table.getToggleAllRowsExpandedHandler()
-                          : () => {}
-                      }
-                      scope="col"
-                      className={
-                        !header.column.columnDef.meta?.headerStyling
-                          ? "whitespace-nowrap"
-                          : header.column.columnDef.meta?.headerStyling
-                      }
-                    >
-                      {header.isPlaceholder ? undefined : (
-                        <AuditEventTableHeader header={header} />
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-              tableBody={table.getRowModel().rows.map((row) => (
-                <Fragment key={row.id}>
-                  <tr
-                    key={row.id}
-                    onClick={() =>
-                      row.getCanExpand() &&
-                      row.getValue("hasDetails") &&
-                      row.toggleExpanded()
-                    }
-                  >
-                    {row.getVisibleCells().map((cell, i, row) => (
-                      <td
-                        key={cell.id}
-                        className={classNames(
-                          cell.column.columnDef.meta?.cellStyling,
-                          {
-                            "whitespace-nowrap":
-                              !cell.column.columnDef.meta?.cellStyling,
-                            "text-left": i + 1 !== row.length,
-                          },
-                        )}
+      {isAnyAuditEventQueryFetching(dataQueries) && <IsLoadingDiv />}
+
+      {!isAnyAuditEventQueryFetching(dataQueries) && (
+        <>
+          <div className="flex grow justify-end">
+            {filterElements && (
+              <div className="ml-2 flex content-center items-center">
+                <FilterElements
+                  includeEvents={includeEvents}
+                  setIncludeEvents={setIncludeEvents}
+                  setCurrentPage={setCurrentPage}
+                  setCurrentTotal={setCurrentTotal}
+                  setUpdateData={setUpdateData}
+                  showAdminView={showAdminView}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col">
+            {error.isSuccess ? (
+              <Table
+                tableHead={table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        onClick={
+                          header.id === "hasDetails"
+                            ? table.getToggleAllRowsExpandedHandler()
+                            : () => {}
+                        }
+                        scope="col"
+                        className={
+                          !header.column.columnDef.meta?.headerStyling
+                            ? "whitespace-nowrap"
+                            : header.column.columnDef.meta?.headerStyling
+                        }
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
+                        {header.isPlaceholder ? undefined : (
+                          <AuditEventTableHeader header={header} />
                         )}
-                      </td>
+                      </th>
                     ))}
                   </tr>
-                  {row.getIsExpanded() &&
-                    (row.getValue("hasDetails") as boolean) && (
-                      <tr key={row.original.objectId}>
-                        {/* skip our expand/unexpand column */}
-                        <td>&nbsp;</td>
-                        {/* expanded content now into the rest of the columns */}
+                ))}
+                tableBody={table.getRowModel().rows.map((row) => (
+                  <Fragment key={row.id}>
+                    <tr
+                      key={row.id}
+                      onClick={() =>
+                        row.getCanExpand() &&
+                        row.getValue("hasDetails") &&
+                        row.toggleExpanded()
+                      }
+                    >
+                      {row.getVisibleCells().map((cell, i, row) => (
                         <td
-                          key={row.original.objectId}
-                          colSpan={row.getVisibleCells().length - 1}
+                          key={cell.id}
+                          className={classNames(
+                            cell.column.columnDef.meta?.cellStyling,
+                            {
+                              "whitespace-nowrap":
+                                !cell.column.columnDef.meta?.cellStyling,
+                              "text-left": i + 1 !== row.length,
+                            },
+                          )}
                         >
-                          <DetailsRow objectId={row.original.objectId} />
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </td>
-                      </tr>
-                    )}
-                </Fragment>
-              ))}
+                      ))}
+                    </tr>
+                    {row.getIsExpanded() &&
+                      (row.getValue("hasDetails") as boolean) && (
+                        <tr key={row.original.objectId}>
+                          {/* skip our expand/unexpand column */}
+                          <td>&nbsp;</td>
+                          {/* expanded content now into the rest of the columns */}
+                          <td
+                            key={row.original.objectId}
+                            colSpan={row.getVisibleCells().length - 1}
+                          >
+                            <DetailsRow objectId={row.original.objectId} />
+                          </td>
+                        </tr>
+                      )}
+                  </Fragment>
+                ))}
+              />
+            ) : (
+              <EagerErrorBoundary error={error.error} />
+            )}
+            <BoxPaginator
+              currentPage={currentPage}
+              setPage={(n) => {
+                table.reset();
+                setUpdateData(true);
+                setCurrentPage(n);
+              }}
+              rowCount={currentTotal}
+              rowsPerPage={pageSize}
+              rowWord="audit events"
             />
-          ) : (
-            <EagerErrorBoundary error={error.error} />
-          )}
-          <BoxPaginator
-            currentPage={currentPage}
-            setPage={(n) => {
-              table.reset();
-              setUpdateData(true);
-              setCurrentPage(n);
-            }}
-            rowCount={currentTotal}
-            rowsPerPage={pageSize}
-            rowWord="audit events"
-          />
-        </div>
-      </>
+          </div>
+        </>
+      )}
     </Box>
   );
 };
