@@ -378,20 +378,7 @@ export const useAllAuditEventQueries = (
 const isAnyAuditEventQueryFetching = (
   allAuditEventQueries: ReturnType<typeof useAllAuditEventQueries>,
 ) => {
-  return (
-    allAuditEventQueries.occurredDateTimeAsc.isFetching ||
-    allAuditEventQueries.occurredDateTimeDesc.isFetching ||
-    allAuditEventQueries.outcomeAsc.isFetching ||
-    allAuditEventQueries.outcomeDesc.isFetching ||
-    allAuditEventQueries.actionCategoryAsc.isFetching ||
-    allAuditEventQueries.actionCategoryDesc.isFetching ||
-    allAuditEventQueries.actionDescriptionAsc.isFetching ||
-    allAuditEventQueries.actionDescriptionDesc.isFetching ||
-    allAuditEventQueries.whoDisplayNameAsc.isFetching ||
-    allAuditEventQueries.whoDisplayNameDesc.isFetching ||
-    allAuditEventQueries.occurredDurationAsc.isFetching ||
-    allAuditEventQueries.occurredDurationDesc.isFetching
-  );
+  return Object.values(allAuditEventQueries).some((q) => q.isFetching);
 };
 
 export type AuditEventTableHeaderProps<TData, TValue> = {
