@@ -121,7 +121,7 @@ export const AuditEventTable = ({
     includeEvents,
     setCurrentTotal,
     setData,
-    setError
+    setError,
   );
 
   useEffect(() => {
@@ -134,8 +134,16 @@ export const AuditEventTable = ({
         key = desc ? id + "Desc" : id + "Asc";
       }
 
-      if (key in dataQueries) {
-        void dataQueries[key].refetch();
+      const isKeyOfDataQueries = (
+        key: string,
+      ): key is keyof typeof dataQueries => {
+        return key in dataQueries;
+      };
+
+      if (isKeyOfDataQueries(key)) {
+        dataQueries[key].refetch();
+      } else {
+        throw Error("Unexpected key " + key);
       }
 
       setUpdateData(false);
@@ -158,8 +166,6 @@ export const AuditEventTable = ({
     manualSorting: true,
   });
 
-  if (dataQueries.isFetching) return <IsLoadingDiv />;
-
   // TODO Search and filtering functionality, refresh button, download audit log button
   return (
     <Box
@@ -169,110 +175,114 @@ export const AuditEventTable = ({
         </div>
       }
     >
-      <>
-        <div className="flex grow justify-end">
-          {filterElements && (
-            <div className="ml-2 flex content-center items-center">
-              <FilterElements
-                includeEvents={includeEvents}
-                setIncludeEvents={setIncludeEvents}
-                setCurrentPage={setCurrentPage}
-                setCurrentTotal={setCurrentTotal}
-                setUpdateData={setUpdateData}
-                showAdminView={showAdminView}
-              />
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col">
-          {error.isSuccess ? (
-            <Table
-              tableHead={table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      onClick={
-                        header.id === "hasDetails"
-                          ? table.getToggleAllRowsExpandedHandler()
-                          : () => {}
-                      }
-                      scope="col"
-                      className={
-                        !header.column.columnDef.meta?.headerStyling
-                          ? "whitespace-nowrap"
-                          : header.column.columnDef.meta?.headerStyling
-                      }
-                    >
-                      {header.isPlaceholder ? undefined : (
-                        <AuditEventTableHeader header={header} />
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-              tableBody={table.getRowModel().rows.map((row) => (
-                <Fragment key={row.id}>
-                  <tr
-                    key={row.id}
-                    onClick={() =>
-                      row.getCanExpand() &&
-                      row.getValue("hasDetails") &&
-                      row.toggleExpanded()
-                    }
-                  >
-                    {row.getVisibleCells().map((cell, i, row) => (
-                      <td
-                        key={cell.id}
-                        className={classNames(
-                          cell.column.columnDef.meta?.cellStyling,
-                          {
-                            "whitespace-nowrap":
-                              !cell.column.columnDef.meta?.cellStyling,
-                            "text-left": i + 1 !== row.length,
-                          }
-                        )}
+      {isAnyAuditEventQueryFetching(dataQueries) && <IsLoadingDiv />}
+
+      {!isAnyAuditEventQueryFetching(dataQueries) && (
+        <>
+          <div className="flex grow justify-end">
+            {filterElements && (
+              <div className="ml-2 flex content-center items-center">
+                <FilterElements
+                  includeEvents={includeEvents}
+                  setIncludeEvents={setIncludeEvents}
+                  setCurrentPage={setCurrentPage}
+                  setCurrentTotal={setCurrentTotal}
+                  setUpdateData={setUpdateData}
+                  showAdminView={showAdminView}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col">
+            {error.isSuccess ? (
+              <Table
+                tableHead={table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        onClick={
+                          header.id === "hasDetails"
+                            ? table.getToggleAllRowsExpandedHandler()
+                            : () => {}
+                        }
+                        scope="col"
+                        className={
+                          !header.column.columnDef.meta?.headerStyling
+                            ? "whitespace-nowrap"
+                            : header.column.columnDef.meta?.headerStyling
+                        }
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+                        {header.isPlaceholder ? undefined : (
+                          <AuditEventTableHeader header={header} />
                         )}
-                      </td>
+                      </th>
                     ))}
                   </tr>
-                  {row.getIsExpanded() &&
-                    (row.getValue("hasDetails") as boolean) && (
-                      <tr key={row.original.objectId}>
-                        {/* skip our expand/unexpand column */}
-                        <td>&nbsp;</td>
-                        {/* expanded content now into the rest of the columns */}
+                ))}
+                tableBody={table.getRowModel().rows.map((row) => (
+                  <Fragment key={row.id}>
+                    <tr
+                      key={row.id}
+                      onClick={() =>
+                        row.getCanExpand() &&
+                        row.getValue("hasDetails") &&
+                        row.toggleExpanded()
+                      }
+                    >
+                      {row.getVisibleCells().map((cell, i, row) => (
                         <td
-                          key={row.original.objectId}
-                          colSpan={row.getVisibleCells().length - 1}
+                          key={cell.id}
+                          className={classNames(
+                            cell.column.columnDef.meta?.cellStyling,
+                            {
+                              "whitespace-nowrap":
+                                !cell.column.columnDef.meta?.cellStyling,
+                              "text-left": i + 1 !== row.length,
+                            },
+                          )}
                         >
-                          <DetailsRow objectId={row.original.objectId} />
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </td>
-                      </tr>
-                    )}
-                </Fragment>
-              ))}
+                      ))}
+                    </tr>
+                    {row.getIsExpanded() &&
+                      (row.getValue("hasDetails") as boolean) && (
+                        <tr key={row.original.objectId}>
+                          {/* skip our expand/unexpand column */}
+                          <td>&nbsp;</td>
+                          {/* expanded content now into the rest of the columns */}
+                          <td
+                            key={row.original.objectId}
+                            colSpan={row.getVisibleCells().length - 1}
+                          >
+                            <DetailsRow objectId={row.original.objectId} />
+                          </td>
+                        </tr>
+                      )}
+                  </Fragment>
+                ))}
+              />
+            ) : (
+              <EagerErrorBoundary error={error.error} />
+            )}
+            <BoxPaginator
+              currentPage={currentPage}
+              setPage={(n) => {
+                table.reset();
+                setUpdateData(true);
+                setCurrentPage(n);
+              }}
+              rowCount={currentTotal}
+              rowsPerPage={pageSize}
+              rowWord="audit events"
             />
-          ) : (
-            <EagerErrorBoundary error={error.error} />
-          )}
-          <BoxPaginator
-            currentPage={currentPage}
-            setPage={(n) => {
-              table.reset();
-              setUpdateData(true);
-              setCurrentPage(n);
-            }}
-            rowCount={currentTotal}
-            rowsPerPage={pageSize}
-            rowWord="audit events"
-          />
-        </div>
-      </>
+          </div>
+        </>
+      )}
     </Box>
   );
 };
@@ -288,7 +298,7 @@ export const useAuditEventQuery = (
   includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
+  setError: Dispatch<SetStateAction<ErrorState>>,
 ) => {
   const query = {
     page: currentPage,
@@ -312,12 +322,12 @@ export const useAuditEventQuery = (
   if (type === "AuditEvent") {
     return trpc.auditEventRouter.getAuditEvent.useQuery(
       { ...query, filter: includeEvents },
-      options
+      options,
     );
   } else {
     return trpc.auditEventRouter.getReleaseAuditEvent.useQuery(
       { ...query, releaseKey: type.releaseKey },
-      options
+      options,
     );
   }
 };
@@ -331,11 +341,11 @@ export const useAllAuditEventQueries = (
   includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
-): { [key: string]: UseQueryResult<AuditEventType[]> } => {
+  setError: Dispatch<SetStateAction<ErrorState>>,
+) => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
-    orderAscending: boolean
+    orderAscending: boolean,
   ) => {
     return useAuditEventQuery(
       currentPage,
@@ -345,7 +355,7 @@ export const useAllAuditEventQueries = (
       includeEvents,
       setCurrentTotal,
       setData,
-      setError
+      setError,
     );
   };
 
@@ -363,6 +373,12 @@ export const useAllAuditEventQueries = (
     occurredDurationAsc: useAuditEventQueryFn("occurredDuration", true),
     occurredDurationDesc: useAuditEventQueryFn("occurredDuration", false),
   };
+};
+
+const isAnyAuditEventQueryFetching = (
+  allAuditEventQueries: ReturnType<typeof useAllAuditEventQueries>,
+) => {
+  return Object.values(allAuditEventQueries).some((q) => q.isFetching);
 };
 
 export type AuditEventTableHeaderProps<TData, TValue> = {
@@ -511,7 +527,7 @@ export const createColumns = (navigate: NavigateFunction) => {
                   </div>
                   <div className="break-all text-xs opacity-50">
                     {`(took ${formatDuration(
-                      info.row.original.occurredDuration
+                      info.row.original.occurredDuration,
                     )})`}
                   </div>
                 </div>
