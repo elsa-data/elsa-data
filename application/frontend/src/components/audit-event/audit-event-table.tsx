@@ -121,7 +121,7 @@ export const AuditEventTable = ({
     includeEvents,
     setCurrentTotal,
     setData,
-    setError
+    setError,
   );
 
   useEffect(() => {
@@ -134,8 +134,16 @@ export const AuditEventTable = ({
         key = desc ? id + "Desc" : id + "Asc";
       }
 
-      if (key in dataQueries) {
-        void dataQueries[key].refetch();
+      const isKeyOfDataQueries = (
+        key: string,
+      ): key is keyof typeof dataQueries => {
+        return key in dataQueries;
+      };
+
+      if (isKeyOfDataQueries(key)) {
+        dataQueries[key].refetch();
+      } else {
+        throw Error("Unexpected key " + key);
       }
 
       setUpdateData(false);
@@ -158,7 +166,7 @@ export const AuditEventTable = ({
     manualSorting: true,
   });
 
-  if (dataQueries.isFetching) return <IsLoadingDiv />;
+  if (isAnyAuditEventQueryFetching(dataQueries)) return <IsLoadingDiv />;
 
   // TODO Search and filtering functionality, refresh button, download audit log button
   return (
@@ -230,12 +238,12 @@ export const AuditEventTable = ({
                             "whitespace-nowrap":
                               !cell.column.columnDef.meta?.cellStyling,
                             "text-left": i + 1 !== row.length,
-                          }
+                          },
                         )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </td>
                     ))}
@@ -288,7 +296,7 @@ export const useAuditEventQuery = (
   includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
+  setError: Dispatch<SetStateAction<ErrorState>>,
 ) => {
   const query = {
     page: currentPage,
@@ -312,12 +320,12 @@ export const useAuditEventQuery = (
   if (type === "AuditEvent") {
     return trpc.auditEventRouter.getAuditEvent.useQuery(
       { ...query, filter: includeEvents },
-      options
+      options,
     );
   } else {
     return trpc.auditEventRouter.getReleaseAuditEvent.useQuery(
       { ...query, releaseKey: type.releaseKey },
-      options
+      options,
     );
   }
 };
@@ -331,11 +339,11 @@ export const useAllAuditEventQueries = (
   includeEvents: AuditEventUserFilterType[],
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
-): { [key: string]: UseQueryResult<AuditEventType[]> } => {
+  setError: Dispatch<SetStateAction<ErrorState>>,
+) => {
   const useAuditEventQueryFn = (
     occurredDateTime: string,
-    orderAscending: boolean
+    orderAscending: boolean,
   ) => {
     return useAuditEventQuery(
       currentPage,
@@ -345,7 +353,7 @@ export const useAllAuditEventQueries = (
       includeEvents,
       setCurrentTotal,
       setData,
-      setError
+      setError,
     );
   };
 
@@ -363,6 +371,25 @@ export const useAllAuditEventQueries = (
     occurredDurationAsc: useAuditEventQueryFn("occurredDuration", true),
     occurredDurationDesc: useAuditEventQueryFn("occurredDuration", false),
   };
+};
+
+const isAnyAuditEventQueryFetching = (
+  allAuditEventQueries: ReturnType<typeof useAllAuditEventQueries>,
+) => {
+  return (
+    allAuditEventQueries.occurredDateTimeAsc.isFetching ||
+    allAuditEventQueries.occurredDateTimeDesc.isFetching ||
+    allAuditEventQueries.outcomeAsc.isFetching ||
+    allAuditEventQueries.outcomeDesc.isFetching ||
+    allAuditEventQueries.actionCategoryAsc.isFetching ||
+    allAuditEventQueries.actionCategoryDesc.isFetching ||
+    allAuditEventQueries.actionDescriptionAsc.isFetching ||
+    allAuditEventQueries.actionDescriptionDesc.isFetching ||
+    allAuditEventQueries.whoDisplayNameAsc.isFetching ||
+    allAuditEventQueries.whoDisplayNameDesc.isFetching ||
+    allAuditEventQueries.occurredDurationAsc.isFetching ||
+    allAuditEventQueries.occurredDurationDesc.isFetching
+  );
 };
 
 export type AuditEventTableHeaderProps<TData, TValue> = {
@@ -511,7 +538,7 @@ export const createColumns = (navigate: NavigateFunction) => {
                   </div>
                   <div className="break-all text-xs opacity-50">
                     {`(took ${formatDuration(
-                      info.row.original.occurredDuration
+                      info.row.original.occurredDuration,
                     )})`}
                   </div>
                 </div>
