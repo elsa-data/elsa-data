@@ -2,7 +2,8 @@ import { expect } from "@playwright/test";
 import { test } from "./custom-base-test";
 
 test("homepage has title and links to intro page", async ({ page }) => {
-  await page.goto("./");
+  await page.goto("/login");
+  await page.click("text=/SuperAdmin/");
 
   // expect the title
   await expect(page).toHaveTitle(/Elsa Data/);
