@@ -139,7 +139,7 @@ export const CasesBox: React.FC<Props> = ({
         setCurrentTotalCases(res.total);
         setCurrentSelectedSpecimens(res.totalSelectedSpecimens);
       },
-    }
+    },
   );
 
   const casesQueryData: ReleaseCaseType[] | undefined = casesQuery.data?.data;
@@ -296,7 +296,7 @@ export const CasesBox: React.FC<Props> = ({
                             "w-10",
                             "px-2",
                             "border-l",
-                            "border-l-red-500"
+                            "border-l-red-500",
                           )}
                           rowSpan={
                             rowSpans[rowIndex] === 1
@@ -357,7 +357,11 @@ export const CasesBox: React.FC<Props> = ({
                       releaseIsActivated={releaseIsActivated}
                       onParseSelectCsv={onParseSelectCsv}
                       onParseUnselectCsv={onParseUnselectCsv}
-                      disabled={specimenMutate.isLoading}
+                      disabled={
+                        specimenMutate.isLoading ||
+                        releaseIsActivated ||
+                        !isAllowEdit
+                      }
                     />
                   </>
                 )}
