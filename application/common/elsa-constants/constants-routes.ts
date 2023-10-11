@@ -9,3 +9,5 @@ export const NO_EMAIL_OR_NAME_ROUTE_PART = "missing-name-or-email";
 export const FLOW_FAIL_ROUTE_PART = "flow-fail";
 
 export const DATABASE_FAIL_ROUTE_PART = "database-fail";
+
+export const RELEASES_ROUTE_PART = "releases";

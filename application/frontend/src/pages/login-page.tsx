@@ -2,6 +2,7 @@ import React from "react";
 import { useEnvRelay } from "../providers/env-relay-provider";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { Navigate } from "react-router-dom";
+import { RELEASES_ROUTE_PART } from "@umccr/elsa-constants/constants-routes";
 
 type Props = {
   showDevTestLogin: boolean;
@@ -12,7 +13,7 @@ export const LoginPageOrRedirect: React.FC<Props> = ({ showDevTestLogin }) => {
   const userObject = useLoggedInUser();
 
   if (userObject) {
-    return <Navigate to={"/releases"} replace />;
+    return <Navigate to={`/${RELEASES_ROUTE_PART}`} replace />;
   }
 
   return (

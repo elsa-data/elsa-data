@@ -35,7 +35,10 @@ import {
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
-import { NOT_AUTHORISED_ROUTE_PART } from "@umccr/elsa-constants/constants-routes";
+import {
+  NOT_AUTHORISED_ROUTE_PART,
+  RELEASES_ROUTE_PART,
+} from "@umccr/elsa-constants/constants-routes";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -156,9 +159,9 @@ export function IndexRouter({ features }: IndexRouterProps) {
         {/* a protected hierarchy of routes - user must be logged in */}
         <Route path={`/`} element={<ProtectedRoute redirectPath="/login" />}>
           {/* our default 'home' is the releases page */}
-          <Route index element={<Navigate to={"releases"} />} />
+          <Route index element={<Navigate to={RELEASES_ROUTE_PART} />} />
 
-          <Route path={`releases`}>
+          <Route path={RELEASES_ROUTE_PART}>
             <Route index element={<ReleasesDashboardPage />} />
 
             {/* all pages pertaining to an individual release get this master page which display
