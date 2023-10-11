@@ -68,7 +68,7 @@ bootstrapGlobalSynchronous();
 
   // we are taking a punt here that the logger settings have been constructed - but if not we will still
   // construct the logger
-  const logger = pino(settings?.logger ?? {});
+  const logger = pino(settings?.logger ?? { level: "debug" });
 
   logger.info(
     `Logger level is currently set at '${logger.level}' - test messages at all levels to follow`
@@ -80,26 +80,27 @@ bootstrapGlobalSynchronous();
   logger.error("Logger error test");
   logger.fatal("Logger fatal test");
 
-  //if (!settings || !rawConfig || !redactedConfig)
-  //  throw new Error("Settings object failure");
-
   // we may have encountered fundamental issues, or just warning issues
   if (configIssues && configIssues.length > 0) {
+    // if we go no config then the issues we encountered are fatal
     if (!rawConfig) {
       for (const i of configIssues) {
         logger.fatal(i, "Configuration issue");
       }
     } else {
+      // otherwise they are more informative messages due to strict mode
       for (const i of configIssues) {
         logger.warn(i, "Configuration issue");
       }
     }
   }
 
-  if (!settings || !rawConfig || !redactedConfig)
-    throw new Error("Settings not present");
+  if (!settings || !rawConfig || !redactedConfig) {
+    logger.fatal("Aborting startup due to lack of valid configuration");
+    return;
+  }
 
-  logger.info(
+  logger.debug(
     redactedConfig,
     `Configuration (redacted) was sourced from "${sources}"`
   );
@@ -139,17 +140,17 @@ bootstrapGlobalSynchronous();
 
   // do some DI resolutions nice and early because if DI is broken (as can happen with @decorators)
   // then we should find out now rather than failing later
-  logger.info(
+  logger.debug(
     `Sample DI resolve of AuditLogService gave us ${typeof dc.resolve(
       AuditEventService
     )}`
   );
-  logger.info(
+  logger.debug(
     `Sample DI resolve of ReleaseActivationService gave us ${typeof dc.resolve(
       ReleaseActivationService
     )}`
   );
-  logger.info(
+  logger.debug(
     `Sample DI resolve of AwsDiscoveryService gave us ${typeof dc.resolve(
       "IAwsDiscoveryService"
     )}`
