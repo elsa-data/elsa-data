@@ -19,7 +19,7 @@ import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-s
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
 import { LayoutBase } from "./layouts/layout-base";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
-import { LoginPage } from "./pages/login-page";
+import { LoginPageOrRedirect } from "./pages/login-page";
 import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
 import { DataEgressSummarySubPage } from "./pages/releases/data-egress-summary-sub-page/data-egress-summary-sub-page";
 import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";
@@ -137,7 +137,7 @@ export function IndexRouter({ features }: IndexRouterProps) {
         <Route
           path={`/login`}
           element={
-            <LoginPage
+            <LoginPageOrRedirect
               showDevTestLogin={features.has(FEATURE_DEV_TEST_USERS_LOGIN)}
             />
           }
@@ -218,8 +218,8 @@ export function IndexRouter({ features }: IndexRouterProps) {
         </Route>
 
         <Route path="*" element={<NoMatch />} />
-      </Route>
-    )
+      </Route>,
+    ),
   );
 
   return <RouterProvider router={router} />;

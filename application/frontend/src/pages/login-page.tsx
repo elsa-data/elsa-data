@@ -1,12 +1,20 @@
 import React from "react";
 import { useEnvRelay } from "../providers/env-relay-provider";
+import { useLoggedInUser } from "../providers/logged-in-user-provider";
+import { Navigate } from "react-router-dom";
 
 type Props = {
   showDevTestLogin: boolean;
 };
 
-export const LoginPage: React.FC<Props> = ({ showDevTestLogin }) => {
+export const LoginPageOrRedirect: React.FC<Props> = ({ showDevTestLogin }) => {
   const envRelay = useEnvRelay();
+  const userObject = useLoggedInUser();
+
+  if (userObject) {
+    return <Navigate to={"/releases"} replace />;
+  }
+
   return (
     <div className="relative">
       <form action="/auth/login" method="POST" id="loginTriggerForm">
