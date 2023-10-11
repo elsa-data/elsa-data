@@ -1,4 +1,4 @@
-import { parseMeta } from "./meta/meta-parser";
+import { parseMeta, ProviderMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
 import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
@@ -8,6 +8,7 @@ import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 import jsonpath from "jsonpath";
 import _ from "lodash";
 import { environmentVariableMap } from "./config-load-environment-variable-map";
+import { ZodError, ZodIssue, ZodIssueCode } from "zod";
 
 const env_prefix = "ELSA_DATA_CONFIG_";
 
@@ -17,18 +18,18 @@ const env_prefix = "ELSA_DATA_CONFIG_";
  * merged and loaded via Zod schema checking. Env variables will be late bound
  * to be able to also set config values.
  *
- * @param meta a string of source of configuration information e.g "file(a) aws-secret(b)"
+ * @param meta an array of meta providers to source configuration information e.g "file(a) aws-secret(b)"
+ * @returns an object with the strictly validated configuration (and empty issue array) OR
+ *          an object with a non-strict validated configuration (and a non-empty array of issues) OR
+ *          an empty configuration (and a non-empty array of issues)
  */
 export async function getMetaConfig(
-  meta: string
-): Promise<ElsaConfigurationType> {
-  // the meta syntax tells us where to source configuration from and in what order
-  const metaProviders = parseMeta(meta);
-
-  // the raw config JSON as loaded from the sources
+  meta: ProviderMeta[]
+): Promise<{ config?: ElsaConfigurationType; configIssues: ZodIssue[] }> {
+  // the raw config JSON as loaded from each meta source (in order)
   const rawConfigs = [];
 
-  for (const mp of metaProviders) {
+  for (const mp of meta) {
     let providerConfig;
     switch (mp.providerToken.value) {
       case "aws-secret":
@@ -121,12 +122,63 @@ export async function getMetaConfig(
   trySetEnvironmentVariableInteger("HTTP_HOSTING_PORT", "httpHosting.port");
 
   // perform validation on the final config object and return it transformed
-  // (the transform will do type coercion and setting defaults)
+  // (the transform will do type coercion and setting of defaults)
+
+  // some convoluted logic here - we want to try strict parsing - in order to get all the
+  // strict error messages... but if strict doesn't work we still want to allow valid
+  // configurations to work
   try {
-    return configZodDefinition.strict().parse(configObject);
-  } catch (e) {
-    console.warn(`failed strict parsing: ${e}`);
-    return configZodDefinition.parse(configObject);
+    return {
+      config: configZodDefinition.strict().parse(configObject),
+      configIssues: [],
+    };
+  } catch (e1: any) {
+    try {
+      // try without the strictness
+      const config = configZodDefinition.parse(configObject);
+
+      if (e1 instanceof ZodError) {
+        // we expect our exception here will be a ZodError - and if so we want to return
+        // the issues so that we can log them sensibly
+        return {
+          config: config,
+          configIssues: e1.issues,
+        };
+      } else {
+        // we still want to display issues if we somehow get a different exception
+        return {
+          config: undefined,
+          configIssues: [
+            {
+              code: ZodIssueCode.custom,
+              path: [],
+              message:
+                "Strict parsing failed with an exception that was not a ZodError",
+            },
+          ],
+        };
+      }
+    } catch (e2: any) {
+      if (e2 instanceof ZodError) {
+        return {
+          config: undefined,
+          configIssues: e2.issues,
+        };
+      } else {
+        // we still want to display issues if we somehow get a different exception
+        return {
+          config: undefined,
+          configIssues: [
+            {
+              code: ZodIssueCode.custom,
+              path: [],
+              message:
+                "Parsing failed with an exception that was not a ZodError",
+            },
+          ],
+        };
+      }
+    }
   }
 }
 

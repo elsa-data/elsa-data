@@ -10,6 +10,10 @@ import { Client } from "edgedb";
 import e from "../dbschema/edgeql-js";
 import { promisify } from "util";
 import { execFile } from "child_process";
+import { Logger } from "pino";
+import { isEmpty } from "lodash";
+import { ZodIssue, ZodIssueCode } from "zod";
+import { parseMeta } from "./config/meta/meta-parser";
 
 export type EntrypointHelper = {
   command: string;
@@ -59,23 +63,51 @@ export function getCommands(argv: string[]): EntrypointHelper[] {
   return commands;
 }
 
-// TODO - decide on a proper 'default' behaviour for config sources and replace this
+/**
+ * An initial load of the configuration settings using the mandatory
+ * meta sources (specified via environment variable). In general tries
+ * to safely return issues (and whatever config it can make) - so that
+ * we can properly log the issues higher in the stack.
+ */
 export async function getFromEnv(): Promise<{
-  sources: string;
-  settings: ElsaSettings;
-  rawConfig: ElsaConfigurationType;
-  redactedConfig: ElsaConfigurationType;
+  sources?: string;
+  rawConfig?: ElsaConfigurationType;
+  redactedConfig?: ElsaConfigurationType;
+  configIssues?: ZodIssue[];
+  settings?: ElsaSettings;
 }> {
   const sources = process.env[CONFIG_SOURCES_ENVIRONMENT_VAR];
 
   if (!sources)
-    throw new Error(
-      `There must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
-    );
+    return {
+      configIssues: [
+        {
+          code: ZodIssueCode.custom,
+          path: [],
+          message: `No sources defined in the environment variable '${CONFIG_SOURCES_ENVIRONMENT_VAR}'`,
+        },
+      ],
+    };
+
+  // the meta syntax tells us where to source configuration from and in what order
+  const metaProviders = parseMeta(sources);
 
   // the raw configuration from our sources - this can *only* be objects that are
   // expressible in JSON (numbers, strings etc)
-  const config = await getMetaConfig(sources);
+  const { config, configIssues } = await getMetaConfig(metaProviders);
+
+  // if there is no config then Zod couldn't make it a valid configuration - even without
+  // strict mode
+  if (!config) {
+    return {
+      sources: sources,
+      configIssues: configIssues,
+    };
+  }
+
+  // create a redacted version as well
+  const configCopy = JSON.parse(JSON.stringify(config));
+  redactConfig(configCopy);
 
   // convert the config into a richer settings object
   // this can contain one off constructed objects like OidcClient etc
@@ -83,30 +115,64 @@ export async function getFromEnv(): Promise<{
 
   return {
     sources: sources,
-    settings: settings,
     rawConfig: config,
-    // TBD now we have removed convict - this redaction does not automatically happen
-    // need to write a serializer that takes into account the Sensitive zod
-    // we are returning the redacted config just basically so we can do a log dump of its content
-    // which we can't do here because we have a chicken/egg problem of constructing the logger first
-    redactedConfig: JSON.parse(JSON.stringify(config)),
+    redactedConfig: configCopy,
+    configIssues: configIssues,
+    settings: settings,
   };
 }
 
 /**
- * Run the `edgedb` CLI command with the given arguments. Deletes a set of
- * keys from the environment if need be.
+ * Recursively replaces the string value of any keys that have names
+ * that are suspiciously like something we shouldn't print out.
  *
+ * @param obj
+ */
+export function redactConfig(obj: any) {
+  for (const key in obj) {
+    if (typeof obj[key] === "object") {
+      if (Array.isArray(obj[key])) {
+        // loop through array
+        for (let i = 0; i < obj[key].length; i++) {
+          redactConfig(obj[key][i]);
+        }
+      } else {
+        // call function recursively for object
+        redactConfig(obj[key]);
+      }
+    } else {
+      const lowerKey = key.toLowerCase();
+
+      // this is a pretty weak way of doing - a blacklist like this can always let things through
+      // but is better than nothing
+      // (in general the config is not displayed anywhere anyhow)
+      if (
+        lowerKey.includes("secret") ||
+        lowerKey.includes("salt") ||
+        lowerKey.includes("botkey")
+      )
+        obj[key] = "****";
+    }
+  }
+}
+
+/**
+ * Run the `edgedb` CLI command with the given arguments. Deletes a set of
+ * keys from the environment if need be (this can be needed in order to
+ * convince EdgeDb that it is *not* already configured for a particular db).
+ *
+ * @param logger
  * @param args
  * @param deleteEnvKeys
  */
 export async function executeEdgeCli(
+  logger: Logger,
   args: string[],
   deleteEnvKeys: string[] = []
 ) {
   const execFilePromise = promisify(execFile);
 
-  console.log(`Executing EdgeDb CLI`);
+  logger.debug(`EdgeDb CLI invoke args = ${args.join(", ")}`);
 
   const newEnv = { ...process.env };
 
@@ -121,12 +187,16 @@ export async function executeEdgeCli(
 
   const { stdout, stderr } = await promiseInvoke;
 
-  console.log(`Error code = ${promiseInvoke.child.exitCode}`);
+  logger.debug(`EdgeDb CLI exit code = ${promiseInvoke.child.exitCode}`);
 
   if (stdout) {
-    stdout.split("\n").forEach((l) => console.log(`stdout ${l}`));
+    stdout.split("\n").forEach((l) => {
+      if (!isEmpty(l)) logger.info(l);
+    });
   }
   if (stderr) {
-    stderr.split("\n").forEach((l) => console.log(`stderr ${l}`));
+    stderr.split("\n").forEach((l) => {
+      if (!isEmpty(l)) logger.warn(l);
+    });
   }
 }

@@ -1,25 +1,25 @@
 import { executeEdgeCli } from "./entrypoint-helper";
+import { Logger } from "pino";
 
 export const DB_WIPE_COMMAND = "db-wipe";
 
 /**
  * A command that instructs EdgeDb to do database wipe.
  */
-export async function commandDbWipe(): Promise<number> {
+export async function commandDbWipe(logger: Logger): Promise<number> {
   if (process.env.NODE_ENV !== "development") {
-    console.log("The database can only be wiped when NODE_ENV is development");
+    logger.fatal("The database can only be wiped when NODE_ENV is development");
 
     return 1;
   }
 
   try {
-    await executeEdgeCli(["database", "wipe", "--non-interactive"]);
-
-    return 0;
+    await executeEdgeCli(logger, ["database", "wipe", "--non-interactive"]);
   } catch (e) {
-    console.error("edgedb database wipe failed");
-    console.error(e);
+    logger.fatal(e, "Database wipe");
 
     return 1;
   }
+
+  return 0;
 }

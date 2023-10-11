@@ -45,6 +45,7 @@ import {
   DB_CREATE_COMMAND,
 } from "./entrypoint-command-db-create";
 import { commandDbWipe, DB_WIPE_COMMAND } from "./entrypoint-command-db-wipe";
+import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-schema";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -55,18 +56,48 @@ bootstrapGlobalSynchronous();
  */
 (async () => {
   // now we are async - we can perform setup operations that themselves need to be async
-  // settings and config are mainly of interest only to the web server - but it is possible some other
-  // operations might need to use services - so we get all the setup out of the way here
-  const { sources, settings, rawConfig, redactedConfig } = await getFromEnv();
+  // we get all the setup out of the way here
+  const { sources, rawConfig, redactedConfig, configIssues, settings } =
+    await getFromEnv();
 
-  const logger = pino(settings.logger);
+  if (!sources) {
+    throw new Error(
+      `There must be a env variable ${CONFIG_SOURCES_ENVIRONMENT_VAR} set to the source of configurations`
+    );
+  }
 
+  // we are taking a punt here that the logger settings have been constructed - but if not we will still
+  // construct the logger
+  const logger = pino(settings?.logger ?? {});
+
+  logger.info(
+    `Logger level is currently set at '${logger.level}' - test messages at all levels to follow`
+  );
   logger.trace("Logger trace test");
   logger.debug("Logger debug test");
   logger.info("Logger info test");
   logger.warn("Logger warn test");
   logger.error("Logger error test");
   logger.fatal("Logger fatal test");
+
+  //if (!settings || !rawConfig || !redactedConfig)
+  //  throw new Error("Settings object failure");
+
+  // we may have encountered fundamental issues, or just warning issues
+  if (configIssues && configIssues.length > 0) {
+    if (!rawConfig) {
+      for (const i of configIssues) {
+        logger.fatal(i, "Configuration issue");
+      }
+    } else {
+      for (const i of configIssues) {
+        logger.warn(i, "Configuration issue");
+      }
+    }
+  }
+
+  if (!settings || !rawConfig || !redactedConfig)
+    throw new Error("Settings not present");
 
   logger.info(
     redactedConfig,
@@ -139,7 +170,7 @@ bootstrapGlobalSynchronous();
       case "echo":
         // TODO consider if this is in anyway useful / too dangerous
         todo.push(async () => {
-          console.log(c.args);
+          logger.info(c.args);
           return 0;
         });
         break;
@@ -152,7 +183,7 @@ bootstrapGlobalSynchronous();
 
       case WEB_SERVER_WITH_SCENARIO_COMMAND:
         if (c.args.length != 1)
-          console.error(
+          logger.error(
             `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
           );
 
@@ -163,7 +194,7 @@ bootstrapGlobalSynchronous();
 
       case ADD_SCENARIO_COMMAND:
         if (c.args.length != 1)
-          console.error(
+          logger.error(
             `Command ${ADD_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`
           );
 
@@ -172,7 +203,7 @@ bootstrapGlobalSynchronous();
 
       case ADD_USER_COMMAND:
         if (c.args.length != 1)
-          console.error(
+          logger.fatal(
             `Command ${ADD_USER_COMMAND} requires a single email address argument indicating a user who should be able to login`
           );
 
@@ -180,19 +211,19 @@ bootstrapGlobalSynchronous();
         break;
 
       case DB_BLANK_COMMAND:
-        todo.push(async () => commandDbBlank());
+        todo.push(async () => commandDbBlank(logger));
         break;
 
       case DB_CREATE_COMMAND:
-        todo.push(async () => commandDbCreate());
+        todo.push(async () => commandDbCreate(logger));
         break;
 
       case DB_MIGRATE_COMMAND:
-        todo.push(async () => commandDbMigrate());
+        todo.push(async () => commandDbMigrate(logger));
         break;
 
       case DB_WIPE_COMMAND:
-        todo.push(async () => commandDbWipe());
+        todo.push(async () => commandDbWipe(logger));
         break;
 
       case DELETE_DATASETS_COMMAND:

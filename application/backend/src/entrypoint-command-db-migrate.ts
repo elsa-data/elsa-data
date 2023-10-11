@@ -1,18 +1,18 @@
 import { executeEdgeCli } from "./entrypoint-helper";
+import { Logger } from "pino";
 
 export const DB_MIGRATE_COMMAND = "db-migrate";
 
 /**
  * A command that instructs EdgeDb to do migrations.
  */
-export async function commandDbMigrate(): Promise<number> {
+export async function commandDbMigrate(logger: Logger): Promise<number> {
   try {
-    await executeEdgeCli(["migration", "apply"]);
+    await executeEdgeCli(logger, ["migration", "apply"]);
 
     return 0;
   } catch (e) {
-    console.error("edgedb migration apply failed");
-    console.error(e);
+    logger.error(e, "Database migration");
 
     return 1;
   }
