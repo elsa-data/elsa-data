@@ -10,7 +10,7 @@ import { EagerErrorBoundary } from "../../../components/errors";
 type Props = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
-  releaseDataIsFetching: boolean;
+  releaseDataIsLoading: boolean;
 };
 
 /**
@@ -19,13 +19,13 @@ type Props = {
  *
  * @param releaseKey the unique key referring to this release
  * @param releaseData the information about this release
- * @param releaseDataIsFetching
+ * @param releaseDataIsLoading
  * @constructor
  */
 export const InformationBox: React.FC<Props> = ({
   releaseData,
   releaseKey,
-  releaseDataIsFetching,
+  releaseDataIsLoading,
 }) => {
   const isAllowMutateActivation = releaseData.roleInRelease == "Administrator";
 
@@ -61,45 +61,12 @@ export const InformationBox: React.FC<Props> = ({
     deactivateMutation.isPaused;
   const releaseIsActivated = !!releaseData.activation;
 
-  const ActivateDeactivateButtonRow = () => (
-    <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
-      <button
-        className="btn-success btn-lg btn grow"
-        disabled={
-          releaseIsActivated || mutationInProgress || releaseDataIsFetching
-        }
-        onClick={() =>
-          activateMutation.mutate(
-            { releaseKey },
-            { onSuccess: async () => await queryClient.invalidateQueries() }
-          )
-        }
-      >
-        Activate Release
-      </button>
-      <button
-        className="btn-warning btn-lg btn grow"
-        disabled={
-          !releaseIsActivated || mutationInProgress || releaseDataIsFetching
-        }
-        onClick={() =>
-          deactivateMutation.mutate(
-            { releaseKey },
-            { onSuccess: async () => await queryClient.invalidateQueries() }
-          )
-        }
-      >
-        Deactivate Release
-      </button>
-    </div>
-  );
-
   return (
     <Box heading={releaseData.applicationDacTitle}>
       {error && <EagerErrorBoundary error={error} />}
 
       <div className="grid grid-cols-2 gap-4 overflow-x-auto">
-        {releaseIsActivated && !releaseDataIsFetching && (
+        {releaseIsActivated && !releaseDataIsLoading && (
           <div className="alert alert-success col-span-2 shadow-lg">
             <div>
               <span>Data sharing is activated for this release</span>
@@ -111,7 +78,46 @@ export const InformationBox: React.FC<Props> = ({
         {isAllowMutateActivation ? (
           <>
             <div className="col-span-2 flex flex-col space-y-2 lg:col-auto">
-              <ActivateDeactivateButtonRow />
+              <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+                <button
+                  className="btn-success btn-lg btn grow"
+                  disabled={
+                    releaseIsActivated ||
+                    mutationInProgress ||
+                    releaseDataIsLoading
+                  }
+                  onClick={() =>
+                    activateMutation.mutate(
+                      { releaseKey },
+                      {
+                        onSuccess: async () =>
+                          await queryClient.invalidateQueries(),
+                      },
+                    )
+                  }
+                >
+                  Activate Release
+                </button>
+                <button
+                  className="btn-warning btn-lg btn grow"
+                  disabled={
+                    !releaseIsActivated ||
+                    mutationInProgress ||
+                    releaseDataIsLoading
+                  }
+                  onClick={() =>
+                    deactivateMutation.mutate(
+                      { releaseKey },
+                      {
+                        onSuccess: async () =>
+                          await queryClient.invalidateQueries(),
+                      },
+                    )
+                  }
+                >
+                  Deactivate Release
+                </button>
+              </div>
             </div>
 
             <div className="col-span-2 flex flex-col space-y-2 lg:col-auto">

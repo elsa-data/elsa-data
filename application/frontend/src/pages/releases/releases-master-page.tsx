@@ -34,7 +34,7 @@ export const ReleasesMasterPage: React.FC = () => {
 
   if (!releaseKey)
     throw new Error(
-      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`
+      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`,
     );
 
   const [error, setError] = useState<ErrorState>({
@@ -51,7 +51,7 @@ export const ReleasesMasterPage: React.FC = () => {
       onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
       // whenever we get the data we need to augment it with a little bit of local knowledge
       select: (d: any) => makeReleaseTypeLocal(d),
-    }
+    },
   );
 
   const cancelMutate = trpc.releaseJob.cancel.useMutation({
@@ -81,7 +81,7 @@ export const ReleasesMasterPage: React.FC = () => {
     // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
     // it is ok because in that case we never actually use this masterOutletContext..
     releaseData: releaseQuery.data!,
-    releaseDataIsFetching: releaseQuery.isFetching,
+    releaseDataIsLoading: releaseQuery.isLoading,
   };
 
   const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as
@@ -105,7 +105,7 @@ export const ReleasesMasterPage: React.FC = () => {
                   icon={<TriangleExclamationIcon />}
                   additionalAlertClassName={"alert-warning"}
                   description={`Someone else has recently edited this release (${formatFromNowTime(
-                    lastUpdated
+                    lastUpdated,
                   )}). Consider if what you are intending to do will interfere with their editing.`}
                 />
               )}
