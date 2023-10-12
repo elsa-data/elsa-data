@@ -31,7 +31,6 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     baseURL: "http://localhost:3000",
-    storageState: "state.json",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
   },
@@ -53,8 +52,6 @@ const config: PlaywrightTestConfig = {
   ],
 
   outputDir: "test-results/",
-
-  globalSetup: require.resolve("./global-setup"),
 
   /* set up so our test server runs directly from dev */
   webServer: {

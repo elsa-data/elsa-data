@@ -19,7 +19,7 @@ import { ReleasesDetailSubPage } from "./pages/releases/detail/releases-detail-s
 import { DatasetsDashboardPage } from "./pages/datasets-dashboard/datasets-dashboard-page";
 import { LayoutBase } from "./layouts/layout-base";
 import { NotAuthorisedPage } from "./pages/not-authorised-page";
-import { LoginPage } from "./pages/login-page";
+import { LoginPageOrRedirect } from "./pages/login-page";
 import { ReleasesMasterPage } from "./pages/releases/releases-master-page";
 import { DataEgressSummarySubPage } from "./pages/releases/data-egress-summary-sub-page/data-egress-summary-sub-page";
 import { BulkSelectorSubPage } from "./pages/releases/bulk-selector-sub-page/bulk-selector-sub-page";
@@ -35,7 +35,10 @@ import {
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
-import { NOT_AUTHORISED_ROUTE_PART } from "@umccr/elsa-constants/constants-routes";
+import {
+  NOT_AUTHORISED_ROUTE_PART,
+  RELEASES_ROUTE_PART,
+} from "@umccr/elsa-constants/constants-routes";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -137,7 +140,7 @@ export function IndexRouter({ features }: IndexRouterProps) {
         <Route
           path={`/login`}
           element={
-            <LoginPage
+            <LoginPageOrRedirect
               showDevTestLogin={features.has(FEATURE_DEV_TEST_USERS_LOGIN)}
             />
           }
@@ -156,9 +159,9 @@ export function IndexRouter({ features }: IndexRouterProps) {
         {/* a protected hierarchy of routes - user must be logged in */}
         <Route path={`/`} element={<ProtectedRoute redirectPath="/login" />}>
           {/* our default 'home' is the releases page */}
-          <Route index element={<Navigate to={"releases"} />} />
+          <Route index element={<Navigate to={RELEASES_ROUTE_PART} />} />
 
-          <Route path={`releases`}>
+          <Route path={RELEASES_ROUTE_PART}>
             <Route index element={<ReleasesDashboardPage />} />
 
             {/* all pages pertaining to an individual release get this master page which display
@@ -218,8 +221,8 @@ export function IndexRouter({ features }: IndexRouterProps) {
         </Route>
 
         <Route path="*" element={<NoMatch />} />
-      </Route>
-    )
+      </Route>,
+    ),
   );
 
   return <RouterProvider router={router} />;
