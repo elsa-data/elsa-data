@@ -29,12 +29,13 @@ export const ReleasesMasterPage: React.FC = () => {
   const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
   const user = useLoggedInUser();
+  const utils = trpc.useContext();
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
   if (!releaseKey)
     throw new Error(
-      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`
+      `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`,
     );
 
   const [error, setError] = useState<ErrorState>({
@@ -51,7 +52,7 @@ export const ReleasesMasterPage: React.FC = () => {
       onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
       // whenever we get the data we need to augment it with a little bit of local knowledge
       select: (d: any) => makeReleaseTypeLocal(d),
-    }
+    },
   );
 
   const cancelMutate = trpc.releaseJob.cancel.useMutation({
@@ -64,11 +65,11 @@ export const ReleasesMasterPage: React.FC = () => {
   // so we set this effect up with a dependency on the runningJob field - and switch the
   // interval on only when there is background job
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       if (releaseQuery?.data?.runningJob) {
-        // we are busy waiting on the job to complete - so we can invalidate the whole cache
-        // as the jobs may affect the entire UI (audit logs, cases etc)
-        queryClient.invalidateQueries().then(() => {});
+        await utils.release.getSpecificRelease.invalidate();
+      } else {
+        await queryClient.invalidateQueries();
       }
     }, REFRESH_JOB_STATUS_MS);
     return () => {
@@ -81,7 +82,7 @@ export const ReleasesMasterPage: React.FC = () => {
     // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
     // it is ok because in that case we never actually use this masterOutletContext..
     releaseData: releaseQuery.data!,
-    releaseDataIsFetching: releaseQuery.isFetching,
+    releaseDataIsLoading: releaseQuery.isLoading,
   };
 
   const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as
@@ -105,7 +106,7 @@ export const ReleasesMasterPage: React.FC = () => {
                   icon={<TriangleExclamationIcon />}
                   additionalAlertClassName={"alert-warning"}
                   description={`Someone else has recently edited this release (${formatFromNowTime(
-                    lastUpdated
+                    lastUpdated,
                   )}). Consider if what you are intending to do will interfere with their editing.`}
                 />
               )}

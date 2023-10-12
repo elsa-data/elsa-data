@@ -8,7 +8,7 @@ import { useOutletContext } from "react-router-dom";
 export type ReleasesMasterContextType = {
   releaseKey: string;
   releaseData: ReleaseTypeLocal;
-  releaseDataIsFetching: boolean;
+  releaseDataIsLoading: boolean;
 };
 
 export function useReleasesMasterData() {
