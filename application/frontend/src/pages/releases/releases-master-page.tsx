@@ -29,6 +29,7 @@ export const ReleasesMasterPage: React.FC = () => {
   const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
   const user = useLoggedInUser();
+  const utils = trpc.useContext();
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
@@ -64,11 +65,11 @@ export const ReleasesMasterPage: React.FC = () => {
   // so we set this effect up with a dependency on the runningJob field - and switch the
   // interval on only when there is background job
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       if (releaseQuery?.data?.runningJob) {
-        // we are busy waiting on the job to complete - so we can invalidate the whole cache
-        // as the jobs may affect the entire UI (audit logs, cases etc)
-        queryClient.invalidateQueries().then(() => {});
+        await utils.release.getSpecificRelease.invalidate();
+      } else {
+        await queryClient.invalidateQueries();
       }
     }, REFRESH_JOB_STATUS_MS);
     return () => {
