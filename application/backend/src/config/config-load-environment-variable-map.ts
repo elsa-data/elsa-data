@@ -1,3 +1,24 @@
+import { set } from "lodash";
+
+const env_prefix = "ELSA_DATA_CONFIG_";
+
+export function trySetEnvironmentVariableString(
+  object: any,
+  env_suffix: string,
+  path: string
+) {
+  const v = process.env[`${env_prefix}${env_suffix}`];
+  if (v) set(object, path, v);
+}
+export function trySetEnvironmentVariableInteger(
+  object: any,
+  env_suffix: string,
+  path: string
+) {
+  const v = process.env[`${env_prefix}${env_suffix}`];
+  if (v) set(object, path, parseInt(v));
+}
+
 export const environmentVariableMap = {
   SERVICE_DISCOVERY_NAMESPACE: "serviceDiscoveryNamespace",
 

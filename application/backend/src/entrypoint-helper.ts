@@ -1,13 +1,7 @@
 import { ElsaSettings } from "./config/elsa-settings";
-import {
-  CONFIG_SOURCES_ENVIRONMENT_VAR,
-  ElsaConfigurationType,
-} from "./config/config-schema";
+import { CONFIG_SOURCES_ENVIRONMENT_VAR } from "./config/config-schema";
 import { bootstrapSettings } from "./bootstrap-settings";
 import { getMetaConfig } from "./config/config-load";
-import { AuthenticatedUser } from "./business/authenticated-user";
-import { Client } from "edgedb";
-import e from "../dbschema/edgeql-js";
 import { promisify } from "util";
 import { execFile } from "child_process";
 import { Logger } from "pino";
@@ -63,61 +57,85 @@ export function getCommands(argv: string[]): EntrypointHelper[] {
   return commands;
 }
 
+interface SettingsFromEnvResult {
+  // whether the load of settings was successful
+  success: boolean;
+
+  // any issues discovered doing the load
+  // NOTE: there can be issues to display *even if* the configuration
+  // loads successfully (treat them as info/warnings)
+  issues: ZodIssue[];
+
+  sources: string;
+  rawConfig: any;
+  redactedConfig: any;
+
+  // if success is true, then this is a correctly formed settings object
+  settings?: ElsaSettings;
+}
+
 /**
  * An initial load of the configuration settings using the mandatory
  * meta sources (specified via environment variable). In general tries
  * to safely return issues (and whatever config it can make) - so that
  * we can properly log the issues higher in the stack.
  */
-export async function getFromEnv(): Promise<{
-  sources?: string;
-  rawConfig?: ElsaConfigurationType;
-  redactedConfig?: ElsaConfigurationType;
-  configIssues?: ZodIssue[];
-  settings?: ElsaSettings;
-}> {
+export async function getSettingsFromEnv(): Promise<SettingsFromEnvResult> {
   const sources = process.env[CONFIG_SOURCES_ENVIRONMENT_VAR];
 
   if (!sources)
     return {
-      configIssues: [
+      success: false,
+      issues: [
         {
           code: ZodIssueCode.custom,
           path: [],
           message: `No sources defined in the environment variable '${CONFIG_SOURCES_ENVIRONMENT_VAR}'`,
         },
       ],
+      sources: "",
+      rawConfig: {},
+      redactedConfig: {},
     };
 
   // the meta syntax tells us where to source configuration from and in what order
+  // TODO catch exceptions and convert into 'issues' instead
   const metaProviders = parseMeta(sources);
 
   // the raw configuration from our sources - this can *only* be objects that are
   // expressible in JSON (numbers, strings etc)
-  const { config, configIssues } = await getMetaConfig(metaProviders);
+  const { success, config, configIssues } = await getMetaConfig(metaProviders);
 
-  // if there is no config then Zod couldn't make it a valid configuration - even without
-  // strict mode
-  if (!config) {
-    return {
-      sources: sources,
-      configIssues: configIssues,
-    };
-  }
-
-  // create a redacted version as well
+  // whether successful or not - our config is always an object we can (and should) redact when printing
+  // so we create a redacted version as well
   const configCopy = JSON.parse(JSON.stringify(config));
   redactConfig(configCopy);
 
+  // a proper configuration could not be made - return our failure information up the chain
+  if (!success) {
+    return {
+      success: false,
+      issues: configIssues,
+      sources: sources,
+      rawConfig: config,
+      redactedConfig: configCopy,
+    };
+  }
+
   // convert the config into a richer settings object
   // this can contain one off constructed objects like OidcClient etc
+  // TODO rather than have a different type ElsaSettings - augment the configuration
+  //      type using Pick,Omit etc. Basically use 95% of the existing config types rather than
+  //      redefine like we currently do
   const settings = await bootstrapSettings(config);
 
+  // note tht even though this is successful we may still have config issues we can report on
   return {
+    success: true,
+    issues: configIssues,
     sources: sources,
     rawConfig: config,
     redactedConfig: configCopy,
-    configIssues: configIssues,
     settings: settings,
   };
 }

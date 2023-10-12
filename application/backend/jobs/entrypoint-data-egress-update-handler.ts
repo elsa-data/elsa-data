@@ -29,7 +29,7 @@ import { IPLookupService } from "../src/business/services/ip-lookup-service";
   // global settings for DI
   const dc = await bootstrapDependencyInjection(
     logger,
-    rawConfig.devTesting?.mockAwsCloud
+    settings.devTesting?.mockAwsCloud
   );
 
   dc.register<ElsaSettings>("Settings", {

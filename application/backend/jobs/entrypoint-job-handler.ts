@@ -27,7 +27,7 @@ import { getFeaturesEnabled } from "../src/features";
   // global settings for DI
   const dc = await bootstrapDependencyInjection(
     logger,
-    rawConfig.devTesting?.mockAwsCloud
+    settings.devTesting?.mockAwsCloud
   );
 
   dc.register<ElsaSettings>("Settings", {
