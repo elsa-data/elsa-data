@@ -1,4 +1,4 @@
-import { parseMeta } from "./meta/meta-parser";
+import { ProviderMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
 import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
@@ -6,10 +6,34 @@ import { configZodDefinition, ElsaConfigurationType } from "./config-schema";
 import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
 import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 import jsonpath from "jsonpath";
-import _ from "lodash";
-import { environmentVariableMap } from "./config-load-environment-variable-map";
+import {
+  environmentVariableMap,
+  trySetEnvironmentVariableInteger,
+  trySetEnvironmentVariableString,
+} from "./config-load-environment-variable-map";
+import { ZodError, ZodIssue, ZodIssueCode } from "zod";
+import { cloneDeep, isNumber, isNil, isString, merge, set } from "lodash";
 
-const env_prefix = "ELSA_DATA_CONFIG_";
+/**
+ * The structure returned when we try to load configuration. Handles
+ * some error cases without needing to use exceptions - as we want to
+ * allow higher layers do things like log the config that failed.
+ */
+interface ConfigResult {
+  // if true, then the config object returns *does* match our configuration
+  // schema
+  // if false, the config object returned is still a valid object but *does not*
+  // match our configuration schema
+  success: boolean;
+
+  // a configuration object that is guaranteed to match the schema only if
+  // success is true
+  config: ElsaConfigurationType;
+
+  // if non-empty, a set of issues which can be reported to the administrator
+  // issues can be reported even if success is true
+  configIssues: ZodIssue[];
+}
 
 /**
  * Given a meta configuration description (a string listing a sequence of config
@@ -17,18 +41,18 @@ const env_prefix = "ELSA_DATA_CONFIG_";
  * merged and loaded via Zod schema checking. Env variables will be late bound
  * to be able to also set config values.
  *
- * @param meta a string of source of configuration information e.g "file(a) aws-secret(b)"
+ * @param providers an array of meta providers to source configuration information
+ * @returns an object with the strictly validated configuration (and empty issue array) OR
+ *          an object with a non-strict validated configuration (and a non-empty array of issues) OR
+ *          an empty configuration (and a non-empty array of issues)
  */
 export async function getMetaConfig(
-  meta: string
-): Promise<ElsaConfigurationType> {
-  // the meta syntax tells us where to source configuration from and in what order
-  const metaProviders = parseMeta(meta);
-
-  // the raw config JSON as loaded from the sources
+  providers: ProviderMeta[]
+): Promise<ConfigResult> {
+  // the raw config JSON as loaded from each provider source (in order)
   const rawConfigs = [];
 
-  for (const mp of metaProviders) {
+  for (const mp of providers) {
     let providerConfig;
     switch (mp.providerToken.value) {
       case "aws-secret":
@@ -60,6 +84,8 @@ export async function getMetaConfig(
     rawConfigs.push(providerConfig);
   }
 
+  // whilst we assert a Typescript type here - we are not sure this object is schema correct
+  // until *after* we do a Zod check
   let configObject: ElsaConfigurationType = {} as ElsaConfigurationType;
 
   // one by one merge each config in order into the config object
@@ -97,36 +123,77 @@ export async function getMetaConfig(
       );
   }
 
-  const trySetEnvironmentVariableString = (
-    env_suffix: string,
-    path: string
-  ) => {
-    const v = process.env[`${env_prefix}${env_suffix}`];
-    if (v) _.set(configObject, path, v);
-  };
-  const trySetEnvironmentVariableInteger = (
-    env_suffix: string,
-    path: string
-  ) => {
-    const v = process.env[`${env_prefix}${env_suffix}`];
-    if (v) _.set(configObject, path, parseInt(v));
-  };
-
   // TODO a mechanism that perhaps _parses_ env names - and works out the path itself..
-  // (i.e. replace _ with . and capitalise! but better)
+  //      (i.e. replace _ with . and capitalise! but better)
+
   for (const [e, v] of Object.entries(environmentVariableMap)) {
-    trySetEnvironmentVariableString(e, v);
+    trySetEnvironmentVariableString(configObject, e, v);
   }
 
-  trySetEnvironmentVariableInteger("HTTP_HOSTING_PORT", "httpHosting.port");
+  trySetEnvironmentVariableInteger(
+    configObject,
+    "HTTP_HOSTING_PORT",
+    "httpHosting.port"
+  );
+
+  const strictIssuesFound: ZodIssue[] = [];
 
   // perform validation on the final config object and return it transformed
-  // (the transform will do type coercion and setting defaults)
+  // (the transform will do type coercion and setting of defaults)
+
   try {
-    return configZodDefinition.strict().parse(configObject);
+    // our best scenario - the config parsed in strict mode so we return that
+    return {
+      success: true,
+      config: configZodDefinition.strict().parse(configObject),
+      configIssues: strictIssuesFound,
+    };
+  } catch (e: any) {
+    // fill in the issues to use in the next attempt
+    if (e instanceof ZodError) {
+      strictIssuesFound.push(...e.issues);
+    } else {
+      strictIssuesFound.push({
+        code: ZodIssueCode.custom,
+        path: [],
+        message:
+          "Strict parsing attempt failed with an exception that was not a ZodError",
+      });
+    }
+  }
+
+  try {
+    // our second-best scenario - the config parses - but didn't in strict mode! - so we have a successful
+    // config, but we also return the issues from the strict attempt
+    return {
+      success: true,
+      config: configZodDefinition.parse(configObject),
+      configIssues: strictIssuesFound,
+    };
   } catch (e) {
-    console.warn(`failed strict parsing: ${e}`);
-    return configZodDefinition.parse(configObject);
+    // ok - we are at disaster level now
+    // we can't actually
+    if (e instanceof ZodError) {
+      return {
+        success: false,
+        config: configObject,
+        // NOTE: we are returning the strict issues we found previously - as they should be a superset of the issues
+        // that causes this failure... so we actually ignore the issues in 'e'
+        configIssues: strictIssuesFound,
+      };
+    } else {
+      return {
+        success: false,
+        config: configObject,
+        configIssues: [
+          {
+            code: ZodIssueCode.custom,
+            path: [],
+            message: "Parsing failed with an exception that was not a ZodError",
+          },
+        ],
+      };
+    }
   }
 }
 
@@ -158,7 +225,7 @@ function mergeNewConfig(
 ): any {
   // start with the intention of returning back exactly what we started with
   // we will now mutate this
-  const returnConfig = _.cloneDeep(startingConfig);
+  const returnConfig = cloneDeep(startingConfig);
 
   // we don't want to accidentally refer to this so null it out
   startingConfig = null;
@@ -247,16 +314,16 @@ function mergeNewConfig(
     } else {
       // if there are already values present matching this key - they cannot be objects or arrays
       if (
-        !_.isString(matching[0]) &&
-        !_.isNumber(matching[0]) &&
-        !_.isNil(matching[0])
+        !isString(matching[0]) &&
+        !isNumber(matching[0]) &&
+        !isNil(matching[0])
       )
         throw new Error(
           `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
         );
 
       // the value we want to set cannot be anything but a string/number (we could probably check this earlier)
-      if (!_.isString(value) && !_.isNumber(value))
+      if (!isString(value) && !isNumber(value))
         throw new Error(
           `Configuration handling for complex key ->${key}<- resulted in a value to be set that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
         );
@@ -270,5 +337,5 @@ function mergeNewConfig(
 
   // all the "special" fields have been removed from newConfig and we have applied their logic ourselves
   // now we can just use the basis Lodash merge functionality for the rest of the newConfig
-  return _.merge(returnConfig, newConfig);
+  return merge(returnConfig, newConfig);
 }

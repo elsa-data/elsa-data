@@ -1,5 +1,7 @@
 import { getMetaConfig } from "../../../src/config/config-load";
 import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-schema";
+import { parseMeta } from "../../../src/config/meta/meta-parser";
+import assert from "assert";
 
 // TODO: because this actually instantiates the providers, all providers mentioned here need to work in test
 // TODO: we still need to set up the test infrastructure so that AWS tests will work (using fake AWS??)
@@ -8,7 +10,9 @@ it("basic parsing of meta syntax", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
     "./tests/unit-tests/config/real-like";
 
-  const config = await getMetaConfig("file('base') file('dev-localhost')");
+  const { config } = await getMetaConfig(
+    parseMeta("file('base') file('dev-localhost')")
+  );
 
   expect(config).toHaveProperty("httpHosting.port", 8000);
   expect(config).toHaveProperty("ontoFhirUrl", "https://server.com/fhir");
@@ -18,8 +22,10 @@ it("basic parsing with right most providers overriding", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
     "./tests/unit-tests/config/real-like";
 
-  const config = await getMetaConfig(
-    "file('base') file('dev-common') file('dev-localhost') file('datasets')"
+  const { config } = await getMetaConfig(
+    parseMeta(
+      "file('base') file('dev-common') file('dev-localhost') file('datasets')"
+    )
   );
 
   // here the dev-common overrides the port as set in base
@@ -32,8 +38,11 @@ it("plus minus operations for arrays", async () => {
 
   // with just the single file we have two datasets
   {
-    const config = await getMetaConfig("file('datasets') file('base')");
+    const { config } = await getMetaConfig(
+      parseMeta("file('datasets') file('base')")
+    );
 
+    assert(config);
     expect(config).toHaveProperty("datasets");
 
     const datasets = config["datasets"];
@@ -50,10 +59,11 @@ it("plus minus operations for arrays", async () => {
 
   // with the add-delete config added - we add two and remove 1
   {
-    const config = await getMetaConfig(
-      "file('datasets') file('add-delete') file('base')"
+    const { config } = await getMetaConfig(
+      parseMeta("file('datasets') file('add-delete') file('base')")
     );
 
+    assert(config);
     expect(config).toHaveProperty("datasets");
 
     const datasets = config["datasets"];
@@ -76,7 +86,9 @@ it("minus an entry that doesn't exist is an error", async () => {
 
   expect.assertions(1);
   try {
-    await getMetaConfig("file('datasets') file('delete-doesnt-exist')");
+    await getMetaConfig(
+      parseMeta("file('datasets') file('delete-doesnt-exist')")
+    );
   } catch (e: any) {
     expect(e.toString()).toContain("did not do anything");
   }
@@ -86,10 +98,11 @@ it("complex key with path expression works", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
     "./tests/unit-tests/config/complex-keys";
 
-  const config = await getMetaConfig(
-    "file('test0') file('test1') file('test2')"
+  const { config } = await getMetaConfig(
+    parseMeta("file('test0') file('test1') file('test2')")
   );
 
+  assert(config);
   expect(config).toHaveProperty("aws");
 
   const aws = config["aws"];
@@ -102,8 +115,10 @@ it("basic parsing but with env variable override", async () => {
     "./tests/unit-tests/config/real-like";
   process.env["ELSA_DATA_CONFIG_HTTP_HOSTING_PORT"] = "9999";
 
-  const config = await getMetaConfig(
-    "file('base') file('dev-common') file('dev-localhost') file('datasets')"
+  const { config } = await getMetaConfig(
+    parseMeta(
+      "file('base') file('dev-common') file('dev-localhost') file('datasets')"
+    )
   );
 
   // here the explicit env variables overrides any file content
@@ -113,7 +128,7 @@ it("basic parsing but with env variable override", async () => {
 it("parser error with double left bracket", async () => {
   await expect(async () => {
     await getMetaConfig(
-      "file(('base') file('dev-common') file('dev-deployed')"
+      parseMeta("file(('base') file('dev-common') file('dev-deployed')")
     );
   }).rejects.toThrow("an argument list is started");
 });

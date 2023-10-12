@@ -70,6 +70,10 @@
     // we have a permanent tmp bucket with a generous expiry lifespan shared for localhost dev
     tempBucket: "elsa-data-tmp",
   },
+  // something not expected in our config that should be logged
+  extra: {
+    foo: "bar",
+  },
   emailer: {
     mode: "SES",
     from: {
