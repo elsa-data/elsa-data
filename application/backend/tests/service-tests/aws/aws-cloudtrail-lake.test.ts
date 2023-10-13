@@ -43,7 +43,7 @@ describe("Test CloudTrailLake Service", () => {
 
   it("Test queryCloudTrailLake", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
-      AwsCloudTrailLakeService
+      AwsCloudTrailLakeService,
     );
     const accessPointService = testContainer.resolve(AwsAccessPointService);
     const BUCKET_NAME = "umccr-10g-data-dev";
@@ -55,7 +55,6 @@ describe("Test CloudTrailLake Service", () => {
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
-        releaseKey: testReleaseKey,
         auditId: "abcd-defg-hijk-lmno",
         eventId: "1234-5678-1234-5678",
       },
@@ -102,7 +101,7 @@ describe("Test CloudTrailLake Service", () => {
 
   it("Test getEventDataStoreIdFromReleaseKey", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
-      AwsCloudTrailLakeService
+      AwsCloudTrailLakeService,
     );
 
     const eventDataStoreIdArr =

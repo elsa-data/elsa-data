@@ -29,7 +29,6 @@ type CloudTrailLakeResponseType = {
   bucketName: string;
   key: string;
   bytesTransferredOut: string;
-  releaseKey: string;
   auditId: string;
 };
 
@@ -42,11 +41,11 @@ export class AwsCloudTrailLakeService {
     @inject("CloudTrailClient")
     private readonly cloudTrailClient: CloudTrailClient,
     @inject(AwsAccessPointService)
-    private readonly awsAccessPointService: AwsAccessPointService
+    private readonly awsAccessPointService: AwsAccessPointService,
   ) {}
 
   getEventDataStoreIdFromDatasetUris(
-    datasetUris: string[]
+    datasetUris: string[],
   ): string[] | undefined {
     const eventDataStoreIdArr: string[] = [];
     for (const dataset of this.settings.datasets) {
@@ -112,9 +111,8 @@ export class AwsCloudTrailLakeService {
         QueryId: queryId,
         NextToken: nextToken,
       });
-      const cloudtrail_query_result_response = await this.cloudTrailClient.send(
-        command
-      );
+      const cloudtrail_query_result_response =
+        await this.cloudTrailClient.send(command);
       if (!cloudtrail_query_result_response.QueryResultRows) break;
 
       for (const row of cloudtrail_query_result_response.QueryResultRows) {
@@ -138,7 +136,7 @@ export class AwsCloudTrailLakeService {
    * @returns
    */
   private createSQLQueryByReleaseKeyReqParams(
-    props: CloudTrailInputQueryType & { releaseKey: string }
+    props: CloudTrailInputQueryType & { releaseKey: string },
   ): string {
     const requestedField =
       "element_at(requestParameters, 'x-auditId') as auditId, " +
@@ -173,16 +171,17 @@ export class AwsCloudTrailLakeService {
   private createSQLQueryByAccessPointAlias(
     props: CloudTrailInputQueryType & {
       apAlias: string;
-    }
+    },
   ): string {
     const requestedField =
       "eventTime, " +
+      "eventId, " +
       "sourceIPAddress, " +
       "element_at(requestParameters, 'bucketName') as bucketName, " +
       "element_at(requestParameters, 'key') as key, " +
       "element_at(additionalEventData, 'bytesTransferredOut') as bytesTransferredOut";
 
-    const conditionStatement = `element_at(requestParameters, 'Host') LIKE '${props.apAlias}%'`;
+    const conditionStatement = `element_at(requestParameters, 'Host') LIKE '${props.apAlias}'`;
 
     let sqlStatement =
       `SELECT ${requestedField} ` +
@@ -285,17 +284,17 @@ export class AwsCloudTrailLakeService {
                 releaseKey,
                 description: "Accessed via presigned url.",
                 c: nctr,
-              })
+              }),
             );
           }
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
           const map =
             await this.awsAccessPointService.getInstalledAccessPointObjectMap(
-              releaseKey
+              releaseKey,
             );
 
           const apAlias = new Set<string>(
-            Object.values(map).map((ape) => ape.objectStoreBucket)
+            Object.values(map).map((ape) => ape.objectStoreBucket),
           );
 
           for (const a of apAlias) {
@@ -319,13 +318,13 @@ export class AwsCloudTrailLakeService {
                   releaseKey,
                   description: "Accessed via S3 access point.",
                   c: nctr,
-                })
+                }),
               );
             }
           }
         } else {
           this.logger.warn(
-            `No matching query type for cloudTrailLake. ('${method}')`
+            `No matching query type for cloudTrailLake. ('${method}')`,
           );
         }
       }
