@@ -48,7 +48,7 @@ export const RELEASE_KEY_1 = "R001";
 
 export async function insertRelease1(
   dc: DependencyContainer,
-  releaseProps: InsertReleaseProps
+  releaseProps: InsertReleaseProps,
 ) {
   const { settings, logger, edgeDbClient } = getServices(dc);
   const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
@@ -63,20 +63,20 @@ export async function insertRelease1(
       applicationDacTitle: "A Study of Lots of Test Data",
       applicationDacIdentifier: makeIdentifierTuple(
         "https://rems.australiangenomics.org.au",
-        "56"
+        "56",
       ),
       applicationDacDetails: applicationDetails,
       applicationCoded: e.insert(e.release.ApplicationCoded, {
         studyType: "DS",
         countriesInvolved: makeSingleCodeArray(
           settings.isoCountrySystemUri,
-          "AUS"
+          "AUS",
         ),
         diseasesOfStudy: makeDoubleCodeArray(
           settings.mondoSystem.uri,
           "MONDO:0008678",
           settings.mondoSystem.uri,
-          "MONDO:0021531"
+          "MONDO:0021531",
         ),
         studyAgreesToPublish: true,
         studyIsNotCommercial: true,
@@ -102,13 +102,13 @@ export async function insertRelease1(
           activatedByDisplayName: releaseAdministrator[0].name,
           manifest: e.json({}),
           manifestEtag: "abcdef",
-        })
+        }),
       ),
       dataSharingConfiguration: e.insert(e.release.DataSharingConfiguration, {
         objectSigningEnabled: true,
         htsgetEnabled: true,
         awsAccessPointEnabled: true,
-        gcpStorageIamEnabled: true,
+        // gcpStorageIamEnabled: true,
         copyOutEnabled: true,
       }),
       releasePassword: "ABCDEFGHIJKL", // pragma: allowlist secret
@@ -126,7 +126,7 @@ export async function insertRelease1(
         findSpecimenQuery(HOMER_SPECIMEN),
         findSpecimenQuery(MARGE_SPECIMEN),
         // and just the proband of another trio
-        findSpecimenQuery(ELROY_SPECIMEN)
+        findSpecimenQuery(ELROY_SPECIMEN),
       ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
@@ -149,27 +149,26 @@ export async function insertRelease1(
             errorMessage: "Audit entry not completed",
           }),
           inProgress: true,
-        })
+        }),
       ),
       dataEgressRecord: await makeSyntheticDataEgressRecord(),
     })
     .run(edgeDbClient);
 
-  // Activating r1 release (with proper manifest)
+  // Updating r1 release with proper manifest json
   const m = await releaseGetSpecimenTreeAndFileArtifacts(edgeDbClient, {
     releaseKey: RELEASE_KEY_1,
   });
   const masterManifest = await transformDbManifestToMasterManifest(m);
   await e
-    .update(e.release.Release, (r) => ({
-      filter: e.op(r.releaseKey, "=", RELEASE_KEY_1),
+    .update(e.release.Activation, (a) => ({
+      filter: e.op(
+        a["<activation[is release::Release]"].releaseKey,
+        "=",
+        RELEASE_KEY_1,
+      ),
       set: {
-        activation: e.insert(e.release.Activation, {
-          activatedById: releaseAdministrator[0].subjectId,
-          activatedByDisplayName: releaseAdministrator[0].name,
-          manifest: e.json(masterManifest),
-          manifestEtag: "0123",
-        }),
+        manifest: e.json(masterManifest),
       },
     }))
     .run(edgeDbClient);
@@ -180,7 +179,7 @@ export async function insertRelease1(
       insertRelease1.id,
       user.email,
       "Administrator",
-      edgeDbClient
+      edgeDbClient,
     );
   }
   for (const user of releaseManager) {
@@ -216,6 +215,6 @@ export const makeSyntheticDataEgressRecord = async () => {
 
   return e.set(
     e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAM_S3)),
-    e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAI_S3))
+    e.insert(e.release.DataEgressRecord, await makeDataEgressLog(MARGE_BAI_S3)),
   );
 };

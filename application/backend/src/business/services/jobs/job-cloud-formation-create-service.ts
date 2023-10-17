@@ -36,7 +36,9 @@ export class JobCloudFormationCreateService extends JobService {
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
+    @inject(AwsAccessPointService)
+    private readonly awsAccessPointService: AwsAccessPointService,
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);
   }
@@ -49,14 +51,14 @@ export class JobCloudFormationCreateService extends JobService {
   public async startCloudFormationInstallJob(
     user: AuthenticatedUser,
     releaseKey: string,
-    s3HttpsUrl: string
+    s3HttpsUrl: string,
   ): Promise<ReleaseDetailType> {
     await this.awsEnabledService.enabledGuard();
 
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator")
@@ -64,7 +66,7 @@ export class JobCloudFormationCreateService extends JobService {
 
     const { releaseQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     await this.startGenericJob(releaseKey, async (tx) => {
@@ -77,7 +79,7 @@ export class JobCloudFormationCreateService extends JobService {
         "E",
         "Install AWS Access Point",
         new Date(),
-        tx
+        tx,
       );
 
       // create a new cloud formation install entry
@@ -133,7 +135,7 @@ export class JobCloudFormationCreateService extends JobService {
 
     if (!cfInstallJob.awsStackId) {
       const releaseStackName = AwsAccessPointService.getReleaseStackName(
-        cfInstallJob.forRelease.releaseKey
+        cfInstallJob.forRelease.releaseKey,
       );
 
       const newReleaseStack = await this.cfnClient.send(
@@ -145,7 +147,7 @@ export class JobCloudFormationCreateService extends JobService {
           // need to determine this number - but creating access points is pretty simple so
           // we only need to set this generously above the upper limit we see in practice
           TimeoutInMinutes: 5,
-        })
+        }),
       );
 
       if (!newReleaseStack || !newReleaseStack.StackId) {
@@ -178,7 +180,7 @@ export class JobCloudFormationCreateService extends JobService {
     const describeStacksResult = await this.cfnClient.send(
       new DescribeStacksCommand({
         StackName: cfInstallJob.awsStackId,
-      })
+      }),
     );
 
     if (
@@ -192,7 +194,7 @@ export class JobCloudFormationCreateService extends JobService {
 
     if (describeStacksResult.Stacks.length > 1) {
       throw new Error(
-        "Unexpected result of two cloud formation stacks with the same name"
+        "Unexpected result of two cloud formation stacks with the same name",
       );
     }
 
@@ -216,7 +218,7 @@ export class JobCloudFormationCreateService extends JobService {
   public async endCloudFormationInstallJob(
     jobId: string,
     wasSuccessful: boolean,
-    isCancellation: boolean
+    isCancellation: boolean,
   ): Promise<void> {
     // basically at this point we believe the cloud formation is installed
     // we just need to clean up the records
@@ -225,18 +227,55 @@ export class JobCloudFormationCreateService extends JobService {
         .select(e.job.CloudFormationInstallJob, (j) => ({
           auditEntry: true,
           started: true,
+          forRelease: {
+            releaseKey: true,
+            activation: { awsS3AccessPointAlias: true },
+          },
           filter: e.op(j.id, "=", e.uuid(jobId)),
         }))
         .assert_single();
 
       const cloudFormationInstallJob = await cloudFormationInstallQuery.run(
-        this.edgeDbClient
+        this.edgeDbClient,
       );
 
       if (!cloudFormationInstallJob)
         throw new Error(
-          "Job id passed in was not a Cloud Formation Install Job"
+          "Job id passed in was not a Cloud Formation Install Job",
         );
+
+      // The cloudformation install job is most likely for s3 access point (ap) installation
+      // We wanted to document all access point ever created
+      try {
+        // First we need to get the new installed AP then merge with existing one if any
+        const map =
+          await this.awsAccessPointService.getInstalledAccessPointObjectMap(
+            cloudFormationInstallJob.forRelease.releaseKey,
+          );
+        const apAlias = new Set<string>(
+          Object.values(map).map((ape) => ape.objectStoreBucket),
+        );
+
+        //
+        await e
+          .update(e.release.Activation, (a) => ({
+            filter: e.op(
+              a["<activation[is release::Release]"].releaseKey,
+              "=",
+              e.str(cloudFormationInstallJob.forRelease.releaseKey),
+            ),
+            set: {
+              awsS3AccessPointAlias: Array.from(apAlias),
+            },
+          }))
+          .run(this.edgeDbClient);
+      } catch (error) {
+        // Possibly this CloudFormation install is not part of AccessPoint installation and
+        // it happens that no AP installed for this release
+        // But our first cut only uses this function on AP installation so wouldn't expect any error
+        // for not having AP
+        this.logger.error(error);
+      }
 
       await this.auditLogService.completeReleaseAuditEvent(
         cloudFormationInstallJob.auditEntry.id,
@@ -244,7 +283,7 @@ export class JobCloudFormationCreateService extends JobService {
         cloudFormationInstallJob.started,
         new Date(),
         { jobId: jobId },
-        tx
+        tx,
       );
 
       await e

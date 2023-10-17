@@ -212,6 +212,12 @@ module release {
         #
         required property manifestEtag -> str;
 
+
+        # We wanted to keep track all access point ever installed for this activation release
+        property awsS3AccessPointAlias -> array<str> {
+            default := <array<str>>[];
+        };
+
     }
 
 

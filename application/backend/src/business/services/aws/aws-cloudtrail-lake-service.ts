@@ -271,7 +271,10 @@ export class AwsCloudTrailLakeService {
             eventDataStoreId: edsi,
           });
 
-          this.logger.debug("SQL statement: ", sqlQueryStatement);
+          this.logger.debug(
+            "CloudTrail PresignedUrl query: ",
+            sqlQueryStatement,
+          );
 
           const newCloudTrailRecords = await this.queryCloudTrailLake({
             sqlQueryStatement: sqlQueryStatement,
@@ -305,7 +308,10 @@ export class AwsCloudTrailLakeService {
               apAlias: a,
             });
 
-            this.logger.debug("SQL statement: ", sqlQueryStatement);
+            this.logger.debug(
+              "CloudTrail AccessPoint SQL Query: ",
+              sqlQueryStatement,
+            );
 
             const newCloudTrailRecords = await this.queryCloudTrailLake({
               sqlQueryStatement: sqlQueryStatement,
