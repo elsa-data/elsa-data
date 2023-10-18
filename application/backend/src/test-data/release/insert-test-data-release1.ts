@@ -94,6 +94,10 @@ export async function insertRelease1(
         activatedByDisplayName: releaseAdministrator[0].name,
         manifest: e.json({}),
         manifestEtag: "123456",
+        accessPointArns: [
+          "third-access-point-s3alias",
+          "second-access-point-s3alias",
+        ],
       }),
       previouslyActivated: e.set(
         e.insert(e.release.Activation, {
@@ -102,6 +106,10 @@ export async function insertRelease1(
           activatedByDisplayName: releaseAdministrator[0].name,
           manifest: e.json({}),
           manifestEtag: "abcdef",
+          accessPointArns: [
+            "first-access-point-s3alias",
+            "second-access-point-s3alias",
+          ],
         }),
       ),
       dataSharingConfiguration: e.insert(e.release.DataSharingConfiguration, {

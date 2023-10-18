@@ -214,7 +214,7 @@ module release {
 
 
         # We wanted to keep track all access point ever installed for this activation release
-        property awsS3AccessPointAlias -> array<str> {
+        property accessPointArns -> array<str> {
             default := <array<str>>[];
         };
 

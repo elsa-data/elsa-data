@@ -76,11 +76,11 @@ export async function beforeEachCommon(dc: DependencyContainer) {
         findSpecimenQuery("HG03433"),
         findSpecimenQuery(BART_SPECIMEN),
         findSpecimenQuery(HOMER_SPECIMEN),
-        findSpecimenQuery(JUDY_SPECIMEN)
+        findSpecimenQuery(JUDY_SPECIMEN),
       ),
       dataSharingConfiguration: e.insert(
         e.release.DataSharingConfiguration,
-        {}
+        {},
       ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
@@ -91,7 +91,7 @@ export async function beforeEachCommon(dc: DependencyContainer) {
           whoId: "a",
           occurredDateTime: e.datetime_current(),
           inProgress: false,
-        })
+        }),
       ),
       lastDataEgressQueryTimestamp: e.datetime_current(),
     })
@@ -168,6 +168,23 @@ export async function beforeEachCommon(dc: DependencyContainer) {
       displayName: allowedDisplayName,
       email: allowedEmail,
     });
+
+    // Activating the release by this admin
+    await e
+      .update(e.release.Release, (r) => ({
+        filter: e.op(r.releaseKey, "=", testReleaseKey),
+        set: {
+          activation: e.insert(e.release.Activation, {
+            activatedAt: e.datetime(new Date(2022, 9, 12, 4, 2, 5)),
+            activatedById: "http://superAdminUser.com",
+            activatedByDisplayName: "Test User Who Is a SuperAdmin Access",
+            manifest: e.json({}),
+            manifestEtag: "123456",
+            accessPointArns: ["first-access-point-s3alias"],
+          }),
+        },
+      }))
+      .run(edgeDbClient);
   }
 
   // Manager user has limits to read/write and only visibility of released data items

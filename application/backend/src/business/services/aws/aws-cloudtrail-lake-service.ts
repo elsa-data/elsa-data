@@ -9,6 +9,7 @@ import { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { Logger } from "pino";
 import { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
+import { releaseGetAllActivationByReleaseKey } from "../../../../dbschema/queries";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",
@@ -29,7 +30,7 @@ type CloudTrailLakeResponseType = {
   bucketName: string;
   key: string;
   bytesTransferredOut: string;
-  auditId: string;
+  auditId?: string;
 };
 
 @injectable()
@@ -40,8 +41,6 @@ export class AwsCloudTrailLakeService {
     @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient")
     private readonly cloudTrailClient: CloudTrailClient,
-    @inject(AwsAccessPointService)
-    private readonly awsAccessPointService: AwsAccessPointService,
   ) {}
 
   getEventDataStoreIdFromDatasetUris(
@@ -140,7 +139,6 @@ export class AwsCloudTrailLakeService {
   ): string {
     const requestedField =
       "element_at(requestParameters, 'x-auditId') as auditId, " +
-      "element_at(requestParameters, 'x-releaseKey') as releaseKey, " +
       "eventTime, " +
       "eventId, " +
       "sourceIPAddress, " +
@@ -168,9 +166,9 @@ export class AwsCloudTrailLakeService {
    * @param props
    * @returns
    */
-  private createSQLQueryByAccessPointAlias(
+  private createSQLQueryByAccessPointArn(
     props: CloudTrailInputQueryType & {
-      apAlias: string;
+      apArn: string;
     },
   ): string {
     const requestedField =
@@ -181,7 +179,9 @@ export class AwsCloudTrailLakeService {
       "element_at(requestParameters, 'key') as key, " +
       "element_at(additionalEventData, 'bytesTransferredOut') as bytesTransferredOut";
 
-    const conditionStatement = `element_at(requestParameters, 'Host') LIKE '${props.apAlias}'`;
+    const conditionStatement =
+      `any_match( resources, r -> ` +
+      `r.type = 'AWS::S3::AccessPoint' AND r.arn = '${props.apArn}')`;
 
     let sqlStatement =
       `SELECT ${requestedField} ` +
@@ -291,21 +291,18 @@ export class AwsCloudTrailLakeService {
             );
           }
         } else if (method == CloudTrailQueryType.S3AccessPoint) {
-          const map =
-            await this.awsAccessPointService.getInstalledAccessPointObjectMap(
-              releaseKey,
-            );
+          // Get all s3Alias ever installed from release::Activation
+          const allReleaseActivation =
+            await releaseGetAllActivationByReleaseKey(this.edgeDbClient, {
+              releaseKey: releaseKey,
+            });
 
-          const apAlias = new Set<string>(
-            Object.values(map).map((ape) => ape.objectStoreBucket),
-          );
-
-          for (const a of apAlias) {
-            const sqlQueryStatement = this.createSQLQueryByAccessPointAlias({
+          for (const a of allReleaseActivation.accessPointArns) {
+            const sqlQueryStatement = this.createSQLQueryByAccessPointArn({
               startTimestamp: startQueryDate ?? undefined,
               endTimestamp: endQueryDateISO,
               eventDataStoreId: edsi,
-              apAlias: a,
+              apArn: a,
             });
 
             this.logger.debug(

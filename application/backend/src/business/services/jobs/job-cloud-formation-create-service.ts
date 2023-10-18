@@ -229,7 +229,7 @@ export class JobCloudFormationCreateService extends JobService {
           started: true,
           forRelease: {
             releaseKey: true,
-            activation: { awsS3AccessPointAlias: true },
+            activation: { accessPointArns: true },
           },
           filter: e.op(j.id, "=", e.uuid(jobId)),
         }))
@@ -245,7 +245,7 @@ export class JobCloudFormationCreateService extends JobService {
         );
 
       // The cloudformation install job is most likely for s3 access point (ap) installation
-      // We wanted to document all access point ever created
+      // We wanted to document all access point ever created in the release::activation schema
       try {
         // First we need to get the new installed AP then merge with existing one if any
         const map =
@@ -256,7 +256,11 @@ export class JobCloudFormationCreateService extends JobService {
           Object.values(map).map((ape) => ape.objectStoreBucket),
         );
 
-        //
+        // Append with existing one if any
+        cloudFormationInstallJob?.forRelease?.activation?.accessPointArns?.forEach(
+          (alias) => apAlias.add(alias),
+        );
+
         await e
           .update(e.release.Activation, (a) => ({
             filter: e.op(
@@ -265,7 +269,7 @@ export class JobCloudFormationCreateService extends JobService {
               e.str(cloudFormationInstallJob.forRelease.releaseKey),
             ),
             set: {
-              awsS3AccessPointAlias: Array.from(apAlias),
+              accessPointArns: Array.from(apAlias),
             },
           }))
           .run(this.edgeDbClient);

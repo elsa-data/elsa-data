@@ -1,4 +1,4 @@
-CREATE MIGRATION m137ugc3vykw7m47wqx4xood3o7vzt3shibtmp2xbuxqoecuv5oahq
+CREATE MIGRATION m1ccs3h3r6py43rkmrwmzcwjizpytawdlci2vvlyp7wm4meczdowqa
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -152,15 +152,15 @@ CREATE MIGRATION m137ugc3vykw7m47wqx4xood3o7vzt3shibtmp2xbuxqoecuv5oahq
       CREATE REQUIRED PROPERTY initialTodoCount: std::int32;
   };
   CREATE TYPE release::Activation {
+      CREATE PROPERTY accessPointArns: array<std::str> {
+          SET default := (<array<std::str>>[]);
+      };
       CREATE REQUIRED PROPERTY activatedAt: std::datetime {
           SET default := (std::datetime_current());
           SET readonly := true;
       };
       CREATE REQUIRED PROPERTY activatedByDisplayName: std::str;
       CREATE REQUIRED PROPERTY activatedById: std::str;
-      CREATE PROPERTY awsS3AccessPointAlias: array<std::str> {
-          SET default := (<array<std::str>>[]);
-      };
       CREATE REQUIRED PROPERTY manifest: std::json;
       CREATE REQUIRED PROPERTY manifestEtag: std::str;
   };

@@ -19,6 +19,8 @@ export const ManifestBucketKeyObjectSchema = Type.Object({
   objectStoreBucket: Type.String(),
   objectStoreKey: Type.String(),
 
+  accessPointArn: Type.Optional(Type.String()),
+
   // optional fields depending on what type of access asked for
   objectStoreSigned: Type.Optional(Type.String()),
 

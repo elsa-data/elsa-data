@@ -9,6 +9,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { AuditEventService } from "../audit-event-service";
 import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
 import {
+  ReleaseActivatedNothingError,
   ReleaseActivationPermissionError,
   ReleaseActivationStateError,
   ReleaseDeactivationStateError,
@@ -42,7 +43,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject("CloudFormationClient") cfnClient: CloudFormationClient,
     @inject(EmailService) private readonly emailService: EmailService,
     @inject(ReleaseParticipationService)
-    private readonly releaseParticipationService: ReleaseParticipationService
+    private readonly releaseParticipationService: ReleaseParticipationService,
   ) {
     super(
       settings,
@@ -52,7 +53,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
       auditEventService,
       auditEventTimedService,
       permissionService,
-      cfnClient
+      cfnClient,
     );
   }
 
@@ -65,12 +66,12 @@ export class ReleaseActivationService extends ReleaseBaseService {
   public async emailAllParticipants(
     user: AuthenticatedUser,
     releaseKey: string,
-    template: string
+    template: string,
   ) {
     // I think emails should not be part of the activation/deactivation transaction, but I could be wrong.
     const participants = await this.releaseParticipationService.getParticipants(
       user,
-      releaseKey
+      releaseKey,
     );
 
     if (participants.data !== undefined) {
@@ -83,9 +84,9 @@ export class ReleaseActivationService extends ReleaseBaseService {
               releaseKey,
               name: participant.displayName ?? "",
               fromName: this.settings.emailer?.from.name ?? "",
-            }
+            },
           );
-        })
+        }),
       );
     }
   }
@@ -102,7 +103,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
   public async activateRelease(user: AuthenticatedUser, releaseKey: string) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -124,9 +125,25 @@ export class ReleaseActivationService extends ReleaseBaseService {
         if (releaseInfo.activation)
           throw new ReleaseActivationStateError(releaseKey);
 
+        // Do some checking if release is activatable
+        // 1. Check if there are any sharing configuration allowed for the release
+        // 2. Check if there are cases releasable with the specified cases and access control
+        //    are check within the 'createMasterManifest' function
+        if (
+          !releaseInfo.dataSharingConfiguration.objectSigningEnabled &&
+          !releaseInfo.dataSharingConfiguration.copyOutEnabled &&
+          !releaseInfo.dataSharingConfiguration.htsgetEnabled &&
+          !releaseInfo.dataSharingConfiguration.awsAccessPointEnabled &&
+          !releaseInfo.dataSharingConfiguration.gcpStorageIamEnabled
+        ) {
+          throw new ReleaseActivatedNothingError(
+            "No sharing configuration is enabled",
+          );
+        }
+
         const m = await this.manifestService.createMasterManifest(
           tx,
-          releaseKey
+          releaseKey,
         );
 
         // once this is working well we can probably drop this to debug
@@ -136,13 +153,12 @@ export class ReleaseActivationService extends ReleaseBaseService {
         const specimensConstructed = (m.specimenList ?? []).length;
         const artifactsConstructed = (m.specimenList ?? []).reduce(
           (partialSum, a) => partialSum + (a.artifacts ?? []).length,
-          0
+          0,
         );
         const casesConstructed = (m.caseTree ?? []).length;
 
         // the etag is going to be useful for HTTP caching/fetches
         const et = etag(JSON.stringify(m));
-
         await e
           .update(e.release.Release, (r) => ({
             filter: e.op(r.releaseKey, "=", releaseKey),
@@ -164,13 +180,13 @@ export class ReleaseActivationService extends ReleaseBaseService {
           manifestCases: casesConstructed,
         };
       },
-      async (_) => {}
+      async (_) => {},
     );
 
     await this.emailAllParticipants(
       user,
       releaseKey,
-      "release/release-activated"
+      "release/release-activated",
     );
   }
 
@@ -184,7 +200,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
   public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -216,13 +232,13 @@ export class ReleaseActivationService extends ReleaseBaseService {
           }))
           .run(tx);
       },
-      async (_) => {}
+      async (_) => {},
     );
 
     await this.emailAllParticipants(
       user,
       releaseKey,
-      "release/release-deactivated"
+      "release/release-deactivated",
     );
   }
 }
