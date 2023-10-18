@@ -30,7 +30,7 @@ export class JobCloudFormationDeleteService extends JobService {
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);
   }
@@ -44,14 +44,14 @@ export class JobCloudFormationDeleteService extends JobService {
    */
   public async startCloudFormationDeleteJob(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ReleaseDetailType> {
     await this.awsEnabledService.enabledGuard();
 
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator")
@@ -59,7 +59,7 @@ export class JobCloudFormationDeleteService extends JobService {
 
     const { releaseQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     await this.startGenericJob(releaseKey, async (tx) => {
@@ -72,7 +72,7 @@ export class JobCloudFormationDeleteService extends JobService {
         "E",
         "Delete S3 Access Point",
         new Date(),
-        tx
+        tx,
       );
 
       // we have *no* state information passed to us from previous install jobs.. all we
@@ -85,7 +85,7 @@ export class JobCloudFormationDeleteService extends JobService {
       const describeStacksResult = await this.cfnClient.send(
         new DescribeStacksCommand({
           StackName: releaseStackName,
-        })
+        }),
       );
 
       if (
@@ -94,7 +94,7 @@ export class JobCloudFormationDeleteService extends JobService {
       ) {
         // there is no stack for our release - we are mistakenly attempting to delete it
         throw new Error(
-          `Unexpected result of no cloud formation stack with the correct name ${releaseStackName}`
+          `Unexpected result of no cloud formation stack with the correct name ${releaseStackName}`,
         );
         // TODO: finish off the audit entry and create a 'failed' job representing that we didn't even
         //       get off the ground
@@ -102,7 +102,7 @@ export class JobCloudFormationDeleteService extends JobService {
 
       if (describeStacksResult.Stacks.length > 1) {
         throw new Error(
-          `Unexpected result of two cloud formation stacks with the same name ${releaseStackName}`
+          `Unexpected result of two cloud formation stacks with the same name ${releaseStackName}`,
         );
         // TODO: finish off the audit entry and create a 'failed' job representing that we didn't even
         //       get off the ground
@@ -112,8 +112,8 @@ export class JobCloudFormationDeleteService extends JobService {
 
       const deleteReleaseStackResult = await this.cfnClient.send(
         new DeleteStackCommand({
-          StackName: theStack.StackId,
-        })
+          StackName: theStack.StackName,
+        }),
       );
 
       if (!deleteReleaseStackResult) {
@@ -172,7 +172,7 @@ export class JobCloudFormationDeleteService extends JobService {
     const describeStacksResult = await this.cfnClient.send(
       new DescribeStacksCommand({
         StackName: cfDeleteJob.awsStackId,
-      })
+      }),
     );
 
     if (
@@ -186,7 +186,7 @@ export class JobCloudFormationDeleteService extends JobService {
 
     if (describeStacksResult.Stacks.length > 1) {
       throw new Error(
-        "Unexpected result of two cloud formation stacks with the same name"
+        "Unexpected result of two cloud formation stacks with the same name",
       );
     }
 
@@ -212,7 +212,7 @@ export class JobCloudFormationDeleteService extends JobService {
 
   public async endCloudFormationDeleteJob(
     jobId: string,
-    wasSuccessful: boolean
+    wasSuccessful: boolean,
   ): Promise<void> {
     // basically at this point we believe the cloud formation is removed
     // we just need to clean up the records
@@ -227,12 +227,12 @@ export class JobCloudFormationDeleteService extends JobService {
         .assert_single();
 
       const cloudFormationDeleteJob = await cloudFormationDeleteQuery.run(
-        this.edgeDbClient
+        this.edgeDbClient,
       );
 
       if (!cloudFormationDeleteJob)
         throw new Error(
-          "Job id passed in was not a Cloud Formation Delete Job"
+          "Job id passed in was not a Cloud Formation Delete Job",
         );
 
       await this.auditLogService.completeReleaseAuditEvent(
@@ -244,7 +244,7 @@ export class JobCloudFormationDeleteService extends JobService {
           jobId: jobId,
           awsStackId: cloudFormationDeleteJob.awsStackId,
         },
-        tx
+        tx,
       );
 
       await e
