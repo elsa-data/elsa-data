@@ -108,16 +108,18 @@ export const AwsAccessPointAccordionContent: React.FC<
 
   if (isCurrentlyAlreadyInstalled) {
     isInstallDisabledDescriptions.add(
-      "an access point for this release is already installed"
+      "an access point for this release is already installed",
     );
   } else {
     isUninstallDisabledDescription.add(
-      "there is no installed access point for this release"
+      "there is no installed access point for this release",
     );
   }
 
   const isInstallDisabled = isInstallDisabledDescriptions.size > 0;
+  console.log("isInstallDisabledDescriptions", isInstallDisabledDescriptions);
   const isUninstallDisabled = isUninstallDisabledDescription.size > 0;
+  console.log("isUninstallDisabledDescription", isUninstallDisabledDescription);
 
   const error =
     accessPointInstallTriggerMutate.error ??
@@ -144,11 +146,15 @@ export const AwsAccessPointAccordionContent: React.FC<
           defaultValue={
             props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY
           }
-          disabled={props.releasePatchMutator.isLoading}
+          disabled={
+            props.releasePatchMutator.isLoading ||
+            // Not allowing to choose other AP when one is already installed
+            isCurrentlyAlreadyInstalled
+          }
           onChange={(e) => {
             // we make sure we are only changing to a name that exists in our config
             const newName = Object.keys(
-              props.awsAccessPointSetting.allowedVpcs
+              props.awsAccessPointSetting.allowedVpcs,
             ).find((name) => name === e.target.value);
 
             if (newName) {
@@ -172,7 +178,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           {Object.entries(props.awsAccessPointSetting.allowedVpcs).map(
             (entry, index) => (
               <option key={index}>{entry[0]}</option>
-            )
+            ),
           )}
         </select>
         <div className="form-control flex-grow">
@@ -216,7 +222,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           title={
             isInstallDisabled
               ? `Disabled due to\n${Array.from(
-                  isInstallDisabledDescriptions.values()
+                  isInstallDisabledDescriptions.values(),
                 ).join("\n")}`
               : undefined
           }
@@ -240,7 +246,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           title={
             isUninstallDisabled
               ? `Disabled due to\n${Array.from(
-                  isUninstallDisabledDescription.values()
+                  isUninstallDisabledDescription.values(),
                 ).join("\n")}`
               : undefined
           }
