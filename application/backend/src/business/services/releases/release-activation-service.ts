@@ -125,21 +125,21 @@ export class ReleaseActivationService extends ReleaseBaseService {
         if (releaseInfo.activation)
           throw new ReleaseActivationStateError(releaseKey);
 
-        // Do some checking if release is activatable
-        // 1. Check if there are any sharing configuration allowed for the release
-        // 2. Check if there are cases releasable with the specified cases and access control
-        //    are check within the 'createMasterManifest' function
-        if (
-          !releaseInfo.dataSharingConfiguration.objectSigningEnabled &&
-          !releaseInfo.dataSharingConfiguration.copyOutEnabled &&
-          !releaseInfo.dataSharingConfiguration.htsgetEnabled &&
-          !releaseInfo.dataSharingConfiguration.awsAccessPointEnabled &&
-          !releaseInfo.dataSharingConfiguration.gcpStorageIamEnabled
-        ) {
-          throw new ReleaseActivatedNothingError(
-            "No sharing configuration is enabled",
-          );
-        }
+        // // Do some checking if release is activatable
+        // // 1. Check if there are any sharing configuration allowed for the release
+        // // 2. Check if there are cases releasable with the specified cases and access control
+        // //    are check within the 'createMasterManifest' function
+        // if (
+        //   !releaseInfo.dataSharingConfiguration.objectSigningEnabled &&
+        //   !releaseInfo.dataSharingConfiguration.copyOutEnabled &&
+        //   !releaseInfo.dataSharingConfiguration.htsgetEnabled &&
+        //   !releaseInfo.dataSharingConfiguration.awsAccessPointEnabled &&
+        //   !releaseInfo.dataSharingConfiguration.gcpStorageIamEnabled
+        // ) {
+        //   throw new ReleaseActivatedNothingError(
+        //     "No sharing configuration is enabled",
+        //   );
+        // }
 
         const m = await this.manifestService.createMasterManifest(
           tx,
