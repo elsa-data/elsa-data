@@ -645,6 +645,7 @@ ${release.applicantEmailAddresses}
             };
             break;
           case "/dataSharingConfiguration/awsAccessPointName":
+            // Check if active AP -> don't allow to change this?
             fieldToSet = {
               awsAccessPointName: e.str(value),
             };
