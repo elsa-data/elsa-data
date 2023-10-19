@@ -184,7 +184,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           )}
         </select>
         {isVPCOptionDisabled && (
-          <span className="label-text-alt h-4 text-slate-400 mt-2">
+          <span className="label-text-alt text-slate-400 mt-2">
             {`(Disabled: ${Array.from(
               isVPCOptionDisabledDescription.values(),
             ).join(", ")})`}
@@ -240,7 +240,7 @@ export const AwsAccessPointAccordionContent: React.FC<
         </button>
 
         {isInstallDisabled && (
-          <span className="label-text-alt h-4 text-slate-400 mt-2">
+          <span className="label-text-alt text-slate-400 mt-2">
             {`(Disabled: ${Array.from(
               isInstallDisabledDescriptions.values(),
             ).join(", ")})`}
@@ -271,7 +271,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           Uninstall
         </button>
         {isUninstallDisabled && (
-          <span className="label-text-alt h-4 text-slate-400 mt-2">
+          <span className="label-text-alt text-slate-400 mt-2">
             {`(Disabled: ${Array.from(
               isUninstallDisabledDescription.values(),
             ).join(", ")})`}
