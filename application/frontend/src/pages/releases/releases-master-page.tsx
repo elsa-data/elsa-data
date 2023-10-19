@@ -127,6 +127,13 @@ export const ReleasesMasterPage: React.FC = () => {
                      administrator - so this section will only appear for admins */}
             {releaseQuery.data.runningJob && (
               <Box heading="Background Job">
+                <div className="flex justify-start text-gray-500">
+                  <span className="text-sm font-medium">
+                    {`Message: ${releaseQuery.data.runningJob.messages.slice(
+                      -1,
+                    )}`}
+                  </span>
+                </div>
                 <div className="mb-4 flex justify-between">
                   <span className="text-base font-medium text-blue-700">
                     Running

@@ -89,7 +89,9 @@ export class JobCloudFormationCreateService extends JobService {
           status: e.job.JobStatus.running,
           started: e.datetime_current(),
           percentDone: e.int16(0),
-          messages: e.literal(e.array(e.str), ["Created"]),
+          messages: e.literal(e.array(e.str), [
+            "Triggered install of stack in AWS",
+          ]),
           auditEntry: e
             .select(e.audit.ReleaseAuditEvent, (ae) => ({
               filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
