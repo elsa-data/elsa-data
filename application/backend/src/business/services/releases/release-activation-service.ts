@@ -215,7 +215,6 @@ export class ReleaseActivationService extends ReleaseBaseService {
         }
       },
       async (tx, _) => {
-        console.log("trigger tx");
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
