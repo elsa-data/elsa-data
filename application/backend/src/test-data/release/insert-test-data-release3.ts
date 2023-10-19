@@ -11,7 +11,7 @@ export const RELEASE3_RELEASE_IDENTIFIER = "R003";
 
 export async function insertRelease3(
   dc: DependencyContainer,
-  releaseProps: InsertReleaseProps
+  releaseProps: InsertReleaseProps,
 ) {
   const { edgeDbClient } = getServices(dc);
   const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
@@ -54,10 +54,9 @@ export async function insertRelease3(
       datasetUris: e.array([
         "urn:fdc:australiangenomics.org.au:2022:dataset/cardiac",
       ]),
-      dataSharingConfiguration: e.insert(
-        e.release.DataSharingConfiguration,
-        {}
-      ),
+      dataSharingConfiguration: e.insert(e.release.DataSharingConfiguration, {
+        objectSigningEnabled: true,
+      }),
       datasetCaseUrisOrderPreference: [""],
       datasetSpecimenUrisOrderPreference: [""],
       datasetIndividualUrisOrderPreference: [""],
@@ -76,7 +75,7 @@ export async function insertRelease3(
           whoId: "a",
           occurredDateTime: e.datetime_current(),
           inProgress: false,
-        })
+        }),
       ),
     })
     .run(edgeDbClient);
@@ -87,7 +86,7 @@ export async function insertRelease3(
       insertRelease3.id,
       user.email,
       "Administrator",
-      edgeDbClient
+      edgeDbClient,
     );
   }
   for (const user of releaseManager) {

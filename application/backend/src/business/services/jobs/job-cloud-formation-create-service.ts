@@ -252,13 +252,13 @@ export class JobCloudFormationCreateService extends JobService {
           await this.awsAccessPointService.getInstalledAccessPointObjectMap(
             cloudFormationInstallJob.forRelease.releaseKey,
           );
-        const apAlias = new Set<string>(
+        const apArn = new Set<string>(
           Object.values(map).map((ape) => ape.objectStoreBucket),
         );
 
         // Append with existing one if any
         cloudFormationInstallJob?.forRelease?.activation?.accessPointArns?.forEach(
-          (alias) => apAlias.add(alias),
+          (alias) => apArn.add(alias),
         );
 
         await e
@@ -269,7 +269,7 @@ export class JobCloudFormationCreateService extends JobService {
               e.str(cloudFormationInstallJob.forRelease.releaseKey),
             ),
             set: {
-              accessPointArns: Array.from(apAlias),
+              accessPointArns: Array.from(apArn),
             },
           }))
           .run(this.edgeDbClient);

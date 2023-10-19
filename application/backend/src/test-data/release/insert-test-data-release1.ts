@@ -95,8 +95,8 @@ export async function insertRelease1(
         manifest: e.json({}),
         manifestEtag: "123456",
         accessPointArns: [
-          "third-access-point-s3alias",
-          "second-access-point-s3alias",
+          "arn:aws:s3:ap-southeast-2:123456789012:accesspoint/test2",
+          "arn:aws:s3:ap-southeast-2:123456789012:accesspoint/test3",
         ],
       }),
       previouslyActivated: e.set(
@@ -107,8 +107,8 @@ export async function insertRelease1(
           manifest: e.json({}),
           manifestEtag: "abcdef",
           accessPointArns: [
-            "first-access-point-s3alias",
-            "second-access-point-s3alias",
+            "arn:aws:s3:ap-southeast-2:123456789012:accesspoint/test1",
+            "arn:aws:s3:ap-southeast-2:123456789012:accesspoint/test2",
           ],
         }),
       ),
