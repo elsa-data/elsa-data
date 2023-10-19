@@ -12,6 +12,7 @@ import {
   ReleaseActivatedNothingError,
   ReleaseActivationPermissionError,
   ReleaseActivationStateError,
+  ReleaseDeactivationRunningJobError,
   ReleaseDeactivationStateError,
 } from "../../exceptions/release-activation";
 import etag from "etag";
@@ -22,6 +23,7 @@ import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { EmailService } from "../email-service";
 import { ReleaseParticipationService } from "./release-participation-service";
 import { PermissionService } from "../permission-service";
+import { JobCloudFormationDeleteService } from "../jobs/job-cloud-formation-delete-service";
 
 /**
  * A service that handles activated and deactivating releases.
@@ -44,6 +46,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
     @inject(EmailService) private readonly emailService: EmailService,
     @inject(ReleaseParticipationService)
     private readonly releaseParticipationService: ReleaseParticipationService,
+    @inject(JobCloudFormationDeleteService)
+    private readonly jobCloudFormationDeleteService: JobCloudFormationDeleteService,
   ) {
     super(
       settings,
@@ -198,10 +202,8 @@ export class ReleaseActivationService extends ReleaseBaseService {
    * @param releaseKey
    */
   public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey,
-    );
+    const { userRole, isRunningJob } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
@@ -213,14 +215,40 @@ export class ReleaseActivationService extends ReleaseBaseService {
         }
       },
       async (tx, _) => {
+        console.log("trigger tx");
         const { releaseInfo } = await getReleaseInfo(tx, releaseKey);
 
         if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
+
+        // Not allowing to deactivate release while there is an existing running job
+        if (isRunningJob)
+          throw new ReleaseDeactivationRunningJobError(releaseKey);
 
         // importantly for this service we need to delay checking
         // the activation status until we get inside the transaction
         if (!releaseInfo.activation)
           throw new ReleaseDeactivationStateError(releaseKey);
+
+        {
+          // If release is deactivated, all access that was given should be revoked (e.g. AccessPoint)
+          // Mind refactor this out to its own function as things to revoke grows
+          const isAllowedAwsAccessPointConfig =
+            this.configForAwsAccessPointFeature();
+
+          const dataSharingAwsAccessPoint = isAllowedAwsAccessPointConfig
+            ? await this.getAwsAccessPointDetail(
+                isAllowedAwsAccessPointConfig,
+                releaseKey,
+                releaseInfo.dataSharingConfiguration.awsAccessPointName,
+              )
+            : undefined;
+          if (dataSharingAwsAccessPoint?.installed) {
+            await this.jobCloudFormationDeleteService.startCloudFormationDeleteJob(
+              user,
+              releaseKey,
+            );
+          }
+        }
 
         await e
           .update(e.release.Release, (r) => ({

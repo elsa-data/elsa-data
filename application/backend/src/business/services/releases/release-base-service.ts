@@ -49,7 +49,7 @@ export abstract class ReleaseBaseService {
     protected readonly auditEventService: AuditEventService,
     protected readonly auditEventTimedService: AuditEventTimedService,
     protected readonly permissionService: PermissionService,
-    private readonly cfnClient: CloudFormationClient
+    private readonly cfnClient: CloudFormationClient,
   ) {}
 
   /**
@@ -62,7 +62,7 @@ export abstract class ReleaseBaseService {
    * @returns The options where this user could alter
    */
   protected getParticipantRoleOption(
-    currentUserRole: ReleaseParticipantRoleType | string
+    currentUserRole: ReleaseParticipantRoleType | string,
   ): ReleaseParticipantRoleType[] | null {
     switch (currentUserRole) {
       case "Administrator": {
@@ -87,7 +87,7 @@ export abstract class ReleaseBaseService {
 
   public async createReleaseViewAuditEvent(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<void> {
     await this.auditEventTimedService.createTimedAuditEvent(
       `${releaseKey}${user.subjectId}`,
@@ -98,9 +98,9 @@ export abstract class ReleaseBaseService {
           releaseKey,
           this.VIEW_AUDIT_EVENT_TIME,
           start,
-          this.edgeDbClient
+          this.edgeDbClient,
         );
-      }
+      },
     );
   }
 
@@ -120,7 +120,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBoundaryInfoWithThrowOnFailure(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<{
     userRole: UserRoleInRelease;
     isActivated: boolean;
@@ -147,7 +147,8 @@ export abstract class ReleaseBaseService {
     return {
       userRole: role as UserRoleInRelease,
       isActivated: !!boundaryInfo.activation,
-      isRunningJob: !!boundaryInfo.runningJob,
+      // `runningJob` returns an array so `.length` is  needed to indicate empty
+      isRunningJob: !!boundaryInfo.runningJob.length,
       isAllowedOverallAdministratorView:
         boundaryInfo.isAllowedOverallAdministratorView,
       isAllowedCreateRelease: boundaryInfo.isAllowedCreateRelease,
@@ -164,7 +165,7 @@ export abstract class ReleaseBaseService {
    */
   public configForFeature(property: "isAllowedHtsget"): URL | undefined {
     const h = this.settings.sharers.filter(
-      (s) => s.type === "htsget"
+      (s) => s.type === "htsget",
     ) as SharerHtsgetType[];
 
     if (h.length === 1) return new URL(h[0].url);
@@ -179,7 +180,7 @@ export abstract class ReleaseBaseService {
     | SharerAwsAccessPointType
     | undefined {
     const h = this.settings.sharers.filter(
-      (s) => s.type === "aws-access-point"
+      (s) => s.type === "aws-access-point",
     ) as SharerAwsAccessPointType[];
 
     if (h.length === 1) return h[0];
@@ -202,7 +203,7 @@ export abstract class ReleaseBaseService {
   public async getAwsAccessPointDetail(
     config: SharerAwsAccessPointType,
     releaseKey: string,
-    awsAccessPointName?: string
+    awsAccessPointName?: string,
   ): Promise<DataSharingAwsAccessPointType | undefined> {
     // NOTE we need to calculate the installation status *independent* of the config lookups
     //      - because we need the ability to "uninstall" an access point stack after the config
@@ -218,7 +219,7 @@ export abstract class ReleaseBaseService {
       const releaseStackResult = await this.cfnClient.send(
         new DescribeStacksCommand({
           StackName: releaseStackName,
-        })
+        }),
       );
       if (
         releaseStackResult &&
@@ -235,7 +236,7 @@ export abstract class ReleaseBaseService {
     }
 
     const firstNameMatch = Object.entries(config.allowedVpcs).find(
-      (n) => n[0] === awsAccessPointName
+      (n) => n[0] === awsAccessPointName,
     );
 
     if (firstNameMatch) {
@@ -270,7 +271,7 @@ export abstract class ReleaseBaseService {
    */
   public async getBase(
     releaseKey: string,
-    userRole: UserRoleInRelease
+    userRole: UserRoleInRelease,
   ): Promise<ReleaseDetailType> {
     const {
       releaseInfo,
@@ -280,7 +281,7 @@ export abstract class ReleaseBaseService {
 
     if (!releaseInfo)
       throw new Error(
-        "getBase is meant for use only where the release and user role are already established"
+        "getBase is meant for use only where the release and user role are already established",
       );
 
     // the visible cases depend on what roles you have
@@ -291,7 +292,7 @@ export abstract class ReleaseBaseService {
 
     if (releaseInfo.runningJob && releaseInfo.runningJob.length > 1)
       throw new Error(
-        "There should only be one running job (if any job is running)"
+        "There should only be one running job (if any job is running)",
       );
 
     // only the admins know about long-running jobs
@@ -306,7 +307,7 @@ export abstract class ReleaseBaseService {
       ? await this.getAwsAccessPointDetail(
           isAllowedAwsAccessPointConfig,
           releaseKey,
-          releaseInfo.dataSharingConfiguration.awsAccessPointName
+          releaseInfo.dataSharingConfiguration.awsAccessPointName,
         )
       : undefined;
 
@@ -420,7 +421,7 @@ export abstract class ReleaseBaseService {
     field: CodeArrayFields,
     system: string,
     code: string,
-    removeRatherThanAdd: boolean = false
+    removeRatherThanAdd: boolean = false,
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
@@ -430,7 +431,7 @@ export abstract class ReleaseBaseService {
 
     const { datasetUriToIdMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     // we need to get/set the Coded Application all within a transaction context
@@ -462,7 +463,7 @@ export abstract class ReleaseBaseService {
 
         if (!releaseWithAppCoded)
           throw new Error(
-            `Release ${releaseKey} that existed just before this code has now disappeared!`
+            `Release ${releaseKey} that existed just before this code has now disappeared!`,
           );
 
         let newArray: { system: string; code: string }[];
@@ -473,14 +474,14 @@ export abstract class ReleaseBaseService {
           newArray = releaseWithAppCoded.applicationCoded.countriesInvolved;
         else
           throw new Error(
-            `Field instruction of ${field} was not a known field for array alteration`
+            `Field instruction of ${field} was not a known field for array alteration`,
           );
 
         const commonFilter = (ac: any) => {
           return e.op(
             ac.id,
             "=",
-            e.uuid(releaseWithAppCoded.applicationCoded.id)
+            e.uuid(releaseWithAppCoded.applicationCoded.id),
           );
         };
 
@@ -490,7 +491,7 @@ export abstract class ReleaseBaseService {
           // we want to remove any entries with the same system/code from our array
           // (there should only be 0 or 1 - but this safely removes *all* if the insertion was broken somehow)
           newArray = newArray.filter(
-            (tup) => tup.system !== system || tup.code !== code
+            (tup) => tup.system !== system || tup.code !== code,
           );
 
           // nothing to mutate - return false
@@ -516,7 +517,7 @@ export abstract class ReleaseBaseService {
               .run(tx);
           else
             throw new Error(
-              `Field instruction of ${field} was not handled in the remove operation`
+              `Field instruction of ${field} was not handled in the remove operation`,
             );
         } else {
           // only do an insert if the entry is not already present
@@ -525,7 +526,7 @@ export abstract class ReleaseBaseService {
           if (
             // if the entry already exists - we can return - nothing to do
             newArray.findIndex(
-              (tup) => tup.system === system && tup.code === code
+              (tup) => tup.system === system && tup.code === code,
             ) > -1
           )
             return false;
@@ -542,7 +543,7 @@ export abstract class ReleaseBaseService {
                   diseasesOfStudy: e.op(
                     ac.diseasesOfStudy,
                     "++",
-                    commonAddition
+                    commonAddition,
                   ),
                 },
               }))
@@ -555,19 +556,19 @@ export abstract class ReleaseBaseService {
                   countriesInvolved: e.op(
                     ac.countriesInvolved,
                     "++",
-                    commonAddition
+                    commonAddition,
                   ),
                 },
               }))
               .run(tx);
           else
             throw new Error(
-              `Field instruction of ${field} was not handled in the add operation`
+              `Field instruction of ${field} was not handled in the add operation`,
             );
         }
         return { field, system, code };
       },
-      async () => await this.getBase(releaseKey, userRole)
+      async () => await this.getBase(releaseKey, userRole),
     );
   }
 }
