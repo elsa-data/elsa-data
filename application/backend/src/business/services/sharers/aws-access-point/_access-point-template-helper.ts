@@ -122,7 +122,7 @@ export async function correctAccessPointUrls(
                 objectStoreUrl: `s3://${accessPointAlias}/${match[7]}`,
                 objectStoreBucket: accessPointAlias,
                 objectStoreKey: match[7],
-                accessPointArn: apArnMatch,
+                accessPointArn: apArnMatch ? apArnMatch[0] : undefined,
               };
             }
           }

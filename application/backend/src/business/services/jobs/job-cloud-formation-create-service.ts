@@ -254,8 +254,11 @@ export class JobCloudFormationCreateService extends JobService {
           await this.awsAccessPointService.getInstalledAccessPointObjectMap(
             cloudFormationInstallJob.forRelease.releaseKey,
           );
+
         const apArn = new Set<string>(
-          Object.values(map).map((ape) => ape.objectStoreBucket),
+          Object.values(map)
+            .map((d) => d.accessPointArn)
+            .filter((d) => !!d) as string[],
         );
 
         // Append with existing one if any
