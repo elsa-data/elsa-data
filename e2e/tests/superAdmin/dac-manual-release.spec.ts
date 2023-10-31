@@ -45,13 +45,13 @@ test("A release can be created manually which has selectable cases", async ({
   });
 
   await expect(
-    page.getByText("urn:fdc:umccr.org:2022:dataset/10c")
+    page.getByText("urn:fdc:umccr.org:2022:dataset/10c"),
   ).toBeVisible();
   await expect(
-    page.getByText("urn:fdc:umccr.org:2022:dataset/10f")
+    page.getByText("urn:fdc:umccr.org:2022:dataset/10f"),
   ).toBeVisible();
   await expect(
-    page.getByText("urn:fdc:umccr.org:2022:dataset/10g")
+    page.getByText("urn:fdc:umccr.org:2022:dataset/10g"),
   ).toBeVisible();
 
   // Press 'See details of application'
@@ -113,11 +113,25 @@ test("A release can be created manually which has selectable cases", async ({
       .toBeTruthy();
   }
 
+  // we need to enable at least 1 sharing configuration
+  {
+    const objectSigningCheckbox = page.getByText("Object Signing");
+
+    // expected to start false (this could easily change if we change the logic so don't be surprised if
+    // it fails here and we instead change the test)
+    expect(await objectSigningCheckbox.isChecked()).toBeFalsy();
+
+    await objectSigningCheckbox.click();
+    await expect
+      .poll(async () => objectSigningCheckbox.isChecked(), { timeout: 30000 })
+      .toBeTruthy();
+  }
+
   // Activate the release
   await page.getByRole("button", { name: "Activate Release" }).first().click();
 
   // Check that the release is active
   await expect(
-    page.getByText("Data sharing is activated for this release")
+    page.getByText("Data sharing is activated for this release"),
   ).toBeVisible();
 });

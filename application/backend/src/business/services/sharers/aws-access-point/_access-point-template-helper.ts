@@ -19,7 +19,7 @@ export type AccessPointTemplateToSave = {
 // for access point work we are only interested in the following fields of our manifest objects
 export type AccessPointEntry = Pick<
   ManifestBucketKeyObjectType,
-  "objectStoreUrl" | "objectStoreBucket" | "objectStoreKey"
+  "objectStoreUrl" | "objectStoreBucket" | "objectStoreKey" | "accessPointArn"
 > & {
   accessPointUnique?: string;
 };
@@ -57,7 +57,7 @@ const ACCESS_POINTS_PER_STACK = 30;
  */
 export async function correctAccessPointUrls(
   stack: Stack,
-  accountId: string
+  accountId: string,
 ): Promise<Record<string, AccessPointEntry>> {
   if (!stack.Outputs) {
     return {};
@@ -66,7 +66,11 @@ export async function correctAccessPointUrls(
   const STACK_OUTPUT_VALUE_REGEX = new RegExp("^([^:]+):([^:]+):(.+)$");
 
   const POLICY_RESOURCE_REGEX = new RegExp(
-    "^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):accesspoint/([^/]+)/object/(.*)\\*$"
+    "^([^:]+):([^:]+):([^:]+):([^:]+):([^:]+):accesspoint/([^/]+)/object/(.*)\\*$",
+  );
+
+  const ACCESS_POINT_ARN_REGEX = new RegExp(
+    "^arn:aws:s3:[a-z0-9-]+:[0-9]+:accesspoint/[a-zA-Z0-9_-]+",
   );
 
   const s3ControlClient = new S3ControlClient({});
@@ -93,7 +97,7 @@ export async function correctAccessPointUrls(
       new GetAccessPointPolicyCommand({
         AccountId: accountId,
         Name: accessPointName,
-      })
+      }),
     );
 
     if (policyResult.Policy) {
@@ -110,6 +114,7 @@ export async function correctAccessPointUrls(
         if (stmt["Action"] === "s3:GetObject") {
           for (const res of stmt["Resource"] ?? []) {
             const match = res.match(POLICY_RESOURCE_REGEX);
+            const apArnMatch = res.match(ACCESS_POINT_ARN_REGEX);
             if (match) {
               const originalS3 = `s3://${accessPointBucket}/${match[7]}`;
 
@@ -117,6 +122,7 @@ export async function correctAccessPointUrls(
                 objectStoreUrl: `s3://${accessPointAlias}/${match[7]}`,
                 objectStoreBucket: accessPointAlias,
                 objectStoreKey: match[7],
+                accessPointArn: apArnMatch ? apArnMatch[0] : undefined,
               };
             }
           }
@@ -161,7 +167,7 @@ function chunkIntoBiteSizes(files: ManifestBucketKeyObjectType[]) {
   // split out into groups by bucket
   const filesByBucket = groupBy(
     Object.values(uniqueEntries),
-    "objectStoreBucket"
+    "objectStoreBucket",
   );
 
   // each access points can only wrap a single bucket and is size limited to a policy
@@ -177,7 +183,7 @@ function chunkIntoBiteSizes(files: ManifestBucketKeyObjectType[]) {
 
       if (unique in filesByGroup) {
         throw new Error(
-          "We got incredibly unlucky in that we generated an identical 8 byte random number"
+          "We got incredibly unlucky in that we generated an identical 8 byte random number",
         );
       }
 
@@ -211,7 +217,7 @@ function createAccessPointResourceForCloudFormation(
   groupUnique: string,
   groupObjects: AccessPointEntry[],
   shareToAccountIds: string[],
-  shareToVpcId?: string
+  shareToVpcId?: string,
 ) {
   if (groupObjects.length === 0)
     throw new Error("Can't create an access point with no objects");
@@ -287,7 +293,7 @@ export function createAccessPointTemplateFromObjects(
   releaseKey: string,
   objects: ManifestBucketKeyObjectType[],
   shareToAccountIds: string[],
-  shareToVpcId?: string
+  shareToVpcId?: string,
 ): AccessPointTemplateToSave[] {
   const rootTemplateName = "install.template";
 
@@ -299,7 +305,7 @@ export function createAccessPointTemplateFromObjects(
 
   if (isEmpty(objectGroups))
     throw new Error(
-      "Cannot create an access point template if there are no objects"
+      "Cannot create an access point template if there are no objects",
     );
 
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
@@ -411,7 +417,7 @@ export function createAccessPointTemplateFromObjects(
         groupUnique,
         groupObjects,
         shareToAccountIds,
-        shareToVpcId
+        shareToVpcId,
       );
 
     // from each stack we share outputs of each access point Alias and name and bucket

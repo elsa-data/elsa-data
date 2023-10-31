@@ -39,7 +39,7 @@ beforeEach(async () => {
 it("releases can be activated", async () => {
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   const result = await releaseService.get(superAdminUser, testReleaseKey);
@@ -48,14 +48,14 @@ it("releases can be activated", async () => {
   assert(result != null);
   expect(result.activation).toBeDefined();
   expect(result.activation!.activatedByDisplayName).toBe(
-    "Test User Who Is a SuperAdmin Access"
+    "Test User Who Is a SuperAdmin Access",
   );
 });
 
 it("active releases have a manifest", async () => {
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   const result = await manifestService.getActiveManifest(testReleaseKey);
@@ -74,23 +74,23 @@ it("active releases have a manifest", async () => {
 it("releases that are active can't be activated again", async () => {
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   await expect(
-    releaseActivationService.activateRelease(superAdminUser, testReleaseKey)
+    releaseActivationService.activateRelease(superAdminUser, testReleaseKey),
   ).rejects.toThrow(ReleaseActivationStateError);
 });
 
 it("releases can be deactivated", async () => {
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   await releaseActivationService.deactivateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   const result = await releaseService.get(superAdminUser, testReleaseKey);
@@ -102,34 +102,37 @@ it("releases can be deactivated", async () => {
 
 it("deactivation only works when activated", async () => {
   await expect(
-    releaseActivationService.deactivateRelease(superAdminUser, testReleaseKey)
+    releaseActivationService.deactivateRelease(superAdminUser, testReleaseKey),
   ).rejects.toThrow(ReleaseDeactivationStateError);
 });
 
 it("deactivation creates a history of activations", async () => {
+  // Before each common has an existing previous activation history
+  // So adding +1 from the number of activation below
+
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
   await releaseActivationService.deactivateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
   await releaseActivationService.deactivateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
   await releaseActivationService.activateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
   await releaseActivationService.deactivateRelease(
     superAdminUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   // for the moment we can only check the history direct in the db
@@ -144,5 +147,5 @@ it("deactivation creates a history of activations", async () => {
   assert(r != null);
 
   expect(r.activation).toBeNull();
-  expect(r.previouslyActivated).toHaveLength(3);
+  expect(r.previouslyActivated).toHaveLength(4);
 });

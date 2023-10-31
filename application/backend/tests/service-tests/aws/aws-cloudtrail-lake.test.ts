@@ -12,6 +12,7 @@ import { AwsCloudTrailLakeService } from "../../../src/business/services/aws/aws
 import { AwsEnabledServiceMock } from "../client-mocks";
 import { IPLookupService } from "../../../src/business/services/ip-lookup-service";
 import { AwsAccessPointService } from "../../../src/business/services/sharers/aws-access-point/aws-access-point-service";
+import { isEqual } from "lodash";
 
 const testContainer = registerTypes();
 
@@ -43,20 +44,29 @@ describe("Test CloudTrailLake Service", () => {
 
   it("Test queryCloudTrailLake", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
-      AwsCloudTrailLakeService
+      AwsCloudTrailLakeService,
     );
     const accessPointService = testContainer.resolve(AwsAccessPointService);
     const BUCKET_NAME = "umccr-10g-data-dev";
     const KEY = "HG00096/HG00096.hard-filtered.vcf.gz";
-    const mockData = [
+    const cloudtrailPresignMockData = [
       {
         eventTime: "2022-10-24 05:56:40.000",
         sourceIPAddress: "192.19.192.192",
         bucketName: BUCKET_NAME,
         key: KEY,
         bytesTransferredOut: "101.0",
-        releaseKey: testReleaseKey,
         auditId: "abcd-defg-hijk-lmno",
+        eventId: "1234-5678-1234-5678",
+      },
+    ];
+    const cloudtrailAPMockData = [
+      {
+        eventTime: "2022-10-24 05:56:40.000",
+        sourceIPAddress: "192.19.192.192",
+        bucketName: BUCKET_NAME,
+        key: KEY,
+        bytesTransferredOut: "101.0",
         eventId: "1234-5678-1234-5678",
       },
     ];
@@ -73,13 +83,19 @@ describe("Test CloudTrailLake Service", () => {
 
     jest
       .spyOn(awsCloudTrailLakeService, "queryCloudTrailLake")
-      .mockImplementation(async () => mockData);
-
-    // we need to make sure the access point service doesn't actually hit real AWS
-    // so mock out the implementation to be empty map
-    jest
-      .spyOn(accessPointService, "getInstalledAccessPointObjectMap")
-      .mockImplementation(async (releaseKey: string) => ({}));
+      .mockImplementation(
+        async (input: {
+          sqlQueryStatement: string;
+          eventDataStoreId: string;
+        }) => {
+          if (input.sqlQueryStatement.includes("AWS::S3::AccessPoint")) {
+            return cloudtrailAPMockData;
+          } else {
+            // A presigned mock data
+            return cloudtrailPresignMockData;
+          }
+        },
+      );
 
     const egressRecords = await awsCloudTrailLakeService.getNewEgressRecords({
       releaseKey: testReleaseKey,
@@ -87,22 +103,44 @@ describe("Test CloudTrailLake Service", () => {
       currentDate: new Date(),
     });
 
-    expect(egressRecords.length).toBe(1);
-    expect(egressRecords[0]).toStrictEqual({
-      releaseKey: "TESTRELEASE0001",
-      description: "Accessed via presigned url.",
-      auditId: "abcd-defg-hijk-lmno",
-      egressId: "1234-5678-1234-5678",
-      occurredDateTime: new Date("2022-10-24T05:56:40.000Z"),
-      sourceIpAddress: "192.19.192.192",
-      egressBytes: 101,
-      fileUrl: "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered.vcf.gz",
-    });
+    // TODO: more testing that also include AccessPoint
+    expect(egressRecords.length).toBe(2);
+    expect(
+      egressRecords.find((v) =>
+        isEqual(v, {
+          releaseKey: "TESTRELEASE0001",
+          description: "Accessed via presigned url.",
+          auditId: "abcd-defg-hijk-lmno",
+          egressId: "1234-5678-1234-5678",
+          occurredDateTime: new Date("2022-10-24T05:56:40.000Z"),
+          sourceIpAddress: "192.19.192.192",
+          egressBytes: 101,
+          fileUrl:
+            "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered.vcf.gz",
+        }),
+      ),
+    ).toBeTruthy();
+    expect(
+      egressRecords.find((v) =>
+        isEqual(v, {
+          releaseKey: "TESTRELEASE0001",
+          description: "Accessed via S3 access point.",
+          // access point cannot have auditId embedded in the request query
+          auditId: undefined,
+          egressId: "1234-5678-1234-5678",
+          occurredDateTime: new Date("2022-10-24T05:56:40.000Z"),
+          sourceIpAddress: "192.19.192.192",
+          egressBytes: 101,
+          fileUrl:
+            "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered.vcf.gz",
+        }),
+      ),
+    ).toBeTruthy();
   });
 
   it("Test getEventDataStoreIdFromReleaseKey", async () => {
     const awsCloudTrailLakeService = testContainer.resolve(
-      AwsCloudTrailLakeService
+      AwsCloudTrailLakeService,
     );
 
     const eventDataStoreIdArr =

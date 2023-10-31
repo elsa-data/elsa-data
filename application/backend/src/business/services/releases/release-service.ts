@@ -57,7 +57,7 @@ export class ReleaseService extends ReleaseBaseService {
     @inject(UserService) userService: UserService,
     @inject(PermissionService) permissionService: PermissionService,
     @inject(UserData) private readonly userData: UserData,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
   ) {
     super(
       settings,
@@ -67,7 +67,7 @@ export class ReleaseService extends ReleaseBaseService {
       auditEventService,
       auditEventTimedService,
       permissionService,
-      cfnClient
+      cfnClient,
     );
   }
 
@@ -83,7 +83,7 @@ export class ReleaseService extends ReleaseBaseService {
   public async getAll(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<PagedResult<ReleaseSummaryType>> {
     const allReleasesByUser = await releaseGetAllByUser(this.edgeDbClient, {
       userDbId: user.dbId,
@@ -129,11 +129,11 @@ export class ReleaseService extends ReleaseBaseService {
    */
   public async get(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ReleaseDetailType | null> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     await this.createReleaseViewAuditEvent(user, releaseKey);
@@ -149,7 +149,7 @@ export class ReleaseService extends ReleaseBaseService {
    */
   public async new(
     user: AuthenticatedUser,
-    release: ReleaseManualType
+    release: ReleaseManualType,
   ): Promise<string> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
@@ -158,11 +158,11 @@ export class ReleaseService extends ReleaseBaseService {
     const otherResearchers = splitUserEmails(release.applicantEmailAddresses);
 
     otherResearchers.forEach((r) =>
-      checkValidApplicationUser(r, "collaborator")
+      checkValidApplicationUser(r, "collaborator"),
     );
 
     const releaseKey = await getNextReleaseKey(
-      this.settings.releaseKeyPrefix
+      this.settings.releaseKeyPrefix,
     ).run(this.edgeDbClient);
 
     const releaseRow = await e
@@ -178,7 +178,7 @@ export class ReleaseService extends ReleaseBaseService {
 
 This application was manually created via Elsa Data on ${format(
           new Date(),
-          "dd/MM/yyyy"
+          "dd/MM/yyyy",
         )}.
 
 #### Summary
@@ -211,7 +211,7 @@ ${release.applicantEmailAddresses}
         isAllowedPhenotypeData: true,
         dataSharingConfiguration: e.insert(
           e.release.DataSharingConfiguration,
-          {}
+          {},
         ),
       })
       .run(this.edgeDbClient);
@@ -223,14 +223,14 @@ ${release.applicantEmailAddresses}
         r.role,
         releaseRow.id,
         releaseKey,
-        this.auditEventService
+        this.auditEventService,
       );
     }
 
     await this.userService.registerRoleInRelease(
       user,
       releaseKey,
-      "Administrator"
+      "Administrator",
     );
 
     return releaseKey;
@@ -246,11 +246,11 @@ ${release.applicantEmailAddresses}
    */
   public async getPassword(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<string | null> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     return await this.auditEventService.transactionalReadInReleaseAuditPattern(
@@ -270,7 +270,7 @@ ${release.applicantEmailAddresses}
       async (p) => {
         return p;
       },
-      true
+      true,
     );
   }
 
@@ -282,11 +282,11 @@ ${release.applicantEmailAddresses}
    */
   public async getIncrementingCounter(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<number> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     // this integer is actually global to the db - so we don't need specific
@@ -299,7 +299,7 @@ ${release.applicantEmailAddresses}
     user: AuthenticatedUser,
     releaseKey: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     return await this.alterApplicationCodedArrayEntry(
       user,
@@ -307,7 +307,7 @@ ${release.applicantEmailAddresses}
       "diseases",
       system,
       code,
-      false
+      false,
     );
   }
 
@@ -315,7 +315,7 @@ ${release.applicantEmailAddresses}
     user: AuthenticatedUser,
     releaseKey: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     return await this.alterApplicationCodedArrayEntry(
       user,
@@ -323,7 +323,7 @@ ${release.applicantEmailAddresses}
       "diseases",
       system,
       code,
-      true
+      true,
     );
   }
 
@@ -331,7 +331,7 @@ ${release.applicantEmailAddresses}
     user: AuthenticatedUser,
     releaseKey: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     return await this.alterApplicationCodedArrayEntry(
       user,
@@ -339,7 +339,7 @@ ${release.applicantEmailAddresses}
       "countries",
       system,
       code,
-      false
+      false,
     );
   }
 
@@ -347,7 +347,7 @@ ${release.applicantEmailAddresses}
     user: AuthenticatedUser,
     releaseKey: string,
     system: string,
-    code: string
+    code: string,
   ): Promise<ReleaseDetailType> {
     return await this.alterApplicationCodedArrayEntry(
       user,
@@ -355,18 +355,18 @@ ${release.applicantEmailAddresses}
       "countries",
       system,
       code,
-      true
+      true,
     );
   }
 
   public async setTypeOfApplicationCoded(
     user: AuthenticatedUser,
     releaseKey: string,
-    type: "HMB" | "DS" | "CC" | "GRU" | "POA"
+    type: "HMB" | "DS" | "CC" | "GRU" | "POA",
   ): Promise<ReleaseDetailType> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     const actionDescription = "set application coded type";
@@ -400,7 +400,7 @@ ${release.applicantEmailAddresses}
             filter: e.op(
               ac.id,
               "=",
-              e.uuid(releaseWithAppCoded.applicationCoded.id)
+              e.uuid(releaseWithAppCoded.applicationCoded.id),
             ),
             set: {
               studyType: type,
@@ -414,14 +414,14 @@ ${release.applicantEmailAddresses}
       },
       async () => {
         return await this.getBase(releaseKey, userRole);
-      }
+      },
     );
   }
 
   public async setBeaconQuery(
     user: AuthenticatedUser,
     releaseKey: string,
-    query: any
+    query: any,
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
@@ -457,7 +457,7 @@ ${release.applicantEmailAddresses}
               filter: e.op(
                 ac.id,
                 "=",
-                e.uuid(releaseWithAppCoded.applicationCoded.id)
+                e.uuid(releaseWithAppCoded.applicationCoded.id),
               ),
               set: {
                 beaconQuery: query,
@@ -469,7 +469,7 @@ ${release.applicantEmailAddresses}
       },
       async () => {
         return await this.getBase(releaseKey, userRole);
-      }
+      },
     );
   }
 
@@ -495,7 +495,7 @@ ${release.applicantEmailAddresses}
       | "isAllowedS3Data"
       | "isAllowedGSData"
       | "isAllowedR2Data",
-    value: boolean
+    value: boolean,
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
@@ -549,7 +549,7 @@ ${release.applicantEmailAddresses}
       },
       async () => {
         return await this.getBase(releaseKey, userRole);
-      }
+      },
     );
   }
 
@@ -575,12 +575,10 @@ ${release.applicantEmailAddresses}
       | "/dataSharingConfiguration/awsAccessPointName"
       | "/dataSharingConfiguration/gcpStorageIamEnabled"
       | "/dataSharingConfiguration/gcpStorageIamUsers",
-    value: any
+    value: any,
   ): Promise<ReleaseDetailType> {
-    const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
-      user,
-      releaseKey
-    );
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
@@ -647,6 +645,7 @@ ${release.applicantEmailAddresses}
             };
             break;
           case "/dataSharingConfiguration/awsAccessPointName":
+            // Check if active AP -> don't allow to change this?
             fieldToSet = {
               awsAccessPointName: e.str(value),
             };
@@ -663,7 +662,7 @@ ${release.applicantEmailAddresses}
             break;
           default:
             throw new Error(
-              `setDataSharingConfigurationField passed in unknown field type to set '${type}'`
+              `setDataSharingConfigurationField passed in unknown field type to set '${type}'`,
             );
         }
 
@@ -674,7 +673,7 @@ ${release.applicantEmailAddresses}
                 dsc["<dataSharingConfiguration[is release::Release]"]
                   .releaseKey,
                 "=",
-                releaseKey
+                releaseKey,
               ),
               set: fieldToSet,
             }))
@@ -688,7 +687,7 @@ ${release.applicantEmailAddresses}
       },
       async () => {
         return await this.getBase(releaseKey, userRole);
-      }
+      },
     );
   }
 
@@ -703,15 +702,15 @@ ${release.applicantEmailAddresses}
         userDbId: string;
         releaseKey: string;
         restriction: string;
-      }
-    ) => Promise<{ id: string } | null>
+      },
+    ) => Promise<{ id: string } | null>,
   ) {
     const { auditEventId, auditEventStart } = await auditReleaseUpdateStart(
       this.auditEventService,
       this.edgeDbClient,
       user,
       releaseKey,
-      actionDescription
+      actionDescription,
     );
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -726,7 +725,7 @@ ${release.applicantEmailAddresses}
         tx,
         auditEventId,
         auditEventStart,
-        { restriction }
+        { restriction },
       );
     });
   }
@@ -734,11 +733,11 @@ ${release.applicantEmailAddresses}
   public async applyHtsgetRestriction(
     user: AuthenticatedUser,
     releaseKey: string,
-    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia"
+    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia",
   ): Promise<ReleaseDetailType> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     if (userRole != "Administrator")
@@ -751,7 +750,7 @@ ${release.applicantEmailAddresses}
         releaseKey,
         restriction,
         "Applied htsget restriction",
-        applyHtsgetRestriction
+        applyHtsgetRestriction,
       );
     }
 
@@ -761,11 +760,11 @@ ${release.applicantEmailAddresses}
   public async removeHtsgetRestriction(
     user: AuthenticatedUser,
     releaseKey: string,
-    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia"
+    restriction: "CongenitalHeartDefect" | "Autism" | "Achromatopsia",
   ): Promise<ReleaseDetailType> {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     if (userRole != "Administrator")
@@ -778,7 +777,7 @@ ${release.applicantEmailAddresses}
         releaseKey,
         restriction,
         "Removed htsget restriction",
-        removeHtsgetRestriction
+        removeHtsgetRestriction,
       );
     }
 

@@ -10,7 +10,7 @@ import { IPLookupService } from "../../ip-lookup-service";
 export type ReleaseEgressRecords = {
   releaseKey: string;
   description: string;
-  auditId: string;
+  auditId?: string;
   egressId: string;
 
   occurredDateTime: Date;
@@ -38,7 +38,7 @@ export interface IQueryEgressRecordsProvider {
  */
 export const getLatestEgressRecordUpdate = async (
   tx: Transaction,
-  releaseKey: string
+  releaseKey: string,
 ): Promise<Date> => {
   const releaseDates = await e
     .select(e.release.Release, (r) => ({

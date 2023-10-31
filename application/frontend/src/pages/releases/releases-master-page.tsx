@@ -64,14 +64,21 @@ export const ReleasesMasterPage: React.FC = () => {
   // *only* when running a job in the background - we want to set up a polling loop of the backend
   // so we set this effect up with a dependency on the runningJob field - and switch the
   // interval on only when there is background job
+
   useEffect(() => {
-    const interval = setInterval(async () => {
-      if (releaseQuery?.data?.runningJob) {
+    let interval: NodeJS.Timer | undefined = undefined;
+    if (releaseQuery?.data?.runningJob) {
+      interval = setInterval(async () => {
         await utils.release.getSpecificRelease.invalidate();
-      } else {
+      }, REFRESH_JOB_STATUS_MS);
+    } else {
+      const invalidateAllQuery = async () => {
         await queryClient.invalidateQueries();
-      }
-    }, REFRESH_JOB_STATUS_MS);
+      };
+      clearInterval(interval);
+      invalidateAllQuery();
+    }
+
     return () => {
       clearInterval(interval);
     };
@@ -120,6 +127,13 @@ export const ReleasesMasterPage: React.FC = () => {
                      administrator - so this section will only appear for admins */}
             {releaseQuery.data.runningJob && (
               <Box heading="Background Job">
+                <div className="flex justify-start text-gray-500">
+                  <span className="text-sm font-medium">
+                    {`Message: ${releaseQuery.data.runningJob.messages.slice(
+                      -1,
+                    )}`}
+                  </span>
+                </div>
                 <div className="mb-4 flex justify-between">
                   <span className="text-base font-medium text-blue-700">
                     Running

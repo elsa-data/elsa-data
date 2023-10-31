@@ -52,18 +52,18 @@ export const SharerControlBox: React.FC<Props> = ({
         await utils.release.getSpecificRelease.invalidate({
           releaseKey: releaseKey,
         }),
-    }
+    },
   );
 
   // the settings come from the backend on login and tell us what is fundamentally enabled
   // in the system
   const objectSigningSetting = sharers.find(
-    isDiscriminate("type", "object-signing")
+    isDiscriminate("type", "object-signing"),
   );
   const copyOutSetting = sharers.find(isDiscriminate("type", "copy-out"));
   const htsgetSetting = sharers.find(isDiscriminate("type", "htsget"));
   const awsAccessPointSetting = sharers.find(
-    isDiscriminate("type", "aws-access-point")
+    isDiscriminate("type", "aws-access-point"),
   );
 
   // the "enabled" fields are whether the custodian has checked the checkbox..
@@ -73,7 +73,7 @@ export const SharerControlBox: React.FC<Props> = ({
   const awsAccessPointEnabled = !!releaseData.dataSharingAwsAccessPoint;
   // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
 
-  const error = releasePatchMutate.error;
+  const error = (releasePatchMutate.error as any)?.response?.data;
   const isError = releasePatchMutate.isError;
 
   return (

@@ -83,23 +83,26 @@ export const AwsAccessPointAccordionContent: React.FC<
 
   const isInstallDisabledDescriptions = new Set<string>();
   const isUninstallDisabledDescription = new Set<string>();
+  const isVPCOptionDisabledDescription = new Set<string>();
 
   if (isCurrentlyMissingNeededValues) {
     const m = "missing needed configuration values";
     isInstallDisabledDescriptions.add(m);
-    isUninstallDisabledDescription.add(m);
+    // isUninstallDisabledDescription.add(m);
   }
 
   if (isCurrentlyRunningAnotherJob) {
     const m = "currently running another job";
     isInstallDisabledDescriptions.add(m);
     isUninstallDisabledDescription.add(m);
+    isVPCOptionDisabledDescription.add(m);
   }
 
   if (isCurrentlyMutating) {
     const m = "currently in a mutation operation";
     isInstallDisabledDescriptions.add(m);
     isUninstallDisabledDescription.add(m);
+    isVPCOptionDisabledDescription.add(m);
   }
 
   if (isCurrentlyInactiveRelease) {
@@ -108,16 +111,20 @@ export const AwsAccessPointAccordionContent: React.FC<
 
   if (isCurrentlyAlreadyInstalled) {
     isInstallDisabledDescriptions.add(
-      "an access point for this release is already installed"
+      "an access point for this release is already installed",
+    );
+    isVPCOptionDisabledDescription.add(
+      "options can be selected when there is no active access point installed",
     );
   } else {
     isUninstallDisabledDescription.add(
-      "there is no installed access point for this release"
+      "there is no installed access point for this release",
     );
   }
 
   const isInstallDisabled = isInstallDisabledDescriptions.size > 0;
   const isUninstallDisabled = isUninstallDisabledDescription.size > 0;
+  const isVPCOptionDisabled = isVPCOptionDisabledDescription.size > 0;
 
   const error =
     accessPointInstallTriggerMutate.error ??
@@ -141,14 +148,13 @@ export const AwsAccessPointAccordionContent: React.FC<
         </label>
         <select
           className="input-bordered input w-full"
-          defaultValue={
+          value={
             props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY
           }
-          disabled={props.releasePatchMutator.isLoading}
           onChange={(e) => {
             // we make sure we are only changing to a name that exists in our config
             const newName = Object.keys(
-              props.awsAccessPointSetting.allowedVpcs
+              props.awsAccessPointSetting.allowedVpcs,
             ).find((name) => name === e.target.value);
 
             if (newName) {
@@ -166,15 +172,24 @@ export const AwsAccessPointAccordionContent: React.FC<
             }
           }}
         >
-          <option key="none" value={""}>
+          <option key="none" value={""} disabled={isVPCOptionDisabled}>
             {NONE_DISPLAY}
           </option>
           {Object.entries(props.awsAccessPointSetting.allowedVpcs).map(
             (entry, index) => (
-              <option key={index}>{entry[0]}</option>
-            )
+              <option key={index} disabled={isVPCOptionDisabled}>
+                {entry[0]}
+              </option>
+            ),
           )}
         </select>
+        {isVPCOptionDisabled && (
+          <span className="label-text-alt text-slate-400 mt-2">
+            {`(Disabled: ${Array.from(
+              isVPCOptionDisabledDescription.values(),
+            ).join(", ")})`}
+          </span>
+        )}
         <div className="form-control flex-grow">
           <label className="label">
             <span className="label-text">Account Id</span>
@@ -216,13 +231,21 @@ export const AwsAccessPointAccordionContent: React.FC<
           title={
             isInstallDisabled
               ? `Disabled due to\n${Array.from(
-                  isInstallDisabledDescriptions.values()
+                  isInstallDisabledDescriptions.values(),
                 ).join("\n")}`
               : undefined
           }
         >
           Install
         </button>
+
+        {isInstallDisabled && (
+          <span className="label-text-alt text-slate-400 mt-2">
+            {`(Disabled: ${Array.from(
+              isInstallDisabledDescriptions.values(),
+            ).join(", ")})`}
+          </span>
+        )}
       </div>
       <div className="form-control">
         <label className="label">
@@ -240,13 +263,20 @@ export const AwsAccessPointAccordionContent: React.FC<
           title={
             isUninstallDisabled
               ? `Disabled due to\n${Array.from(
-                  isUninstallDisabledDescription.values()
+                  isUninstallDisabledDescription.values(),
                 ).join("\n")}`
               : undefined
           }
         >
           Uninstall
         </button>
+        {isUninstallDisabled && (
+          <span className="label-text-alt text-slate-400 mt-2">
+            {`(Disabled: ${Array.from(
+              isUninstallDisabledDescription.values(),
+            ).join(", ")})`}
+          </span>
+        )}
       </div>
     </>
   );

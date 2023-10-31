@@ -8,7 +8,7 @@ set {
 
       egressId := <str>$egressId,
 
-      auditId := <str>$auditId,
+      auditId := <optional str>$auditId,
       occurredDateTime := <datetime>$occurredDateTime,
       description := <str>$description,
 

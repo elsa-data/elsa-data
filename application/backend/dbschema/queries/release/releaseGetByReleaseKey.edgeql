@@ -3,7 +3,8 @@
 
 select assert_single((
   select release::Release{
-    datasetUris
+    *,
+    dataSharingConfiguration: { * }
   }
   filter
     .releaseKey = <str>$releaseKey
