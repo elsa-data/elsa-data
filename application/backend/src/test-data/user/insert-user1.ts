@@ -11,7 +11,7 @@ export const TEST_SUBJECT_1_DISPLAY = "Test User 1";
  * Will create a superAdmin user
  */
 export async function insertUser1(
-  dc: DependencyContainer
+  dc: DependencyContainer,
 ): Promise<UserObject> {
   const { edgeDbClient } = getServices(dc);
 

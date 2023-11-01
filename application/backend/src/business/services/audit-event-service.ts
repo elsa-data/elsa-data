@@ -60,7 +60,7 @@ export class AuditEventService {
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Logger") private readonly logger: Logger,
-    @inject(UserData) private readonly userData: UserData
+    @inject(UserData) private readonly userData: UserData,
   ) {}
 
   /**
@@ -73,7 +73,7 @@ export class AuditEventService {
   private async checkIsAllowedViewAuditEvents(
     user: AuthenticatedUser,
     releaseKey?: string,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     // Check if user has the permission to view all audit events
     const dbUser = await this.userData.getDbUser(executor, user);
@@ -110,7 +110,7 @@ export class AuditEventService {
     actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date(),
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<string> {
     const auditEvent = await insertReleaseAuditEvent(executor, {
       whoId: user.subjectId,
@@ -138,7 +138,7 @@ export class AuditEventService {
   private async updateRelease(
     releaseKey: string,
     auditEvent: { id: string },
-    executor: Executor
+    executor: Executor,
   ) {
     // TODO: get the insert AND the update to happen at the same time (easy) - but ALSO get it to return
     // the id of the newly inserted event (instead we can only get the release id)
@@ -172,7 +172,7 @@ export class AuditEventService {
     start: Date,
     end: Date,
     details?: any,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
@@ -214,7 +214,7 @@ export class AuditEventService {
     details?: any,
     outcome: number = 0,
     occurredDateTime: Date = new Date(),
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<string> {
     const auditEvent = await insertReleaseAuditEvent(executor, {
       whoId: user.subjectId,
@@ -249,7 +249,7 @@ export class AuditEventService {
     actionCategory: ActionType,
     actionDescription: string,
     start: Date = new Date(),
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<string> {
     const auditEvent = await insertUserAuditEvent(executor, {
       whoId,
@@ -272,7 +272,7 @@ export class AuditEventService {
   private async updateUser(
     userId: string,
     auditEvent: { id: string },
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ) {
     await e
       .update(e.permission.User, (user) => ({
@@ -310,7 +310,7 @@ export class AuditEventService {
     details?: any,
     outcome: number = 0,
     occurredDateTime: Date = new Date(),
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<string> {
     const auditEvent = await insertUserAuditEvent(executor, {
       whoId,
@@ -343,7 +343,7 @@ export class AuditEventService {
     start: Date,
     end: Date,
     details: any,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
@@ -383,7 +383,7 @@ export class AuditEventService {
     executor: Executor = this.edgeDbClient,
     details: any = { errorMessage: "Audit entry not completed" },
     inProgress: boolean = true,
-    outcome: number = 8
+    outcome: number = 8,
   ): Promise<string> {
     return (
       await insertSystemAuditEvent(executor, {
@@ -411,7 +411,7 @@ export class AuditEventService {
     actionDescription: string,
     details?: any,
     outcome: number = 0,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<string> {
     return (
       await insertSystemAuditEvent(executor, {
@@ -439,7 +439,7 @@ export class AuditEventService {
     start: Date,
     end: Date,
     details: any,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
     const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
@@ -468,7 +468,7 @@ export class AuditEventService {
     offset: number,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<PagedResult<AuditEventType> | null> {
     await this.checkIsAllowedViewAuditEvents(user, releaseKey, executor);
 
@@ -482,7 +482,7 @@ export class AuditEventService {
     });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(releaseKey=${releaseKey}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`,
     );
 
     return createPagedResult(
@@ -503,9 +503,9 @@ export class AuditEventService {
                 hasDetails: entry.hasDetails,
               },
             ]
-          : []
+          : [],
       ),
-      total
+      total,
     );
   }
 
@@ -530,7 +530,7 @@ export class AuditEventService {
     includeSystemEvents: boolean = false,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<PagedResult<AuditEventType> | null> {
     if (filter.length === 0) {
       return null;
@@ -551,7 +551,7 @@ export class AuditEventService {
     });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(user=${user}, limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`,
     );
 
     return createPagedResult(
@@ -573,9 +573,9 @@ export class AuditEventService {
                 hasDetails: entry.hasDetails,
               },
             ]
-          : []
+          : [],
       ),
-      total
+      total,
     );
   }
 
@@ -585,7 +585,7 @@ export class AuditEventService {
     offset: number,
     orderByProperty: keyof AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<PagedResult<AuditEventType> | null> {
     // Only admin view users should be able to view system audit events.
     await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
@@ -600,7 +600,7 @@ export class AuditEventService {
     });
 
     this.logger.debug(
-      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`
+      `${AuditEventService.name}.getEntries(limit=${limit}, offset=${offset}) -> total=${total}, pageOfEntries=...`,
     );
 
     return createPagedResult(
@@ -621,9 +621,9 @@ export class AuditEventService {
                 hasDetails: entry.hasDetails,
               },
             ]
-          : []
+          : [],
       ),
-      total
+      total,
     );
   }
 
@@ -632,7 +632,7 @@ export class AuditEventService {
     id: string,
     start: number,
     end?: number,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<AuditEventDetailsType | null> {
     const entry = await auditEventGetSomeByUser(executor, {
       userDbId: user.dbId,
@@ -654,7 +654,7 @@ export class AuditEventService {
   public async getFullEntry(
     user: AuthenticatedUser,
     id: string,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<AuditEventFullType | null> {
     await this.checkIsAllowedViewAuditEvents(user, undefined, executor);
 
@@ -690,7 +690,7 @@ export class AuditEventService {
     whoDisplayName: string,
     role: string,
     releaseKey: string,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ) {
     return updateUserAuditEvents(executor, {
       subjectId,
@@ -711,7 +711,7 @@ export class AuditEventService {
     subjectId: string,
     whoDisplayName: string,
     details: any,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ) {
     return updateUserAuditEvents(executor, {
       subjectId,
@@ -728,7 +728,7 @@ export class AuditEventService {
     user: AuthenticatedUser,
     dataset: string,
     occurredDateTime: Date,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ) {
     return await this.createUserAuditEvent(
       user.dbId,
@@ -739,7 +739,7 @@ export class AuditEventService {
       null,
       0,
       occurredDateTime,
-      executor
+      executor,
     );
   }
 
@@ -749,7 +749,7 @@ export class AuditEventService {
   public async insertAddDatasetAuditEvent(
     user: AuthenticatedUser,
     dataset: string,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ) {
     return await this.createUserAuditEvent(
       user.dbId,
@@ -760,7 +760,7 @@ export class AuditEventService {
       undefined,
       0,
       new Date(),
-      executor
+      executor,
     );
   }
 
@@ -773,7 +773,7 @@ export class AuditEventService {
     releaseKey: string,
     delay: Duration,
     occurredDateTime: Date,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ): Promise<string | null> {
     let recentAuditEvents = await auditEventGetMostRecent(executor, {
       whoId: user.subjectId,
@@ -790,7 +790,7 @@ export class AuditEventService {
         undefined,
         0,
         occurredDateTime,
-        executor
+        executor,
       );
     }
 
@@ -803,7 +803,7 @@ export class AuditEventService {
   public async insertDeleteDatasetAuditEvent(
     user: AuthenticatedUser,
     dataset: string,
-    executor: Executor = this.edgeDbClient
+    executor: Executor = this.edgeDbClient,
   ) {
     return await this.createUserAuditEvent(
       user.dbId,
@@ -814,7 +814,7 @@ export class AuditEventService {
       undefined,
       0,
       new Date(),
-      executor
+      executor,
     );
   }
 
@@ -837,7 +837,7 @@ export class AuditEventService {
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
     finishFunc: (a: U) => Promise<V>,
-    isResultSecureString?: boolean
+    isResultSecureString?: boolean,
   ) {
     return this.transactionalAuditPattern(
       user,
@@ -847,7 +847,7 @@ export class AuditEventService {
       initFunc,
       transFunc,
       finishFunc,
-      isResultSecureString
+      isResultSecureString,
     );
   }
 
@@ -868,7 +868,7 @@ export class AuditEventService {
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
-    finishFunc: (a: U) => Promise<V>
+    finishFunc: (a: U) => Promise<V>,
   ) {
     return this.transactionalAuditPattern(
       user,
@@ -877,7 +877,7 @@ export class AuditEventService {
       actionDescription,
       initFunc,
       transFunc,
-      finishFunc
+      finishFunc,
     );
   }
 
@@ -898,7 +898,7 @@ export class AuditEventService {
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
-    finishFunc: (a: U) => Promise<V>
+    finishFunc: (a: U) => Promise<V>,
   ) {
     return this.transactionalAuditPattern(
       user,
@@ -907,7 +907,7 @@ export class AuditEventService {
       actionDescription,
       initFunc,
       transFunc,
-      finishFunc
+      finishFunc,
     );
   }
 
@@ -928,7 +928,7 @@ export class AuditEventService {
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
-    finishFunc: (a: U) => Promise<V>
+    finishFunc: (a: U) => Promise<V>,
   ) {
     return this.transactionalAuditPattern(
       user,
@@ -937,7 +937,7 @@ export class AuditEventService {
       actionDescription,
       initFunc,
       transFunc,
-      finishFunc
+      finishFunc,
     );
   }
 
@@ -947,11 +947,11 @@ export class AuditEventService {
   public async systemAuditEventPattern<T>(
     actionDescription: string,
     tryFunc: (
-      completeAudit: (details: any, executor: Executor) => Promise<void>
+      completeAudit: (details: any, executor: Executor) => Promise<void>,
     ) => Promise<T>,
     startDetails: any = { errorMessage: "Audit entry not completed" },
     inProgress: boolean = true,
-    startOutcome: number = 8
+    startOutcome: number = 8,
   ): Promise<T> {
     return this.auditPattern(
       async (start) => {
@@ -962,11 +962,11 @@ export class AuditEventService {
           this.edgeDbClient,
           startDetails,
           inProgress,
-          startOutcome
+          startOutcome,
         );
       },
       this.completeSystemAuditEvent,
-      tryFunc
+      tryFunc,
     );
   }
 
@@ -987,7 +987,7 @@ export class AuditEventService {
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
-    finishFunc: (a: U) => Promise<V>
+    finishFunc: (a: U) => Promise<V>,
   ) {
     return this.transactionalAuditPattern(
       user,
@@ -996,7 +996,7 @@ export class AuditEventService {
       actionDescription,
       initFunc,
       transFunc,
-      finishFunc
+      finishFunc,
     );
   }
 
@@ -1022,7 +1022,7 @@ export class AuditEventService {
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,
     finishFunc: (a: U) => Promise<V>,
-    isResultSecureString?: boolean
+    isResultSecureString?: boolean,
   ) {
     return await this.auditPattern(
       async (start) => {
@@ -1032,7 +1032,7 @@ export class AuditEventService {
           actionCategory,
           actionDescription,
           start,
-          this.edgeDbClient
+          this.edgeDbClient,
         );
       },
       this.completeReleaseAuditEvent,
@@ -1049,7 +1049,7 @@ export class AuditEventService {
 
         return await finishFunc(transResult);
       },
-      isResultSecureString
+      isResultSecureString,
     );
   }
 
@@ -1067,12 +1067,12 @@ export class AuditEventService {
       start: Date,
       end: Date,
       details: any,
-      executor: Executor
+      executor: Executor,
     ) => Promise<void>,
     tryFn: (
-      completeAuditFn: (details: any, executor: Executor) => Promise<void>
+      completeAuditFn: (details: any, executor: Executor) => Promise<void>,
     ) => Promise<R>,
-    isDetailSecretString?: boolean
+    isDetailSecretString?: boolean,
   ): Promise<R> {
     // Is this refactor getting out of hand?
     const auditEventStart = new Date();
@@ -1092,7 +1092,7 @@ export class AuditEventService {
           auditEventStart,
           new Date(),
           hiddenString ?? details,
-          executor
+          executor,
         );
       });
     } catch (error) {
@@ -1118,7 +1118,7 @@ export class AuditEventService {
             auditEventStart,
             new Date(),
             { error: errorResponse },
-            this.edgeDbClient
+            this.edgeDbClient,
           );
           throw error;
         }
@@ -1132,7 +1132,7 @@ export class AuditEventService {
         auditEventStart,
         new Date(),
         { error: errorDetails },
-        this.edgeDbClient
+        this.edgeDbClient,
       );
       throw error;
     }

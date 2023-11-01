@@ -18,7 +18,7 @@ export const inputFilter = z.object({
       z.literal("user"),
       z.literal("system"),
       z.literal("all"),
-    ])
+    ]),
   ),
 });
 
@@ -47,7 +47,7 @@ export const auditEventRouter = router({
           pageSize,
           (input.page - 1) * pageSize,
           input.orderByProperty as keyof AuditEvent,
-          input.orderAscending
+          input.orderAscending,
         )) ?? { data: [], total: 0 }
       );
     }),
@@ -64,7 +64,7 @@ export const auditEventRouter = router({
           (input.page - 1) * pageSize,
           true,
           input.orderByProperty as keyof AuditEvent,
-          input.orderAscending
+          input.orderAscending,
         )) ?? { data: [], total: 0 }
       );
     }),
@@ -77,7 +77,7 @@ export const auditEventRouter = router({
         user,
         input.id,
         input.start,
-        input.end
+        input.end,
       );
     }),
 });

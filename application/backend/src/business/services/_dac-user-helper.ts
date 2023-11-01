@@ -37,7 +37,7 @@ export const splitUserEmails = (userEmails: string): ApplicationUser[] => {
 // has the right field content and types and throw an exception if not
 export const checkValidApplicationUser = (
   au: ApplicationUser,
-  userDescription: string
+  userDescription: string,
 ) => {
   const e = `Email/name fields for a person listed in an application must be non-empty strings - in this case user ${userDescription} in the application`;
 
@@ -54,7 +54,7 @@ export const insertPotentialOrReal = async (
   role: Role,
   releaseId: string,
   releaseKey: string,
-  auditEventService: AuditEventService
+  auditEventService: AuditEventService,
 ) => {
   // Find if user had logged in to elsa
   const dbUser = await userGetByEmail(executor, {
@@ -75,7 +75,7 @@ export const insertPotentialOrReal = async (
       dbUser.subjectId,
       dbUser.displayName,
       role,
-      releaseKey
+      releaseKey,
     );
   } else if (potentialDbUser) {
     // Adding a role to an existing potentialUser record.

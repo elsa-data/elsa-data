@@ -12,7 +12,7 @@ export const DELETE_DATASETS_COMMAND = "delete-dataset";
  */
 export async function commandDeleteDataset(
   dc: DependencyContainer,
-  datasetUriArray: string[]
+  datasetUriArray: string[],
 ): Promise<number> {
   // Insert config datasets where does not appear in Db
   const datasetsService = dc.resolve(DatasetService);

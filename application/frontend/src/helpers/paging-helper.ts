@@ -9,10 +9,10 @@ import { AxiosResponse } from "axios";
  */
 export function handleTotalCountHeaders(
   response: AxiosResponse,
-  setCurrentTotal: (value: ((prevState: number) => number) | number) => void
+  setCurrentTotal: (value: ((prevState: number) => number) | number) => void,
 ) {
   const newTotal = parseInt(
-    response.headers["elsa-total-count"] ?? "not-a-number"
+    response.headers["elsa-total-count"] ?? "not-a-number",
   );
 
   if (isFinite(newTotal)) setCurrentTotal(newTotal);

@@ -11,7 +11,7 @@ it("basic parsing of meta syntax", async () => {
     "./tests/unit-tests/config/real-like";
 
   const { config } = await getMetaConfig(
-    parseMeta("file('base') file('dev-localhost')")
+    parseMeta("file('base') file('dev-localhost')"),
   );
 
   expect(config).toHaveProperty("httpHosting.port", 8000);
@@ -24,8 +24,8 @@ it("basic parsing with right most providers overriding", async () => {
 
   const { config } = await getMetaConfig(
     parseMeta(
-      "file('base') file('dev-common') file('dev-localhost') file('datasets')"
-    )
+      "file('base') file('dev-common') file('dev-localhost') file('datasets')",
+    ),
   );
 
   // here the dev-common overrides the port as set in base
@@ -39,7 +39,7 @@ it("plus minus operations for arrays", async () => {
   // with just the single file we have two datasets
   {
     const { config } = await getMetaConfig(
-      parseMeta("file('datasets') file('base')")
+      parseMeta("file('datasets') file('base')"),
     );
 
     assert(config);
@@ -60,7 +60,7 @@ it("plus minus operations for arrays", async () => {
   // with the add-delete config added - we add two and remove 1
   {
     const { config } = await getMetaConfig(
-      parseMeta("file('datasets') file('add-delete') file('base')")
+      parseMeta("file('datasets') file('add-delete') file('base')"),
     );
 
     assert(config);
@@ -87,7 +87,7 @@ it("minus an entry that doesn't exist is an error", async () => {
   expect.assertions(1);
   try {
     await getMetaConfig(
-      parseMeta("file('datasets') file('delete-doesnt-exist')")
+      parseMeta("file('datasets') file('delete-doesnt-exist')"),
     );
   } catch (e: any) {
     expect(e.toString()).toContain("did not do anything");
@@ -99,7 +99,7 @@ it("complex key with path expression works", async () => {
     "./tests/unit-tests/config/complex-keys";
 
   const { config } = await getMetaConfig(
-    parseMeta("file('test0') file('test1') file('test2')")
+    parseMeta("file('test0') file('test1') file('test2')"),
   );
 
   assert(config);
@@ -117,8 +117,8 @@ it("basic parsing but with env variable override", async () => {
 
   const { config } = await getMetaConfig(
     parseMeta(
-      "file('base') file('dev-common') file('dev-localhost') file('datasets')"
-    )
+      "file('base') file('dev-common') file('dev-localhost') file('datasets')",
+    ),
   );
 
   // here the explicit env variables overrides any file content
@@ -128,7 +128,7 @@ it("basic parsing but with env variable override", async () => {
 it("parser error with double left bracket", async () => {
   await expect(async () => {
     await getMetaConfig(
-      parseMeta("file(('base') file('dev-common') file('dev-deployed')")
+      parseMeta("file(('base') file('dev-common') file('dev-deployed')"),
     );
   }).rejects.toThrow("an argument list is started");
 });

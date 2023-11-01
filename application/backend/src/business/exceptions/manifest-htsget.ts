@@ -11,7 +11,7 @@ export class ManifestHtsgetEndpointNotEnabled extends Base7807Error {
     super(
       "not enabled",
       404,
-      "the htsget manifest api endpoint is not enabled"
+      "the htsget manifest api endpoint is not enabled",
     );
   }
 }

@@ -28,7 +28,7 @@ function mergeLookupResults(lookupResults: LookupResult[]): LookupResult {
   return {
     resolved: lookupResults.flatMap((lookupResult) => lookupResult.resolved),
     unresolved: lookupResults.flatMap(
-      (lookupResult) => lookupResult.unresolved
+      (lookupResult) => lookupResult.unresolved,
     ),
   };
 }
@@ -74,14 +74,14 @@ async function tryLookupInCache(codes: CodingType[]): Promise<LookupResult> {
 }
 
 async function tryLookupInCountryMap(
-  codes: CodingType[]
+  codes: CodingType[],
 ): Promise<LookupResult> {
   return mergeLookupResults(codes.map(tryLookupInCountryMap1));
 }
 
 async function tryLookupInTerminologyServer(
   url: string,
-  codes: CodingType[]
+  codes: CodingType[],
 ): Promise<LookupResult> {
   if (codes.length === 0) {
     return { resolved: [], unresolved: [] };
@@ -142,7 +142,7 @@ async function tryLookupInTerminologyServer(
   const entryCodePairs: EntryCodePair[] = zipWith(
     coerceEntryToArray(results?.entry),
     codes,
-    (entry, code) => ({ entry: entry, code: code })
+    (entry, code) => ({ entry: entry, code: code }),
   );
 
   const resolved: ResolvedCodingType[] = [];
@@ -151,7 +151,7 @@ async function tryLookupInTerminologyServer(
     if (pair.entry?.response?.status !== "200") {
       console.log(
         `Dropping code ${JSON.stringify(pair.code)} as the lookup of ` +
-          `it resulted in ${JSON.stringify(pair.entry?.response)}`
+          `it resulted in ${JSON.stringify(pair.entry?.response)}`,
       );
       unresolved.push(pair.code);
       continue;
@@ -200,7 +200,7 @@ export function putManyIntoCache(codes: ResolvedCodingType[]) {
 export async function doLookup(
   url: string,
   code: CodingType,
-  forceRefresh: boolean = false
+  forceRefresh: boolean = false,
 ): Promise<ResolvedCodingType | undefined> {
   return (await doBatchLookup(url, [code], forceRefresh)).resolved[0];
 }
@@ -216,11 +216,11 @@ export async function doLookup(
 export async function doBatchLookup(
   url: string,
   codes: CodingType[],
-  forceAllRefresh: boolean = false
+  forceAllRefresh: boolean = false,
 ): Promise<LookupResult> {
   const tryLookupInSpecificTerminologyServer = partial(
     tryLookupInTerminologyServer,
-    url
+    url,
   );
 
   const lookupFuncs = [

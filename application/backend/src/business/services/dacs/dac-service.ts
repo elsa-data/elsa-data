@@ -24,7 +24,7 @@ export class DacService {
     @inject(RemsService) private readonly remsService: RemsService,
     @inject(RedcapImportApplicationService)
     private redcapImportApplicationService: RedcapImportApplicationService,
-    @inject(UserData) private readonly userData: UserData
+    @inject(UserData) private readonly userData: UserData,
   ) {}
 
   /**
@@ -64,7 +64,7 @@ export class DacService {
             return await this.redcapImportApplicationService.detectNewReleases(
               user,
               d,
-              body
+              body,
             );
           case "rems":
             // for detection for REMS there is no data to pass in... the service itself
@@ -72,7 +72,7 @@ export class DacService {
             return await this.remsService.detectNewReleases(user, d);
           case "manual":
             throw new Error(
-              "detectNew should never be called on a 'manual' DAC"
+              "detectNew should never be called on a 'manual' DAC",
             );
           default:
             throw new Error(`Unknown DAC type ${(d as any).type}`);
@@ -99,7 +99,7 @@ export class DacService {
             return await this.redcapImportApplicationService.startNewRelease(
               user,
               d,
-              body
+              body,
             );
           case "rems":
             // creating a new REMS takes an application number
@@ -107,7 +107,7 @@ export class DacService {
             return await this.remsService.startNewRelease(
               user,
               d,
-              parseInt(body)
+              parseInt(body),
             );
           case "manual":
             return await this.releaseService.new(user, body);

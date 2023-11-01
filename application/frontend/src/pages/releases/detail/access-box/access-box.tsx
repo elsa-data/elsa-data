@@ -26,12 +26,12 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   // the settings come from the backend on login and tell us what is fundamentally enabled
   // in the system - if something is not enabled in the config system then we WILL NEVER SHOW IT
   const objectSigningSetting = sharers.find(
-    isDiscriminate("type", "object-signing")
+    isDiscriminate("type", "object-signing"),
   );
   const copyOutSetting = sharers.find(isDiscriminate("type", "copy-out"));
   const htsgetSetting = sharers.find(isDiscriminate("type", "htsget"));
   const awsAccessPointSetting = sharers.find(
-    isDiscriminate("type", "aws-access-point")
+    isDiscriminate("type", "aws-access-point"),
   );
 
   // there can theoretically be a disconnect between what is enabled in

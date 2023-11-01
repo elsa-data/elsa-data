@@ -10,7 +10,7 @@ export const releaseActivationRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.releaseActivationService.activateRelease(
         ctx.user,
-        input.releaseKey
+        input.releaseKey,
       );
     }),
   deactivate: internalProcedure
@@ -18,7 +18,7 @@ export const releaseActivationRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.releaseActivationService.deactivateRelease(
         ctx.user,
-        input.releaseKey
+        input.releaseKey,
       );
     }),
 });

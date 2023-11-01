@@ -15,7 +15,7 @@ export const dacRouter = router({
     .input(
       z.object({
         dacId: z.string(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const { user } = ctx;
@@ -28,7 +28,7 @@ export const dacRouter = router({
       z.object({
         dacId: z.string(),
         dacData: z.any(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
@@ -41,7 +41,7 @@ export const dacRouter = router({
       z.object({
         dacId: z.string(),
         dacData: z.any(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;

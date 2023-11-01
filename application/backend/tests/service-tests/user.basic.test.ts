@@ -43,7 +43,7 @@ it("upsert a new user", async () => {
   const newUser = await userService.upsertUserForLogin(
     "http://newuser.com",
     "New User",
-    "test@example.com"
+    "test@example.com",
   );
 
   const u = await userService.getBySubjectId("http://newuser.com");
@@ -58,7 +58,7 @@ it("upsert an existing user to a new display name", async () => {
   const newUser = await userService.upsertUserForLogin(
     "http://subject1.com",
     "New Display Name",
-    "test@example.com"
+    "test@example.com",
   );
 
   const u = await userService.getBySubjectId("http://subject1.com");
@@ -93,7 +93,7 @@ it("SuperAdmin change other user permission", async () => {
   const newUser = await newUserService.upsertUserForLogin(
     "http://test.com",
     "New Display Name",
-    "test@example.com"
+    "test@example.com",
   );
 
   await newUserService.changeActiveUserPermission(
@@ -103,12 +103,12 @@ it("SuperAdmin change other user permission", async () => {
       isAllowedCreateRelease: true,
       isAllowedOverallAdministratorView: true,
       isAllowedRefreshDatasetIndex: true,
-    }
+    },
   );
 
   const u = await userData.getDbUserBySubjectId(
     edgeDbClient,
-    "http://test.com"
+    "http://test.com",
   );
 
   expect(u.isAllowedCreateRelease).toBe(true);
@@ -120,7 +120,7 @@ it("normal user change attempt change permission", async () => {
   const newUser = await userService.upsertUserForLogin(
     "http://test.com",
     "New Display Name",
-    "test@example.com"
+    "test@example.com",
   );
   const newAuthedUser = new AuthenticatedUser(newUser);
   await expect(async () => {
@@ -131,7 +131,7 @@ it("normal user change attempt change permission", async () => {
         isAllowedCreateRelease: true,
         isAllowedOverallAdministratorView: true,
         isAllowedRefreshDatasetIndex: true,
-      }
+      },
     );
   }).rejects.toThrow(NotAuthorisedEditUserManagement);
 });
@@ -177,7 +177,7 @@ it("altercation of potential user list", async () => {
       isAllowedCreateRelease: false,
       isAllowedOverallAdministratorView: false,
       isAllowedRefreshDatasetIndex: false,
-    }
+    },
   );
 
   puList = await newUserService.getPotentialUsers(existingUser, 10, 0);

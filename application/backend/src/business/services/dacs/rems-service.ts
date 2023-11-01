@@ -35,7 +35,7 @@ export class RemsService {
     @inject(UserData) private readonly userData: UserData,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(AuditEventService)
-    private readonly auditEventService: AuditEventService
+    private readonly auditEventService: AuditEventService,
   ) {}
 
   /**
@@ -51,7 +51,7 @@ export class RemsService {
     url: string,
     botUser: string,
     botKey: string,
-    applicationId?: number
+    applicationId?: number,
   ) {
     return await axios
       .get(
@@ -64,7 +64,7 @@ export class RemsService {
             "x-rems-api-key": botKey,
             "x-rems-user-id": botUser,
           },
-        }
+        },
       )
       .then((a) => a.data);
   }
@@ -77,14 +77,14 @@ export class RemsService {
    */
   public async detectNewReleases(
     user: AuthenticatedUser,
-    dacConfiguration: DacRemsType
+    dacConfiguration: DacRemsType,
   ): Promise<RemsApprovedApplicationType[]> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
     if (!dbUser.isAllowedCreateRelease) throw new ReleaseViewError();
 
     this.logger.info(
-      `Looking for releases for REMS DAC ${dacConfiguration.id}`
+      `Looking for releases for REMS DAC ${dacConfiguration.id}`,
     );
 
     // the application data from REMS
@@ -93,7 +93,7 @@ export class RemsService {
     const remsApplicationData = await this.getRemsApplications(
       dacConfiguration.url,
       dacConfiguration.botUser,
-      dacConfiguration.botKey
+      dacConfiguration.botKey,
     );
 
     // eventually we might need to put a date range on this but let's see if we can get away
@@ -105,10 +105,10 @@ export class RemsService {
           filter: e.op(
             r.applicationDacIdentifier.system,
             "=",
-            dacConfiguration.url
+            dacConfiguration.url,
           ),
         }))
-        .applicationDacIdentifier.value.run(this.edgeDbClient)
+        .applicationDacIdentifier.value.run(this.edgeDbClient),
     );
 
     const newReleases: RemsApprovedApplicationType[] = [];
@@ -144,14 +144,14 @@ export class RemsService {
   public async startNewRelease(
     user: AuthenticatedUser,
     dacConfiguration: DacRemsType,
-    remsId: number
+    remsId: number,
   ): Promise<string> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
     if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
     this.logger.info(
-      `Attempting create for REMS entry ${remsId} for REMS DAC ${dacConfiguration.id}`
+      `Attempting create for REMS entry ${remsId} for REMS DAC ${dacConfiguration.id}`,
     );
 
     // return the single application we are interested in from this REMS
@@ -159,7 +159,7 @@ export class RemsService {
       dacConfiguration.url,
       dacConfiguration.botUser,
       dacConfiguration.botKey,
-      remsId
+      remsId,
     );
 
     // TODO: some error checking here
@@ -182,7 +182,7 @@ export class RemsService {
         if (matchDs && matchDs.length > 0) {
           if (matchDs.length > 1)
             throw new Error(
-              `Too many matching datasets on record for ${remsDatasetUri}`
+              `Too many matching datasets on record for ${remsDatasetUri}`,
             );
           else resourceToDatasetMap[remsDatasetUri] = matchDs[0].id;
         } else {
@@ -208,7 +208,7 @@ export class RemsService {
 
 This application was sourced from ${dacConfiguration.url} on ${format(
               new Date(),
-              "dd/MM/yyyy"
+              "dd/MM/yyyy",
             )}.
           
 The identifier for this application in REMS is
@@ -253,11 +253,11 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
             releasePassword: generateZipPassword(),
             datasetUris: e.literal(
               e.array(e.str),
-              Object.keys(resourceToDatasetMap)
+              Object.keys(resourceToDatasetMap),
             ),
             dataSharingConfiguration: e.insert(
               e.release.DataSharingConfiguration,
-              {}
+              {},
             ),
             // NOTE: this is slightly non-standard as the audit event here is not created as part of the
             // audit service - however this allows us to make it all a single db operation
@@ -271,13 +271,13 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
                 whoId: user.subjectId,
                 occurredDateTime: e.datetime_current(),
                 inProgress: false,
-              })
+              }),
             ),
           }),
           (_) => ({
             id: true,
             releaseKey: true,
-          })
+          }),
         )
         .run(this.edgeDbClient);
 
@@ -295,14 +295,14 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
           "Manager",
           newRelease.id,
           newRelease.releaseKey,
-          this.auditEventService
+          this.auditEventService,
         );
       }
 
       await this.userService.registerRoleInRelease(
         user,
         newRelease.releaseKey,
-        "Administrator"
+        "Administrator",
       );
 
       return newRelease.releaseKey;

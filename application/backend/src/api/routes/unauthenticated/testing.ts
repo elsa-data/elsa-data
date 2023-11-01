@@ -28,9 +28,9 @@ export const testingDevRoutes = async (fastify: FastifyInstance) => {
         "Error was thrown",
         406,
         "Asynchronous handler",
-        "i-12345"
+        "i-12345",
       );
-    }
+    },
   );
 
   fastify.get("/testing/get-internal-error", {}, function (request, reply) {
@@ -50,6 +50,6 @@ export const testingDevRoutes = async (fastify: FastifyInstance) => {
       else {
         throw new ApiRequestValidationError(testingRequestValidate.errors!);
       }
-    }
+    },
   );
 };

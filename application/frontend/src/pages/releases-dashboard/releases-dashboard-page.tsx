@@ -27,7 +27,7 @@ export const ReleasesDashboardPage: React.FC = () => {
       onSuccess: (res) => {
         setCurrentTotal(res.total);
       },
-    }
+    },
   );
   const queryData = releaseQuery.data?.data;
 

@@ -57,7 +57,7 @@ it("basic release data is present for Manager", async () => {
   expect(result.applicationDacTitle).toBe("A Study in Many Parts");
   expect(result.runningJob).toBeUndefined();
   expect(result.applicationDacDetails).toBe(
-    "So this is all that we have brought over not coded"
+    "So this is all that we have brought over not coded",
   );
   // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(6);
@@ -66,7 +66,7 @@ it("basic release data is present for Manager", async () => {
 it("basic release data is present for release administrator", async () => {
   const result = await releaseService.get(
     allowedAdministratorUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(result).not.toBeNull();
@@ -75,7 +75,7 @@ it("basic release data is present for release administrator", async () => {
   expect(result.applicationDacTitle).toBe("A Study in Many Parts");
   expect(result.runningJob).toBeUndefined();
   expect(result.applicationDacDetails).toBe(
-    "So this is all that we have brought over not coded"
+    "So this is all that we have brought over not coded",
   );
   // as the Manager we will only see cases already selected
   expect(result.visibleCasesCount).toBe(14);

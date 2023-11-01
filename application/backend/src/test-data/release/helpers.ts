@@ -16,7 +16,7 @@ export const insertRole = async (
   releaseUuid: string,
   userEmail: string,
   role: "Administrator" | "Manager" | "Member",
-  edgedbClient: Executor
+  edgedbClient: Executor,
 ) => {
   await e
     .update(e.permission.User, (user) => ({

@@ -27,7 +27,7 @@ import { getFeaturesEnabled } from "../src/features";
   // global settings for DI
   const dc = await bootstrapDependencyInjection(
     logger,
-    settings.devTesting?.mockAwsCloud
+    settings.devTesting?.mockAwsCloud,
   );
 
   dc.register<ElsaSettings>("Settings", {
@@ -67,10 +67,10 @@ import { getFeaturesEnabled } from "../src/features";
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
       const jobService = dc.resolve(JobService);
       const jobCloudFormationCreateService = dc.resolve(
-        JobCloudFormationCreateService
+        JobCloudFormationCreateService,
       );
       const jobCloudFormationDeleteService = dc.resolve(
-        JobCloudFormationDeleteService
+        JobCloudFormationDeleteService,
       );
       const jobCopyOutService = dc.resolve(JobCopyOutService);
 
@@ -81,7 +81,7 @@ import { getFeaturesEnabled } from "../src/features";
           differenceInHours(Date.now(), lastEmptyInProgressMessageDateTime) > 0
         ) {
           logger.debug(
-            `Check for in progress jobs resulted in empty set (this message occurs hourly even though checks are more frequent)`
+            `Check for in progress jobs resulted in empty set (this message occurs hourly even though checks are more frequent)`,
           );
           lastEmptyInProgressMessageDateTime = Date.now();
         }
@@ -107,11 +107,11 @@ import { getFeaturesEnabled } from "../src/features";
 
           if (j.requestedCancellation) {
             logger.info(
-              `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`
+              `Cancelling job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`,
             );
           } else {
             logger.info(
-              `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`
+              `Progressing job ${j.jobType} with id ${j.jobId} for release ${j.releaseKey}`,
             );
           }
 
@@ -130,7 +130,7 @@ import { getFeaturesEnabled } from "../src/features";
                     .then((result) => {
                       if (result === 0)
                         return jobService.endSelectJob(j.jobId, true, false);
-                    })
+                    }),
                 );
               break;
 
@@ -143,9 +143,9 @@ import { getFeaturesEnabled } from "../src/features";
                       return jobCloudFormationCreateService.endCloudFormationInstallJob(
                         j.jobId,
                         true,
-                        false
+                        false,
                       );
-                  })
+                  }),
               );
               break;
 
@@ -157,9 +157,9 @@ import { getFeaturesEnabled } from "../src/features";
                     if (result === 0)
                       return jobCloudFormationDeleteService.endCloudFormationDeleteJob(
                         j.jobId,
-                        true
+                        true,
                       );
-                  })
+                  }),
               );
               break;
 
@@ -168,7 +168,7 @@ import { getFeaturesEnabled } from "../src/features";
                 jobCopyOutService.progressCopyOutJob(j.jobId).then((result) => {
                   if (result === 0)
                     return jobCopyOutService.endCopyOutJob(j.jobId, true);
-                })
+                }),
               );
               break;
 
@@ -188,7 +188,7 @@ import { getFeaturesEnabled } from "../src/features";
       // the only way we finish the job service is if the parent asks us
       if (isJobHandlerCancelled) {
         logger.warn(
-          "JOB SERVICE FAILURE - RECEIVED PARENT CANCELLATION MESSAGE"
+          "JOB SERVICE FAILURE - RECEIVED PARENT CANCELLATION MESSAGE",
         );
         process.exit(0);
       }
@@ -198,7 +198,7 @@ import { getFeaturesEnabled } from "../src/features";
       if (failureCount++ > 1000) {
         logger.fatal(
           e,
-          "JOB SERVICE FAILURE - HIT FAILURE COUNT OF 1000 SO EXITING"
+          "JOB SERVICE FAILURE - HIT FAILURE COUNT OF 1000 SO EXITING",
         );
         logger.flush();
         process.exit(0);

@@ -56,7 +56,7 @@ export class UserService {
     @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
     @inject(UserData) private readonly userData: UserData,
     @inject(AuditEventService)
-    private readonly auditEventService: AuditEventService
+    private readonly auditEventService: AuditEventService,
   ) {}
 
   /**
@@ -93,7 +93,7 @@ export class UserService {
 
       // Write Access
       isAllowedChangeUserPermission: this.isConfiguredSuperAdmin(
-        currentUser.subjectId
+        currentUser.subjectId,
       ),
       isAllowedRefreshDatasetIndex: currentUser.isAllowedRefreshDatasetIndex,
       isAllowedCreateRelease: currentUser.isAllowedCreateRelease,
@@ -117,7 +117,7 @@ export class UserService {
   public async getActiveUsers(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<PagedResult<UserSummaryType>> {
     const { total, data } = await userGetAllByUser(this.edgeDbClient, {
       userDbId: user.dbId,
@@ -142,7 +142,7 @@ export class UserService {
         // Read Access
         isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
       })),
-      total
+      total,
     );
   }
 
@@ -156,7 +156,7 @@ export class UserService {
   public async getPotentialUsers(
     user: AuthenticatedUser,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<PagedResult<PotentialUserSummaryType>> {
     const { total, data } = await potentialUserGetAllByUser(this.edgeDbClient, {
       userDbId: user.dbId,
@@ -176,7 +176,7 @@ export class UserService {
         isAllowedCreateRelease: a.isAllowedCreateRelease,
         isAllowedOverallAdministratorView: a.isAllowedOverallAdministratorView,
       })),
-      total
+      total,
     );
   }
   /**
@@ -186,7 +186,7 @@ export class UserService {
    * @param subjectId
    */
   public async getBySubjectId(
-    subjectId: string
+    subjectId: string,
   ): Promise<AuthenticatedUser | null> {
     const dbUser = await userGetBySubjectId(this.edgeDbClient, {
       subjectId: subjectId,
@@ -205,7 +205,7 @@ export class UserService {
   public async changeActiveUserPermission(
     user: AuthenticatedUser,
     targetSubjectId: string,
-    permission: ChangeablePermission
+    permission: ChangeablePermission,
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
       throw new NotAuthorisedEditUserManagement();
@@ -237,7 +237,7 @@ export class UserService {
           },
           permission,
         },
-        this.edgeDbClient
+        this.edgeDbClient,
       );
     });
   }
@@ -250,7 +250,7 @@ export class UserService {
   public async changePotentialUserPermission(
     user: AuthenticatedUser,
     targetPotentialUserEmail: string,
-    permission: ChangeablePermission
+    permission: ChangeablePermission,
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
       throw new NotAuthorisedEditUserManagement();
@@ -282,14 +282,14 @@ export class UserService {
           },
           permission,
         },
-        this.edgeDbClient
+        this.edgeDbClient,
       );
     });
   }
   public async addPotentialUser(
     user: AuthenticatedUser,
     newPotentialUserEmail: string,
-    permission: ChangeablePermission
+    permission: ChangeablePermission,
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
       throw new NotAuthorisedEditUserManagement();
@@ -315,7 +315,7 @@ export class UserService {
         "E",
         `Add a potential user: ${newPotentialUserEmail}`,
         start,
-        tx
+        tx,
       );
 
       await potentialUserInsert(tx, {
@@ -338,14 +338,14 @@ export class UserService {
           isAllowedOverallAdministratorView:
             permission.isAllowedOverallAdministratorView,
         },
-        tx
+        tx,
       );
     });
   }
 
   public async removePotentialUser(
     user: AuthenticatedUser,
-    potentialUserEmail: string
+    potentialUserEmail: string,
   ): Promise<void> {
     if (!this.isConfiguredSuperAdmin(user.subjectId))
       throw new NotAuthorisedEditUserManagement();
@@ -369,7 +369,7 @@ export class UserService {
         "E",
         `Remove a potential user: ${potentialUserEmail}`,
         start,
-        tx
+        tx,
       );
 
       await potentialUserDeleteByEmail(tx, {
@@ -384,7 +384,7 @@ export class UserService {
         {
           email: potentialUserEmail,
         },
-        tx
+        tx,
       );
     });
   }
@@ -401,10 +401,10 @@ export class UserService {
    */
   public async existsForLogin(
     subjectId: string,
-    email: string
+    email: string,
   ): Promise<boolean> {
     const isSuper = this.settings.superAdmins.find(
-      (sa) => sa.sub === subjectId
+      (sa) => sa.sub === subjectId,
     );
 
     // if the users subject id is listed in the super admins then they are allowed to login
@@ -443,7 +443,7 @@ export class UserService {
     subjectId: string,
     displayName: string,
     email: string,
-    auditDetails?: LoginDetailType
+    auditDetails?: LoginDetailType,
   ) {
     // this should be handled beforehand - but bad things will go
     // wrong if we get pass in empty params - so we check again
@@ -486,8 +486,8 @@ export class UserService {
           potentialDbUser.futureReleaseParticipant.length > 0
             ? e.set(
                 ...potentialDbUser.futureReleaseParticipant.map((a) =>
-                  e.uuid(a.id)
-                )
+                  e.uuid(a.id),
+                ),
               )
             : e.cast(e.uuid, e.set());
 
@@ -547,7 +547,7 @@ export class UserService {
     if (dbUser !== null) {
       const newOrUpdatedUser = await this.userData.getDbUserByDbId(
         this.edgeDbClient,
-        dbUser.id
+        dbUser.id,
       );
 
       if (newOrUpdatedUser) return newOrUpdatedUser;
@@ -569,7 +569,7 @@ export class UserService {
   public async registerRoleInRelease(
     user: AuthenticatedUser,
     releaseKey: string,
-    role: ReleaseParticipantRoleType
+    role: ReleaseParticipantRoleType,
   ) {
     await UserService.addUserToReleaseWithRole(
       this.edgeDbClient,
@@ -578,7 +578,7 @@ export class UserService {
       role,
       user.subjectId,
       user.displayName,
-      this.auditEventService
+      this.auditEventService,
     );
   }
 
@@ -592,7 +592,7 @@ export class UserService {
     role: string,
     subjectId: string,
     whoDisplayName: string,
-    auditEventService: AuditEventService
+    auditEventService: AuditEventService,
   ) {
     await client.transaction(async (tx) => {
       await releaseParticipantAddUser(tx, {
@@ -606,7 +606,7 @@ export class UserService {
         whoDisplayName,
         role,
         releaseKey,
-        client
+        client,
       );
     });
   }
@@ -620,7 +620,7 @@ export class UserService {
    */
   public async roleInRelease(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ReleaseParticipantRoleType | null> {
     // TODO: check that releaseKey is a valid UUID structure
     // given this is a boundary check function for our routes - we need to protect against being

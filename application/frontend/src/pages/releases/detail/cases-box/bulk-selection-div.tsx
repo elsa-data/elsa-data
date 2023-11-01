@@ -41,7 +41,7 @@ export const BulkSelectionDiv: React.FC<Props> = ({
 
       cb(value);
     },
-    []
+    [],
   );
 
   const _onParseSelectCsv = _onParseCsv(onParseSelectCsv);

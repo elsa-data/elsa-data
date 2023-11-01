@@ -49,5 +49,5 @@ export const artifactFilesForSpecimensQuery = e.params(
         }),
       },
       filter: e.op(rs.id, "in", e.array_unpack(specimenIds)),
-    }))
+    })),
 );

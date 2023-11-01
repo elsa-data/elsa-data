@@ -12,7 +12,7 @@ async function auditReleaseGenericStart(
   user: AuthenticatedUser,
   releaseKey: string,
   actionCategory: string,
-  actionDescription: string
+  actionDescription: string,
 ) {
   const now = new Date();
   const newAuditEventId = await service.startReleaseAuditEvent(
@@ -21,7 +21,7 @@ async function auditReleaseGenericStart(
     "U",
     actionDescription,
     now,
-    executor
+    executor,
   );
 
   return {
@@ -45,7 +45,7 @@ export async function auditReleaseUpdateStart(
   executor: Executor,
   user: AuthenticatedUser,
   releaseKey: string,
-  actionDescription: string
+  actionDescription: string,
 ) {
   return auditReleaseGenericStart(
     service,
@@ -53,7 +53,7 @@ export async function auditReleaseUpdateStart(
     user,
     releaseKey,
     "U",
-    actionDescription
+    actionDescription,
   );
 }
 
@@ -72,7 +72,7 @@ export async function auditReleaseExecuteStart(
   executor: Executor,
   user: AuthenticatedUser,
   releaseKey: string,
-  actionDescription: string
+  actionDescription: string,
 ) {
   return auditReleaseGenericStart(
     service,
@@ -80,7 +80,7 @@ export async function auditReleaseExecuteStart(
     user,
     releaseKey,
     "E",
-    actionDescription
+    actionDescription,
   );
 }
 
@@ -99,7 +99,7 @@ export async function auditFailure(
   executor: Executor,
   auditEventId: string,
   startTime: Date,
-  error: unknown
+  error: unknown,
 ) {
   const errorString = error instanceof Error ? error.message : String(error);
 
@@ -109,7 +109,7 @@ export async function auditFailure(
     startTime,
     new Date(),
     { error: errorString },
-    executor
+    executor,
   );
 }
 
@@ -118,7 +118,7 @@ export async function auditSuccess(
   executor: Executor,
   auditEventId: string,
   startTime: Date,
-  details?: any
+  details?: any,
 ) {
   await service.completeReleaseAuditEvent(
     auditEventId,
@@ -126,6 +126,6 @@ export async function auditSuccess(
     startTime,
     new Date(),
     details,
-    executor
+    executor,
   );
 }

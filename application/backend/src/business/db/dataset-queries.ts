@@ -19,7 +19,7 @@ export const selectDatasetPatientByExternalIdAndDatasetUriQuery = ({
     filter_single: e.op(
       e.op(dp.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId)),
       "and",
-      e.op(dp.dataset.uri, "=", datasetUri)
+      e.op(dp.dataset.uri, "=", datasetUri),
     ),
   }));
 
@@ -37,14 +37,14 @@ export const selectDatasetSpecimen = ({
       e.op(
         e.op(ds.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId)),
         "and",
-        e.op(ds.dataset.uri, "=", datasetUri)
+        e.op(ds.dataset.uri, "=", datasetUri),
       ),
       "and",
       e.op(
         ds.patient.externalIdentifiers,
         "=",
-        makeSystemlessIdentifierArray(patientId)
-      )
+        makeSystemlessIdentifierArray(patientId),
+      ),
     ),
   }));
 export const selectDatasetCaseByExternalIdAndDatasetUriQuery = ({
@@ -58,7 +58,7 @@ export const selectDatasetCaseByExternalIdAndDatasetUriQuery = ({
     filter_single: e.op(
       e.op(dc.externalIdentifiers, "=", makeSystemlessIdentifierArray(exId)),
       "and",
-      e.op(dc.dataset.uri, "=", datasetUri)
+      e.op(dc.dataset.uri, "=", datasetUri),
     ),
   }));
 
@@ -92,7 +92,7 @@ export const linkDatasetWithDatasetCase = ({
 
 export const linkNewArtifactWithDatasetSpecimen = (
   datasetSpecimenUUID: string,
-  insertArtifactQuery: any
+  insertArtifactQuery: any,
 ) =>
   e.update(e.dataset.DatasetSpecimen, (ds) => ({
     filter_single: e.op(ds.id, "=", e.uuid(datasetSpecimenUUID)),

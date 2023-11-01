@@ -19,7 +19,7 @@ export const releaseDataEgressRouter = router({
       const { releaseKey } = input;
       await ctx.releaseDataEgressService.updateDataEgressRecordsByReleaseKey(
         user,
-        releaseKey
+        releaseKey,
       );
     }),
   dataEgressSummary: internalProcedure
@@ -32,7 +32,7 @@ export const releaseDataEgressRouter = router({
         user,
         releaseKey,
         pageSize,
-        calculateOffset(page, pageSize)
+        calculateOffset(page, pageSize),
       );
     }),
   dataEgressRecords: internalProcedure
@@ -45,7 +45,7 @@ export const releaseDataEgressRouter = router({
         user,
         releaseKey,
         pageSize,
-        calculateOffset(page, pageSize)
+        calculateOffset(page, pageSize),
       );
     }),
 });

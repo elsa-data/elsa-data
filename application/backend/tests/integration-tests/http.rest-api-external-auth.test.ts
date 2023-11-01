@@ -14,7 +14,7 @@ describe("http integration tests", () => {
       testContainer,
       settings,
       logger,
-      new Set<string>([FEATURE_RELEASE_COHORT_CONSTRUCTOR])
+      new Set<string>([FEATURE_RELEASE_COHORT_CONSTRUCTOR]),
     );
     server = await app.setupServer();
     await server.ready();

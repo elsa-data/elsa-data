@@ -8,7 +8,7 @@ export const DataEgressConfigSchema = z.object({
   updateInterval: z
     .optional(z.string())
     .describe(
-      "If specified, a cron expression on when the system will need to auto-update the data egress records."
+      "If specified, a cron expression on when the system will need to auto-update the data egress records.",
     ),
 });
 

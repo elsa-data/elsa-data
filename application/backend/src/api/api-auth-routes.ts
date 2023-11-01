@@ -63,7 +63,7 @@ export const apiAuthRoutes = async (
     container: DependencyContainer;
     redirectUri: string;
     includeTestUsers: boolean;
-  }
+  },
 ) => {
   const { logger, edgeDbClient, settings } = getServices(opts.container);
 
@@ -77,7 +77,7 @@ export const apiAuthRoutes = async (
   fastify.post("/login", async (request, reply) => {
     if (!client)
       throw new Error(
-        "OIDC client not configured so cannot proceed with an OIDC login flow"
+        "OIDC client not configured so cannot proceed with an OIDC login flow",
       );
 
     // before changing please read https://danielfett.de/2020/05/16/pkce-vs-nonce-equivalent-or-not/
@@ -90,13 +90,13 @@ export const apiAuthRoutes = async (
       request,
       reply,
       SESSION_OIDC_STATE_KEY_NAME,
-      state
+      state,
     );
     cookieBackendSessionSetKeyValue(
       request,
       reply,
       SESSION_OIDC_NONCE_KEY_NAME,
-      nonce
+      nonce,
     );
 
     const oidcParams = {
@@ -109,7 +109,7 @@ export const apiAuthRoutes = async (
 
     logger.info(
       { ...oidcParams, redirectUrl },
-      `${FILENAME_FOR_LOGGING}: OIDC flow start`
+      `${FILENAME_FOR_LOGGING}: OIDC flow start`,
     );
 
     reply.redirect(redirectUrl);
@@ -120,7 +120,7 @@ export const apiAuthRoutes = async (
   const clearOurLoginState = (
     request: FastifyRequest,
     reply: FastifyReply,
-    auditDetails: any = null
+    auditDetails: any = null,
   ) => {
     const dbUser = request.session.get(SESSION_USER_DB_OBJECT_KEY_NAME);
 
@@ -134,7 +134,7 @@ export const apiAuthRoutes = async (
         auditDetails,
         0,
         new Date(),
-        edgeDbClient
+        edgeDbClient,
       );
     }
     // delete all the backend session cookies
@@ -175,7 +175,7 @@ export const callbackRoutes = async (
     container: DependencyContainer;
     redirectUri: string;
     includeTestUsers: boolean;
-  }
+  },
 ) => {
   const { settings } = getServices(opts.container);
   const userService = opts.container.resolve(UserService);
@@ -188,7 +188,7 @@ export const callbackRoutes = async (
   fastify.get("/", async (request, reply) => {
     if (!client)
       throw new Error(
-        "OIDC client not configured so cannot proceed with an OIDC login flow"
+        "OIDC client not configured so cannot proceed with an OIDC login flow",
       );
 
     // extract raw params from the request
@@ -199,7 +199,7 @@ export const callbackRoutes = async (
 
     request.log.info(
       { ...params, stateFromSession: state, nonceFromSession: nonce },
-      `${FILENAME_FOR_LOGGING}: OIDC flow callback parameters`
+      `${FILENAME_FOR_LOGGING}: OIDC flow callback parameters`,
     );
 
     let tokenSet: TokenSet;
@@ -215,7 +215,7 @@ export const callbackRoutes = async (
     } catch (err: unknown) {
       request.log.error(
         err,
-        `${FILENAME_FOR_LOGGING}: OIDC flow callback processing failure`
+        `${FILENAME_FOR_LOGGING}: OIDC flow callback processing failure`,
       );
 
       if (err instanceof errors.RPError) {
@@ -230,7 +230,7 @@ export const callbackRoutes = async (
 
     request.log.info(
       tokenSet,
-      `${FILENAME_FOR_LOGGING}: OIDC flow callback tokenSet`
+      `${FILENAME_FOR_LOGGING}: OIDC flow callback tokenSet`,
     );
 
     const idClaims = tokenSet.claims();
@@ -238,14 +238,14 @@ export const callbackRoutes = async (
     if (!idClaims.sub) {
       // this should never happen - id claims will always include a subject
       reply.redirect(
-        `/${NOT_AUTHORISED_ROUTE_PART}/${NO_SUBJECT_ID_ROUTE_PART}`
+        `/${NOT_AUTHORISED_ROUTE_PART}/${NO_SUBJECT_ID_ROUTE_PART}`,
       );
       return;
     }
 
     if (!idClaims.name || !idClaims.email) {
       reply.redirect(
-        `/${NOT_AUTHORISED_ROUTE_PART}/${NO_EMAIL_OR_NAME_ROUTE_PART}`
+        `/${NOT_AUTHORISED_ROUTE_PART}/${NO_EMAIL_OR_NAME_ROUTE_PART}`,
       );
       return;
     }
@@ -264,19 +264,19 @@ export const callbackRoutes = async (
       idClaims.email,
       {
         ip: request.ip,
-      }
+      },
     );
 
     if (!dbUser) {
       reply.redirect(
-        `/${NOT_AUTHORISED_ROUTE_PART}/${DATABASE_FAIL_ROUTE_PART}`
+        `/${NOT_AUTHORISED_ROUTE_PART}/${DATABASE_FAIL_ROUTE_PART}`,
       );
       return;
     }
 
     request.log.info(
       { resolvedUser: dbUser },
-      `${FILENAME_FOR_LOGGING}: OIDC flow callback user`
+      `${FILENAME_FOR_LOGGING}: OIDC flow callback user`,
     );
 
     // the secure session token is HTTP only - so its existence can't even be tracked in
@@ -297,7 +297,7 @@ export const callbackRoutes = async (
       reply,
       // the existence of this key in the session state is the definition of being "logged in"
       SESSION_USER_DB_OBJECT_KEY_NAME,
-      new AuthenticatedUser(dbUser).asJson()
+      new AuthenticatedUser(dbUser).asJson(),
     );
 
     // CSRF Token passed as cookie

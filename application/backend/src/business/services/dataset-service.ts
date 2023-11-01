@@ -29,7 +29,7 @@ export class DatasetService {
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService
+    private readonly auditLogService: AuditEventService,
   ) {}
 
   /**
@@ -47,7 +47,7 @@ export class DatasetService {
    * @returns
    */
   public getStorageUriPrefixFromFromDatasetUri(
-    datasetUri: string
+    datasetUri: string,
   ): string | null {
     for (const d of this.settings.datasets) {
       if (d.uri === datasetUri) {
@@ -80,7 +80,7 @@ export class DatasetService {
    * @returns
    */
   public async getDatasetUrisFromReleaseKey(
-    releaseKey: string
+    releaseKey: string,
   ): Promise<string[] | undefined> {
     return (
       await e
@@ -102,7 +102,7 @@ export class DatasetService {
    */
   public async getConfigured(user: AuthenticatedUser) {
     return Object.fromEntries(
-      this.settings.datasets.map((a) => [a.uri, a.name])
+      this.settings.datasets.map((a) => [a.uri, a.name]),
     );
   }
 
@@ -137,7 +137,7 @@ export class DatasetService {
         totalPatientCount: r.totalPatientCount,
         totalSpecimenCount: r.totalSpecimenCount,
       })),
-      datasetSummaryQuery.total
+      datasetSummaryQuery.total,
     );
   }
 
@@ -151,7 +151,7 @@ export class DatasetService {
   public async get(
     user: AuthenticatedUser,
     datasetUri: string,
-    includeDeletedFile: boolean
+    includeDeletedFile: boolean,
   ): Promise<DatasetDeepType | null> {
     const datasetCasesQuery = await getDatasetCasesByUri(this.edgeDbClient, {
       userDbId: user.dbId,
@@ -163,7 +163,7 @@ export class DatasetService {
         userDbId: user.dbId,
         datasetUri: datasetUri,
         includeDeletedFile,
-      }
+      },
     );
 
     if (!datasetCasesQuery || !datasetStorageStatsQuery) return null;
@@ -204,7 +204,7 @@ export class DatasetService {
       datasetDescription: string;
       datasetName: string;
     },
-    user?: AuthenticatedUser
+    user?: AuthenticatedUser,
   ): Promise<string> {
     // Find current Dataset
     const datasetId = (
@@ -226,7 +226,7 @@ export class DatasetService {
         await this.auditLogService.insertAddDatasetAuditEvent(
           user,
           datasetUri,
-          tx
+          tx,
         );
       }
 
@@ -238,7 +238,7 @@ export class DatasetService {
    * Select dataset from datasetUri
    */
   public async selectDatasetIdFromDatasetUri(
-    datasetUri: string
+    datasetUri: string,
   ): Promise<string | null> {
     const datasetId = (
       await selectDatasetIdByDatasetUri(datasetUri).run(this.edgeDbClient)
@@ -259,7 +259,7 @@ export class DatasetService {
     }: {
       datasetUri: string;
     },
-    user?: AuthenticatedUser
+    user?: AuthenticatedUser,
   ): Promise<string | undefined> {
     return await this.edgeDbClient.transaction(async (tx) => {
       const deleteDataset = e
@@ -274,7 +274,7 @@ export class DatasetService {
         await this.auditLogService.insertDeleteDatasetAuditEvent(
           user,
           datasetUri,
-          tx
+          tx,
         );
       }
 
@@ -287,7 +287,7 @@ export class DatasetService {
       uri: string;
       description: string;
       name: string;
-    } & Record<string, any>)[]
+    } & Record<string, any>)[],
   ): Promise<void> {
     // Insert new dataset
     for (const dc of datasetConfigArray) {
@@ -335,7 +335,7 @@ export class DatasetService {
 
   public async getDatasetsConsent(
     user: AuthenticatedUser,
-    consentId: string
+    consentId: string,
   ): Promise<DuoLimitationCodedType[]> {
     const consent = await getDatasetConsent(this.edgeDbClient, {
       userDbId: user.dbId,
@@ -345,7 +345,7 @@ export class DatasetService {
     if (!consent) return [];
 
     return consent.statements.map(
-      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType,
     );
   }
 }

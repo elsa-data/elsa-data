@@ -31,7 +31,7 @@ export class AuthenticatedUser {
       isNil(this.dbUser.email)
     )
       throw new UnexpectedStateInternalServerError(
-        "Cannot instantiate an AuthenticatedUser without being passed a complete user database record"
+        "Cannot instantiate an AuthenticatedUser without being passed a complete user database record",
       );
   }
 

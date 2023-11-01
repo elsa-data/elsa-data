@@ -17,10 +17,10 @@ export class AwsEnabledService implements IAwsEnabledService {
 
   constructor(
     @inject("Logger") private readonly logger: Logger,
-    @inject("STSClient") private readonly stsClient: STSClient
+    @inject("STSClient") private readonly stsClient: STSClient,
   ) {
     logger.debug(
-      "Created AwsEnabledService instance - expecting this to only happen once"
+      "Created AwsEnabledService instance - expecting this to only happen once",
     );
   }
 
@@ -47,7 +47,7 @@ export class AwsEnabledService implements IAwsEnabledService {
   public async enabledGuard() {
     if (!(await this.isEnabled()))
       throw new Error(
-        "This service is not enabled due to lack of AWS credentials"
+        "This service is not enabled due to lack of AWS credentials",
       );
   }
 }

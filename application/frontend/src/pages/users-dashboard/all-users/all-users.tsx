@@ -60,7 +60,7 @@ type Props = {};
  */
 export const AllUsers: React.FC<Props> = () => {
   const [userTableView, setUserTableView] = useState<UserTableType>(
-    UserTableType.ACTIVE
+    UserTableType.ACTIVE,
   );
 
   const BoxHeading = (): JSX.Element => {

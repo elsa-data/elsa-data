@@ -38,11 +38,11 @@ export const BoxPaginator: React.FC<Props> = (props) => {
   const maxPage = Math.ceil(props.rowCount / props.rowsPerPage);
   const from = Math.min(
     (props.currentPage - 1) * props.rowsPerPage + 1,
-    props.rowCount
+    props.rowCount,
   );
   const to = Math.min(
     (props.currentPage - 1) * props.rowsPerPage + props.rowsPerPage,
-    props.rowCount
+    props.rowCount,
   );
 
   const textSearchInProgress =
@@ -62,7 +62,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               {
                 "cursor-pointer": props.currentPage !== 1,
                 "pointer-events-none opacity-50": props.currentPage === 1,
-              }
+              },
             )}
           >
             Previous
@@ -75,7 +75,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               {
                 "cursor-pointer": props.currentPage !== maxPage,
                 "pointer-events-none opacity-50": props.currentPage === maxPage,
-              }
+              },
             )}
           >
             Next
@@ -118,7 +118,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               "ml-8 flex min-w-[250px] items-center justify-end",
               {
                 "animate-pulse rounded-full bg-gray-200": textSearchInProgress,
-              }
+              },
             )}
           >
             <Pagination
@@ -129,7 +129,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               middlePagesSiblingCount={1}
               className={classNames(
                 "relative z-0 inline-flex -space-x-px text-sm text-gray-700",
-                { invisible: textSearchInProgress }
+                { invisible: textSearchInProgress },
               )}
               truncableText="..."
               truncableClassName="w-10 px-0.5 text-center"
@@ -140,7 +140,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                   {
                     "cursor-pointer": props.currentPage !== 1,
                     "opacity-50": props.currentPage === 1,
-                  }
+                  },
                 )}
               >
                 <span className="sr-only">Previous</span>
@@ -177,7 +177,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                   {
                     "cursor-pointer": props.currentPage !== maxPage,
                     "opacity-50": props.currentPage === maxPage,
-                  }
+                  },
                 )}
               >
                 <span className="sr-only">Next</span>

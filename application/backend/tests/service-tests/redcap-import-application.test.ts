@@ -37,7 +37,7 @@ describe("Redcap Import for AG", () => {
 
   it("Base case with two new users", async () => {
     const redcapImportService = testContainer.resolve(
-      RedcapImportApplicationService
+      RedcapImportApplicationService,
     );
     const userService = testContainer.resolve(UserService);
 
@@ -62,7 +62,7 @@ describe("Redcap Import for AG", () => {
     const rk = await redcapImportService.startNewRelease(
       allowedAdministratorUser,
       configDac,
-      app
+      app,
     );
 
     expect(rk).toBe("REL02");
@@ -82,7 +82,7 @@ describe("Redcap Import for AG", () => {
     expect(existingUserCount).toBe(5);
 
     const redcapImportService = testContainer.resolve(
-      RedcapImportApplicationService
+      RedcapImportApplicationService,
     );
 
     const app = {
@@ -111,7 +111,7 @@ describe("Redcap Import for AG", () => {
     await redcapImportService.startNewRelease(
       allowedAdministratorUser,
       configDac,
-      app
+      app,
     );
 
     const potentialCount = await e

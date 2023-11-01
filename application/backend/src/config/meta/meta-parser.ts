@@ -26,19 +26,19 @@ export function parseMeta(meta: string): ProviderMeta[] {
       if (!providerToken) providerToken = currentTok;
       else
         throw new Error(
-          "You must close off the arguments with a ) before naming another provider"
+          "You must close off the arguments with a ) before naming another provider",
         );
     }
 
     if (currentTok.type === "lbracket") {
       if (!providerToken)
         throw new Error(
-          "Left bracket shouldn't be encountered till after a provider name"
+          "Left bracket shouldn't be encountered till after a provider name",
         );
 
       if (!_.isUndefined(argTokens))
         throw new Error(
-          "Once an argument list is started it needs a ) to terminate"
+          "Once an argument list is started it needs a ) to terminate",
         );
 
       argTokens = [];
@@ -47,12 +47,12 @@ export function parseMeta(meta: string): ProviderMeta[] {
     if (currentTok.type === "rbracket") {
       if (_.isUndefined(providerToken))
         throw new Error(
-          "Right bracket shouldn't be encountered till after a provider name"
+          "Right bracket shouldn't be encountered till after a provider name",
         );
 
       if (_.isUndefined(argTokens))
         throw new Error(
-          "Right bracket shouldn't be encountered till after a left bracket"
+          "Right bracket shouldn't be encountered till after a left bracket",
         );
 
       // rbracket completes the provider details - we push a new provider result
@@ -69,12 +69,12 @@ export function parseMeta(meta: string): ProviderMeta[] {
     if (currentTok.type === "string") {
       if (_.isUndefined(providerToken))
         throw new Error(
-          "String argument shouldn't be encountered till after a left bracket"
+          "String argument shouldn't be encountered till after a left bracket",
         );
 
       if (_.isUndefined(argTokens))
         throw new Error(
-          "String argument shouldn't be encountered till after a left bracket"
+          "String argument shouldn't be encountered till after a left bracket",
         );
 
       argTokens!.push(currentTok);
@@ -83,12 +83,12 @@ export function parseMeta(meta: string): ProviderMeta[] {
     if (currentTok.type === "integer") {
       if (_.isUndefined(providerToken))
         throw new Error(
-          "Integer argument shouldn't be encountered till after a left bracket"
+          "Integer argument shouldn't be encountered till after a left bracket",
         );
 
       if (_.isUndefined(argTokens))
         throw new Error(
-          "Integer argument shouldn't be encountered till after a left bracket"
+          "Integer argument shouldn't be encountered till after a left bracket",
         );
 
       argTokens!.push(currentTok);

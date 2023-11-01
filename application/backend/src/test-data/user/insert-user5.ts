@@ -12,7 +12,7 @@ export const TEST_SUBJECT_5_DISPLAY = "Test User 5";
  * Will create a user that is allowed to administrator/refresh datasets
  */
 export async function insertUser5(
-  dc: DependencyContainer
+  dc: DependencyContainer,
 ): Promise<UserObject> {
   const { edgeDbClient } = getServices(dc);
 

@@ -24,9 +24,8 @@ test("Upload (un)select CSV", async ({ page }) => {
 
   // Wait for dropzones to attach to the DOM then select them
   await page.waitForSelector('input[type="file"]', { state: "attached" });
-  const [selectInputElement, unselectInputElement] = await page.$$(
-    'input[type="file"]'
-  );
+  const [selectInputElement, unselectInputElement] =
+    await page.$$('input[type="file"]');
 
   // These checkboxes will go from being unchecked to being checked and back again
   const hg7 = await page.getByText("HG7");

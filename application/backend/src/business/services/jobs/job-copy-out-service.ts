@@ -47,14 +47,14 @@ export class JobCopyOutService extends JobService {
     private readonly awsDiscoveryService: IAwsDiscoveryService,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("S3Client") private readonly s3Client: S3Client,
-    @inject("SFNClient") private readonly sfnClient: SFNClient
+    @inject("SFNClient") private readonly sfnClient: SFNClient,
   ) {
     super(edgeDbClient, auditLogService, releaseService, selectService);
   }
 
   private async getCurrentJobWithExceptionForInvalid(
     executor: Executor,
-    jobId: string
+    jobId: string,
   ) {
     const copyOutJobQuery = e
       .select(e.job.CopyOutJob, (j) => ({
@@ -77,7 +77,7 @@ export class JobCopyOutService extends JobService {
   private async updateCurrentJob(
     executor: Executor,
     jobId: string,
-    toSet: any
+    toSet: any,
   ) {
     await e
       .update(e.job.CopyOutJob, (j) => ({
@@ -97,12 +97,12 @@ export class JobCopyOutService extends JobService {
   public async startCopyOutJob(
     user: AuthenticatedUser,
     releaseKey: string,
-    destinationBucket: string
+    destinationBucket: string,
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator")
@@ -111,7 +111,7 @@ export class JobCopyOutService extends JobService {
     if (!isActivated)
       throw new ReleaseNeedsActivationToStartJob(
         JobCopyOutService.JOB_NAME,
-        releaseKey
+        releaseKey,
       );
 
     const stepsArn = await this.awsDiscoveryService.locateCopyOutStepsArn();
@@ -120,7 +120,7 @@ export class JobCopyOutService extends JobService {
 
     const { releaseQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     await this.startGenericJob(releaseKey, async (tx) => {
@@ -133,16 +133,15 @@ export class JobCopyOutService extends JobService {
         "E",
         "Copy Out",
         new Date(),
-        tx
+        tx,
       );
 
-      const manifest = await this.manifestService.getActiveBucketKeyManifest(
-        releaseKey
-      );
+      const manifest =
+        await this.manifestService.getActiveBucketKeyManifest(releaseKey);
 
       assert(
         manifest,
-        "Active manifest appeared to be null even though this release has been activated"
+        "Active manifest appeared to be null even though this release has been activated",
       );
 
       let manifestCsv = "";
@@ -152,11 +151,11 @@ export class JobCopyOutService extends JobService {
         //      buckets or keys with quotes)
         if (s.objectStoreBucket.includes('"'))
           throw new Error(
-            `One of the buckets contains a quote character that we cannot handle yet - ${s.objectStoreBucket}`
+            `One of the buckets contains a quote character that we cannot handle yet - ${s.objectStoreBucket}`,
           );
         if (s.objectStoreKey.includes('"'))
           throw new Error(
-            `One of the keys contains a quote character that we cannot handle yet - ${s.objectStoreKey}`
+            `One of the keys contains a quote character that we cannot handle yet - ${s.objectStoreKey}`,
           );
 
         if (s.objectStoreProtocol === "s3") {
@@ -175,7 +174,7 @@ export class JobCopyOutService extends JobService {
           Key: fileListKey,
           ContentType: "text/csv",
           Body: Buffer.from(manifestCsv),
-        })
+        }),
       );
 
       const startExecutionResult = await this.sfnClient.send(
@@ -189,7 +188,7 @@ export class JobCopyOutService extends JobService {
             // we can set this here - or leave for default of 1
             // maxItemsPerBatch: 10
           }),
-        })
+        }),
       );
 
       if (!startExecutionResult.executionArn) {
@@ -234,19 +233,19 @@ export class JobCopyOutService extends JobService {
     return await this.edgeDbClient.transaction(async (tx) => {
       const copyOutJob = await this.getCurrentJobWithExceptionForInvalid(
         tx,
-        jobId
+        jobId,
       );
 
       // get the status of the overall steps function that does copying
       const describeExecutionResult = await this.sfnClient.send(
         new DescribeExecutionCommand({
           executionArn: copyOutJob.awsExecutionArn,
-        })
+        }),
       );
 
       assert(
         describeExecutionResult,
-        `Steps execution ARN ${copyOutJob.awsExecutionArn} unexpectedly disappeared`
+        `Steps execution ARN ${copyOutJob.awsExecutionArn} unexpectedly disappeared`,
       );
 
       // at our first polling after a successful launch - we upgrade to 1%
@@ -260,7 +259,7 @@ export class JobCopyOutService extends JobService {
         const listMapRunsResults = await this.sfnClient.send(
           new ListMapRunsCommand({
             executionArn: copyOutJob.awsExecutionArn,
-          })
+          }),
         );
 
         // we have only one map run in our steps so this can only ever be 1 or 0
@@ -271,7 +270,7 @@ export class JobCopyOutService extends JobService {
           const describeMapResult = await this.sfnClient.send(
             new DescribeMapRunCommand({
               mapRunArn: listMapRunsResults.mapRuns[0].mapRunArn,
-            })
+            }),
           );
 
           // if we have an item count report out the percent done
@@ -285,7 +284,7 @@ export class JobCopyOutService extends JobService {
             // we limit our 'to copy' items to a range between 1 and 99..
             // (we reserved 0 to mean we just started, and we reserve 100 to mean completely done)
             let percentDone = Math.ceil(
-              (countDone * 100) / describeMapResult.itemCounts.total!
+              (countDone * 100) / describeMapResult.itemCounts.total!,
             );
 
             if (percentDone < 1) percentDone = 1;
@@ -315,12 +314,12 @@ export class JobCopyOutService extends JobService {
    */
   public async endCopyOutJob(
     jobId: string,
-    wasSuccessful: boolean
+    wasSuccessful: boolean,
   ): Promise<void> {
     await this.edgeDbClient.transaction(async (tx) => {
       const copyOutJob = await this.getCurrentJobWithExceptionForInvalid(
         tx,
-        jobId
+        jobId,
       );
 
       await this.auditLogService.completeReleaseAuditEvent(
@@ -332,7 +331,7 @@ export class JobCopyOutService extends JobService {
           jobId: jobId,
           awsExecutionArn: copyOutJob.awsExecutionArn,
         },
-        tx
+        tx,
       );
 
       await this.updateCurrentJob(tx, jobId, {

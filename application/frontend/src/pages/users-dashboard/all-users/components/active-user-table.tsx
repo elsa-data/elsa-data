@@ -42,7 +42,7 @@ export const ActiveUserTable = () => {
         // use the total
         setCurrentTotal(res.total);
       },
-    }
+    },
   );
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
@@ -79,7 +79,7 @@ export const ActiveUserTable = () => {
               baseColumnClasses,
               "text-left",
               "pl-4",
-              "font-normal"
+              "font-normal",
             )}
           >
             {row.email}
@@ -90,7 +90,7 @@ export const ActiveUserTable = () => {
               baseColumnClasses,
               "text-left",
               "pr-4",
-              "font-normal"
+              "font-normal",
             )}
           >
             {formatLocalDateTime(row.lastLogin as string | undefined)}
@@ -101,7 +101,7 @@ export const ActiveUserTable = () => {
               baseColumnClasses,
               "text-right",
               "pl-4",
-              "font-normal"
+              "font-normal",
             )}
           >
             {permissionIconProperties.map((prop) => (

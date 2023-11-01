@@ -100,7 +100,7 @@ export class S3IndexApplicationService {
     @inject(DatasetService) private readonly datasetService: DatasetService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
-    @inject(UserData) private readonly userData: UserData
+    @inject(UserData) private readonly userData: UserData,
   ) {}
 
   /**
@@ -111,7 +111,7 @@ export class S3IndexApplicationService {
    */
   private async checkIsImportDatasetAllowed(
     user: AuthenticatedUser,
-    datasetUri?: string
+    datasetUri?: string,
   ): Promise<void> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
@@ -124,7 +124,7 @@ export class S3IndexApplicationService {
    * @returns A list of S3 object metadata for AG bucket matching key prefix
    */
   async getS3ObjectListFromUriPrefix(
-    s3UrlPrefix: string
+    s3UrlPrefix: string,
   ): Promise<S3ObjectMetadataType[]> {
     return await awsListObjects(this.s3Client, s3UrlPrefix);
   }
@@ -134,7 +134,7 @@ export class S3IndexApplicationService {
    * @returns A list of manifest string
    */
   getManifestUriFromS3ObjectList(
-    s3ListMetadata: S3ObjectMetadataType[]
+    s3ListMetadata: S3ObjectMetadataType[],
   ): string[] {
     const manifestKeys: string[] = [];
     for (const s3Metadata of s3ListMetadata) {
@@ -174,7 +174,7 @@ export class S3IndexApplicationService {
    */
   mergeObjectMetadata(
     manifestList: ManifestType[],
-    s3ObjectMetadataTypeList: S3ObjectMetadataType[]
+    s3ObjectMetadataTypeList: S3ObjectMetadataType[],
   ): MergedManifestMetadataType[] {
     const result: MergedManifestMetadataType[] = [];
 
@@ -207,7 +207,7 @@ export class S3IndexApplicationService {
    */
   async getS3ManifestObjectListFromAllObjectList(
     allObjects: S3ObjectMetadataType[],
-    loadText: (url: string) => Promise<string>
+    loadText: (url: string) => Promise<string>,
   ): Promise<S3ManifestDictType> {
     const s3UrlManifestObj: S3ManifestDictType = {};
 
@@ -229,7 +229,7 @@ export class S3IndexApplicationService {
       const manifestLastSlashIndex = manifestS3Url.lastIndexOf("/");
       const manifestS3UrlPrefix = manifestS3Url.substring(
         0,
-        manifestLastSlashIndex
+        manifestLastSlashIndex,
       );
       for (const manifestObj of manifestObjContentList) {
         const s3Url = `${manifestS3UrlPrefix}/${manifestObj.filename}`;
@@ -380,7 +380,7 @@ export class S3IndexApplicationService {
      */
     const sortManifestFile = (artifactSet: MergedManifestMetadataType[]) =>
       artifactSet.sort((a, b) =>
-        a.s3Url.toLowerCase() > b.s3Url.toLowerCase() ? 1 : -1
+        a.s3Url.toLowerCase() > b.s3Url.toLowerCase() ? 1 : -1,
       );
     const manifestSet = sortManifestFile(groupManifest.file);
 
@@ -398,7 +398,7 @@ export class S3IndexApplicationService {
 
     if (manifestSet.length <= 1) {
       throw new Error(
-        `Dataset import encountered only a single file with base ${groupManifest.filenameId} - but all our files should come in as pairs`
+        `Dataset import encountered only a single file with base ${groupManifest.filenameId} - but all our files should come in as pairs`,
       );
     }
 
@@ -411,7 +411,7 @@ export class S3IndexApplicationService {
         return insertArtifactVcfQuery(
           baseFile,
           indexFile,
-          groupManifest.patientIdArray
+          groupManifest.patientIdArray,
         );
       case ArtifactEnum.BAM:
         return insertArtifactBamQuery(baseFile, indexFile);
@@ -419,7 +419,7 @@ export class S3IndexApplicationService {
         return insertArtifactCramQuery(baseFile, indexFile);
       default:
         throw new Error(
-          `Attempt to insert artifact of unknown type ${groupManifest.filetype}`
+          `Attempt to insert artifact of unknown type ${groupManifest.filetype}`,
         );
     }
   }
@@ -430,7 +430,7 @@ export class S3IndexApplicationService {
    * @returns
    */
   convertManifestToStorageFileType(
-    manifest: MergedManifestMetadataType
+    manifest: MergedManifestMetadataType,
   ): LabArtifactType {
     return {
       url: manifest.s3Url,
@@ -453,7 +453,7 @@ export class S3IndexApplicationService {
    */
   converts3ManifestTypeToArtifactTypeRecord(
     manifestRecordList: ManifestType[],
-    s3MetadataList: S3ObjectMetadataType[]
+    s3MetadataList: S3ObjectMetadataType[],
   ): LabArtifactType[] {
     const result: LabArtifactType[] = [];
 
@@ -486,7 +486,7 @@ export class S3IndexApplicationService {
   }
 
   async getDbManifestObjectListByDatasetId(
-    datasetId: string
+    datasetId: string,
   ): Promise<S3ManifestDictType> {
     const s3UrlManifestObj: S3ManifestDictType = {};
 
@@ -498,28 +498,28 @@ export class S3IndexApplicationService {
         this.edgeDbClient,
         {
           datasetId: datasetId,
-        }
+        },
       );
     artifactList.push(...fastqArtifact);
     const bamArtifact = await bamArtifactStudyIdAndFileIdByDatasetIdQuery.run(
       this.edgeDbClient,
       {
         datasetId: datasetId,
-      }
+      },
     );
     artifactList.push(...bamArtifact);
     const cramArtifact = await cramArtifactStudyIdAndFileIdByDatasetIdQuery.run(
       this.edgeDbClient,
       {
         datasetId: datasetId,
-      }
+      },
     );
     artifactList.push(...cramArtifact);
     const vcfArtifact = await vcfArtifactStudyIdAndFileIdByDatasetIdQuery.run(
       this.edgeDbClient,
       {
         datasetId: datasetId,
-      }
+      },
     );
     artifactList.push(...vcfArtifact);
 
@@ -560,7 +560,7 @@ export class S3IndexApplicationService {
    */
   diffManifestAlphaAndManifestBeta(
     manifestAlpha: S3ManifestDictType,
-    manifestBeta: S3ManifestDictType
+    manifestBeta: S3ManifestDictType,
   ): ManifestType[] {
     const result: ManifestType[] = [];
 
@@ -592,7 +592,7 @@ export class S3IndexApplicationService {
    */
   checkDiffChecksumRecordBetweenManifestDict(
     newManifest: S3ManifestDictType,
-    oldManifest: S3ManifestDictType
+    oldManifest: S3ManifestDictType,
   ): ManifestType[] {
     const result: ManifestType[] = [];
     for (const key in newManifest) {
@@ -621,7 +621,7 @@ export class S3IndexApplicationService {
       probandId: string;
       patientId: string;
       datasetCaseId: string;
-    }[]
+    }[],
   ) {
     for (const pedigree of pedigreeList) {
       const { probandId, patientId, datasetCaseId } = pedigree;
@@ -680,7 +680,7 @@ export class S3IndexApplicationService {
    */
   public async syncWithDatabaseFromDatasetUri(
     datasetUri: string,
-    loaderType: "australian-genomics-directories"
+    loaderType: "australian-genomics-directories",
   ) {
     // triggering a sync is limited to certain users
     // await this.checkIsImportDatasetAllowed(user, datasetUri);
@@ -693,7 +693,7 @@ export class S3IndexApplicationService {
     if (!datasetId) {
       console.warn("No Dataset URI found from given key prefix.");
       console.warn(
-        "Please register to the configuration before running this service."
+        "Please register to the configuration before running this service.",
       );
       return;
     }
@@ -722,7 +722,7 @@ export class S3IndexApplicationService {
             s3MetadataList,
             (url: string) => {
               return readObjectToStringFromS3Url(this.s3Client, url);
-            }
+            },
           );
         const datasetConfig: any =
           this.datasetService.getDatasetConfiguration(datasetUri);
@@ -748,15 +748,15 @@ export class S3IndexApplicationService {
     // Do comparison for data retrieve from s3 and with current edgedb data
     const missingFileFromDb = this.diffManifestAlphaAndManifestBeta(
       s3ManifestTypeObjectDict,
-      dbs3ManifestTypeObjectDict
+      dbs3ManifestTypeObjectDict,
     );
     const toBeDeletedFromDb = this.diffManifestAlphaAndManifestBeta(
       dbs3ManifestTypeObjectDict,
-      s3ManifestTypeObjectDict
+      s3ManifestTypeObjectDict,
     );
     const differentChecksum = this.checkDiffChecksumRecordBetweenManifestDict(
       s3ManifestTypeObjectDict,
-      dbs3ManifestTypeObjectDict
+      dbs3ManifestTypeObjectDict,
     );
 
     // Update file record to be unavailable
@@ -770,7 +770,7 @@ export class S3IndexApplicationService {
     if (differentChecksum.length) {
       const fileRecChangeList = this.converts3ManifestTypeToArtifactTypeRecord(
         differentChecksum,
-        s3MetadataList
+        s3MetadataList,
       );
 
       for (const fileRec of fileRecChangeList) {
@@ -795,7 +795,7 @@ export class S3IndexApplicationService {
       // Combine S3 Manifest metadata (study_id, md5) with S3 Object Metadata (etag, size)
       const fullManifest = this.mergeObjectMetadata(
         missingFileFromDb,
-        s3MetadataList
+        s3MetadataList,
       );
 
       //  Inserting a new artifact must be in a complete file set (e.g. you can't insert a BAM without BAI)
@@ -821,7 +821,7 @@ export class S3IndexApplicationService {
           // we can load the content of the phenopacket and use it to inform other aspects
           const phenopacketString = await readObjectToStringFromS3Url(
             this.s3Client,
-            groupedManifest.filenameId
+            groupedManifest.filenameId,
           );
           const phenopacket: PhenopacketIndividiual =
             JSON.parse(phenopacketString);
@@ -830,7 +830,7 @@ export class S3IndexApplicationService {
             phenopacketsFound[patientIdArray[0]] = phenopacket;
           } else {
             this.logger.info(
-              `Found individual phenopacket but they matched to multiple patient ids`
+              `Found individual phenopacket but they matched to multiple patient ids`,
             );
           }
 
@@ -846,7 +846,7 @@ export class S3IndexApplicationService {
 
         if (!artifactInsertionQuery) {
           console.error(
-            `File base ${groupedManifest.filenameId} was not of a type for insertion as an artifact so it has been skipped`
+            `File base ${groupedManifest.filenameId} was not of a type for insertion as an artifact so it has been skipped`,
           );
           continue;
         }
@@ -868,7 +868,7 @@ export class S3IndexApplicationService {
           if (datasetSpecimenUUID) {
             await linkNewArtifactWithDatasetSpecimen(
               datasetSpecimenUUID,
-              artifactInsertionQuery
+              artifactInsertionQuery,
             ).run(this.edgeDbClient);
 
             // Done and can proceed to the next one.
@@ -976,13 +976,13 @@ export class S3IndexApplicationService {
       // At this stage, all dataset::DatasetPatient record should already exist
       await this.linkPedigreeRelationship(
         datasetUri,
-        patientIdAndDataCaseIdLinkingArray
+        patientIdAndDataCaseIdLinkingArray,
       );
 
       // by now everyone that should exist does exist... so we can take all the phenopackets we have
       // encountered and use them to set sex
       for (const [patientId, phenopacket] of Object.entries(
-        phenopacketsFound
+        phenopacketsFound,
       )) {
         const datasetPatient =
           await selectDatasetPatientByExternalIdAndDatasetUriQuery({

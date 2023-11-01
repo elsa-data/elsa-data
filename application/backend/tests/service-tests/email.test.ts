@@ -41,7 +41,7 @@ it("send email", async () => {
       releaseKey: "R001",
       name: "name",
       fromName: "Elsa Data",
-    }
+    },
   );
 
   expect(info).toHaveProperty("envelope");
@@ -90,7 +90,7 @@ it("send email override locals", async () => {
       releaseKey: "R001",
       name: "name",
       fromName: "Elsa Data",
-    }
+    },
   );
 
   expect(info).toHaveProperty("envelope");

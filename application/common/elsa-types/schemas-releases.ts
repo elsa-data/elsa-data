@@ -82,7 +82,7 @@ export const DataSharingAwsAccessPointSchema = Type.Optional(
     vpcId: Type.String(),
     installed: Type.Boolean(),
     installedStackArn: Type.Optional(Type.String()),
-  })
+  }),
 );
 
 export type DataSharingAwsAccessPointType = Static<
@@ -94,8 +94,8 @@ export const ReleaseDetailSchema = Type.Object({
 
   roleInRelease: Type.Union(
     ReleaseParticipantRole.map((r: ReleaseParticipantRoleType) =>
-      Type.Literal(r)
-    )
+      Type.Literal(r),
+    ),
   ),
 
   lastUpdatedDateTime: TypeDate,
@@ -127,7 +127,7 @@ export const ReleaseDetailSchema = Type.Object({
 
   // Permission for the current user that allowed to edit other user's role within the release.
   rolesAllowedToAlterParticipant: Nullable(
-    Type.Array(StringUnion(ReleaseParticipantRole))
+    Type.Array(StringUnion(ReleaseParticipantRole)),
   ),
 
   // if present, means that this release has been activated for data sharing
@@ -145,7 +145,7 @@ export const ReleaseDetailSchema = Type.Object({
   dataSharingObjectSigning: Type.Optional(
     Type.Object({
       expiryHours: Type.Integer(),
-    })
+    }),
   ),
 
   dataSharingHtsgetRestrictions: Type.Array(Type.String()),
@@ -154,14 +154,14 @@ export const ReleaseDetailSchema = Type.Object({
   dataSharingCopyOut: Type.Optional(
     Type.Object({
       destinationLocation: Type.String(),
-    })
+    }),
   ),
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
   dataSharingHtsget: Type.Optional(
     Type.Object({
       url: Type.String(),
-    })
+    }),
   ),
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
@@ -171,7 +171,7 @@ export const ReleaseDetailSchema = Type.Object({
   dataSharingGcpStorageIam: Type.Optional(
     Type.Object({
       users: Type.Array(Type.String()),
-    })
+    }),
   ),
 
   // once we get @role link properties working we should enable this

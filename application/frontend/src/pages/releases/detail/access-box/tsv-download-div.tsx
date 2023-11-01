@@ -45,7 +45,7 @@ export const TsvDownloadDiv: React.FC<Props> = (props) => {
           <div className="grid grid-cols-3">
             <div className="flex flex-col gap-2">
               {ObjectStoreRecordKey.filter(
-                (field) => !props.fieldsToExclude.includes(field)
+                (field) => !props.fieldsToExclude.includes(field),
               ).map((field, i) => (
                 <TsvColumnCheck key={i} field={field} />
               ))}

@@ -25,7 +25,7 @@ export async function commandDbCreate(logger: Logger): Promise<number> {
     await executeEdgeCli(
       logger,
       ["database", "create", dbName],
-      ["EDGEDB_DATABASE"]
+      ["EDGEDB_DATABASE"],
     );
 
     return 0;

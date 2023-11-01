@@ -65,11 +65,11 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
 
   const authedUser = getAuthenticatedUserFromSecureSession(
     userService,
-    ctx.req
+    ctx.req,
   );
   if (!authedUser) {
     ctx.req.log.error(
-      "isSessionCookieAuthed: no session cookie data was present so failing authentication"
+      "isSessionCookieAuthed: no session cookie data was present so failing authentication",
     );
 
     throw new TRPCError({
@@ -107,16 +107,16 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       releaseService: ctx.container.resolve(ReleaseService),
       releaseActivationService: ctx.container.resolve(ReleaseActivationService),
       releaseParticipantService: ctx.container.resolve(
-        ReleaseParticipationService
+        ReleaseParticipationService,
       ),
       releaseSelectionService: ctx.container.resolve(ReleaseSelectionService),
       releaseDataEgressService: ctx.container.resolve(ReleaseDataEgressService),
       jobService: ctx.container.resolve(JobService),
       jobCloudFormationCreateService: ctx.container.resolve(
-        JobCloudFormationCreateService
+        JobCloudFormationCreateService,
       ),
       jobCloudFormationDeleteService: ctx.container.resolve(
-        JobCloudFormationDeleteService
+        JobCloudFormationDeleteService,
       ),
       jobCopyOutService: ctx.container.resolve(JobCopyOutService),
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
@@ -134,7 +134,7 @@ export const internalProcedure = t.procedure.use(isSessionCookieAuthed);
 
 export const calculateOffset = (
   page: number | undefined = 1,
-  pageSize: number
+  pageSize: number,
 ) => {
   return (page - 1) * pageSize;
 };

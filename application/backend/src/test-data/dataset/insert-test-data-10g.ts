@@ -53,23 +53,23 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
         `s3://umccr-10g-data-dev/${masterCase.specimenId}/${masterCase.specimenId}.bam`,
         masterCase.bamSize,
         masterCase.bamEtag,
-        masterCase.bamMd5
+        masterCase.bamMd5,
       ),
       createFile(
         `s3://umccr-10g-data-dev/${masterCase.specimenId}/${masterCase.specimenId}.bam.bai`,
-        0
+        0,
       ),
       createFile(
         `s3://umccr-10g-data-dev/${masterCase.specimenId}/${masterCase.specimenId}.hard-filtered.vcf.gz`,
         masterCase.vcfSize,
         masterCase.vcfEtag,
-        masterCase.vcfMd5
+        masterCase.vcfMd5,
       ),
       createFile(
         `s3://umccr-10g-data-dev/${masterCase.specimenId}/${masterCase.specimenId}.hard-filtered.vcf.gz.tbi`,
-        0
+        0,
       ),
-      []
+      [],
     );
     const gsArtifacts = await createArtifacts(
       [],
@@ -77,23 +77,23 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
         `gs://10gbucket/${masterCase.specimenId}/${masterCase.specimenId}.bam`,
         masterCase.bamSize,
         undefined,
-        masterCase.bamMd5
+        masterCase.bamMd5,
       ),
       createFile(
         `gs://10gbucket/${masterCase.specimenId}/${masterCase.specimenId}.bam.bai`,
-        0
+        0,
       ),
       createFile(
         `gs://10gbucket/${masterCase.specimenId}/${masterCase.specimenId}.hard-filtered.vcf.gz`,
         masterCase.vcfSize,
         undefined,
-        masterCase.vcfMd5
+        masterCase.vcfMd5,
       ),
       createFile(
         `gs://10gbucket/${masterCase.specimenId}/${masterCase.specimenId}.hard-filtered.vcf.gz.tbi`,
-        0
+        0,
       ),
-      []
+      [],
     );
     const r2Artifacts = await createArtifacts(
       [],
@@ -103,13 +103,13 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
         `r2://75cd1b191bb75176cc5418ad2878db39/umccr-10g-data-dev/${masterCase.specimenId}/${masterCase.specimenId}.hard-filtered.vcf.gz`, // pragma: allowlist secret
         masterCase.vcfSize,
         undefined,
-        masterCase.vcfMd5
+        masterCase.vcfMd5,
       ),
       createFile(
         `r2://75cd1b191bb75176cc5418ad2878db39/umccr-10g-data-dev//${masterCase.specimenId}/${masterCase.specimenId}.hard-filtered.vcf.gz.tbi`, // pragma: allowlist secret
-        0
+        0,
       ),
-      []
+      [],
     );
 
     return e.insert(e.dataset.DatasetCase, {
@@ -117,7 +117,7 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
       patients: e.insert(e.dataset.DatasetPatient, {
         sexAtBirth: masterCase.patientSexAtBirth,
         externalIdentifiers: makeSystemlessIdentifierArray(
-          masterCase.patientId
+          masterCase.patientId,
         ),
         consent:
           masterCase.patientConsentJsons &&
@@ -127,14 +127,14 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
                   ...masterCase.patientConsentJsons.map((pc) =>
                     e.insert(e.consent.ConsentStatementDuo, {
                       dataUseLimitation: pc,
-                    })
-                  )
+                    }),
+                  ),
                 ),
               })
             : undefined,
         specimens: e.insert(e.dataset.DatasetSpecimen, {
           externalIdentifiers: makeSystemlessIdentifierArray(
-            masterCase.specimenId
+            masterCase.specimenId,
           ),
           consent:
             masterCase.specimenConsentJsons &&
@@ -144,15 +144,15 @@ export async function insert10G(dc: DependencyContainer): Promise<string> {
                     ...masterCase.specimenConsentJsons.map((sc) =>
                       e.insert(e.consent.ConsentStatementDuo, {
                         dataUseLimitation: sc,
-                      })
-                    )
+                      }),
+                    ),
                   ),
                 })
               : undefined,
           artifacts: e.op(
             e.op(s3Artifacts, "union", gsArtifacts),
             "union",
-            r2Artifacts
+            r2Artifacts,
           ),
         }),
       }),
@@ -228,7 +228,7 @@ export async function australianGenomicsDirectoryStructureFor10G(): Promise<
   const pushCase = (
     files: AustralianGenomicsDirectoryStructureObject[],
     folder: string,
-    case_: MasterRareDiseaseCase
+    case_: MasterRareDiseaseCase,
   ): string => {
     const bamName = `${case_.specimenId}.bam`;
     const baiName = `${case_.specimenId}.bam.bai`;

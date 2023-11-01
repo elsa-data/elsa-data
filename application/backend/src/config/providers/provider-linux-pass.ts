@@ -19,7 +19,7 @@ export class ProviderLinuxPass extends ProviderBase {
 
     if (argTokens.length != 1)
       throw new Error(
-        `${ProviderLinuxPass.name} expects a single meta parameter specifying the name of the password store holding configuration values`
+        `${ProviderLinuxPass.name} expects a single meta parameter specifying the name of the password store holding configuration values`,
       );
 
     this.passwordStoreName = argTokens[0].value;

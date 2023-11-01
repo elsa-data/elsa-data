@@ -11,7 +11,7 @@ export async function commandDbBlank(logger: Logger): Promise<number> {
   //      extra per instance details such as hostname are passed in e.g. db-blank elsa.umccr.org
   if (process.env.NODE_ENV !== "development") {
     logger.fatal(
-      "The database can only be blanked when NODE_ENV is development"
+      "The database can only be blanked when NODE_ENV is development",
     );
 
     return 1;

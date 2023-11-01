@@ -38,7 +38,7 @@ it("audit release stuff instant", async () => {
     },
     0,
     new Date(),
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getReleaseEntries(
@@ -48,7 +48,7 @@ it("audit release stuff instant", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -73,7 +73,7 @@ it("audit release stuff duration", async () => {
     "C",
     "Made User Over Time",
     start,
-    edgeDbClient
+    edgeDbClient,
   );
 
   await auditEventService.completeReleaseAuditEvent(
@@ -84,7 +84,7 @@ it("audit release stuff duration", async () => {
     {
       field: "A field",
     },
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getReleaseEntries(
@@ -94,7 +94,7 @@ it("audit release stuff duration", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -118,7 +118,7 @@ it("get entries with release filter", async () => {
     "C",
     "Made User Over Time",
     start,
-    edgeDbClient
+    edgeDbClient,
   );
 
   await auditEventService.completeReleaseAuditEvent(
@@ -129,7 +129,7 @@ it("get entries with release filter", async () => {
     {
       field: "A field",
     },
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getUserEntries(
@@ -140,7 +140,7 @@ it("get entries with release filter", async () => {
     false,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -162,7 +162,7 @@ it("get in progress release entries", async () => {
     "C",
     "Made User Over Time",
     new Date(),
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getReleaseEntries(
@@ -172,7 +172,7 @@ it("get in progress release entries", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);

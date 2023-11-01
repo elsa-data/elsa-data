@@ -23,7 +23,7 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
           props.className,
           "form-control",
           "items-start",
-          "space-x-2"
+          "space-x-2",
         )}
       >
         <label className="label cursor-pointer">
@@ -38,7 +38,7 @@ export const RhCheckItem = React.forwardRef<HTMLInputElement, Props>(
         </label>
       </div>
     );
-  }
+  },
 );
 
 /**
@@ -67,7 +67,7 @@ export const RhChecksDetail: React.FC<
       <div
         className={classNames(
           "ml-4 w-12 border-l-4",
-          enabled ? "border-green-500" : "border-gray-500"
+          enabled ? "border-green-500" : "border-gray-500",
         )}
       ></div>
       {children}

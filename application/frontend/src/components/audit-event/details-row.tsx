@@ -20,7 +20,7 @@ export type DetailsRowProps = {
 export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
   const detailsQuery = trpc.auditEventRouter.getAuditEventDetails.useQuery(
     { id: objectId },
-    { keepPreviousData: true }
+    { keepPreviousData: true },
   );
 
   // TODO make a link here to a full details page

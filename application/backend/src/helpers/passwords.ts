@@ -32,7 +32,7 @@ export function generateZipPassword() {
  */
 export function generatePassword(
   length: number,
-  wishlist = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$" // pragma: allowlist secret
+  wishlist = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$", // pragma: allowlist secret
 ) {
   return Array.from(randomFillSync(new Uint32Array(length)))
     .map((x) => wishlist[x % wishlist.length])

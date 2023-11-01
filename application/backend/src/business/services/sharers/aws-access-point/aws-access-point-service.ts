@@ -54,7 +54,7 @@ export class AwsAccessPointService {
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
   ) {}
 
   /**
@@ -67,7 +67,7 @@ export class AwsAccessPointService {
    * @returns details of the installed access point or null if none is installed
    */
   public async getInstalledAccessPoint(
-    releaseKey: string
+    releaseKey: string,
   ): Promise<Stack | null> {
     await this.awsEnabledService.enabledGuard();
 
@@ -80,7 +80,7 @@ export class AwsAccessPointService {
       releaseStack = await this.cfnClient.send(
         new DescribeStacksCommand({
           StackName: releaseStackName,
-        })
+        }),
       );
     } catch (e) {
       // describing a stack that is not present throws an exception so we take that to mean it is
@@ -103,23 +103,23 @@ export class AwsAccessPointService {
    * @param releaseKey
    */
   public async getInstalledAccessPointObjectMap(
-    releaseKey: string
+    releaseKey: string,
   ): Promise<Record<string, AccessPointEntry>> {
     assert(
       this.settings.deployedAwsAccount,
-      "There were no settings present for AWS account (are you running in AWS?)"
+      "There were no settings present for AWS account (are you running in AWS?)",
     );
 
     const stackInstalled = await this.getInstalledAccessPoint(releaseKey);
 
     if (!stackInstalled)
       throw new Error(
-        "Access point file list was requested but the release does not appear to have a current access point"
+        "Access point file list was requested but the release does not appear to have a current access point",
       );
 
     return await correctAccessPointUrls(
       stackInstalled,
-      this.settings.deployedAwsAccount
+      this.settings.deployedAwsAccount,
     );
   }
 
@@ -135,12 +135,12 @@ export class AwsAccessPointService {
   public async getAccessPointBucketKeyManifest(
     user: AuthenticatedUser,
     releaseKey: string,
-    tsvColumns: string[]
+    tsvColumns: string[],
   ) {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (!this.permissionService.canAccessData(userRole))
@@ -155,7 +155,7 @@ export class AwsAccessPointService {
 
     assert(
       bucketKeyManifest,
-      "Active manifest appeared to be null even though this release has been activated"
+      "Active manifest appeared to be null even though this release has been activated",
     );
 
     const map = await this.getInstalledAccessPointObjectMap(releaseKey);
@@ -187,7 +187,7 @@ export class AwsAccessPointService {
 
     const counter = await this.releaseService.getIncrementingCounter(
       user,
-      releaseKey
+      releaseKey,
     );
 
     const filename = `release-${releaseKey.replaceAll("-", "")}-${counter}.tsv`;
@@ -211,7 +211,7 @@ export class AwsAccessPointService {
    */
   public async createAccessPointCloudFormationTemplate(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<string> {
     // the AWS guard is switched on as this needs to write out to S3
     await this.awsEnabledService.enabledGuard();
@@ -219,17 +219,17 @@ export class AwsAccessPointService {
     // convince typescript that these are also valid
     assert(
       this.settings.aws,
-      "There were no settings present for AWS temporary buckets (are you running in AWS?)"
+      "There were no settings present for AWS temporary buckets (are you running in AWS?)",
     );
     assert(
       this.settings.deployedAwsRegion,
-      "There were no settings present for AWS region (are you running in AWS?)"
+      "There were no settings present for AWS region (are you running in AWS?)",
     );
 
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole !== "Administrator") {
@@ -243,7 +243,7 @@ export class AwsAccessPointService {
       !releaseInfo.dataSharingAwsAccessPoint.name
     )
       throw new Error(
-        "There were no data sharing configuration settings for AWS Access Point saved for this release"
+        "There were no data sharing configuration settings for AWS Access Point saved for this release",
       );
 
     const bucketKeyManifest =
@@ -251,12 +251,12 @@ export class AwsAccessPointService {
 
     assert(
       bucketKeyManifest,
-      "Active manifest appeared to be null even though this release has been activated"
+      "Active manifest appeared to be null even though this release has been activated",
     );
 
     if (bucketKeyManifest.objects.length === 0)
       throw new Error(
-        "There were no S3 objects in the release so the AWS Access Point has not been installed"
+        "There were no S3 objects in the release so the AWS Access Point has not been installed",
       );
 
     // make a (nested) CloudFormation templates that will expose only these
@@ -268,7 +268,7 @@ export class AwsAccessPointService {
       releaseKey,
       bucketKeyManifest.objects,
       [releaseInfo.dataSharingAwsAccessPoint.accountId],
-      releaseInfo.dataSharingAwsAccessPoint.vpcId
+      releaseInfo.dataSharingAwsAccessPoint.vpcId,
     );
 
     this.logger.debug(accessPointTemplates, "created access point templates");
@@ -284,7 +284,7 @@ export class AwsAccessPointService {
           Key: apt.templateKey,
           ContentType: "application/json",
           Body: Buffer.from(apt.content),
-        })
+        }),
       );
 
       if (apt.root) rootTemplate = apt;
@@ -292,7 +292,7 @@ export class AwsAccessPointService {
 
     if (!rootTemplate)
       throw new Error(
-        "Created an access point template but none of them were designated the root template that we can install"
+        "Created an access point template but none of them were designated the root template that we can install",
       );
 
     // return the HTTPS path to the root template that can then be passed to the install job

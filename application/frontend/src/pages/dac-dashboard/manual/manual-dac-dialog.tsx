@@ -45,7 +45,7 @@ export const ManualDacDialog: React.FC<Props> = ({
   const cancelButtonRef = useRef(null);
 
   const [lastMutateError, setLastMutateError] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const createNewReleaseMutate = useMutation(
@@ -65,7 +65,7 @@ export const ManualDacDialog: React.FC<Props> = ({
         cancelShowing();
       },
       onError: (err: any) => setLastMutateError(err?.response?.data?.detail),
-    }
+    },
   );
 
   return (
@@ -116,7 +116,7 @@ export const ManualDacDialog: React.FC<Props> = ({
                       options={
                         loggedInUserConfig?.datasets
                           ? Object.entries(loggedInUserConfig.datasets).map(
-                              (d) => ({ value: d[0], label: d[1] })
+                              (d) => ({ value: d[0], label: d[1] }),
                             )
                           : []
                       }

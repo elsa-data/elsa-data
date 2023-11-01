@@ -99,7 +99,7 @@ describe("edgedb release queries tests", () => {
       "Manager",
       "id1",
       "name1",
-      auditEventService
+      auditEventService,
     );
 
     await UserService.addUserToReleaseWithRole(
@@ -109,7 +109,7 @@ describe("edgedb release queries tests", () => {
       "Administrator",
       "id2",
       "name2",
-      auditEventService
+      auditEventService,
     );
 
     // and we don't add them into release 4 at all
@@ -164,7 +164,7 @@ describe("edgedb release queries tests", () => {
       "Manager",
       "id1",
       "name1",
-      auditEventService
+      auditEventService,
     );
 
     await UserService.addUserToReleaseWithRole(
@@ -174,7 +174,7 @@ describe("edgedb release queries tests", () => {
       "Administrator",
       "id2",
       "name2",
-      auditEventService
+      auditEventService,
     );
 
     await UserService.addUserToReleaseWithRole(
@@ -184,7 +184,7 @@ describe("edgedb release queries tests", () => {
       "Member",
       "id3",
       "name3",
-      auditEventService
+      auditEventService,
     );
 
     {

@@ -8,7 +8,7 @@ export const SharerObjectSigningSchema = z.object({
     .number()
     .int()
     .describe(
-      "The amount of time that a signed object link should remain valid in seconds"
+      "The amount of time that a signed object link should remain valid in seconds",
     ),
 });
 
@@ -24,7 +24,7 @@ export const SharerHtsgetSchema = z.object({
     .number()
     .int()
     .describe(
-      "The amount of time that a htsget manifest remains valid in seconds"
+      "The amount of time that a htsget manifest remains valid in seconds",
     ),
   url: z.string().describe("The URL for the htsget endpoint"),
 });

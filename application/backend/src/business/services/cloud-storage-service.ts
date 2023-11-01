@@ -30,7 +30,7 @@ export interface CloudStorage {
   put(
     bucket: string,
     key: string,
-    data: string
+    data: string,
   ): Promise<{ [key: string]: any }>;
 
   /**

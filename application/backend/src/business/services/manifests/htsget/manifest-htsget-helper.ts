@@ -20,7 +20,7 @@ import { ManifestRegionRestrictionType } from "./manifest-htsget-types";
  *
  */
 export async function transformMasterManifestToHtsgetManifest(
-  masterManifest: ManifestMasterType
+  masterManifest: ManifestMasterType,
 ): Promise<ManifestHtsgetType> {
   // a little tidy up of the uuids so they look not quite as uuids
   const uuidToHtsgetId = (uuid: string): string => {
@@ -47,7 +47,7 @@ export async function transformMasterManifestToHtsgetManifest(
           { chromosome: 9, start: 130713043, end: 130887675 },
           { chromosome: 15, start: 34790230, end: 34795549 },
           { chromosome: 2, start: 157736446, end: 157876330 },
-        ]
+        ],
       );
     }
 
@@ -57,7 +57,7 @@ export async function transformMasterManifestToHtsgetManifest(
           { chromosome: 20, start: 50888918, end: 50931437 },
           { chromosome: 22, start: 40346500, end: 40387527 },
           { chromosome: 1, start: 27534245, end: 27604227 },
-        ]
+        ],
       );
     }
 
@@ -67,7 +67,7 @@ export async function transformMasterManifestToHtsgetManifest(
           { chromosome: 1, start: 161766320, end: 161964070 },
           { chromosome: 2, start: 98346456, end: 98398601 },
           { chromosome: 8, start: 86574179, end: 86743634 },
-        ]
+        ],
       );
     }
   };
@@ -147,7 +147,7 @@ export async function transformMasterManifestToHtsgetManifest(
   }
 
   const externalIdsToMap = (
-    ids: { system: string; value: string }[] | null
+    ids: { system: string; value: string }[] | null,
   ): { [id: string]: string | string[] } => {
     const result: { [id: string]: string | string[] } = {};
     for (const id of ids || []) {

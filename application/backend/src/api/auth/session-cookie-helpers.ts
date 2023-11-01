@@ -15,7 +15,7 @@ import { UserService } from "../../business/services/user-service";
  * @param settings our Elsa Settings that are used to create the session crypto
  */
 export function getSecureSessionOptions(
-  settings: ElsaSettings
+  settings: ElsaSettings,
 ): SecureSessionPluginOptions {
   return {
     secret: settings.httpHosting.session.secret,
@@ -41,13 +41,13 @@ export function getSecureSessionOptions(
  */
 export function getAuthenticatedUserFromSecureSession(
   userService: UserService,
-  request: FastifyRequest
+  request: FastifyRequest,
 ): AuthenticatedUser | null {
   // cannot return authenticated users if our session management was not installed
   if (!request.session) return null;
 
   const sessionDbObject: AuthenticatedUserJsonType = request.session.get(
-    SESSION_USER_DB_OBJECT_KEY_NAME
+    SESSION_USER_DB_OBJECT_KEY_NAME,
   );
 
   // cannot return authenticated user if no session cookie has been created

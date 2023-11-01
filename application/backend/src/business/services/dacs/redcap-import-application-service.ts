@@ -34,7 +34,7 @@ export class RedcapImportApplicationService {
     @inject(UserData) private readonly userData: UserData,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(AuditEventService)
-    private readonly auditEventService: AuditEventService
+    private readonly auditEventService: AuditEventService,
   ) {}
 
   /**
@@ -50,7 +50,7 @@ export class RedcapImportApplicationService {
   public async detectNewReleases(
     user: AuthenticatedUser,
     dacConfiguration: DacRedcapAustralianGenomicsCsvType,
-    csvAsJson: AustraliaGenomicsDacRedcap[]
+    csvAsJson: AustraliaGenomicsDacRedcap[],
   ): Promise<AustraliaGenomicsDacRedcap[]> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
@@ -65,10 +65,10 @@ export class RedcapImportApplicationService {
           filter: e.op(
             r.applicationDacIdentifier.system,
             "=",
-            dacConfiguration.identifierSystem
+            dacConfiguration.identifierSystem,
           ),
         }))
-        .applicationDacIdentifier.value.run(this.edgeDbClient)
+        .applicationDacIdentifier.value.run(this.edgeDbClient),
     );
 
     const results: AustraliaGenomicsDacRedcap[] = [];
@@ -82,7 +82,7 @@ export class RedcapImportApplicationService {
       const releaseNumber = parseInt(
         possibleApplicationAsJsonObject[
           dacConfiguration.identifierValueColumnHeader
-        ]
+        ],
       );
 
       if (!isInteger(releaseNumber)) continue;
@@ -107,7 +107,7 @@ export class RedcapImportApplicationService {
   public async startNewRelease(
     user: AuthenticatedUser,
     dacConfiguration: DacRedcapAustralianGenomicsCsvType,
-    csvAsJson: AustraliaGenomicsDacRedcap
+    csvAsJson: AustraliaGenomicsDacRedcap,
   ): Promise<string> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
@@ -134,17 +134,17 @@ export class RedcapImportApplicationService {
     }
 
     this.logger.debug(
-      `Redcap CSV application via DAC ${dacConfiguration.id}/${dacConfiguration.type} requested the following flagships ${allRequested}`
+      `Redcap CSV application via DAC ${dacConfiguration.id}/${dacConfiguration.type} requested the following flagships ${allRequested}`,
     );
 
     // establish the map for all the datasets that this particular application wants - via our configuration
     for (const [csvColumnName, wantedDatasetUri] of Object.entries(
-      dacConfiguration.csvFlagshipDatasets
+      dacConfiguration.csvFlagshipDatasets,
     )) {
       // lookup the column header we are told is needed
       if (!(csvColumnName in csvAsJsonObject))
         throw new Error(
-          `Configured column header name ${csvColumnName} was not in the given Redcap CSV`
+          `Configured column header name ${csvColumnName} was not in the given Redcap CSV`,
         );
 
       // the application has not asked for this - so we can skip
@@ -161,25 +161,25 @@ export class RedcapImportApplicationService {
       if (matchDs && matchDs.length > 0) {
         if (matchDs.length > 1)
           throw new Error(
-            `Too many matching datasets on record for ${wantedDatasetUri}`
+            `Too many matching datasets on record for ${wantedDatasetUri}`,
           );
         else resourceToDatasetMap[wantedDatasetUri] = matchDs[0].id;
       } else {
         throw new Error(
-          `Configured Redcap dataset ${wantedDatasetUri} was not loaded in this Elsa Data instance`
+          `Configured Redcap dataset ${wantedDatasetUri} was not loaded in this Elsa Data instance`,
         );
       }
     }
 
     if (Object.values(resourceToDatasetMap).length === 0)
       throw new Error(
-        "No datasets that exist in this Elsa Data instance were applied for by this application CSV"
+        "No datasets that exist in this Elsa Data instance were applied for by this application CSV",
       );
 
     // the release number is the unique number in the redcap database describing each row
     // we use this number in a variety of places
     const releaseNumber = parseInt(
-      csvAsJsonObject[dacConfiguration.identifierValueColumnHeader]
+      csvAsJsonObject[dacConfiguration.identifierValueColumnHeader],
     );
 
     if (!isInteger(releaseNumber))
@@ -188,7 +188,7 @@ export class RedcapImportApplicationService {
           dacConfiguration.identifierValueColumnHeader
         }' was not an integer - its value was ${
           csvAsJsonObject[dacConfiguration.identifierValueColumnHeader]
-        }`
+        }`,
       );
 
     // for Redcap releases - we can create the release key direct from the unique release number
@@ -253,7 +253,7 @@ export class RedcapImportApplicationService {
 
       if (!studyType) {
         throw new Error(
-          "The application had no type of study expressed as a DUO code"
+          "The application had no type of study expressed as a DUO code",
         );
       }
 
@@ -263,11 +263,11 @@ export class RedcapImportApplicationService {
       ];
 
       roleTable.push(
-        `| ${manager.displayName} | ${manager.email} | ${manager.institution} | ${manager.role} |`
+        `| ${manager.displayName} | ${manager.email} | ${manager.institution} | ${manager.role} |`,
       );
       for (const o of otherResearchers) {
         roleTable.push(
-          `| ${o.displayName} | ${o.email} | ${o.institution} | ${o.role} |`
+          `| ${o.displayName} | ${o.email} | ${o.institution} | ${o.role} |`,
         );
       }
 
@@ -286,7 +286,7 @@ export class RedcapImportApplicationService {
 
 This application was sourced from Australian Genomics Redcap on ${format(
             new Date(),
-            "dd/MM/yyyy"
+            "dd/MM/yyyy",
           )}.
 
 The unique number for this application in the source Redcap instance is
@@ -346,11 +346,11 @@ ${roleTable.join("\n")}
           releasePassword: generateZipPassword(),
           datasetUris: e.literal(
             e.array(e.str),
-            Object.keys(resourceToDatasetMap)
+            Object.keys(resourceToDatasetMap),
           ),
           dataSharingConfiguration: e.insert(
             e.release.DataSharingConfiguration,
-            {}
+            {},
           ),
           // NOTE: this is slightly non-standard as the audit event here is not created as part of the
           // audit service - however this allows us to make it all a single db operation
@@ -364,7 +364,7 @@ ${roleTable.join("\n")}
               whoId: user.subjectId,
               occurredDateTime: e.datetime_current(),
               inProgress: false,
-            })
+            }),
           ),
         })
         .run(t);
@@ -375,7 +375,7 @@ ${roleTable.join("\n")}
         manager.role,
         newRelease.id,
         releaseKey,
-        this.auditEventService
+        this.auditEventService,
       );
 
       for (const r of otherResearchers) {
@@ -385,7 +385,7 @@ ${roleTable.join("\n")}
           r.role,
           newRelease.id,
           releaseKey,
-          this.auditEventService
+          this.auditEventService,
         );
       }
 
@@ -396,7 +396,7 @@ ${roleTable.join("\n")}
     await this.userService.registerRoleInRelease(
       user,
       releaseKey,
-      "Administrator"
+      "Administrator",
     );
 
     return releaseKey;

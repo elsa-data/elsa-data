@@ -18,7 +18,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
     label: string,
     textClass: string,
     borderClass: string,
-    hoverClass: string
+    hoverClass: string,
   ) => {
     const always =
       "block py-1 md:py-3 pl-1 align-middle no-underline border-b-2";
@@ -119,7 +119,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       "Releases",
                       "text-primary",
                       "border-primary",
-                      "hover:border-primary-focus"
+                      "hover:border-primary-focus",
                     )}
                   </li>
                   <li className="my-2 md:my-0">
@@ -128,7 +128,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       "Datasets",
                       "text-primary",
                       "border-primary",
-                      "hover:border-primary-focus"
+                      "hover:border-primary-focus",
                     )}
                   </li>
                   {user.isAllowedCreateRelease && (
@@ -138,7 +138,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                         "DAC",
                         "text-primary",
                         "border-primary",
-                        "hover:border-primary-focus"
+                        "hover:border-primary-focus",
                       )}
                     </li>
                   )}
@@ -148,7 +148,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       "Users",
                       "text-primary",
                       "border-primary",
-                      "hover:border-primary-focus"
+                      "hover:border-primary-focus",
                     )}
                   </li>
                   <li className="my-2 md:my-0">
@@ -157,7 +157,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       "Audit Events",
                       "text-primary",
                       "border-primary",
-                      "hover:border-primary-focus"
+                      "hover:border-primary-focus",
                     )}
                   </li>
                 </ul>
@@ -169,7 +169,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       "Login",
                       "text-primary",
                       "border-primary",
-                      "hover:border-primary-focus"
+                      "hover:border-primary-focus",
                     )}
                   </li>
                 </ul>

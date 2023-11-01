@@ -59,58 +59,56 @@ beforeEach(async () => {
   s3ClientMock.reset();
   awsEnabledServiceMock.reset();
 
-  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
-    testContainer
-  ));
+  ({ testReleaseKey, allowedAdministratorUser } =
+    await beforeEachCommon(testContainer));
 
   // assert a release state so that everything is included for the moment
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedS3Data",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
-    true
+    true,
   );
   await releaseService.setDataSharingConfigurationField(
     allowedAdministratorUser,
     testReleaseKey,
     "/dataSharingConfiguration/htsgetEnabled",
-    true
+    true,
   );
 });
 
 it("test basic operation of manifest helper", async () => {
   const masterManifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
-  const htsgetManifest = await transformMasterManifestToHtsgetManifest(
-    masterManifest
-  );
+  const htsgetManifest =
+    await transformMasterManifestToHtsgetManifest(masterManifest);
 
   expect(htsgetManifest.id).toBeDefined();
   expect(htsgetManifest.reads).toBeDefined();
@@ -150,12 +148,11 @@ it("test basic operation of manifest helper", async () => {
 it("test multiple blank identifiers converts to an array", async () => {
   const masterManifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
-  const htsgetManifest = await transformMasterManifestToHtsgetManifest(
-    masterManifest
-  );
+  const htsgetManifest =
+    await transformMasterManifestToHtsgetManifest(masterManifest);
 
   // make sure we actually catch the assertion code
   expect.assertions(3);
@@ -184,17 +181,16 @@ it("test read data needs to be specified to be included", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
-    false
+    false,
   );
 
   const masterManifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
-  const htsgetManifest = await transformMasterManifestToHtsgetManifest(
-    masterManifest
-  );
+  const htsgetManifest =
+    await transformMasterManifestToHtsgetManifest(masterManifest);
 
   expect(htsgetManifest.reads).toStrictEqual({});
 });
@@ -205,17 +201,16 @@ it("test variants data needs to be specified to be included", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
-    false
+    false,
   );
 
   const masterManifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
-  const htsgetManifest = await transformMasterManifestToHtsgetManifest(
-    masterManifest
-  );
+  const htsgetManifest =
+    await transformMasterManifestToHtsgetManifest(masterManifest);
   expect(htsgetManifest.variants).toStrictEqual({});
 });
 
@@ -225,7 +220,7 @@ it("test publish htsget manifest release not activated", async () => {
   };
 
   await expect(throwsHtsgetNotAllowed()).rejects.toThrow(
-    ManifestHtsgetNotAllowed
+    ManifestHtsgetNotAllowed,
   );
 });
 
@@ -234,11 +229,11 @@ it("test publish htsget manifest htsget not allowed", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "/dataSharingConfiguration/htsgetEnabled",
-    false
+    false,
   );
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   const throwsHtsgetNotAllowed = async () => {
@@ -246,7 +241,7 @@ it("test publish htsget manifest htsget not allowed", async () => {
   };
 
   await expect(throwsHtsgetNotAllowed()).rejects.toThrow(
-    ManifestHtsgetNotAllowed
+    ManifestHtsgetNotAllowed,
   );
 });
 
@@ -262,12 +257,12 @@ it("test publish htsget manifest htsget not enabled", async () => {
   });
 
   const manifestHtsgetServiceNoHtsget = testContainerNoHtsget.resolve(
-    S3ManifestHtsgetService
+    S3ManifestHtsgetService,
   );
 
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   const throwsHtsgetEndpointNotEnabled = async () => {
@@ -275,7 +270,7 @@ it("test publish htsget manifest htsget not enabled", async () => {
   };
 
   await expect(throwsHtsgetEndpointNotEnabled()).rejects.toThrow(
-    ManifestHtsgetEndpointNotEnabled
+    ManifestHtsgetEndpointNotEnabled,
   );
 });
 
@@ -289,13 +284,13 @@ it("test publish htsget cached", async () => {
 
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
     LastModified: addSeconds(
       new Date(),
-      -htsgetSettings.maxAgeInSeconds + 1000
+      -htsgetSettings.maxAgeInSeconds + 1000,
     ),
   });
 
@@ -318,13 +313,13 @@ it("test publish htsget not cached", async () => {
 
   await releaseActivationService.activateRelease(
     allowedAdministratorUser,
-    testReleaseKey
+    testReleaseKey,
   );
 
   s3ClientMock.on(HeadObjectCommand).resolves({
     LastModified: addSeconds(
       new Date(),
-      -htsgetSettings.maxAgeInSeconds - 1000
+      -htsgetSettings.maxAgeInSeconds - 1000,
     ),
   });
   s3ClientMock.on(PutObjectCommand).resolves({});

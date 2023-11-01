@@ -71,7 +71,7 @@ type ExternalIdentifiersType = {
   externalIdentifiers: { system: string; value: string }[] | null;
 };
 const sortFirstExternalId = (
-  arr: ExternalIdentifiersType[]
+  arr: ExternalIdentifiersType[],
 ): ExternalIdentifiersType[] => {
   return arr.sort((a, b) => {
     if (a.externalIdentifiers === null) {
@@ -103,7 +103,7 @@ describe("AWS s3 client", () => {
   it("Test getManifestKeyFromS3ObjectList", async () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
     const manifestObjectList = agService.getManifestUriFromS3ObjectList(
-      MOCK_1_CARDIAC_S3_OBJECT_LIST
+      MOCK_1_CARDIAC_S3_OBJECT_LIST,
     );
     expect(manifestObjectList).toEqual([
       `${MOCK_STORAGE_PREFIX_URL}/2019-11-21/manifest.txt`,
@@ -156,7 +156,7 @@ describe("AWS s3 client", () => {
     });
 
     const newMd5Checksum = getMd5FromChecksumsArray(
-      newFileRec?.checksums ?? []
+      newFileRec?.checksums ?? [],
     );
     expect(newMd5Checksum).toEqual("UPDATED_CHECKSUM");
   });
@@ -245,7 +245,7 @@ describe("AWS s3 client", () => {
 
     const artRec = agService.converts3ManifestTypeToArtifactTypeRecord(
       MOCK_1_S3URL_MANIFEST_OBJECT,
-      MOCK_1_CARDIAC_S3_OBJECT_LIST
+      MOCK_1_CARDIAC_S3_OBJECT_LIST,
     );
 
     expect(artRec[0].size).toBeGreaterThanOrEqual(0);
@@ -284,8 +284,8 @@ describe("AWS s3 client", () => {
           ...pedigreeIdList.map((p) =>
             e.insert(e.dataset.DatasetPatient, {
               externalIdentifiers: makeSystemlessIdentifierArray(p.patientId),
-            })
-          )
+            }),
+          ),
         ),
       }),
     });
@@ -298,7 +298,7 @@ describe("AWS s3 client", () => {
 
     const pedigreeRQuery = e.select(
       e.pedigree.PedigreeRelationship,
-      () => ({})
+      () => ({}),
     );
     const pedigreeRelationshipArray = await pedigreeRQuery.run(edgedbClient);
     expect(pedigreeRelationshipArray.length).toEqual(2);
@@ -321,7 +321,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories"
+      "australian-genomics-directories",
     );
 
     // FILE schema expected values
@@ -363,7 +363,7 @@ describe("AWS s3 client", () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
-      MOCK_2_BAI_FILE_RECORD
+      MOCK_2_BAI_FILE_RECORD,
     );
     const preExistingData = e.insert(e.dataset.DatasetPatient, {
       externalIdentifiers: makeSystemlessIdentifierArray(MOCK_2_STUDY_ID),
@@ -371,7 +371,7 @@ describe("AWS s3 client", () => {
         e.insert(e.dataset.DatasetSpecimen, {
           externalIdentifiers: makeEmptyIdentifierArray(),
           artifacts: e.set(bamInsertArtifact),
-        })
+        }),
       ),
     });
     const linkDatapatientQuery = e.update(
@@ -383,7 +383,7 @@ describe("AWS s3 client", () => {
           },
         },
         filter: e.op(datasetCase.dataset.uri, "ilike", MOCK_DATASET_URI),
-      })
+      }),
     );
     await linkDatapatientQuery.run(edgedbClient);
 
@@ -397,7 +397,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories"
+      "australian-genomics-directories",
     );
 
     // FILE schema expected values
@@ -433,7 +433,7 @@ describe("AWS s3 client", () => {
     // Current DB already exist with outdated data
     const bamInsertArtifact = insertArtifactBamQuery(
       MOCK_2_BAM_FILE_RECORD,
-      MOCK_2_BAI_FILE_RECORD
+      MOCK_2_BAI_FILE_RECORD,
     );
 
     const preExistingData = e.insert(e.dataset.DatasetPatient, {
@@ -442,7 +442,7 @@ describe("AWS s3 client", () => {
         e.insert(e.dataset.DatasetSpecimen, {
           externalIdentifiers: makeEmptyIdentifierArray(),
           artifacts: e.set(bamInsertArtifact),
-        })
+        }),
       ),
     });
     const linkDatasetUriQuery = e.update(e.dataset.Dataset, (d) => ({
@@ -468,7 +468,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories"
+      "australian-genomics-directories",
     );
 
     const expectedFileMarked = [
@@ -504,7 +504,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories"
+      "australian-genomics-directories",
     );
 
     // FILE schema expected values
@@ -532,7 +532,7 @@ describe("AWS s3 client", () => {
         { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_1 }] },
         { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_3 }] },
         { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
-      ])
+      ]),
     );
   });
 

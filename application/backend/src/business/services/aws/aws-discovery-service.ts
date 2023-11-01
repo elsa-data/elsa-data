@@ -49,10 +49,10 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
     @inject("ServiceDiscoveryClient")
     private readonly serviceDiscoveryClient: ServiceDiscoveryClient,
     @inject("SecretsManagerClient")
-    private readonly secretsManagerClient: SecretsManagerClient
+    private readonly secretsManagerClient: SecretsManagerClient,
   ) {
     logger.debug(
-      "Created AwsDiscoveryService instance - expecting this to only happen once"
+      "Created AwsDiscoveryService instance - expecting this to only happen once",
     );
   }
 
@@ -189,7 +189,7 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
         const secretResult = await this.secretsManagerClient.send(
           new GetSecretValueCommand({
             SecretId: v2,
-          })
+          }),
         );
 
         if (secretResult.SecretString) v2 = secretResult.SecretString;
@@ -205,7 +205,7 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
     } catch (e) {
       this.logger.error(
         e,
-        `Performing CloudMap discovery in ${cl.serviceName}`
+        `Performing CloudMap discovery in ${cl.serviceName}`,
       );
     }
 

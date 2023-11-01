@@ -36,7 +36,7 @@ import { Logger } from "pino";
 export async function bootstrapDependencyInjectionAwsClients(
   dc: DependencyContainer,
   logger: Logger,
-  mockAws: boolean
+  mockAws: boolean,
 ) {
   if (mockAws) {
     const s3MockClient = mockClient(S3Client);
@@ -49,7 +49,7 @@ export async function bootstrapDependencyInjectionAwsClients(
       s3MockClient,
       SMARTIE_FAKE_BUCKET,
       SMARTIE_FAKE_KEY,
-      join(__dirname, "..", "datasets", "Smartie")
+      join(__dirname, "..", "datasets", "Smartie"),
     );
 
     const tengPhases = await australianGenomicsDirectoryStructureFor10G();
@@ -60,7 +60,7 @@ export async function bootstrapDependencyInjectionAwsClients(
       s3MockClient,
       "agha-gdr-demo-store",
       "10G",
-      tengPhases[1]
+      tengPhases[1],
     );
 
     // our access point work requires us to save the CloudFormation template into our temp bucket..
@@ -69,7 +69,7 @@ export async function bootstrapDependencyInjectionAwsClients(
 
     const cloudFormationClient = createMockCloudFormation(
       dc.resolve("Database"),
-      logger
+      logger,
     );
     const cloudTrailClient = createMockCloudTrail();
     const secretsManagerClient = createMockSecretsManager();

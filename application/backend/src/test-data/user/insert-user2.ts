@@ -12,7 +12,7 @@ export const TEST_SUBJECT_2_DISPLAY = "Test User 2";
  * Will create a user that is allowed to create release
  */
 export async function insertUser2(
-  dc: DependencyContainer
+  dc: DependencyContainer,
 ): Promise<UserObject> {
   const { edgeDbClient } = getServices(dc);
 

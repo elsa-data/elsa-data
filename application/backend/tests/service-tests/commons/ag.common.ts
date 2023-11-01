@@ -19,7 +19,7 @@ function createS3ObjectList(key = "S3_KEY", etag = "AWS_ETAG", size = 1) {
 function createManifestObject(
   filename = "FILE_L001_R1.fastq.gz",
   agha_study_id = "A0000001",
-  checksum = "RANDOMCHECKSUM"
+  checksum = "RANDOMCHECKSUM",
 ) {
   return {
     checksum: checksum,
@@ -32,7 +32,7 @@ function createS3UrlManifestObject(
   s3Url = `${S3_URL_PREFIX}/FILE_L001_R1.fastq.gz`,
   agha_study_id = "A0000001",
   agha_study_id_array = ["A0000001"],
-  checksum = "RANDOMCHECKSUM"
+  checksum = "RANDOMCHECKSUM",
 ) {
   return {
     checksum: checksum,
@@ -70,13 +70,13 @@ export const MOCK_1_CARDIAC_MANIFEST_FILENAME = "manifest.txt";
 export const MOCK_1_STUDY_ID = "A0000001";
 export const MOCK_1_CARDIAC_S3_OBJECT_LIST = [
   createS3ObjectList(
-    `${MOCK_1_CARDIAC_KEY_PREFIX}${MOCK_1_CARDIAC_FASTQ1_FILENAME}`
+    `${MOCK_1_CARDIAC_KEY_PREFIX}${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
   ),
   createS3ObjectList(
-    `${MOCK_1_CARDIAC_KEY_PREFIX}${MOCK_1_CARDIAC_FASTQ2_FILENAME}`
+    `${MOCK_1_CARDIAC_KEY_PREFIX}${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
   ),
   createS3ObjectList(
-    `${MOCK_1_CARDIAC_KEY_PREFIX}${MOCK_1_CARDIAC_MANIFEST_FILENAME}`
+    `${MOCK_1_CARDIAC_KEY_PREFIX}${MOCK_1_CARDIAC_MANIFEST_FILENAME}`,
   ),
 ];
 
@@ -92,10 +92,10 @@ export const MOCK_1_MANIFEST_OBJECT = [
 
 export const MOCK_1_S3URL_MANIFEST_OBJECT = [
   createS3UrlManifestObject(
-    `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`
+    `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ1_FILENAME}`,
   ),
   createS3UrlManifestObject(
-    `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`
+    `${S3_URL_PREFIX}/${MOCK_1_CARDIAC_FASTQ2_FILENAME}`,
   ),
 ];
 
@@ -107,13 +107,13 @@ export const MOCK_2_CARDIAC_MANIFEST_FILENAME = "manifest.txt";
 export const MOCK_2_STUDY_ID = "A0000002";
 export const MOCK_2_CARDIAC_S3_OBJECT_LIST = [
   createS3ObjectList(
-    `${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAM_FILENAME}`
+    `${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAM_FILENAME}`,
   ),
   createS3ObjectList(
-    `${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAI_FILENAME}`
+    `${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_BAI_FILENAME}`,
   ),
   createS3ObjectList(
-    `${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_MANIFEST_FILENAME}`
+    `${MOCK_2_CARDIAC_KEY_PREFIX}${MOCK_2_CARDIAC_MANIFEST_FILENAME}`,
   ),
 ];
 
@@ -149,7 +149,7 @@ export const MOCK_3_CARDIAC_MANIFEST_FILENAME = "manifest.txt";
 export const MOCK_3_STUDY_ID = "A0000003";
 export const MOCK_3_CARDIAC_S3_OBJECT_LIST = [
   createS3ObjectList(
-    `${MOCK_3_CARDIAC_KEY_PREFIX}${MOCK_3_CARDIAC_MANIFEST_FILENAME}`
+    `${MOCK_3_CARDIAC_KEY_PREFIX}${MOCK_3_CARDIAC_MANIFEST_FILENAME}`,
   ),
 ];
 
@@ -166,13 +166,13 @@ export const MOCK_4_STUDY_ID_2 = "A0000002";
 export const MOCK_4_STUDY_ID_3 = "A0000003";
 export const MOCK_4_CARDIAC_S3_OBJECT_LIST = [
   createS3ObjectList(
-    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_FILENAME}`
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_FILENAME}`,
   ),
   createS3ObjectList(
-    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_TBI_FILENAME}`
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_VCF_TBI_FILENAME}`,
   ),
   createS3ObjectList(
-    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_MANIFEST_FILENAME}`
+    `${MOCK_4_CARDIAC_KEY_PREFIX}${MOCK_4_CARDIAC_MANIFEST_FILENAME}`,
   ),
 ];
 export const MOCK_4_CARDIAC_MANIFEST =

@@ -4,7 +4,7 @@ it("basic parsing of meta syntax results in an array of tokens", async () => {
   // note that this wouldn't be an actually valid meta config as the number/types of params is wrong
   // but we are just testing the parser tokenisation
   const toks = parseMeta(
-    " aws-secret('ElsaDev') file('dev' 'abc')  file('prod'  , 5)"
+    " aws-secret('ElsaDev') file('dev' 'abc')  file('prod'  , 5)",
   );
 
   expect(toks).toHaveLength(3);

@@ -23,7 +23,7 @@ describe("TRPC authentication tests", () => {
       server,
       "/api/trpc",
       undefined,
-      csrfHeaderValue
+      csrfHeaderValue,
     );
 
     // this specific error message is due to TRPC client not understanding a "problem" JSON
@@ -54,7 +54,7 @@ describe("TRPC authentication tests", () => {
       server,
       "/api/trpc",
       authCookieValue,
-      undefined
+      undefined,
     );
 
     // this specific error message is due to TRPC client not understanding a "problem" JSON

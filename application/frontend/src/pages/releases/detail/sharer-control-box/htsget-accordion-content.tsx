@@ -28,14 +28,14 @@ export const HtsgetAccordionContent: React.FC<
 > = (props) => {
   const [congenitalHeartDefect, setCongenitalHeartDefect] = useState(
     props.releaseData.dataSharingHtsgetRestrictions.includes(
-      "CongenitalHeartDefect"
-    )
+      "CongenitalHeartDefect",
+    ),
   );
   const [autism, setAutism] = useState(
-    props.releaseData.dataSharingHtsgetRestrictions.includes("Autism")
+    props.releaseData.dataSharingHtsgetRestrictions.includes("Autism"),
   );
   const [achromatopsia, setAchromatopsia] = useState(
-    props.releaseData.dataSharingHtsgetRestrictions.includes("Achromatopsia")
+    props.releaseData.dataSharingHtsgetRestrictions.includes("Achromatopsia"),
   );
 
   const applyHtsgetRestriction =

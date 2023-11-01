@@ -50,7 +50,7 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
         dacData: parsed,
       });
     },
-    [detectQuery, dacId]
+    [detectQuery, dacId],
   );
 
   const cancelShowing = useCallback(() => setShowingRedcapDialog(false), []);

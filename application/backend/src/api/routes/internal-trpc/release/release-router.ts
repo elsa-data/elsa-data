@@ -26,7 +26,7 @@ const casesQuerySchema = inputReleaseKeySingle
   .merge(
     z.object({
       q: z.optional(z.string().trim()),
-    })
+    }),
   );
 
 const specimensMutateSchema = inputReleaseKeySingle.merge(
@@ -37,7 +37,7 @@ const specimensMutateSchema = inputReleaseKeySingle.merge(
       z.object({ externalIdentifierValues: z.array(z.string()) }),
       z.object({ selectAll: z.literal(true) }),
     ]),
-  })
+  }),
 );
 
 /**
@@ -53,7 +53,7 @@ export const releaseRouter = router({
       return await ctx.releaseService.getAll(
         user,
         pageSize,
-        calculateOffset(page, pageSize)
+        calculateOffset(page, pageSize),
       );
     }),
   getSpecificRelease: internalProcedure
@@ -75,7 +75,7 @@ export const releaseRouter = router({
         releaseKey,
         pageSize,
         calculateOffset(page, pageSize),
-        q
+        q,
       );
     }),
   updateReleaseSpecimens: internalProcedure
@@ -107,7 +107,7 @@ export const releaseRouter = router({
       return await ctx.releaseSelectionService.getNodeConsent(
         user,
         releaseKey,
-        nodeId
+        nodeId,
       );
     }),
   applyHtsgetRestriction: internalProcedure
@@ -119,7 +119,7 @@ export const releaseRouter = router({
       return await ctx.releaseService.applyHtsgetRestriction(
         user,
         releaseKey,
-        restriction
+        restriction,
       );
     }),
   removeHtsgetRestriction: internalProcedure
@@ -131,7 +131,7 @@ export const releaseRouter = router({
       return await ctx.releaseService.removeHtsgetRestriction(
         user,
         releaseKey,
-        restriction
+        restriction,
       );
     }),
 });

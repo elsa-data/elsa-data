@@ -34,7 +34,7 @@ const resolveDuoCode = function (duoCode: string): string {
 const resolveDiseaseCode = async function (
   terminologyFhirUrl: string,
   mondoSystem: string | undefined,
-  mondoCode: string | undefined
+  mondoCode: string | undefined,
 ): Promise<string | undefined> {
   if (mondoSystem === undefined) {
     return undefined;
@@ -77,7 +77,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
     const fetchConsent = async () => {
       const resolvedDuos = await Promise.all(
         duosCode.map(async function (
-          duo: DuoLimitationCodedType
+          duo: DuoLimitationCodedType,
         ): Promise<ResolvedDuo> {
           const duoCode: string = (duo as any)?.code;
 
@@ -89,7 +89,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
             await resolveDiseaseCode(
               terminologyFhirUrl,
               diseaseSystem,
-              diseaseCode
+              diseaseCode,
             );
 
           const modifiers: DuoModifierType[] = (duo as any)?.modifiers;
@@ -100,7 +100,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
             diseaseSystem: diseaseSystem,
             modifiers: modifiers,
           };
-        })
+        }),
       );
       setDuos(resolvedDuos);
     };

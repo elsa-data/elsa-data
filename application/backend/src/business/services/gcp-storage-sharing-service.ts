@@ -24,7 +24,7 @@ export class GcpStorageSharingService {
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
     @inject(GcpEnabledService)
-    private readonly gcpEnabledService: GcpEnabledService
+    private readonly gcpEnabledService: GcpEnabledService,
   ) {
     this.storage = new Storage();
 
@@ -62,7 +62,7 @@ export class GcpStorageSharingService {
     bucket: string,
     key: string,
     releaseKey: string,
-    principal: string
+    principal: string,
   ): () => Promise<void> {
     const go = async () => {
       await this.gcpEnabledService.enabledGuard();
@@ -86,7 +86,7 @@ export class GcpStorageSharingService {
     bucket: string,
     key: string,
     releaseKey: string,
-    principals: string[]
+    principals: string[],
   ): (() => Promise<void>)[] {
     return principals.map((principal) =>
       this.modifyObjectPrincipalFn(
@@ -94,8 +94,8 @@ export class GcpStorageSharingService {
         bucket,
         key,
         releaseKey,
-        principal
-      )
+        principal,
+      ),
     );
   }
 
@@ -103,7 +103,7 @@ export class GcpStorageSharingService {
     operation: "add" | "delete",
     allFiles: ManifestBucketKeyObjectType[],
     releaseKey: string,
-    principals: string[]
+    principals: string[],
   ): (() => Promise<void>)[] {
     return allFiles.flatMap((f) =>
       this.modifyObjectPrincipalsFns(
@@ -111,8 +111,8 @@ export class GcpStorageSharingService {
         f.objectStoreBucket,
         f.objectStoreKey,
         releaseKey,
-        principals
-      )
+        principals,
+      ),
     );
   }
 
@@ -132,12 +132,12 @@ export class GcpStorageSharingService {
     operation: "add" | "delete",
     user: AuthenticatedUser,
     releaseKey: string,
-    principals: string[]
+    principals: string[],
   ): Promise<number> {
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator") {
@@ -151,21 +151,21 @@ export class GcpStorageSharingService {
       "E",
       "Modified GCP object ACLs for release",
       now,
-      this.edgeDbClient
+      this.edgeDbClient,
     );
 
     const allFiles = await getAllFileRecords(
       this.edgeDbClient,
       this.userService,
       user,
-      releaseKey
+      releaseKey,
     );
 
     const shareFns = this.modifyObjectsPrincipalsFns(
       operation,
       allFiles,
       releaseKey,
-      principals
+      principals,
     );
 
     const numberOfFilesModified = principals.length === 0 ? 0 : allFiles.length;
@@ -181,7 +181,7 @@ export class GcpStorageSharingService {
         now,
         new Date(),
         { error: errorString },
-        this.edgeDbClient
+        this.edgeDbClient,
       );
 
       throw e;
@@ -193,7 +193,7 @@ export class GcpStorageSharingService {
       now,
       new Date(),
       { numUrls: numberOfFilesModified },
-      this.edgeDbClient
+      this.edgeDbClient,
     );
 
     return numberOfFilesModified;
@@ -202,7 +202,7 @@ export class GcpStorageSharingService {
   async addUsers(
     user: AuthenticatedUser,
     releaseKey: string,
-    principals: string[]
+    principals: string[],
   ): Promise<number> {
     await this.gcpEnabledService.enabledGuard();
 
@@ -212,7 +212,7 @@ export class GcpStorageSharingService {
   async deleteUsers(
     user: AuthenticatedUser,
     releaseKey: string,
-    principals: string[]
+    principals: string[],
   ): Promise<number> {
     await this.gcpEnabledService.enabledGuard();
 

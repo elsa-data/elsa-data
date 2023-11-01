@@ -19,7 +19,7 @@ import { ReleaseService } from "../../../business/services/releases/release-serv
  */
 export const releaseRoutes = async (
   fastify: FastifyInstance,
-  _opts: { container: DependencyContainer }
+  _opts: { container: DependencyContainer },
 ) => {
   const releaseService = _opts.container.resolve(ReleaseService);
 
@@ -48,7 +48,7 @@ export const releaseRoutes = async (
         // so we would need transactions to achieve this
         // until we hit a need for it - we just disallow
         throw new Error(
-          "Due to our services not having transaction support we don't allow multiple operations in one PATCH"
+          "Due to our services not having transaction support we don't allow multiple operations in one PATCH",
         );
 
       // as above - this is not really a for loop - this just deals with 1 PATCH operation - as all cases "return"
@@ -62,8 +62,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
-                    op.value.code
-                  )
+                    op.value.code,
+                  ),
                 );
                 return;
               case "/applicationCoded/countries":
@@ -72,13 +72,13 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
-                    op.value.code
-                  )
+                    op.value.code,
+                  ),
                 );
                 return;
               default:
                 throw new Error(
-                  `Unknown "add" operation path ${(op as any).path}`
+                  `Unknown "add" operation path ${(op as any).path}`,
                 );
             }
 
@@ -90,8 +90,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
-                    op.value.code
-                  )
+                    op.value.code,
+                  ),
                 );
                 return;
               case "/applicationCoded/countries":
@@ -100,13 +100,13 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     op.value.system,
-                    op.value.code
-                  )
+                    op.value.code,
+                  ),
                 );
                 return;
               default:
                 throw new Error(
-                  `Unknown "remove" operation path ${(op as any).path}`
+                  `Unknown "remove" operation path ${(op as any).path}`,
                 );
             }
 
@@ -117,8 +117,8 @@ export const releaseRoutes = async (
                   await releaseService.setTypeOfApplicationCoded(
                     authenticatedUser,
                     releaseKey,
-                    op.value as any
-                  )
+                    op.value as any,
+                  ),
                 );
                 return;
               case "/applicationCoded/beacon":
@@ -126,8 +126,8 @@ export const releaseRoutes = async (
                   await releaseService.setBeaconQuery(
                     authenticatedUser,
                     releaseKey,
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/allowedRead":
@@ -136,8 +136,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     "isAllowedReadData",
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/allowedVariant":
@@ -146,8 +146,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     "isAllowedVariantData",
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/allowedPhenotype":
@@ -156,8 +156,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     "isAllowedPhenotypeData",
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/allowedS3":
@@ -166,8 +166,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     "isAllowedS3Data",
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/allowedGS":
@@ -176,8 +176,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     "isAllowedGSData",
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/allowedR2":
@@ -186,8 +186,8 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     "isAllowedR2Data",
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               case "/dataSharingConfiguration/objectSigningEnabled":
@@ -204,20 +204,20 @@ export const releaseRoutes = async (
                     authenticatedUser,
                     releaseKey,
                     op.path,
-                    op.value
-                  )
+                    op.value,
+                  ),
                 );
                 return;
               default:
                 throw new Error(
-                  `Unknown "replace" operation path ${(op as any).path}`
+                  `Unknown "replace" operation path ${(op as any).path}`,
                 );
             }
           default:
             throw new Error(`Unknown operation op ${(op as any).op}`);
         }
       }
-    }
+    },
   );
 
   // POST for create new release via "Manual" DAC
@@ -234,7 +234,7 @@ export const releaseRoutes = async (
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
       reply.send(await releaseService.new(authenticatedUser, request.body));
-    }
+    },
   );
 
   /* TEMPORARILY DISABLED - NEED TO RE-ENABLE FOR A PRODUCTION GCS BUILD - BUT ALSO PROBABLY NEEDS TO BE MOVED TO BACKGROUND JOB

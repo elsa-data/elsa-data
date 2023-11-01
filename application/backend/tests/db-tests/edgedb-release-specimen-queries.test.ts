@@ -115,7 +115,7 @@ describe("edgedb release specimen query tests", () => {
 
     expect(specimensResult.specimens).toHaveLength(1);
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId),
     ).toBeTruthy();
   });
 
@@ -130,7 +130,7 @@ describe("edgedb release specimen query tests", () => {
 
     expect(specimensResult.specimens).toHaveLength(1);
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId),
     ).toBeTruthy();
   });
 
@@ -149,13 +149,13 @@ describe("edgedb release specimen query tests", () => {
     expect(specimensResult.crossLinkedPatientCount).toBe(0);
     expect(specimensResult.crossLinkedCaseCount).toBe(0);
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId),
     ).toBeTruthy();
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(homerSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(homerSpecimenDbId),
     ).toBeTruthy();
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(margeSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(margeSpecimenDbId),
     ).toBeTruthy();
   });
 
@@ -174,7 +174,7 @@ describe("edgedb release specimen query tests", () => {
     expect(specimensResult.crossLinkedPatientCount).toBe(0);
     expect(specimensResult.crossLinkedCaseCount).toBe(0);
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId),
     ).toBeTruthy();
   });
 
@@ -193,7 +193,7 @@ describe("edgedb release specimen query tests", () => {
     expect(specimensResult.crossLinkedPatientCount).toBe(0);
     expect(specimensResult.crossLinkedCaseCount).toBe(0);
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId),
     ).toBeTruthy();
   });
 
@@ -212,13 +212,13 @@ describe("edgedb release specimen query tests", () => {
     expect(specimensResult.crossLinkedPatientCount).toBe(0);
     expect(specimensResult.crossLinkedCaseCount).toBe(0);
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(bartSpecimenDbId),
     ).toBeTruthy();
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(homerSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(homerSpecimenDbId),
     ).toBeTruthy();
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(margeSpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(margeSpecimenDbId),
     ).toBeTruthy();
   });
 
@@ -327,7 +327,7 @@ describe("edgedb release specimen query tests", () => {
     expect(specimensResult.crossLinkedCaseCount).toBe(1);
 
     expect(
-      specimensResult.specimens.map((a) => a.id).includes(elroySpecimenDbId)
+      specimensResult.specimens.map((a) => a.id).includes(elroySpecimenDbId),
     ).toBeTruthy();
   });
 });

@@ -19,7 +19,7 @@ export function makeDictionaryIdentifierArray(dict: {
       }
     } else
       throw new Error(
-        "Tried to construct an identifier array where one of the dictionary values was neither a string not an array of strings"
+        "Tried to construct an identifier array where one of the dictionary values was neither a string not an array of strings",
       );
   }
 
@@ -75,7 +75,7 @@ export function makeDoubleCodeArray(
   system1: string,
   code1: string,
   system2: string,
-  code2: string
+  code2: string,
 ) {
   return e.array([
     e.tuple({ system: system1, code: code1 }),
@@ -89,7 +89,7 @@ export function makeTripleCodeArray(
   system2: string,
   code2: string,
   system3: string,
-  code3: string
+  code3: string,
 ) {
   return e.array([
     e.tuple({ system: system1, code: code1 }),
@@ -118,7 +118,7 @@ export async function createTestUser(
   releasesAsManager: string[],
   releasesAsMember: string[],
   isReleaseAdmin: boolean = false,
-  giveAdminAllowed: boolean = false
+  giveAdminAllowed: boolean = false,
 ) {
   const isAllowedPermission = giveAdminAllowed;
 
@@ -152,7 +152,7 @@ export async function createTestUser(
   // a helper to update the role this users has with a release
   const insertRole = async (
     releaseUuid: string,
-    role: "Administrator" | "Manager" | "Member"
+    role: "Administrator" | "Manager" | "Member",
   ) => {
     await e
       .update(e.permission.User, (user) => ({
@@ -206,7 +206,7 @@ export function findCase(id: string) {
       filter: e.op(
         id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers).value)
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
       ),
     }))
     .assert_single();
@@ -218,7 +218,7 @@ export function findPatient(id: string) {
       filter: e.op(
         id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers).value)
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
       ),
     }))
     .assert_single();
@@ -230,7 +230,7 @@ export function findSpecimenQuery(id: string) {
       filter: e.op(
         id,
         "in",
-        e.set(e.array_unpack(dp.externalIdentifiers).value)
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
       ),
     }))
     .assert_single();
@@ -252,7 +252,7 @@ export function createFile(
   etag?: string,
   md5?: string,
   sha1?: string,
-  sha256?: string
+  sha256?: string,
 ): File {
   const f: File = {
     url: name,
@@ -325,7 +325,7 @@ export async function createArtifacts(
   bamIndex?: File,
   vcf?: File,
   vcfIndex?: File,
-  vcfSampleIds?: string[]
+  vcfSampleIds?: string[],
 ) {
   const fastqPair = fastqs.map((fq) =>
     e.insert(e.lab.ArtifactFastqPair, {
@@ -339,7 +339,7 @@ export async function createArtifacts(
         size: fq[1].size,
         checksums: fq[1].checksums,
       }),
-    })
+    }),
   );
 
   // we insert all the fastq pairs as if they are owned by a pseudo-run
@@ -379,7 +379,7 @@ export async function createArtifacts(
             on: file.url,
             else: file,
           })),
-      })
+      }),
     );
   }
 
@@ -396,7 +396,7 @@ export async function createArtifacts(
           size: bamIndex.size,
           checksums: bamIndex.checksums,
         }),
-      })
+      }),
     );
   }
 

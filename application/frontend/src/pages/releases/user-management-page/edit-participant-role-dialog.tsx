@@ -32,7 +32,7 @@ export const EditParticipantRoleDialog: React.FC<
 
   // New Role data
   const [newRole, setNewRole] = useState<ReleaseParticipantRoleType | null>(
-    role as ReleaseParticipantRoleType
+    role as ReleaseParticipantRoleType,
   );
 
   // Mutating the participant role
@@ -42,7 +42,7 @@ export const EditParticipantRoleDialog: React.FC<
         utils.releaseParticipant.getParticipants.invalidate();
         setIsDialogOpen(false);
       },
-    }
+    },
   );
 
   // Parsing for easy access
@@ -117,7 +117,7 @@ export const EditParticipantRoleDialog: React.FC<
                       className="select-bordered select select-sm w-full"
                       onChange={(e) => {
                         setNewRole(
-                          e.target.value as ReleaseParticipantRoleType
+                          e.target.value as ReleaseParticipantRoleType,
                         );
                       }}
                       value={newRole ?? undefined}

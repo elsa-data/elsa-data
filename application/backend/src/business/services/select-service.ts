@@ -12,7 +12,7 @@ import { dataset, release } from "../../../dbschema/interfaces";
 @injectable()
 export class SelectService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client
+    @inject("Database") private readonly edgeDbClient: edgedb.Client,
   ) {}
 
   /**
@@ -32,7 +32,7 @@ export class SelectService {
     vcfIndex: string | undefined,
     caseContext: dataset.DatasetCase,
     patientContext: dataset.DatasetPatient,
-    specimenContext: dataset.DatasetSpecimen
+    specimenContext: dataset.DatasetSpecimen,
   ): Promise<boolean> {
     let beaconGenotypeAllowed = true;
     let beaconFilterAllowed = true;
@@ -47,7 +47,7 @@ export class SelectService {
           filters,
           caseContext,
           patientContext,
-          specimenContext
+          specimenContext,
         );
       }
 
@@ -81,12 +81,12 @@ export class SelectService {
               FunctionName: "elsa-data-beacon",
               Payload: Buffer.from(JSON.stringify(genotypeQuery), "utf8"),
               InvocationType: InvocationType.RequestResponse,
-            })
+            }),
           );
 
           if (beaconResult.StatusCode === 200 && beaconResult.Payload) {
             const beaconResultParsed = JSON.parse(
-              Buffer.from(beaconResult.Payload).toString()
+              Buffer.from(beaconResult.Payload).toString(),
             );
             beaconGenotypeAllowed = !!beaconResultParsed.found;
           } else {
@@ -117,7 +117,7 @@ export class SelectService {
     filters: any[],
     caseContext: dataset.DatasetCase,
     patientContext: dataset.DatasetPatient,
-    specimenContext: dataset.DatasetSpecimen
+    specimenContext: dataset.DatasetSpecimen,
   ): boolean {
     for (const filter of filters) {
       // the only filter we currently implement is basic sex

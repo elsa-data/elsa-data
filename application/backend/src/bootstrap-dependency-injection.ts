@@ -18,7 +18,7 @@ import { Logger } from "pino";
  */
 export async function bootstrapDependencyInjection(
   logger: Logger,
-  mockAws: boolean = false
+  mockAws: boolean = false,
 ) {
   // this should be the ONLY point where we use the global tsyringe container -
   // all subsequent dcs should be passed into us - never using the global "container"
@@ -36,7 +36,7 @@ export async function bootstrapDependencyInjection(
         // we do some bioinformatics activities within a transaction context (looking up variants)
         // and the default 10 seconds sometimes is a bit short
         session_idle_transaction_timeout: edgedb.Duration.from({ seconds: 60 }),
-      })
+      }),
     ),
   });
 

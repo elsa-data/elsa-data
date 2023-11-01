@@ -41,12 +41,12 @@ export const LoggedInUserConfigRelayProvider: React.FC<{
 
   const datasetsQuery = trpc.datasetRouter.getConfiguredDatasets.useQuery(
     undefined,
-    qSettings
+    qSettings,
   );
 
   const sharersQuery = trpc.sharer.getConfiguredSharers.useQuery(
     undefined,
-    qSettings
+    qSettings,
   );
 
   const dacQuery = trpc.dac.getConfiguredDacs.useQuery(undefined, qSettings);

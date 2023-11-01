@@ -11,7 +11,7 @@ export const ADD_SCENARIO_COMMAND = "add-scenario";
  */
 export async function commandAddScenario(
   dc: DependencyContainer,
-  scenario: number
+  scenario: number,
 ): Promise<number> {
   // TODO make multiple scenarios
 

@@ -17,7 +17,7 @@ export const apiExternalRoutes = async (
   fastify: FastifyInstance,
   opts: {
     container: DependencyContainer;
-  }
+  },
 ) => {
   const userService = opts.container.resolve(UserService);
 

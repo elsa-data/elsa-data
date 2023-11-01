@@ -35,7 +35,7 @@ export function DataEgressDetailedTable({
       onSuccess: (res) => {
         setCurrentTotal(res.total);
       },
-    }
+    },
   );
 
   const data = dataEgressQuery.data?.data;

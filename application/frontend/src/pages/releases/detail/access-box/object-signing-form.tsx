@@ -27,7 +27,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
     },
     {
       enabled: isViewPassword,
-    }
+    },
   );
 
   const [isPassInClipboard, setIsPassInClipboard] = useState<boolean>(false);
@@ -77,7 +77,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
                 className="btn-table-action-navigate"
                 onClick={async () => {
                   await navigator.clipboard.writeText(
-                    getFilePasswordQuery.data!
+                    getFilePasswordQuery.data!,
                   );
                   setIsPassInClipboard(true);
                   setTimeout(() => {

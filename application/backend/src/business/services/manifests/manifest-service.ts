@@ -37,7 +37,7 @@ export class ManifestService {
     @inject(PermissionService)
     private readonly permissionService: PermissionService,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService
+    private readonly auditLogService: AuditEventService,
   ) {}
 
   /**
@@ -49,7 +49,7 @@ export class ManifestService {
    * @param releaseKey
    */
   public async getActiveManifest(
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ManifestMasterType | null> {
     const releaseWithManifest = await e
       .select(e.release.Release, (r) => ({
@@ -95,7 +95,7 @@ export class ManifestService {
    */
   public async createMasterManifest(
     executor: Executor,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ManifestMasterType> {
     const manifest = await releaseGetSpecimenTreeAndFileArtifacts(executor, {
       releaseKey: releaseKey,
@@ -114,12 +114,12 @@ export class ManifestService {
    */
   public async computeReleaseSize(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ReleaseSizeType> {
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (!(userRole === "Administrator" || userRole === "AdminView")) {
@@ -130,14 +130,14 @@ export class ManifestService {
       this.edgeDbClient,
       {
         releaseKey: releaseKey,
-      }
+      },
     );
 
     // we want to create the manifest just for stats purposes so we switch off exceptions (exceptions caused
     // by there being no data for instance)
     const masterManifest = await transformDbManifestToMasterManifest(
       manifest,
-      false
+      false,
     );
 
     const numBytes = masterManifest.specimenList.reduce(
@@ -155,9 +155,9 @@ export class ManifestService {
             (cur_?.craiFile?.size ?? 0) +
             (cur_?.vcfFile?.size ?? 0) +
             (cur_?.tbiFile?.size ?? 0),
-          0
+          0,
         ),
-      0
+      0,
     );
 
     const numObjects = masterManifest.specimenList.reduce(
@@ -175,9 +175,9 @@ export class ManifestService {
             (cur_?.craiFile?.size ? 1 : 0) +
             (cur_?.vcfFile?.size ? 1 : 0) +
             (cur_?.tbiFile?.size ? 1 : 0),
-          0
+          0,
         ),
-      0
+      0,
     );
 
     return { numBytes, numObjects };
@@ -186,7 +186,7 @@ export class ManifestService {
   private async getActiveTsvManifest(
     presignedUrlService: PresignedUrlService,
     releaseKey: string,
-    auditId: string
+    auditId: string,
   ): Promise<ManifestTsvBodyType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
     // TODO fix exceptions here
@@ -196,7 +196,7 @@ export class ManifestService {
       masterManifest,
       presignedUrlService,
       releaseKey,
-      auditId
+      auditId,
     );
   }
 
@@ -204,12 +204,12 @@ export class ManifestService {
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey)[number][]
+    header: (typeof ObjectStoreRecordKey)[number][],
   ): Promise<string | null> {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (!this.permissionService.canAccessData(userRole))
@@ -221,7 +221,7 @@ export class ManifestService {
       const manifest = await this.getActiveTsvManifest(
         presignedUrlService,
         releaseKey,
-        auditId
+        auditId,
       );
       if (!manifest) return null;
 
@@ -250,7 +250,7 @@ export class ManifestService {
       "E",
       "Created TSV",
       now,
-      this.edgeDbClient
+      this.edgeDbClient,
     );
 
     try {
@@ -261,7 +261,7 @@ export class ManifestService {
         now,
         new Date(),
         { header },
-        this.edgeDbClient
+        this.edgeDbClient,
       );
       return tsv;
     } catch (e) {
@@ -276,7 +276,7 @@ export class ManifestService {
           error: errorString,
           header,
         },
-        this.edgeDbClient
+        this.edgeDbClient,
       );
 
       throw e;
@@ -287,13 +287,13 @@ export class ManifestService {
     presignedUrlService: PresignedUrlService,
     user: AuthenticatedUser,
     releaseKey: string,
-    header: (typeof ObjectStoreRecordKey)[number][]
+    header: (typeof ObjectStoreRecordKey)[number][],
   ): Promise<archiver.Archiver | null> {
     const buf = await this.getActiveTsvManifestAsString(
       presignedUrlService,
       user,
       releaseKey,
-      header
+      header,
     );
     if (buf === null) {
       return buf;
@@ -325,7 +325,7 @@ export class ManifestService {
    */
   public async getActiveBucketKeyManifest(
     releaseKey: string,
-    filterByProtocol: (KnownObjectProtocolType | "*")[] = ["*"]
+    filterByProtocol: (KnownObjectProtocolType | "*")[] = ["*"],
   ): Promise<ManifestBucketKeyType | null> {
     const masterManifest = await this.getActiveManifest(releaseKey);
 
@@ -334,7 +334,7 @@ export class ManifestService {
 
     return transformMasterManifestToBucketKeyManifest(
       masterManifest,
-      filterByProtocol
+      filterByProtocol,
     );
   }
 }

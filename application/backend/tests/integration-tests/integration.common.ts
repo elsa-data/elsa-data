@@ -97,11 +97,11 @@ export async function createLoggedInServerWithRelease(role: string) {
         findSpecimenQuery("HG03433"),
         findSpecimenQuery(BART_SPECIMEN),
         findSpecimenQuery(HOMER_SPECIMEN),
-        findSpecimenQuery(JUDY_SPECIMEN)
+        findSpecimenQuery(JUDY_SPECIMEN),
       ),
       dataSharingConfiguration: e.insert(
         e.release.DataSharingConfiguration,
-        {}
+        {},
       ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
@@ -112,7 +112,7 @@ export async function createLoggedInServerWithRelease(role: string) {
           whoId: "a",
           occurredDateTime: e.datetime_current(),
           inProgress: false,
-        })
+        }),
       ),
     })
     .run(edgeDbClient);
@@ -143,12 +143,12 @@ export async function createLoggedInServerWithRelease(role: string) {
   // our clients under test to use as they see fit
   authCookieValue = (
     loginResponse.cookies.filter(
-      (a: any) => a.name === authCookieName
+      (a: any) => a.name === authCookieName,
     )[0] as any
   ).value;
   csrfCookieValue = (
     loginResponse.cookies.filter(
-      (a: any) => a.name === csrfCookieName
+      (a: any) => a.name === csrfCookieName,
     )[0] as any
   ).value;
 
@@ -179,11 +179,11 @@ export async function createTrpcClient(
   server: FastifyInstance,
   apiPath: string,
   authCookieValue: string | undefined,
-  csrfHeaderValue: string | undefined
+  csrfHeaderValue: string | undefined,
 ) {
   const lightMyRequestFetch = async (
     input: RequestInfo | URL | string,
-    init?: RequestInit | RequestInitEsque
+    init?: RequestInit | RequestInitEsque,
   ): Promise<ResponseEsque> => {
     const url = input as string;
     const opts = {
@@ -222,7 +222,7 @@ export async function createTrpcClient(
       url: url,
       clone: (): ResponseEsque => {
         throw Error(
-          "clone not implemented as part of LightMyRequest/fetch bridge"
+          "clone not implemented as part of LightMyRequest/fetch bridge",
         );
       },
       json: injectResult.json,

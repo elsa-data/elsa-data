@@ -42,7 +42,7 @@ it("basic add/remove of diseases from coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "AA",
-      "BB"
+      "BB",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
@@ -63,14 +63,14 @@ it("basic add/remove of diseases from coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "AA",
-      "CC"
+      "CC",
     );
 
     await releaseService.removeDiseaseFromApplicationCoded(
       allowedAdministratorUser,
       testReleaseKey,
       "mondo",
-      "ABCD"
+      "ABCD",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
@@ -101,7 +101,7 @@ it("basic add/remove of countries from coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "AA",
-      "BB"
+      "BB",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
@@ -122,14 +122,14 @@ it("basic add/remove of countries from coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "AA",
-      "CC"
+      "CC",
     );
 
     await releaseService.removeCountryFromApplicationCoded(
       allowedAdministratorUser,
       testReleaseKey,
       "iso",
-      "AU"
+      "AU",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
@@ -152,7 +152,7 @@ it("set like behaviour of disease/country in coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "iso",
-      "AU"
+      "AU",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
@@ -169,7 +169,7 @@ it("set like behaviour of disease/country in coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "mondo",
-      "ABCD"
+      "ABCD",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);
@@ -187,7 +187,7 @@ it("set like behaviour of disease/country in coded application", async () => {
       allowedAdministratorUser,
       testReleaseKey,
       "mondoNOT",
-      "ABCD"
+      "ABCD",
     );
 
     const r = await findDatabaseRelease(edgeDbClient, testReleaseKey);

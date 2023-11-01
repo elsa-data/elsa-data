@@ -40,7 +40,7 @@ export const DatasetTable: React.FC = ({}) => {
       onSuccess: (res) => {
         setCurrentTotal(res.total);
       },
-    }
+    },
   );
 
   if (datasetQuery.isLoading) return <IsLoadingDiv />;
@@ -65,7 +65,7 @@ export const DatasetTable: React.FC = ({}) => {
             {["", "Description / URI", "Count", "Last Modified"].map(
               (props, idx) => (
                 <th key={idx}>{props}</th>
-              )
+              ),
             )}
 
             {/* Placeholder for the VIEW button (defined below) */}
@@ -112,7 +112,7 @@ export const DatasetTable: React.FC = ({}) => {
                 className={classNames(
                   baseColumnClasses,
                   "text-left",
-                  "whitespace-nowrap"
+                  "whitespace-nowrap",
                 )}
               >
                 {row.updatedDateTime
@@ -128,7 +128,7 @@ export const DatasetTable: React.FC = ({}) => {
                     className={classNames("btn-table-action-navigate")}
                     onClick={async () => {
                       navigate(
-                        encodeURIComponent(row.uri.replaceAll(".", "[dot]"))
+                        encodeURIComponent(row.uri.replaceAll(".", "[dot]")),
                       );
                     }}
                   >

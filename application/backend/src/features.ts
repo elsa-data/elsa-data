@@ -18,7 +18,7 @@ import { DependencyContainer } from "tsyringe";
  */
 export async function getFeaturesEnabled(
   container: DependencyContainer,
-  settings: ElsaSettings
+  settings: ElsaSettings,
 ): Promise<Set<string>> {
   const featuresEnabled = new Set<string>();
 

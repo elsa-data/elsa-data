@@ -19,7 +19,7 @@ export const trpcRoutes = async (
   opts: {
     // we need a minimum context that at least provides us with a DI container
     trpcCreateContext: (opts: CreateFastifyContextOptions) => Promise<Context>;
-  }
+  },
 ) => {
   // the CSRF plugin types seem to not be compatible with fastify (types!) any more
   // as a hack just changed to any

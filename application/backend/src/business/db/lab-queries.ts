@@ -33,7 +33,7 @@ function insertFile(file: File) {
 
 export function insertArtifactFastqPairQuery(
   forwardFile: File,
-  reverseFile: File
+  reverseFile: File,
 ) {
   return e.insert(e.lab.ArtifactFastqPair, {
     forwardFile: insertFile(forwardFile),
@@ -51,7 +51,7 @@ export function insertArtifactBamQuery(bamFile: File, baiFile: File) {
 export function insertArtifactVcfQuery(
   vcfFile: File,
   tbiFile: File,
-  sampleIds?: string[]
+  sampleIds?: string[],
 ) {
   return e.insert(e.lab.ArtifactVcf, {
     sampleIds: sampleIds,
@@ -77,7 +77,7 @@ export const fastqArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
       return {
         fileIdList: e.set(
           fastqArtifact.forwardFile.id,
-          fastqArtifact.reverseFile.id
+          fastqArtifact.reverseFile.id,
         ),
         studyIdList:
           fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].patient
@@ -85,10 +85,10 @@ export const fastqArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
         filter: e.op(
           fastqArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetId
+          params.datasetId,
         ),
       };
-    })
+    }),
 );
 
 export const bamArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
@@ -103,10 +103,10 @@ export const bamArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
         filter: e.op(
           bamArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetId
+          params.datasetId,
         ),
       };
-    })
+    }),
 );
 
 export const cramArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
@@ -121,10 +121,10 @@ export const cramArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
         filter: e.op(
           cramArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetId
+          params.datasetId,
         ),
       };
-    })
+    }),
 );
 
 export const vcfArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
@@ -139,10 +139,10 @@ export const vcfArtifactStudyIdAndFileIdByDatasetIdQuery = e.params(
         filter: e.op(
           vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].dataset.id,
           "=",
-          params.datasetId
+          params.datasetId,
         ),
       };
-    })
+    }),
 );
 
 /**
@@ -157,8 +157,8 @@ export const vcfArtifactUrlsBySpecimenQuery = e.params(
         filter: e.op(
           vcfArtifact["<artifacts[is dataset::DatasetSpecimen]"].id,
           "=",
-          params.specimenId
+          params.specimenId,
         ),
       };
-    })
+    }),
 );

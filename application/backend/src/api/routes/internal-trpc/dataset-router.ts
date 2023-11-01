@@ -44,7 +44,7 @@ export const datasetRouter = router({
     .input(
       z.object({
         consentId: z.string(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const { user } = ctx;

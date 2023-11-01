@@ -18,7 +18,7 @@ export const testRouter = router({
         aOptionalString: z.optional(z.string()),
         aOptionalNumber: z.optional(z.number()),
         aArrayOfString: z.array(z.string()),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       // test our ctx is correctly populated

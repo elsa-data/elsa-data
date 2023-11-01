@@ -25,7 +25,7 @@ export const formatError = (err: any): string => {
 };
 
 async function parseCsv<T extends File>(
-  file: T
+  file: T,
 ): Promise<Record<string, string>[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -75,15 +75,15 @@ export const CsvDropzone: React.FC<Props> = ({
       parseCsv(acceptedFiles[0])
         .then(onParseCsv)
         .catch(() =>
-          onError(formatError(`${GENERIC_ERR_MSG} while parsing the CSV file`))
+          onError(formatError(`${GENERIC_ERR_MSG} while parsing the CSV file`)),
         );
     },
-    []
+    [],
   );
 
   const _onDropError = useCallback(
     (err: Error) => onError(formatError(err)),
-    []
+    [],
   );
 
   const { getRootProps, getInputProps } = useDropzone({

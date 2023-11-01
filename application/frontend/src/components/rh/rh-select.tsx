@@ -41,5 +41,5 @@ export const RhSelect = React.forwardRef<HTMLSelectElement, Props>(
         )}
       </div>
     );
-  }
+  },
 );

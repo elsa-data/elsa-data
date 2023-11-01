@@ -28,22 +28,22 @@ export async function insert10C(dc: DependencyContainer): Promise<string> {
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.bam`,
         123534530,
         "NOT",
-        "MD5"
+        "MD5",
       ),
       createFile(
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.bam.bai`,
-        3424
+        3424,
       ),
       createFile(
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
         56456456,
-        "NOTREAL"
+        "NOTREAL",
       ),
       createFile(
         `s3://umccr-10c-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-        56546
+        56546,
       ),
-      []
+      [],
     );
   };
 
@@ -52,7 +52,7 @@ export async function insert10C(dc: DependencyContainer): Promise<string> {
     patientId: string,
     patientSex: "male" | "female" | "other",
     normalSpecimenId: string,
-    tumourSpecimenId: string
+    tumourSpecimenId: string,
   ) => {
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
@@ -70,9 +70,9 @@ export async function insert10C(dc: DependencyContainer): Promise<string> {
               externalIdentifiers:
                 makeSystemlessIdentifierArray(tumourSpecimenId),
               artifacts: await makeArtifacts(tumourSpecimenId),
-            })
+            }),
           ),
-        })
+        }),
       ),
     });
   };
@@ -88,15 +88,15 @@ export async function insert10C(dc: DependencyContainer): Promise<string> {
           TN_1_PATIENT,
           "male",
           TN_1_SPECIMEN_NORMAL,
-          TN_1_SPECIMEN_TUMOUR
+          TN_1_SPECIMEN_TUMOUR,
         ),
         await makeTumourNormal(
           "AG1023",
           "UR23456",
           "female",
           "N757567",
-          "T657567"
-        )
+          "T657567",
+        ),
       ),
     })
     .run(edgeDbClient);

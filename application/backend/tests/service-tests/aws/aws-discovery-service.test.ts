@@ -39,7 +39,7 @@ describe("Test AWS Discovery Service", () => {
     const awsDiscoveryService = testContainer.resolve(AwsDiscoveryService);
 
     expect(await awsDiscoveryService.locateCopyOutStepsArn()).toEqual(
-      "located:arn"
+      "located:arn",
     );
   });
 });

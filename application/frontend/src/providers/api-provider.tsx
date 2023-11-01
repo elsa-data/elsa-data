@@ -77,7 +77,7 @@ export const APIProvider: React.FC<Props> = (props: Props) => {
       }
 
       return Promise.reject(err);
-    }
+    },
   );
 
   axios.interceptors.request.use(
@@ -94,7 +94,7 @@ export const APIProvider: React.FC<Props> = (props: Props) => {
     },
     (err) => {
       return Promise.reject(err);
-    }
+    },
   );
 
   return (

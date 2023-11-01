@@ -12,7 +12,7 @@ export const ManifestExternalIdentifiersSchema = Type.Record(
   // note we handle the case here
   // a) the most normal case where each system has a single value
   // b) the edge case where a system can have multiple identifier values in it (most likely when system = "")
-  Type.Union([Type.String(), Type.Array(Type.String())])
+  Type.Union([Type.String(), Type.Array(Type.String())]),
 );
 
 export const ManifestSpecimenSchema = Type.Object({
@@ -107,7 +107,7 @@ export const ManifestHtsgetResponseSchema = Type.Object({
     Type.Object({
       bucket: Type.String(),
       key: Type.String(),
-    })
+    }),
   ),
   maxAge: Type.Number(),
 });

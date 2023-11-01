@@ -77,7 +77,7 @@ export const JobTable = ({
     releaseKey,
     setCurrentTotal,
     setData,
-    setError
+    setError,
   );
 
   useEffect(() => {
@@ -151,12 +151,12 @@ export const JobTable = ({
                           "whitespace-nowrap":
                             !cell.column.columnDef.meta?.cellStyling,
                           "text-left": i + 1 !== row.length,
-                        }
+                        },
                       )}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </td>
                   ))}
@@ -202,7 +202,7 @@ export const useJobQuery = (
   releaseKey: string,
   setCurrentTotal: Dispatch<SetStateAction<number>>,
   setData: Dispatch<SetStateAction<ReleasePreviousJobType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>
+  setError: Dispatch<SetStateAction<ErrorState>>,
 ) => {
   const query = {
     page: currentPage,
@@ -223,7 +223,7 @@ export const useJobQuery = (
 
   return trpc.releaseJob.previousJobs.useQuery(
     { ...query, releaseKey },
-    options
+    options,
   );
 };
 
@@ -352,7 +352,7 @@ export const createColumns = () => {
           applyCSS="before:max-w-none"
           description={createdToolTipDescription(
             info.row.original.created,
-            info.row.original.started
+            info.row.original.started,
           )}
         />
       ),

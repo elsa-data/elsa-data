@@ -124,7 +124,7 @@ export type ReleasePatchOperationType = Static<
 >;
 
 export const ReleasePatchOperationsSchema = Type.Array(
-  ReleasePatchOperationSchema
+  ReleasePatchOperationSchema,
 );
 
 export type ReleasePatchOperationsType = Static<

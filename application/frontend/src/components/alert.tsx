@@ -90,7 +90,7 @@ export const Alert = ({
         additionalAlertClassName,
         {
           "animate-pop": isInView && animate,
-        }
+        },
       )}
       show={!dismissed}
       enter="transition-opacity duration-75"
