@@ -68,7 +68,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
         utils.release.getSpecificRelease.invalidate({
           releaseKey: releaseKey,
         }),
-    }
+    },
   );
 
   const [releaseSize, setReleaseSize] = useState<
@@ -77,7 +77,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
 
   const releaseSizeQuery = trpc.manifest.getReleaseSize.useQuery(
     { releaseKey },
-    { enabled: false }
+    { enabled: false },
   );
 
   const onPressComputeSize = useCallback(async () => {
@@ -96,7 +96,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       | "/allowedGS"
       | "/allowedR2"
       | null,
-    current: boolean
+    current: boolean,
   ) => (
     <RhCheckItem
       label={label}
@@ -138,17 +138,17 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
                 {isAllowedCheck(
                   "Reads (e.g. BAM, CRAM, FASTQ, ORA)",
                   "/allowedRead",
-                  releaseData.isAllowedReadData
+                  releaseData.isAllowedReadData,
                 )}
                 {isAllowedCheck(
                   "Variants (e.g. VCF)",
                   "/allowedVariant",
-                  releaseData.isAllowedVariantData
+                  releaseData.isAllowedVariantData,
                 )}
                 {isAllowedCheck(
                   "Phenotypes (e.g. FHIR, Phenopackets) (currently disabled)",
                   null,
-                  false
+                  false,
                 )}
               </RhChecks>
             </div>
@@ -160,21 +160,21 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
                     AWS S3 (<span className="font-mono">s3://...</span>)
                   </>,
                   "/allowedS3",
-                  releaseData.isAllowedS3Data
+                  releaseData.isAllowedS3Data,
                 )}
                 {isAllowedCheck(
                   <>
                     Google GCP (<span className="font-mono">gs://...</span>)
                   </>,
                   "/allowedGS",
-                  releaseData.isAllowedGSData
+                  releaseData.isAllowedGSData,
                 )}
                 {isAllowedCheck(
                   <>
                     CloudFlare R2 (<span className="font-mono">r2://...</span>)
                   </>,
                   "/allowedR2",
-                  releaseData.isAllowedR2Data
+                  releaseData.isAllowedR2Data,
                 )}
               </RhChecks>
             </div>

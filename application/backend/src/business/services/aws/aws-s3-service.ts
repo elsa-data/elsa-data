@@ -12,13 +12,13 @@ export class AwsS3Service implements CloudStorage {
   constructor(
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject(AwsEnabledService)
-    private readonly awsEnabledService: AwsEnabledService
+    private readonly awsEnabledService: AwsEnabledService,
   ) {}
 
   public async put(
     bucket: string,
     key: string,
-    data: string
+    data: string,
   ): Promise<{ [key: string]: any }> {
     await this.awsEnabledService.enabledGuard();
 

@@ -25,7 +25,7 @@ export class NotAuthorisedToControlJob extends Base7807Error {
     super(
       "Not authorised to control jobs for this release",
       403,
-      `User is only a ${userRole} in the release ${releaseKey}`
+      `User is only a ${userRole} in the release ${releaseKey}`,
     );
   }
 }
@@ -37,7 +37,7 @@ export class JobService {
     @inject(AuditEventService)
     protected readonly auditLogService: AuditEventService,
     @inject(ReleaseService) protected readonly releaseService: ReleaseService,
-    @inject(SelectService) protected readonly selectService: SelectService
+    @inject(SelectService) protected readonly selectService: SelectService,
   ) {}
 
   /**
@@ -50,7 +50,7 @@ export class JobService {
    */
   protected async startGenericJob(
     releaseKey: string,
-    finalJobStartStep: (tx: Transaction) => Promise<void>
+    finalJobStartStep: (tx: Transaction) => Promise<void>,
   ) {
     await this.edgeDbClient.transaction(async (tx) => {
       // we do not use the 'exclusive constraint's of edgedb because we want to
@@ -65,7 +65,7 @@ export class JobService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.releaseKey, "=", releaseKey)
+            e.op(j.forRelease.releaseKey, "=", releaseKey),
           ),
         }))
         .run(tx);
@@ -76,7 +76,7 @@ export class JobService {
           400,
           `Job with id(s) ${oldJob
             .map((oj) => oj.id)
-            .join(" ")} have been found in the running state`
+            .join(" ")} have been found in the running state`,
         );
 
       await finalJobStartStep(tx);
@@ -120,12 +120,12 @@ export class JobService {
    */
   public async startSelectJob(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ReleaseDetailType> {
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator")
@@ -133,7 +133,7 @@ export class JobService {
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     await this.startGenericJob(releaseKey, async (tx) => {
@@ -146,7 +146,7 @@ export class JobService {
         "E",
         "Ran Dynamic Consent",
         new Date(),
-        tx
+        tx,
       );
 
       // create a new select job entry
@@ -175,12 +175,12 @@ export class JobService {
 
   public async cancelInProgressSelectJob(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ReleaseDetailType> {
     const { userRole } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator")
@@ -188,7 +188,7 @@ export class JobService {
 
     const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     await this.edgeDbClient.transaction(async (tx) => {
@@ -198,7 +198,7 @@ export class JobService {
           filter: e.op(
             e.op(j.status, "=", e.job.JobStatus.running),
             "and",
-            e.op(j.forRelease.releaseKey, "=", releaseKey)
+            e.op(j.forRelease.releaseKey, "=", releaseKey),
           ),
         }))
         .assert_single()
@@ -230,7 +230,7 @@ export class JobService {
    */
   public async doSelectJobWork(
     jobId: string,
-    roughlyMaxSeconds: number
+    roughlyMaxSeconds: number,
   ): Promise<number> {
     const selectJobQuery = e
       .select(e.job.SelectJob, (j) => ({
@@ -317,7 +317,7 @@ export class JobService {
                   index,
                   cas as any,
                   pat as any,
-                  spec as any
+                  spec as any,
                 )
               ) {
                 resultSpecimens.push(e.uuid(spec.id));
@@ -349,7 +349,7 @@ export class JobService {
             filter: e.op(
               dc.id,
               "in",
-              e.set(...casesFromQueue.map((m) => e.uuid(m.id)))
+              e.set(...casesFromQueue.map((m) => e.uuid(m.id))),
             ),
           }));
 
@@ -373,17 +373,17 @@ export class JobService {
                         e.op(
                           e.op(sj.initialTodoCount, "-", e.count(sj.todoQueue)),
                           "+",
-                          casesFromQueue.length
+                          casesFromQueue.length,
                         ),
                         "*",
                         // so we actually don't want this percentDone to ever get us to 100%...
                         // that step is reserved for the final end job step
-                        99.99
+                        99.99,
                       ),
                       "/",
-                      sj.initialTodoCount
-                    )
-                  )
+                      sj.initialTodoCount,
+                    ),
+                  ),
                 ),
               },
             }))
@@ -410,7 +410,7 @@ export class JobService {
   public async endSelectJob(
     jobId: string,
     wasSuccessful: boolean,
-    isCancellation: boolean
+    isCancellation: boolean,
   ): Promise<void> {
     // basically the gist here is we need to move the new results into the release - and close this job off
     await this.edgeDbClient.transaction(async (tx) => {
@@ -447,7 +447,7 @@ export class JobService {
         selectJob.started,
         new Date(),
         { jobId: jobId },
-        tx
+        tx,
       );
 
       await e
@@ -478,12 +478,12 @@ export class JobService {
     user: AuthenticatedUser,
     releaseKey: string,
     limit: number,
-    offset: number
+    offset: number,
   ): Promise<PagedResult<ReleasePreviousJobType>> {
     const { userRole, isAllowedOverallAdministratorView } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (userRole != "Administrator" && !isAllowedOverallAdministratorView)
@@ -511,7 +511,7 @@ export class JobService {
         filter: e.op(
           e.op(sj.status, "!=", e.job.JobStatus.running),
           "and",
-          e.op(sj.forRelease.releaseKey, "=", releaseKey)
+          e.op(sj.forRelease.releaseKey, "=", releaseKey),
         ),
         order_by: [
           {
@@ -553,10 +553,10 @@ export class JobService {
             })
             .value(),
           null,
-          2
+          2,
         ),
       })),
-      totalEntries
+      totalEntries,
     );
   }
 }

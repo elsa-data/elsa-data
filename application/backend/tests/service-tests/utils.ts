@@ -34,21 +34,21 @@ export async function findDatabaseRelease(client: Client, releaseKey: string) {
  */
 export async function findDatabaseSpecimenIds(
   client: Client,
-  valueIds: string[]
+  valueIds: string[],
 ): Promise<string[]> {
   const toChange = await e
     .select(e.dataset.DatasetSpecimen, (dss) => ({
       filter: e.op(
         e.set(...valueIds),
         "in",
-        e.array_unpack(dss.externalIdentifiers).value
+        e.array_unpack(dss.externalIdentifiers).value,
       ),
     }))
     .run(client);
 
   if (toChange.length != valueIds.length)
     throw new Error(
-      "In our test setup we requested database specimen ids that weren't actually in the database"
+      "In our test setup we requested database specimen ids that weren't actually in the database",
     );
 
   return toChange.map((a) => a.id);
@@ -63,14 +63,14 @@ export async function findDatabaseSpecimenIds(
  */
 export async function findDatabasePatientIds(
   client: Client,
-  valueIds: string[]
+  valueIds: string[],
 ): Promise<string[]> {
   const toChange = await e
     .select(e.dataset.DatasetPatient, (dp) => ({
       filter: e.op(
         e.set(...valueIds.map((a) => makeSystemlessIdentifier(a))),
         "in",
-        e.array_unpack(dp.externalIdentifiers)
+        e.array_unpack(dp.externalIdentifiers),
       ),
     }))
     .run(client);
@@ -87,14 +87,14 @@ export async function findDatabasePatientIds(
  */
 export async function findDatabaseCaseIds(
   client: Client,
-  valueIds: string[]
+  valueIds: string[],
 ): Promise<string[]> {
   const toChange = await e
     .select(e.dataset.DatasetCase, (dp) => ({
       filter: e.op(
         e.set(...valueIds.map((a) => makeSystemlessIdentifier(a))),
         "in",
-        e.array_unpack(dp.externalIdentifiers)
+        e.array_unpack(dp.externalIdentifiers),
       ),
     }))
     .run(client);
@@ -104,14 +104,14 @@ export async function findDatabaseCaseIds(
 
 export function findSpecimen(
   cases: ReleaseCaseType[],
-  externalId: string
+  externalId: string,
 ): ReleaseSpecimenType | undefined {
   return allSpecimens(cases).find((s) => s.externalId === externalId);
 }
 
 export function findPatient(
   cases: ReleaseCaseType[],
-  externalId: string
+  externalId: string,
 ): ReleasePatientType | null {
   for (const c of cases || []) {
     for (const p of c.patients || []) {
@@ -123,7 +123,7 @@ export function findPatient(
 
 export function findPatientExpected(
   cases: ReleaseCaseType[],
-  externalId: string
+  externalId: string,
 ) {
   const v = findPatient(cases, externalId);
   if (!v)
@@ -133,7 +133,7 @@ export function findPatientExpected(
 
 export function findCase(
   cases: ReleaseCaseType[],
-  externalId: string
+  externalId: string,
 ): ReleaseCaseType | null {
   for (const c of cases || []) {
     if (c.externalId === externalId) return c;
@@ -143,6 +143,6 @@ export function findCase(
 
 export function allSpecimens(cases: ReleaseCaseType[]): ReleaseSpecimenType[] {
   return cases.flatMap((case_) =>
-    case_.patients.flatMap((patient) => patient.specimens)
+    case_.patients.flatMap((patient) => patient.specimens),
   );
 }

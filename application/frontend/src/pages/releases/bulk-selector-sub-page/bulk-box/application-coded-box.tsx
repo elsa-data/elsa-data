@@ -119,15 +119,15 @@ export const ApplicationCodedBox: React.FC<Props> = ({
       onSuccess: (result: ReleaseTypeLocal) => {
         queryClient.setQueryData(
           REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-          result
+          result,
         );
       },
-    }
+    },
   );
 
   const ApplicationTypeRadio = (
     label: string,
-    value: "HMB" | "POA" | "DS" | "GRU" | "UN"
+    value: "HMB" | "POA" | "DS" | "GRU" | "UN",
   ) => (
     <RhRadioItem
       label={label}
@@ -217,12 +217,12 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                 {ApplicationTypeRadio("Unspecified", "UN")}
                 {ApplicationTypeRadio(
                   "Population Origins or Ancestry Research Only",
-                  "POA"
+                  "POA",
                 )}
                 {ApplicationTypeRadio("General Research Use", "GRU")}
                 {ApplicationTypeRadio(
                   "Health or Medical or Biomedical Research",
-                  "HMB"
+                  "HMB",
                 )}
                 {ApplicationTypeRadio("Disease Specific Research", "DS")}
               </RhRadios>
@@ -269,7 +269,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                 defaultValue={JSON.stringify(
                   applicationCoded.beaconQuery,
                   null,
-                  2
+                  2,
                 )}
                 ref={textAreaRef}
                 // value={beaconText}
@@ -288,15 +288,15 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                 {ExampleBeaconQueryLink("Not Males", notMalesQuery)}
                 {ExampleBeaconQueryLink(
                   "Males with Variant 0101101111",
-                  malesWithChr1VariantQuery
+                  malesWithChr1VariantQuery,
                 )}
                 {ExampleBeaconQueryLink(
                   "All with Variant 1111111000",
-                  allWithChr2VariantQuery
+                  allWithChr2VariantQuery,
                 )}
                 {ExampleBeaconQueryLink(
                   "Females with Variant 1100101111",
-                  femalesWithChr20VariantQuery
+                  femalesWithChr20VariantQuery,
                 )}
               </div>
             </div>

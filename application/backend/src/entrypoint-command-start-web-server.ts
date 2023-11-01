@@ -28,7 +28,7 @@ export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
  */
 export async function startWebServer(
   dc: DependencyContainer,
-  scenario: number | null
+  scenario: number | null,
 ): Promise<number> {
   const { settings, logger, features } = getServices(dc);
 
@@ -52,7 +52,7 @@ export async function startWebServer(
     } else {
       // a simple guard to hopefully stop an accident in prod
       console.log(
-        "Only 'development' Node environments can start the web server with a scenario - as scenarios will blank out the existing data"
+        "Only 'development' Node environments can start the web server with a scenario - as scenarios will blank out the existing data",
       );
 
       return 1;
@@ -178,7 +178,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
 
       // this is likely to fail if we haven't yet performed the first migration
       const userResult = await edgeDbClient.query(
-        "select permission::User { id };"
+        "select permission::User { id };",
       );
 
       if (!userResult) {
@@ -228,7 +228,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
 
         response.writeHead(200);
         response.write(
-          "<html><body>Database query success - proceeding to web serving</body></html>"
+          "<html><body>Database query success - proceeding to web serving</body></html>",
         );
         response.end();
       }
@@ -265,7 +265,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
   const seconds = (endDate.getTime() - startDate.getTime()) / 1000;
 
   logger.info(
-    `Database test was successful (after ${seconds} seconds of database testing) - proceeding to web serving`
+    `Database test was successful (after ${seconds} seconds of database testing) - proceeding to web serving`,
   );
 
   await httpTerminator.terminate();

@@ -15,7 +15,7 @@ export class ProviderOsxKeychain extends ProviderBase {
 
     if (argTokens.length != 1)
       throw new Error(
-        `${ProviderOsxKeychain.name} expects a single meta parameter specifying the name of the keychain holding configuration values`
+        `${ProviderOsxKeychain.name} expects a single meta parameter specifying the name of the keychain holding configuration values`,
       );
 
     this.keychainName = argTokens[0].value;
@@ -26,7 +26,7 @@ export class ProviderOsxKeychain extends ProviderBase {
 
     if (this.keychainName.toLowerCase() === "login") {
       throw new Error(
-        "The login keychain cannot be used for storing Elsa Data configuration - use a custom keychain"
+        "The login keychain cannot be used for storing Elsa Data configuration - use a custom keychain",
       );
     }
 
@@ -46,7 +46,7 @@ export class ProviderOsxKeychain extends ProviderBase {
           keysFound.push(keyAlmost.substring(0, keyAlmost.length - 1));
         else
           throw new Error(
-            `Discovered a key name that wasn't quite in the format we expected - the entire line was ->${d.trimEnd()}<-`
+            `Discovered a key name that wasn't quite in the format we expected - the entire line was ->${d.trimEnd()}<-`,
           );
       }
     }
@@ -55,7 +55,7 @@ export class ProviderOsxKeychain extends ProviderBase {
 
     for (const k of keysFound) {
       const { stdout: lookupStdout, stderr: lookupStderr } = await execPromise(
-        `security find-generic-password -s "${k}" -w ${this.keychainName}`
+        `security find-generic-password -s "${k}" -w ${this.keychainName}`,
       );
 
       values[k] = lookupStdout.trim();

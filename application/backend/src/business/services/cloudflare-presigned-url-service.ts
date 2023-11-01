@@ -15,7 +15,7 @@ export class CloudflarePresignedUrlService implements IPresignedUrlProvider {
   async presign(
     releaseKey: string,
     bucket: string,
-    key: string
+    key: string,
   ): Promise<string> {
     throw new Error("not implemented");
 

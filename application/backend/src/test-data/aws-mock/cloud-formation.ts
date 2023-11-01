@@ -33,7 +33,7 @@ import { Logger } from "pino";
  */
 export function createMockCloudFormation(
   dbClient: edgedb.Client,
-  logger: Logger
+  logger: Logger,
 ) {
   const cloudFormationClientMock = mockClient(CloudFormationClient);
 
@@ -91,7 +91,7 @@ export function createMockCloudFormation(
         Stacks: stacks
           .filter((s) =>
             // if they asked for a specific stackname return just it - otherwise return all
-            input.StackName ? s.stackName === input.StackName : true
+            input.StackName ? s.stackName === input.StackName : true,
           )
           .map((s) => ({
             StackId: s.stackId,

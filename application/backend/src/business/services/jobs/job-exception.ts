@@ -5,7 +5,7 @@ export class ReleaseNeedsActivationToStartJob extends Base7807Error {
     super(
       "The release must be activated before attempting to start this job",
       400,
-      `Release ${releaseKey} is not activated and so a job of type ${jobType} cannot be started`
+      `Release ${releaseKey} is not activated and so a job of type ${jobType} cannot be started`,
     );
   }
 }
@@ -17,7 +17,7 @@ export class CopyOutServiceNotInstalled extends Base7807Error {
       500,
       "The discovery service was asked for the location of the 'copy out' " +
         "service and it returned an empty result. This is likely to be " +
-        "a fundamental configuration error in the underlying environment"
+        "a fundamental configuration error in the underlying environment",
     );
   }
 }

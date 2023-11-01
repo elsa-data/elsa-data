@@ -25,7 +25,7 @@ export async function addMocksForFileSystem(
   s3MockClient: AwsStub<ServiceInputTypes, ServiceOutputTypes, any>,
   mockBucket: string,
   mockKey: string,
-  fileRoot: string
+  fileRoot: string,
 ) {
   const filesAll = await getFileEntriesWithContent(fileRoot);
 
@@ -86,7 +86,7 @@ type FileEntryWithContent = {
  * @param dirName the root folder path (should be absolute probably)
  */
 const getFileEntriesWithContent = async (
-  dirName: string
+  dirName: string,
 ): Promise<FileEntryWithContent[]> => {
   let files: FileEntryWithContent[] = [];
 

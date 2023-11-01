@@ -18,7 +18,7 @@ export class GcpPresignedUrlService implements IPresignedUrlProvider {
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(UserService) userService: UserService,
     @inject(GcpEnabledService)
-    private readonly gcpEnabledService: GcpEnabledService
+    private readonly gcpEnabledService: GcpEnabledService,
   ) {
     this.storage = new Storage();
   }
@@ -30,7 +30,7 @@ export class GcpPresignedUrlService implements IPresignedUrlProvider {
   async presign(
     releaseKey: string,
     bucket: string,
-    key: string
+    key: string,
   ): Promise<string> {
     await this.gcpEnabledService.enabledGuard();
 

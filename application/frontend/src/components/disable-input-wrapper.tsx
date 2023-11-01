@@ -14,7 +14,7 @@ export const DisabledInputWrapper = ({ children, isInputDisabled }: Props) => {
   useEffect(() => {
     if (isInputDisabled && childrenRef.current) {
       const inputElements: any = childrenRef.current.querySelectorAll(
-        "input, option, button, textarea"
+        "input, option, button, textarea",
       );
 
       for (const inEl of inputElements) {

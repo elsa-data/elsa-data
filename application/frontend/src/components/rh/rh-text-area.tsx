@@ -33,5 +33,5 @@ export const RhTextArea = React.forwardRef<HTMLTextAreaElement, Props>(
         )}
       </div>
     );
-  }
+  },
 );

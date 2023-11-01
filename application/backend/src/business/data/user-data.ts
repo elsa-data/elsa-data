@@ -35,7 +35,7 @@ export class UserData {
    */
   public async getDbUser(
     executor: Executor,
-    user: AuthenticatedUser
+    user: AuthenticatedUser,
   ): Promise<UserDataDbUser> {
     const u = await userGetByDbId(executor, {
       dbId: user.dbId,
@@ -43,7 +43,7 @@ export class UserData {
 
     if (!u)
       throw new Error(
-        `User with database uuid ${user.dbId} (${user.displayName}) was expected to exist but has disappeared from the database`
+        `User with database uuid ${user.dbId} (${user.displayName}) was expected to exist but has disappeared from the database`,
       );
 
     return u;
@@ -61,7 +61,7 @@ export class UserData {
    */
   public async getDbUserByDbId(
     executor: Executor,
-    dbId: string
+    dbId: string,
   ): Promise<UserDataDbUser> {
     const u = await userGetByDbId(executor, {
       dbId: dbId,
@@ -69,7 +69,7 @@ export class UserData {
 
     if (!u)
       throw new Error(
-        `User with database uuid ${dbId} was expected to exist but has disappeared from the database`
+        `User with database uuid ${dbId} was expected to exist but has disappeared from the database`,
       );
 
     return u;
@@ -88,7 +88,7 @@ export class UserData {
    */
   public async getDbUserBySubjectId(
     executor: Executor,
-    subjectId: string
+    subjectId: string,
   ): Promise<UserDataDbUser> {
     const u = await userGetBySubjectId(executor, {
       subjectId: subjectId,
@@ -96,7 +96,7 @@ export class UserData {
 
     if (!u)
       throw new Error(
-        `User with database subject id ${subjectId} was expected to exist but has disappeared from the database`
+        `User with database subject id ${subjectId} was expected to exist but has disappeared from the database`,
       );
 
     return u;
@@ -115,7 +115,7 @@ export class UserData {
    */
   public async getDbUserByEmail(
     executor: Executor,
-    email: string
+    email: string,
   ): Promise<UserDataDbUser> {
     const u = await userGetByEmail(executor, {
       email: email,
@@ -123,7 +123,7 @@ export class UserData {
 
     if (!u)
       throw new Error(
-        `User with database email ${email} was expected to exist but has disappeared from the database`
+        `User with database email ${email} was expected to exist but has disappeared from the database`,
       );
 
     return u;

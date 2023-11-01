@@ -28,8 +28,8 @@ export const DatasetPatientSchema = Type.Object({
         Type.Object({
           system: Type.String(),
           value: Type.String(),
-        })
-      )
+        }),
+      ),
     ),
     Type.Null(),
   ]),
@@ -45,8 +45,8 @@ export const DatasetCaseSchema = Type.Object({
         Type.Object({
           system: Type.String(),
           value: Type.String(),
-        })
-      )
+        }),
+      ),
     ),
     Type.Null(),
   ]),

@@ -53,7 +53,7 @@ export async function insert10F(dc: DependencyContainer): Promise<string> {
     familyId: string,
     patientId: string,
     specimenId: string,
-    sex: "male" | "female" | "other"
+    sex: "male" | "female" | "other",
   ) => {
     const arts = await createArtifacts(
       [],
@@ -61,14 +61,14 @@ export async function insert10F(dc: DependencyContainer): Promise<string> {
       blankFile(),
       blankFile(),
       blankFile(),
-      []
+      [],
     );
     await e
       .update(e.dataset.DatasetCase, (dc) => ({
         filter: e.op(
           makeSystemlessIdentifier(familyId),
           "in",
-          e.set(e.array_unpack(dc.externalIdentifiers))
+          e.set(e.array_unpack(dc.externalIdentifiers)),
         ),
         set: {
           patients: {
@@ -92,7 +92,7 @@ export async function insert10F(dc: DependencyContainer): Promise<string> {
         filter: e.op(
           makeSystemlessIdentifier(patientId),
           "in",
-          e.set(e.array_unpack(dp.externalIdentifiers))
+          e.set(e.array_unpack(dp.externalIdentifiers)),
         ),
       }))
       .run(edgeDbClient);
@@ -122,7 +122,7 @@ export async function insert10F(dc: DependencyContainer): Promise<string> {
     [blankFile(), blankFile()],
     [],
     [],
-    ["ADDAMS", "QUINGGOMEZ", "QUINMORTICIA"]
+    ["ADDAMS", "QUINGGOMEZ", "QUINMORTICIA"],
     // PUGSLEY
     // UNCLE FESTER - brother of GOMEZ
     // Esmeralda ADDAMS (Grandmama) - mother of MORTICIA
@@ -150,7 +150,7 @@ export async function insert10F(dc: DependencyContainer): Promise<string> {
     [blankFile(), blankFile()],
     [],
     [],
-    ["DUCK", "UNKNOWNDUCK", "DELLA"]
+    ["DUCK", "UNKNOWNDUCK", "DELLA"],
     // DELLA and DONALD are twins
     // DELLA is mother of
     // HUEY, DEWEY and LOUIE (triplets)
@@ -168,7 +168,7 @@ export async function insert10F(dc: DependencyContainer): Promise<string> {
           // convert this to a full family at some point
           addams,
           // convert this to a full family at some point
-          ducks
+          ducks,
         ),
         updatedDateTime: e.datetime_current(),
       },

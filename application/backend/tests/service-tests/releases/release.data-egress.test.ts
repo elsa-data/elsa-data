@@ -82,7 +82,7 @@ it("test audit data access log", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     10,
-    0
+    0,
   );
   const firstData = res.data?.length ? res.data[0] : null;
 
@@ -95,7 +95,7 @@ it("test unauthorised attempt", async () => {
     const result =
       await releaseDataEgressService.updateDataEgressRecordsByReleaseKey(
         allowedAdministratorUser,
-        testReleaseKey
+        testReleaseKey,
       );
   }).rejects.toThrow(NotAuthorisedUpdateDataEgressRecords);
 });

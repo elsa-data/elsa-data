@@ -26,7 +26,7 @@ export const userRouter = router({
       return await ctx.userService.getActiveUsers(
         user,
         pageSize,
-        calculateOffset(page, pageSize)
+        calculateOffset(page, pageSize),
       );
     }),
   getPotentialUsers: internalProcedure
@@ -38,7 +38,7 @@ export const userRouter = router({
       return await ctx.userService.getPotentialUsers(
         user,
         pageSize,
-        calculateOffset(page, pageSize)
+        calculateOffset(page, pageSize),
       );
     }),
   changeActiveUserPermission: internalProcedure
@@ -52,12 +52,12 @@ export const userRouter = router({
           isAllowedOverallAdministratorView:
             input.isAllowedOverallAdministratorView,
           isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
-        }
+        },
       );
     }),
   changePotentialUserPermission: internalProcedure
     .input(
-      inputUserPermission.merge(z.object({ potentialUserEmail: z.string() }))
+      inputUserPermission.merge(z.object({ potentialUserEmail: z.string() })),
     )
     .mutation(async ({ input, ctx }) => {
       await ctx.userService.changePotentialUserPermission(
@@ -68,13 +68,15 @@ export const userRouter = router({
           isAllowedOverallAdministratorView:
             input.isAllowedOverallAdministratorView,
           isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
-        }
+        },
       );
     }),
 
   addPotentialUser: internalProcedure
     .input(
-      inputUserPermission.merge(z.object({ newPotentialUserEmail: z.string() }))
+      inputUserPermission.merge(
+        z.object({ newPotentialUserEmail: z.string() }),
+      ),
     )
     .mutation(async ({ input, ctx }) => {
       await ctx.userService.addPotentialUser(
@@ -85,7 +87,7 @@ export const userRouter = router({
           isAllowedOverallAdministratorView:
             input.isAllowedOverallAdministratorView,
           isAllowedRefreshDatasetIndex: input.isAllowedRefreshDatasetIndex,
-        }
+        },
       );
     }),
 
@@ -94,7 +96,7 @@ export const userRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.userService.removePotentialUser(
         ctx.user,
-        input.potentialUserEmail
+        input.potentialUserEmail,
       );
     }),
 });

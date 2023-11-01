@@ -56,7 +56,7 @@
 } */
 
 export function australianGenomicsDacRedcapToDuoString(
-  ag: AustraliaGenomicsDacRedcap
+  ag: AustraliaGenomicsDacRedcap,
 ): "GRU" | "HMB" | "CC" | "POA" | "DS" | undefined {
   if (ag.daf_type_research___case_ctrl === "1") return "CC";
   if (ag.daf_type_research___disease === "1") return "DS";

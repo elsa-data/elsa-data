@@ -12,7 +12,7 @@ export const AuditEventsSubPage = () => {
 
   if (!releaseKey)
     throw new Error(
-      `The component AuditEventsSubPage cannot be rendered outside a route with a releaseKey param`
+      `The component AuditEventsSubPage cannot be rendered outside a route with a releaseKey param`,
     );
 
   return (

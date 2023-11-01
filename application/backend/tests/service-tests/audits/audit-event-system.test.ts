@@ -24,7 +24,7 @@ it("audit system instant", async () => {
     "E",
     "Email",
     start,
-    edgeDbClient
+    edgeDbClient,
   );
 
   await auditEventService.completeSystemAuditEvent(
@@ -35,7 +35,7 @@ it("audit system instant", async () => {
     {
       message: "Message",
     },
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getSystemEntries(
@@ -44,7 +44,7 @@ it("audit system instant", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -64,7 +64,7 @@ it("audit system instant with create function", async () => {
     "Email",
     { message: "Message" },
     8,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getSystemEntries(
@@ -73,7 +73,7 @@ it("audit system instant with create function", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -94,7 +94,7 @@ it("audit system duration", async () => {
     "E",
     "Login",
     start,
-    edgeDbClient
+    edgeDbClient,
   );
 
   await auditEventService.completeSystemAuditEvent(
@@ -105,7 +105,7 @@ it("audit system duration", async () => {
     {
       message: "Message",
     },
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getSystemEntries(
@@ -114,7 +114,7 @@ it("audit system duration", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -136,7 +136,7 @@ it("get in progress system entries", async () => {
     "E",
     "Login",
     new Date(),
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getSystemEntries(
@@ -145,7 +145,7 @@ it("get in progress system entries", async () => {
     0,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);

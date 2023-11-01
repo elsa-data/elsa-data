@@ -39,7 +39,7 @@ export async function addMocksForInMemory(
   s3MockClient: AwsStub<ServiceInputTypes, ServiceOutputTypes, any>,
   mockBucket: string,
   mockKey: string,
-  directoryStructure: AustralianGenomicsDirectoryStructure
+  directoryStructure: AustralianGenomicsDirectoryStructure,
 ) {
   const fileAsKey = (f: string) => {
     return `${mockKey}/${f}`;

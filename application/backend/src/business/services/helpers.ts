@@ -28,7 +28,7 @@ export function collapseExternalIds(externals: any): string {
 export async function doRoleInReleaseCheck(
   userService: UserService,
   user: AuthenticatedUser,
-  releaseKey?: string
+  releaseKey?: string,
 ) {
   const userRole = releaseKey
     ? await userService.roleInRelease(user, releaseKey)
@@ -36,7 +36,7 @@ export async function doRoleInReleaseCheck(
 
   if (!userRole)
     throw new Error(
-      "Unauthenticated attempt to access release, or release does not exist"
+      "Unauthenticated attempt to access release, or release does not exist",
     );
 
   return {
@@ -53,7 +53,7 @@ export async function doRoleInReleaseCheck(
  */
 export async function getReleaseInfo(
   edgeDbClient: Executor | Transaction,
-  releaseKey: string
+  releaseKey: string,
 ) {
   // the base (id only) query that will give us just the release
   const releaseQuery = e
@@ -64,7 +64,7 @@ export async function getReleaseInfo(
 
   // the set of selected specimens from the release
   const releaseSelectedSpecimensQuery = e.select(
-    releaseQuery.selectedSpecimens
+    releaseQuery.selectedSpecimens,
   );
 
   const releaseInfoQuery = e.select(releaseQuery, (r) => ({
@@ -95,11 +95,11 @@ export async function getReleaseInfo(
   if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
   const datasetUriToIdMap = new Map(
-    releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)])
+    releaseInfo.datasetIds.map((d) => [d.uri, e.uuid(d.id)]),
   );
 
   const datasetIdToUriMap = new Map(
-    releaseInfo.datasetIds.map((d) => [d.id, d.uri])
+    releaseInfo.datasetIds.map((d) => [d.id, d.uri]),
   );
 
   const releaseAllDatasetIdDbSet =
@@ -122,7 +122,7 @@ export async function getReleaseInfo(
     (dsc) => ({
       externalIdentifiers: true,
       filter: e.op(dsc.patients.specimens, "in", releaseSelectedSpecimensQuery),
-    })
+    }),
   );
 
   return {
@@ -146,12 +146,12 @@ export async function getReleaseInfo(
  * @returns
  */
 export function getFirstSystemSortedExternalIdentifierValue(
-  externalIdentifiers?: { system: string; value: string }[]
+  externalIdentifiers?: { system: string; value: string }[],
 ): string {
   if (!externalIdentifiers || externalIdentifiers.length == 0) return "";
 
   externalIdentifiers.sort((a, b) =>
-    a.system.toLowerCase() > b.system.toLowerCase() ? 1 : -1
+    a.system.toLowerCase() > b.system.toLowerCase() ? 1 : -1,
   );
   return externalIdentifiers[0].value;
 }

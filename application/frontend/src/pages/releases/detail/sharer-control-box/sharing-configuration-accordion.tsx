@@ -35,7 +35,7 @@ export const SharingConfigurationAccordion: React.FC<
       {
         "collapse-open": props.current,
         "collapse-close": !props.current,
-      }
+      },
     )}
   >
     <div className="collapse-title text-xl font-medium">

@@ -30,16 +30,16 @@ export const GcpStorageIamShareForm: React.FC<Props> = ({ releaseKey }) => {
       .post<any>(url, data)
       .then((reply) => setStatus({ recordsUpdated: reply.data }))
       .catch((error) =>
-        setStatus({ error: error?.response?.data ?? error, isSuccess: false })
+        setStatus({ error: error?.response?.data ?? error, isSuccess: false }),
       );
   };
 
   const addAclUsersMutate = useMutation(
-    postAclUpdate(`/api/releases/${releaseKey}/gcp-storage/acls/add`)
+    postAclUpdate(`/api/releases/${releaseKey}/gcp-storage/acls/add`),
   );
 
   const removeAclUsersMutate = useMutation(
-    postAclUpdate(`/api/releases/${releaseKey}/gcp-storage/acls/remove`)
+    postAclUpdate(`/api/releases/${releaseKey}/gcp-storage/acls/remove`),
   );
 
   const [iamUsers, setIamUsers] = useState("");

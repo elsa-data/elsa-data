@@ -26,7 +26,7 @@ export const DatasetsDetailPage: React.FC = () => {
     useParams<DatasetsSpecificPageParams>();
   const datasetUri = decodeURIComponent(encodedDatasetUri ?? "").replaceAll(
     "[dot]",
-    "."
+    ".",
   );
 
   const datasetQuery = trpc.datasetRouter.getSingleDataset.useQuery(
@@ -35,7 +35,7 @@ export const DatasetsDetailPage: React.FC = () => {
     },
     {
       keepPreviousData: true,
-    }
+    },
   );
 
   if (datasetQuery.isLoading) return <IsLoadingDiv />;
@@ -118,13 +118,13 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
       }
       tableBody={cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
         const exId = getFirstExternalIdentifierValue(
-          caseVal.externalIdentifiers ?? undefined
+          caseVal.externalIdentifiers ?? undefined,
         );
         const patients = caseVal.patients;
 
         return patients.map((patient, patientIdx) => {
           const patientId = getFirstExternalIdentifierValue(
-            patient.externalIdentifiers ?? undefined
+            patient.externalIdentifiers ?? undefined,
           );
           return (
             <tr key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
@@ -187,7 +187,7 @@ const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
                       )}
                     </React.Fragment>
                   );
-                }
+                },
               )}
             </tr>
           );

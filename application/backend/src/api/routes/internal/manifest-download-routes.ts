@@ -23,7 +23,7 @@ import { S3ManifestHtsgetService } from "../../../business/services/manifests/ht
  */
 export const manifestDownloadRoutes = async (
   fastify: FastifyInstance,
-  _opts: { container: DependencyContainer }
+  _opts: { container: DependencyContainer },
 ) => {
   const presignedUrlService = _opts.container.resolve(PresignedUrlService);
   const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
@@ -61,7 +61,7 @@ export const manifestDownloadRoutes = async (
         presignedUrlService,
         authenticatedUser,
         releaseKey,
-        presignHeaderArray
+        presignHeaderArray,
       );
 
       if (!manifest) {
@@ -73,11 +73,11 @@ export const manifestDownloadRoutes = async (
         .status(200)
         .header(
           "Content-Disposition",
-          `attachment; filename=manifest-${releaseKey}.tsv`
+          `attachment; filename=manifest-${releaseKey}.tsv`,
         )
         .header("Content-Type", "text/tab-separated-values")
         .send(manifest);
-    }
+    },
   );
 
   // this TSV manifest also contains the object data as shared via AWS access points
@@ -105,16 +105,16 @@ export const manifestDownloadRoutes = async (
         await awsAccessPointService.getAccessPointBucketKeyManifest(
           authenticatedUser,
           releaseKey,
-          presignHeaderArray
+          presignHeaderArray,
         );
 
       reply.header(
         "Content-disposition",
-        `attachment; filename=${accessPointTsv.filename}`
+        `attachment; filename=${accessPointTsv.filename}`,
       );
       reply.type("text/tab-separated-values");
       reply.send(accessPointTsv.content);
-    }
+    },
   );
 
   // this TSV manifest contains object represented at a particular htsget endpoint
@@ -141,16 +141,16 @@ export const manifestDownloadRoutes = async (
       const htsgetTsv = await htsgetService.getActiveHtsgetManifestAsTsv(
         authenticatedUser,
         releaseKey,
-        presignHeaderArray
+        presignHeaderArray,
       );
 
       reply.header(
         "Content-disposition",
-        `attachment; filename=${htsgetTsv.filename}`
+        `attachment; filename=${htsgetTsv.filename}`,
       );
       reply.type("text/tab-separated-values");
       reply.send(htsgetTsv.content);
-    }
+    },
   );
 
   // this TSV manifest contains signed URLS that give access to the genomic data for up to 7 days
@@ -177,7 +177,7 @@ export const manifestDownloadRoutes = async (
         presignedUrlService,
         authenticatedUser,
         releaseKey,
-        presignHeaderArray
+        presignHeaderArray,
       );
 
       if (!manifest) {
@@ -191,6 +191,6 @@ export const manifestDownloadRoutes = async (
       });
 
       manifest.pipe(reply.raw);
-    }
+    },
   );
 };

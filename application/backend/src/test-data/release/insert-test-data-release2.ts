@@ -15,7 +15,7 @@ export const RELEASE2_APPLICATION_DAC_DETAILS =
 
 export async function insertRelease2(
   dc: DependencyContainer,
-  releaseProps: InsertReleaseProps
+  releaseProps: InsertReleaseProps,
 ) {
   const { edgeDbClient } = getServices(dc);
   const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
@@ -50,7 +50,7 @@ export async function insertRelease2(
       selectedSpecimens: e.set(),
       dataSharingConfiguration: e.insert(
         e.release.DataSharingConfiguration,
-        {}
+        {},
       ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
@@ -61,7 +61,7 @@ export async function insertRelease2(
           whoId: releaseProps.releaseAdministrator[0].subjectId,
           occurredDateTime: e.datetime_current(),
           inProgress: false,
-        })
+        }),
       ),
     })
     .run(edgeDbClient);
@@ -72,7 +72,7 @@ export async function insertRelease2(
       insertRelease2.id,
       user.email,
       "Administrator",
-      edgeDbClient
+      edgeDbClient,
     );
   }
   for (const user of releaseManager) {

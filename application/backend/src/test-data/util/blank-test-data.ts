@@ -80,7 +80,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`Removing any existing data in test database`);
     console.log(`  ${jobsDeleted.length} job(s)`);
     console.log(
-      `  ${usersDeleted.length}/${potentialUsersDeleted.length} user(s)/potential user(s)`
+      `  ${usersDeleted.length}/${potentialUsersDeleted.length} user(s)/potential user(s)`,
     );
 
     console.log(`  ${releasesDeleted.length} release(s)`);
@@ -90,14 +90,14 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
     console.log(`  ${dataEgressRecordDeleted.length} dataEgressRecord(s)`);
 
     console.log(
-      `  ${specimensDeleted.length}/${patientsDeleted.length}/${casesDeleted.length}/${datasetsDeleted.length} dataset specimen(s)/patient(s)/case(s)/set(s)`
+      `  ${specimensDeleted.length}/${patientsDeleted.length}/${casesDeleted.length}/${datasetsDeleted.length} dataset specimen(s)/patient(s)/case(s)/set(s)`,
     );
     console.log(`  ${consentDeleted.length} consent(s)`);
 
     console.log(`  ${analysesDeleted.length} lab analyses(s)`);
     console.log(`  ${runsDeleted.length} lab run(s)`);
     console.log(
-      `  ${submissionsBatchesDeleted.length} lab submission batch(s)`
+      `  ${submissionsBatchesDeleted.length} lab submission batch(s)`,
     );
 
     console.log(`  ${bclsDeleted.length} lab bcl(s)`);
@@ -110,7 +110,7 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
 
     console.log(`  ${pedigreeDeleted.length} pedigree(s)`);
     console.log(
-      `  ${pedigreeRelationshipDeleted.length} pedigree relationship(s)`
+      `  ${pedigreeRelationshipDeleted.length} pedigree relationship(s)`,
     );
   }
 }

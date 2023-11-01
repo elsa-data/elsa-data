@@ -32,7 +32,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-      result
+      result,
     );
     setLastMutateError(null);
   };
@@ -44,14 +44,14 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
 
   const consentPreferenceMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseKey}/NEEDTODOTHIS`
-    )
+      `/api/releases/${releaseKey}/NEEDTODOTHIS`,
+    ),
   );
 
   const ctrlUrlMutate = useMutation(
     axiosPostArgMutationFn<{ type: string }>(
-      `/api/releases/${releaseKey}/NEEDTODOTHIS`
-    )
+      `/api/releases/${releaseKey}/NEEDTODOTHIS`,
+    ),
   );
 
   const typeRadio = (label: string, value: string) => (
@@ -65,7 +65,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
           {
             onSuccess: afterMutateUpdateQueryData,
             onError: afterMutateError,
-          }
+          },
         )
       }
     />
@@ -82,7 +82,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
           {
             onSuccess: afterMutateUpdateQueryData,
             onError: afterMutateError,
-          }
+          },
         )
       }
     />
@@ -120,7 +120,7 @@ export const ConsentSourcesBox: React.FC<Props> = ({ releaseKey }) => {
                     {
                       onSuccess: afterMutateUpdateQueryData,
                       onError: afterMutateError,
-                    }
+                    },
                   )
                 }
               />

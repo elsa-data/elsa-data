@@ -35,10 +35,10 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
       onError: (e) => {
         console.log(e);
       },
-    }
+    },
   );
   const [input, setInput] = useState<string>(
-    releaseData.dataSharingCopyOut?.destinationLocation ?? ""
+    releaseData.dataSharingCopyOut?.destinationLocation ?? "",
   );
 
   const isMatchDb =

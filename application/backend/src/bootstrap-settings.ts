@@ -16,7 +16,7 @@ import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
  */
 export async function oidcConfigurationToSettings(
   allowEmptyIssuer: boolean,
-  oidcConfiguration?: OidcType
+  oidcConfiguration?: OidcType,
 ) {
   if (!oidcConfiguration) return undefined;
 
@@ -27,7 +27,7 @@ export async function oidcConfigurationToSettings(
   } else {
     if (!allowEmptyIssuer)
       throw new Error(
-        "Only localhost development launches can exist without setting up an OIDC issuer"
+        "Only localhost development launches can exist without setting up an OIDC issuer",
       );
   }
 
@@ -39,7 +39,7 @@ export async function oidcConfigurationToSettings(
 }
 
 export async function bootstrapSettings(
-  config: ElsaConfigurationType
+  config: ElsaConfigurationType,
 ): Promise<ElsaSettings> {
   // we now have our 'config' - which is the plain text values from all our configuration sources..
   // however our 'settings' are more than that - the settings involve things that need to be
@@ -71,7 +71,7 @@ export async function bootstrapSettings(
   } else {
     if (!isDevelopment)
       throw new Error(
-        "Only development launches can default to the use of localhost"
+        "Only development launches can default to the use of localhost",
       );
   }
 
@@ -115,12 +115,12 @@ export async function bootstrapSettings(
   const sharerTypes = sharers.map((s) => s.type);
 
   const sharerDuplicates = sharerTypes.filter(
-    (item, index) => sharerTypes.indexOf(item) !== index
+    (item, index) => sharerTypes.indexOf(item) !== index,
   );
 
   if (sharerDuplicates.length > 0)
     throw new Error(
-      `For the moment, only a single sharer of each type can be specified. The following sharers types are duplicated -> ${sharerDuplicates}`
+      `For the moment, only a single sharer of each type can be specified. The following sharers types are duplicated -> ${sharerDuplicates}`,
     );
 
   return {
@@ -133,7 +133,7 @@ export async function bootstrapSettings(
     emailer: config.emailer ? _.get(config, "emailer") : undefined,
     oidc: await oidcConfigurationToSettings(
       isDevelopment || isLocalhost,
-      config.oidc
+      config.oidc,
     ),
     feature: _.get(config, "feature"),
     aws: hasAws
@@ -146,7 +146,7 @@ export async function bootstrapSettings(
           signingAccessKeyId: _.get(config, "cloudflare.signingAccessKeyId"),
           signingSecretAccessKey: _.get(
             config,
-            "cloudflare.signingAccessKeyId"
+            "cloudflare.signingAccessKeyId",
           ),
         }
       : undefined,

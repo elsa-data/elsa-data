@@ -55,14 +55,14 @@ export function locateHtmlDirectory(allowFilesDirectFromSource: boolean) {
 export async function serveCustomIndexHtml(
   reply: FastifyReply,
   staticFilesPath: string,
-  safeEnvironment: { [id: string]: string }
+  safeEnvironment: { [id: string]: string },
 ) {
   // the base index.html template (note: this index.html will *already* have been through a level of
   // templating during the create-react-app build phase - any further templating we are about to do
   // is to insert values that are from the *deployment* or *browser* context)
   let indexText = await readFile(
     resolve(staticFilesPath, "index.html"),
-    "utf8"
+    "utf8",
   );
 
   // because it is very simple we are choosing to use the lodash template engine
@@ -87,7 +87,7 @@ export async function serveCustomIndexHtml(
  */
 export async function strictServeRealFileIfPresent(
   reply: FastifyReply,
-  requestPath: string
+  requestPath: string,
 ) {
   // we *attempt to send a file* but not being able to do it just means we need to serve up the
   // index.html

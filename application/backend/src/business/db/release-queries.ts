@@ -16,7 +16,7 @@ export const getNextReleaseKey = (prefix: string = "R") => {
     "if",
     e.op(e.len(nextIdString), "<=", minDigitLength),
     "else",
-    nextIdString
+    nextIdString,
   );
 
   return e.op(e.str(prefix), "++", formatIdString);

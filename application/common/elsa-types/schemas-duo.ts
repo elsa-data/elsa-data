@@ -142,7 +142,7 @@ export const DuoModifierSchema = Type.Union(
   // this doesn't seem to be working - I can't use a Type.Ref to this anyhow
   {
     $id: "DuoModifier",
-  }
+  },
 );
 
 // we should get $ref working so that the definition of the array of modifiers is only declared once

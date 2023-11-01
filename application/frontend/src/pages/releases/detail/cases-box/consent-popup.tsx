@@ -44,7 +44,7 @@ export const ConsentPopup: React.FC<Props> = (props) => {
           "dropdown-content block min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg",
           {
             hidden: !isConsentHover,
-          }
+          },
         )}
       >
         {isFetchConsent && <ConsentSummary {...props} />}

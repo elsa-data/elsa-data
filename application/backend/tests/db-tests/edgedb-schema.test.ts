@@ -49,7 +49,7 @@ describe("edgedb tests", () => {
         e.insert(e.dataset.DatasetCase, {
           externalIdentifiers: makeSystemlessIdentifierArray("case-id-test"),
           patients: e.set(insertPatient),
-        })
+        }),
       ),
     });
 

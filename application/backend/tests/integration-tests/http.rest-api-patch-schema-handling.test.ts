@@ -112,7 +112,7 @@ describe("http patch schema handling tests", () => {
 
     expect(errorResponse).toHaveProperty(
       "detail",
-      expect.stringContaining("body/0/value must be boolean")
+      expect.stringContaining("body/0/value must be boolean"),
     );
     expect(errorResponse).toHaveProperty("status", 400);
   });

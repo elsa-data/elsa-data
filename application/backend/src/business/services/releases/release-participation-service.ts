@@ -50,7 +50,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
     @inject(PermissionService) permissionService: PermissionService,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
   ) {
     super(
       settings,
@@ -60,7 +60,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       auditEventService,
       auditEventTimedService,
       permissionService,
-      cfnClient
+      cfnClient,
     );
   }
 
@@ -68,11 +68,11 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string,
     limit?: number,
-    offset?: number
+    offset?: number,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     // NOTE: for 'reading' participant information (i.e. this call) we are happy for anyone involved
@@ -93,7 +93,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         // Also they can't change their own roles in the release
         const isAllowedChangeThisParticipant =
           roleOptionFromThisUser?.includes(
-            p.role as ReleaseParticipantRoleType
+            p.role as ReleaseParticipantRoleType,
           ) && p.id !== user.dbId;
 
         return {
@@ -105,7 +105,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
             : null,
         };
       }),
-      allParticipants.total
+      allParticipants.total,
     );
   }
 
@@ -125,11 +125,11 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string,
     newUserEmail: string,
-    newUserRole: ReleaseParticipantRoleType
+    newUserRole: ReleaseParticipantRoleType,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     // We need to get the participant Role (to check if it is <= than the authenticated user role)
@@ -138,7 +138,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       {
         email: newUserEmail,
         releaseKey: releaseKey,
-      }
+      },
     );
 
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -222,7 +222,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       },
       async (a) => {
         return a.affectedUserOrPotentialUser;
-      }
+      },
     );
   }
 
@@ -239,11 +239,11 @@ export class ReleaseParticipationService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string,
     existingEmail: string,
-    newUserRole: ReleaseParticipantRoleType
+    newUserRole: ReleaseParticipantRoleType,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     // We need to get the participant Role (to check if it is <= than the authenticated user role)
@@ -252,7 +252,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       {
         email: existingEmail,
         releaseKey: releaseKey,
-      }
+      },
     );
 
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -264,7 +264,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         if (!participantReleaseInfo) {
           throw new ReleaseParticipationNotFoundError(
             releaseKey,
-            existingEmail
+            existingEmail,
           );
         }
 
@@ -323,18 +323,18 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       },
       async (a) => {
         return a.affectedUserOrPotentialUser;
-      }
+      },
     );
   }
 
   public async removeParticipant(
     user: AuthenticatedUser,
     releaseKey: string,
-    email: string
+    email: string,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
     // We need to get the participant Role (to check if it is <= than the authenticated user role)
     const participantReleaseInfo = await releaseParticipantGetUser(
@@ -342,7 +342,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
       {
         email: email,
         releaseKey: releaseKey,
-      }
+      },
     );
 
     await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
@@ -383,7 +383,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
             userRemoved?.id ?? potentialUserRemoved?.id ?? "none",
         };
       },
-      async (a) => {}
+      async (a) => {},
     );
   }
 }

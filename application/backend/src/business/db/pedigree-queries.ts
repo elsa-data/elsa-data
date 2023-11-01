@@ -15,10 +15,10 @@ export const selectPedigreeByDatasetCaseIdAndDatasetUri = ({
       e.op(
         p.case_.externalIdentifiers,
         "=",
-        makeSystemlessIdentifierArray(datasetCaseId)
+        makeSystemlessIdentifierArray(datasetCaseId),
       ),
       "and",
-      e.op(p.case_.dataset.uri, "=", datasetUri)
+      e.op(p.case_.dataset.uri, "=", datasetUri),
     ),
   }));
 };
@@ -37,10 +37,10 @@ export const linkPedigreeWithDatasetCase = ({
       e.op(
         dc.externalIdentifiers,
         "=",
-        makeSystemlessIdentifierArray(datasetCaseId)
+        makeSystemlessIdentifierArray(datasetCaseId),
       ),
       "and",
-      e.op(dc.dataset.uri, "=", datasetUri)
+      e.op(dc.dataset.uri, "=", datasetUri),
     ),
     set: {
       pedigree: e.select(e.pedigree.Pedigree, (p) => ({

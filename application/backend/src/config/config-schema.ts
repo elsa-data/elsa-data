@@ -23,15 +23,15 @@ export const configZodDefinition = z.object({
     .optional(z.string())
     .default("elsa-data")
     .describe(
-      "The name of the root artifact used for dynamic service discovery - this will differ for each deployment environment. For AWS - it refers to a CloudMap namespace"
+      "The name of the root artifact used for dynamic service discovery - this will differ for each deployment environment. For AWS - it refers to a CloudMap namespace",
     ),
   // all production deployments will require this to be set - though the logic for this check is elsewhere
   deployedUrl: z.optional(
     z
       .string()
       .describe(
-        "The externally accessible Url for the deployed location of Elsa Data"
-      )
+        "The externally accessible Url for the deployed location of Elsa Data",
+      ),
   ),
   httpHosting: HttpHostingSchema,
   oidc: z.optional(OidcSchema),
@@ -43,32 +43,32 @@ export const configZodDefinition = z.object({
       tempBucket: z
         .optional(z.string())
         .describe(
-          "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day"
+          "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day",
         ),
-    })
+    }),
   ),
   cloudflare: z.optional(
     z.object({
       signingAccessKeyId: z
         .string()
         .describe(
-          "A CloudFlare R2 access key id for a user with read permission of files that can be shared via signed URLs"
+          "A CloudFlare R2 access key id for a user with read permission of files that can be shared via signed URLs",
         )
         .brand<Sensitive>(),
       signingSecretAccessKey: z
         .string()
         .describe(
-          "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs"
+          "A CloudFlare R2 secret access key for a user with read permission of files that can be shared via signed URLs",
         )
         .brand<Sensitive>(),
-    })
+    }),
   ),
   logger: z
     .object({
       level: z
         .string()
         .describe(
-          "The logging level as per Pino (all the standard level strings + silent)"
+          "The logging level as per Pino (all the standard level strings + silent)",
         )
         .default("debug"),
       transportTargets: z
@@ -77,7 +77,7 @@ export const configZodDefinition = z.object({
             .object({
               target: z.string(),
             })
-            .passthrough()
+            .passthrough(),
         )
         .describe("An array of Pino logger transport targets configurations")
         .default([]),
@@ -95,7 +95,7 @@ export const configZodDefinition = z.object({
     .array(DatasetSchema)
     .default([])
     .describe(
-      "An array defining the datasets which are shareable from this instance"
+      "An array defining the datasets which are shareable from this instance",
     ),
   superAdmins: z
     .array(
@@ -103,13 +103,13 @@ export const configZodDefinition = z.object({
         sub: z
           .string()
           .describe(
-            "The subject id of the user that should be given super admin permissions"
+            "The subject id of the user that should be given super admin permissions",
           ),
-      })
+      }),
     )
     .default([])
     .describe(
-      "A collection of users with super administration rights i.e. the ability to alter other user rights"
+      "A collection of users with super administration rights i.e. the ability to alter other user rights",
     ),
   dacs: z.array(DacSchema).default([
     {
@@ -122,7 +122,7 @@ export const configZodDefinition = z.object({
     .array(SharerSchema)
     .default([])
     .describe(
-      "An array defining the sharing mechanisms which are to be enabled from this instance"
+      "An array defining the sharing mechanisms which are to be enabled from this instance",
     ),
   // if present, a mailer is being configured and if not present, then the mailer does not start
   emailer: z.optional(EmailerSchema),
@@ -131,9 +131,9 @@ export const configZodDefinition = z.object({
       maxMindDbPath: z
         .string()
         .describe(
-          "The MaxMind GeoCity database `.mmdb` path used for IP lookup."
+          "The MaxMind GeoCity database `.mmdb` path used for IP lookup.",
         ),
-    })
+    }),
   ),
   devTesting: DevTestingSchema,
   branding: z.optional(BrandingSchema),

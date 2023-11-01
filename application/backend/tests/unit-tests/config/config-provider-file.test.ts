@@ -18,9 +18,8 @@ it("basic config file loads from a single relative folder path", async () => {
 });
 
 it("basic config file loads from an absolute folder path", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = await fs.realpath(
-    FOLDER1_RELATIVE
-  );
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+    await fs.realpath(FOLDER1_RELATIVE);
 
   const pf = new ProviderFile([{ type: "string", value: "test1" }]);
 

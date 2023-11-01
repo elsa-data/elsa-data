@@ -48,11 +48,11 @@ export async function makeJetsonsTrio() {
     [
       createFile(
         s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz`,
-        1
+        1,
       ),
       createFile(
         s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz.csi`,
-        1
+        1,
       ),
     ],
     [createFile(s3base + `.bam`, 1), createFile(s3base + `.bam.bai`, 1)],
@@ -71,11 +71,11 @@ export async function makeJetsonsTrio() {
     [
       createFile(
         s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz`,
-        1
+        1,
       ),
       createFile(
         s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz.csi`,
-        1
+        1,
       ),
     ],
     [
@@ -97,11 +97,11 @@ export async function makeJetsonsTrio() {
     [
       createFile(
         s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz`,
-        1
+        1,
       ),
       createFile(
         s3base + `${JETSONS_CASE}HG002-HG003-HG004.joint.filter.vcf.gz.csi`,
-        1
+        1,
       ),
     ],
     [
@@ -110,6 +110,6 @@ export async function makeJetsonsTrio() {
     ],
     [],
     [],
-    ["ELROY", GEORGE_PATIENT_PGP, JUDY_PATIENT_PGP]
+    ["ELROY", GEORGE_PATIENT_PGP, JUDY_PATIENT_PGP],
   );
 }

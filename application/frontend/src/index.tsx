@@ -76,7 +76,7 @@ if (rootElement != null) {
           </CookiesProvider>
         </EnvRelayProvider>
       </ErrorBoundary>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 }
 

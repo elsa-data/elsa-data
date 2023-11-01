@@ -19,21 +19,21 @@ export const releaseJobRouter = router({
     .input(
       z.object({
         releaseKey: inputReleaseKey,
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       // create the cloud formation template and save it to temp S3 bucket
       const s3HttpsUrl =
         await ctx.awsAccessPointService.createAccessPointCloudFormationTemplate(
           ctx.user,
-          input.releaseKey
+          input.releaseKey,
         );
 
       // start the job that actually installs the cloud formation
       await ctx.jobCloudFormationCreateService.startCloudFormationInstallJob(
         ctx.user,
         input.releaseKey,
-        s3HttpsUrl
+        s3HttpsUrl,
       );
     }),
   startAwsAccessPointUninstall: internalProcedure
@@ -41,7 +41,7 @@ export const releaseJobRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(
         ctx.user,
-        input.releaseKey
+        input.releaseKey,
       );
     }),
   startCopyOut: internalProcedure
@@ -49,13 +49,13 @@ export const releaseJobRouter = router({
       z.object({
         releaseKey: inputReleaseKey,
         destinationBucket: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       await ctx.jobCopyOutService.startCopyOutJob(
         ctx.user,
         input.releaseKey,
-        input.destinationBucket
+        input.destinationBucket,
       );
     }),
   cancel: internalProcedure
@@ -63,7 +63,7 @@ export const releaseJobRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.jobService.cancelInProgressSelectJob(
         ctx.user,
-        input.releaseKey
+        input.releaseKey,
       );
     }),
   previousJobs: internalProcedure
@@ -76,7 +76,7 @@ export const releaseJobRouter = router({
           user,
           input.releaseKey,
           pageSize,
-          (input.page - 1) * pageSize
+          (input.page - 1) * pageSize,
         )) ?? { data: [], total: 0 }
       );
     }),

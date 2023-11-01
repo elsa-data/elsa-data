@@ -5,7 +5,7 @@ const env_prefix = "ELSA_DATA_CONFIG_";
 export function trySetEnvironmentVariableString(
   object: any,
   env_suffix: string,
-  path: string
+  path: string,
 ) {
   const v = process.env[`${env_prefix}${env_suffix}`];
   if (v) set(object, path, v);
@@ -13,7 +13,7 @@ export function trySetEnvironmentVariableString(
 export function trySetEnvironmentVariableInteger(
   object: any,
   env_suffix: string,
-  path: string
+  path: string,
 ) {
   const v = process.env[`${env_prefix}${env_suffix}`];
   if (v) set(object, path, parseInt(v));

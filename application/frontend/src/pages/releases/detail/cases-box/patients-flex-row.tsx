@@ -78,7 +78,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
   const onSelectChange = async (
     ce: React.ChangeEvent<HTMLInputElement>,
-    id: string
+    id: string,
   ) => {
     // our other UI work should mean this event never occurs, but easy
     // to also skip it here
@@ -201,7 +201,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
             indeterminate={row.nodeStatus === "indeterminate"}
             onChange={onChangeCasesCheckbox(
               row.externalId,
-              row.nodeStatus !== "selected"
+              row.nodeStatus !== "selected",
             )}
           />
           <div className="flex space-x-1">

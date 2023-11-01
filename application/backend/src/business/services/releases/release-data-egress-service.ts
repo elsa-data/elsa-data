@@ -42,7 +42,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     @inject(PermissionService) permissionService: PermissionService,
     @inject("CloudFormationClient") cfnClient: CloudFormationClient,
     @inject(UserData) private readonly userData: UserData,
-    @inject(IPLookupService) private readonly ipLookupService: IPLookupService
+    @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
   ) {
     super(
       settings,
@@ -52,12 +52,12 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
       auditEventService,
       auditEventTimedService,
       permissionService,
-      cfnClient
+      cfnClient,
     );
   }
 
   private async checkIsAllowedRefreshDatasetIndex(
-    user: AuthenticatedUser
+    user: AuthenticatedUser,
   ): Promise<void> {
     const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
 
@@ -67,7 +67,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
 
   public async updateDataEgressRecordsByReleaseKey(
     user: AuthenticatedUser,
-    releaseKey: string
+    releaseKey: string,
   ) {
     await this.checkIsAllowedRefreshDatasetIndex(user);
 
@@ -99,7 +99,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
           lastUpdatedSubjectId: user.subjectId,
         });
       },
-      async () => {}
+      async () => {},
     );
   }
 
@@ -107,11 +107,11 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string,
     limit: number,
-    offset: number
+    offset: number,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     const dataEgressSummaryResult = await getReleaseDataEgressSummary(
@@ -120,7 +120,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
         releaseKey,
         offset,
         limit,
-      }
+      },
     );
 
     return createPagedResult(
@@ -131,7 +131,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
         lastOccurredDateTime: v.lastOccurredDateTime,
         isActive: v.isActive,
       })),
-      dataEgressSummaryResult.total
+      dataEgressSummaryResult.total,
     );
   }
 
@@ -139,11 +139,11 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     user: AuthenticatedUser,
     releaseKey: string,
     limit: number,
-    offset: number
+    offset: number,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     const dataEgressQueryRes = await getReleaseDataEgress(this.edgeDbClient, {
@@ -157,7 +157,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
         ...a,
         sourceLocation: a.sourceLocation as LocationType,
       })),
-      dataEgressQueryRes.total
+      dataEgressQueryRes.total,
     );
   }
 }

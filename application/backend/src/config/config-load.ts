@@ -47,7 +47,7 @@ interface ConfigResult {
  *          an empty configuration (and a non-empty array of issues)
  */
 export async function getMetaConfig(
-  providers: ProviderMeta[]
+  providers: ProviderMeta[],
 ): Promise<ConfigResult> {
   // the raw config JSON as loaded from each provider source (in order)
   const rawConfigs = [];
@@ -57,12 +57,12 @@ export async function getMetaConfig(
     switch (mp.providerToken.value) {
       case "aws-secret":
         providerConfig = await new ProviderAwsSecretsManager(
-          mp.argTokens
+          mp.argTokens,
         ).getConfig();
         break;
       case "gcloud-secret":
         providerConfig = await new ProviderGcpSecretsManager(
-          mp.argTokens
+          mp.argTokens,
         ).getConfig();
         break;
       case "file":
@@ -70,7 +70,7 @@ export async function getMetaConfig(
         break;
       case "osx-keychain":
         providerConfig = await new ProviderOsxKeychain(
-          mp.argTokens
+          mp.argTokens,
         ).getConfig();
         break;
       case "linux-pass":
@@ -78,7 +78,7 @@ export async function getMetaConfig(
         break;
       default:
         throw new Error(
-          `unrecognised configuration provider ${mp.providerToken.value}`
+          `unrecognised configuration provider ${mp.providerToken.value}`,
         );
     }
     rawConfigs.push(providerConfig);
@@ -107,7 +107,7 @@ export async function getMetaConfig(
     }
     if (idSet.size !== (configObject.dacs || []).length)
       throw new Error(
-        "The 'id' field of the configuration 'dacs' array must be unique"
+        "The 'id' field of the configuration 'dacs' array must be unique",
       );
   }
 
@@ -119,7 +119,7 @@ export async function getMetaConfig(
     }
     if (uriSet.size !== (configObject.datasets || []).length)
       throw new Error(
-        "The 'uri' field of the configuration 'datasets' array must be unique"
+        "The 'uri' field of the configuration 'datasets' array must be unique",
       );
   }
 
@@ -133,7 +133,7 @@ export async function getMetaConfig(
   trySetEnvironmentVariableInteger(
     configObject,
     "HTTP_HOSTING_PORT",
-    "httpHosting.port"
+    "httpHosting.port",
   );
 
   const strictIssuesFound: ZodIssue[] = [];
@@ -205,7 +205,7 @@ export async function getMetaConfig(
  * @param config
  */
 export async function getDirectConfig(
-  config: any
+  config: any,
 ): Promise<ElsaConfigurationType> {
   return configZodDefinition.strict().parse(config);
 }
@@ -221,7 +221,7 @@ export async function getDirectConfig(
 function mergeNewConfig(
   startingConfig: any,
   newConfig: any,
-  arrayMarkers: string[]
+  arrayMarkers: string[],
 ): any {
   // start with the intention of returning back exactly what we started with
   // we will now mutate this
@@ -255,7 +255,7 @@ function mergeNewConfig(
       // the presence of the key name directly means we are doing a straight "replace" - and hence can't be doing an add or delete
       if (addKey in newConfig || deleteKey in newConfig) {
         throw new Error(
-          `If a configuration has a key '${replaceKey}' to replace array content - it does not make any sense to also have a '${addKey}' or '${deleteKey}' key`
+          `If a configuration has a key '${replaceKey}' to replace array content - it does not make any sense to also have a '${addKey}' or '${deleteKey}' key`,
         );
       }
 
@@ -276,11 +276,11 @@ function mergeNewConfig(
         for (const toDelete of newConfig[deleteKey]) {
           const startLength = returnConfig[am].length;
           returnConfig[am] = returnConfig[am].filter(
-            (v: any) => !idPresent(toDelete, v)
+            (v: any) => !idPresent(toDelete, v),
           );
           if (startLength === returnConfig[am].length) {
             throw new Error(
-              `The configuration instruction ${deleteKey} of ${toDelete} did not do anything as no existing config had an entry with an id,uri or name of ${toDelete}`
+              `The configuration instruction ${deleteKey} of ${toDelete} did not do anything as no existing config had an entry with an id,uri or name of ${toDelete}`,
             );
           }
         }
@@ -303,13 +303,13 @@ function mergeNewConfig(
     // we do not want to use this mechanism for replacing multiple nodes
     if (matching.length > 1)
       throw new Error(
-        `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
+        `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`,
       );
 
     if (matching.length === 0) {
       // if the value is not already present - jsonpath apply can't really help us out because it only applies to existing objects
       throw new Error(
-        `Configuration handling for complex key ->${key}<- can _currently_ only replace existing fields, not create them new - so you may need to add an empty field in an earlier configuration i.e a blank secret ""`
+        `Configuration handling for complex key ->${key}<- can _currently_ only replace existing fields, not create them new - so you may need to add an empty field in an earlier configuration i.e a blank secret ""`,
       );
     } else {
       // if there are already values present matching this key - they cannot be objects or arrays
@@ -319,13 +319,13 @@ function mergeNewConfig(
         !isNil(matching[0])
       )
         throw new Error(
-          `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
+          `Configuration handling for complex key ->${key}<- resulted in a path value that was not a single string or number - which is incompatible with how this mechanism is designed to be used`,
         );
 
       // the value we want to set cannot be anything but a string/number (we could probably check this earlier)
       if (!isString(value) && !isNumber(value))
         throw new Error(
-          `Configuration handling for complex key ->${key}<- resulted in a value to be set that was not a single string or number - which is incompatible with how this mechanism is designed to be used`
+          `Configuration handling for complex key ->${key}<- resulted in a value to be set that was not a single string or number - which is incompatible with how this mechanism is designed to be used`,
         );
 
       // now that we have ensured they aren't getting up to anything funny - we apply the replacement of the single value

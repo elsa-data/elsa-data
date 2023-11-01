@@ -17,7 +17,7 @@ export class ProviderAwsSecretsManager extends ProviderBase {
 
     if (argTokens.length != 1)
       throw new Error(
-        `${ProviderAwsSecretsManager.name} expects a single meta parameter specifying the name of an AWS secret`
+        `${ProviderAwsSecretsManager.name} expects a single meta parameter specifying the name of an AWS secret`,
       );
 
     this.secretId = argTokens[0].value;
@@ -27,12 +27,12 @@ export class ProviderAwsSecretsManager extends ProviderBase {
     const client = new SecretsManagerClient({});
 
     const secretResult = await client.send(
-      new GetSecretValueCommand({ SecretId: this.secretId })
+      new GetSecretValueCommand({ SecretId: this.secretId }),
     );
 
     if (secretResult.SecretBinary || !secretResult.SecretString) {
       throw new Error(
-        "We expect the Elsa secret to be a secret string (as JSON key/values) - not a SecretBinary"
+        "We expect the Elsa secret to be a secret string (as JSON key/values) - not a SecretBinary",
       );
     }
 

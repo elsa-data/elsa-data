@@ -59,7 +59,7 @@ describe("edgedb egress-release query tests", () => {
       edgeDbClient,
       {
         releaseKey: RELEASE3_RELEASE_IDENTIFIER,
-      }
+      },
     );
 
     // Since it never been activated, it shouldn't return any egress records
@@ -83,13 +83,13 @@ describe("edgedb egress-release query tests", () => {
     // Testing when activating release
     await releaseActivationService.activateRelease(
       adminAuthUser,
-      RELEASE3_RELEASE_IDENTIFIER
+      RELEASE3_RELEASE_IDENTIFIER,
     );
     const activeEgressSummaryResult = await getReleaseDataEgressSummary(
       edgeDbClient,
       {
         releaseKey: RELEASE3_RELEASE_IDENTIFIER,
-      }
+      },
     );
     expect(activeEgressSummaryResult).not.toBeNull();
     expect(activeEgressSummaryResult!.data.length).toBe(4);
@@ -105,13 +105,13 @@ describe("edgedb egress-release query tests", () => {
 
     await releaseActivationService.deactivateRelease(
       adminAuthUser,
-      RELEASE3_RELEASE_IDENTIFIER
+      RELEASE3_RELEASE_IDENTIFIER,
     );
     const prevActiveEgressSummaryResult = await getReleaseDataEgressSummary(
       edgeDbClient,
       {
         releaseKey: RELEASE3_RELEASE_IDENTIFIER,
-      }
+      },
     );
     expect(prevActiveEgressSummaryResult).not.toBeNull();
     expect(prevActiveEgressSummaryResult!.data.length).toBe(4);

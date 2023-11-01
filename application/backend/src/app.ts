@@ -35,7 +35,7 @@ export class App {
   public readonly staticFilesPath: string;
 
   private readonly trpcCreateContext: (
-    opts: CreateFastifyContextOptions
+    opts: CreateFastifyContextOptions,
   ) => Promise<Context>;
 
   /**
@@ -52,7 +52,7 @@ export class App {
     private readonly dc: DependencyContainer,
     private readonly settings: ElsaSettings,
     private readonly logger: FastifyBaseLogger,
-    private readonly features: ReadonlySet<string>
+    private readonly features: ReadonlySet<string>,
   ) {
     // find where our website HTML is
     this.staticFilesPath = locateHtmlDirectory(true);
@@ -123,7 +123,7 @@ export class App {
 
       await this.server.register(
         fastifySecureSession,
-        getSecureSessionOptions(this.settings)
+        getSecureSessionOptions(this.settings),
       );
 
       await this.server.register(fastifyCsrfProtection, {
@@ -135,7 +135,7 @@ export class App {
       // NOTE: we may need to consider moving this only to the /api section
       await this.server.register(
         fastifyRateLimit,
-        this.settings.httpHosting.rateLimit
+        this.settings.httpHosting.rateLimit,
       );
     }
 
@@ -228,9 +228,9 @@ export class App {
         await serveCustomIndexHtml(
           reply,
           this.staticFilesPath,
-          this.buildIndexHtmlTemplateData()
+          this.buildIndexHtmlTemplateData(),
         );
-      }
+      },
     );
 
     const logoUriRelative = this.settings.branding?.logoUriRelative;
@@ -254,7 +254,7 @@ export class App {
         return await serveCustomIndexHtml(
           reply,
           this.staticFilesPath,
-          this.buildIndexHtmlTemplateData()
+          this.buildIndexHtmlTemplateData(),
         );
       }
 
@@ -316,22 +316,22 @@ export class App {
     addAttribute("data-revision", getMandatoryEnv("ELSA_DATA_REVISION"));
     addAttribute(
       "data-deployed-environment",
-      this.settings.devTesting ? "development" : "production"
+      this.settings.devTesting ? "development" : "production",
     );
     addAttribute(
       "data-terminology-fhir-url",
-      this.settings.ontoFhirUrl ?? "undefined"
+      this.settings.ontoFhirUrl ?? "undefined",
     );
     if (this.features.size > 0)
       addAttribute(
         "data-features",
-        Array.from(this.features.values()).join(" ")
+        Array.from(this.features.values()).join(" "),
       );
     addAttribute("data-document-title", documentTitle ?? "");
     addAttribute("data-brand-name", this.settings.branding?.brandName ?? "");
     addAttribute(
       "data-brand-logo-uri-relative",
-      this.settings.branding?.logoUriRelative ?? ""
+      this.settings.branding?.logoUriRelative ?? "",
     );
 
     return {

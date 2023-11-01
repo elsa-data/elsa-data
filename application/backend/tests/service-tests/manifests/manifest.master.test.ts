@@ -20,9 +20,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-  ({ testReleaseKey, allowedAdministratorUser } = await beforeEachCommon(
-    testContainer
-  ));
+  ({ testReleaseKey, allowedAdministratorUser } =
+    await beforeEachCommon(testContainer));
 
   // assert a release state so that everything is included for the moment
   // (these are probably already set to true in the release setup but this makes sure it is true)
@@ -30,44 +29,44 @@ beforeEach(async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedS3Data",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
-    true
+    true,
   );
   await releaseService.setIsAllowed(
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
-    true
+    true,
   );
   await releaseService.setDataSharingConfigurationField(
     allowedAdministratorUser,
     testReleaseKey,
     "/dataSharingConfiguration/htsgetEnabled",
-    true
+    true,
   );
 });
 
 it("test basic operation of manifest helper", async () => {
   const manifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(manifest.releaseKey).toBe(testReleaseKey);
@@ -81,7 +80,7 @@ it("test basic operation of manifest helper", async () => {
 
   const artifactCount = manifest.specimenList.reduce(
     (accumulateCount, a) => accumulateCount + a.artifacts.length,
-    0
+    0,
   );
 
   expect(artifactCount).toBe(26);
@@ -92,12 +91,12 @@ it("test no reads in the master manifest", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedReadData",
-    false
+    false,
   );
 
   const manifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(manifest.releaseKey).toBe(testReleaseKey);
@@ -105,7 +104,7 @@ it("test no reads in the master manifest", async () => {
 
   const artifactCount = manifest.specimenList.reduce(
     (accumulateCount, a) => accumulateCount + a.artifacts.length,
-    0
+    0,
   );
 
   expect(artifactCount).toBe(15);
@@ -116,12 +115,12 @@ it("test no variants in the master manifest", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedVariantData",
-    false
+    false,
   );
 
   const manifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(manifest.releaseKey).toBe(testReleaseKey);
@@ -129,7 +128,7 @@ it("test no variants in the master manifest", async () => {
 
   const artifactCount = manifest.specimenList.reduce(
     (accumulateCount, a) => accumulateCount + a.artifacts.length,
-    0
+    0,
   );
 
   expect(artifactCount).toBe(11);
@@ -140,12 +139,12 @@ it("test no S3 in the master manifest", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedS3Data",
-    false
+    false,
   );
 
   const manifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(manifest.releaseKey).toBe(testReleaseKey);
@@ -153,7 +152,7 @@ it("test no S3 in the master manifest", async () => {
 
   const artifactCount = manifest.specimenList.reduce(
     (accumulateCount, a) => accumulateCount + a.artifacts.length,
-    0
+    0,
   );
 
   expect(artifactCount).toBe(12);
@@ -164,12 +163,12 @@ it("test no GS in the master manifest", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedGSData",
-    false
+    false,
   );
 
   const manifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(manifest.releaseKey).toBe(testReleaseKey);
@@ -177,7 +176,7 @@ it("test no GS in the master manifest", async () => {
 
   const artifactCount = manifest.specimenList.reduce(
     (accumulateCount, a) => accumulateCount + a.artifacts.length,
-    0
+    0,
   );
 
   expect(artifactCount).toBe(18);
@@ -188,12 +187,12 @@ it("test no R2 in the master manifest", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "isAllowedR2Data",
-    false
+    false,
   );
 
   const manifest = await manifestService.createMasterManifest(
     edgeDbClient,
-    testReleaseKey
+    testReleaseKey,
   );
 
   expect(manifest.releaseKey).toBe(testReleaseKey);
@@ -201,7 +200,7 @@ it("test no R2 in the master manifest", async () => {
 
   const artifactCount = manifest.specimenList.reduce(
     (accumulateCount, a) => accumulateCount + a.artifacts.length,
-    0
+    0,
   );
 
   expect(artifactCount).toBe(22);

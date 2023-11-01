@@ -71,7 +71,7 @@ describe("edgedb audit entry tests", () => {
 
     if (!releaseAuditEvent)
       throw new Error(
-        "Inserting a release should have made one release audit event - we are counting on this!"
+        "Inserting a release should have made one release audit event - we are counting on this!",
       );
 
     // user 1 is participating in the release but did not create it

@@ -10,7 +10,7 @@ export const PermissionSchema = z.object({
   releaseAdministratorsCanAlsoAccessData: z
     .optional(z.boolean())
     .describe(
-      "If present and true, release administrators will also be able to use the access mechanisms for sharing (as opposed to just being able to 'set' the sharers)"
+      "If present and true, release administrators will also be able to use the access mechanisms for sharing (as opposed to just being able to 'set' the sharers)",
     ),
 });
 

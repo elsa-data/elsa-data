@@ -29,7 +29,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
     vcfEtag: string,
     vcfMd5: string,
     patientConsentJsons?: DuoLimitationCodedType[],
-    specimenConsentJsons?: DuoLimitationCodedType[]
+    specimenConsentJsons?: DuoLimitationCodedType[],
   ) => {
     return e.insert(e.dataset.DatasetCase, {
       externalIdentifiers: makeSystemlessIdentifierArray(caseId),
@@ -43,8 +43,8 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
                   ...patientConsentJsons.map((pc) =>
                     e.insert(e.consent.ConsentStatementDuo, {
                       dataUseLimitation: pc,
-                    })
-                  )
+                    }),
+                  ),
                 ),
               })
             : undefined,
@@ -57,8 +57,8 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
                     ...specimenConsentJsons.map((sc) =>
                       e.insert(e.consent.ConsentStatementDuo, {
                         dataUseLimitation: sc,
-                      })
-                    )
+                      }),
+                    ),
                   ),
                 })
               : undefined,
@@ -68,23 +68,23 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
               `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam`,
               bamSize,
               bamEtag,
-              bamMd5
+              bamMd5,
             ),
             createFile(
               `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.bam.bai`,
-              0
+              0,
             ),
             createFile(
               `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz`,
               vcfSize,
               vcfEtag,
-              vcfMd5
+              vcfMd5,
             ),
             createFile(
               `gs://umccr-10g-data-dev/${specimenId}/${specimenId}.hard-filtered.vcf.gz.tbi`,
-              0
+              0,
             ),
-            []
+            [],
           ),
         }),
       }),
@@ -108,7 +108,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           425745911,
           "19dca923f52f14af83d410983e46284f-26", // pragma: allowlist secret
           "54c76df2f55aa5a2450bd874bf488100", // pragma: allowlist secret
-          [{ code: "DUO:0000006", modifiers: [{ code: "DUO:0000045" }] }]
+          [{ code: "DUO:0000006", modifiers: [{ code: "DUO:0000045" }] }],
         ),
         await makeCase(
           "SINGLETONMARY",
@@ -130,7 +130,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
               diseaseCode: "MONDO:0005151",
               modifiers: [{ code: "DUO:0000045" }],
             },
-          ]
+          ],
         ),
         await makeCase(
           "SINGLETONJANE",
@@ -142,7 +142,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "8335ad513b0c22f32d558302448e69c8", // pragma: allowlist secret
           438966719,
           "3724127aaee9ca1a94f9b70d67e67a29-27", // pragma: allowlist secret
-          "48c5e1a3e232d4f0f86dc7d5573ee092" // pragma: allowlist secret
+          "48c5e1a3e232d4f0f86dc7d5573ee092", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONKAARINA",
@@ -154,7 +154,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "63510a8e2239cf249ca09713a91a6424", // pragma: allowlist secret
           437251295,
           "df373fd8c2d17baabe3ee589c0326fb9-27", // pragma: allowlist secret
-          "9797c64d48fa174fea3b01347e26a308" // pragma: allowlist secret
+          "9797c64d48fa174fea3b01347e26a308", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONANNELI",
@@ -166,7 +166,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "c74d331165fe3f38cc761f2a0722ba72", // pragma: allowlist secret
           429780695,
           "7d05309c6f6844d905c31be28586a982-26", // pragma: allowlist secret
-          "efbb3a684951c627b82cbd66e84f55c1" // pragma: allowlist secret
+          "efbb3a684951c627b82cbd66e84f55c1", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONMARIA",
@@ -178,7 +178,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "45d0cf732bab4a511a32107740b35a07", // pragma: allowlist secret
           434759056,
           "f47ab95a47264f62de13f5365b83eb64-26", // pragma: allowlist secret
-          "be6558787eb497fe2574d3c994e320f9" // pragma: allowlist secret
+          "be6558787eb497fe2574d3c994e320f9", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONMELE",
@@ -190,7 +190,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "cb7e8611d76ceca501692bd0eafb659d", // pragma: allowlist secret
           419758367,
           "7d735cd64a1117d1b862ff3228d7a6e2-26", // pragma: allowlist secret
-          "7917729eda54199c49195c0673692e22" // pragma: allowlist secret
+          "7917729eda54199c49195c0673692e22", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONPELANI",
@@ -202,7 +202,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "42cb60acce8b87487dbc4be04029d140", // pragma: allowlist secret
           419339818,
           "b257163c3eade1afb78f8bce4d6c89df-25", // pragma: allowlist secret
-          "49de7148a89194b1f706c510a7d1e9e7" // pragma: allowlist secret
+          "49de7148a89194b1f706c510a7d1e9e7", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONDEMBO",
@@ -214,7 +214,7 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "d2d47067e22360ebcc7a7eb0c4211f0f", // pragma: allowlist secret
           534880969,
           "ae99529fbdfcf1e399e6f7060b2b691e-32", // pragma: allowlist secret
-          "f8777c671b63974c3c0f1f167a57a36d" // pragma: allowlist secret
+          "f8777c671b63974c3c0f1f167a57a36d", // pragma: allowlist secret
         ),
         await makeCase(
           "SINGLETONPAKUTEH",
@@ -226,8 +226,8 @@ export async function insertGs(dc: DependencyContainer): Promise<string> {
           "65a66f7b1fa663a6c4660e42fb11baf6", // pragma: allowlist secret
           540694003,
           "cde09b0694f3cd5cfd014a7500cfc0e9-33", // pragma: allowlist secret
-          "bb80404412db614f2e6a7b9b49ab5977" // pragma: allowlist secret
-        )
+          "bb80404412db614f2e6a7b9b49ab5977", // pragma: allowlist secret
+        ),
       ),
     })
     .run(edgeDbClient);

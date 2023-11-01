@@ -11,7 +11,7 @@ export const TEST_SUBJECT_3_DISPLAY = "Test User 3";
  * Will create an ordinary (member/manager) user
  */
 export async function insertUser3(
-  dc: DependencyContainer
+  dc: DependencyContainer,
 ): Promise<UserObject> {
   const { edgeDbClient } = getServices(dc);
 

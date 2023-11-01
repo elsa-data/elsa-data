@@ -14,7 +14,7 @@ export const healthRoutes = async (
   fastify: FastifyInstance,
   opts: {
     container: DependencyContainer;
-  }
+  },
 ) => {
   /**
    * Add a health check route that just purely indicates connectivity to the HTTP server... should
@@ -26,7 +26,7 @@ export const healthRoutes = async (
     { logLevel: "silent" },
     async function (request, reply) {
       reply.send("Ok");
-    }
+    },
   );
 
   /**

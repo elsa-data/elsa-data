@@ -31,7 +31,7 @@ export const RhRadioItem = React.forwardRef<HTMLInputElement, Props>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 /**

@@ -16,7 +16,7 @@ export class ProviderFile extends ProviderBase {
 
     if (argTokens.length != 1)
       throw new Error(
-        `${ProviderFile.name} expects a single meta parameter specifying the base name of a JSON5 file that will be found in the configuration directories`
+        `${ProviderFile.name} expects a single meta parameter specifying the base name of a JSON5 file that will be found in the configuration directories`,
       );
 
     this.fileBase = argTokens[0].value;
@@ -58,7 +58,7 @@ export class ProviderFile extends ProviderBase {
 
       if (duplicate)
         throw new Error(
-          `Folder name ${folderName} resolved to a folder we have already had listed`
+          `Folder name ${folderName} resolved to a folder we have already had listed`,
         );
     }
 
@@ -72,7 +72,7 @@ export class ProviderFile extends ProviderBase {
       // TODO: consider whether YAML should also be supported as the config file format
 
       const onlyJson5Files = configEntries.filter(
-        (de) => de.isFile() && de.name.endsWith("json5")
+        (de) => de.isFile() && de.name.endsWith("json5"),
       );
 
       const fileName = `${this.fileBase}.json5`;
@@ -88,14 +88,14 @@ export class ProviderFile extends ProviderBase {
     const baseMessage = `Configuration file ${
       this.fileBase
     } (.json5) was not found in any of the configuration folders ${foldersAbsolute.join(
-      path.delimiter
+      path.delimiter,
     )}`;
 
     if (foldersNotFound.length > 0) {
       throw new Error(
         `${baseMessage}, though the following folders ${foldersNotFound.join(
-          path.delimiter
-        )} were deemed not accessible so were not inspected`
+          path.delimiter,
+        )} were deemed not accessible so were not inspected`,
       );
     } else throw new Error(baseMessage);
   }

@@ -37,7 +37,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
       onSuccess: (res) => {
         setCurrentTotal(res.total);
       },
-    }
+    },
   );
 
   const data = dataEgressQuery.data?.data;

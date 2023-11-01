@@ -29,7 +29,7 @@ import { IPLookupService } from "../src/business/services/ip-lookup-service";
   // global settings for DI
   const dc = await bootstrapDependencyInjection(
     logger,
-    settings.devTesting?.mockAwsCloud
+    settings.devTesting?.mockAwsCloud,
   );
 
   dc.register<ElsaSettings>("Settings", {
@@ -72,9 +72,9 @@ import { IPLookupService } from "../src/business/services/ip-lookup-service";
               dataEgressQueryService: awsCloudTrailLakeService,
               ipLookupService: ipLookupService,
               releaseKey: rd.releaseKey,
-            })
+            }),
         );
-      }
+      },
     );
   }
 })();

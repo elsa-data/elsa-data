@@ -27,7 +27,7 @@ it("audit user instant", async () => {
     "E",
     "Login",
     start,
-    edgeDbClient
+    edgeDbClient,
   );
 
   await auditEventService.completeUserAuditEvent(
@@ -38,7 +38,7 @@ it("audit user instant", async () => {
     {
       message: "Message",
     },
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getUserEntries(
@@ -49,7 +49,7 @@ it("audit user instant", async () => {
     false,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -75,7 +75,7 @@ it("audit user instant with create function", async () => {
     { message: "Message" },
     8,
     new Date(),
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getUserEntries(
@@ -86,7 +86,7 @@ it("audit user instant with create function", async () => {
     false,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -112,7 +112,7 @@ it("audit user duration", async () => {
     "E",
     "Login",
     start,
-    edgeDbClient
+    edgeDbClient,
   );
 
   await auditEventService.completeUserAuditEvent(
@@ -123,7 +123,7 @@ it("audit user duration", async () => {
     {
       message: "Message",
     },
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getUserEntries(
@@ -134,7 +134,7 @@ it("audit user duration", async () => {
     false,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);
@@ -160,7 +160,7 @@ it("get entries with no filter", async () => {
     false,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
   expect(events).toEqual(null);
 });
@@ -173,7 +173,7 @@ it("get in progress user entries", async () => {
     "E",
     "Login",
     new Date(),
-    edgeDbClient
+    edgeDbClient,
   );
 
   const events = await auditEventService.getUserEntries(
@@ -184,7 +184,7 @@ it("get in progress user entries", async () => {
     false,
     "occurredDateTime",
     false,
-    edgeDbClient
+    edgeDbClient,
   );
 
   const auditEvent = events?.data?.find((element) => element.objectId === aeId);

@@ -30,7 +30,7 @@ export const releaseParticipantRouter = router({
         user,
         releaseKey,
         pageSize,
-        calculateOffset(page, pageSize)
+        calculateOffset(page, pageSize),
       );
     }),
   addParticipant: internalProcedure
@@ -39,7 +39,7 @@ export const releaseParticipantRouter = router({
         releaseKey: inputReleaseKey,
         email: z.string(),
         role: z.enum(ReleaseParticipantRoleConst),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
@@ -49,7 +49,7 @@ export const releaseParticipantRouter = router({
         user,
         releaseKey,
         email,
-        role
+        role,
       );
     }),
 
@@ -59,7 +59,7 @@ export const releaseParticipantRouter = router({
         releaseKey: inputReleaseKey,
         email: z.string(),
         role: z.enum(ReleaseParticipantRoleConst),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
@@ -69,7 +69,7 @@ export const releaseParticipantRouter = router({
         user,
         releaseKey,
         email,
-        role
+        role,
       );
     }),
 
@@ -78,7 +78,7 @@ export const releaseParticipantRouter = router({
       z.object({
         releaseKey: inputReleaseKey,
         email: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
@@ -87,7 +87,7 @@ export const releaseParticipantRouter = router({
       return ctx.releaseParticipantService.removeParticipant(
         user,
         releaseKey,
-        email
+        email,
       );
     }),
 });

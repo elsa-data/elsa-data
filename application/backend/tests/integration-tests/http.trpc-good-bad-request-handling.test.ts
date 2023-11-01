@@ -22,7 +22,7 @@ describe("TRPC good/bad request handling tests", () => {
       server,
       "/api/trpc",
       authCookieValue,
-      csrfHeaderValue
+      csrfHeaderValue,
     );
 
     const result = await client.test.succeed.query({

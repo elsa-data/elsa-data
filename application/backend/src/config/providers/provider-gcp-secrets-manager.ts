@@ -14,7 +14,7 @@ export class ProviderGcpSecretsManager extends ProviderBase {
 
     if (argTokens.length != 1)
       throw new Error(
-        `${ProviderGcpSecretsManager.name} expects a single meta parameter specifying the name of an GCP secret`
+        `${ProviderGcpSecretsManager.name} expects a single meta parameter specifying the name of an GCP secret`,
       );
 
     this.secretId = argTokens[0].value;

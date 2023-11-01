@@ -21,7 +21,7 @@ export class AuditEventTimedService {
     key: string,
     delay: Duration,
     startAuditEventFn: (start: Date) => Promise<string | null>,
-    completeAuditEventFn?: (auditEventId: string, end: Date) => Promise<void>
+    completeAuditEventFn?: (auditEventId: string, end: Date) => Promise<void>,
   ): Promise<string | null> {
     if (!this.awaitingAuditEvents.has(key)) {
       this.awaitingAuditEvents.add(key);

@@ -17,7 +17,7 @@ import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-typ
 export const unpackFileArtifact = (
   fileArtifact: any,
   includeReadData: boolean = true,
-  includeVariantData: boolean = true
+  includeVariantData: boolean = true,
 ): Pick<
   ManifestBucketKeyObjectType,
   | "artifactId"
@@ -167,7 +167,7 @@ export async function createReleaseFileList(
   executor: Executor,
   specimens: { id: string }[],
   includeReadData: boolean,
-  includeVariantData: boolean
+  includeVariantData: boolean,
 ): Promise<ManifestBucketKeyObjectType[]> {
   // a query to retrieve all the files associated with the given specimen ids
   const filesResult = await artifactFilesForSpecimensQuery.run(executor, {
@@ -185,7 +185,7 @@ export async function createReleaseFileList(
       const unpacked = unpackFileArtifact(
         fa,
         includeReadData,
-        includeVariantData
+        includeVariantData,
       );
       if (unpacked === null) {
         continue;
@@ -218,29 +218,28 @@ export async function getAllFileRecords(
   edgeDbClient: edgedb.Client,
   userService: UserService,
   user: AuthenticatedUser,
-  releaseKey: string
+  releaseKey: string,
 ): Promise<ManifestBucketKeyObjectType[]> {
   const { userRole } = await doRoleInReleaseCheck(
     userService,
     user,
-    releaseKey
+    releaseKey,
   );
 
   const { releaseSelectedSpecimensQuery, releaseInfo } = await getReleaseInfo(
     edgeDbClient,
-    releaseKey
+    releaseKey,
   );
 
   return await edgeDbClient.transaction(async (tx) => {
-    const releaseSelectedSpecimens = await releaseSelectedSpecimensQuery.run(
-      tx
-    );
+    const releaseSelectedSpecimens =
+      await releaseSelectedSpecimensQuery.run(tx);
 
     return await createReleaseFileList(
       tx,
       releaseSelectedSpecimens,
       releaseInfo.isAllowedReadData,
-      releaseInfo.isAllowedVariantData
+      releaseInfo.isAllowedVariantData,
     );
   });
 }

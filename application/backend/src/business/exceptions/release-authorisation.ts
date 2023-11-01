@@ -7,7 +7,7 @@ export class ReleaseViewError extends Base7807Error {
       403,
       `The user do not have the permission to access release${
         releaseKey ? ` with key '${releaseKey}'` : ""
-      }.`
+      }.`,
     );
   }
 }
@@ -17,7 +17,7 @@ export class ReleaseCreateError extends Base7807Error {
     super(
       "The user does not have permission to access the content release",
       403,
-      `The user do not have the permission to create new releases.`
+      `The user do not have the permission to create new releases.`,
     );
   }
 }

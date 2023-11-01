@@ -8,7 +8,7 @@ export class GcpEnabledService {
 
   constructor(@inject("Logger") private readonly logger: Logger) {
     logger.debug(
-      "Created GcpEnabledInstance instance - expecting this to only happen once"
+      "Created GcpEnabledInstance instance - expecting this to only happen once",
     );
   }
 
@@ -39,7 +39,7 @@ export class GcpEnabledService {
   public async enabledGuard() {
     if (!(await this.isEnabled()))
       throw new Error(
-        "This service is not enabled due to lack of GCP credentials"
+        "This service is not enabled due to lack of GCP credentials",
       );
   }
 }

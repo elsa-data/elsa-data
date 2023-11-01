@@ -15,7 +15,7 @@ export const ADD_USER_COMMAND = "add-user";
  */
 export async function commandAddUser(
   dc: DependencyContainer,
-  userEmail: string
+  userEmail: string,
 ): Promise<void> {
   const edgeDbClient: edgedb.Client = dc.resolve("Database");
 

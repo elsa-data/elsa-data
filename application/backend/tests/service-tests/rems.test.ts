@@ -41,7 +41,7 @@ beforeEach(async () => {
 xit("sync", async () => {
   const newReleases = await remsService.detectNewReleases(
     superAdminUser,
-    configDac
+    configDac,
   );
 
   console.log(newReleases);
@@ -58,7 +58,7 @@ it("Test non-allowed user to detect new release.", async () => {
   await expect(async () => {
     const newReleases = await remsService.detectNewReleases(
       notAllowedUser,
-      configDac
+      configDac,
     );
   }).rejects.toThrow(ReleaseViewError);
 });
@@ -68,7 +68,7 @@ it("Test non-allowed user to create new release.", async () => {
     const newReleases = await remsService.startNewRelease(
       notAllowedUser,
       configDac,
-      1
+      1,
     );
   }).rejects.toThrow(ReleaseCreateError);
 });

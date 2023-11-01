@@ -12,7 +12,7 @@ export function cookieForUI(
   request: FastifyRequest,
   reply: FastifyReply,
   k: string,
-  v: string
+  v: string,
 ) {
   return reply.setCookie(k, v, {
     path: "/",
@@ -34,7 +34,7 @@ export function cookieBackendSessionSetKeyValue(
   request: FastifyRequest,
   reply: FastifyReply,
   k: string,
-  v: any
+  v: any,
 ) {
   request.session.options({
     maxAge: 24 * 60 * 60, // 1 day (in seconds); Documented in "SECURITY.md" please update accordingly.

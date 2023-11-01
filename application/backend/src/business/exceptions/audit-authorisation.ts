@@ -7,7 +7,7 @@ export class NotAuthorisedViewAudits extends Base7807Error {
       403,
       `User do not have a role to access audit events${
         releaseKey ? ` for the release key of '${releaseKey}'` : ""
-      }.`
+      }.`,
     );
   }
 }
@@ -17,7 +17,7 @@ export class NotAuthorisedUpdateDataEgressRecords extends Base7807Error {
     super(
       "Unauthorised attempt to update data egress records",
       403,
-      `User do not have the permission to update data egress records.`
+      `User do not have the permission to update data egress records.`,
     );
   }
 }

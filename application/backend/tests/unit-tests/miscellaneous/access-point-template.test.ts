@@ -55,7 +55,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       "RELEASEID",
       singleBucketFiles,
       ["123456789"],
-      "vpc-123456"
+      "vpc-123456",
     );
 
     expect(result).toHaveLength(2);
@@ -68,7 +68,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
 
       expect(rootTemplateJson).toHaveProperty(
         "AWSTemplateFormatVersion",
-        "2010-09-09"
+        "2010-09-09",
       );
       expect(rootTemplateJson).toHaveProperty("Resources");
     }
@@ -81,7 +81,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       "REGION",
       "RELEASEID",
       dualBucketFiles,
-      ["123456789"]
+      ["123456789"],
     );
 
     expect(result).toHaveLength(2);
@@ -92,7 +92,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
 
       expect(rootTemplateJson).toHaveProperty(
         "AWSTemplateFormatVersion",
-        "2010-09-09"
+        "2010-09-09",
       );
     }
   });

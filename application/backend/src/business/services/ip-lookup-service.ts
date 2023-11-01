@@ -14,7 +14,7 @@ export class IPLookupService {
   private maxMindReader: Reader<CityResponse> | undefined = undefined;
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Logger") private readonly logger: Logger
+    @inject("Logger") private readonly logger: Logger,
   ) {}
 
   /**
@@ -27,7 +27,7 @@ export class IPLookupService {
         this.maxMindReader = await maxmind.open<CityResponse>(maxMindDbPath);
       } catch (error) {
         this.logger.warn(
-          `The configured MaxMind Database (${maxMindDbPath}) does not contain a readable MaxMind Database, therefore, it will not perform IP lookup.`
+          `The configured MaxMind Database (${maxMindDbPath}) does not contain a readable MaxMind Database, therefore, it will not perform IP lookup.`,
         );
       }
     }

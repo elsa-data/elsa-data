@@ -195,7 +195,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
                 code: ontoResult.code,
                 display: ontoResult.display,
               };
-            })
+            }),
           );
       });
   };
@@ -259,7 +259,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
                 "block",
                 "px-4",
                 "py-2",
-                "text-sm"
+                "text-sm",
               );
 
               return (

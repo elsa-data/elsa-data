@@ -41,7 +41,7 @@ import { NOT_AUTHORISED_MESSAGE } from "./authentication-error";
 export function ErrorHandler(
   error: Error,
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   // because we are in an error handler - we obviously have to be very careful about
   // creating our own errors in the error handler!
@@ -82,7 +82,7 @@ export function ErrorHandler(
     }
   } else {
     request.log.error(
-      "Undefined error object encountered in Fastify error handler - responded with generic 500 error"
+      "Undefined error object encountered in Fastify error handler - responded with generic 500 error",
     );
   }
   // we can't allow a non-error status to come through this code-path - and if we get one - we have to report this

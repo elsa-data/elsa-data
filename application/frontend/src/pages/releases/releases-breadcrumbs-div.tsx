@@ -37,7 +37,7 @@ export const ReleasesBreadcrumbsDiv: React.FC<{
       // Don't show the "Jobs" breadcrumb for non-admins
       si.id !== "jobs" ||
       props.releaseData.roleInRelease === "Administrator" ||
-      props.releaseData.roleInRelease === "AdminView"
+      props.releaseData.roleInRelease === "AdminView",
   );
 
   return (

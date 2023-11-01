@@ -25,13 +25,13 @@ import { collapseExternalIds } from "../helpers";
  */
 export async function transformMasterManifestToBucketKeyManifest(
   masterManifest: ManifestMasterType,
-  filterByProtocol: (KnownObjectProtocolType | "*")[]
+  filterByProtocol: (KnownObjectProtocolType | "*")[],
 ): Promise<ManifestBucketKeyType> {
   // this might be overly strict - but until there is a use case for us generating empty manifests
   // I would prefer this is a hard fail early
   if (!filterByProtocol || filterByProtocol.length === 0) {
     throw new Error(
-      "The protocol filter for the manifest transform is empty which guarantees an empty output"
+      "The protocol filter for the manifest transform is empty which guarantees an empty output",
     );
   }
 
@@ -54,7 +54,7 @@ export async function transformMasterManifestToBucketKeyManifest(
       checksums: {
         type: "MD5" | "AWS_ETAG" | "SHA_1" | "SHA_256";
         value: string;
-      }[]
+      }[],
     ): Pick<
       ManifestBucketKeyObjectType,
       | "objectStoreProtocol"
@@ -68,11 +68,11 @@ export async function transformMasterManifestToBucketKeyManifest(
         if (match) {
           if (
             !KnownObjectProtocolsArray.includes(
-              match[1] as KnownObjectProtocolType
+              match[1] as KnownObjectProtocolType,
             )
           )
             throw new Error(
-              `Encountered object URL ${url} with unknown protocol ${match[1]} - known protocols are ${KnownObjectProtocolsArray}`
+              `Encountered object URL ${url} with unknown protocol ${match[1]} - known protocols are ${KnownObjectProtocolsArray}`,
             );
 
           return {
@@ -85,24 +85,24 @@ export async function transformMasterManifestToBucketKeyManifest(
         }
       }
       throw new Error(
-        `Encountered object URL ${url} that could not be correctly processed for release`
+        `Encountered object URL ${url} that could not be correctly processed for release`,
       );
     };
 
     for (const artifact of specimenWithArtifacts.artifacts) {
       const createEntry = (
         file: typeof artifact.baiFile,
-        objectType: string
+        objectType: string,
       ) => {
         return {
           caseId: collapseExternalIds(
-            specimenWithArtifacts.case_?.externalIdentifiers
+            specimenWithArtifacts.case_?.externalIdentifiers,
           ),
           patientId: collapseExternalIds(
-            specimenWithArtifacts.patient?.externalIdentifiers
+            specimenWithArtifacts.patient?.externalIdentifiers,
           ),
           specimenId: collapseExternalIds(
-            specimenWithArtifacts.externalIdentifiers
+            specimenWithArtifacts.externalIdentifiers,
           ),
           artifactId: artifact.id,
           objectType: objectType,
@@ -119,7 +119,7 @@ export async function transformMasterManifestToBucketKeyManifest(
         } else {
           if (
             filterByProtocol.includes(
-              e.objectStoreProtocol as KnownObjectProtocolType | "*"
+              e.objectStoreProtocol as KnownObjectProtocolType | "*",
             )
           )
             converted.push(e);

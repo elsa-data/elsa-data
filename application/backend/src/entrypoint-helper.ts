@@ -186,7 +186,7 @@ export function redactConfig(obj: any) {
 export async function executeEdgeCli(
   logger: Logger,
   args: string[],
-  deleteEnvKeys: string[] = []
+  deleteEnvKeys: string[] = [],
 ) {
   const execFilePromise = promisify(execFile);
 

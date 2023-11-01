@@ -26,7 +26,7 @@ export const FilterElements = ({
   const updateIncludeEvents = (checkbox: AuditEventUserFilterType[]) => {
     if (checkbox.every((value) => includeEvents.includes(value))) {
       setIncludeEvents(
-        includeEvents.filter((value) => !checkbox.includes(value))
+        includeEvents.filter((value) => !checkbox.includes(value)),
       );
     } else {
       setIncludeEvents([...includeEvents, ...checkbox]);

@@ -26,14 +26,14 @@ export const HttpHostingSchema = z.object({
     secret: z
       .string()
       .describe(
-        "A long string secret that is used as part of the session encryption"
+        "A long string secret that is used as part of the session encryption",
       )
       .brand<Sensitive>(),
     salt: z
       .string()
       .length(16)
       .describe(
-        "A 16 character salt that is used as part of the session encryption"
+        "A 16 character salt that is used as part of the session encryption",
       )
       .brand<Sensitive>(),
   }),
@@ -47,19 +47,19 @@ export const HttpHostingSchema = z.object({
       allowList: z
         .optional(z.array(z.string()))
         .describe(
-          "The IP addresses of any clients allowed to bypass rate limiting"
+          "The IP addresses of any clients allowed to bypass rate limiting",
         ),
       max: z
         .optional(z.number().int())
         .describe(
-          "The maximum number of API calls allowed from a single IP in the time window"
+          "The maximum number of API calls allowed from a single IP in the time window",
         ),
       timeWindow: z
         .optional(z.number().int())
         .describe(
-          "The number of milliseconds in the time window in which rate limit events are measured"
+          "The number of milliseconds in the time window in which rate limit events are measured",
         ),
-    })
+    }),
   ),
 });
 

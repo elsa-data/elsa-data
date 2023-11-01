@@ -19,7 +19,7 @@ export type S3ObjectMetadataType = {
 };
 export async function awsListObjects(
   s3Client: S3Client,
-  s3UrlPrefix: string
+  s3UrlPrefix: string,
 ): Promise<S3ObjectMetadataType[]> {
   const stripS3Protocol = s3UrlPrefix.replaceAll(/s3:\/\//gi, "");
   const bucketName = stripS3Protocol.split("/")[0];
@@ -56,7 +56,7 @@ export async function awsListObjects(
 
 export async function readObjectToStringFromS3Url(
   s3Client: S3Client,
-  s3Url: string
+  s3Url: string,
 ): Promise<string> {
   const stripS3Protocol = s3Url.replaceAll(/s3:\/\//gi, "");
   const bucketName = stripS3Protocol.split("/")[0];
@@ -68,7 +68,7 @@ export async function readObjectToStringFromS3Url(
       new GetObjectCommand({
         Bucket: bucketName,
         Key: key,
-      })
+      }),
     );
     if (getObjOutput.Body) {
       const stream = getObjOutput.Body as Readable;

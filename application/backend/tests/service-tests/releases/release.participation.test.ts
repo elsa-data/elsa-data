@@ -28,7 +28,7 @@ beforeAll(async () => {
   edgeDbClient = testContainer.resolve("Database");
   releaseService = testContainer.resolve(ReleaseService);
   releaseParticipationService = testContainer.resolve(
-    ReleaseParticipationService
+    ReleaseParticipationService,
   );
 });
 
@@ -48,7 +48,7 @@ it("all the participants in a release are correctly returned", async () => {
     superAdminUser,
     testReleaseKey,
     10,
-    0
+    0,
   );
 
   const data = result.data;
@@ -59,7 +59,7 @@ it("all the participants in a release are correctly returned", async () => {
   expect(result.total).toBe(4);
 
   const comparableResults = _.map(data, (item) =>
-    _.pick(item, ["role", "email", "subjectId", "displayName"])
+    _.pick(item, ["role", "email", "subjectId", "displayName"]),
   );
 
   expect(comparableResults).toContainEqual({
@@ -85,14 +85,14 @@ it("adding a user who doesn't yet exist makes a potential user who is returned w
     superAdminUser,
     testReleaseKey,
     "test@example.com",
-    "Manager"
+    "Manager",
   );
 
   const result = await releaseParticipationService.getParticipants(
     superAdminUser,
     testReleaseKey,
     10,
-    0
+    0,
   );
 
   const data = result.data;
@@ -114,7 +114,7 @@ it("real users and potential users can both have their roles altered", async () 
     superAdminUser,
     testReleaseKey,
     "test@example.com",
-    "Member"
+    "Member",
   );
 
   {
@@ -122,7 +122,7 @@ it("real users and potential users can both have their roles altered", async () 
       superAdminUser,
       testReleaseKey,
       10,
-      0
+      0,
     );
 
     const data = startingResult.data;
@@ -138,7 +138,7 @@ it("real users and potential users can both have their roles altered", async () 
     superAdminUser,
     testReleaseKey,
     "subject4@elsa.net",
-    "Manager"
+    "Manager",
   );
 
   // upgrade our potential user to a Manager as well
@@ -146,7 +146,7 @@ it("real users and potential users can both have their roles altered", async () 
     superAdminUser,
     testReleaseKey,
     "test@example.com",
-    "Manager"
+    "Manager",
   );
 
   {
@@ -154,7 +154,7 @@ it("real users and potential users can both have their roles altered", async () 
       superAdminUser,
       testReleaseKey,
       10,
-      0
+      0,
     );
 
     const data = result.data;
@@ -174,18 +174,18 @@ it("real users and potential users can be removed", async () => {
     allowedAdministratorUser,
     testReleaseKey,
     "test@example.com",
-    "Member"
+    "Member",
   );
 
   await releaseParticipationService.removeParticipant(
     allowedAdministratorUser,
     testReleaseKey,
-    allowedMemberUser.email
+    allowedMemberUser.email,
   );
   await releaseParticipationService.removeParticipant(
     allowedAdministratorUser,
     testReleaseKey,
-    "test@example.com"
+    "test@example.com",
   );
 
   {
@@ -193,7 +193,7 @@ it("real users and potential users can be removed", async () => {
       superAdminUser,
       testReleaseKey,
       10,
-      0
+      0,
     );
 
     const data = result.data;
@@ -215,7 +215,7 @@ it("lower roles cannot remove/modify higher participant role", async () => {
       await releaseParticipationService.removeParticipant(
         allowedMemberUser,
         testReleaseKey,
-        allowedManagerUser.email
+        allowedManagerUser.email,
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
     await expect(async () => {
@@ -223,7 +223,7 @@ it("lower roles cannot remove/modify higher participant role", async () => {
         allowedMemberUser,
         testReleaseKey,
         "admin@elsa.org",
-        "Manager"
+        "Manager",
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
   }
@@ -234,7 +234,7 @@ it("lower roles cannot remove/modify higher participant role", async () => {
       await releaseParticipationService.removeParticipant(
         allowedManagerUser,
         testReleaseKey,
-        allowedAdministratorUser.email
+        allowedAdministratorUser.email,
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
     await expect(async () => {
@@ -242,7 +242,7 @@ it("lower roles cannot remove/modify higher participant role", async () => {
         allowedManagerUser,
         testReleaseKey,
         "admin@elsa.org",
-        "Administrator"
+        "Administrator",
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
   }
@@ -256,7 +256,7 @@ it("cannot edit its own participant role in the release", async () => {
         allowedAdministratorUser,
         testReleaseKey,
         allowedAdministratorUser.email,
-        "Manager"
+        "Manager",
       );
     }).rejects.toThrow(ReleaseParticipationPermissionError);
   }
@@ -270,7 +270,7 @@ it("cannot add new participant which has exist in the release", async () => {
         allowedAdministratorUser,
         testReleaseKey,
         allowedAdministratorUser.email,
-        "Manager"
+        "Manager",
       );
     }).rejects.toThrow(ReleaseParticipationExistError);
   }

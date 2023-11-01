@@ -22,7 +22,7 @@ import { EmailService } from "./business/services/email-service";
  */
 export function bootstrapDependencyInjectionSingletonServices(
   dc: DependencyContainer,
-  mockAws: boolean
+  mockAws: boolean,
 ) {
   // we register our singletons this way as this is the only way to prevent them being registered
   // in the global container namespace (we DON'T use the @singleton decorator)
@@ -47,7 +47,7 @@ export function bootstrapDependencyInjectionSingletonServices(
 
   dc.registerSingleton<AuditEventTimedService>(
     "ReleaseAuditTimedService",
-    AuditEventTimedService
+    AuditEventTimedService,
   );
 
   dc.registerSingleton<S3ManifestHtsgetService>(S3, S3ManifestHtsgetService);

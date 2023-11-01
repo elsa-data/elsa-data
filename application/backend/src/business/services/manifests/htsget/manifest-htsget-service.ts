@@ -35,12 +35,12 @@ import { ManifestBucketKeyObjectType } from "../manifest-bucket-key-types";
 import { PermissionService } from "../../permission-service";
 
 export function getHtsgetSetting(
-  settings: ElsaSettings
+  settings: ElsaSettings,
 ): SharerHtsgetType | undefined {
   // the typescript is not clever enough to work out the resolution of the discriminated union
   // to our htsget type - so we need to typecast
   const htsgetSettings: SharerHtsgetType[] = settings.sharers.filter(
-    (s) => s.type === "htsget"
+    (s) => s.type === "htsget",
   ) as SharerHtsgetType[];
 
   if (htsgetSettings.length < 1) {
@@ -49,7 +49,7 @@ export function getHtsgetSetting(
 
   if (htsgetSettings.length > 1)
     throw new Error(
-      "For the moment we have only enabled the logic for a single htsget sharer"
+      "For the moment we have only enabled the logic for a single htsget sharer",
     );
 
   return htsgetSettings[0];
@@ -69,15 +69,14 @@ export abstract class ManifestHtsgetService {
     private readonly auditLogService: AuditEventService,
     private readonly manifestService: ManifestService,
     private readonly releaseService: ReleaseService,
-    private readonly permissionService: PermissionService
+    private readonly permissionService: PermissionService,
   ) {}
 
   public async getActiveHtsgetManifest(
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ManifestHtsgetType | null> {
-    const masterManifest = await this.manifestService.getActiveManifest(
-      releaseKey
-    );
+    const masterManifest =
+      await this.manifestService.getActiveManifest(releaseKey);
 
     // TODO fix exceptions here
     if (!masterManifest) return null;
@@ -97,12 +96,12 @@ export abstract class ManifestHtsgetService {
   public async getActiveHtsgetManifestAsTsv(
     user: AuthenticatedUser,
     releaseKey: string,
-    tsvColumns: string[]
+    tsvColumns: string[],
   ) {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
         user,
-        releaseKey
+        releaseKey,
       );
 
     if (!this.permissionService.canAccessData(userRole))
@@ -156,12 +155,12 @@ export abstract class ManifestHtsgetService {
 
     const counter = await this.releaseService.getIncrementingCounter(
       user,
-      releaseKey
+      releaseKey,
     );
 
     const filename = `release-${releaseKey.replaceAll(
       "-",
-      ""
+      "",
     )}-htsget-${counter}.tsv`;
 
     return {
@@ -172,7 +171,7 @@ export abstract class ManifestHtsgetService {
 
   async publishHtsgetManifestAuditFn(
     releaseKey: string,
-    completeAuditFn: (details: any, executor: Executor) => Promise<void>
+    completeAuditFn: (details: any, executor: Executor) => Promise<void>,
   ): Promise<ManifestHtsgetResponseType> {
     const activated = await releaseIsActivated(this.edgeDbClient, {
       releaseKey,
@@ -181,7 +180,7 @@ export abstract class ManifestHtsgetService {
       this.edgeDbClient,
       {
         releaseKey,
-      }
+      },
     );
 
     if (!activated?.isActivated || !htsgetSharingConfig?.htsgetEnabled) {
@@ -201,18 +200,20 @@ export abstract class ManifestHtsgetService {
       // Should htsget have its own bucket, or is the tempBucket okay?
       const head = await this.cloudStorage.head(
         this.settings.aws.tempBucket,
-        manifestKey
+        manifestKey,
       );
 
       this.logger.debug(
-        `received head object in htsget manifest route: ${JSON.stringify(head)}`
+        `received head object in htsget manifest route: ${JSON.stringify(
+          head,
+        )}`,
       );
 
       // Get the difference in time between now and the last modified date of the object, plus it's max age.
       if (head.lastModified !== undefined) {
         const addMaxAge = addSeconds(
           head.lastModified,
-          htsgetSettings.maxAgeInSeconds
+          htsgetSettings.maxAgeInSeconds,
         );
         timeDifference = differenceInSeconds(addMaxAge, new Date());
       }
@@ -238,13 +239,13 @@ export abstract class ManifestHtsgetService {
       this.logger.debug(
         `publishing manifest: ${JSON.stringify(manifest)} to bucket: ${
           this.settings.aws.tempBucket
-        }`
+        }`,
       );
 
       await this.cloudStorage.put(
         this.settings.aws.tempBucket,
         manifestKey,
-        JSON.stringify(manifest)
+        JSON.stringify(manifest),
       );
 
       timeDifference = htsgetSettings.maxAgeInSeconds;
@@ -266,16 +267,16 @@ export abstract class ManifestHtsgetService {
   }
 
   public async publishHtsgetManifest(
-    releaseKey: string
+    releaseKey: string,
   ): Promise<ManifestHtsgetResponseType> {
     return await this.auditLogService.systemAuditEventPattern(
       "publish htsget manifest",
       async (completeAuditFn) => {
         return await this.publishHtsgetManifestAuditFn(
           releaseKey,
-          completeAuditFn
+          completeAuditFn,
         );
-      }
+      },
     );
   }
 }
@@ -293,7 +294,7 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ManifestService) manifestService: ManifestService,
     @inject(ReleaseService) releaseService: ReleaseService,
-    @inject(PermissionService) permissionService: PermissionService
+    @inject(PermissionService) permissionService: PermissionService,
   ) {
     super(
       settings,
@@ -303,7 +304,7 @@ export class S3ManifestHtsgetService extends ManifestHtsgetService {
       auditLogService,
       manifestService,
       releaseService,
-      permissionService
+      permissionService,
     );
   }
 }

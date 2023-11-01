@@ -50,7 +50,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
         onSuccess: (res) => {
           setCurrentTotal(res.total);
         },
-      }
+      },
     );
   const participantDataList = releaseParticipantsQuery.data?.data;
 
@@ -144,7 +144,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                       {
                         "input-error": !isEmailValid,
                         "input-accent": isEmailValid,
-                      }
+                      },
                     )}
                     value={newUserEmail}
                     onChange={(e) => setNewUserEmail(e.target.value)}
@@ -253,7 +253,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                                   "btn-table-action-danger",
                                   {
                                     "btn-disabled": isLoading,
-                                  }
+                                  },
                                 )}
                                 onConfirmButtonLabel={"Remove"}
                                 dialogTitle={`Remove Participant Confirmation`}

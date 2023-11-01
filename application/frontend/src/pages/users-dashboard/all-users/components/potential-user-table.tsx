@@ -85,7 +85,7 @@ export const PotentialUserTable = () => {
         // use the total
         setCurrentTotal(res.total);
       },
-    }
+    },
   );
 
   const removePotentialUserMutate = trpc.user.removePotentialUser.useMutation({
@@ -121,7 +121,7 @@ export const PotentialUserTable = () => {
               baseColumnClasses,
               "text-left",
               "pl-4",
-              "font-normal"
+              "font-normal",
             )}
           >
             {row.email}
@@ -132,7 +132,7 @@ export const PotentialUserTable = () => {
               baseColumnClasses,
               "text-left",
               "pr-4",
-              "font-normal"
+              "font-normal",
             )}
           >
             {formatLocalDateTime(row.createdDateTime as string | undefined)}
@@ -143,7 +143,7 @@ export const PotentialUserTable = () => {
               baseColumnClasses,
               "text-right",
               "pl-4",
-              "font-normal"
+              "font-normal",
             )}
           >
             {permissionIconProperties.map((prop) => (

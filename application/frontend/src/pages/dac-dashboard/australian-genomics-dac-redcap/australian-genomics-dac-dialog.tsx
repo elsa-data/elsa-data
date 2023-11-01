@@ -122,7 +122,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                   },
                   onError: (err: any) =>
                     setLastError(err?.response?.data?.detail),
-                }
+                },
               );
             else {
               // this should not be possible as the button is disabled whilst the row index is null

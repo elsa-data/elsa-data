@@ -31,7 +31,7 @@ export const RemsDacDialog: React.FC<Props> = ({
   const cancelButtonRef = useRef(null);
 
   const [lastMutateError, setLastMutateError] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const createNewReleaseMutate = trpc.dac.createNew.useMutation();
@@ -83,7 +83,7 @@ export const RemsDacDialog: React.FC<Props> = ({
                     },
                     onError: (err: any) =>
                       setLastMutateError(err?.response?.data?.detail),
-                  }
+                  },
                 );
               }}
               cancelButtonLabel={"Cancel"}

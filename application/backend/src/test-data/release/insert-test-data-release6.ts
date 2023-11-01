@@ -9,7 +9,7 @@ import { InsertReleaseProps, insertRole } from "./helpers";
 
 export async function insertRelease6(
   dc: DependencyContainer,
-  releaseProps: InsertReleaseProps
+  releaseProps: InsertReleaseProps,
 ) {
   const { edgeDbClient } = getServices(dc);
   const { releaseAdministrator, releaseManager, releaseMember, datasetUris } =
@@ -34,7 +34,7 @@ export async function insertRelease6(
       }),
       dataSharingConfiguration: e.insert(
         e.release.DataSharingConfiguration,
-        {}
+        {},
       ),
       datasetUris: datasetUris,
       datasetCaseUrisOrderPreference: [""],
@@ -55,7 +55,7 @@ export async function insertRelease6(
           whoId: "a",
           occurredDateTime: e.datetime_current(),
           inProgress: false,
-        })
+        }),
       ),
     })
     .run(edgeDbClient);
@@ -66,7 +66,7 @@ export async function insertRelease6(
       insertRelease6.id,
       user.email,
       "Administrator",
-      edgeDbClient
+      edgeDbClient,
     );
   }
   for (const user of releaseManager) {

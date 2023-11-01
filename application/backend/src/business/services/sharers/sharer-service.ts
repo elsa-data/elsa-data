@@ -20,7 +20,7 @@ export class SharerService {
     @inject(AwsDiscoveryService)
     private readonly awsDiscoveryService: AwsDiscoveryService,
     @inject(AuditEventService)
-    private readonly auditLogService: AuditEventService
+    private readonly auditLogService: AuditEventService,
   ) {}
 
   /**
@@ -32,7 +32,7 @@ export class SharerService {
    * @private
    */
   private async checkSharerWorking(
-    s: SharerType
+    s: SharerType,
   ): Promise<SharerWithStatusType> {
     switch (s.type) {
       case "object-signing":
@@ -77,7 +77,7 @@ export class SharerService {
    */
   public async getSharersConfiguration(): Promise<SharerWithStatusType[]> {
     return await Promise.all(
-      this.settings.sharers.map(async (i) => this.checkSharerWorking(i))
+      this.settings.sharers.map(async (i) => this.checkSharerWorking(i)),
     );
   }
 }

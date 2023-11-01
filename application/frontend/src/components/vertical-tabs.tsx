@@ -22,14 +22,14 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
 
   if (definedChildren.length != tabHeadings.length)
     throw new Error(
-      `Vertical tabs had mismatched children (${definedChildren.length}) and headers (${tabHeadings.length})`
+      `Vertical tabs had mismatched children (${definedChildren.length}) and headers (${tabHeadings.length})`,
     );
 
   return (
     <div
       className={classNames(
         "flex flex-row space-x-4",
-        "min-h-[200px]" // we want to assert a minimum height so that the whole tab group doesn't resize up and down as we tab through (small) content
+        "min-h-[200px]", // we want to assert a minimum height so that the whole tab group doesn't resize up and down as we tab through (small) content
       )}
     >
       <Tab.Group vertical={true}>
@@ -37,7 +37,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
           className={classNames(
             "flex flex-col justify-start", // vertical flex column but everything justified start (as we have a overall min height we *don't* want to grow into)
             "min-w-min", // assert a column span for the headers - here 1/5 of the overall grid
-            "space-y-4" // with some spacing between tab headers
+            "space-y-4", // with some spacing between tab headers
           )}
         >
           {tabHeadings.map((t, idx) => (
@@ -52,7 +52,7 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
                     "border-secondary": selected,
                     "border-slate-200 transition duration-200 ease-in-out hover:border-secondary-focus":
                       !selected,
-                  }
+                  },
                 )
               }
             >

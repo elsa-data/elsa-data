@@ -10,7 +10,7 @@ export interface IPresignedUrlProvider {
     releaseKey: string,
     bucket: string,
     key: string,
-    auditId: string
+    auditId: string,
   ): Promise<string>;
 }
 
@@ -20,7 +20,7 @@ export class PresignedUrlService {
     @inject("Database") private readonly edgeDbClient: edgedb.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @injectAll("IPresignedUrlProvider")
-    private readonly presignedUrlServices: IPresignedUrlProvider[]
+    private readonly presignedUrlServices: IPresignedUrlProvider[],
   ) {}
 
   public async isEnabled(): Promise<boolean> {
@@ -37,7 +37,7 @@ export class PresignedUrlService {
     protocol: string,
     bucket: string,
     key: string,
-    auditId: string
+    auditId: string,
   ): Promise<string> {
     for (const p of this.presignedUrlServices)
       if (protocol === p.protocol)

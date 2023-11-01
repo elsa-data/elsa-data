@@ -23,7 +23,7 @@ const R2_PREFIX = "r2://";
  */
 export async function transformDbManifestToMasterManifest(
   manifest: ManifestMasterType,
-  throwExceptions: boolean = true
+  throwExceptions: boolean = true,
 ): Promise<ManifestMasterType> {
   // TODO prune/collapse externalIdentifiers if we had rules about how they need to be processed
 
@@ -43,7 +43,7 @@ export async function transformDbManifestToMasterManifest(
   if (manifest.specimenList.length === 0) {
     if (throwExceptions)
       throw new ReleaseActivatedNothingError(
-        "No cases/patients/specimens selected"
+        "No cases/patients/specimens selected",
       );
   }
 
@@ -167,7 +167,7 @@ export async function transformDbManifestToMasterManifest(
  */
 function checkArtifacts(manifest: ManifestMasterType) {
   const artifacts = manifest.specimenList.flatMap(
-    (specimen) => specimen.artifacts
+    (specimen) => specimen.artifacts,
   );
 
   let checkReadData = (artifact: any) => {
@@ -190,7 +190,7 @@ function checkArtifacts(manifest: ManifestMasterType) {
   if (
     artifacts.length === 0 ||
     artifacts.every(
-      (artifact) => checkReadData(artifact) && checkVariantData(artifact)
+      (artifact) => checkReadData(artifact) && checkVariantData(artifact),
     )
   ) {
     throw new ReleaseActivatedNothingError("No data artifacts present");
@@ -201,12 +201,12 @@ function checkArtifacts(manifest: ManifestMasterType) {
     manifest.releaseIsAllowedVariantData
   ) {
     const artifacts = manifest.specimenList.flatMap(
-      (specimen) => specimen.artifacts
+      (specimen) => specimen.artifacts,
     );
 
     if (manifest.releaseIsAllowedReadData && artifacts.every(checkReadData)) {
       throw new ReleaseActivatedMismatchedExpectationsError(
-        "Read data is enabled but there are no read data artifacts"
+        "Read data is enabled but there are no read data artifacts",
       );
     }
 
@@ -215,7 +215,7 @@ function checkArtifacts(manifest: ManifestMasterType) {
       artifacts.every(checkVariantData)
     ) {
       throw new ReleaseActivatedMismatchedExpectationsError(
-        "Variant data is enabled but there are no variant data artifacts"
+        "Variant data is enabled but there are no variant data artifacts",
       );
     }
   }

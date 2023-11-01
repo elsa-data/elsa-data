@@ -87,7 +87,7 @@ bootstrapGlobalSynchronous();
   // global settings for DI
   const dc = await bootstrapDependencyInjection(
     logger,
-    settings.devTesting?.mockAwsCloud
+    settings.devTesting?.mockAwsCloud,
   );
 
   // THE DI CHECKING NEEDS TO BE WRITTEN SO THAT IS ACTUALLY STOPS IF DI FAILING - NOT JUST
@@ -160,7 +160,7 @@ bootstrapGlobalSynchronous();
         todo.push(async () => {
           // as a 'bonus' we also test the logging out
           logger.info(
-            `Logger level is currently set at '${logger.level}' - test messages at all levels to follow`
+            `Logger level is currently set at '${logger.level}' - test messages at all levels to follow`,
           );
           logger.trace("Logger trace test");
           logger.debug("Logger debug test");
@@ -186,7 +186,7 @@ bootstrapGlobalSynchronous();
       case WEB_SERVER_WITH_SCENARIO_COMMAND:
         if (c.args.length != 1) {
           logger.fatal(
-            `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`
+            `Command ${WEB_SERVER_WITH_SCENARIO_COMMAND} requires a single number argument indicating which scenario to start with`,
           );
           return 1;
         }
@@ -199,7 +199,7 @@ bootstrapGlobalSynchronous();
       case ADD_SCENARIO_COMMAND:
         if (c.args.length != 1) {
           logger.fatal(
-            `Command ${ADD_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`
+            `Command ${ADD_SCENARIO_COMMAND} requires a single number argument indicating which scenario to add`,
           );
           return 1;
         }
@@ -210,7 +210,7 @@ bootstrapGlobalSynchronous();
       case ADD_USER_COMMAND:
         if (c.args.length != 1) {
           logger.fatal(
-            `Command ${ADD_USER_COMMAND} requires a single email address argument indicating a user who should be able to login`
+            `Command ${ADD_USER_COMMAND} requires a single email address argument indicating a user who should be able to login`,
           );
           return 1;
         }
@@ -290,13 +290,13 @@ function printHelpText(logger: Logger) {
   logger.info(`${DB_CREATE_COMMAND} - create database if not existing`);
   logger.info(`${DB_WIPE_COMMAND} - wipe database content`);
   logger.info(
-    `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`
+    `${ADD_SCENARIO_COMMAND} <scenario 1|2...> - add in the data for a scenario`,
   );
   logger.info(
-    `${ADD_USER_COMMAND} <email> - allow the given email to be able to log in to this instance`
+    `${ADD_USER_COMMAND} <email> - allow the given email to be able to log in to this instance`,
   );
   logger.info(
-    `${SYNC_DATASETS_COMMAND} <datasetUri> [...<datasetUri>] - sync datasets of given URIs`
+    `${SYNC_DATASETS_COMMAND} <datasetUri> [...<datasetUri>] - sync datasets of given URIs`,
   );
   // TODO implement some guards on destructive operations
   // console.log(`${DELETE_DATASETS_COMMAND} <datasetUri> - delete specified dataset URI.`);

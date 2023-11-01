@@ -15,7 +15,7 @@ export const apiUnauthenticatedRoutes = async (
   opts: {
     container: DependencyContainer;
     addDevTestingRoutes: boolean;
-  }
+  },
 ) => {
   // we want to make a new opts object as there are some values (like prefix) that can appear
   // in `opts` that we *don't* want to pass through

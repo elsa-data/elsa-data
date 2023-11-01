@@ -22,7 +22,7 @@ it("create timed audit event", async () => {
     "key",
     { seconds: 1 },
     startFn,
-    endFn
+    endFn,
   );
   expect(startFn).toBeCalledTimes(1);
   expect(endFn).not.toBeCalled();
@@ -31,7 +31,7 @@ it("create timed audit event", async () => {
     "key",
     { seconds: 1 },
     startFn,
-    endFn
+    endFn,
   );
   expect(startFn).toBeCalledTimes(1);
   expect(endFn).not.toBeCalled();

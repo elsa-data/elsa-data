@@ -8,7 +8,7 @@ export class NotAuthorisedGetOwnUser extends Base7807Error {
       401,
       `User is unable to read its own user information${
         subjectId ? ` subjectId: '${subjectId}'` : ""
-      }.`
+      }.`,
     );
   }
 }
@@ -20,7 +20,7 @@ export class NotAuthorisedViewUserManagement extends Base7807Error {
       403,
       `User do not have a role to read access user management${
         subjectId ? ` for the subject Id of '${subjectId}'` : ""
-      }.`
+      }.`,
     );
   }
 }
@@ -30,7 +30,7 @@ export class NotAuthorisedEditUserManagement extends Base7807Error {
     super(
       "Unauthorised attempt to edit user permission.",
       403,
-      `User do not have a role to edit user permission.`
+      `User do not have a role to edit user permission.`,
     );
   }
 }
@@ -40,7 +40,7 @@ export class NonExistentUser extends Base7807Error {
     super(
       "user does not exist",
       500,
-      `user with subject id ${subjectId} does not exist`
+      `user with subject id ${subjectId} does not exist`,
     );
   }
 }
@@ -50,7 +50,7 @@ export class UserEmailExist extends Base7807Error {
     super(
       "user does exist",
       400,
-      `user with email "${email}" exist in the system`
+      `user with email "${email}" exist in the system`,
     );
   }
 }
@@ -60,7 +60,7 @@ export class UserEmailNotExist extends Base7807Error {
     super(
       "user does not exist",
       400,
-      `user with email "${email}" does not exist`
+      `user with email "${email}" does not exist`,
     );
   }
 }

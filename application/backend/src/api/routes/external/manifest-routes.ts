@@ -15,7 +15,7 @@ export const manifestRoutes = async (
   fastify: FastifyInstance,
   opts: {
     container: DependencyContainer;
-  }
+  },
 ) => {
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
@@ -42,7 +42,7 @@ export const manifestRoutes = async (
       const releaseKey = request.params.releaseKey;
 
       const manifestService = opts.container.resolve<ManifestHtsgetService>(
-        request.query.type
+        request.query.type,
       );
 
       const output = await manifestService.publishHtsgetManifest(releaseKey);
@@ -50,9 +50,9 @@ export const manifestRoutes = async (
       reply
         .header(
           "Cache-Control",
-          `public, max-age=${output.maxAge}, must-revalidate, immutable`
+          `public, max-age=${output.maxAge}, must-revalidate, immutable`,
         )
         .send(output);
-    }
+    },
   );
 };

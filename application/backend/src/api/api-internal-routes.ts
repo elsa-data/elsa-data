@@ -32,7 +32,7 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
     // we should never ever get to this - but if for some reason our plumbing has gone wrong
     // then we need to stop this progressing any further
     throw new Error(
-      "Inside authenticated route body but no authenticated user data"
+      "Inside authenticated route body but no authenticated user data",
     );
 
   const elsaSettings: ElsaSettings = (request as any).settings;
@@ -67,7 +67,7 @@ export function authenticatedRouteOnEntryHelper(request: FastifyRequest) {
 export function sendResult<T>(
   reply: FastifyReply,
   pr: T | null,
-  headers: { [key: string]: string } = {}
+  headers: { [key: string]: string } = {},
 ) {
   if (!pr) reply.status(400).send();
   else {
@@ -83,7 +83,7 @@ export function sendResult<T>(
  */
 export function sendUncheckedPagedResult<T>(
   reply: FastifyReply,
-  pr: PagedResult<T>
+  pr: PagedResult<T>,
 ) {
   sendResult(reply, pr.data, {
     [TOTAL_COUNT_HEADER_NAME]: pr.total.toString(),
@@ -96,7 +96,7 @@ export function sendUncheckedPagedResult<T>(
  */
 export function sendPagedResult<T>(
   reply: FastifyReply,
-  pr: PagedResult<T> | null
+  pr: PagedResult<T> | null,
 ) {
   if (!pr || !pr.data) sendResult(reply, null);
   else {
@@ -119,7 +119,7 @@ export const apiInternalRoutes = async (
   opts: {
     container: DependencyContainer;
     allowTestCookieEquals?: string;
-  }
+  },
 ) => {
   const userService = opts.container.resolve(UserService);
 

@@ -70,7 +70,7 @@ export async function addTestUserRoutesAndActualUsers(
   fastify: FastifyInstance,
   opts: {
     container: DependencyContainer;
-  }
+  },
 ) {
   const { logger } = getServices(opts.container);
 
@@ -80,12 +80,12 @@ export async function addTestUserRoutesAndActualUsers(
     const subject = await userService.upsertUserForLogin(
       subjectProp.subjectId,
       subjectProp.name,
-      subjectProp.email
+      subjectProp.email,
     );
 
     if (!subject)
       throw new Error(
-        "Test users not setup correctly in database even though they are meant to be enabled"
+        "Test users not setup correctly in database even though they are meant to be enabled",
       );
 
     addTestUserRoute(
@@ -94,7 +94,7 @@ export async function addTestUserRoutesAndActualUsers(
       subjectProp.bypassPath,
       subjectProp.subjectId,
       subjectProp.name,
-      subjectProp.email
+      subjectProp.email,
     );
   }
 }
@@ -112,7 +112,7 @@ const addTestUserRoute = (
   path: string,
   subjectId: string,
   name: string,
-  email: string
+  email: string,
 ) => {
   fastify.post(path, async (request, reply) => {
     const { logger } = getServices(container);
@@ -124,11 +124,11 @@ const addTestUserRoute = (
       email,
       {
         ip: "192.19.192.192", // An example of US IP location
-      }
+      },
     );
 
     logger.warn(
-      `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`
+      `addTestUserRoute: executing login bypass route ${path} - this should only be occurring in locally deployed dev instances`,
     );
 
     const authUser = new AuthenticatedUser(dbUser);
@@ -144,7 +144,7 @@ const addTestUserRoute = (
       request,
       reply,
       SESSION_USER_DB_OBJECT_KEY_NAME,
-      authUser.asJson()
+      authUser.asJson(),
     );
 
     // CSRF Token passed as cookie

@@ -11,11 +11,11 @@ async function manifestBodyElements(
   datasetSpecimen: any,
   presignedUrlService: PresignedUrlService,
   releaseKey: string,
-  auditId: string
+  auditId: string,
 ): Promise<ManifestBucketKeyObjectType[]> {
   const artifacts: any[] = datasetSpecimen.artifacts;
   const unpackedFileArtifacts = artifacts.flatMap(
-    (a: any) => unpackFileArtifact(a) ?? []
+    (a: any) => unpackFileArtifact(a) ?? [],
   );
   const signedFileArtifacts = await Promise.all(
     unpackedFileArtifacts.map(async (f) => ({
@@ -25,24 +25,24 @@ async function manifestBodyElements(
         f.objectStoreProtocol,
         f.objectStoreBucket,
         f.objectStoreKey,
-        auditId
+        auditId,
       ),
-    }))
+    })),
   );
 
   return await Promise.all(
     signedFileArtifacts.map(async (a) => ({
       ...a,
       caseId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.case_.externalIdentifiers
+        datasetSpecimen.case_.externalIdentifiers,
       ),
       patientId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.patient.externalIdentifiers
+        datasetSpecimen.patient.externalIdentifiers,
       ),
       specimenId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.externalIdentifiers
+        datasetSpecimen.externalIdentifiers,
       ),
-    }))
+    })),
   );
 }
 
@@ -50,7 +50,7 @@ export async function transformMasterManifestToTsvManifest(
   masterManifest: ManifestMasterType,
   presignedUrlService: PresignedUrlService,
   releaseKey: string,
-  auditId: string
+  auditId: string,
 ): Promise<ManifestTsvBodyType> {
   return (
     await Promise.all(
@@ -60,9 +60,9 @@ export async function transformMasterManifestToTsvManifest(
             s,
             presignedUrlService,
             releaseKey,
-            auditId
-          )
-      )
+            auditId,
+          ),
+      ),
     )
   ).flat(1);
 }

@@ -29,7 +29,7 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
     queryClient.setQueryData(
       REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-      result
+      result,
     );
     setError({ error: null, isSuccess: true });
   };
