@@ -283,7 +283,9 @@ export class S3IndexApplicationService {
           ? ArtifactEnum.FASTQ
           : filenameId.endsWith(".bam") || filenameId.endsWith(".bai")
           ? ArtifactEnum.BAM
-          : filenameId.endsWith(".vcf") || filenameId.endsWith(".tbi")
+          : filenameId.endsWith(".vcf") ||
+            filenameId.endsWith(".gvcf") ||
+            filenameId.endsWith(".tbi")
           ? ArtifactEnum.VCF
           : filenameId.endsWith(".cram") || filenameId.endsWith(".crai")
           ? ArtifactEnum.CRAM
