@@ -582,18 +582,6 @@ describe("AWS s3 client", () => {
       `RANDOMCHECKSUM\t${filenameNoFamilyId}.tbi\t${studyIdNoLinkFamId}\n`;
 
     jest
-      .spyOn(datasetService, "getDatasetConfiguration")
-      .mockImplementation(() => ({
-        uri: MOCK_DATASET_URI,
-        name: "TEN_G",
-        description: "Test data for 10G flagship",
-        loader: "australian-genomics-directories",
-        storageLocation: "aws-s3",
-        storageUriPrefix: MOCK_STORAGE_PREFIX_URL,
-        caseIdentifierRegex: ".*(FAM\\d+).*$",
-      }));
-
-    jest
       .spyOn(awsHelper, "awsListObjects")
       .mockImplementation(async () => mockS3ObjectList);
     jest
