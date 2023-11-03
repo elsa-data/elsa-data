@@ -728,6 +728,7 @@ export class S3IndexApplicationService {
           );
         const datasetConfig: any =
           this.datasetService.getDatasetConfiguration(datasetUri);
+
         if (datasetConfig) {
           if (datasetConfig.specimenIdentifierRegex) {
             datasetSpecimenIdRe = datasetConfig.specimenIdentifierRegex;
@@ -812,6 +813,35 @@ export class S3IndexApplicationService {
 
       const phenopacketsFound: { [patientId: string]: PhenopacketIndividiual } =
         {};
+
+      // If we do not find any existing datasetCase id from the regex (that matches against the filename) provided, we
+      // would attempt to group or use other studyId that have the same proband study Id (study Id prefix). (e.g. the
+      // study id A123 belongs to the same A123_mat)
+      // Ref: https://github.com/elsa-data/elsa-data/issues/509
+
+      // We will create a dictionary of probandId (which is the studyId prefix) with the caseId (based on the regex of
+      // the filename)
+      const probandIdMapCaseId: Record<string, string> = {};
+
+      // Need to loop through all studyId
+      for (const m of groupedManifestByFiletype) {
+        const patientIdArray = m.patientIdArray;
+        const filenameId = m.filenameId;
+
+        for (const patientId of patientIdArray) {
+          const probandId = patientId.split("_")[0];
+
+          // If this filename has a matching regex (for the caseId), we will store this value
+          // There is a possibility that value are being replaced if it has the same probandId in the next iteration,
+          // but in theory they are all should be the same value
+          if (datasetCaseIdRe) {
+            const reMatchCaseId = filenameId.match(datasetCaseIdRe);
+            if (reMatchCaseId) {
+              probandIdMapCaseId[probandId] = reMatchCaseId[1];
+            }
+          }
+        }
+      }
 
       for (const groupedManifest of groupedManifestByFiletype) {
         // Parsing for easy access
@@ -928,11 +958,12 @@ export class S3IndexApplicationService {
 
           // Grouping and passing this array for the pedigree relationship below.
           const probandId = patientId.split("_")[0];
-          let datasetCaseId = patientIdArray.join(",");
-          if (datasetCaseIdRe) {
-            const reMatchCaseId = filenameId.match(datasetCaseIdRe);
-            if (reMatchCaseId) datasetCaseId = reMatchCaseId[1];
-          }
+
+          const matchedCaseId = probandIdMapCaseId[probandId];
+          const datasetCaseId = matchedCaseId
+            ? matchedCaseId
+            : patientIdArray.join(",");
+
           patientIdAndDataCaseIdLinkingArray.push({
             probandId: probandId,
             datasetCaseId: datasetCaseId,

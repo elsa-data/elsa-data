@@ -68,6 +68,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10g-data-dev",
+      caseIdentifierRegex: ".*(FAM\\d+).*$",
       aws: {
         eventDataStoreId: TENG_AWS_EVENT_DATA_STORE_ID,
       },
