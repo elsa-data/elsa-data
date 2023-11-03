@@ -815,8 +815,10 @@ export class S3IndexApplicationService {
         {};
 
       // If we do not find any existing datasetCase id from the regex (that matches against the filename) provided, we
-      // would attempt to group or use other studyId that have the same proband study Id (study Id prefix). (e.g. the
-      // study id A123 belongs to the same A123_mat)
+      // would attempt to group with other studyId that have the same proband study Id (study Id prefix) and use the
+      // caseId found on the other studyId.
+      // e.g. the studyId A123 (do not have caseId) belongs to the same A123_mat and will use A123's caseId instead)
+      //
       // Ref: https://github.com/elsa-data/elsa-data/issues/509
 
       // We will create a dictionary of probandId (which is the studyId prefix) with the caseId (based on the regex of
