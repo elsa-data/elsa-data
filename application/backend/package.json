@@ -131,7 +131,7 @@
     "@babel/core": "^7.21.8",
     "@babel/preset-env": "^7.21.5",
     "@babel/preset-typescript": "^7.21.5",
-    "@edgedb/generate": "0.3.3",
+    "@edgedb/generate": "0.4.1",
     "@types/archiver": "5.3.1",
     "@types/email-templates": "^10.0.1",
     "@types/etag": "1.8.1",
