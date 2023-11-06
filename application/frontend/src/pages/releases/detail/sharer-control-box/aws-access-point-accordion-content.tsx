@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import { UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerAwsAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
@@ -25,6 +25,10 @@ export const AwsAccessPointAccordionContent: React.FC<
   PropsWithChildren<AwsAccessPointAccordionContentProps>
 > = (props) => {
   const utils = trpc.useContext();
+
+  const [accessPointNameInput, setAccessPointNameInput] = useState(
+    props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY,
+  );
 
   const onSuccess = async () => {
     await utils.release.getSpecificRelease.invalidate({
@@ -148,28 +152,9 @@ export const AwsAccessPointAccordionContent: React.FC<
         </label>
         <select
           className="input-bordered input w-full"
-          value={
-            props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY
-          }
+          value={accessPointNameInput}
           onChange={(e) => {
-            // we make sure we are only changing to a name that exists in our config
-            const newName = Object.keys(
-              props.awsAccessPointSetting.allowedVpcs,
-            ).find((name) => name === e.target.value);
-
-            if (newName) {
-              props.releasePatchMutator.mutate({
-                op: "replace",
-                path: "/dataSharingConfiguration/awsAccessPointName",
-                value: newName,
-              });
-            } else {
-              props.releasePatchMutator.mutate({
-                op: "replace",
-                path: "/dataSharingConfiguration/awsAccessPointName",
-                value: "",
-              });
-            }
+            setAccessPointNameInput(e.target.value);
           }}
         >
           <option key="none" value={""} disabled={isVPCOptionDisabled}>
@@ -225,6 +210,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           onClick={() => {
             accessPointInstallTriggerMutate.mutate({
               releaseKey: props.releaseKey,
+              awsAccessPointName: accessPointNameInput,
             });
           }}
           disabled={isInstallDisabled}

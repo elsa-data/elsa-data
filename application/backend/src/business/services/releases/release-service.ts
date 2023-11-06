@@ -42,6 +42,7 @@ import {
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
 import { PermissionService } from "../permission-service";
+import { ReleaseConfigurationError } from "../../exceptions/release-configuration";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
@@ -580,6 +581,8 @@ ${release.applicantEmailAddresses}
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
+    const releaseInfo = await this.getBase(releaseKey, userRole);
+
     return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
       user,
       releaseKey,
@@ -645,7 +648,38 @@ ${release.applicantEmailAddresses}
             };
             break;
           case "/dataSharingConfiguration/awsAccessPointName":
-            // Check if active AP -> don't allow to change this?
+            //  We need some check before allowing any updates prevent the app to lose any context
+
+            // Currently only 1 AP can be installed at time as multiple AP causes duplicate CF stack name
+            // error. Might support multi AP for each release in the future.
+            // Ref: https://github.com/elsa-data/elsa-data/issues/514
+            if (releaseInfo.dataSharingAwsAccessPoint?.installed) {
+              throw new Error(
+                `Only 1 access point can be installed at a time. ` +
+                  `Access Point '${releaseInfo.dataSharingAwsAccessPoint?.name}' is currently installed`,
+              );
+            }
+
+            // We need to make sure the access point given is correct
+            const allowedAwsAccessPointConfig =
+              this.configForAwsAccessPointFeature();
+
+            if (!allowedAwsAccessPointConfig) {
+              throw new ReleaseConfigurationError(
+                "No AWS Access Point configuration for this release",
+              );
+            }
+
+            const isAccessPointNameValid = Object.keys(
+              allowedAwsAccessPointConfig?.allowedVpcs,
+            ).find((name) => name === value);
+
+            if (!isAccessPointNameValid) {
+              throw new ReleaseConfigurationError(
+                `The Access Point named '${value}' does not matched with configuration`,
+              );
+            }
+
             fieldToSet = {
               awsAccessPointName: e.str(value),
             };
