@@ -14,6 +14,7 @@ import {
 import { fileByUrlQuery } from "../../../src/business/db/storage-queries";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 import {
+  createS3ObjectList,
   S3_URL_PREFIX,
   MOCK_STORAGE_PREFIX_URL,
   MOCK_DATASET_URI,
@@ -49,6 +50,7 @@ import {
   getMd5FromChecksumsArray,
   makeSystemlessIdentifierArray,
   makeEmptyIdentifierArray,
+  makeSystemlessIdentifier,
 } from "../../../src/business/db/helper";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { DatasetService } from "../../../src/business/services/dataset-service";
@@ -487,7 +489,10 @@ describe("AWS s3 client", () => {
     }
   });
 
-  it("Test MOCK 4 Multi Study Id", async () => {
+  /**
+   * Test for Mock 4 data
+   */
+  it("test for multi (trio) study id in a single file", async () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
     const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
@@ -534,6 +539,68 @@ describe("AWS s3 client", () => {
         { externalIdentifiers: [{ system: "", value: MOCK_4_STUDY_ID_2 }] },
       ]),
     );
+  });
+
+  /**
+   * Testing for https://github.com/elsa-data/elsa-data/issues/509
+   */
+  it("test if studyId with no famId will be grouped as a datasetCase if has a matching prefix with other studyId", async () => {
+    const famId = "FAM1234567";
+
+    const agService = testContainer.resolve(S3IndexApplicationService);
+    const datasetService = testContainer.resolve(DatasetService);
+    await datasetService.selectOrInsertDataset({
+      datasetUri: MOCK_DATASET_URI,
+      datasetName: "Cardiac",
+      datasetDescription: "A test flagship",
+    });
+
+    // creating some mock of filenames (with on has a familyId)
+    const filenameWithFamilyId = `0000-${famId}-FILE001.vcf`;
+    const filenameNoFamilyId = "0000-FILE002.vcf";
+
+    const studyIdLinkFamId = "A0000001_mat";
+    const studyIdNoLinkFamId = "A0000001";
+
+    // mock files where dataset 1 file has a familyId included as filename and one doesn't
+
+    const mockS3ObjectList = [
+      createS3ObjectList(`Cardiac/2019-11-21/${filenameWithFamilyId}`),
+      createS3ObjectList(`Cardiac/2019-11-21/${filenameWithFamilyId}.tbi`),
+
+      createS3ObjectList(`Cardiac/2019-11-21/${filenameNoFamilyId}`),
+      createS3ObjectList(`Cardiac/2019-11-21/${filenameNoFamilyId}.tbi`),
+
+      createS3ObjectList(`Cardiac/2019-11-21/manifest.txt`),
+    ];
+
+    const mockManifest =
+      `checksum\tfilename\tagha_study_id\n` +
+      `RANDOMCHECKSUM\t${filenameWithFamilyId}\t${studyIdLinkFamId}\n` +
+      `RANDOMCHECKSUM\t${filenameWithFamilyId}.tbi\t${studyIdLinkFamId}\n` +
+      `RANDOMCHECKSUM\t${filenameNoFamilyId}\t${studyIdNoLinkFamId}\n` +
+      `RANDOMCHECKSUM\t${filenameNoFamilyId}.tbi\t${studyIdNoLinkFamId}\n`;
+
+    jest
+      .spyOn(awsHelper, "awsListObjects")
+      .mockImplementation(async () => mockS3ObjectList);
+    jest
+      .spyOn(awsHelper, "readObjectToStringFromS3Url")
+      .mockImplementation(async () => mockManifest);
+
+    await agService.syncWithDatabaseFromDatasetUri(
+      MOCK_DATASET_URI,
+      "australian-genomics-directories",
+    );
+
+    const datasetCase = await e
+      .select(e.dataset.DatasetCase, () => ({ ...e.dataset.DatasetCase["*"] }))
+      .run(edgedbClient);
+
+    expect(datasetCase.length).toBe(1);
+    expect(datasetCase[0].externalIdentifiers).toEqual([
+      { system: "", value: famId },
+    ]);
   });
 
   /* No longer initiated by known user - so no user audit event..

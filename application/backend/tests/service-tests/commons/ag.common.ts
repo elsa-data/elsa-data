@@ -8,7 +8,11 @@ export const MOCK_DATASET_URI = "urn:fdc:umccr.org:2022:dataset/10g"; // SYNC wi
 export const MOCK_STORAGE_PREFIX_URL = "s3://umccr-10g-data-dev/Cardiac";
 export const S3_URL_PREFIX = "s3://umccr-10g-data-dev/Cardiac/2019-11-21";
 
-function createS3ObjectList(key = "S3_KEY", etag = "AWS_ETAG", size = 1) {
+export function createS3ObjectList(
+  key = "S3_KEY",
+  etag = "AWS_ETAG",
+  size = 1,
+) {
   return {
     s3Url: `s3://umccr-10g-data-dev/${key}`,
     eTag: etag,
