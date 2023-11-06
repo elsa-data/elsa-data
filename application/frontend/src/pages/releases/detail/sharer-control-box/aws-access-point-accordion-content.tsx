@@ -26,9 +26,16 @@ export const AwsAccessPointAccordionContent: React.FC<
 > = (props) => {
   const utils = trpc.useContext();
 
-  const [accessPointNameInput, setAccessPointNameInput] = useState(
+  const [accessPointNameInput, setAccessPointNameInput] = useState<string>(
     props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY,
   );
+  const accessPointConfig =
+    props.awsAccessPointSetting.allowedVpcs[accessPointNameInput];
+
+  const isApInstalledButConfigRemoved =
+    !Object.keys(props.awsAccessPointSetting.allowedVpcs).find(
+      (name) => name === accessPointNameInput,
+    ) && props.releaseData?.dataSharingAwsAccessPoint?.installed;
 
   const onSuccess = async () => {
     await utils.release.getSpecificRelease.invalidate({
@@ -57,9 +64,7 @@ export const AwsAccessPointAccordionContent: React.FC<
 
   // does the backend have non-empty values for any fields
   const isCurrentlyMissingNeededValues =
-    !props.releaseData?.dataSharingAwsAccessPoint?.name ||
-    !props.releaseData?.dataSharingAwsAccessPoint?.vpcId ||
-    !props.releaseData?.dataSharingAwsAccessPoint?.accountId;
+    !accessPointConfig?.vpcId || !accessPointConfig?.accountId;
 
   // if mutators are running then UI bits needs to be disabled until finished
   const isCurrentlyMutating =
@@ -157,6 +162,15 @@ export const AwsAccessPointAccordionContent: React.FC<
             setAccessPointNameInput(e.target.value);
           }}
         >
+          {isApInstalledButConfigRemoved && (
+            <option
+              key="installed-but-removed"
+              value={accessPointNameInput}
+              disabled={isVPCOptionDisabled}
+            >
+              {`${accessPointNameInput} *`}
+            </option>
+          )}
           <option key="none" value={""} disabled={isVPCOptionDisabled}>
             {NONE_DISPLAY}
           </option>
@@ -168,6 +182,13 @@ export const AwsAccessPointAccordionContent: React.FC<
             ),
           )}
         </select>
+
+        {isApInstalledButConfigRemoved && (
+          <span className="label-text-alt text-slate-400 mt-2">
+            {`*This access point is installed but the configuration was removed`}
+          </span>
+        )}
+
         {isVPCOptionDisabled && (
           <span className="label-text-alt text-slate-400 mt-2">
             {`(Disabled: ${Array.from(
@@ -183,9 +204,7 @@ export const AwsAccessPointAccordionContent: React.FC<
             type="text"
             disabled={true}
             className="input-bordered input input-disabled w-full"
-            defaultValue={
-              props.releaseData.dataSharingAwsAccessPoint?.accountId
-            }
+            value={accessPointConfig?.accountId ?? ""}
           />
         </div>
         <div className="form-control flex-grow">
@@ -196,7 +215,7 @@ export const AwsAccessPointAccordionContent: React.FC<
             type="text"
             disabled={true}
             className="input-bordered input input-disabled w-full"
-            defaultValue={props.releaseData.dataSharingAwsAccessPoint?.vpcId}
+            value={accessPointConfig?.vpcId ?? ""}
           />
         </div>
       </div>

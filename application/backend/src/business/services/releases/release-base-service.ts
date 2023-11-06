@@ -249,7 +249,10 @@ export abstract class ReleaseBaseService {
       };
     } else {
       return {
-        name: "",
+        name:
+          isAwsAccessPointInstalled && awsAccessPointName
+            ? awsAccessPointName
+            : "",
         accountId: "",
         vpcId: "",
         installed: isAwsAccessPointInstalled,
