@@ -32,7 +32,8 @@ export const AwsAccessPointAccordionContent: React.FC<
   const accessPointConfig =
     props.awsAccessPointSetting.allowedVpcs[accessPointNameInput];
 
-  const isApInstalledButConfigRemoved =
+  // There is a possibility that there is an active access point but it is no longer in the configuration
+  const isActiveAccessPointButNoConfig =
     !Object.keys(props.awsAccessPointSetting.allowedVpcs).find(
       (name) => name === accessPointNameInput,
     ) && props.releaseData?.dataSharingAwsAccessPoint?.installed;
@@ -162,7 +163,8 @@ export const AwsAccessPointAccordionContent: React.FC<
             setAccessPointNameInput(e.target.value);
           }}
         >
-          {isApInstalledButConfigRemoved && (
+          {/* We want to show the active access point despite no longer in the option/VPCconfig */}
+          {isActiveAccessPointButNoConfig && (
             <option
               key="installed-but-removed"
               value={accessPointNameInput}
@@ -183,7 +185,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           )}
         </select>
 
-        {isApInstalledButConfigRemoved && (
+        {isActiveAccessPointButNoConfig && (
           <span className="label-text-alt text-slate-400 mt-2">
             {`*This access point is installed but the configuration was removed`}
           </span>

@@ -249,6 +249,8 @@ export abstract class ReleaseBaseService {
       };
     } else {
       return {
+        // We need some info (name) about the active AccessPoint to show in FE
+        // This could be possible if this Access Point details is removed from the config
         name:
           isAwsAccessPointInstalled && awsAccessPointName
             ? awsAccessPointName
