@@ -29,107 +29,112 @@ export const unpackFileArtifact = (
   | "objectStoreBucket"
   | "objectStoreKey"
   | "objectStoreSigned"
-> | null => {
+>[] => {
   const getMd5 = (checksums: any[]): string => {
     for (const c of checksums || []) {
       if (c.type === "MD5") return c.value;
     }
     return "";
   };
+  console.log("fileArtifact", fileArtifact);
 
   const getRaw = (): Pick<
     ManifestBucketKeyObjectType,
     "artifactId" | "md5" | "objectSize" | "objectStoreUrl" | "objectType"
-  > | null => {
-    if (fileArtifact.bclFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "BCL",
-        objectStoreUrl: fileArtifact.bclFile.url,
-        objectSize: fileArtifact.bclFile.size.toString(),
-        artifactId: fileArtifact.bclFile.id,
-        md5: getMd5(fileArtifact.bclFile.checksums),
-      };
-    } else if (fileArtifact.forwardFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "FASTQ",
-        objectStoreUrl: fileArtifact.forwardFile.url,
-        objectSize: fileArtifact.forwardFile.size.toString(),
-        artifactId: fileArtifact.forwardFile.id,
-        md5: getMd5(fileArtifact.forwardFile.checksums),
-      };
-    } else if (fileArtifact.reverseFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "FASTQ",
-        objectStoreUrl: fileArtifact.reverseFile.url,
-        objectSize: fileArtifact.reverseFile.size.toString(),
-        artifactId: fileArtifact.reverseFile.id,
-        md5: getMd5(fileArtifact.reverseFile.checksums),
-      };
-    } else if (fileArtifact.bamFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "BAM",
-        objectStoreUrl: fileArtifact.bamFile.url,
-        objectSize: fileArtifact.bamFile.size.toString(),
-        artifactId: fileArtifact.bamFile.id,
-        md5: getMd5(fileArtifact.bamFile.checksums),
-      };
-    } else if (fileArtifact.baiFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "BAM",
-        objectStoreUrl: fileArtifact.baiFile.url,
-        objectSize: fileArtifact.baiFile.size.toString(),
-        artifactId: fileArtifact.baiFile.id,
-        md5: getMd5(fileArtifact.baiFile.checksums),
-      };
-    } else if (fileArtifact.cramFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "CRAM",
-        objectStoreUrl: fileArtifact.cramFile.url,
-        objectSize: fileArtifact.cramFile.size.toString(),
-        artifactId: fileArtifact.cramFile.id,
-        md5: getMd5(fileArtifact.cramFile.checksums),
-      };
-    } else if (fileArtifact.craiFile) {
-      if (!includeReadData) return null;
-      return {
-        objectType: "CRAM",
-        objectStoreUrl: fileArtifact.craiFile.url,
-        objectSize: fileArtifact.craiFile.size.toString(),
-        artifactId: fileArtifact.craiFile.id,
-        md5: getMd5(fileArtifact.craiFile.checksums),
-      };
-    } else if (fileArtifact.vcfFile) {
-      if (!includeVariantData) return null;
-      return {
-        objectType: "VCF",
-        objectStoreUrl: fileArtifact.vcfFile.url,
-        objectSize: fileArtifact.vcfFile.size.toString(),
-        artifactId: fileArtifact.vcfFile.id,
-        md5: getMd5(fileArtifact.vcfFile.checksums),
-      };
-    } else if (fileArtifact.tbiFile) {
-      if (!includeVariantData) return null;
-      return {
-        objectType: "VCF",
-        objectStoreUrl: fileArtifact.tbiFile.url,
-        objectSize: fileArtifact.tbiFile.size.toString(),
-        artifactId: fileArtifact.tbiFile.id,
-        md5: getMd5(fileArtifact.tbiFile.checksums),
-      };
+  >[] => {
+    const rawArray = [];
+
+    if (includeReadData) {
+      if (fileArtifact.bclFile) {
+        rawArray.push({
+          objectType: "BCL",
+          objectStoreUrl: fileArtifact.bclFile.url,
+          objectSize: fileArtifact.bclFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.bclFile.checksums),
+        });
+      }
+      if (fileArtifact.forwardFile) {
+        rawArray.push({
+          objectType: "FASTQ",
+          objectStoreUrl: fileArtifact.forwardFile.url,
+          objectSize: fileArtifact.forwardFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.forwardFile.checksums),
+        });
+      }
+      if (fileArtifact.reverseFile) {
+        rawArray.push({
+          objectType: "FASTQ",
+          objectStoreUrl: fileArtifact.reverseFile.url,
+          objectSize: fileArtifact.reverseFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.reverseFile.checksums),
+        });
+      }
+      if (fileArtifact.bamFile) {
+        rawArray.push({
+          objectType: "BAM",
+          objectStoreUrl: fileArtifact.bamFile.url,
+          objectSize: fileArtifact.bamFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.bamFile.checksums),
+        });
+      }
+      if (fileArtifact.baiFile) {
+        rawArray.push({
+          objectType: "BAM",
+          objectStoreUrl: fileArtifact.baiFile.url,
+          objectSize: fileArtifact.baiFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.baiFile.checksums),
+        });
+      }
+      if (fileArtifact.cramFile) {
+        rawArray.push({
+          objectType: "CRAM",
+          objectStoreUrl: fileArtifact.cramFile.url,
+          objectSize: fileArtifact.cramFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.cramFile.checksums),
+        });
+      }
+      if (fileArtifact.craiFile) {
+        rawArray.push({
+          objectType: "CRAM",
+          objectStoreUrl: fileArtifact.craiFile.url,
+          objectSize: fileArtifact.craiFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.craiFile.checksums),
+        });
+      }
     }
 
-    return null;
+    if (includeVariantData) {
+      if (fileArtifact.vcfFile) {
+        rawArray.push({
+          objectType: "VCF",
+          objectStoreUrl: fileArtifact.vcfFile.url,
+          objectSize: fileArtifact.vcfFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.vcfFile.checksums),
+        });
+      }
+      if (fileArtifact.tbiFile) {
+        rawArray.push({
+          objectType: "VCF",
+          objectStoreUrl: fileArtifact.tbiFile.url,
+          objectSize: fileArtifact.tbiFile.size.toString(),
+          artifactId: fileArtifact.id,
+          md5: getMd5(fileArtifact.tbiFile.checksums),
+        });
+      }
+    }
+    console.log("rawArray", rawArray);
+    return rawArray;
   };
 
-  const raw = getRaw();
-
-  if (raw) {
+  return getRaw().map((raw) => {
     // decompose the object URL into protocol, bucket and key
     const match = raw.objectStoreUrl.match(/^([^:]+):\/\/([^\/]+)\/(.+)$/);
 
@@ -143,9 +148,7 @@ export const unpackFileArtifact = (
       objectStoreBucket: match[2],
       objectStoreKey: match[3],
     };
-  }
-
-  return null;
+  });
 };
 
 // TODO possibly this is a 'db' function that could like in that folder
@@ -182,23 +185,22 @@ export async function createReleaseFileList(
     const specimenId = collapseExternalIds(f.externalIdentifiers);
 
     for (const fa of f.artifacts) {
-      const unpacked = unpackFileArtifact(
+      const unpackedArray = unpackFileArtifact(
         fa,
         includeReadData,
         includeVariantData,
       );
-      if (unpacked === null) {
-        continue;
+
+      for (const unpacked of unpackedArray) {
+        const entry: ManifestBucketKeyObjectType = {
+          caseId: caseId,
+          patientId: patientId,
+          specimenId: specimenId,
+          ...unpacked,
+        };
+
+        entries.push(entry);
       }
-
-      const entry: ManifestBucketKeyObjectType = {
-        caseId: caseId,
-        patientId: patientId,
-        specimenId: specimenId,
-        ...unpacked,
-      };
-
-      entries.push(entry);
     }
   }
 
