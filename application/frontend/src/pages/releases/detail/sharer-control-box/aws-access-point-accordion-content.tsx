@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useState } from "react";
 import { UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerAwsAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
@@ -25,6 +25,18 @@ export const AwsAccessPointAccordionContent: React.FC<
   PropsWithChildren<AwsAccessPointAccordionContentProps>
 > = (props) => {
   const utils = trpc.useContext();
+
+  const [accessPointNameInput, setAccessPointNameInput] = useState<string>(
+    props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY,
+  );
+  const accessPointConfig =
+    props.awsAccessPointSetting.allowedVpcs[accessPointNameInput];
+
+  // There is a possibility that there is an active access point but it is no longer in the configuration
+  const isActiveAccessPointButNoConfig =
+    !Object.keys(props.awsAccessPointSetting.allowedVpcs).find(
+      (name) => name === accessPointNameInput,
+    ) && props.releaseData?.dataSharingAwsAccessPoint?.installed;
 
   const onSuccess = async () => {
     await utils.release.getSpecificRelease.invalidate({
@@ -53,9 +65,7 @@ export const AwsAccessPointAccordionContent: React.FC<
 
   // does the backend have non-empty values for any fields
   const isCurrentlyMissingNeededValues =
-    !props.releaseData?.dataSharingAwsAccessPoint?.name ||
-    !props.releaseData?.dataSharingAwsAccessPoint?.vpcId ||
-    !props.releaseData?.dataSharingAwsAccessPoint?.accountId;
+    !accessPointConfig?.vpcId || !accessPointConfig?.accountId;
 
   // if mutators are running then UI bits needs to be disabled until finished
   const isCurrentlyMutating =
@@ -148,30 +158,21 @@ export const AwsAccessPointAccordionContent: React.FC<
         </label>
         <select
           className="input-bordered input w-full"
-          value={
-            props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY
-          }
+          value={accessPointNameInput}
           onChange={(e) => {
-            // we make sure we are only changing to a name that exists in our config
-            const newName = Object.keys(
-              props.awsAccessPointSetting.allowedVpcs,
-            ).find((name) => name === e.target.value);
-
-            if (newName) {
-              props.releasePatchMutator.mutate({
-                op: "replace",
-                path: "/dataSharingConfiguration/awsAccessPointName",
-                value: newName,
-              });
-            } else {
-              props.releasePatchMutator.mutate({
-                op: "replace",
-                path: "/dataSharingConfiguration/awsAccessPointName",
-                value: "",
-              });
-            }
+            setAccessPointNameInput(e.target.value);
           }}
         >
+          {/* We want to show the active access point despite no longer in the option/VPCconfig */}
+          {isActiveAccessPointButNoConfig && (
+            <option
+              key="installed-but-removed"
+              value={accessPointNameInput}
+              disabled={isVPCOptionDisabled}
+            >
+              {`${accessPointNameInput} *`}
+            </option>
+          )}
           <option key="none" value={""} disabled={isVPCOptionDisabled}>
             {NONE_DISPLAY}
           </option>
@@ -183,6 +184,13 @@ export const AwsAccessPointAccordionContent: React.FC<
             ),
           )}
         </select>
+
+        {isActiveAccessPointButNoConfig && (
+          <span className="label-text-alt text-slate-400 mt-2">
+            {`*This access point is installed but the configuration was removed`}
+          </span>
+        )}
+
         {isVPCOptionDisabled && (
           <span className="label-text-alt text-slate-400 mt-2">
             {`(Disabled: ${Array.from(
@@ -198,9 +206,7 @@ export const AwsAccessPointAccordionContent: React.FC<
             type="text"
             disabled={true}
             className="input-bordered input input-disabled w-full"
-            defaultValue={
-              props.releaseData.dataSharingAwsAccessPoint?.accountId
-            }
+            value={accessPointConfig?.accountId ?? ""}
           />
         </div>
         <div className="form-control flex-grow">
@@ -211,7 +217,7 @@ export const AwsAccessPointAccordionContent: React.FC<
             type="text"
             disabled={true}
             className="input-bordered input input-disabled w-full"
-            defaultValue={props.releaseData.dataSharingAwsAccessPoint?.vpcId}
+            value={accessPointConfig?.vpcId ?? ""}
           />
         </div>
       </div>
@@ -225,6 +231,7 @@ export const AwsAccessPointAccordionContent: React.FC<
           onClick={() => {
             accessPointInstallTriggerMutate.mutate({
               releaseKey: props.releaseKey,
+              awsAccessPointName: accessPointNameInput,
             });
           }}
           disabled={isInstallDisabled}

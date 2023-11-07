@@ -18,6 +18,7 @@ export const releaseJobRouter = router({
   startAwsAccessPointInstall: internalProcedure
     .input(
       z.object({
+        awsAccessPointName: z.string(),
         releaseKey: inputReleaseKey,
       }),
     )
@@ -27,6 +28,7 @@ export const releaseJobRouter = router({
         await ctx.awsAccessPointService.createAccessPointCloudFormationTemplate(
           ctx.user,
           input.releaseKey,
+          input.awsAccessPointName,
         );
 
       // start the job that actually installs the cloud formation

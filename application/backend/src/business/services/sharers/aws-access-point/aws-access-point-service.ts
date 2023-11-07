@@ -212,6 +212,7 @@ export class AwsAccessPointService {
   public async createAccessPointCloudFormationTemplate(
     user: AuthenticatedUser,
     releaseKey: string,
+    accessPointName: string,
   ): Promise<string> {
     // the AWS guard is switched on as this needs to write out to S3
     await this.awsEnabledService.enabledGuard();
@@ -235,6 +236,14 @@ export class AwsAccessPointService {
     if (userRole !== "Administrator") {
       throw new ReleaseViewError(releaseKey);
     }
+
+    // Store access point name to its own db
+    await this.releaseService.setDataSharingConfigurationField(
+      user,
+      releaseKey,
+      "/dataSharingConfiguration/awsAccessPointName",
+      accessPointName,
+    );
 
     const releaseInfo = await this.releaseService.getBase(releaseKey, userRole);
 

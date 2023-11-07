@@ -230,7 +230,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
 
         {
           // If release is deactivated, all access that was given should be revoked (e.g. AccessPoint)
-          // Mind refactor this out to its own function as things to revoke grows
+          // Might refactor this out to its own function as things to revoke grows
           const isAllowedAwsAccessPointConfig =
             this.configForAwsAccessPointFeature();
 
