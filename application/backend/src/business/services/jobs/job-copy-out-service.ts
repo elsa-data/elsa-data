@@ -353,7 +353,8 @@ export class JobCopyOutService extends JobService {
       // In CopyOut we couldn't get the exact egress stats from the storage server, but we still want to track this in
       // our record, so we would temporarily update this manually assuming that it always copied out to its destination
       // 100%.
-      // In the future, we might poll this information about which object is actually being copied
+      // In the future, we might poll this information about which object is actually being copied successfully
+      // Ref: https://github.com/elsa-data/elsa-data/issues/503
 
       const manifest =
         await this.manifestService.getActiveBucketKeyManifest(releaseKey);
