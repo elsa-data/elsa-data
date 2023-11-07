@@ -355,22 +355,23 @@ export class JobCopyOutService extends JobService {
       // 100%.
       // In the future, we might poll this information about which object is actually being copied successfully
       // Ref: https://github.com/elsa-data/elsa-data/issues/503
+      if (wasSuccessful) {
+        const manifest =
+          await this.manifestService.getActiveBucketKeyManifest(releaseKey);
 
-      const manifest =
-        await this.manifestService.getActiveBucketKeyManifest(releaseKey);
+        for (const o of manifest?.objects ?? []) {
+          await updateReleaseDataEgress(tx, {
+            releaseKey: releaseKey,
+            description: "Successfully copied out (manually updated)",
+            egressId: `${completionTime.toISOString()}-${o.objectStoreUrl}`,
 
-      for (const o of manifest?.objects ?? []) {
-        await updateReleaseDataEgress(tx, {
-          releaseKey: releaseKey,
-          description: "Successfully copied out (manually updated)",
-          egressId: `${completionTime.toISOString()}-${o.objectStoreUrl}`,
+            occurredDateTime: completionTime,
+            sourceIpAddress: "",
 
-          occurredDateTime: completionTime,
-          sourceIpAddress: "",
-
-          egressBytes: o.objectSize,
-          fileUrl: o.objectStoreUrl,
-        });
+            egressBytes: o.objectSize,
+            fileUrl: o.objectStoreUrl,
+          });
+        }
       }
     });
   }

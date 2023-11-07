@@ -155,7 +155,7 @@ export class ReleaseDataEgressService extends ReleaseBaseService {
     return createPagedResult(
       dataEgressQueryRes.data.map((a) => ({
         ...a,
-        sourceLocation: a.sourceLocation as LocationType,
+        sourceLocation: a.sourceLocation as LocationType | null,
       })),
       dataEgressQueryRes.total,
     );

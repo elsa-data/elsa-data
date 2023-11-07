@@ -76,13 +76,16 @@ export function DataEgressDetailedTable({
                       } else if (objKey === "occurredDateTime") {
                         return <>{formatLocalDateTime(row[objKey])}</>;
                       } else if (objKey === "sourceLocation") {
-                        const { city, country, region } = row.sourceLocation;
-                        return (
-                          <>
-                            {`${city ?? "-"}, ${country ?? "-"} `}
-                            {region && <Flags regions={[region]} />}
-                          </>
-                        );
+                        const loc = row.sourceLocation;
+                        if (loc) {
+                          return (
+                            <>
+                              {`${loc.city ?? "-"}, ${loc.country ?? "-"} `}
+                              {loc.region && <Flags regions={[loc.region]} />}
+                            </>
+                          );
+                        }
+                        return <></>;
                       } else if (objKey === "fileUrl") {
                         return (
                           <pre className="break-all">{row[objKey] ?? ""}</pre>

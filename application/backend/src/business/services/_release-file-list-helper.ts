@@ -36,7 +36,6 @@ export const unpackFileArtifact = (
     }
     return "";
   };
-  console.log("fileArtifact", fileArtifact);
 
   const getRaw = (): Pick<
     ManifestBucketKeyObjectType,
