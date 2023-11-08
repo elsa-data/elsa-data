@@ -129,7 +129,7 @@ export const unpackFileArtifact = (
         });
       }
     }
-    console.log("rawArray", rawArray);
+
     return rawArray;
   };
 
