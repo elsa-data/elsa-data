@@ -25,7 +25,7 @@
     "@umccr/elsa-constants": "file:../common/elsa-constants",
     "@umccr/elsa-types": "file:../common/elsa-types",
     "@vitejs/plugin-react": "^2.2.0",
-    "axios": "1.2.0",
+    "axios": "1.6.0",
     "classnames": "2.3.2",
     "country-flag-icons": "1.5.5",
     "dayjs": "1.11.6",
