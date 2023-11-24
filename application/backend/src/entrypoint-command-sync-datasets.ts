@@ -16,7 +16,7 @@ export const SYNC_DATASETS_COMMAND = "sync-datasets";
  */
 export async function commandSyncDatasets(
   dc: DependencyContainer,
-  datasetUriArray: string[]
+  datasetUriArray: string[],
 ): Promise<number> {
   const { settings, logger } = getServices(dc);
   const agIndexService = dc.resolve(S3IndexApplicationService);
@@ -32,14 +32,14 @@ export async function commandSyncDatasets(
         didLoad = true;
 
         logger.info(
-          `Starting synchronisation for ->${datasetUri}<- using loader ${configuredDataset.loader}`
+          `Starting synchronisation for ->${datasetUri}<- using loader ${configuredDataset.loader}`,
         );
 
         switch (configuredDataset.loader) {
           case "australian-genomics-directories":
             await agIndexService.syncWithDatabaseFromDatasetUri(
               datasetUri,
-              configuredDataset
+              configuredDataset,
             );
             break;
           case "dev":
@@ -58,13 +58,13 @@ export async function commandSyncDatasets(
                 logger.error(
                   `Dataset URI ${
                     (configuredDataset.uri as any).loader
-                  } is not a dev dataset`
+                  } is not a dev dataset`,
                 );
             }
             break;
           default:
             logger.error(
-              `Loader type ${(configuredDataset as any).loader} not known`
+              `Loader type ${(configuredDataset as any).loader} not known`,
             );
         }
       }
@@ -72,7 +72,7 @@ export async function commandSyncDatasets(
 
     if (!didLoad) {
       logger.warn(
-        `Did not perform a sync for ->${datasetUri}<- as it was not listed in the configuration`
+        `Did not perform a sync for ->${datasetUri}<- as it was not listed in the configuration`,
       );
     }
   }

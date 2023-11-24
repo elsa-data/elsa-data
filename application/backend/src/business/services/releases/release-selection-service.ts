@@ -51,7 +51,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     auditEventTimedService: AuditEventTimedService,
     @inject(UserService) userService: UserService,
     @inject(PermissionService) permissionService: PermissionService,
-    @inject("CloudFormationClient") cfnClient: CloudFormationClient
+    @inject("CloudFormationClient") cfnClient: CloudFormationClient,
   ) {
     super(
       settings,
@@ -61,7 +61,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       auditEventService,
       auditEventTimedService,
       permissionService,
-      cfnClient
+      cfnClient,
     );
   }
 
@@ -83,11 +83,11 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     releaseKey: string,
     limit: number,
     offset: number,
-    identifierSearchText?: string
+    identifierSearchText?: string,
   ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
-      releaseKey
+      releaseKey,
     );
 
     const isAllowedViewAllCases =
@@ -109,7 +109,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     // given an array of children node-like structures, compute what our node status is
     // NOTE: this is entirely dependent on the Release node types to all have a `nodeStatus` field
     const calcNodeStatus = (
-      nodes: { nodeStatus: ReleaseNodeStatusType }[]
+      nodes: { nodeStatus: ReleaseNodeStatusType }[],
     ): ReleaseNodeStatusType => {
       const isAllSelected = nodes.every((s) => s.nodeStatus === "selected");
       const isNoneSelected = nodes.every((s) => s.nodeStatus === "unselected");
@@ -123,7 +123,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     };
 
     const createSpecimenMap = (
-      spec: dataset.DatasetSpecimen
+      spec: dataset.DatasetSpecimen,
     ): ReleaseSpecimenType => {
       return {
         id: spec.id,
@@ -136,10 +136,10 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     };
 
     const createPatientMap = (
-      pat: dataset.DatasetPatient
+      pat: dataset.DatasetPatient,
     ): ReleasePatientType => {
       const specimensMapped = Array.from<ReleaseSpecimenType>(
-        pat.specimens.map(createSpecimenMap)
+        pat.specimens.map(createSpecimenMap),
       );
 
       return {
@@ -155,7 +155,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
 
     const createCaseMap = (cas: dataset.DatasetCase): ReleaseCaseType => {
       const patientsMapped = Array.from<ReleasePatientType>(
-        cas.patients.map(createPatientMap)
+        cas.patients.map(createPatientMap),
       );
 
       return {
@@ -172,9 +172,9 @@ export class ReleaseSelectionService extends ReleaseBaseService {
 
     const paged = createPagedResult<ReleaseCaseType>(
       casesResult.data.map((pc) =>
-        createCaseMap(pc as unknown as dataset.DatasetCase)
+        createCaseMap(pc as unknown as dataset.DatasetCase),
       ),
-      casesResult.total
+      casesResult.total,
     );
 
     // extend our paged result with some extra information
@@ -196,14 +196,14 @@ export class ReleaseSelectionService extends ReleaseBaseService {
   public async getNodeConsent(
     user: AuthenticatedUser,
     releaseKey: string,
-    nodeId: string
+    nodeId: string,
   ): Promise<DuoLimitationCodedType[]> {
     // to read consent we just need to a member of the release
     await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
     const { datasetIdToUriMap } = await getReleaseInfo(
       this.edgeDbClient,
-      releaseKey
+      releaseKey,
     );
 
     const nodeFromValidDatasetsQuery = e
@@ -247,7 +247,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
 
     return actualNode.consent.statements.map(
-      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType
+      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType,
     );
   }
 
@@ -257,7 +257,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     args:
       | { dbIds: string[] }
       | { externalIdentifierValues: string[] }
-      | { selectAll: true }
+      | { selectAll: true },
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
     return await this.setSelectedStatus(user, true, releaseKey, args);
@@ -269,7 +269,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     args:
       | { dbIds: string[] }
       | { externalIdentifierValues: string[] }
-      | { selectAll: true }
+      | { selectAll: true },
   ): Promise<ReleaseDetailType> {
     // NOTE: we do our boundary/permission checks in the setSelectedStatus method
     return await this.setSelectedStatus(user, false, releaseKey, args);
@@ -298,7 +298,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     args:
       | { dbIds: string[] }
       | { externalIdentifierValues: string[] }
-      | { selectAll: true }
+      | { selectAll: true },
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
@@ -348,7 +348,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
 
         if (specimenIds.invalidDbIds.length)
           throw new ReleaseSelectionNonExistentIdentifierError(
-            specimenIds.invalidDbIds
+            specimenIds.invalidDbIds,
           );
 
         if (
@@ -373,7 +373,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
                     })),
                   },
                 },
-              }))
+              })),
             )
             .run(tx, { ids: internalIdentifiers });
         } else {
@@ -389,7 +389,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
                     })),
                   },
                 },
-              }))
+              })),
             )
             .run(tx, { ids: internalIdentifiers });
         }
@@ -400,7 +400,7 @@ export class ReleaseSelectionService extends ReleaseBaseService {
       },
       async () => {
         return await this.getBase(releaseKey, userRole);
-      }
+      },
     );
   }
 }
