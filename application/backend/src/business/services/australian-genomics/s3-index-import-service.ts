@@ -269,10 +269,13 @@ export class S3IndexApplicationService {
     const groupedByFilenameBase: Record<string, MergedManifestMetadataType[]> =
       groupBy(manifestArray, (manifest: MergedManifestMetadataType) => {
         // Removing index/compressed extension to find base filename.
-        const filename = manifest.s3Url.replaceAll(/.gz|.tbi|.bai|.crai/g, "");
+        const filename = manifest.s3Url.replaceAll(
+          /\.gz|\.tbi|\.bai|\.crai/g,
+          ""
+        );
 
         return filename.endsWith(".fastq") || filename.endsWith(".fq")
-          ? filename.replaceAll(/_R1|_R2|.R1|.R2/g, "")
+          ? filename.replaceAll(/_R1|_R2|\.R1|\.R2/g, "")
           : filename;
       });
 
