@@ -27,6 +27,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { randomBytes } from "crypto";
 import assert from "node:assert";
+import { updateReleaseDataEgress } from "../../../../dbschema/queries";
 
 /**
  * A service for performing long-running operations that copy out files
@@ -61,7 +62,10 @@ export class JobCopyOutService extends JobService {
         auditEntry: true,
         started: true,
         percentDone: true,
-        forRelease: true,
+        forRelease: {
+          id: true,
+          releaseKey: true,
+        },
         awsExecutionArn: true,
         filter: e.op(j.id, "=", e.uuid(jobId)),
       }))
@@ -322,11 +326,14 @@ export class JobCopyOutService extends JobService {
         jobId,
       );
 
+      const completionTime = new Date();
+      const releaseKey = copyOutJob.forRelease.releaseKey;
+
       await this.auditLogService.completeReleaseAuditEvent(
         copyOutJob.auditEntry.id,
         OUTCOME_SUCCESS,
         copyOutJob.started,
-        new Date(),
+        completionTime,
         {
           jobId: jobId,
           awsExecutionArn: copyOutJob.awsExecutionArn,
@@ -341,6 +348,31 @@ export class JobCopyOutService extends JobService {
           ? e.job.JobStatus.succeeded
           : e.job.JobStatus.failed,
       });
+
+      // Copied succeeded === data transferred out from the storage server
+      // In CopyOut we couldn't get the exact egress stats from the storage server, but we still want to track this in
+      // our record, so we would temporarily update this manually assuming that it always copied out to its destination
+      // 100%.
+      // In the future, we might poll this information about which object is actually being copied successfully
+      // Ref: https://github.com/elsa-data/elsa-data/issues/503
+      if (wasSuccessful) {
+        const manifest =
+          await this.manifestService.getActiveBucketKeyManifest(releaseKey);
+
+        for (const o of manifest?.objects ?? []) {
+          await updateReleaseDataEgress(tx, {
+            releaseKey: releaseKey,
+            description: "Successfully copied out (manually updated)",
+            egressId: `${completionTime.toISOString()}-${o.objectStoreUrl}`,
+
+            occurredDateTime: completionTime,
+            sourceIpAddress: "",
+
+            egressBytes: o.objectSize,
+            fileUrl: o.objectStoreUrl,
+          });
+        }
+      }
     });
   }
 }
