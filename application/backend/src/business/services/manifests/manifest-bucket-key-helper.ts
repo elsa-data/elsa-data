@@ -7,6 +7,11 @@ import {
   ManifestBucketKeyType,
 } from "./manifest-bucket-key-types";
 import { collapseExternalIds } from "../helpers";
+import { storage } from "../../../../dbschema/interfaces";
+
+// this is not *quite* the right type - but is a more generic abstract type encompasses everything we want
+// to pass in as opposed to the very specific typeof baiFile, typeof bclFile etc...
+type CommonFile = Omit<storage.File, "id" | "isDeleted">;
 
 /**
  * Create a simple list of object in the manifest broken into simple fields - service, bucket, key, protocol etc
@@ -25,13 +30,13 @@ import { collapseExternalIds } from "../helpers";
  */
 export async function transformMasterManifestToBucketKeyManifest(
   masterManifest: ManifestMasterType,
-  filterByProtocol: (KnownObjectProtocolType | "*")[],
+  filterByProtocol: (KnownObjectProtocolType | "*")[]
 ): Promise<ManifestBucketKeyType> {
   // this might be overly strict - but until there is a use case for us generating empty manifests
   // I would prefer this is a hard fail early
   if (!filterByProtocol || filterByProtocol.length === 0) {
     throw new Error(
-      "The protocol filter for the manifest transform is empty which guarantees an empty output",
+      "The protocol filter for the manifest transform is empty which guarantees an empty output"
     );
   }
 
@@ -49,12 +54,7 @@ export async function transformMasterManifestToBucketKeyManifest(
     };
 
     const decomposeObjectUrlIntoParts = (
-      url: string,
-      size: number,
-      checksums: {
-        type: "MD5" | "AWS_ETAG" | "SHA_1" | "SHA_256";
-        value: string;
-      }[],
+      file: CommonFile
     ): Pick<
       ManifestBucketKeyObjectType,
       | "objectStoreProtocol"
@@ -63,51 +63,48 @@ export async function transformMasterManifestToBucketKeyManifest(
       | "objectSize"
       | "md5"
     > => {
-      if (isString(url)) {
-        const match = url.match(OBJECT_URL_REGEX);
+      if (isString(file.url)) {
+        const match = file.url.match(OBJECT_URL_REGEX);
         if (match) {
           if (
             !KnownObjectProtocolsArray.includes(
-              match[1] as KnownObjectProtocolType,
+              match[1] as KnownObjectProtocolType
             )
           )
             throw new Error(
-              `Encountered object URL ${url} with unknown protocol ${match[1]} - known protocols are ${KnownObjectProtocolsArray}`,
+              `Encountered object URL ${file.url} with unknown protocol ${match[1]} - known protocols are ${KnownObjectProtocolsArray}`
             );
 
           return {
             objectStoreProtocol: match[1],
             objectStoreBucket: match[2],
             objectStoreKey: match[3],
-            objectSize: size,
-            md5: getMd5(checksums),
+            objectSize: file.size,
+            md5: getMd5(file.checksums),
           };
         }
       }
       throw new Error(
-        `Encountered object URL ${url} that could not be correctly processed for release`,
+        `Encountered object URL ${file.url} that could not be correctly processed for release`
       );
     };
 
     for (const artifact of specimenWithArtifacts.artifacts) {
-      const createEntry = (
-        file: typeof artifact.baiFile,
-        objectType: string,
-      ) => {
+      const createEntry = (file: CommonFile, objectType: string) => {
         return {
           caseId: collapseExternalIds(
-            specimenWithArtifacts.case_?.externalIdentifiers,
+            specimenWithArtifacts.case_?.externalIdentifiers
           ),
           patientId: collapseExternalIds(
-            specimenWithArtifacts.patient?.externalIdentifiers,
+            specimenWithArtifacts.patient?.externalIdentifiers
           ),
           specimenId: collapseExternalIds(
-            specimenWithArtifacts.externalIdentifiers,
+            specimenWithArtifacts.externalIdentifiers
           ),
           artifactId: artifact.id,
           objectType: objectType,
           objectStoreUrl: file.url,
-          ...decomposeObjectUrlIntoParts(file.url, file.size, file.checksums),
+          ...decomposeObjectUrlIntoParts(file),
         };
       };
 
@@ -119,7 +116,7 @@ export async function transformMasterManifestToBucketKeyManifest(
         } else {
           if (
             filterByProtocol.includes(
-              e.objectStoreProtocol as KnownObjectProtocolType | "*",
+              e.objectStoreProtocol as KnownObjectProtocolType | "*"
             )
           )
             converted.push(e);
