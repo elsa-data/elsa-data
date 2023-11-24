@@ -30,34 +30,5 @@
       description: "10C",
       loader: "dev",
     },
-    {
-      uri: "urn:fdc:mackenziesmission.org.au:2022:dataset/vcgs",
-      name: "Mackenzie's Mission VCGS",
-      description: "The Mackenzie's Mission study sequenced by VCGS",
-      loader: "australian-genomics-directories",
-      storageLocation: "aws-s3",
-      storageUriPrefix: "s3://agha-gdr-store-2.0/MM_VCGS/",
-      caseIdentifier: {
-        pathRegex: ".*(CPL\\d+).*$",
-      },
-      specimenIdentifier: {
-        pathRegex: ".*(\\d\\dGR\\d+).*$",
-      },
-    },
-    {
-      uri: "urn:fdc:mackenziesmission.org.au:2022:dataset/nsw-health",
-      name: "Mackenzie's Mission NSW Health",
-      description: "The Mackenzie's Mission study sequenced by NSW Health",
-      loader: "australian-genomics-directories",
-      storageLocation: "aws-s3",
-      storageUriPrefix: "s3://agha-gdr-store-2.0/MM_NSWHP/",
-      manifestEndsWith: "manifest.orig",
-      caseIdentifier: {
-        manifestColumnName: "NSWHP_Family_ID",
-      },
-      specimenIdentifier: {
-        manifestColumnName: "sample_id",
-      },
-    },
   ],
 }
