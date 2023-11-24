@@ -2,6 +2,7 @@ import e from "../../../dbschema/edgeql-js";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
 import { makeSystemlessIdentifierArray } from "../util/test-data-helpers";
+import { DatasetAustralianGenomicsDirectories } from "../../config/config-schema-dataset";
 
 export const SMARTIE_URI = "urn:example:elsa-data-demo-dataset-smartie";
 
@@ -14,6 +15,16 @@ export const SMARTIE_FAKE_S3_PREFIX = `s3://${SMARTIE_FAKE_BUCKET}/${SMARTIE_FAK
 export const SMARTIE_NAME = "Smartie Study";
 
 export const SMARTIE_DESCRIPTION = "Mini and mitochondrial - the Smartie study";
+
+export const SMARTIE_DATASET_CONFIG: DatasetAustralianGenomicsDirectories = {
+  loader: "australian-genomics-directories",
+  uri: SMARTIE_URI,
+  name: SMARTIE_NAME,
+  description: SMARTIE_DESCRIPTION,
+  storageLocation: "aws-s3",
+  storageUriPrefix: SMARTIE_FAKE_S3_PREFIX,
+  manifestEndsWith: "manifest.txt",
+};
 
 /**
  * The Smartie dataset is mini and mitochondrial data

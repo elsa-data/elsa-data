@@ -33,6 +33,7 @@ import { S3IndexApplicationService } from "../../business/services/australian-ge
 import { UserService } from "../../business/services/user-service";
 import { insertUser5 } from "../user/insert-user5";
 import {
+  SMARTIE_DATASET_CONFIG,
   SMARTIE_DESCRIPTION,
   SMARTIE_URI,
 } from "../dataset/insert-test-data-smartie";
@@ -80,7 +81,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   const userService = dc.resolve(UserService);
 
   const datasetAdministratorUser = await userService.getBySubjectId(
-    datasetAdministrator.subjectId,
+    datasetAdministrator.subjectId
   );
 
   if (!datasetAdministratorUser)
@@ -107,7 +108,7 @@ export async function insertScenario1(dc: DependencyContainer) {
 
       await s3IndexService.syncWithDatabaseFromDatasetUri(
         SMARTIE_URI,
-        "australian-genomics-directories",
+        SMARTIE_DATASET_CONFIG
       );
     }
   }
@@ -181,22 +182,22 @@ export async function insertScenario1(dc: DependencyContainer) {
   logger.debug(
     `insertTestData: Number of object artifacts present = ${await e
       .count(e.lab.ArtifactBase)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
   logger.debug(
     `insertTestData: Number of users present = ${await e
       .count(e.permission.User)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
   logger.debug(
     `insertTestData: Number of runs present = ${await e
       .count(e.lab.Run)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
   logger.debug(
     `insertTestData: Number of releases present = ${await e
       .count(e.release.Release)
-      .run(edgeDbClient)}`,
+      .run(edgeDbClient)}`
   );
 
   //const eachDs = e.for(e.dataset.Dataset, (ds) => {

@@ -68,7 +68,12 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10g-data-dev",
-      caseIdentifierRegex: ".*(FAM\\d+).*$",
+      // note if configured via Zod some of these would be defaulted correctly - but we need to be explicit
+      manifestEndsWith: "manifest.txt",
+      caseIdentifier: {
+        pathRegex: ".*(FAM\\d+).*$",
+        manifestColumnName: undefined,
+      },
       aws: {
         eventDataStoreId: TENG_AWS_EVENT_DATA_STORE_ID,
       },
@@ -80,6 +85,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10f-data-dev",
+      manifestEndsWith: "manifest.txt",
     },
     {
       name: "10C",
@@ -88,6 +94,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: "s3://umccr-10c-data-dev",
+      manifestEndsWith: "manifest.txt",
     },
     {
       uri: SMARTIE_URI,
@@ -96,6 +103,7 @@ export const createTestElsaSettings: () => ElsaSettings = () => ({
       loader: "australian-genomics-directories",
       storageLocation: "aws-s3",
       storageUriPrefix: SMARTIE_FAKE_S3_PREFIX,
+      manifestEndsWith: "manifest.txt",
     },
   ],
   superAdmins: [

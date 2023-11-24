@@ -1,4 +1,3 @@
-import { DatasetService } from "./business/services/dataset-service";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "./di-helpers";
 import { insert10G, TENG_URI } from "./test-data/dataset/insert-test-data-10g";
@@ -17,12 +16,12 @@ export const SYNC_DATASETS_COMMAND = "sync-datasets";
  */
 export async function commandSyncDatasets(
   dc: DependencyContainer,
-  datasetUriArray: string[],
+  datasetUriArray: string[]
 ): Promise<number> {
   const { settings, logger } = getServices(dc);
   const agIndexService = dc.resolve(S3IndexApplicationService);
 
-  // no point in doing a dataset twice - even if the user lists them twice - so put the input into a set
+  // no point in doing a dataset twice - even if the user lists them twice - so we put the input into a set
   const datasetUriSet = new Set<string>(datasetUriArray);
 
   for (const datasetUri of datasetUriSet) {
@@ -33,18 +32,18 @@ export async function commandSyncDatasets(
         didLoad = true;
 
         logger.info(
-          `Starting sync for ->${datasetUri}<- using loader ${configuredDataset.loader}`,
+          `Starting synchronisation for ->${datasetUri}<- using loader ${configuredDataset.loader}`
         );
 
         switch (configuredDataset.loader) {
           case "australian-genomics-directories":
             await agIndexService.syncWithDatabaseFromDatasetUri(
               datasetUri,
-              "australian-genomics-directories",
+              configuredDataset
             );
             break;
           case "dev":
-            // I guess we could restrict this loader to literally dev only (we could do a check here) - but this
+            // I guess we could restrict this loader to literally dev deployments only (we could do a check here) - but this
             // whole code section is
             // only executable by system administrators - and I guess they might have a good
             // reason to do this in prod(?) - so no check for now
@@ -59,13 +58,13 @@ export async function commandSyncDatasets(
                 logger.error(
                   `Dataset URI ${
                     (configuredDataset.uri as any).loader
-                  } is not a dev dataset`,
+                  } is not a dev dataset`
                 );
             }
             break;
           default:
             logger.error(
-              `Loader type ${(configuredDataset as any).loader} not known`,
+              `Loader type ${(configuredDataset as any).loader} not known`
             );
         }
       }
@@ -73,7 +72,7 @@ export async function commandSyncDatasets(
 
     if (!didLoad) {
       logger.warn(
-        `Did not perform a sync for ->${datasetUri}<- as it was not listed in the configuration`,
+        `Did not perform a sync for ->${datasetUri}<- as it was not listed in the configuration`
       );
     }
   }

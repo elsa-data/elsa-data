@@ -1,4 +1,5 @@
 import {
+  SMARTIE_DATASET_CONFIG,
   SMARTIE_DESCRIPTION,
   SMARTIE_FAKE_BUCKET,
   SMARTIE_FAKE_KEY,
@@ -42,7 +43,7 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
       s3Client,
       SMARTIE_FAKE_BUCKET,
       SMARTIE_FAKE_KEY,
-      join(__dirname, "..", "..", "..", "datasets", "Smartie"),
+      join(__dirname, "..", "..", "..", "datasets", "Smartie")
     );
 
     // register the dataset in the database
@@ -59,7 +60,7 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       SMARTIE_URI,
-      "australian-genomics-directories",
+      SMARTIE_DATASET_CONFIG
     );
 
     const datasetSummary = await datasetService.get(user, SMARTIE_URI, true);
@@ -72,18 +73,18 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
 
     const findPatientById = (id: string) => {
       const casesWithPatient = datasetSummary?.cases.filter((a) => {
-        return a.patients.find(
-          (p) => p.externalIdentifiers?.map((e) => e.value).includes(id),
+        return a.patients.find((p) =>
+          p.externalIdentifiers?.map((e) => e.value).includes(id)
         );
       });
 
       if (casesWithPatient.length !== 1)
         fail(
-          "There were multiple cases containing the same patient id OR no cases containing the patient id",
+          "There were multiple cases containing the same patient id OR no cases containing the patient id"
         );
 
-      return casesWithPatient[0].patients.find(
-        (p) => p.externalIdentifiers?.map((e) => e.value).includes(id),
+      return casesWithPatient[0].patients.find((p) =>
+        p.externalIdentifiers?.map((e) => e.value).includes(id)
       );
     };
 
