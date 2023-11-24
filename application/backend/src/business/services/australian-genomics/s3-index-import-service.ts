@@ -311,11 +311,11 @@ export class S3IndexApplicationService {
         if (reMatchSpecimenId) specimenId = reMatchSpecimenId[1];
       }
 
-      //if (columnNameSpecimenId) {
-      //  const manifestSpecimenId =
-      //    manifestGroupedArray[0][columnNameSpecimenId];
-      //  if (manifestSpecimenId) specimenId = manifestSpecimenId;
-      // }
+      if (columnNameSpecimenId) {
+        const manifestSpecimenId =
+          manifestGroupedArray[0][columnNameSpecimenId];
+        if (manifestSpecimenId) specimenId = manifestSpecimenId;
+      }
 
       if (!filetype) {
         this.logger.warn("No matching Artifact Type");
