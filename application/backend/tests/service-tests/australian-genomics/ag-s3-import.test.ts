@@ -57,6 +57,8 @@ import { DatasetService } from "../../../src/business/services/dataset-service";
 import { storage } from "../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { beforeEachCommon } from "../commons/user.common";
+import { DatasetAustralianGenomicsDirectories } from "../../../src/config/config-schema-dataset";
+import { readObjectToStringFromS3Url } from "../../../src/business/services/aws/aws-helper";
 
 const testContainer = registerTypes();
 
@@ -68,6 +70,26 @@ jest.mock("../../../src/business/services/aws/aws-helper", () => ({
   __esModule: true,
   ...jest.requireActual("../../../src/business/services/aws/aws-helper"),
 }));
+
+// note that unlike a real configuration - this is not going through the Zod layer
+// and therefore we need to provide values that otherwise would be defaulted()
+// (like manifest name)
+const datasetConfig: DatasetAustralianGenomicsDirectories = {
+  uri: MOCK_DATASET_URI,
+  name: "b",
+  description: "c",
+  loader: "australian-genomics-directories",
+  storageLocation: "aws-s3",
+  storageUriPrefix: "d",
+  manifestEndsWith: "manifest.txt",
+  caseIdentifier: {
+    pathRegex: ".*(FAM\\d+).*$",
+    manifestColumnName: undefined,
+  },
+  pedigree: {
+    usePatientIdentifierSuffixes: true,
+  },
+};
 
 type ExternalIdentifiersType = {
   externalIdentifiers: { system: string; value: string }[] | null;
@@ -106,16 +128,11 @@ describe("AWS s3 client", () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
     const manifestObjectList = agService.getManifestUriFromS3ObjectList(
       MOCK_1_CARDIAC_S3_OBJECT_LIST,
+      "manifest.txt",
     );
     expect(manifestObjectList).toEqual([
       `${MOCK_STORAGE_PREFIX_URL}/2019-11-21/manifest.txt`,
     ]);
-  });
-
-  it("Test convertTsvToJson", async () => {
-    const agService = testContainer.resolve(S3IndexApplicationService);
-    const jsonManifest = agService.convertTsvToJson(MOCK_1_CARDIAC_MANIFEST);
-    expect(jsonManifest).toEqual(MOCK_1_MANIFEST_OBJECT);
   });
 
   it("Test updateFileRecordFromManifest", async () => {
@@ -323,7 +340,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories",
+      datasetConfig,
     );
 
     // FILE schema expected values
@@ -399,7 +416,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories",
+      datasetConfig,
     );
 
     // FILE schema expected values
@@ -470,7 +487,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories",
+      datasetConfig,
     );
 
     const expectedFileMarked = [
@@ -509,7 +526,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories",
+      datasetConfig,
     );
 
     // FILE schema expected values
@@ -590,7 +607,7 @@ describe("AWS s3 client", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       MOCK_DATASET_URI,
-      "australian-genomics-directories",
+      datasetConfig,
     );
 
     const datasetCase = await e
@@ -603,10 +620,7 @@ describe("AWS s3 client", () => {
     ]);
   });
 
-  /* No longer initiated by known user - so no user audit event..
-     possibly migrate to pure system event.. in which case this test is irrelevant anyhow..
-     but here as a reminder
-  it("Test User Audit Event", async () => {
+  it("test that arbitrary manifest column data can feed through from the manifests", async () => {
     const agService = testContainer.resolve(S3IndexApplicationService);
     const datasetService = testContainer.resolve(DatasetService);
     await datasetService.selectOrInsertDataset({
@@ -614,32 +628,39 @@ describe("AWS s3 client", () => {
       datasetName: "Cardiac",
       datasetDescription: "A test flagship",
     });
-    jest
-      .spyOn(awsHelper, "awsListObjects")
-      .mockImplementation(async () => MOCK_4_CARDIAC_S3_OBJECT_LIST);
+
+    // creating some mock of filenames (with on has a familyId)
+    const file1 = `0000-FAMXYZ-FILE001.vcf`;
+    const file2 = "0000-FILE002.vcf";
+    const studyId = "A0000001";
+
+    // we have added in two "extra" columns to our manifest
+    // this test ensures that they still appear in the manifest dictionary data
+    const mockManifest =
+      `checksum\tfilename\tagha_study_id\tCOL1\tanother_column\n` +
+      `RANDOMCHECKSUM\t${file1}\t${studyId}\tblah\t1\n` +
+      `RANDOMCHECKSUM\t${file1}.tbi\t${studyId}\tfoo\t2\n` +
+      `RANDOMCHECKSUM\t${file2}\t${studyId}\tbah\t3\n` +
+      `RANDOMCHECKSUM\t${file2}.tbi\t${studyId}\tnoob\t4\n`;
+
     jest
       .spyOn(awsHelper, "readObjectToStringFromS3Url")
-      .mockImplementation(async () => MOCK_4_CARDIAC_MANIFEST);
+      .mockImplementation(async () => mockManifest);
 
-    await agService.syncWithDatabaseFromDatasetUri(
-      MOCK_DATASET_URI,
-      "australian-genomics-directories"
+    const dict = await agService.getS3ManifestObjectListFromAllObjectList(
+      datasetConfig,
+      [createS3ObjectList(`Cardiac/2019-11-21/manifest.txt`)],
+      (url: string) => Promise.resolve(mockManifest),
     );
 
-    const userAuditEvent = await e
-      .select(e.audit.UserAuditEvent, (event) => ({
-        whoId: true,
-        whoDisplayName: true,
-        actionCategory: true,
-        filter: e.op(event.whoId, "=", e.str(user.subjectId)),
-        order_by: event.occurredDateTime,
-      }))
-      .run(edgedbClient);
-
-    expect(userAuditEvent.length).toEqual(1);
-    expect(userAuditEvent[0].whoId).toEqual(user.subjectId);
-    expect(userAuditEvent[0].whoDisplayName).toEqual(user.displayName);
-    expect(userAuditEvent[0].actionCategory).toEqual("U");
+    expect(dict[`${S3_URL_PREFIX}/${file2}`]).toEqual({
+      agha_study_id_array: ["A0000001"],
+      checksum: "RANDOMCHECKSUM",
+      filename: "0000-FILE002.vcf",
+      agha_study_id: "A0000001",
+      COL1: "bah",
+      another_column: "3",
+      s3Url: `${S3_URL_PREFIX}/${file2}`,
+    });
   });
-   */
 });

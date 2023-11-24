@@ -48,14 +48,11 @@ import { dataset } from "../../../../dbschema/interfaces";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
 import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
-import {
-  australianGenomicsDirectoryStructureFor10G,
-  TENG_URI,
-} from "../../../test-data/dataset/insert-test-data-10g";
 import phenopackets from "../../../generated/phenopackets";
 import { Logger } from "pino";
-import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
+import { DatasetAustralianGenomicsDirectories } from "../../../config/config-schema-dataset";
+import { parse } from "papaparse";
 
 type PhenopacketIndividiual =
   phenopackets.org.phenopackets.schema.v2.IPhenopacket;
@@ -67,10 +64,15 @@ type PhenopacketCohort = phenopackets.org.phenopackets.schema.v2.ICohort;
  */
 
 export type ManifestType = {
+  // these TSV manifest fields are required and known
   checksum: string;
   agha_study_id_array: string[];
   s3Url: string;
+
+  // we can also bring in a set of other fields from the source TSV
+  [key: string]: any;
 };
+
 export type MergedManifestMetadataType = ManifestType & S3ObjectMetadataType;
 
 export type FileGroupType = {
@@ -131,39 +133,20 @@ export class S3IndexApplicationService {
 
   /**
    * @param s3ListMetadata
+   * @param manifestEndsWith identifies manifests as those that end with this string
    * @returns A list of manifest string
    */
   getManifestUriFromS3ObjectList(
     s3ListMetadata: S3ObjectMetadataType[],
+    manifestEndsWith: string,
   ): string[] {
     const manifestKeys: string[] = [];
     for (const s3Metadata of s3ListMetadata) {
-      if (s3Metadata.s3Url.endsWith("manifest.txt")) {
+      if (s3Metadata.s3Url.endsWith(manifestEndsWith)) {
         manifestKeys.push(s3Metadata.s3Url);
       }
     }
     return manifestKeys;
-  }
-
-  /**
-   * Mostly used for parsing the manifest file from TSV format
-   * @param tsvString string with tsv format
-   * @returns
-   */
-  convertTsvToJson(tsvString: string): unknown[] {
-    tsvString = tsvString.trimEnd();
-    const lines = tsvString.split("\n");
-    const result = [];
-    const headers = lines[0].split("\t");
-    for (let i = 1; i < lines.length; i++) {
-      const obj: Record<string, string> = {};
-      const currentLine = lines[i].split("\t");
-      for (let j = 0; j < headers.length; j++) {
-        obj[headers[j]] = currentLine[j];
-      }
-      result.push(obj);
-    }
-    return result;
   }
 
   /**
@@ -202,27 +185,42 @@ export class S3IndexApplicationService {
    * From a list of objects stored in the backend for a dataset, reads all the manifest
    * entries and decomposes them into objects.
    *
+   * @param config
    * @param allObjects
    * @param loadText
    */
   async getS3ManifestObjectListFromAllObjectList(
+    config: DatasetAustralianGenomicsDirectories,
     allObjects: S3ObjectMetadataType[],
     loadText: (url: string) => Promise<string>,
   ): Promise<S3ManifestDictType> {
     const s3UrlManifestObj: S3ManifestDictType = {};
 
-    const manifestUriList = this.getManifestUriFromS3ObjectList(allObjects);
+    const manifestUriList = this.getManifestUriFromS3ObjectList(
+      allObjects,
+      config.manifestEndsWith,
+    );
 
     for (const manifestS3Url of manifestUriList) {
       const manifestTsvContent = await loadText(manifestS3Url);
 
-      const manifestObjContentList = <
-        {
-          checksum: string;
-          agha_study_id: string;
-          filename: string;
-        }[]
-      >this.convertTsvToJson(manifestTsvContent);
+      const manifestObjContentList = parse<{
+        checksum: string;
+        agha_study_id: string;
+        filename: string;
+      }>(manifestTsvContent, {
+        header: true,
+        skipEmptyLines: true,
+      });
+
+      if (
+        manifestObjContentList.errors &&
+        manifestObjContentList.errors.length > 0
+      ) {
+        throw new Error(
+          `Error ${manifestObjContentList.errors[0].message} parsing manifest file ${manifestS3Url}`,
+        );
+      }
 
       // The manifest will contain a filename only, but for the purpose of uniqueness and how we stored in db.
       // We would append the filename with the s3 Url prefix.
@@ -231,12 +229,12 @@ export class S3IndexApplicationService {
         0,
         manifestLastSlashIndex,
       );
-      for (const manifestObj of manifestObjContentList) {
+      for (const manifestObj of manifestObjContentList.data) {
         const s3Url = `${manifestS3UrlPrefix}/${manifestObj.filename}`;
         s3UrlManifestObj[s3Url] = {
           s3Url: s3Url,
-          checksum: manifestObj.checksum,
           agha_study_id_array: manifestObj.agha_study_id.split(","),
+          ...manifestObj,
         };
       }
     }
@@ -245,8 +243,10 @@ export class S3IndexApplicationService {
 
   /**
    * Grouping manifest files based on filetype
-   * @param manifestArray
-   * @param regexSpecimenId
+   *
+   * @param manifestArray an array of the manifests from files
+   * @param regexSpecimenId a regex that could be applied on files to determine specimen id
+   * @param columnNameSpecimenId a column name that might be present in the manifests to set the specimen id
    * @returns FileGroupType
    * e.g.
    * {
@@ -257,43 +257,47 @@ export class S3IndexApplicationService {
    * }
    *
    */
-  filetypeGrouping({
-    manifestArray,
-    regexSpecimenId,
-  }: {
-    manifestArray: MergedManifestMetadataType[];
-    regexSpecimenId?: string;
-  }): FileGroupType[] {
+  filetypeGrouping(
+    manifestArray: MergedManifestMetadataType[],
+    regexSpecimenId?: string,
+    columnNameSpecimenId?: string,
+  ): FileGroupType[] {
     const result: FileGroupType[] = [];
 
-    const groupedByFilenameId: Record<string, MergedManifestMetadataType[]> =
+    // take all the passed in files and group them by the "base" of their filenames
+    // (this helps join indexes in with their primary data, joins fastq pairs together etc)
+    const groupedByFilenameBase: Record<string, MergedManifestMetadataType[]> =
       groupBy(manifestArray, (manifest: MergedManifestMetadataType) => {
-        const filename = manifest.s3Url.replaceAll(/.gz|.tbi|.bai|.crai/g, ""); // Removing index/compressed extension to find base filename.
+        // Removing index/compressed extension to find base filename.
+        const filename = manifest.s3Url.replaceAll(
+          /\.gz|\.tbi|\.bai|\.crai/g,
+          "",
+        );
 
         return filename.endsWith(".fastq") || filename.endsWith(".fq")
-          ? filename.replaceAll(/_R1|_R2|.R1|.R2/g, "")
+          ? filename.replaceAll(/_R1|_R2|\.R1|\.R2/g, "")
           : filename;
       });
 
-    for (const filenameId in groupedByFilenameId) {
-      const manifestGroupedArray = groupedByFilenameId[filenameId];
-
+    for (const [filenameBase, manifestGroupedArray] of Object.entries(
+      groupedByFilenameBase,
+    )) {
       const filetype =
-        filenameId.endsWith(".fastq") || filenameId.endsWith(".fq")
+        filenameBase.endsWith(".fastq") || filenameBase.endsWith(".fq")
           ? ArtifactEnum.FASTQ
-          : filenameId.endsWith(".bam") || filenameId.endsWith(".bai")
+          : filenameBase.endsWith(".bam") || filenameBase.endsWith(".bai")
           ? ArtifactEnum.BAM
-          : filenameId.endsWith(".vcf") ||
-            filenameId.endsWith(".gvcf") ||
-            filenameId.endsWith(".tbi")
+          : filenameBase.endsWith(".vcf") ||
+            filenameBase.endsWith(".gvcf") ||
+            filenameBase.endsWith(".tbi")
           ? ArtifactEnum.VCF
-          : filenameId.endsWith(".cram") || filenameId.endsWith(".crai")
+          : filenameBase.endsWith(".cram") || filenameBase.endsWith(".crai")
           ? ArtifactEnum.CRAM
-          : filenameId.endsWith(".phenopacket.json")
+          : filenameBase.endsWith(".phenopacket.json")
           ? "PHENOPACKET_INDIVIDUAL"
-          : filenameId.endsWith(".family.json")
+          : filenameBase.endsWith(".family.json")
           ? "PHENOPACKET_FAMILY"
-          : filenameId.endsWith(".cohort.json")
+          : filenameBase.endsWith(".cohort.json")
           ? "PHENOPACKET_COHORT"
           : undefined;
 
@@ -304,9 +308,16 @@ export class S3IndexApplicationService {
       // If regex not provided, will use patientId instead
 
       let specimenId = patientIdArray.join(",");
+
       if (regexSpecimenId) {
-        const reMatchSpecimenId = filenameId.match(regexSpecimenId);
+        const reMatchSpecimenId = filenameBase.match(regexSpecimenId);
         if (reMatchSpecimenId) specimenId = reMatchSpecimenId[1];
+      }
+
+      if (columnNameSpecimenId) {
+        const manifestSpecimenId =
+          manifestGroupedArray[0][columnNameSpecimenId];
+        if (manifestSpecimenId) specimenId = manifestSpecimenId;
       }
 
       if (!filetype) {
@@ -316,7 +327,7 @@ export class S3IndexApplicationService {
 
       result.push({
         filetype,
-        filenameId,
+        filenameId: filenameBase,
         specimenId,
         patientIdArray,
         file: manifestGroupedArray,
@@ -678,11 +689,11 @@ export class S3IndexApplicationService {
    * S3 this will read the directories in S3 and look for new or updated objects.
    *
    * @param datasetUri the URI that defines the dataset in the configuration
-   * @param loaderType one of the loader types this service supports
+   * @param datasetConfig the configuration of this dataset
    */
   public async syncWithDatabaseFromDatasetUri(
     datasetUri: string,
-    loaderType: "australian-genomics-directories",
+    datasetConfig: DatasetAustralianGenomicsDirectories,
   ) {
     // triggering a sync is limited to certain users
     // await this.checkIsImportDatasetAllowed(user, datasetUri);
@@ -702,46 +713,27 @@ export class S3IndexApplicationService {
 
     let s3MetadataList: S3ObjectMetadataType[];
     let s3ManifestTypeObjectDict: S3ManifestDictType;
-    let datasetSpecimenIdRe: string | undefined = undefined;
-    let datasetCaseIdRe: string | undefined = undefined;
 
-    switch (loaderType) {
-      case "australian-genomics-directories":
-        const s3UrlPrefix =
-          this.datasetService.getStorageUriPrefixFromFromDatasetUri(datasetUri);
+    const s3UrlPrefix =
+      this.datasetService.getStorageUriPrefixFromFromDatasetUri(datasetUri);
 
-        if (!s3UrlPrefix) {
-          console.warn("No Storage Dataset URI found.");
-          return;
-        }
-
-        // Searching match prefix with data in S3 store bucket
-        s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
-
-        // Grab all ManifestType object from all manifest files in s3
-        s3ManifestTypeObjectDict =
-          await this.getS3ManifestObjectListFromAllObjectList(
-            s3MetadataList,
-            (url: string) => {
-              return readObjectToStringFromS3Url(this.s3Client, url);
-            },
-          );
-        const datasetConfig: any =
-          this.datasetService.getDatasetConfiguration(datasetUri);
-
-        if (datasetConfig) {
-          if (datasetConfig.specimenIdentifierRegex) {
-            datasetSpecimenIdRe = datasetConfig.specimenIdentifierRegex;
-          }
-          if (datasetConfig.caseIdentifierRegex) {
-            datasetCaseIdRe = datasetConfig.caseIdentifierRegex;
-          }
-        }
-
-        break;
-      default:
-        throw new Error(`Unknown loader type '${loaderType}'`);
+    if (!s3UrlPrefix) {
+      console.warn("No Storage Dataset URI found.");
+      return;
     }
+
+    // Searching match prefix with data in S3 store bucket
+    s3MetadataList = await this.getS3ObjectListFromUriPrefix(s3UrlPrefix);
+
+    // Grab all ManifestType object from all manifest files in s3
+    s3ManifestTypeObjectDict =
+      await this.getS3ManifestObjectListFromAllObjectList(
+        datasetConfig,
+        s3MetadataList,
+        (url: string) => {
+          return readObjectToStringFromS3Url(this.s3Client, url);
+        },
+      );
 
     // Grab all ManifestType object from current edgedb (i.e all the artifacts for a dataset but represented
     // as they would have been in their original manifest)
@@ -803,10 +795,11 @@ export class S3IndexApplicationService {
 
       //  Inserting a new artifact must be in a complete file set (e.g. you can't insert a BAM without BAI)
       //  For this reason all files need to be grouped based on filetype before the insertion process.
-      const groupedManifestByFiletype = this.filetypeGrouping({
-        manifestArray: fullManifest,
-        regexSpecimenId: datasetSpecimenIdRe,
-      });
+      const groupedManifestByFiletype = this.filetypeGrouping(
+        fullManifest,
+        datasetConfig?.specimenIdentifier?.pathRegex,
+        datasetConfig?.specimenIdentifier?.manifestColumnName,
+      );
 
       // A patientId link array that will be used for linking new patient record
       const patientIdAndDataCaseIdLinkingArray = [];
@@ -821,25 +814,41 @@ export class S3IndexApplicationService {
       //
       // Ref: https://github.com/elsa-data/elsa-data/issues/509
 
-      // We will create a dictionary of probandId (which is the studyId prefix) with the caseId (based on the regex of
-      // the filename)
+      // We will create a dictionary of probandId (which is the studyId prefix) to a preferred case id
+      // (via a configurable process)
+      // Any not put into this dictionary will force Elsa to try to make up a case id
       const probandIdMapCaseId: Record<string, string> = {};
 
-      // Need to loop through all studyId
-      for (const m of groupedManifestByFiletype) {
-        const patientIdArray = m.patientIdArray;
-        const filenameId = m.filenameId;
+      // custom case ids are only enabled via configuration
+      if (datasetConfig.caseIdentifier) {
+        // Need to loop through all studyId
+        for (const m of groupedManifestByFiletype) {
+          const patientIdArray = m.patientIdArray;
+          const filenameId = m.filenameId;
 
-        for (const patientId of patientIdArray) {
-          const probandId = patientId.split("_")[0];
+          for (const patientId of patientIdArray) {
+            const probandId = patientId.split("_")[0];
 
-          // If this filename has a matching regex (for the caseId), we will store this value
-          // There is a possibility that value are being replaced if it has the same probandId in the next iteration,
-          // but in theory they are all should be the same value
-          if (datasetCaseIdRe) {
-            const reMatchCaseId = filenameId.match(datasetCaseIdRe);
-            if (reMatchCaseId) {
-              probandIdMapCaseId[probandId] = reMatchCaseId[1];
+            // case ids might be able to be derived from the filenames
+            if (datasetConfig.caseIdentifier.pathRegex) {
+              // If this filename has a matching regex (for the caseId), we will store this value
+              const reMatchCaseId = filenameId.match(
+                datasetConfig.caseIdentifier.pathRegex,
+              );
+              if (reMatchCaseId) {
+                probandIdMapCaseId[probandId] = reMatchCaseId[1];
+              }
+            }
+
+            // case ids can be specified as part of the manifest that came with the files
+            if (datasetConfig.caseIdentifier.manifestColumnName) {
+              for (const c of m.file) {
+                if (datasetConfig.caseIdentifier.manifestColumnName in c)
+                  probandIdMapCaseId[probandId] =
+                    c[
+                      datasetConfig.caseIdentifier.manifestColumnName
+                    ].toString();
+              }
             }
           }
         }
@@ -1007,12 +1016,17 @@ export class S3IndexApplicationService {
         }
       }
 
-      // Handling pedigree Linking
-      // At this stage, all dataset::DatasetPatient record should already exist
-      await this.linkPedigreeRelationship(
-        datasetUri,
-        patientIdAndDataCaseIdLinkingArray,
-      );
+      if (
+        datasetConfig.pedigree &&
+        datasetConfig.pedigree.usePatientIdentifierSuffixes
+      ) {
+        // Handling pedigree Linking
+        // At this stage, all dataset::DatasetPatient record should already exist
+        await this.linkPedigreeRelationship(
+          datasetUri,
+          patientIdAndDataCaseIdLinkingArray,
+        );
+      }
 
       // by now everyone that should exist does exist... so we can take all the phenopackets we have
       // encountered and use them to set sex

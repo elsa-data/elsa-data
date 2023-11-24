@@ -282,9 +282,10 @@ export class ReleaseSelectionService extends ReleaseBaseService {
    * @param statusToSet the status to set i.e. selected = true means shared,
    *        selected = false means not shared
    * @param releaseKey the release id of the release to alter
-   * @param dbIds a list of EdgeDB uuids, each identifying a patient, case, or specimen
-   * @param externalIdentifierValues a list of external identifiers, each identifying a patient, case, or specimen
-   * @param selectAll whether to apply the given `statusToSet` to all identifiers associated with the release
+   * @param args
+   * @param args.dbIds a list of EdgeDB uuids, each identifying a patient, case, or specimen
+   * @param args.externalIdentifierValues a list of external identifiers, each identifying a patient, case, or specimen
+   * @param args.selectAll whether to apply the given `statusToSet` to all identifiers associated with the release
    *
    * This function is responsible for ensuring the passed in identifiers are
    * valid - so it makes sure that all specimen ids are from datasets that are

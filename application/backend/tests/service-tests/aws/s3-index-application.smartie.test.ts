@@ -1,4 +1,5 @@
 import {
+  SMARTIE_DATASET_CONFIG,
   SMARTIE_DESCRIPTION,
   SMARTIE_FAKE_BUCKET,
   SMARTIE_FAKE_KEY,
@@ -59,7 +60,7 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
 
     await agService.syncWithDatabaseFromDatasetUri(
       SMARTIE_URI,
-      "australian-genomics-directories",
+      SMARTIE_DATASET_CONFIG,
     );
 
     const datasetSummary = await datasetService.get(user, SMARTIE_URI, true);
