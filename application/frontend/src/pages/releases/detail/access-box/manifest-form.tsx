@@ -28,6 +28,7 @@ export const ManifestForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
           "objectStoreBucket",
           "objectStoreKey",
           "objectStoreUrl",
+          "objectStoreName",
         ]}
       />
     </>

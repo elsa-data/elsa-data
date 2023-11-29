@@ -3,6 +3,7 @@ import {
   doRoleInReleaseCheck,
   getReleaseInfo,
 } from "./helpers";
+import { basename } from "path/posix";
 import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
@@ -28,6 +29,7 @@ export const unpackFileArtifact = (
   | "objectStoreProtocol"
   | "objectStoreBucket"
   | "objectStoreKey"
+  | "objectStoreName"
   | "objectStoreSigned"
 >[] => {
   const getMd5 = (checksums: any[]): string => {
@@ -146,6 +148,7 @@ export const unpackFileArtifact = (
       objectStoreProtocol: match[1],
       objectStoreBucket: match[2],
       objectStoreKey: match[3],
+      objectStoreName: basename(match[3])
     };
   });
 };
@@ -211,6 +214,8 @@ export async function createReleaseFileList(
  * for the given release. This function returns *only* raw data from the
  * database - it does not attempt to 'sign urls' etc.
  *
+ * @param edgeDbClient
+ * @param userService
  * @param user
  * @param releaseKey
  * @deprecated

@@ -33,6 +33,7 @@ export const ObjectStoreRecordKey = [
   "objectStoreProtocol",
   "objectStoreBucket",
   "objectStoreKey",
+  "objectStoreName",
   "objectStoreSigned",
   "objectStoreUrl",
   "objectType",
