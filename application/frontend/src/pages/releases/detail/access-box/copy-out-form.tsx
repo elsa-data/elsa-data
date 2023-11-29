@@ -36,10 +36,10 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
       onError: (e) => {
         console.log(e);
       },
-    }
+    },
   );
   const [input, setInput] = useState<string>(
-    releaseData.dataSharingCopyOut?.destinationLocation ?? ""
+    releaseData.dataSharingCopyOut?.destinationLocation ?? "",
   );
 
   const isMatchDb =
@@ -53,17 +53,17 @@ export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
       )}
       <div className="prose-sm flex flex-col">
         <p>
-          The copy out mechanism provides an ability
-          to bulk copy released objects into another bucket.
+          The copy out mechanism provides an ability to bulk copy released
+          objects into another bucket.
         </p>
         <p>
           The data applicants can provide the name of the destination bucket
-          here - but the actual copy process can only be initiated by the
-          data administrators. Let them know when the bucket is ready to receive
+          here - but the actual copy process can only be initiated by the data
+          administrators. Let them know when the bucket is ready to receive
           data.
         </p>
 
-          {/* ok so this isn't the worlds best pattern - we possibly should be doing some sort of
+        {/* ok so this isn't the worlds best pattern - we possibly should be doing some sort of
               autosave with a de-bounce - but anyhow - for a field that is rarely edited it is fine */}
         <div className="flex flex-row items-center space-x-2">
           <label className="label">
