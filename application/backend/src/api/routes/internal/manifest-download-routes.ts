@@ -5,7 +5,6 @@ import {
 } from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
-import { ReleaseService } from "../../../business/services/releases/release-service";
 import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
@@ -28,7 +27,6 @@ export const manifestDownloadRoutes = async (
   const presignedUrlService = _opts.container.resolve(PresignedUrlService);
   const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
   const htsgetService = _opts.container.resolve(S3ManifestHtsgetService);
-  const releaseService = _opts.container.resolve(ReleaseService);
   const manifestService = _opts.container.resolve(ManifestService);
 
   // this TSV manifest is available to everyone involved in the project

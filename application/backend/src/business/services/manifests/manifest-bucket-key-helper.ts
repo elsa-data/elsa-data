@@ -7,6 +7,7 @@ import {
   ManifestBucketKeyType,
 } from "./manifest-bucket-key-types";
 import { collapseExternalIds } from "../helpers";
+import { basename } from "path/posix";
 
 /**
  * Create a simple list of object in the manifest broken into simple fields - service, bucket, key, protocol etc
@@ -60,6 +61,7 @@ export async function transformMasterManifestToBucketKeyManifest(
       | "objectStoreProtocol"
       | "objectStoreBucket"
       | "objectStoreKey"
+      | "objectStoreName"
       | "objectSize"
       | "md5"
     > => {
@@ -79,6 +81,7 @@ export async function transformMasterManifestToBucketKeyManifest(
             objectStoreProtocol: match[1],
             objectStoreBucket: match[2],
             objectStoreKey: match[3],
+            objectStoreName: basename(match[3]),
             objectSize: size,
             md5: getMd5(checksums),
           };

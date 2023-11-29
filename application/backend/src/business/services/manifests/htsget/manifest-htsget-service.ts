@@ -129,6 +129,7 @@ export abstract class ManifestHtsgetService {
         objectType: "BAM",
         objectStoreSigned: "",
         objectStoreKey: "",
+        objectStoreName: "",
         objectStoreBucket: "",
         objectStoreProtocol: "htsget",
         objectSize: 0,

@@ -18,6 +18,7 @@ export const ManifestBucketKeyObjectSchema = Type.Object({
   objectStoreUrl: Type.String(),
   objectStoreBucket: Type.String(),
   objectStoreKey: Type.String(),
+  objectStoreName: Type.String(),
 
   accessPointArn: Type.Optional(Type.String()),
 

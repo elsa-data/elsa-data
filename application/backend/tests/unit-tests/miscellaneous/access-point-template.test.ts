@@ -4,6 +4,7 @@ import {
 } from "../../../src/business/services/sharers/aws-access-point/_access-point-template-helper";
 import { ManifestBucketKeyObjectType } from "../../../src/business/services/manifests/manifest-bucket-key-types";
 import { pino } from "pino";
+import { basename } from "path/posix";
 
 describe("Creating Access Point CloudFormation Templates", () => {
   let singleBucketFiles: ManifestBucketKeyObjectType[];
@@ -24,6 +25,7 @@ describe("Creating Access Point CloudFormation Templates", () => {
       objectStoreUrl: s3Url,
       objectStoreBucket: _match[1],
       objectStoreKey: _match[2],
+      objectStoreName: basename(_match[2]),
       // the fields below are not actually used in the template creation - so can be anything
       objectType: "NOTIMPORTANT",
       caseId: "ACASEID",
