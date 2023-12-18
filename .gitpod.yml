@@ -8,6 +8,15 @@ tasks:
     init: echo 'init script' # runs during prebuild => https://www.gitpod.io/docs/configure/projects/prebuilds
     command: echo 'start script'
 
+  - name: Database
+    init: >
+      cd application/backend &&
+      edgedb project init --non-interactive &&
+      gp sync-done database
+    command: >
+      cd application/backend &&
+      edgedb list databases
+
 # List the ports to expose. Learn more: https://www.gitpod.io/docs/configure/workspaces/ports
 ports:
   - name: Frontend
@@ -15,4 +24,8 @@ ports:
     port: 3000
     onOpen: open-preview
 
+  - name: Database UI
+    description: Port 10701 for the frontend
+    port: 10701
+    onOpen: open-preview
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
