@@ -3,6 +3,6 @@
   "ext": "js,ts,json,json5,esdl",
   "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts", "tests/**/*"],
   "execMap": {
-    "ts": "node --loader ts-node/esm -r dotenv/config"
+    "ts": "tsx -r dotenv/config"
   }
 }

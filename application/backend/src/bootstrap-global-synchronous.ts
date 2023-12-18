@@ -1,5 +1,4 @@
 import archiver from "archiver";
-import archiverZipEncrypted from "archiver-zip-encrypted";
 import Bree from "bree";
 import path from "path";
 import i18n from "i18n";
@@ -13,7 +12,7 @@ import i18n from "i18n";
 export function bootstrapGlobalSynchronous() {
   // register format for archiver
   // note: only do it once per Node.js process/application, as duplicate registration will throw an error
-  archiver.registerFormat("zip-encrypted", archiverZipEncrypted);
+  archiver.registerFormat("zip-encrypted", require("archiver-zip-encrypted"));
 
   // global settings for bree (job scheduler)
   Bree.extend(require("@breejs/ts-worker"));
