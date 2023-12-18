@@ -56,7 +56,7 @@ const config: PlaywrightTestConfig = {
   /* set up so our test server runs directly from dev */
   webServer: {
     cwd: "../application/backend",
-    command: "tsx src/entrypoint.ts web-server-with-scenario 1",
+    command: "npx tsx src/entrypoint.ts web-server-with-scenario 1",
     timeout: 2 * 60 * 1000,
     port: 3000,
     // there should be nothing running on our port in CI
