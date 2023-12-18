@@ -36,7 +36,7 @@
     "edgetypes": "generate queries --file && generate edgeql-js --force-overwrite  && generate interfaces",
     "//test": "Run Jest across the full test suite",
     "test": "jest --forceExit --detectOpenHandles --runInBand",
-    "test:blank": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.minimum tsx -r dotenv/config src/entrypoint.ts db-blank",
+    "test:blank": "cross-env NODE_ENV=development DOTENV_CONFIG_PATH=.env.bare tsx -r dotenv/config src/entrypoint.ts db-blank",
     "test:service": "jest --forceExit --detectOpenHandles --runInBand --config jest.service-tests.config.js",
     "test:db": "jest --forceExit --detectOpenHandles --runInBand --config jest.db-tests.config.js",
     "test:unit": "jest --forceExit --detectOpenHandles --runInBand --config jest.unit-tests.config.js",
