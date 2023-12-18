@@ -5,19 +5,31 @@ image:
 tasks:
   - name: Packages
     init: |
+      pre-commit install
       (cd application/backend && npm i)
       (cd application/frontend && npm i)
       (cd application/common/elsa-constants && npm i)
       (cd application/common/elsa-types && npm i)
       gp sync-await database
       (cd application/backend && npm run edgetypes)
-      (cd application/frontend && npm run dev:build)
+      gp sync-done packages
 
   - name: Database
     init: >
       cd application/backend &&
       edgedb project init --non-interactive &&
       gp sync-done database
+
+  - name: Front End
+    command: |
+      gp sync-await packages
+      cd application/frontend && npm run dev:watch
+
+  - name: Backend
+    init: |
+      gp sync-await packages
+      cd application/backend && npm run dev:bare
+
 
 ports:
   - name: Frontend

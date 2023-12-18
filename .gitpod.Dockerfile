@@ -10,4 +10,7 @@ RUN echo deb [signed-by=/usr/local/share/keyrings/edgedb-keyring.gpg]\
       $(grep "VERSION_CODENAME=" /etc/os-release | cut -d= -f2) main \
       | sudo tee /etc/apt/sources.list.d/edgedb.list
 
-RUN sudo apt-get update && sudo apt-get install -y edgedb-3
+# Our list of tools we need to use for dev (that won't be installed via npm etc)
+# pre-commit is used for checking before git commits
+# edgedb is our database
+RUN sudo apt-get update && sudo apt-get install -y edgedb-3 pre-commit
