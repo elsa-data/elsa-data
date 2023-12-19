@@ -13,4 +13,4 @@ RUN echo deb [signed-by=/usr/local/share/keyrings/edgedb-keyring.gpg]\
 # Our list of tools we need to use for dev (that won't be installed via npm etc)
 # pre-commit is used for checking before git commits
 # edgedb is our database
-RUN sudo apt-get update && sudo apt-get install -y edgedb-3 pre-commit && rm -rf /var/lib/apt/lists/*
+RUN sudo apt-get update && sudo apt-get install -y edgedb-3 pre-commit
