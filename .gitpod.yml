@@ -20,12 +20,12 @@ tasks:
       gp sync-done database
 
   - name: Front End
-    command: |
-      cd application/frontend && npm run dev:watch
+    init: gp sync-await packages
+    command: cd application/frontend && npm run dev:watch
 
   - name: Backend
-    init: |
-      cd application/backend && npm run dev:bare
+    init: gp sync-await packages
+    command: cd application/backend && npm run dev:bare
 
 ports:
   - name: Frontend
