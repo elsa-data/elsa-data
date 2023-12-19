@@ -1,5 +1,6 @@
 {
-  "extends": "ts-node/node16/tsconfig.json",
+  "extends": "@tsconfig/node20/tsconfig.json",
+  "//ts-node": "our main builds *do not* use ts-node anymore - but Bree typescript plugin needs these settings",
   "ts-node": {
     "transpileOnly": true,
     "files": true,
@@ -9,7 +10,7 @@
       "emitDecoratorMetadata": true
     }
   },
-  "//comment": "we are almost always either bundling or ts-noding - if we do run tsc for type checking we never want it to output .js files",
+  "//compilerOptions": "we are almost always either bundling or using tsx - if we do run tsc for type checking we never want it to output .js files",
   "compilerOptions": {
     "noEmit": true,
     "experimentalDecorators": true,
@@ -18,6 +19,6 @@
     "strict": true,
     "downlevelIteration": true
   },
-  "include": ["./src/**/*", "./jobs/**/*", "./tests/**/*"],
+  "include": ["./src/**/*", "./tests/**/*"],
   "exclude": ["node_modules"]
 }

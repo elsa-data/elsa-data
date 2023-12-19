@@ -20,11 +20,6 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { App } from "../../src/app";
 import { getServices } from "../../src/di-helpers";
 import { Headers, RequestInfo, RequestInit } from "node-fetch";
-import {
-  HeadersEsque,
-  RequestInitEsque,
-  ResponseEsque,
-} from "@trpc/client/dist/internals/types";
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import { AppRouter } from "../../src/app-router";
 import { FastifyInstance } from "fastify";
@@ -183,8 +178,8 @@ export async function createTrpcClient(
 ) {
   const lightMyRequestFetch = async (
     input: RequestInfo | URL | string,
-    init?: RequestInit | RequestInitEsque,
-  ): Promise<ResponseEsque> => {
+    init?: RequestInit,
+  ): Promise<any> => {
     const url = input as string;
     const opts = {
       url: url,
@@ -206,7 +201,7 @@ export async function createTrpcClient(
     // NOTE: this is very adhoc - the alternative would be to not use 'inject' and actually expose the
     // server on a real port and use actual fetch. But we have been using inject for our other tests so
     // we have done this
-    const headers: HeadersEsque = new Headers();
+    const headers = new Headers();
     for (const [k, v] of Object.entries(injectResult.headers)) {
       if (v) {
         headers.set(k, v.toString());
@@ -220,13 +215,13 @@ export async function createTrpcClient(
       status: injectResult.statusCode,
       statusText: injectResult.statusMessage,
       url: url,
-      clone: (): ResponseEsque => {
+      clone: () => {
         throw Error(
           "clone not implemented as part of LightMyRequest/fetch bridge",
         );
       },
       json: injectResult.json,
-    } as ResponseEsque;
+    };
   };
 
   return createTRPCProxyClient<AppRouter>({
