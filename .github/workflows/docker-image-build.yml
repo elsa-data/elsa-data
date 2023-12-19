@@ -6,7 +6,7 @@ on:
   # we want something built at the end of each day's work
   schedule:
     # this is in UTC - so 10am = 9pm Melbourne time from the same day - also resilient to daylight savings
-    - cron: "5 * * * *"
+    - cron: "0 10 * * *"
   push:
     branches:
       - "dev"
