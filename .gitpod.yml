@@ -6,16 +6,22 @@ tasks:
   - name: Packages
     init: |
       pre-commit install
+      pre-commit run
       (cd application/backend && npm i)
       (cd application/frontend && npm i)
       (cd application/common/elsa-constants && npm i)
       (cd application/common/elsa-types && npm i)
-      gp sync-await database
+      gp sync-await database-init
       (cd application/backend && npm run edgetypes)
       gp sync-done packages
 
   - name: Database
+    # note this init will start the database for the package management, but the db will not run
+    # past the init phase - so we need to do this again later
     init: |
+      (cd application/backend && edgedb project init --non-interactive)
+      gp sync-done database-init
+    command: |
       (cd application/backend && edgedb project init --non-interactive)
       gp sync-done database
 
@@ -25,7 +31,9 @@ tasks:
 
   - name: Backend
     init: gp sync-await packages
-    command: cd application/backend && npm run dev:bare
+    command: |
+      gp sync-await database
+      cd application/backend && npm run dev:bare
 
 ports:
   - name: Frontend
