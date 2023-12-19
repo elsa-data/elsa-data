@@ -42,6 +42,6 @@ ports:
     onOpen: open-browser
 
   - name: Database UI
-    description: Port 10701 for the frontend
-    port: 10701
-    onOpen: open-preview
+    description: Port 10700 for the frontend
+    port: 10700
+    onOpen: open-browser
