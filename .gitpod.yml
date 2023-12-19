@@ -15,21 +15,17 @@ tasks:
       gp sync-done packages
 
   - name: Database
-    init: >
-      cd application/backend &&
-      edgedb project init --non-interactive &&
+    init: |
+      (cd application/backend && edgedb project init --non-interactive)
       gp sync-done database
 
   - name: Front End
     command: |
-      gp sync-await packages
       cd application/frontend && npm run dev:watch
 
   - name: Backend
     init: |
-      gp sync-await packages
       cd application/backend && npm run dev:bare
-
 
 ports:
   - name: Frontend
