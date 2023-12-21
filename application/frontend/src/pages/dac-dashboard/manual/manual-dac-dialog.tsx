@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { ReleaseManualType } from "@umccr/elsa-types";
@@ -11,6 +11,7 @@ import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
 import Select from "react-select";
 import { useLoggedInUserConfigRelay } from "../../../providers/logged-in-user-config-relay-provider";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
+import classNames from "classnames";
 
 type Props = {
   showing: boolean;
@@ -24,6 +25,20 @@ const Required: React.FC = () => {
     </span>
   );
 };
+
+const FormControl: React.FC<{ title: string, input: ReactNode, displayRequiredError: boolean }> = (props) => {
+  return (
+    <label className="form-control w-full">
+      <div className="label">
+        <span className="label-text font-bold">{props.title}</span>
+      </div>
+      {props.input}
+      {props.displayRequiredError && <div className="label">
+        <span className="label-text text-error">This field is required</span>
+      </div>}
+    </label>
+  )
+}
 
 export const ManualDacDialog: React.FC<Props> = ({
   showing,
@@ -87,110 +102,86 @@ export const ManualDacDialog: React.FC<Props> = ({
         }
         content={
           <>
-            <div>
-              <input
-                type="text"
-                className="my-4 block w-full rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Release Title"
-                {...register("releaseTitle", { required: true })}
-              />
-              {errors.releaseTitle && <Required />}
-              <textarea
-                className="my-4 block w-full rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Release Description"
-                {...register("releaseDescription", { required: true })}
-              />
-              {errors.releaseDescription && <Required />}
-              <Controller
-                control={control}
-                name="datasetUris"
-                rules={{ required: true }}
-                render={({ field: { onChange } }) => (
-                  <>
-                    <Select
-                      id="datasetSelector"
-                      placeholder="Datasets"
-                      noOptionsMessage={() =>
-                        "There are no datasets to select from"
-                      }
-                      options={
-                        loggedInUserConfig?.datasets
-                          ? Object.entries(loggedInUserConfig.datasets).map(
-                              (d) => ({ value: d[0], label: d[1] }),
-                            )
-                          : []
-                      }
-                      isMulti={true}
-                      isLoading={!loggedInUserConfig}
-                      isSearchable={false}
-                      closeMenuOnSelect={false}
-                      classNames={{
-                        container: () =>
-                          "!my-4 !focus:border-blue-500 !focus:ring-blue-500",
-                        control: () => "!rounded-lg !border !border-gray-300",
-                        option: () => "!font-medium !text-gray-700",
-                        placeholder: () => "!text-sm !text-gray-500",
-                      }}
-                      onChange={(opts) =>
-                        onChange(opts.map((opt) => opt.value))
-                      }
-                    />
-                  </>
-                )}
-              />
-              {errors.datasetUris && <Required />}
-              <Controller
-                control={control}
-                name="studyType"
-                rules={{ required: true }}
-                render={({ field: { onChange } }) => (
-                  <RhRadios label="Study Type" className="my-4">
-                    <RhRadioItem
-                      name="studyType"
-                      label="Population Origins or Ancestry Research Only"
-                      value="POA"
-                      onChange={(e) => onChange(e.target.value)}
-                    />
+            <FormControl
+              title={"Release Title"}
+              displayRequiredError={!!errors.releaseTitle}
+              input={
+                <input type="text"
+                  placeholder="A short title"
+                  className={classNames("input input-bordered w-full", { "input-error": errors.releaseTitle })}
+                  {...register("releaseTitle", { required: true })}
+                />
 
-                    <RhRadioItem
-                      name="studyType"
-                      label="General Research Use"
-                      value="GRU"
-                      onChange={(e) => onChange(e.target.value)}
-                    />
+              }>
+            </FormControl>
 
-                    <RhRadioItem
-                      name="studyType"
-                      label="Health or Medical or Biomedical Research"
-                      value="HMB"
-                      onChange={(e) => onChange(e.target.value)}
-                    />
+            <FormControl
+              title={"Release Description"}
+              displayRequiredError={!!errors.releaseDescription}
+              input={
+                <textarea
+                  className={classNames("textarea textarea-bordered h-24", { "textarea-error": errors.releaseDescription })}
+                  placeholder="A paragraph description"
+                  {...register("releaseDescription", { required: true })}
+                />
 
-                    <RhRadioItem
-                      name="studyType"
-                      label="Disease Specific Research"
-                      value="DS"
-                      onChange={(e) => onChange(e.target.value)}
-                    />
+              }>
+            </FormControl>
 
-                    <RhRadioItem
-                      name="studyType"
-                      label="Clinical Care Use"
-                      value="CC"
-                      onChange={(e) => onChange(e.target.value)}
-                    />
-                  </RhRadios>
-                )}
-              />
-              {errors.studyType && <Required />}
-              <input
-                type="text"
-                className="my-4 block w-full rounded-lg border border-gray-300 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Applicant Email Address(es)"
-                {...register("applicantEmailAddresses", { required: true })}
-              />
-              {errors.applicantEmailAddresses && <Required />}
-            </div>
+            <Controller
+              control={control}
+              name="datasetUris"
+              rules={{ required: true }}
+              render={({ field: { onChange } }) => (
+                <>
+                  <Select
+                    id="datasetSelector"
+                    placeholder="Datasets"
+                    noOptionsMessage={() =>
+                      "There are no datasets to select from"
+                    }
+                    options={
+                      loggedInUserConfig?.datasets
+                        ? Object.entries(loggedInUserConfig.datasets).map(
+                          (d) => ({ value: d[0], label: d[1] }),
+                        )
+                        : []
+                    }
+                    isMulti={true}
+                    isLoading={!loggedInUserConfig}
+                    isSearchable={false}
+                    closeMenuOnSelect={false}
+                    classNames={{
+                      container: () =>
+                        "!my-4 !focus:border-blue-500 !focus:ring-blue-500",
+                      control: () => "!rounded-lg !border !border-gray-300",
+                      option: () => "!font-medium !text-gray-700",
+                      placeholder: () => "!text-sm !text-gray-500",
+                    }}
+                    onChange={(opts) =>
+                      onChange(opts.map((opt) => opt.value))
+                    }
+                  />
+                </>
+              )}
+            />
+            {errors.datasetUris && <Required />}
+
+            <FormControl
+              title={"Applicant Email Address(es)"}
+              displayRequiredError={false}
+              input={
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="pi@institute.org.au"
+                  {...register("applicantEmailAddresses")}
+                />}>
+
+
+            </FormControl>
+
+
           </>
         }
         errorMessage={lastMutateError}
