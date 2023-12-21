@@ -4,8 +4,8 @@ import type {
   ManifestHtsgetType,
   ManifestHtsgetVariantsFileType,
 } from "./manifest-htsget-types";
-import { ManifestMasterType } from "../manifest-master-types";
 import { ManifestRegionRestrictionType } from "./manifest-htsget-types";
+import { ManifestMasterType } from "../manifest-master-types";
 
 /**
  * Create a structured/tree manifest for the data included in a release.
@@ -23,9 +23,9 @@ export async function transformMasterManifestToHtsgetManifest(
   masterManifest: ManifestMasterType,
 ): Promise<ManifestHtsgetType> {
   // a little tidy up of the uuids so they look not quite as uuids
-  const uuidToHtsgetId = (uuid: string): string => {
-    return uuid.replaceAll("-", "").toUpperCase();
-  };
+  // const uuidToHtsgetId = (uuid: string): string => {
+  //   return uuid.replaceAll("-", "").toUpperCase();
+  // };
 
   // convert the raw files into a dictionary of variants/reads - keyed by a guaranteed unique htsget id
   // (happens to be the edgedb id reformatted but could be anything - it is restricted locally to this manifest)
@@ -77,7 +77,7 @@ export async function transformMasterManifestToHtsgetManifest(
     // it is entirely possible we might have 3 specimens say (a trio) all pointing to a single VCF artifact
     // when we expose via htsget - we are talking about access at the specimen level (i.e. one sample in the VCF is
     // exposed via htsget per request)
-    const htsgetId: string = uuidToHtsgetId(filesResult.id);
+    const htsgetId: string = filesResult.id;
 
     // at the moment - with only three practical file locations - we do this splitting/logic
     // will need to rethink approach I think if we add others
@@ -93,8 +93,8 @@ export async function transformMasterManifestToHtsgetManifest(
     const R2_PREFIX = "r2://";
 
     for (const art of filesResult.artifacts) {
-      // NOTE htsget protocol only supports BAMs and VCFS currently (and the indexes are dealt with by htsget)
-      //      hence us only interested in vcfFile and bamFile
+      // NOTE htsget protocol supports BAM, VCF, BCF and CRAM, although this is only BAMs and VCFS currently
+      // (and the indexes are dealt with by htsget) hence us only interested in vcfFile and bamFile
 
       if ("vcfFile" in art) {
         const url = art["vcfFile"]?.url;
@@ -186,12 +186,12 @@ export async function transformMasterManifestToHtsgetManifest(
               // in including it here as there is nothing to point htsget to
               // TODO is this the correct decision? - maybe the researcher wants to know no file avail?
               .filter((s) => {
-                const hid = uuidToHtsgetId(s.id);
+                const hid = s.id;
 
                 return hid in readDictionary || hid in variantDictionary;
               })
               .map((s) => ({
-                htsgetId: uuidToHtsgetId(s.id),
+                htsgetId: s.id,
                 ids: externalIdsToMap(s.externalIdentifiers),
               })),
           };

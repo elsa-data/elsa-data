@@ -136,22 +136,41 @@ export const unpackFileArtifact = (
   };
 
   return getRaw().map((raw) => {
-    // decompose the object URL into protocol, bucket and key
-    const match = raw.objectStoreUrl.match(/^([^:]+):\/\/([^\/]+)\/(.+)$/);
-
-    if (!match) {
-      throw new Error(`Bad URL format: ${raw.objectStoreUrl}`);
-    }
+    const match = decomposeUrl(raw.objectStoreUrl);
 
     return {
       ...raw,
-      objectStoreProtocol: match[1],
-      objectStoreBucket: match[2],
-      objectStoreKey: match[3],
-      objectStoreName: basename(match[3])
+      objectStoreProtocol: match.protocol,
+      objectStoreBucket: match.bucket,
+      objectStoreKey: match.key,
+      objectStoreName: match.baseName,
     };
   });
 };
+
+/**
+ * Decompose a URL into the protocol, bucket, key, and base name.
+ * @param url
+ */
+export function decomposeUrl(url: string): {
+  protocol: string;
+  bucket: string;
+  key: string;
+  baseName: string;
+} {
+  const match = url.match(/^([^:]+):\/\/([^\/]+)\/(.+)$/);
+
+  if (!match) {
+    throw new Error(`Bad URL format: ${url}`);
+  }
+
+  return {
+    protocol: match[1],
+    bucket: match[2],
+    key: match[3],
+    baseName: basename(match[3]),
+  };
+}
 
 // TODO possibly this is a 'db' function that could like in that folder
 //      it is very close - but it does some 'business' in collapsing identifiers etc

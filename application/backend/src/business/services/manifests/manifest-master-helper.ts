@@ -4,6 +4,10 @@ import {
   ReleaseActivatedNothingError,
 } from "../../exceptions/release-activation";
 import { isString } from "lodash";
+import { stringify } from "csv-stringify";
+import { Readable } from "stream";
+import streamConsumers from "node:stream/consumers";
+import { ObjectStoreRecordKey } from "@umccr/elsa-types";
 
 const S3_PREFIX = "s3://";
 const GS_PREFIX = "gs://";
@@ -219,4 +223,37 @@ function checkArtifacts(manifest: ManifestMasterType) {
       );
     }
   }
+}
+
+/**
+ * Create a TSV with the headers and tsv objects.
+ *
+ * @param header headers.
+ * @param createTsvObjects TSV objects.
+ */
+export async function createTsv(
+  header: (typeof ObjectStoreRecordKey)[number][],
+  createTsvObjects: () => Promise<Iterable<any> | AsyncIterable<any> | null>,
+): Promise<string | null> {
+  // setup a TSV stream
+  const stringifyColumnOptions = [];
+  for (const column of header) {
+    stringifyColumnOptions.push({
+      key: column,
+      header: column.toUpperCase(),
+    });
+  }
+  const stringifier = stringify({
+    header: true,
+    columns: stringifyColumnOptions,
+    delimiter: "\t",
+  });
+
+  const tsv = await createTsvObjects();
+  if (tsv === null) {
+    return null;
+  }
+
+  const readableStream = Readable.from(tsv);
+  return await streamConsumers.text(readableStream.pipe(stringifier));
 }

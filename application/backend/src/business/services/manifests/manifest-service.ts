@@ -4,7 +4,10 @@ import * as edgedb from "edgedb";
 import { Executor } from "edgedb";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
-import { transformDbManifestToMasterManifest } from "./manifest-master-helper";
+import {
+  createTsv,
+  transformDbManifestToMasterManifest,
+} from "./manifest-master-helper";
 import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
 import {
@@ -13,9 +16,6 @@ import {
   ManifestTsvBodyType,
 } from "./manifest-bucket-key-types";
 import archiver, { ArchiverOptions } from "archiver";
-import { stringify } from "csv-stringify";
-import { Readable } from "stream";
-import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../releases/release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import {
@@ -26,7 +26,6 @@ import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
 import { getReleaseInfo } from "../helpers";
-import { ReleaseActivatedNothingError } from "../../exceptions/release-activation";
 import { PermissionService } from "../permission-service";
 
 @injectable()
@@ -183,7 +182,7 @@ export class ManifestService {
     return { numBytes, numObjects };
   }
 
-  private async getActiveTsvManifest(
+  async getActiveTsvManifest(
     presignedUrlService: PresignedUrlService,
     releaseKey: string,
     auditId: string,
@@ -217,32 +216,6 @@ export class ManifestService {
 
     if (!isActivated) throw new Error("needs to be activated");
 
-    const createTsv = async (auditId: string) => {
-      const manifest = await this.getActiveTsvManifest(
-        presignedUrlService,
-        releaseKey,
-        auditId,
-      );
-      if (!manifest) return null;
-
-      // setup a TSV stream
-      const stringifyColumnOptions = [];
-      for (const column of header) {
-        stringifyColumnOptions.push({
-          key: column,
-          header: column.toUpperCase(),
-        });
-      }
-      const stringifier = stringify({
-        header: true,
-        columns: stringifyColumnOptions,
-        delimiter: "\t",
-      });
-
-      const readableStream = Readable.from(manifest);
-      return await streamConsumers.text(readableStream.pipe(stringifier));
-    };
-
     const now = new Date();
     const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
       user,
@@ -254,7 +227,16 @@ export class ManifestService {
     );
 
     try {
-      const tsv = createTsv(newAuditEventId);
+      const tsv = createTsv(header, async () => {
+        const manifest = await this.getActiveTsvManifest(
+          presignedUrlService,
+          releaseKey,
+          newAuditEventId,
+        );
+        if (!manifest) return null;
+
+        return manifest;
+      });
       await this.auditLogService.completeReleaseAuditEvent(
         newAuditEventId,
         0,

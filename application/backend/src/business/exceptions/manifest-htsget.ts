@@ -27,3 +27,9 @@ export class ManifestHtsgetNotAllowed extends Base7807Error {
     super("not allowed", 404, "htsget is not allowed for this release");
   }
 }
+
+export class ManifestHtsgetNotConfigured extends Base7807Error {
+  constructor() {
+    super("not configured", 500, "htsget has not been configured");
+  }
+}
