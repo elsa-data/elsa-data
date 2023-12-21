@@ -12,6 +12,7 @@ import {
   ManifestHtsgetEndpointNotEnabled,
   ManifestHtsgetError,
   ManifestHtsgetNotAllowed,
+  ManifestHtsgetNotConfigured,
 } from "../../../exceptions/manifest-htsget";
 import { addSeconds, differenceInSeconds } from "date-fns";
 import { NotFound } from "@aws-sdk/client-s3";
@@ -26,13 +27,13 @@ import { AwsS3Service } from "../../aws/aws-s3-service";
 import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
 import { AuthenticatedUser } from "../../../authenticated-user";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
-import assert from "assert";
-import { stringify } from "csv-stringify";
-import { Readable } from "stream";
-import streamConsumers from "node:stream/consumers";
 import { ReleaseService } from "../../releases/release-service";
 import { ManifestBucketKeyObjectType } from "../manifest-bucket-key-types";
 import { PermissionService } from "../../permission-service";
+import { ObjectStoreRecordKey } from "@umccr/elsa-types";
+import { getFirstExternalIds } from "../manifest-tsv-helper";
+import { decomposeUrl } from "../../_release-file-list-helper";
+import { createTsv } from "../manifest-master-helper";
 
 export function getHtsgetSetting(
   settings: ElsaSettings,
@@ -91,12 +92,12 @@ export abstract class ManifestHtsgetService {
    *
    * @param user
    * @param releaseKey
-   * @param tsvColumns
+   * @param header
    */
   public async getActiveHtsgetManifestAsTsv(
     user: AuthenticatedUser,
     releaseKey: string,
-    tsvColumns: string[],
+    header: (typeof ObjectStoreRecordKey)[number][],
   ) {
     const { userRole, isActivated } =
       await this.releaseService.getBoundaryInfoWithThrowOnFailure(
@@ -113,61 +114,147 @@ export abstract class ManifestHtsgetService {
 
     if (!htsgetManifest) throw new Error("needs an active htsget manifest");
 
+    const now = new Date();
+    const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
+      user,
+      releaseKey,
+      "E",
+      "Created htsget TSV",
+      now,
+      this.edgeDbClient,
+    );
+
+    try {
+      const tsv = await createTsv(header, async () => {
+        const variants = await this.createHtsgetTsvForEndpoint(
+          releaseKey,
+          htsgetManifest,
+          "variants",
+        );
+        const reads = await this.createHtsgetTsvForEndpoint(
+          releaseKey,
+          htsgetManifest,
+          "reads",
+        );
+
+        if (variants === null || reads == null) {
+          return null;
+        }
+
+        return variants.concat(reads);
+      });
+
+      await this.auditLogService.completeReleaseAuditEvent(
+        newAuditEventId,
+        0,
+        now,
+        new Date(),
+        { header },
+        this.edgeDbClient,
+      );
+
+      const counter = await this.releaseService.getIncrementingCounter(
+        user,
+        releaseKey,
+      );
+
+      const filename = `release-${releaseKey.replaceAll(
+        "-",
+        "",
+      )}-htsget-${counter}.tsv`;
+
+      return {
+        filename: filename,
+        content: tsv,
+      };
+    } catch (e) {
+      const errorString = e instanceof Error ? e.message : String(e);
+
+      await this.auditLogService.completeReleaseAuditEvent(
+        newAuditEventId,
+        8,
+        now,
+        new Date(),
+        {
+          error: errorString,
+          header,
+        },
+        this.edgeDbClient,
+      );
+
+      throw e;
+    }
+  }
+
+  /**
+   * Create a new htsget TSV.
+   *
+   * @param releaseKey release key.
+   * @param htsgetManifest main htsget manifest.
+   * @param endpoint endpoint to create manifest for.
+   */
+  async createHtsgetTsvForEndpoint(
+    releaseKey: string,
+    htsgetManifest: ManifestHtsgetType,
+    endpoint: "reads" | "variants",
+  ): Promise<ManifestBucketKeyObjectType[] | null> {
+    const htsgetUrl = this.releaseService.configForFeature("isAllowedHtsget");
+    if (!htsgetUrl) {
+      throw new ManifestHtsgetNotConfigured();
+    }
+
     const tsvObjects: ManifestBucketKeyObjectType[] = [];
 
-    // TODO - better filling in of the TSV objects structure
-    //        might need cross referencing from the master manifest etc
+    const manifest = await this.manifestService.getActiveManifest(releaseKey);
+    if (!manifest) {
+      return null;
+    }
 
-    for (const [key, r] of Object.entries(htsgetManifest.reads ?? {})) {
+    for (const [key, data] of Object.entries(
+      endpoint === "variants"
+        ? htsgetManifest.variants
+        : htsgetManifest.reads ?? {},
+    )) {
+      // There should not be a case where there is a key in the htsgetManifest but not in the normal manifest.
+      const entry = manifest.specimenList.find((entry) => entry.id === key)!;
+
+      htsgetUrl.pathname = `/${endpoint}/${releaseKey}/${key}`;
+      for (const restriction of data.restrictions) {
+        htsgetUrl.searchParams.append(
+          "referenceName",
+          restriction.chromosome.toString(),
+        );
+
+        if (restriction.start) {
+          htsgetUrl.searchParams.append("start", restriction.start.toString());
+        }
+        if (restriction.end) {
+          htsgetUrl.searchParams.append("end", restriction.end.toString());
+        }
+      }
+
+      const ids = getFirstExternalIds(entry);
+      const decomposed = decomposeUrl(data.url);
+
       tsvObjects.push({
-        caseId: "CASE",
-        patientId: "PATIENT",
-        specimenId: "SPECIMEN",
+        caseId: ids.caseId,
+        patientId: ids.patientId,
+        specimenId: ids.specimenId,
         artifactId: key,
-        // FIX
-        objectStoreUrl: `htsget://${"host"}/reads/${key}`,
-        objectType: "BAM",
-        objectStoreSigned: "",
-        objectStoreKey: "",
-        objectStoreName: "",
-        objectStoreBucket: "",
+        objectStoreUrl: htsgetUrl.toString(),
+        // Only VCF and BAM for now, although htsget supports CRAM and BCF.
+        objectType: endpoint === "variants" ? "VCF" : "BAM",
+        objectStoreSigned: htsgetUrl.toString(),
+        objectStoreKey: decomposed.key,
+        objectStoreName: decomposed.baseName,
+        objectStoreBucket: decomposed.bucket,
         objectStoreProtocol: "htsget",
+        // MD5 and size not known prior to htsget request.
         objectSize: 0,
       });
     }
 
-    // setup a TSV stream
-    const stringifyColumnOptions = [];
-
-    for (const header of tsvColumns) {
-      stringifyColumnOptions.push({
-        key: header,
-        header: header.toUpperCase(),
-      });
-    }
-    const stringifier = stringify({
-      header: true,
-      columns: stringifyColumnOptions,
-      delimiter: "\t",
-    });
-
-    const readableStream = Readable.from(tsvObjects);
-    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
-
-    const counter = await this.releaseService.getIncrementingCounter(
-      user,
-      releaseKey,
-    );
-
-    const filename = `release-${releaseKey.replaceAll(
-      "-",
-      "",
-    )}-htsget-${counter}.tsv`;
-
-    return {
-      filename: filename,
-      content: buf,
-    };
+    return tsvObjects;
   }
 
   async publishHtsgetManifestAuditFn(

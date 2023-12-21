@@ -33,17 +33,27 @@ async function manifestBodyElements(
   return await Promise.all(
     signedFileArtifacts.map(async (a) => ({
       ...a,
-      caseId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.case_.externalIdentifiers,
-      ),
-      patientId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.patient.externalIdentifiers,
-      ),
-      specimenId: getFirstSystemSortedExternalIdentifierValue(
-        datasetSpecimen.externalIdentifiers,
-      ),
+      ...getFirstExternalIds(datasetSpecimen),
     })),
   );
+}
+
+export function getFirstExternalIds(datasetSpecimen: any): {
+  caseId: string;
+  patientId: string;
+  specimenId: string;
+} {
+  return {
+    caseId: getFirstSystemSortedExternalIdentifierValue(
+      datasetSpecimen.case_.externalIdentifiers,
+    ),
+    patientId: getFirstSystemSortedExternalIdentifierValue(
+      datasetSpecimen.patient.externalIdentifiers,
+    ),
+    specimenId: getFirstSystemSortedExternalIdentifierValue(
+      datasetSpecimen.externalIdentifiers,
+    ),
+  };
 }
 
 export async function transformMasterManifestToTsvManifest(
