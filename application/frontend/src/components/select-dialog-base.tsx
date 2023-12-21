@@ -47,23 +47,25 @@ export const SelectDialogBase: React.FC<Props> = ({
 
         <div className="fixed inset-0 flex w-screen items-center justify-center">
           <Dialog.Panel className="mx-auto w-full max-w-2xl rounded-lg shadow-2xl overflow-hidden">
-
-          <div className={classNames(
-            "border-b-4", "border-neutral-content", "border-solid",
+            <div
+              className={classNames(
+                "border-b-4",
+                "border-neutral-content",
+                "border-solid",
                 "p-4",
                 "bg-neutral",
-                "prose", "prose-base",
-                "max-w-none")}>
+                "prose",
+                "prose-base",
+                "max-w-none",
+              )}
+            >
               <Dialog.Title as="h2" className="text-neutral-content">
                 {title}
               </Dialog.Title>
             </div>
 
             {/* dialogs have an upper portion.. */}
-            <div className={classNames(
-                "p-4",
-                "bg-white")}>
-
+            <div className={classNames("p-4", "bg-white")}>
               {errorMessage && (
                 <EagerErrorBoundary error={new Error(errorMessage)} />
               )}
@@ -75,7 +77,6 @@ export const SelectDialogBase: React.FC<Props> = ({
             <div className="p-4 bg-gray-50 sm:flex sm:flex-row-reverse">
               {buttons}
             </div>
-
           </Dialog.Panel>
         </div>
       </Dialog>

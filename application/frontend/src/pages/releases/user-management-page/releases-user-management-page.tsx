@@ -84,8 +84,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const error = releaseParticipantsQuery.error
     ? releaseParticipantsQuery.error
     : addParticipantMutate.error
-    ? addParticipantMutate.error
-    : removeParticipantMutate.error;
+      ? addParticipantMutate.error
+      : removeParticipantMutate.error;
 
   const ourRadio = (text: string, checked: boolean, onChange: () => void) => (
     <div className="form-control items-start">

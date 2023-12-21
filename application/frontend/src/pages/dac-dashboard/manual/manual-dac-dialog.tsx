@@ -26,19 +26,25 @@ const Required: React.FC = () => {
   );
 };
 
-const FormControl: React.FC<{ title: string, input: ReactNode, displayRequiredError: boolean }> = (props) => {
+const FormControl: React.FC<{
+  title: string;
+  input: ReactNode;
+  displayRequiredError: boolean;
+}> = (props) => {
   return (
     <label className="form-control w-full">
       <div className="label">
-        <span className="label-text font-bold">{props.title}</span>
+        <span className="font-bold">{props.title}</span>
       </div>
       {props.input}
-      {props.displayRequiredError && <div className="label">
-        <span className="label-text text-error">This field is required</span>
-      </div>}
+      {props.displayRequiredError && (
+        <div className="label">
+          <span className="label-text text-error">This field is required</span>
+        </div>
+      )}
     </label>
-  )
-}
+  );
+};
 
 export const ManualDacDialog: React.FC<Props> = ({
   showing,
@@ -106,27 +112,30 @@ export const ManualDacDialog: React.FC<Props> = ({
               title={"Release Title"}
               displayRequiredError={!!errors.releaseTitle}
               input={
-                <input type="text"
+                <input
+                  type="text"
                   placeholder="A short title"
-                  className={classNames("input input-bordered w-full", { "input-error": errors.releaseTitle })}
+                  className={classNames("input input-bordered w-full", {
+                    "input-error": errors.releaseTitle,
+                  })}
                   {...register("releaseTitle", { required: true })}
                 />
-
-              }>
-            </FormControl>
+              }
+            ></FormControl>
 
             <FormControl
               title={"Release Description"}
               displayRequiredError={!!errors.releaseDescription}
               input={
                 <textarea
-                  className={classNames("textarea textarea-bordered h-24", { "textarea-error": errors.releaseDescription })}
+                  className={classNames("textarea textarea-bordered h-24", {
+                    "textarea-error": errors.releaseDescription,
+                  })}
                   placeholder="A paragraph description"
                   {...register("releaseDescription", { required: true })}
                 />
-
-              }>
-            </FormControl>
+              }
+            ></FormControl>
 
             <Controller
               control={control}
@@ -134,17 +143,20 @@ export const ManualDacDialog: React.FC<Props> = ({
               rules={{ required: true }}
               render={({ field: { onChange } }) => (
                 <>
+                  <div className="label">
+                    <span className="font-bold">Datasets</span>
+                  </div>
                   <Select
                     id="datasetSelector"
-                    placeholder="Datasets"
+                    placeholder="The datasets to include"
                     noOptionsMessage={() =>
                       "There are no datasets to select from"
                     }
                     options={
                       loggedInUserConfig?.datasets
                         ? Object.entries(loggedInUserConfig.datasets).map(
-                          (d) => ({ value: d[0], label: d[1] }),
-                        )
+                            (d) => ({ value: d[0], label: d[1] }),
+                          )
                         : []
                     }
                     isMulti={true}
@@ -153,14 +165,12 @@ export const ManualDacDialog: React.FC<Props> = ({
                     closeMenuOnSelect={false}
                     classNames={{
                       container: () =>
-                        "!my-4 !focus:border-blue-500 !focus:ring-blue-500",
+                        "!mb-4 !focus:border-blue-500 !focus:ring-blue-500",
                       control: () => "!rounded-lg !border !border-gray-300",
                       option: () => "!font-medium !text-gray-700",
                       placeholder: () => "!text-sm !text-gray-500",
                     }}
-                    onChange={(opts) =>
-                      onChange(opts.map((opt) => opt.value))
-                    }
+                    onChange={(opts) => onChange(opts.map((opt) => opt.value))}
                   />
                 </>
               )}
@@ -174,14 +184,11 @@ export const ManualDacDialog: React.FC<Props> = ({
                 <input
                   type="text"
                   className="input input-bordered w-full"
-                  placeholder="pi@institute.org.au"
+                  placeholder="Semi-colon separated email addresses e.g. pi@institute.org.au"
                   {...register("applicantEmailAddresses")}
-                />}>
-
-
-            </FormControl>
-
-
+                />
+              }
+            ></FormControl>
           </>
         }
         errorMessage={lastMutateError}
