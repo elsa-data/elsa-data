@@ -43,7 +43,12 @@ export const HtsgetForm: React.FC<Props> = ({
       <TsvDownloadDiv
         actionUrl={`/api/releases/${releaseKey}/tsv-manifest-htsget`}
         releaseActivated={!!releaseData.activation}
-        fieldsToExclude={[]}
+        fieldsToExclude={[
+          "objectStoreSigned",
+          // Size and MD5 doesn't make sense before performing the htsget query.
+          "objectSize",
+          "md5",
+        ]}
       />
     </>
   );

@@ -28,7 +28,7 @@ import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
 import { AuthenticatedUser } from "../../../authenticated-user";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import { ReleaseService } from "../../releases/release-service";
-import { ManifestBucketKeyObjectType } from "../manifest-bucket-key-types";
+import { ManifestHtsgetTsvType } from "../manifest-bucket-key-types";
 import { PermissionService } from "../../permission-service";
 import { ObjectStoreRecordKey } from "@umccr/elsa-types";
 import { getFirstExternalIds } from "../manifest-tsv-helper";
@@ -197,18 +197,40 @@ export abstract class ManifestHtsgetService {
     releaseKey: string,
     htsgetManifest: ManifestHtsgetType,
     endpoint: "reads" | "variants",
-  ): Promise<ManifestBucketKeyObjectType[] | null> {
+  ): Promise<ManifestHtsgetTsvType[] | null> {
     const htsgetUrl = this.releaseService.configForFeature("isAllowedHtsget");
     if (!htsgetUrl) {
       throw new ManifestHtsgetNotConfigured();
     }
 
-    const tsvObjects: ManifestBucketKeyObjectType[] = [];
+    const tsvObjects: ManifestHtsgetTsvType[] = [];
 
     const manifest = await this.manifestService.getActiveManifest(releaseKey);
     if (!manifest) {
       return null;
     }
+
+    const pushTsvObject = (
+      ids: any,
+      key: string,
+      decomposed: any,
+      url: string,
+    ) => {
+      tsvObjects.push({
+        caseId: ids.caseId,
+        patientId: ids.patientId,
+        specimenId: ids.specimenId,
+        artifactId: key,
+        objectStoreUrl: url,
+        // Only VCF and BAM for now.
+        objectType: endpoint === "variants" ? "VCF" : "BAM",
+        objectStoreKey: decomposed.key,
+        objectStoreName: decomposed.baseName,
+        objectStoreBucket: decomposed.bucket,
+        objectStoreProtocol: "htsget",
+        // MD5 and size not known prior to htsget request. The signed URL is also unused.
+      });
+    };
 
     for (const [key, data] of Object.entries(
       endpoint === "variants"
@@ -218,40 +240,32 @@ export abstract class ManifestHtsgetService {
       // There should not be a case where there is a key in the htsgetManifest but not in the normal manifest.
       const entry = manifest.specimenList.find((entry) => entry.id === key)!;
 
+      const ids = getFirstExternalIds(entry);
+      const decomposed = decomposeUrl(data.url);
+
       htsgetUrl.pathname = `/${endpoint}/${releaseKey}/${key}`;
+
+      // If there are no restrictions, just add the whole url.
+      if (data.restrictions.length === 0) {
+        pushTsvObject(ids, key, decomposed, htsgetUrl.toString());
+      }
+
+      // Each restriction should have another htsget url associated with it.
       for (const restriction of data.restrictions) {
-        htsgetUrl.searchParams.append(
+        htsgetUrl.searchParams.set(
           "referenceName",
           restriction.chromosome.toString(),
         );
 
         if (restriction.start) {
-          htsgetUrl.searchParams.append("start", restriction.start.toString());
+          htsgetUrl.searchParams.set("start", restriction.start.toString());
         }
         if (restriction.end) {
-          htsgetUrl.searchParams.append("end", restriction.end.toString());
+          htsgetUrl.searchParams.set("end", restriction.end.toString());
         }
+
+        pushTsvObject(ids, key, decomposed, htsgetUrl.toString());
       }
-
-      const ids = getFirstExternalIds(entry);
-      const decomposed = decomposeUrl(data.url);
-
-      tsvObjects.push({
-        caseId: ids.caseId,
-        patientId: ids.patientId,
-        specimenId: ids.specimenId,
-        artifactId: key,
-        objectStoreUrl: htsgetUrl.toString(),
-        // Only VCF and BAM for now, although htsget supports CRAM and BCF.
-        objectType: endpoint === "variants" ? "VCF" : "BAM",
-        objectStoreSigned: htsgetUrl.toString(),
-        objectStoreKey: decomposed.key,
-        objectStoreName: decomposed.baseName,
-        objectStoreBucket: decomposed.bucket,
-        objectStoreProtocol: "htsget",
-        // MD5 and size not known prior to htsget request.
-        objectSize: 0,
-      });
     }
 
     return tsvObjects;

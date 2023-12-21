@@ -45,4 +45,12 @@ export type ManifestBucketKeyObjectType = Static<
   typeof ManifestBucketKeyObjectSchema
 >;
 
+const ManifestHtsgetTsvSchema = Type.Omit(ManifestBucketKeyObjectSchema, [
+  "objectSize",
+  "objectStoreSigned",
+  "md5",
+]);
+
+export type ManifestHtsgetTsvType = Static<typeof ManifestHtsgetTsvSchema>;
+
 export type ManifestTsvBodyType = Static<typeof ManifestTsvBodySchema>;
