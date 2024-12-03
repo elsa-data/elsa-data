@@ -1,4 +1,4 @@
-CREATE MIGRATION m1ccs3h3r6py43rkmrwmzcwjizpytawdlci2vvlyp7wm4meczdowqa
+CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -57,19 +57,22 @@ CREATE MIGRATION m1ccs3h3r6py43rkmrwmzcwjizpytawdlci2vvlyp7wm4meczdowqa
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE ABSTRACT TYPE lab::ArtifactBase;
-  CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE MULTI LINK artifacts: lab::ArtifactBase;
-      CREATE OPTIONAL PROPERTY sampleType: std::str;
-  };
   CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
   CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE MULTI LINK specimens: dataset::DatasetSpecimen {
+      CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
+  };
+  ALTER TYPE dataset::DatasetCase {
+      CREATE MULTI LINK patients: dataset::DatasetPatient {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
-      CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
+  };
+  CREATE ABSTRACT TYPE lab::ArtifactBase;
+  CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE MULTI LINK artifacts: lab::ArtifactBase;
+      CREATE OPTIONAL PROPERTY sampleType: std::str;
   };
   CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE storage::File {
@@ -304,16 +307,13 @@ CREATE MIGRATION m1ccs3h3r6py43rkmrwmzcwjizpytawdlci2vvlyp7wm4meczdowqa
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation: std::json;
   };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK patients: dataset::DatasetPatient {
+  ALTER TYPE dataset::DatasetPatient {
+      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK specimens: dataset::DatasetSpecimen {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
-  };
-  ALTER TYPE dataset::DatasetPatient {
-      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
