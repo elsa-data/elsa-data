@@ -43,10 +43,11 @@ export async function commandSyncDatasets(
             );
             break;
           case "pfdl":
-            await agIndexService.syncWithDatabaseFromDatasetUri(
-              datasetUri,
-              configuredDataset,
-            );
+            // await agIndexService.syncWithDatabaseFromDatasetUri(
+            //   datasetUri,
+            //  configuredDataset,
+            // );
+            throw new Error("Not implemented yet");
             break;
           case "dev":
             // I guess we could restrict this loader to literally dev deployments only (we could do a check here) - but this

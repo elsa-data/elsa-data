@@ -1,3 +1,5 @@
+import { AuthenticatedUserJsonType } from "../../business/authenticated-user";
+
 /**
  * The following constants are keys within our single SECURE_COOKIE_NAME
  * as managed by fastify session management.
@@ -8,3 +10,5 @@ export const SESSION_USER_DB_OBJECT_KEY_NAME = "user_db_object";
 
 export const SESSION_OIDC_STATE_KEY_NAME = "state";
 export const SESSION_OIDC_NONCE_KEY_NAME = "nonce";
+
+export type SESSION_KEYS = "user_db_object" | "state" | "nonce";

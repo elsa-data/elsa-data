@@ -123,8 +123,6 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
       sharerService: ctx.container.resolve(SharerService),
-      req: ctx.req,
-      res: ctx.res,
       ...ctx,
     },
   });

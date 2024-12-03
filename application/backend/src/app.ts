@@ -16,7 +16,6 @@ import { apiInternalRoutes } from "./api/api-internal-routes";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
 import { DependencyContainer } from "tsyringe";
 import { ElsaSettings } from "./config/elsa-settings";
-import { Logger } from "pino";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
@@ -58,7 +57,7 @@ export class App {
     this.staticFilesPath = locateHtmlDirectory(true);
 
     this.server = Fastify({
-      logger: logger,
+      loggerInstance: logger,
       // needed for supporting TRPC queries (that can get very long!)
       maxParamLength: 5000,
       // consider if this should be a setting - but currently we are always deploying behind a load balancer
@@ -135,7 +134,7 @@ export class App {
       // NOTE: we may need to consider moving this only to the /api section
       await this.server.register(
         fastifyRateLimit,
-        this.settings.httpHosting.rateLimit,
+        this.settings.httpHosting.rateLimit || {},
       );
     }
 
