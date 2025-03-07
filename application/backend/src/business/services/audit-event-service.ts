@@ -15,7 +15,7 @@ import {
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import type { ElsaSettings } from "../../config/elsa-settings";
-import * as interfaces from "../../../dbschema/interfaces";
+import type { audit } from "../../../dbschema/interfaces";
 import {
   auditEventGetMostRecent,
   auditEventGetSomeByUser,
@@ -28,10 +28,8 @@ import {
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 import { Transaction } from "gel/dist/transaction";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { UserData } from "../data/user-data";
-import AuditEvent = interfaces.audit.AuditEvent;
-import ActionType = interfaces.audit.ActionType;
 import { Base7807Error } from "@umccr/elsa-types";
 
 export const OUTCOME_SUCCESS = 0;
@@ -45,7 +43,7 @@ export const OUTCOME_MAJOR_FAILURE = 12;
 // 8	Serious failure	The action was not successful due to some kind of unexpected error (often equivalent to an HTTP 500 response).
 // 12	Major failure	An error of such magnitude occurred that the system is no longer available for use (i.e. the system died).
 
-export type AuditEventAction = interfaces.audit.ActionType;
+export type AuditEventAction = audit.ActionType;
 export type AuditEventOutcome =
   | typeof OUTCOME_SUCCESS
   | typeof OUTCOME_MINOR_FAILURE
@@ -107,7 +105,7 @@ export class AuditEventService {
   public async startReleaseAuditEvent(
     user: AuthenticatedUser,
     releaseKey: string,
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     start: Date = new Date(),
     executor: Executor = this.edgeDbClient,
@@ -209,7 +207,7 @@ export class AuditEventService {
   public async createReleaseAuditEvent(
     user: AuthenticatedUser,
     releaseKey: string,
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     details?: any,
     outcome: number = 0,
@@ -246,7 +244,7 @@ export class AuditEventService {
     whoId: string,
     whoDisplayName: string,
     userId: string,
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     start: Date = new Date(),
     executor: Executor = this.edgeDbClient,
@@ -305,7 +303,7 @@ export class AuditEventService {
     userId: string,
     whoId: string,
     whoDisplayName: string,
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     details?: any,
     outcome: number = 0,
@@ -377,7 +375,7 @@ export class AuditEventService {
    * @param outcome
    */
   public async startSystemAuditEvent(
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     start: Date = new Date(),
     executor: Executor = this.edgeDbClient,
@@ -407,7 +405,7 @@ export class AuditEventService {
    * @param executor the EdgeDb execution context (either client or transaction)
    */
   public async createSystemAuditEvent(
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     details?: any,
     outcome: number = 0,
@@ -466,7 +464,7 @@ export class AuditEventService {
     releaseKey: string,
     limit: number,
     offset: number,
-    orderByProperty: keyof AuditEvent = "occurredDateTime",
+    orderByProperty: keyof audit.AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
     executor: Executor = this.edgeDbClient,
   ): Promise<PagedResult<AuditEventType> | null> {
@@ -528,7 +526,7 @@ export class AuditEventService {
     limit: number,
     offset: number,
     includeSystemEvents: boolean = false,
-    orderByProperty: keyof AuditEvent = "occurredDateTime",
+    orderByProperty: keyof audit.AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
     executor: Executor = this.edgeDbClient,
   ): Promise<PagedResult<AuditEventType> | null> {
@@ -583,7 +581,7 @@ export class AuditEventService {
     user: AuthenticatedUser,
     limit: number,
     offset: number,
-    orderByProperty: keyof AuditEvent = "occurredDateTime",
+    orderByProperty: keyof audit.AuditEvent = "occurredDateTime",
     orderAscending: boolean = false,
     executor: Executor = this.edgeDbClient,
   ): Promise<PagedResult<AuditEventType> | null> {
@@ -1017,7 +1015,7 @@ export class AuditEventService {
   protected async transactionalAuditPattern<T, U, V>(
     user: AuthenticatedUser,
     releaseKey: string,
-    actionCategory: ActionType,
+    actionCategory: audit.ActionType,
     actionDescription: string,
     initFunc: () => Promise<T>,
     transFunc: (tx: Transaction, a: T) => Promise<U>,

@@ -19,7 +19,7 @@ import {
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 /**
  * A service for performing long-running operations creating new

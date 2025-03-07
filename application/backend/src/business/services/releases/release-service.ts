@@ -25,7 +25,7 @@ import {
 } from "../../../../dbschema/queries";
 import { auditReleaseUpdateStart, auditSuccess } from "../../../audit-helpers";
 import { AuditEventService } from "../audit-event-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { jobAsBadgeLabel } from "../jobs/job-helpers";
 import {
   checkValidApplicationUser,

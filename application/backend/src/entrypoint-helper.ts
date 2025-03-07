@@ -4,7 +4,7 @@ import { bootstrapSettings } from "./bootstrap-settings";
 import { getMetaConfig } from "./config/config-load";
 import { promisify } from "util";
 import { execFile } from "child_process";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { isEmpty } from "lodash";
 import { ZodIssue, ZodIssueCode } from "zod";
 import { parseMeta } from "./config/meta/meta-parser";

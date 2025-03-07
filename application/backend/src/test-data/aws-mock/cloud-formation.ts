@@ -18,7 +18,7 @@ import {
   installCloudFormationStack,
 } from "../../../dbschema/queries";
 import { v4 as uuidv4 } from "uuid";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 /**
  * A mock client for cloud formation stacks.

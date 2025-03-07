@@ -49,7 +49,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
 import { NotAuthorisedRefreshDatasetIndex } from "../../exceptions/dataset-authorisation";
 import phenopackets from "../../../generated/phenopackets";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { UserData } from "../../data/user-data";
 import { DatasetAustralianGenomicsDirectories } from "../../../config/config-schema-dataset";
 import { parse } from "papaparse";

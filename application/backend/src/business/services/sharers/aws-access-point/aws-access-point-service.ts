@@ -21,7 +21,7 @@ import {
   createAccessPointTemplateFromObjects,
 } from "./_access-point-template-helper";
 import type { ElsaSettings } from "../../../../config/elsa-settings";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import assert from "assert";
 import { ManifestService } from "../../manifests/manifest-service";

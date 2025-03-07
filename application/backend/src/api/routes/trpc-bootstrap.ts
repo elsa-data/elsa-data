@@ -85,7 +85,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   const { edgeDbClient, settings, logger } = getServices(ctx.container);
 
   // now that we have authenticated we can inject the user globally into our db client
-  ctx.container.register<edgedb.Client>("DatabaseWithUser", {
+  ctx.container.register<gel.Client>("DatabaseWithUser", {
     useFactory: () =>
       edgeDbClient.withGlobals({
         user: authedUser.dbId,

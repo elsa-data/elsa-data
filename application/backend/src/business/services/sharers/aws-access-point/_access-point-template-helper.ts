@@ -6,7 +6,7 @@ import {
   GetAccessPointPolicyCommand,
   S3ControlClient,
 } from "@aws-sdk/client-s3-control";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 export type AccessPointTemplateToSave = {
   root: boolean;

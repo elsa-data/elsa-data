@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/client-cloudtrail";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
 import { releaseGetAllActivationByReleaseKey } from "../../../../dbschema/queries";
 

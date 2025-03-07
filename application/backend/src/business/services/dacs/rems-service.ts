@@ -18,7 +18,7 @@ import {
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
 import { isEmpty, isInteger } from "lodash";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import {
   ApplicationUser,
   checkValidApplicationUser,

@@ -19,7 +19,7 @@ import { NotFound } from "@aws-sdk/client-s3";
 import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
 import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../../../config/elsa-settings";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { CloudStorage } from "../../cloud-storage-service";
 import { AuditEventService } from "../../audit-event-service";
 import { ManifestService } from "../manifest-service";

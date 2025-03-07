@@ -23,7 +23,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { addSeconds } from "date-fns";
 import { createTestElsaSettings } from "../../test-elsa-settings.common";
 import { AwsEnabledServiceMock } from "../client-mocks";

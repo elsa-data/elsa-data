@@ -16,7 +16,7 @@ import {
   insertPotentialOrReal,
 } from "../_dac-user-helper";
 import { DacRedcapAustralianGenomicsCsvType } from "../../../config/config-schema-dac";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";

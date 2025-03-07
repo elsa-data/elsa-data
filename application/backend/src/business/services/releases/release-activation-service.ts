@@ -16,7 +16,7 @@ import {
   ReleaseDeactivationStateError,
 } from "../../exceptions/release-activation";
 import etag from "etag";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ManifestService } from "../manifests/manifest-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";

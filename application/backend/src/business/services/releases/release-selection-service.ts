@@ -18,7 +18,7 @@ import { ReleaseBaseService } from "./release-base-service";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import { dataset } from "../../../../dbschema/interfaces";
 import { AuditEventService } from "../audit-event-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import {
   ReleaseSelectionCrossLinkedIdentifierError,
   ReleaseSelectionNonExistentIdentifierError,

@@ -7,7 +7,7 @@ import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-se
 import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
 import { bootstrapDependencyInjectionAwsClients } from "./bootstrap-dependency-injection-aws-clients";
 import { bootstrapDependencyInjectionSingletonServices } from "./bootstrap-dependency-injection-singleton-services";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 /**
  * Bootstrap the DI with some basic services that are

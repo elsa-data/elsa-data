@@ -28,7 +28,7 @@ import {
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
 import type { ElsaSettings } from "./config/elsa-settings";
-import pino, { Logger } from "pino";
+import pino from "pino";
 import { AuditEventService } from "./business/services/audit-event-service";
 import { ReleaseActivationService } from "./business/services/releases/release-activation-service";
 import { getFeaturesEnabled } from "./features";
@@ -127,7 +127,7 @@ bootstrapGlobalSynchronous();
     useValue: settings,
   });
 
-  dc.register<Logger>("Logger", {
+  dc.register<pino.Logger>("Logger", {
     useValue: logger,
   });
 
@@ -274,7 +274,7 @@ bootstrapGlobalSynchronous();
 /**
  * Help text for the commands that can be executed
  */
-function printHelpText(logger: Logger) {
+function printHelpText(logger: pino.Logger) {
   // We only actually want these to be invoked as part of infrastructure - so no need to show
   // these to the admins
   // logger.info(`${WEB_SERVER_COMMAND} - launch Elsa Data web server and wait`);

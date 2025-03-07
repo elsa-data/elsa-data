@@ -2,7 +2,7 @@ import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../config/elsa-settings";
 import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { AuditEventService } from "./audit-event-service";
 import * as gel from "gel";
 import { AwsEnabledService } from "./aws/aws-enabled-service";

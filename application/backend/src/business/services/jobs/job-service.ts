@@ -12,8 +12,6 @@ import { Transaction } from "gel/dist/transaction";
 import { AuditEventService } from "../audit-event-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import { jobAsType } from "./job-helpers";
-import * as interfaces from "../../../../dbschema/interfaces";
-import Job = interfaces.job.Job;
 import {
   createPagedResult,
   PagedResult,

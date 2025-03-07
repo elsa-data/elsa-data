@@ -1,5 +1,5 @@
 import { DependencyContainer } from "tsyringe";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { Client } from "gel";
 import type { ElsaSettings } from "./config/elsa-settings";
 

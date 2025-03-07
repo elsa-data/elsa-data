@@ -1,5 +1,5 @@
 import { blankTestData } from "./test-data/util/blank-test-data";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 export const DB_BLANK_COMMAND = "db-blank";
 
