@@ -10,7 +10,7 @@ import { getReleaseInfo } from "../helpers";
 import { UserService } from "../user-service";
 import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import {

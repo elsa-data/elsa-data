@@ -16,7 +16,7 @@ import {
   S3ManifestHtsgetService,
 } from "../../../src/business/services/manifests/htsget/manifest-htsget-service";
 import { ReleaseActivationService } from "../../../src/business/services/releases/release-activation-service";
-import { ElsaSettings } from "../../../src/config/elsa-settings";
+import type { ElsaSettings } from "../../../src/config/elsa-settings";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   HeadObjectCommand,

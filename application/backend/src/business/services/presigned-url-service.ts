@@ -1,6 +1,6 @@
 import * as gel from "gel";
 import { inject, injectable, injectAll } from "tsyringe";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 
 export interface IPresignedUrlProvider {
   readonly protocol: string;

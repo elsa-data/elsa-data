@@ -15,7 +15,7 @@ import { collapseExternalIds, getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { dataset } from "../../../../dbschema/interfaces";
 import { AuditEventService } from "../audit-event-service";
 import { Logger } from "pino";

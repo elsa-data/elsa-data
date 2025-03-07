@@ -20,7 +20,7 @@ import {
   correctAccessPointUrls,
   createAccessPointTemplateFromObjects,
 } from "./_access-point-template-helper";
-import { ElsaSettings } from "../../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../../config/elsa-settings";
 import { Logger } from "pino";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import assert from "assert";

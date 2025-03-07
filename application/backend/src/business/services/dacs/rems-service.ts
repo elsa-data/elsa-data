@@ -6,7 +6,7 @@ import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseService } from "../releases/release-service";

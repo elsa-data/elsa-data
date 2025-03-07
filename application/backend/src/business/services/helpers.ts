@@ -3,7 +3,7 @@ import { Executor } from "gel";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UserService } from "./user-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
-import { Transaction } from "edgedb/dist/transaction";
+import { Transaction } from "gel/dist/transaction";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate

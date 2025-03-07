@@ -16,7 +16,7 @@ import {
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
 } from "@umccr/elsa-types";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 
 // we make these identifiers as external const so they can be used as insertion values

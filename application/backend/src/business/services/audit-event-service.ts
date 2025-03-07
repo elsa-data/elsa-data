@@ -14,7 +14,7 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import * as interfaces from "../../../dbschema/interfaces";
 import {
   auditEventGetMostRecent,
@@ -27,7 +27,7 @@ import {
   updateUserAuditEvents,
 } from "../../../dbschema/queries";
 import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
-import { Transaction } from "edgedb/dist/transaction";
+import { Transaction } from "gel/dist/transaction";
 import { Logger } from "pino";
 import { UserData } from "../data/user-data";
 import AuditEvent = interfaces.audit.AuditEvent;

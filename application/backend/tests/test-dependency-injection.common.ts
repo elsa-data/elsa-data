@@ -1,6 +1,6 @@
 import * as tsyringe from "tsyringe";
 import * as gel from "gel";
-import { ElsaSettings } from "../src/config/elsa-settings";
+import type { ElsaSettings } from "../src/config/elsa-settings";
 import { createTestElsaSettings } from "./test-elsa-settings.common";
 import { Logger, pino } from "pino";
 import { IPresignedUrlProvider } from "../src/business/services/presigned-url-service";

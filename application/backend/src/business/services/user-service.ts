@@ -11,7 +11,7 @@ import {
   PotentialUserSummaryType,
   UserSummaryType,
 } from "@umccr/elsa-types/schemas-users";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   NonExistentUser,
   NotAuthorisedEditUserManagement,

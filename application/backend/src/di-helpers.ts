@@ -1,7 +1,7 @@
 import { DependencyContainer } from "tsyringe";
 import { Logger } from "pino";
 import { Client } from "gel";
-import { ElsaSettings } from "./config/elsa-settings";
+import type { ElsaSettings } from "./config/elsa-settings";
 
 // our DI framework is limited by javascript/typescript - and so for concrete classes
 // needs to use a string based Token mechanism

@@ -3,8 +3,8 @@ import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
 import { ReleaseService } from "./releases/release-service";
-import { ElsaSettings } from "../../config/elsa-settings";
-import { IPresignedUrlProvider } from "./presigned-url-service";
+import type { ElsaSettings } from "../../config/elsa-settings";
+import type { IPresignedUrlProvider } from "./presigned-url-service";
 import { GetSignedUrlConfig, Storage } from "@google-cloud/storage";
 
 @injectable()

@@ -15,7 +15,7 @@ import { ReleaseBaseService, UserRoleInRelease } from "./release-base-service";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import {
   applyHtsgetRestriction,

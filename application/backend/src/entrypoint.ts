@@ -27,7 +27,7 @@ import {
   commandDeleteDataset,
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
-import { ElsaSettings } from "./config/elsa-settings";
+import type { ElsaSettings } from "./config/elsa-settings";
 import pino, { Logger } from "pino";
 import { AuditEventService } from "./business/services/audit-event-service";
 import { ReleaseActivationService } from "./business/services/releases/release-activation-service";

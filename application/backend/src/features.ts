@@ -4,7 +4,7 @@ import {
   FEATURE_RELEASE_CONSENT_DISPLAY,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "@umccr/elsa-constants";
-import { ElsaSettings } from "./config/elsa-settings";
+import type { ElsaSettings } from "./config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 
 /**

@@ -27,7 +27,7 @@ export async function bootstrapDependencyInjection(
   // see our build scripts for where we abort if detecting this regexp)
   const dc = tsyringe.container.createChildContainer();
 
-  dc.register<edgedb.Client>("Database", {
+  dc.register<gel.Client>("Database", {
     // we want a single instance of the edgedb client as that then will establish a
     // shared connection pool that is effective
     // https://www.edgedb.com/docs/clients/js/driver#configuring-clients

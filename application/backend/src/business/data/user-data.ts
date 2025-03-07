@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   userGetByDbId,
   userGetByEmail,

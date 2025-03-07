@@ -5,7 +5,7 @@ import { inject, injectable } from "tsyringe";
 import { australianGenomicsDacRedcapToDuoString } from "@umccr/elsa-types";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";

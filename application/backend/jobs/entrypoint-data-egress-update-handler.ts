@@ -1,8 +1,7 @@
 import "reflect-metadata";
 import { Client } from "gel";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
-import { ElsaSettings } from "../src/config/elsa-settings";
-import { sleep } from "edgedb/dist/utils";
+import type { ElsaSettings } from "../src/config/elsa-settings";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
 import { getDirectConfig } from "../src/config/config-load";

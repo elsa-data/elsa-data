@@ -17,14 +17,14 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
-import { IAwsDiscoveryService } from "../aws/aws-discovery-service";
+import type { IAwsDiscoveryService } from "../aws/aws-discovery-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,
 } from "./job-exception";
 import { ManifestService } from "../manifests/manifest-service";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { randomBytes } from "crypto";
 import assert from "node:assert";
 import { updateReleaseDataEgress } from "../../../../dbschema/queries";

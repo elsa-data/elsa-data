@@ -15,7 +15,7 @@ import { ErrorHandler } from "./api/errors/_error.handler";
 import { apiInternalRoutes } from "./api/api-internal-routes";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
 import { DependencyContainer } from "tsyringe";
-import { ElsaSettings } from "./config/elsa-settings";
+import type { ElsaSettings } from "./config/elsa-settings";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";

@@ -5,7 +5,7 @@ import { registerTypes } from "../test-dependency-injection.common";
 import { UserService } from "../../src/business/services/user-service";
 import { NotAuthorisedEditUserManagement } from "../../src/business/exceptions/user";
 import { getServices } from "../../src/di-helpers";
-import { ElsaSettings } from "../../src/config/elsa-settings";
+import type { ElsaSettings } from "../../src/config/elsa-settings";
 import { UserData } from "../../src/business/data/user-data";
 
 let existingUser: AuthenticatedUser;

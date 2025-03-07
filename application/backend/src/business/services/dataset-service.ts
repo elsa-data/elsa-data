@@ -13,7 +13,7 @@ import {
 } from "../../api/helpers/pagination-helpers";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import {
   getAllDataset,

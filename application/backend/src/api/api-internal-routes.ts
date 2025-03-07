@@ -9,7 +9,7 @@ import {
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { isEmpty, isString, trim } from "lodash";
-import { ElsaSettings } from "../config/elsa-settings";
+import type { ElsaSettings } from "../config/elsa-settings";
 import { createSessionCookieRouteHook } from "./session-cookie-route-hook";
 import { manifestDownloadRoutes } from "./routes/internal/manifest-download-routes";
 

@@ -1,4 +1,4 @@
-import { ElsaSettings } from "../config/elsa-settings";
+import type { ElsaSettings } from "../config/elsa-settings";
 
 /**
  * Helper function to extract the document title from the brand name.

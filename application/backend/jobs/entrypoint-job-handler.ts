@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { parentPort } from "worker_threads";
 import { JobService } from "../src/business/services/jobs/job-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
-import { ElsaSettings } from "../src/config/elsa-settings";
+import type { ElsaSettings } from "../src/config/elsa-settings";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
 import { getDirectConfig } from "../src/config/config-load";

@@ -2,7 +2,7 @@ import { Client, createClient } from "gel";
 import e from "../../dbschema/edgeql-js";
 import { blankTestData } from "../../src/test-data/util/blank-test-data";
 import { UserData } from "../../src/business/data/user-data";
-import { ElsaSettings } from "../../src/config/elsa-settings";
+import type { ElsaSettings } from "../../src/config/elsa-settings";
 
 describe("user load tests", () => {
   let edgeDbClient: Client;
