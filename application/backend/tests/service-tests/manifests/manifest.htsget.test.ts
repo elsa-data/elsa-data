@@ -1,6 +1,6 @@
 import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { THOUSAND_GENOMES_SYSTEM } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";
 import { ManifestService } from "../../../src/business/services/manifests/manifest-service";
 import { ReleaseService } from "../../../src/business/services/releases/release-service";

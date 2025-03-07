@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import { ManifestService } from "../../../src/business/services/manifests/manifest-service";

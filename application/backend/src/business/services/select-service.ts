@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import {
   InvocationType,
@@ -11,9 +11,7 @@ import { dataset, release } from "../../../dbschema/interfaces";
 
 @injectable()
 export class SelectService {
-  constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
-  ) {}
+  constructor(@inject("Database") private readonly edgeDbClient: gel.Client) {}
 
   /**
    * For a given chain of specimen->patient->case decide if the specimen should

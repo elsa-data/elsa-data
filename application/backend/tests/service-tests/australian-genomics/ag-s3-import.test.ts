@@ -3,7 +3,7 @@ import {
   FileGroupType,
 } from "../../../src/business/services/australian-genomics/s3-index-import-service";
 import { S3Client } from "@aws-sdk/client-s3";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
 import { mockClient } from "aws-sdk-client-mock";
 import {
@@ -63,7 +63,7 @@ import { readObjectToStringFromS3Url } from "../../../src/business/services/aws/
 const testContainer = registerTypes();
 
 const s3ClientMock = mockClient(S3Client);
-let edgedbClient: edgedb.Client;
+let edgedbClient: gel.Client;
 let user: AuthenticatedUser;
 
 jest.mock("../../../src/business/services/aws/aws-helper", () => ({

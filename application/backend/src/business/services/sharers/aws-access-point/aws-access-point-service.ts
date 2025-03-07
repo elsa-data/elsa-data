@@ -1,6 +1,6 @@
 import { AuthenticatedUser } from "../../../authenticated-user";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../../user-service";
 import { AwsEnabledService } from "../../aws/aws-enabled-service";
@@ -42,7 +42,7 @@ export class AwsAccessPointService {
   constructor(
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,

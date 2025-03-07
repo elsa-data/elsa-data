@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { registerTypes } from "../test-dependency-injection.common";
 import { EmailService } from "../../src/business/services/email-service";
 import { mockClient } from "aws-sdk-client-mock";

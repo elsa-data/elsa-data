@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
 import { ManifestMasterType } from "./manifest-master-types";
 import {
@@ -31,7 +31,7 @@ import { PermissionService } from "../permission-service";
 @injectable()
 export class ManifestService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(PermissionService)
     private readonly permissionService: PermissionService,

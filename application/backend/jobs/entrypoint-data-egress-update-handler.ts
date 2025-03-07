@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { sleep } from "edgedb/dist/utils";

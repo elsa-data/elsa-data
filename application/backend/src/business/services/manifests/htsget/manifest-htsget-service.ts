@@ -1,5 +1,5 @@
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import {
   ManifestHtsgetResponseType,
   ManifestHtsgetType,
@@ -64,7 +64,7 @@ export abstract class ManifestHtsgetService {
 
   protected constructor(
     private readonly settings: ElsaSettings,
-    private readonly edgeDbClient: edgedb.Client,
+    private readonly edgeDbClient: gel.Client,
     private readonly logger: Logger,
     private readonly cloudStorage: CloudStorage,
     private readonly auditLogService: AuditEventService,
@@ -235,7 +235,7 @@ export abstract class ManifestHtsgetService {
     for (const [key, data] of Object.entries(
       endpoint === "variants"
         ? htsgetManifest.variants
-        : htsgetManifest.reads ?? {},
+        : (htsgetManifest.reads ?? {}),
     )) {
       // There should not be a case where there is a key in the htsgetManifest but not in the normal manifest.
       const entry = manifest.specimenList.find((entry) => entry.id === key)!;
@@ -390,7 +390,7 @@ export abstract class ManifestHtsgetService {
 export class S3ManifestHtsgetService extends ManifestHtsgetService {
   constructor(
     @inject("Settings") settings: ElsaSettings,
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Logger") logger: Logger,
     @inject(AwsS3Service) awsS3Service: AwsS3Service,
     @inject(AuditEventService) auditLogService: AuditEventService,

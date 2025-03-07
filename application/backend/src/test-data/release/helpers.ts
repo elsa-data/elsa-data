@@ -1,4 +1,4 @@
-import { Executor } from "edgedb";
+import { Executor } from "gel";
 import { UserObject } from "../user/helpers";
 import e from "../../../dbschema/edgeql-js";
 

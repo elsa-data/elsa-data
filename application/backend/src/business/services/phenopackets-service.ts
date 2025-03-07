@@ -1,6 +1,6 @@
 import e from "../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { org } from "../../generated/phenopackets";
 import { AuthenticatedUser } from "../authenticated-user";
 import Phenopacket = org.phenopackets.schema.v2.Phenopacket;

@@ -1,5 +1,5 @@
 import { mockClient } from "aws-sdk-client-mock";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import {
   CloudFormationClient,
   CreateStackCommand,
@@ -31,10 +31,7 @@ import { Logger } from "pino";
  * @param dbClient
  * @param logger
  */
-export function createMockCloudFormation(
-  dbClient: edgedb.Client,
-  logger: Logger,
-) {
+export function createMockCloudFormation(dbClient: gel.Client, logger: Logger) {
   const cloudFormationClientMock = mockClient(CloudFormationClient);
 
   // when install is called we want to put us into the installed state - but with a count

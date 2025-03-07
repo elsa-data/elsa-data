@@ -1,6 +1,6 @@
 import e from "../../../dbschema/edgeql-js";
 import { registerTypes } from "../../test-dependency-injection.common";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { beforeEachCommon } from "../commons/releases.common";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
 import { ElsaSettings } from "../../../src/config/elsa-settings";

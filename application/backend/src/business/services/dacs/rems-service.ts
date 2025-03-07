@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
 import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
@@ -28,7 +28,7 @@ import { AuditEventService } from "../audit-event-service";
 @injectable()
 export class RemsService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,

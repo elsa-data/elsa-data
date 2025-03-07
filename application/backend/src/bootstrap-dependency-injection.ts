@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import * as tsyringe from "tsyringe";
 import { instanceCachingFactory } from "tsyringe";
 import { IPresignedUrlProvider } from "./business/services/presigned-url-service";
@@ -32,10 +32,10 @@ export async function bootstrapDependencyInjection(
     // shared connection pool that is effective
     // https://www.edgedb.com/docs/clients/js/driver#configuring-clients
     useFactory: instanceCachingFactory(() =>
-      edgedb.createClient().withConfig({
+      gel.createClient().withConfig({
         // we do some bioinformatics activities within a transaction context (looking up variants)
         // and the default 10 seconds sometimes is a bit short
-        session_idle_transaction_timeout: edgedb.Duration.from({ seconds: 60 }),
+        session_idle_transaction_timeout: gel.Duration.from({ seconds: 60 }),
       }),
     ),
   });

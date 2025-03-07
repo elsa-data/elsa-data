@@ -1,5 +1,5 @@
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import {
   ReleaseDetailType,
@@ -47,7 +47,7 @@ import { ReleaseConfigurationError } from "../../exceptions/release-configuratio
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,

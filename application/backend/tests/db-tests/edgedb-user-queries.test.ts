@@ -1,11 +1,11 @@
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { beforeEachCommon } from "../service-tests/commons/user.common";
 import { userUpdatePermissions } from "../../dbschema/queries";
 import e from "../../dbschema/edgeql-js";
 
 let existingUser: AuthenticatedUser;
-let edgeDbClient: edgedb.Client;
+let edgeDbClient: gel.Client;
 
 beforeEach(async () => {
   ({ existingUser, edgeDbClient } = await beforeEachCommon());

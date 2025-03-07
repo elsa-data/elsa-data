@@ -1,5 +1,5 @@
 import e from "../../../dbschema/edgeql-js";
-import { Executor } from "edgedb";
+import { Executor } from "gel";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UserService } from "./user-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";

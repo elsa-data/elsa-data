@@ -1,4 +1,4 @@
-import { Client, createClient } from "edgedb";
+import { Client, createClient } from "gel";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { findDatabaseRelease } from "../utils";
 import { beforeEachCommon } from "../commons/releases.common";

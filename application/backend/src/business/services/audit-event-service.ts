@@ -1,5 +1,5 @@
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
@@ -58,7 +58,7 @@ export class AuditEventService {
 
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserData) private readonly userData: UserData,
   ) {}
@@ -175,7 +175,7 @@ export class AuditEventService {
     executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
-    const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
+    const diffDuration = new gel.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
     await e
       .update(e.audit.ReleaseAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
@@ -346,7 +346,7 @@ export class AuditEventService {
     executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
-    const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
+    const diffDuration = new gel.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
     await e
       .update(e.audit.UserAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),
@@ -442,7 +442,7 @@ export class AuditEventService {
     executor: Executor = this.edgeDbClient,
   ): Promise<void> {
     const diffSeconds = differenceInSeconds(end, start);
-    const diffDuration = new edgedb.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
+    const diffDuration = new gel.Duration(0, 0, 0, 0, 0, 0, diffSeconds);
     await e
       .update(e.audit.SystemAuditEvent, (ae) => ({
         filter: e.op(e.uuid(auditEventId), "=", ae.id),

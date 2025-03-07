@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
@@ -31,7 +31,7 @@ import { JobCloudFormationDeleteService } from "../jobs/job-cloud-formation-dele
 @injectable()
 export class ReleaseActivationService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,

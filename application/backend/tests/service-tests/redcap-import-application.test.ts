@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../dbschema/edgeql-js";
 import { RedcapImportApplicationService } from "../../src/business/services/dacs/redcap-import-application-service";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
@@ -12,7 +12,7 @@ import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpe
 
 const testContainer = registerTypes();
 
-const edgedbClient = edgedb.createClient();
+const edgedbClient = gel.createClient();
 
 const configDac: DacRedcapAustralianGenomicsCsvType = {
   id: "aaa",

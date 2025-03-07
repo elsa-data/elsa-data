@@ -1,5 +1,5 @@
 import { S3Client } from "@aws-sdk/client-s3";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
 import {
@@ -97,7 +97,7 @@ export type S3ManifestDictType = Record<string, ManifestType>;
 export class S3IndexApplicationService {
   constructor(
     @inject("S3Client") private readonly s3Client: S3Client,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Logger") private readonly logger: Logger,
     @inject(DatasetService) private readonly datasetService: DatasetService,
     @inject(AuditEventService)
@@ -286,20 +286,20 @@ export class S3IndexApplicationService {
         filenameBase.endsWith(".fastq") || filenameBase.endsWith(".fq")
           ? ArtifactEnum.FASTQ
           : filenameBase.endsWith(".bam") || filenameBase.endsWith(".bai")
-          ? ArtifactEnum.BAM
-          : filenameBase.endsWith(".vcf") ||
-            filenameBase.endsWith(".gvcf") ||
-            filenameBase.endsWith(".tbi")
-          ? ArtifactEnum.VCF
-          : filenameBase.endsWith(".cram") || filenameBase.endsWith(".crai")
-          ? ArtifactEnum.CRAM
-          : filenameBase.endsWith(".phenopacket.json")
-          ? "PHENOPACKET_INDIVIDUAL"
-          : filenameBase.endsWith(".family.json")
-          ? "PHENOPACKET_FAMILY"
-          : filenameBase.endsWith(".cohort.json")
-          ? "PHENOPACKET_COHORT"
-          : undefined;
+            ? ArtifactEnum.BAM
+            : filenameBase.endsWith(".vcf") ||
+                filenameBase.endsWith(".gvcf") ||
+                filenameBase.endsWith(".tbi")
+              ? ArtifactEnum.VCF
+              : filenameBase.endsWith(".cram") || filenameBase.endsWith(".crai")
+                ? ArtifactEnum.CRAM
+                : filenameBase.endsWith(".phenopacket.json")
+                  ? "PHENOPACKET_INDIVIDUAL"
+                  : filenameBase.endsWith(".family.json")
+                    ? "PHENOPACKET_FAMILY"
+                    : filenameBase.endsWith(".cohort.json")
+                      ? "PHENOPACKET_COHORT"
+                      : undefined;
 
       // The context of agha_study_id is actually the patient Id
       const patientIdArray = manifestGroupedArray[0].agha_study_id_array;

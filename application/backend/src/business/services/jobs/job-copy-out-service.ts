@@ -1,5 +1,5 @@
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
@@ -39,7 +39,7 @@ export class JobCopyOutService extends JobService {
   public static readonly JOB_NAME = "CopyOut";
 
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,

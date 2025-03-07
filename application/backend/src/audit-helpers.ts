@@ -3,7 +3,7 @@ import {
   OUTCOME_SERIOUS_FAILURE,
   OUTCOME_SUCCESS,
 } from "./business/services/audit-event-service";
-import { Executor } from "edgedb";
+import { Executor } from "gel";
 import { AuthenticatedUser } from "./business/authenticated-user";
 
 async function auditReleaseGenericStart(

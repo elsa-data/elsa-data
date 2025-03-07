@@ -1,7 +1,7 @@
 import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
 import assert from "assert";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { findSpecimenQuery } from "../../../src/test-data/util/test-data-helpers";
 import {
   BART_SPECIMEN,

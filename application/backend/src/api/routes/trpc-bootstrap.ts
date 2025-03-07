@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-helpers";
 import { DependencyContainer } from "tsyringe";

@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import {
   CloudTrailClient,
@@ -37,7 +37,7 @@ type CloudTrailLakeResponseType = {
 export class AwsCloudTrailLakeService {
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient")
     private readonly cloudTrailClient: CloudTrailClient,

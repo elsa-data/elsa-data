@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
@@ -13,7 +13,7 @@ export type SharerWithStatusType = SharerType & {
 @injectable()
 export class SharerService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService,

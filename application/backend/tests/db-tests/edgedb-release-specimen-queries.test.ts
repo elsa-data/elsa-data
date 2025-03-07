@@ -1,4 +1,4 @@
-import { Client, createClient } from "edgedb";
+import { Client, createClient } from "gel";
 import { blankTestData } from "../../src/test-data/util/blank-test-data";
 import { releaseGetSpecimensByDbIdsAndExternalIdentifiers } from "../../dbschema/queries";
 import { registerTypes } from "../test-dependency-injection.common";

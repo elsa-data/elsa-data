@@ -1,5 +1,5 @@
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
 import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
@@ -23,7 +23,7 @@ let auditLogService: AuditEventService;
 let releaseDataEgressService: ReleaseDataEgressService;
 let iPLookupService: IPLookupService;
 
-let edgeDbClient: edgedb.Client;
+let edgeDbClient: gel.Client;
 
 const testContainer = registerTypes();
 

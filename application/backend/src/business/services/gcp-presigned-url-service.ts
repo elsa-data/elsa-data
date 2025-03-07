@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
@@ -13,7 +13,7 @@ export class GcpPresignedUrlService implements IPresignedUrlProvider {
   private readonly storage: Storage;
 
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(UserService) userService: UserService,

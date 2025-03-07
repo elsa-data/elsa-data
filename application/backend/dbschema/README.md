@@ -1,6 +1,6 @@
 # Database schema
 
-`edgedb` schema definitions and migration scripts.
+`gel` schema definitions and migration scripts.
 
 ## How to start migrations from scratch
 

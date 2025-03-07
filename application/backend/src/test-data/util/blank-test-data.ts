@@ -1,7 +1,7 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
 
-const edgeDbClient = edgedb.createClient();
+const edgeDbClient = gel.createClient();
 
 /**
  * In the absence of some sort of truncate functionality in edgedb - we explicitly

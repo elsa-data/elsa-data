@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import {
   DuoLimitationCodedType,
@@ -41,7 +41,7 @@ import { PermissionService } from "../permission-service";
 @injectable()
 export class ReleaseSelectionService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,
@@ -117,8 +117,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         isAllSelected
           ? "selected"
           : isNoneSelected
-          ? "unselected"
-          : "indeterminate"
+            ? "unselected"
+            : "indeterminate"
       ) as ReleaseNodeStatusType;
     };
 

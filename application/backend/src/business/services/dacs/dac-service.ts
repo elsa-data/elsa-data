@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
@@ -17,7 +17,7 @@ import { UserData } from "../../data/user-data";
 @injectable()
 export class DacService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,

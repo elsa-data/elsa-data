@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
@@ -33,7 +33,7 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 @injectable()
 export class JobService {
   constructor(
-    @inject("Database") protected readonly edgeDbClient: edgedb.Client,
+    @inject("Database") protected readonly edgeDbClient: gel.Client,
     @inject(AuditEventService)
     protected readonly auditLogService: AuditEventService,
     @inject(ReleaseService) protected readonly releaseService: ReleaseService,
@@ -458,8 +458,8 @@ export class JobService {
             status: isCancellation
               ? e.job.JobStatus.cancelled
               : wasSuccessful
-              ? e.job.JobStatus.succeeded
-              : e.job.JobStatus.failed,
+                ? e.job.JobStatus.succeeded
+                : e.job.JobStatus.failed,
           },
         }))
         .run(tx);

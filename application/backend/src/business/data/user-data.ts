@@ -7,7 +7,7 @@ import {
   UserGetBySubjectIdReturns,
 } from "../../../dbschema/queries";
 import { AuthenticatedUser } from "../authenticated-user";
-import { Executor } from "edgedb";
+import { Executor } from "gel";
 
 export type UserDataDbUser = NonNullable<UserGetBySubjectIdReturns>;
 

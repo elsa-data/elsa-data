@@ -1,5 +1,5 @@
 import * as tsyringe from "tsyringe";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { ElsaSettings } from "../src/config/elsa-settings";
 import { createTestElsaSettings } from "./test-elsa-settings.common";
 import { Logger, pino } from "pino";
@@ -22,7 +22,7 @@ export function registerTypes() {
   const logger = pino(createTestElsaSettings().logger);
 
   testContainer.register<edgedb.Client>("Database", {
-    useFactory: () => edgedb.createClient(),
+    useFactory: () => gel.createClient(),
   });
 
   bootstrapDependencyInjectionAwsClients(testContainer, logger, false);

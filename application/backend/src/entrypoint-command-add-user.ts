@@ -1,5 +1,5 @@
 import { DependencyContainer } from "tsyringe";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { potentialUserGetByEmail, userGetByEmail } from "../dbschema/queries";
 import e from "../dbschema/edgeql-js";
 
@@ -17,7 +17,7 @@ export async function commandAddUser(
   dc: DependencyContainer,
   userEmail: string,
 ): Promise<void> {
-  const edgeDbClient: edgedb.Client = dc.resolve("Database");
+  const edgeDbClient: gel.Client = dc.resolve("Database");
 
   await edgeDbClient.transaction(async (tx) => {
     // we want this to be safe... so if the user already exists we just silently pass

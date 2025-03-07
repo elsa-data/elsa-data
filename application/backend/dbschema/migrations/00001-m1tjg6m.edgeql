@@ -1,4 +1,4 @@
-CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
+CREATE MIGRATION m1tjg6mwiglowfjpxwpwzbdotxpncdgmd2pkqcydaur5cxpzifnoma
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -11,7 +11,13 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
   CREATE MODULE permission IF NOT EXISTS;
   CREATE MODULE release IF NOT EXISTS;
   CREATE MODULE storage IF NOT EXISTS;
+  CREATE SCALAR TYPE audit::ActionType EXTENDING enum<C, R, U, D, E>;
+  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
+  CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
+  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isBiologicalFatherOf, isBiologicalMotherOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE SCALAR TYPE release::ApplicationCodedStudyType EXTENDING enum<GRU, HMB, CC, POA, DS>;
+  CREATE SCALAR TYPE release::ReleaseCounterSequence EXTENDING std::sequence;
+  CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE release::ApplicationCoded {
       CREATE REQUIRED PROPERTY countriesInvolved: array<tuple<system: std::str, code: std::str>>;
       CREATE REQUIRED PROPERTY diseasesOfStudy: array<tuple<system: std::str, code: std::str>>;
@@ -57,7 +63,6 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE SCALAR TYPE dataset::SexAtBirthType EXTENDING enum<male, female, other>;
   CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
   };
@@ -74,7 +79,6 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
       CREATE MULTI LINK artifacts: lab::ArtifactBase;
       CREATE OPTIONAL PROPERTY sampleType: std::str;
   };
-  CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
   CREATE TYPE storage::File {
       CREATE REQUIRED PROPERTY checksums: array<tuple<type: storage::ChecksumType, value: std::str>>;
       CREATE REQUIRED PROPERTY isDeleted: std::bool {
@@ -88,7 +92,6 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
       };
   };
   CREATE FUNCTION dataset::extractIdentifierValue(i: tuple<system: std::str, value: std::str>) ->  std::str USING (i.value);
-  CREATE SCALAR TYPE audit::ActionType EXTENDING enum<C, R, U, D, E>;
   CREATE ABSTRACT TYPE audit::AuditEvent {
       CREATE REQUIRED PROPERTY updatedDateTime: std::datetime {
           SET default := (std::datetime_current());
@@ -115,7 +118,6 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
   CREATE TYPE audit::ReleaseAuditEvent EXTENDING audit::OwnedAuditEvent;
   CREATE TYPE audit::SystemAuditEvent EXTENDING audit::AuditEvent;
   CREATE TYPE audit::UserAuditEvent EXTENDING audit::OwnedAuditEvent;
-  CREATE SCALAR TYPE job::JobStatus EXTENDING enum<running, succeeded, failed, cancelled>;
   CREATE ABSTRACT TYPE job::Job {
       CREATE REQUIRED LINK auditEntry: audit::AuditEvent;
       CREATE REQUIRED PROPERTY created: std::datetime {
@@ -197,7 +199,6 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
           SET default := ((6 * 24));
       };
   };
-  CREATE SCALAR TYPE release::ReleaseCounterSequence EXTENDING std::sequence;
   CREATE TYPE release::Release {
       CREATE MULTI LINK releaseAuditLog: audit::ReleaseAuditEvent {
           ON TARGET DELETE RESTRICT;
@@ -320,7 +321,6 @@ CREATE MIGRATION m1m2z6eh3x34dpeu7ttxtgznglfmoaxmbnl3n2nkvys53cex6dlx4a
       CREATE LINK case_ := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase]);
       CREATE LINK patient := (.<specimens[IS dataset::DatasetPatient]);
   };
-  CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isBiologicalFatherOf, isBiologicalMotherOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE TYPE pedigree::PedigreeRelationship {
       CREATE REQUIRED LINK individual: dataset::DatasetPatient {
           ON TARGET DELETE DELETE SOURCE;

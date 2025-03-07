@@ -4,7 +4,6 @@ import { parentPort } from "worker_threads";
 import { JobService } from "../src/business/services/jobs/job-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
 import { ElsaSettings } from "../src/config/elsa-settings";
-import { sleep } from "edgedb/dist/utils";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
 import { getDirectConfig } from "../src/config/config-load";
@@ -14,6 +13,10 @@ import { JobCloudFormationCreateService } from "../src/business/services/jobs/jo
 import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
 import { differenceInHours, minTime } from "date-fns";
 import { getFeaturesEnabled } from "../src/features";
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
 
 (async () => {
   const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);

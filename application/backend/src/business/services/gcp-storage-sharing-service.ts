@@ -1,5 +1,5 @@
 import { AuthenticatedUser } from "../authenticated-user";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "./user-service";
 import { GcpEnabledService } from "./gcp-enabled-service";
@@ -18,7 +18,7 @@ export class GcpStorageSharingService {
   private readonly objectLimits: { [uri: string]: Limit };
 
   constructor(
-    @inject("Database") protected edgeDbClient: edgedb.Client,
+    @inject("Database") protected edgeDbClient: gel.Client,
     @inject(UserService) private readonly userService: UserService,
     @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(AuditEventService)

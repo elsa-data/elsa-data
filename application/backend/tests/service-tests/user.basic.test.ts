@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { AuthenticatedUser } from "../../src/business/authenticated-user";
 import { beforeEachCommon } from "./commons/user.common";
 import { registerTypes } from "../test-dependency-injection.common";
@@ -9,7 +9,7 @@ import { ElsaSettings } from "../../src/config/elsa-settings";
 import { UserData } from "../../src/business/data/user-data";
 
 let existingUser: AuthenticatedUser;
-let edgeDbClient: edgedb.Client;
+let edgeDbClient: gel.Client;
 let userService: UserService;
 let userData: UserData;
 
