@@ -5,14 +5,14 @@ import { userUpdatePermissions } from "../../dbschema/queries";
 import e from "../../dbschema/edgeql-js";
 
 let existingUser: AuthenticatedUser;
-let edgeDbClient: gel.Client;
+let gelClient: gel.Client;
 
 beforeEach(async () => {
-  ({ existingUser, edgeDbClient } = await beforeEachCommon());
+  ({ existingUser, edgeDbClient: gelClient } = await beforeEachCommon());
 });
 
 it("test the change permission query", async () => {
-  await userUpdatePermissions(edgeDbClient, {
+  await userUpdatePermissions(gelClient, {
     subjectId: existingUser.subjectId,
     isAllowedCreateRelease: false,
     isAllowedOverallAdministratorView: false,
@@ -27,7 +27,7 @@ it("test the change permission query", async () => {
       isAllowedCreateRelease: true,
       filter_single: { id: e.uuid(existingUser.dbId) },
     }))
-    .run(edgeDbClient);
+    .run(gelClient);
 
   expect(user).toBeDefined();
   expect(user!.isAllowedCreateRelease).toBe(false);

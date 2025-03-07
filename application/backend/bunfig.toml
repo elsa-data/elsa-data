@@ -1,1 +1,3 @@
-preload = ["./reflect-metadata-import.js"]
+preload = ["./bunfig.reflect-metadata-import"]
+
+test.preload = ["./bunfig.reflect-metadata-import"]

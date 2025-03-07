@@ -1,11 +1,11 @@
 import { Client, createClient } from "gel";
 import { blankTestData } from "../../src/test-data/util/blank-test-data";
 
-describe("edgedb tests", () => {
-  let edgeDbClient: Client;
+describe("gel plumbing tests", () => {
+  let gelClient: Client;
 
   beforeAll(async () => {
-    edgeDbClient = createClient({});
+    gelClient = createClient({});
   });
 
   afterAll(() => {});
@@ -15,7 +15,7 @@ describe("edgedb tests", () => {
   });
 
   it("can connect using the client for a basic select", async () => {
-    const result = await edgeDbClient.querySingle(`select 2 + 2;`);
+    const result = await gelClient.querySingle(`select 2 + 2;`);
 
     expect(result).toBe(4);
   });
