@@ -1,5 +1,5 @@
 // must be first and before any DI is used
-import "reflect-metadata";
+// #import "reflect-metadata";
 
 import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
 import { bootstrapGlobalSynchronous } from "./bootstrap-global-synchronous";

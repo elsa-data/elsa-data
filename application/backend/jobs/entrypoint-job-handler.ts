@@ -19,6 +19,8 @@ function sleep(ms: number) {
 }
 
 (async () => {
+  console.log("HEELO FROM THE WORKER!");
+
   const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
 
   const settings = await bootstrapSettings(rawConfig);

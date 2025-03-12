@@ -104,6 +104,15 @@ export async function startWebServer(
  * @param config
  */
 export async function startJobQueue(config: ElsaConfigurationType) {
+  const worker = new Worker("jobs/entrypoint-test.ts", {});
+
+  worker.postMessage("hello");
+  worker.onmessage = (event) => {
+    console.log(event.data);
+  };
+
+  return;
+
   let root = path.resolve("jobs");
 
   const convertFileNameTsToJs = (tsFile: string) =>
