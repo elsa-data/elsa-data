@@ -45,7 +45,7 @@ import {
   DB_CREATE_COMMAND,
 } from "./entrypoint-command-db-create";
 import { commandDbWipe, DB_WIPE_COMMAND } from "./entrypoint-command-db-wipe";
-import assert from "assert";
+import assert from "node:assert";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
