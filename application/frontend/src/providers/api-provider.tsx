@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCookies } from "react-cookie";
 import { httpBatchLink } from "@trpc/client";
 import { trpc } from "../helpers/trpc";
-import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "../../../backend/src/shared/constants-cookies";
 import { useShowAlert } from "./show-alert-provider";
 import axios, { AxiosRequestConfig } from "axios";
 

@@ -1,6 +1,6 @@
-import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
 import React from "react";
 import { useCookies } from "react-cookie";
+import { CSRF_TOKEN_COOKIE_NAME } from "../../../backend/src/shared/constants-cookies";
 
 /**
  * This is a simple a hidden "_csrf" input that will contain the csrf token.

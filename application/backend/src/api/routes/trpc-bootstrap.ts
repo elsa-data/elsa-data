@@ -25,6 +25,7 @@ import { AuditEventService } from "../../business/services/audit-event-service";
 import { ManifestService } from "../../business/services/manifests/manifest-service";
 import { SharerService } from "../../business/services/sharers/sharer-service";
 import { NOT_AUTHORISED_MESSAGE } from "../errors/authentication-error";
+import { CopyService } from "../../business/services/copy-service";
 
 /**
  * This is the types for the initial context that we guarantee exits for
@@ -99,6 +100,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       edgeDbClient,
       settings,
       logger,
+      copyService: ctx.container.resolve(CopyService),
       dacService: ctx.container.resolve(DacService),
       datasetService: ctx.container.resolve(DatasetService),
       userService: userService,

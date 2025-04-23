@@ -3,7 +3,7 @@ import {
   Base7807Error,
   Base7807Response,
   isBase7807Response,
-} from "@umccr/elsa-types/error-types";
+} from "../../../backend/src/shared/error-types";
 import axios from "axios";
 import { TRPCClientError } from "@trpc/client";
 import { Alert, CircleExclamationIcon } from "./alert";

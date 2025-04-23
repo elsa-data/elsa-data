@@ -160,7 +160,7 @@ export const ReleasesMasterPage: React.FC = () => {
                     })
                   }
                   disabled={
-                    cancelMutate.isLoading ||
+                    cancelMutate.isPending ||
                     releaseQuery.data.runningJob.requestedCancellation
                   }
                 >

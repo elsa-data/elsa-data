@@ -10,7 +10,7 @@ import {
   ActionCategoryType,
   AuditEventType,
   RouteValidation,
-} from "@umccr/elsa-types";
+} from "../../../../backend/src/shared/schemas";
 import { UseQueryResult } from "@tanstack/react-query";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
@@ -25,7 +25,6 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Base7807Error, Base7807Response } from "@umccr/elsa-types";
 import {
   formatDuration,
   formatFromNowTime,

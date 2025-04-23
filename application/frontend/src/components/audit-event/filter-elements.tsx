@@ -1,4 +1,4 @@
-import { RouteValidation } from "@umccr/elsa-types";
+import { RouteValidation } from "../../../../backend/src/shared/schemas";
 import React, { Dispatch, SetStateAction } from "react";
 import { ToolTip } from "../tooltip";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;

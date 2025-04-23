@@ -1,7 +1,7 @@
 import {
   UI_PAGE_SIZE_COOKIE_NAME,
   UI_PAGE_SIZE_DEFAULT,
-} from "@umccr/elsa-constants";
+} from "../../../backend/src/shared/constants-cookies";
 import React from "react";
 import { useCookies } from "react-cookie";
 

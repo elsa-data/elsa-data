@@ -47,13 +47,9 @@ var __generator =
       f,
       y,
       t,
-      g = Object.create(
-        (typeof Iterator === "function" ? Iterator : Object).prototype,
-      );
+      g;
     return (
-      (g.next = verb(0)),
-      (g["throw"] = verb(1)),
-      (g["return"] = verb(2)),
+      (g = { next: verb(0), throw: verb(1), return: verb(2) }),
       typeof Symbol === "function" &&
         (g[Symbol.iterator] = function () {
           return this;

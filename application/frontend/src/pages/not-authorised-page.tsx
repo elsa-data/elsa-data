@@ -5,7 +5,7 @@ import {
   FLOW_FAIL_ROUTE_PART,
   NO_EMAIL_OR_NAME_ROUTE_PART,
   NO_SUBJECT_ID_ROUTE_PART,
-} from "@umccr/elsa-constants/constants-routes";
+} from "../../../backend/src/shared/constants-routes";
 
 export const NotAuthorisedPage: React.FC = () => {
   const navigate = useNavigate();

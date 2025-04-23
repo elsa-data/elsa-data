@@ -19,11 +19,9 @@
     "@fortawesome/react-fontawesome": "0.2.0",
     "@headlessui/react": "1.6.6",
     "@heroicons/react": "^2.0.11",
-    "@tanstack/react-query": "^4.26.1",
-    "@tanstack/react-table": "^8.5.15",
-    "@trpc/react-query": "^10.20.0",
-    "@umccr/elsa-constants": "file:../common/elsa-constants",
-    "@umccr/elsa-types": "file:../common/elsa-types",
+    "@tanstack/react-query": "5.74.4",
+    "@tanstack/react-table": "8.21.3",
+    "@trpc/react-query": "11.1.1",
     "@vitejs/plugin-react": "^2.2.0",
     "axios": "1.2.0",
     "classnames": "2.3.2",
@@ -76,7 +74,7 @@
     "postcss": "^8.4.19",
     "prettier": "3.1.0",
     "tailwindcss": "^3.2.4",
-    "typescript": "4.9.3"
+    "typescript": "5.8.3"
   },
   "browserslist": {
     "production": [
