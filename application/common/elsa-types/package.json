@@ -7,9 +7,9 @@
   "author": "Andrew Patterson",
   "license": "MIT",
   "dependencies": {
-    "@sinclair/typebox": "0.25.10"
+    "@sinclair/typebox": "0.34.9"
   },
   "devDependencies": {
-    "typescript": "4.9.3"
+    "typescript": "5.2.2"
   }
 }

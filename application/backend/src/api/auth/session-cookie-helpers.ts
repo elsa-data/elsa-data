@@ -2,7 +2,7 @@ import { FastifyRequest } from "fastify";
 import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./session-cookie-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
 import { SECURE_COOKIE_NAME } from "@umccr/elsa-constants";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   AuthenticatedUser,
   AuthenticatedUserJsonType,
@@ -46,9 +46,8 @@ export function getAuthenticatedUserFromSecureSession(
   // cannot return authenticated users if our session management was not installed
   if (!request.session) return null;
 
-  const sessionDbObject: AuthenticatedUserJsonType = request.session.get(
-    SESSION_USER_DB_OBJECT_KEY_NAME,
-  );
+  const sessionDbObject: AuthenticatedUserJsonType | undefined =
+    request.session.get(SESSION_USER_DB_OBJECT_KEY_NAME);
 
   // cannot return authenticated user if no session cookie has been created
   if (!sessionDbObject) return null;

@@ -4,8 +4,8 @@ import {
   getReleaseInfo,
 } from "./helpers";
 import { basename } from "path/posix";
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UserService } from "./user-service";
@@ -240,7 +240,7 @@ export async function createReleaseFileList(
  * @deprecated
  */
 export async function getAllFileRecords(
-  edgeDbClient: edgedb.Client,
+  edgeDbClient: gel.Client,
   userService: UserService,
   user: AuthenticatedUser,
   releaseKey: string,

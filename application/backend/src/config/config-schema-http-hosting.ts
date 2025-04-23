@@ -40,6 +40,40 @@ export const HttpHostingSchema = z.object({
   // the rate limiting options are basically a pass through to the Fastify rate limit plugin
   // for the moment we have picked only a subset of the full configuration items
   rateLimit: z.optional(
+    // export interface RateLimitOptions {
+    //     max?:
+    //       | number
+    //       | ((req: FastifyRequest, key: string) => number)
+    //       | ((req: FastifyRequest, key: string) => Promise<number>);
+    //     timeWindow?:
+    //       | number
+    //       | string
+    //       | ((req: FastifyRequest, key: string) => number)
+    //       | ((req: FastifyRequest, key: string) => Promise<number>);
+    //     hook?: RateLimitHook;
+    //     cache?: number;
+    //     store?: FastifyRateLimitStoreCtor;
+    //     /**
+    //      * @deprecated Use `allowList` property
+    //      */
+    //     whitelist?: string[] | ((req: FastifyRequest, key: string) => boolean);
+    //     allowList?: string[] | ((req: FastifyRequest, key: string) => boolean | Promise<boolean>);
+    //     continueExceeding?: boolean;
+    //     skipOnError?: boolean;
+    //     ban?: number;
+    //     onBanReach?: (req: FastifyRequest, key: string) => void;
+    //     keyGenerator?: (req: FastifyRequest) => string | number | Promise<string | number>;
+    //     groupId?: string;
+    //     errorResponseBuilder?: (
+    //       req: FastifyRequest,
+    //       context: errorResponseBuilderContext
+    //     ) => object;
+    //     enableDraftSpec?: boolean;
+    //     onExceeding?: (req: FastifyRequest, key: string) => void;
+    //     onExceeded?: (req: FastifyRequest, key: string) => void;
+    //     exponentialBackoff?: boolean;
+    //
+    //   }
     z.object({
       // for the moment we set up the rate limiting across the entire Elsa Data surface
       // (includes APIs and HTML/CSS fetches etc)

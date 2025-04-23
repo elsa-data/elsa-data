@@ -1,5 +1,5 @@
 // must be first and before any DI is used
-import "reflect-metadata";
+// #import "reflect-metadata";
 
 import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
 import { bootstrapGlobalSynchronous } from "./bootstrap-global-synchronous";
@@ -27,8 +27,8 @@ import {
   commandDeleteDataset,
   DELETE_DATASETS_COMMAND,
 } from "./entrypoint-command-delete-datasets";
-import { ElsaSettings } from "./config/elsa-settings";
-import pino, { Logger } from "pino";
+import type { ElsaSettings } from "./config/elsa-settings";
+import pino from "pino";
 import { AuditEventService } from "./business/services/audit-event-service";
 import { ReleaseActivationService } from "./business/services/releases/release-activation-service";
 import { getFeaturesEnabled } from "./features";
@@ -45,7 +45,7 @@ import {
   DB_CREATE_COMMAND,
 } from "./entrypoint-command-db-create";
 import { commandDbWipe, DB_WIPE_COMMAND } from "./entrypoint-command-db-wipe";
-import assert from "assert";
+import assert from "node:assert";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -127,7 +127,7 @@ bootstrapGlobalSynchronous();
     useValue: settings,
   });
 
-  dc.register<Logger>("Logger", {
+  dc.register<pino.Logger>("Logger", {
     useValue: logger,
   });
 
@@ -274,7 +274,7 @@ bootstrapGlobalSynchronous();
 /**
  * Help text for the commands that can be executed
  */
-function printHelpText(logger: Logger) {
+function printHelpText(logger: pino.Logger) {
   // We only actually want these to be invoked as part of infrastructure - so no need to show
   // these to the admins
   // logger.info(`${WEB_SERVER_COMMAND} - launch Elsa Data web server and wait`);

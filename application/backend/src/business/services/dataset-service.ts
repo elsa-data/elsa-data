@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
 import {
   DatasetDeepType,
@@ -13,7 +13,7 @@ import {
 } from "../../api/helpers/pagination-helpers";
 import { makeSystemlessIdentifierArray } from "../db/helper";
 import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { AuditEventService } from "./audit-event-service";
 import {
   getAllDataset,
@@ -26,7 +26,7 @@ import { DatasetType } from "../../config/config-schema-dataset";
 @injectable()
 export class DatasetService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,

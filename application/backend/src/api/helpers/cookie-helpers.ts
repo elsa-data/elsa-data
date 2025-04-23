@@ -1,4 +1,19 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import {
+  SESSION_KEYS,
+  SESSION_OIDC_NONCE_KEY_NAME,
+  SESSION_OIDC_STATE_KEY_NAME,
+  SESSION_USER_DB_OBJECT_KEY_NAME,
+} from "../auth/session-cookie-constants";
+import { AuthenticatedUserJsonType } from "../../business/authenticated-user";
+
+declare module "@fastify/secure-session" {
+  interface SessionData {
+    [SESSION_USER_DB_OBJECT_KEY_NAME]: AuthenticatedUserJsonType;
+    [SESSION_OIDC_NONCE_KEY_NAME]: string;
+    [SESSION_OIDC_STATE_KEY_NAME]: string;
+  }
+}
 
 /**
  * Set a cookie for use in a frontend UI.
@@ -33,7 +48,7 @@ export function cookieForUI(
 export function cookieBackendSessionSetKeyValue(
   request: FastifyRequest,
   reply: FastifyReply,
-  k: string,
+  k: SESSION_KEYS,
   v: any,
 ) {
   request.session.options({

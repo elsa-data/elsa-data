@@ -3,7 +3,6 @@ import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
 import Bree from "bree";
 import { DependencyContainer } from "tsyringe";
 import path from "path";
-import { sleep } from "edgedb/dist/utils";
 import { DatasetService } from "./business/services/dataset-service";
 import { getServices } from "./di-helpers";
 import { EmailService } from "./business/services/email-service";
@@ -18,6 +17,10 @@ import { insertScenario99 } from "./test-data/scenario/insert-scenario99";
 
 export const WEB_SERVER_COMMAND = "web-server";
 export const WEB_SERVER_WITH_SCENARIO_COMMAND = "web-server-with-scenario";
+
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
 
 /**
  * A command that starts (and waits) for the Elsa Data web server to serve
@@ -101,6 +104,15 @@ export async function startWebServer(
  * @param config
  */
 export async function startJobQueue(config: ElsaConfigurationType) {
+  const worker = new Worker("jobs/entrypoint-test.ts", {});
+
+  worker.postMessage("hello");
+  worker.onmessage = (event) => {
+    console.log(event.data);
+  };
+
+  return;
+
   let root = path.resolve("jobs");
 
   const convertFileNameTsToJs = (tsFile: string) =>

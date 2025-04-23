@@ -1,11 +1,11 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
 import { inject, injectable } from "tsyringe";
 import { australianGenomicsDacRedcapToDuoString } from "@umccr/elsa-types";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
@@ -16,7 +16,7 @@ import {
   insertPotentialOrReal,
 } from "../_dac-user-helper";
 import { DacRedcapAustralianGenomicsCsvType } from "../../../config/config-schema-dac";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
@@ -27,7 +27,7 @@ import { AuditEventService } from "../audit-event-service";
 @injectable()
 export class RedcapImportApplicationService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,

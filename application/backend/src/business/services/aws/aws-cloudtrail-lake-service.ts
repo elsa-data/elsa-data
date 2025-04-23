@@ -1,13 +1,13 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import {
   CloudTrailClient,
   GetQueryResultsCommand,
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
 import { releaseGetAllActivationByReleaseKey } from "../../../../dbschema/queries";
 
@@ -37,7 +37,7 @@ type CloudTrailLakeResponseType = {
 export class AwsCloudTrailLakeService {
   constructor(
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Logger") private readonly logger: Logger,
     @inject("CloudTrailClient")
     private readonly cloudTrailClient: CloudTrailClient,

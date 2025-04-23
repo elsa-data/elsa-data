@@ -1,10 +1,10 @@
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { registerTypes } from "../test-dependency-injection.common";
 import { EmailService } from "../../src/business/services/email-service";
 import { mockClient } from "aws-sdk-client-mock";
 import { SendRawEmailCommand, SESClient } from "@aws-sdk/client-ses";
 import { AwsEnabledServiceMock } from "./client-mocks";
-import { ElsaSettings } from "../../src/config/elsa-settings";
+import type { ElsaSettings } from "../../src/config/elsa-settings";
 import { createTestElsaSettings } from "../test-elsa-settings.common";
 
 let edgeDbClient: Client;

@@ -23,7 +23,7 @@ import { createMockCloudTrail } from "./test-data/aws-mock/cloud-trail";
 import { createMockSts } from "./test-data/aws-mock/sts";
 import { createMockSes } from "./test-data/aws-mock/ses";
 import { createMockCloudFormation } from "./test-data/aws-mock/cloud-formation";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 /**
  * Register factories for all the AWS clients we might need.

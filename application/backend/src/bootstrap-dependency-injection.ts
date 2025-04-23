@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import * as tsyringe from "tsyringe";
 import { instanceCachingFactory } from "tsyringe";
 import { IPresignedUrlProvider } from "./business/services/presigned-url-service";
@@ -7,7 +7,7 @@ import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-se
 import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
 import { bootstrapDependencyInjectionAwsClients } from "./bootstrap-dependency-injection-aws-clients";
 import { bootstrapDependencyInjectionSingletonServices } from "./bootstrap-dependency-injection-singleton-services";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 /**
  * Bootstrap the DI with some basic services that are
@@ -27,15 +27,15 @@ export async function bootstrapDependencyInjection(
   // see our build scripts for where we abort if detecting this regexp)
   const dc = tsyringe.container.createChildContainer();
 
-  dc.register<edgedb.Client>("Database", {
+  dc.register<gel.Client>("Database", {
     // we want a single instance of the edgedb client as that then will establish a
     // shared connection pool that is effective
     // https://www.edgedb.com/docs/clients/js/driver#configuring-clients
     useFactory: instanceCachingFactory(() =>
-      edgedb.createClient().withConfig({
+      gel.createClient().withConfig({
         // we do some bioinformatics activities within a transaction context (looking up variants)
         // and the default 10 seconds sometimes is a bit short
-        session_idle_transaction_timeout: edgedb.Duration.from({ seconds: 60 }),
+        session_idle_transaction_timeout: gel.Duration.from({ seconds: 60 }),
       }),
     ),
   });

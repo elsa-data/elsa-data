@@ -1,7 +1,7 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
 
-const edgeDbClient = edgedb.createClient();
+const gelClient = gel.createClient();
 
 /**
  * In the absence of some sort of truncate functionality in edgedb - we explicitly
@@ -13,68 +13,66 @@ export async function blankTestData(printDetailsToConsole: boolean = false) {
   // TODO: add a guard such that this can only execute on a local db
 
   // Schema: mock
-  await e.delete(e.mock.AwsCloudFormationStack).run(edgeDbClient);
+  await e.delete(e.mock.AwsCloudFormationStack).run(gelClient);
 
   // Schema: pedigree
-  const pedigreeDeleted = await e.delete(e.pedigree.Pedigree).run(edgeDbClient);
+  const pedigreeDeleted = await e.delete(e.pedigree.Pedigree).run(gelClient);
   const pedigreeRelationshipDeleted = await e
     .delete(e.pedigree.PedigreeRelationship)
-    .run(edgeDbClient);
+    .run(gelClient);
 
   // Schema: job
-  const jobsDeleted = await e.delete(e.job.Job).run(edgeDbClient);
+  const jobsDeleted = await e.delete(e.job.Job).run(gelClient);
 
   // Schema: permission
-  const usersDeleted = await e.delete(e.permission.User).run(edgeDbClient);
+  const usersDeleted = await e.delete(e.permission.User).run(gelClient);
   const potentialUsersDeleted = await e
     .delete(e.permission.PotentialUser)
-    .run(edgeDbClient);
+    .run(gelClient);
 
   // Schema: release
-  const releasesDeleted = await e.delete(e.release.Release).run(edgeDbClient);
+  const releasesDeleted = await e.delete(e.release.Release).run(gelClient);
   const dataEgressRecordDeleted = await e
     .delete(e.release.DataEgressRecord)
-    .run(edgeDbClient);
+    .run(gelClient);
 
   // Schema: dataset
   const specimensDeleted = await e
     .delete(e.dataset.DatasetSpecimen)
-    .run(edgeDbClient);
+    .run(gelClient);
   const patientsDeleted = await e
     .delete(e.dataset.DatasetPatient)
-    .run(edgeDbClient);
-  const casesDeleted = await e.delete(e.dataset.DatasetCase).run(edgeDbClient);
-  const datasetsDeleted = await e.delete(e.dataset.Dataset).run(edgeDbClient);
-  const consentDeleted = await e.delete(e.consent.Consent).run(edgeDbClient);
+    .run(gelClient);
+  const casesDeleted = await e.delete(e.dataset.DatasetCase).run(gelClient);
+  const datasetsDeleted = await e.delete(e.dataset.Dataset).run(gelClient);
+  const consentDeleted = await e.delete(e.consent.Consent).run(gelClient);
 
   // Schema: lab
-  const bclsDeleted = await e.delete(e.lab.ArtifactBcl).run(edgeDbClient);
-  const fastqsDeleted = await e
-    .delete(e.lab.ArtifactFastqPair)
-    .run(edgeDbClient);
-  const bamsDeleted = await e.delete(e.lab.ArtifactBam).run(edgeDbClient);
-  const cramsDeleted = await e.delete(e.lab.ArtifactCram).run(edgeDbClient);
-  const vcfsDeleted = await e.delete(e.lab.ArtifactVcf).run(edgeDbClient);
+  const bclsDeleted = await e.delete(e.lab.ArtifactBcl).run(gelClient);
+  const fastqsDeleted = await e.delete(e.lab.ArtifactFastqPair).run(gelClient);
+  const bamsDeleted = await e.delete(e.lab.ArtifactBam).run(gelClient);
+  const cramsDeleted = await e.delete(e.lab.ArtifactCram).run(gelClient);
+  const vcfsDeleted = await e.delete(e.lab.ArtifactVcf).run(gelClient);
 
-  const analysesDeleted = await e.delete(e.lab.Analyses).run(edgeDbClient);
-  const runsDeleted = await e.delete(e.lab.Run).run(edgeDbClient);
+  const analysesDeleted = await e.delete(e.lab.Analyses).run(gelClient);
+  const runsDeleted = await e.delete(e.lab.Run).run(gelClient);
   const submissionsBatchesDeleted = await e
     .delete(e.lab.SubmissionBatch)
-    .run(edgeDbClient);
+    .run(gelClient);
 
   // Schema: storage
-  const filesDeleted = await e.delete(e.storage.File).run(edgeDbClient);
+  const filesDeleted = await e.delete(e.storage.File).run(gelClient);
 
   // Schema: audit
   const releaseAuditDeleted = await e
     .delete(e.audit.ReleaseAuditEvent)
-    .run(edgeDbClient);
+    .run(gelClient);
   const userAuditDeleted = await e
     .delete(e.audit.UserAuditEvent)
-    .run(edgeDbClient);
+    .run(gelClient);
   const systemAuditDeleted = await e
     .delete(e.audit.SystemAuditEvent)
-    .run(edgeDbClient);
+    .run(gelClient);
 
   if (printDetailsToConsole) {
     console.log(`Removing any existing data in test database`);

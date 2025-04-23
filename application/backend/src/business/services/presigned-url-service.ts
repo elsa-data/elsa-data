@@ -1,6 +1,6 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { inject, injectable, injectAll } from "tsyringe";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 
 export interface IPresignedUrlProvider {
   readonly protocol: string;
@@ -17,7 +17,7 @@ export interface IPresignedUrlProvider {
 @injectable()
 export class PresignedUrlService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @injectAll("IPresignedUrlProvider")
     private readonly presignedUrlServices: IPresignedUrlProvider[],

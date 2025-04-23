@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
 import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
@@ -6,7 +6,7 @@ import axios from "axios";
 import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseService } from "../releases/release-service";
@@ -18,7 +18,7 @@ import {
 import { UserData } from "../../data/user-data";
 import { generateZipPassword } from "../../../helpers/passwords";
 import { isEmpty, isInteger } from "lodash";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import {
   ApplicationUser,
   checkValidApplicationUser,
@@ -28,7 +28,7 @@ import { AuditEventService } from "../audit-event-service";
 @injectable()
 export class RemsService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,

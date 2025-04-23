@@ -1,27 +1,5 @@
-import { RefinementCtx, z } from "zod";
-import { Sensitive } from "./config-schema-sensitive";
-
-function oneOf<
-  A,
-  K1 extends Extract<keyof A, string>,
-  K2 extends Extract<keyof A, string>,
-  R extends A &
-    (
-      | (Required<Pick<A, K1>> & { [P in K2]: undefined })
-      | (Required<Pick<A, K2>> & { [P in K1]: undefined })
-    ),
->(key1: K1, key2: K2): (arg: A, ctx: RefinementCtx) => arg is R {
-  return (arg, ctx): arg is R => {
-    if ((arg[key1] === undefined) === (arg[key2] === undefined)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Either ${key1} or ${key2} must be filled, but not both`,
-      });
-      return false;
-    }
-    return true;
-  };
-}
+import { z } from "zod";
+import { oneOf } from "./zod-typescript-helpers";
 
 export const DatasetAustralianGenomicsDirectoriesSchema = z.object({
   uri: z
@@ -124,7 +102,10 @@ export const DatasetAustralianGenomicsDirectoriesSchema = z.object({
   ),
 });
 
-export const DatasetAustralianGenomicsDirectoriesDemoSchema = z.object({
+/**
+ *
+ */
+export const DatasetPhenopacketFirstSchema = z.object({
   uri: z
     .string()
     .describe(
@@ -133,29 +114,15 @@ export const DatasetAustralianGenomicsDirectoriesDemoSchema = z.object({
   name: z.string().describe("Friendly name of the dataset"),
   description: z.string().describe("A brief description of the dataset"),
   loader: z
-    .literal("australian-genomics-directories-demo")
+    .literal("pfdl")
     .describe(
-      "A loader that simulates loads from Australian Genomics structured directories - but does not need any actual cloud infrastructure",
+      "A loader that loads from Phenopacket first structured directories",
     ),
-  demonstrationStoragePrefix: z
-    .string()
+  rootUrls: z
+    .array(z.string())
     .describe(
-      "The storage path prefix where objects would exist for this demonstration - though their actual existence is entirely optional. e.g. 's3://a-bucket/10g/'",
+      "The root URLs making up this dataset. e.g. ['s3://agha-gdr-store-2.0/Cardiac/']",
     ),
-  demonstrationSpecimenIdentifierRegex: z.optional(
-    z
-      .string()
-      .describe(
-        "If present a regex capture group that will state the specimen identifier from a given filename",
-      ),
-  ),
-  demonstrationCaseIdentifierRegex: z.optional(
-    z
-      .string()
-      .describe(
-        "If present a regex capture group that will state the case identifier from a given filename",
-      ),
-  ),
 });
 
 /**
@@ -175,7 +142,7 @@ export const DatasetDevSchema = z.object({
 
 export const DatasetSchema = z.discriminatedUnion("loader", [
   DatasetAustralianGenomicsDirectoriesSchema,
-  DatasetAustralianGenomicsDirectoriesDemoSchema,
+  DatasetPhenopacketFirstSchema,
   DatasetDevSchema,
 ]);
 
@@ -187,4 +154,12 @@ export type DatasetAustralianGenomicsDirectories = z.infer<
 
 export type DatasetAustralianGenomicsDirectoriesInput = z.input<
   typeof DatasetAustralianGenomicsDirectoriesSchema
+>;
+
+export type DatasetPhenopacketFirst = z.infer<
+  typeof DatasetPhenopacketFirstSchema
+>;
+
+export type DatasetPhenopacketFirstInput = z.input<
+  typeof DatasetPhenopacketFirstSchema
 >;

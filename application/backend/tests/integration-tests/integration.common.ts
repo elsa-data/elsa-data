@@ -178,7 +178,7 @@ export async function createTrpcClient(
 ) {
   const lightMyRequestFetch = async (
     input: RequestInfo | URL | string,
-    init?: RequestInit,
+    init?: any,
   ): Promise<any> => {
     const url = input as string;
     const opts = {

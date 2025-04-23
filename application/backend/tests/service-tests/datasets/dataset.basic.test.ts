@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import { Client } from "gel";
 import assert from "assert";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { beforeEachCommon } from "../commons/dataset.common";

@@ -1,4 +1,4 @@
-import { Client, createClient } from "edgedb";
+import { Client, createClient } from "gel";
 import { blankTestData } from "../../src/test-data/util/blank-test-data";
 import { releaseGetSpecimensByDbIdsAndExternalIdentifiers } from "../../dbschema/queries";
 import { registerTypes } from "../test-dependency-injection.common";
@@ -32,8 +32,8 @@ import {
 
 const testContainer = registerTypes();
 
-describe("edgedb release specimen query tests", () => {
-  let edgeDbClient: Client;
+describe("gel release specimen query tests", () => {
+  let gelClient: Client;
 
   let simpsonsCaseDbId: string;
   let bartPatientDbId: string;
@@ -53,7 +53,7 @@ describe("edgedb release specimen query tests", () => {
   //
 
   beforeAll(async () => {
-    edgeDbClient = createClient({});
+    gelClient = createClient({});
 
     await blankTestData();
     await insert10F(testContainer);
@@ -72,31 +72,31 @@ describe("edgedb release specimen query tests", () => {
 
     // find the canonical "correct" db ids for all sorts of things
     simpsonsCaseDbId = (
-      await findDatabaseCaseIds(edgeDbClient, [SIMPSONS_CASE])
+      await findDatabaseCaseIds(gelClient, [SIMPSONS_CASE])
     )[0];
     bartPatientDbId = (
-      await findDatabasePatientIds(edgeDbClient, [BART_PATIENT_SYSTEMLESS])
+      await findDatabasePatientIds(gelClient, [BART_PATIENT_SYSTEMLESS])
     )[0];
     bartSpecimenDbId = (
-      await findDatabaseSpecimenIds(edgeDbClient, [BART_SPECIMEN])
+      await findDatabaseSpecimenIds(gelClient, [BART_SPECIMEN])
     )[0];
     homerSpecimenDbId = (
-      await findDatabaseSpecimenIds(edgeDbClient, [HOMER_SPECIMEN])
+      await findDatabaseSpecimenIds(gelClient, [HOMER_SPECIMEN])
     )[0];
     margeSpecimenDbId = (
-      await findDatabaseSpecimenIds(edgeDbClient, [MARGE_SPECIMEN])
+      await findDatabaseSpecimenIds(gelClient, [MARGE_SPECIMEN])
     )[0];
     elroySpecimenDbId = (
-      await findDatabaseSpecimenIds(edgeDbClient, [ELROY_SPECIMEN])
+      await findDatabaseSpecimenIds(gelClient, [ELROY_SPECIMEN])
     )[0];
     charlesCaseDbId = (
-      await findDatabaseCaseIds(edgeDbClient, [CHARLES_CASE_SYSTEMLESS])
+      await findDatabaseCaseIds(gelClient, [CHARLES_CASE_SYSTEMLESS])
     )[0];
     charlesPatientDbId = (
-      await findDatabasePatientIds(edgeDbClient, [CHARLES_PATIENT_SYSTEMLESS])
+      await findDatabasePatientIds(gelClient, [CHARLES_PATIENT_SYSTEMLESS])
     )[0];
     charlesSpecimenDbId = (
-      await findDatabaseSpecimenIds(edgeDbClient, [CHARLES_SPECIMEN_SYSTEMLESS])
+      await findDatabaseSpecimenIds(gelClient, [CHARLES_SPECIMEN_SYSTEMLESS])
     )[0];
   });
 
@@ -106,7 +106,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test basic selection by single specimen db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [bartSpecimenDbId],
         externalIdentifierValues: [],
@@ -121,7 +121,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test basic selection by single patient db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [bartPatientDbId],
         externalIdentifierValues: [],
@@ -136,7 +136,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test basic selection by single case db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [simpsonsCaseDbId],
         externalIdentifierValues: [],
@@ -161,7 +161,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test basic selection by single specimen external identifier", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         externalIdentifierValues: [BART_SPECIMEN],
@@ -180,7 +180,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test basic selection by single patient external identifier", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         externalIdentifierValues: [BART_PATIENT_1KGP],
@@ -199,7 +199,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test basic selection by single case external identifier", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         externalIdentifierValues: [SIMPSONS_CASE],
@@ -224,7 +224,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test case sensitivity of external identifier", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [],
         // lowercase the id
@@ -242,7 +242,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test case cross-link selection with single case db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [charlesCaseDbId],
         externalIdentifierValues: [],
@@ -258,7 +258,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test case cross-link selection with single patient db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [charlesPatientDbId],
         externalIdentifierValues: [],
@@ -274,7 +274,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test case cross-link selection with single specimen db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [charlesSpecimenDbId],
         externalIdentifierValues: [],
@@ -290,7 +290,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test use of an invalid db id", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: ["4da8d9d1-ca33-48f4-a1fd-986d5fe1d13c"],
         externalIdentifierValues: [],
@@ -306,7 +306,7 @@ describe("edgedb release specimen query tests", () => {
 
   it("test full query with combination of all id types", async () => {
     const specimensResult =
-      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(edgeDbClient, {
+      await releaseGetSpecimensByDbIdsAndExternalIdentifiers(gelClient, {
         releaseKey: RELEASE_KEY_1,
         dbIds: [
           simpsonsCaseDbId,

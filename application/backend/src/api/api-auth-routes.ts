@@ -5,7 +5,7 @@ import {
   SESSION_OIDC_STATE_KEY_NAME,
   SESSION_USER_DB_OBJECT_KEY_NAME,
 } from "./auth/session-cookie-constants";
-import { ElsaSettings } from "../config/elsa-settings";
+import type { ElsaSettings } from "../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { errors, generators, TokenSet } from "openid-client";

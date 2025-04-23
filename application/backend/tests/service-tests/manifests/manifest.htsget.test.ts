@@ -1,6 +1,6 @@
 import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { THOUSAND_GENOMES_SYSTEM } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";
 import { ManifestService } from "../../../src/business/services/manifests/manifest-service";
 import { ReleaseService } from "../../../src/business/services/releases/release-service";
@@ -16,14 +16,14 @@ import {
   S3ManifestHtsgetService,
 } from "../../../src/business/services/manifests/htsget/manifest-htsget-service";
 import { ReleaseActivationService } from "../../../src/business/services/releases/release-activation-service";
-import { ElsaSettings } from "../../../src/config/elsa-settings";
+import type { ElsaSettings } from "../../../src/config/elsa-settings";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { addSeconds } from "date-fns";
 import { createTestElsaSettings } from "../../test-elsa-settings.common";
 import { AwsEnabledServiceMock } from "../client-mocks";

@@ -3,8 +3,7 @@ import "reflect-metadata";
 import { parentPort } from "worker_threads";
 import { JobService } from "../src/business/services/jobs/job-service";
 import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
-import { ElsaSettings } from "../src/config/elsa-settings";
-import { sleep } from "edgedb/dist/utils";
+import type { ElsaSettings } from "../src/config/elsa-settings";
 import { workerData as breeWorkerData } from "node:worker_threads";
 import { bootstrapSettings } from "../src/bootstrap-settings";
 import { getDirectConfig } from "../src/config/config-load";
@@ -15,7 +14,13 @@ import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-se
 import { differenceInHours, minTime } from "date-fns";
 import { getFeaturesEnabled } from "../src/features";
 
+function sleep(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 (async () => {
+  console.log("HEELO FROM THE WORKER!");
+
   const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
 
   const settings = await bootstrapSettings(rawConfig);

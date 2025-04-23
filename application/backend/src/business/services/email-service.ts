@@ -1,10 +1,10 @@
 import { inject, injectable } from "tsyringe";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { createTransport, Transporter } from "nodemailer";
 import * as aws from "@aws-sdk/client-ses";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { AuditEventService } from "./audit-event-service";
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { AwsEnabledService } from "./aws/aws-enabled-service";
 import Email from "email-templates";
 import { Address } from "nodemailer/lib/mailer";
@@ -14,7 +14,7 @@ export class EmailService {
   private transporter?: Transporter;
 
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("SESClient") private readonly ses: aws.SES,
     @inject("Logger") private readonly logger: Logger,

@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
-import { ElsaSettings } from "../../../config/elsa-settings";
-import { Logger } from "pino";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type { Logger } from "pino";
 import {
   DiscoverInstancesCommand,
   ServiceDiscoveryClient,

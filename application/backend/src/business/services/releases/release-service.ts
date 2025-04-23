@@ -1,5 +1,5 @@
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import {
   ReleaseDetailType,
@@ -15,7 +15,7 @@ import { ReleaseBaseService, UserRoleInRelease } from "./release-base-service";
 import { getNextReleaseKey } from "../../db/release-queries";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
 import {
   applyHtsgetRestriction,
@@ -25,7 +25,7 @@ import {
 } from "../../../../dbschema/queries";
 import { auditReleaseUpdateStart, auditSuccess } from "../../../audit-helpers";
 import { AuditEventService } from "../audit-event-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { jobAsBadgeLabel } from "../jobs/job-helpers";
 import {
   checkValidApplicationUser,
@@ -47,7 +47,7 @@ import { ReleaseConfigurationError } from "../../exceptions/release-configuratio
 @injectable()
 export class ReleaseService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,

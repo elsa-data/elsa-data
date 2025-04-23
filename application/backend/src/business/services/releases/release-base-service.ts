@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import {
   DataSharingAwsAccessPointType,
@@ -10,7 +10,7 @@ import { getReleaseInfo } from "../helpers";
 import { UserService } from "../user-service";
 import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import {
@@ -43,7 +43,7 @@ export abstract class ReleaseBaseService {
 
   protected constructor(
     protected readonly settings: ElsaSettings,
-    protected readonly edgeDbClient: edgedb.Client,
+    protected readonly edgeDbClient: gel.Client,
     protected readonly features: ReadonlySet<string>,
     protected readonly userService: UserService,
     protected readonly auditEventService: AuditEventService,

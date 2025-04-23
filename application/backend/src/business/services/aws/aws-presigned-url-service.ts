@@ -6,8 +6,8 @@ import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
 import { parseUrl } from "@smithy/url-parser";
 import { Hash } from "@smithy/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
-import { ElsaSettings } from "../../../config/elsa-settings";
-import { IPresignedUrlProvider } from "../presigned-url-service";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type { IPresignedUrlProvider } from "../presigned-url-service";
 import { AwsDiscoveryService } from "./aws-discovery-service";
 import { SharerObjectSigningType } from "../../../config/config-schema-sharer";
 

@@ -1,5 +1,5 @@
 import { Issuer } from "openid-client";
-import { ElsaSettings } from "./config/elsa-settings";
+import type { ElsaSettings } from "./config/elsa-settings";
 import _ from "lodash";
 import { ElsaConfigurationType } from "./config/config-schema";
 import * as path from "path";

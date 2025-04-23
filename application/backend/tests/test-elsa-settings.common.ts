@@ -1,4 +1,4 @@
-import { ElsaSettings } from "../src/config/elsa-settings";
+import type { ElsaSettings } from "../src/config/elsa-settings";
 import { Issuer } from "openid-client";
 import { TEST_SUBJECT_3 } from "../src/test-data/user/insert-user3";
 import {

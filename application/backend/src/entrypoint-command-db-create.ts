@@ -1,5 +1,5 @@
 import { executeEdgeCli } from "./entrypoint-helper";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 export const DB_CREATE_COMMAND = "db-create";
 

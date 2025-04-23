@@ -1,5 +1,5 @@
-import * as edgedb from "edgedb";
-import { Executor } from "edgedb";
+import * as gel from "gel";
+import { Executor } from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
@@ -17,14 +17,14 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
-import { IAwsDiscoveryService } from "../aws/aws-discovery-service";
+import type { IAwsDiscoveryService } from "../aws/aws-discovery-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,
 } from "./job-exception";
 import { ManifestService } from "../manifests/manifest-service";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { randomBytes } from "crypto";
 import assert from "node:assert";
 import { updateReleaseDataEgress } from "../../../../dbschema/queries";
@@ -39,7 +39,7 @@ export class JobCopyOutService extends JobService {
   public static readonly JOB_NAME = "CopyOut";
 
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,

@@ -5,8 +5,7 @@ import {
   inputReleaseKeySingle,
 } from "./input-schemas-common";
 import _ from "lodash";
-import * as interfaces from "../../../../dbschema/interfaces";
-import AuditEvent = interfaces.audit.AuditEvent;
+import type { audit } from "../../../../dbschema/interfaces";
 
 /**
  * An object for the audit event filter type.
@@ -46,7 +45,7 @@ export const auditEventRouter = router({
           input.releaseKey,
           pageSize,
           (input.page - 1) * pageSize,
-          input.orderByProperty as keyof AuditEvent,
+          input.orderByProperty as keyof audit.AuditEvent,
           input.orderAscending,
         )) ?? { data: [], total: 0 }
       );
@@ -63,7 +62,7 @@ export const auditEventRouter = router({
           pageSize,
           (input.page - 1) * pageSize,
           true,
-          input.orderByProperty as keyof AuditEvent,
+          input.orderByProperty as keyof audit.AuditEvent,
           input.orderAscending,
         )) ?? { data: [], total: 0 }
       );

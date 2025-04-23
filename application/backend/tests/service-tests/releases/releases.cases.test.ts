@@ -10,7 +10,7 @@ import {
 import { ReleaseSpecimenType } from "@umccr/elsa-types";
 import { beforeEachCommon } from "../commons/releases.common";
 import { registerTypes } from "../../test-dependency-injection.common";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,

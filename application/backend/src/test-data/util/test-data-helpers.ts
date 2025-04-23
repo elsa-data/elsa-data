@@ -1,4 +1,4 @@
-import { createClient } from "edgedb";
+import { createClient } from "gel";
 import e from "../../../dbschema/edgeql-js";
 import _ from "lodash";
 import { lab, storage } from "../../../dbschema/interfaces";

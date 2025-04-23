@@ -1,4 +1,4 @@
-import { createClient } from "edgedb";
+import { createClient } from "gel";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 import { insert10G } from "../../../src/test-data/dataset/insert-test-data-10g";
 import e from "../../../dbschema/edgeql-js";

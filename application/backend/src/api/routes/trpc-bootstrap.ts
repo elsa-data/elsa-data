@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getAuthenticatedUserFromSecureSession } from "../auth/session-cookie-helpers";
 import { DependencyContainer } from "tsyringe";
@@ -85,7 +85,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
   const { edgeDbClient, settings, logger } = getServices(ctx.container);
 
   // now that we have authenticated we can inject the user globally into our db client
-  ctx.container.register<edgedb.Client>("DatabaseWithUser", {
+  ctx.container.register<gel.Client>("DatabaseWithUser", {
     useFactory: () =>
       edgeDbClient.withGlobals({
         user: authedUser.dbId,
@@ -123,8 +123,6 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
       sharerService: ctx.container.resolve(SharerService),
-      req: ctx.req,
-      res: ctx.res,
       ...ctx,
     },
   });

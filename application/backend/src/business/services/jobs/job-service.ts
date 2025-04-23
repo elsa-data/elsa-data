@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
@@ -8,12 +8,10 @@ import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../releases/release-service";
-import { Transaction } from "edgedb/dist/transaction";
+import { Transaction } from "gel/dist/transaction";
 import { AuditEventService } from "../audit-event-service";
 import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import { jobAsType } from "./job-helpers";
-import * as interfaces from "../../../../dbschema/interfaces";
-import Job = interfaces.job.Job;
 import {
   createPagedResult,
   PagedResult,
@@ -33,7 +31,7 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 @injectable()
 export class JobService {
   constructor(
-    @inject("Database") protected readonly edgeDbClient: edgedb.Client,
+    @inject("Database") protected readonly edgeDbClient: gel.Client,
     @inject(AuditEventService)
     protected readonly auditLogService: AuditEventService,
     @inject(ReleaseService) protected readonly releaseService: ReleaseService,
@@ -458,8 +456,8 @@ export class JobService {
             status: isCancellation
               ? e.job.JobStatus.cancelled
               : wasSuccessful
-              ? e.job.JobStatus.succeeded
-              : e.job.JobStatus.failed,
+                ? e.job.JobStatus.succeeded
+                : e.job.JobStatus.failed,
           },
         }))
         .run(tx);

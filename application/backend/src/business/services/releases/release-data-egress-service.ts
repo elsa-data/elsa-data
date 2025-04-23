@@ -1,9 +1,9 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
 import { createPagedResult } from "../../../api/helpers/pagination-helpers";
 
@@ -29,7 +29,7 @@ import { PermissionService } from "../permission-service";
 @injectable()
 export class ReleaseDataEgressService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject(AwsCloudTrailLakeService)

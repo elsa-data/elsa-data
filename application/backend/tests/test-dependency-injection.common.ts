@@ -1,6 +1,6 @@
 import * as tsyringe from "tsyringe";
-import * as edgedb from "edgedb";
-import { ElsaSettings } from "../src/config/elsa-settings";
+import * as gel from "gel";
+import type { ElsaSettings } from "../src/config/elsa-settings";
 import { createTestElsaSettings } from "./test-elsa-settings.common";
 import { Logger, pino } from "pino";
 import { IPresignedUrlProvider } from "../src/business/services/presigned-url-service";
@@ -22,7 +22,7 @@ export function registerTypes() {
   const logger = pino(createTestElsaSettings().logger);
 
   testContainer.register<edgedb.Client>("Database", {
-    useFactory: () => edgedb.createClient(),
+    useFactory: () => gel.createClient(),
   });
 
   bootstrapDependencyInjectionAwsClients(testContainer, logger, false);

@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
+  "extends": "@tsconfig/node22/tsconfig.json",
   "//ts-node": "our main builds *do not* use ts-node anymore - but Bree typescript plugin needs these settings",
   "ts-node": {
     "transpileOnly": true,

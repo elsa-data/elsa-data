@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   userGetByDbId,
   userGetByEmail,
@@ -7,7 +7,7 @@ import {
   UserGetBySubjectIdReturns,
 } from "../../../dbschema/queries";
 import { AuthenticatedUser } from "../authenticated-user";
-import { Executor } from "edgedb";
+import { Executor } from "gel";
 
 export type UserDataDbUser = NonNullable<UserGetBySubjectIdReturns>;
 

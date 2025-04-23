@@ -3,7 +3,7 @@ import { beforeEachCommon } from "../commons/releases.common";
 import { ReleaseService } from "../../../src/business/services/releases/release-service";
 import { registerTypes } from "../../test-dependency-injection.common";
 import assert from "assert";
-import { Client } from "edgedb";
+import { Client } from "gel";
 import e from "../../../dbschema/edgeql-js";
 import {
   ReleaseActivationStateError,

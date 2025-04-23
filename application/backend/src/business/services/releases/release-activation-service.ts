@@ -1,10 +1,10 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import { ElsaSettings } from "../../../config/elsa-settings";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 import e from "../../../../dbschema/edgeql-js";
 import { AuditEventService } from "../audit-event-service";
 import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
@@ -16,7 +16,7 @@ import {
   ReleaseDeactivationStateError,
 } from "../../exceptions/release-activation";
 import etag from "etag";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 import { ManifestService } from "../manifests/manifest-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
@@ -31,7 +31,7 @@ import { JobCloudFormationDeleteService } from "../jobs/job-cloud-formation-dele
 @injectable()
 export class ReleaseActivationService extends ReleaseBaseService {
   constructor(
-    @inject("Database") edgeDbClient: edgedb.Client,
+    @inject("Database") edgeDbClient: gel.Client,
     @inject("Settings") settings: ElsaSettings,
     @inject("Features") features: ReadonlySet<string>,
     @inject("Logger") private readonly logger: Logger,

@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
@@ -11,7 +11,7 @@ import {
   PotentialUserSummaryType,
   UserSummaryType,
 } from "@umccr/elsa-types/schemas-users";
-import { ElsaSettings } from "../../config/elsa-settings";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   NonExistentUser,
   NotAuthorisedEditUserManagement,
@@ -51,7 +51,7 @@ export type LoginDetailType = {
 @injectable()
 export class UserService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: edgedb.Client,
+    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject(IPLookupService) private readonly ipLookupService: IPLookupService,
     @inject(UserData) private readonly userData: UserData,
@@ -586,7 +586,7 @@ export class UserService {
    * Add the user as a participant in a release with the given role.
    */
   public static async addUserToReleaseWithRole(
-    client: edgedb.Client,
+    client: gel.Client,
     releaseKey: string,
     userDbId: string,
     role: string,

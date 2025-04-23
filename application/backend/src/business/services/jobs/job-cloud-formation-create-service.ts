@@ -1,4 +1,4 @@
-import * as edgedb from "edgedb";
+import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
@@ -19,7 +19,7 @@ import {
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
-import { Logger } from "pino";
+import type { Logger } from "pino";
 
 /**
  * A service for performing long-running operations creating new
@@ -28,7 +28,7 @@ import { Logger } from "pino";
 @injectable()
 export class JobCloudFormationCreateService extends JobService {
   constructor(
-    @inject("Database") readonly edgeDbClient: edgedb.Client,
+    @inject("Database") readonly edgeDbClient: gel.Client,
     @inject("Logger") readonly logger: Logger,
     @inject(AuditEventService) readonly auditLogService: AuditEventService,
     @inject(ReleaseService) readonly releaseService: ReleaseService,
@@ -303,8 +303,8 @@ export class JobCloudFormationCreateService extends JobService {
             status: isCancellation
               ? e.job.JobStatus.cancelled
               : wasSuccessful
-              ? e.job.JobStatus.succeeded
-              : e.job.JobStatus.failed,
+                ? e.job.JobStatus.succeeded
+                : e.job.JobStatus.failed,
           },
         }))
         .run(tx);

@@ -1,4 +1,4 @@
-import { Client } from "edgedb";
+import { Client } from "gel";
 import { makeSystemlessIdentifier } from "../../src/test-data/util/test-data-helpers";
 import e from "../../dbschema/edgeql-js";
 import {
