@@ -1,14 +1,13 @@
 import React, { useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { ReleaseManualType } from "@umccr/elsa-types";
+import Select from "react-select";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
-import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
-import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
+import { ReleaseManualType } from "../../../../../backend/src/shared/schemas";
+import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { ErrorBoundary } from "../../../components/errors";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";
-import Select from "react-select";
 import { useLoggedInUserConfigRelay } from "../../../providers/logged-in-user-config-relay-provider";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
@@ -48,25 +47,23 @@ export const ManualDacDialog: React.FC<Props> = ({
     undefined,
   );
 
-  const createNewReleaseMutate = useMutation(
-    () =>
+  const { isPending, mutate } = useMutation({
+    mutationFn: () =>
       axios
         .post<string>("/api/release", getValues())
         .then((response) => response.data),
-    {
-      onSuccess: (newReleaseKey) => {
-        // invalidate the keys so that going to the dashboard will be refreshed
-        queryClient.invalidateQueries(REACT_QUERY_RELEASE_KEYS.all).then(() => {
-          // bounce us to the details page for the release we just made
-          navigate(`/releases/${newReleaseKey}/detail`);
-        });
+    onSuccess: (newReleaseKey) => {
+      // invalidate the keys so that going to the dashboard will be refreshed
+      queryClient.invalidateQueries().then(() => {
+        // bounce us to the details page for the release we just made
+        navigate(`/releases/${newReleaseKey}/detail`);
+      });
 
-        // now close the dialog
-        cancelShowing();
-      },
-      onError: (err: any) => setLastMutateError(err?.response?.data?.detail),
+      // now close the dialog
+      cancelShowing();
     },
-  );
+    onError: (err: any) => setLastMutateError(err?.response?.data?.detail),
+  });
 
   return (
     <ErrorBoundary>
@@ -76,10 +73,10 @@ export const ManualDacDialog: React.FC<Props> = ({
         title="Create Release Manually"
         buttons={
           <SuccessCancelButtons
-            isLoading={createNewReleaseMutate.isLoading}
-            isSuccessDisabled={createNewReleaseMutate.isLoading}
+            isLoading={isPending}
+            isSuccessDisabled={isPending}
             successButtonLabel={"Create"}
-            onSuccess={handleSubmit(() => createNewReleaseMutate.mutate())}
+            onSuccess={handleSubmit(() => mutate())}
             cancelButtonLabel={"Cancel"}
             onCancel={cancelShowing}
             cancelButtonRef={cancelButtonRef}

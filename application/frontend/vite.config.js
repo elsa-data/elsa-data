@@ -1,10 +1,10 @@
 import svgrPlugin from "vite-plugin-svgr";
 import react from "@vitejs/plugin-react";
-import { build, defineConfig, UserConfig } from "vite";
+import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig((env) => {
-  const defaultConfig: UserConfig = {
+  const defaultConfig = {
     build: {
       outDir: "build",
     },

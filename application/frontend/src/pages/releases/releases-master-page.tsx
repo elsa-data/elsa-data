@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Outlet, useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
 import { makeReleaseTypeLocal } from "./queries";
-import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../components/errors";
 import { ReleasesBreadcrumbsDiv } from "./releases-breadcrumbs-div";
 import { ReleasesMasterContextType } from "./releases-types";
@@ -14,7 +13,6 @@ import {
   formatFromNowTime,
   Millisecond,
 } from "../../helpers/datetime-helper";
-import { useCookies } from "react-cookie";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 
@@ -29,7 +27,7 @@ export const ReleasesMasterPage: React.FC = () => {
   const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
   const user = useLoggedInUser();
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
@@ -38,27 +36,34 @@ export const ReleasesMasterPage: React.FC = () => {
       `The component ReleasesMasterPage cannot be rendered outside a route with a releaseKey param`,
     );
 
-  const [error, setError] = useState<ErrorState>({
+  const [errorState, setErrorState] = useState<ErrorState>({
     error: null,
     isSuccess: true,
   });
 
   const queryClient = useQueryClient();
 
-  const releaseQuery = trpc.release.getSpecificRelease.useQuery(
-    { releaseKey },
-    {
-      onError: (error: any) => setError({ error, isSuccess: false }),
-      onSuccess: (_: any) => setError({ error: null, isSuccess: true }),
-      // whenever we get the data we need to augment it with a little bit of local knowledge
-      select: (d: any) => makeReleaseTypeLocal(d),
-    },
-  );
+  const { data, isLoading, isSuccess, isError, error } =
+    trpc.release.getSpecificRelease.useQuery(
+      { releaseKey },
+      {
+        select: (d: any) => makeReleaseTypeLocal(d),
+      },
+    );
+
+  useEffect(() => {
+    if (isError) {
+      setErrorState({ error, isSuccess: false });
+    }
+    if (isSuccess) {
+      setErrorState({ error: null, isSuccess: true });
+    }
+  }, [isError, isSuccess]);
 
   const cancelMutate = trpc.releaseJob.cancel.useMutation({
     onSettled: () => queryClient.invalidateQueries(),
-    onSuccess: () => setError({ error: null, isSuccess: true }),
-    onError: (error: any) => setError({ error, isSuccess: false }),
+    onSuccess: () => setErrorState({ error: null, isSuccess: true }),
+    onError: (error: any) => setErrorState({ error, isSuccess: false }),
   });
 
   // *only* when running a job in the background - we want to set up a polling loop of the backend
@@ -67,7 +72,7 @@ export const ReleasesMasterPage: React.FC = () => {
 
   useEffect(() => {
     let interval: NodeJS.Timer | undefined = undefined;
-    if (releaseQuery?.data?.runningJob) {
+    if (data?.runningJob) {
       interval = setInterval(async () => {
         await utils.release.getSpecificRelease.invalidate();
       }, REFRESH_JOB_STATUS_MS);
@@ -82,29 +87,29 @@ export const ReleasesMasterPage: React.FC = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [releaseQuery?.data?.runningJob]);
+  }, [data?.runningJob]);
 
   const masterOutletContext: ReleasesMasterContextType = {
     releaseKey: releaseKey,
     // note: that whilst we might construct the outlet context here with data being undefined (hence needing !),
     // it is ok because in that case we never actually use this masterOutletContext..
-    releaseData: releaseQuery.data!,
-    releaseDataIsLoading: releaseQuery.isLoading,
+    releaseData: data!,
+    releaseDataIsLoading: isLoading,
   };
 
-  const lastUpdated = releaseQuery.data?.lastUpdatedDateTime as
-    | string
-    | undefined;
-  const lastUpdatedSubjectId = releaseQuery.data?.lastUpdatedUserSubjectId;
+  const lastUpdated = data?.lastUpdatedDateTime as string | undefined;
+  const lastUpdatedSubjectId = data?.lastUpdatedUserSubjectId;
 
   return (
     <div className="flex flex-grow flex-row flex-wrap space-y-6">
       <>
-        {!error.isSuccess && <EagerErrorBoundary error={error.error} />}
+        {!errorState.isSuccess && (
+          <EagerErrorBoundary error={errorState.error} />
+        )}
 
-        {releaseQuery.isLoading && <IsLoadingDiv />}
+        {isLoading && <IsLoadingDiv />}
 
-        {releaseQuery.isSuccess && (
+        {isSuccess && (
           <>
             {differenceFromNow(lastUpdated) <= ALERT_RELEASE_EDITED_TIME &&
               lastUpdatedSubjectId !== user?.subjectIdentifier && (
@@ -125,13 +130,11 @@ export const ReleasesMasterPage: React.FC = () => {
 
             {/* NOTE job information will only be returned from the backend where the user is a release
                      administrator - so this section will only appear for admins */}
-            {releaseQuery.data.runningJob && (
+            {data.runningJob && (
               <Box heading="Background Job">
                 <div className="flex justify-start text-gray-500">
                   <span className="text-sm font-medium">
-                    {`Message: ${releaseQuery.data.runningJob.messages.slice(
-                      -1,
-                    )}`}
+                    {`Message: ${data.runningJob.messages.slice(-1)}`}
                   </span>
                 </div>
                 <div className="mb-4 flex justify-between">
@@ -139,16 +142,14 @@ export const ReleasesMasterPage: React.FC = () => {
                     Running
                   </span>
                   <span className="text-sm font-medium text-blue-700">
-                    {releaseQuery.data.runningJob.percentDone.toString()}%
+                    {data.runningJob.percentDone.toString()}%
                   </span>
                 </div>
                 <div className="mb-4 h-2.5 w-full rounded-full bg-gray-200">
                   <div
                     className="h-2.5 rounded-full bg-blue-600"
                     style={{
-                      width:
-                        releaseQuery.data.runningJob.percentDone.toString() +
-                        "%",
+                      width: data.runningJob.percentDone.toString() + "%",
                     }}
                   ></div>
                 </div>
@@ -161,11 +162,11 @@ export const ReleasesMasterPage: React.FC = () => {
                   }
                   disabled={
                     cancelMutate.isPending ||
-                    releaseQuery.data.runningJob.requestedCancellation
+                    data.runningJob.requestedCancellation
                   }
                 >
                   Cancel
-                  {releaseQuery.data.runningJob?.requestedCancellation && (
+                  {data.runningJob?.requestedCancellation && (
                     <span> (in progress)</span>
                   )}
                 </button>

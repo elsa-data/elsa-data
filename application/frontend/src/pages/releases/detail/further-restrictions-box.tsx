@@ -13,7 +13,7 @@ import { axiosPatchOperationMutationFn } from "../queries";
 import { trpc } from "../../../helpers/trpc";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-solid-svg-icons";
-import { ReleaseSizeType } from "@umccr/elsa-types";
+import type { ReleaseSizeType } from "../../../../../backend/src/shared/schemas";
 import { fileSize } from "humanize-plus";
 
 const Stats = ({
@@ -59,17 +59,16 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
-  const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    {
-      onSuccess: (result: ReleaseTypeLocal) =>
-        // we need to cross over into TRPC world to invalidate its cache
-        // eventually we should move this PATCH to TRPC too
-        utils.release.getSpecificRelease.invalidate({
-          releaseKey: releaseKey,
-        }),
-    },
-  );
+  const releasePatchMutate = useMutation({
+    mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
+
+    onSuccess: (result: ReleaseTypeLocal) =>
+      // we need to cross over into TRPC world to invalidate its cache
+      // eventually we should move this PATCH to TRPC too
+      utils.release.getSpecificRelease.invalidate({
+        releaseKey: releaseKey,
+      }),
+  });
 
   const [releaseSize, setReleaseSize] = useState<
     "unknown" | "loading" | ReleaseSizeType
@@ -102,7 +101,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       label={label}
       checked={current}
       disabled={!path || !!releaseData.activation}
-      className={classNames({ "opacity-50": releasePatchMutate.isLoading })}
+      className={classNames({ "opacity-50": releasePatchMutate.isPending })}
       inputClassName={"checkbox-accent"}
       onChange={(e) => {
         if (path) {

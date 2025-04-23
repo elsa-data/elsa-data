@@ -3,7 +3,7 @@ import { UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerCopyOutType } from "../../../../../../backend/src/config/config-schema-sharer";
 import { trpc } from "../../../../helpers/trpc";
-import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type CopyOutAccordionContentProps = {
@@ -22,7 +22,7 @@ type CopyOutAccordionContentProps = {
 export const CopyOutAccordionContent: React.FC<
   PropsWithChildren<CopyOutAccordionContentProps>
 > = (props) => {
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
 
   const copyOutTriggerMutate = trpc.releaseJob.startCopyOut.useMutation({
     onSuccess: async () => {
@@ -61,7 +61,7 @@ export const CopyOutAccordionContent: React.FC<
           defaultValue={
             props.releaseData.dataSharingCopyOut?.destinationLocation
           }
-          disabled={props.releasePatchMutator.isLoading}
+          disabled={props.releasePatchMutator.isPending}
           onBlur={(e) => {
             // only attempt a mutate if we think the textbox has changed
             if (
@@ -99,9 +99,9 @@ export const CopyOutAccordionContent: React.FC<
             // must be activated
             !props.releaseData.activation ||
             // can't be within our own trigger operation
-            copyOutTriggerMutate.isLoading ||
+            copyOutTriggerMutate.isPending ||
             // can't be started whilst other fields are being mutated
-            props.releasePatchMutator.isLoading ||
+            props.releasePatchMutator.isPending ||
             // copy out needs to be working as a mechanism
             props.copyOutWorking
           }
