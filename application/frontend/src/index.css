@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
 
 html,
 body {
@@ -9,51 +8,51 @@ body {
 
 /* Major cards as displayed down the page */
 .card-major {
-  @apply card card-compact static bg-base-100 shadow-lg;
+  @reference card card-compact static bg-base-100 shadow-lg;
 }
 
 .btn-standard-action-trigger-dialog {
-  @apply btn-accent btn-sm btn;
+  @reference btn-accent btn-sm btn;
 }
 
 /* A button in a table column that just navigates somewhere */
 .btn-table-action-navigate {
-  @apply btn-link btn-xs btn no-underline;
+  @reference btn-link btn-xs btn no-underline;
 }
 
 /* A button in a table column that does something destructive */
 .btn-table-action-danger {
-  @apply btn-link btn-xs btn text-error no-underline;
+  @reference btn-link btn-xs btn text-error no-underline;
 }
 
 /* legacy */
 
 .btn-base {
-  @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
+  @reference min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
 }
 
 .btn-normal {
-  @apply btn-base bg-blue-500 text-white;
+  @reference btn-base bg-blue-500 text-white;
 }
 
 .btn-normal:hover {
-  @apply bg-blue-700;
+  @reference bg-blue-700;
 }
 
 .btn-danger {
-  @apply btn-base bg-red-500 text-white;
+  @reference btn-base bg-red-500 text-white;
 }
 
 .btn-danger:hover {
-  @apply bg-red-700;
+  @reference bg-red-700;
 }
 
 .btn-warning {
-  @apply btn-base bg-orange-500 text-white;
+  @reference btn-base bg-orange-500 text-white;
 }
 
 .btn-warning:hover {
-  @apply bg-orange-700;
+  @reference bg-orange-700;
 }
 
 .inline-list {
@@ -76,7 +75,7 @@ body {
 input[type="search"],
 input[type="text"],
 textarea {
-  @apply my-2 p-3;
+  @reference my-2 p-3;
 }
 
 /*

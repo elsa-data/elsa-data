@@ -39,6 +39,7 @@ import {
   NOT_AUTHORISED_ROUTE_PART,
   RELEASES_ROUTE_PART,
 } from "../../backend/src/shared/constants-routes";
+import { CopiesDashboardPage } from "./pages/copies-dashboard/copies-dashboard-page";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -209,6 +210,7 @@ export function IndexRouter({ features }: IndexRouterProps) {
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
+          <Route path={`copies`} element={<CopiesDashboardPage />} />
 
           <Route path={`audit-events`} element={<AuditEventsPage />} />
 

@@ -142,6 +142,17 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       )}
                     </li>
                   )}
+                  {user.isAllowedCreateRelease && (
+                    <li className="my-2 md:my-0">
+                      {navLink(
+                        "/copies",
+                        "Copies",
+                        "text-primary",
+                        "border-primary",
+                        "hover:border-primary-focus",
+                      )}
+                    </li>
+                  )}
                   <li className="my-2 md:my-0">
                     {navLink(
                       "/users",

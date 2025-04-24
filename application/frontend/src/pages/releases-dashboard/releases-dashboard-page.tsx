@@ -23,11 +23,17 @@ export const ReleasesDashboardPage: React.FC = () => {
       page: currentPage,
     });
 
+  const { data: copyData, isSuccess: copyIsSuccess } =
+    trpc.copyService.getCopied.useQuery();
+
   useEffect(() => {
     if (isSuccess) {
       setCurrentTotal(data.total);
     }
-  }, [isError, isSuccess]);
+    if (copyIsSuccess) {
+      console.log(copyData);
+    }
+  }, [isError, isSuccess, copyIsSuccess]);
 
   const queryData = data?.data;
 
