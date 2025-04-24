@@ -26,26 +26,27 @@ export const CopiesDashboardPage: React.FC = () => {
 
         {copyIsSuccess && copyData && (
           <>
-            <table className="table-auto">
-              {copyData.map((x: any) => {
-                return (
-                  <tr>
-                    <td
-                      onClick={async () => {
-                        const r = await utils.copyService.getCopiedReport.fetch(
-                          {
-                            executionArn: x.arn,
-                          },
-                        );
-                        setReportState(r);
-                      }}
-                    >
-                      {x.id}
-                    </td>
-                    <td>{x.status}</td>
-                  </tr>
-                );
-              })}
+            <table className="table w-full table-auto">
+              <tbody>
+                {copyData.map((x: any) => {
+                  return (
+                    <tr>
+                      <td
+                        onClick={async () => {
+                          const r =
+                            await utils.copyService.getCopiedReport.fetch({
+                              executionArn: x.arn,
+                            });
+                          setReportState(r);
+                        }}
+                      >
+                        {x.id}
+                      </td>
+                      <td>{x.status}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </table>
           </>
         )}

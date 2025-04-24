@@ -1,58 +1,67 @@
 @import "tailwindcss";
-@plugin "daisyui";
-
-html,
-body {
-  @apply min-h-full;
+@plugin "daisyui" {
+  themes:
+    light --default,
+    cupcake;
 }
+@plugin "@tailwindcss/typography";
 
-/* Major cards as displayed down the page */
-.card-major {
-  @reference card card-compact static bg-base-100 shadow-lg;
-}
+@layer components {
+  @reference "tailwindcss";
 
-.btn-standard-action-trigger-dialog {
-  @reference btn-accent btn-sm btn;
-}
+  html,
+  body {
+    @apply min-h-full;
+  }
 
-/* A button in a table column that just navigates somewhere */
-.btn-table-action-navigate {
-  @reference btn-link btn-xs btn no-underline;
-}
+  /* Major cards as displayed down the page */
+  .card-major {
+    @apply card card-sm static bg-base-100 shadow-lg;
+  }
 
-/* A button in a table column that does something destructive */
-.btn-table-action-danger {
-  @reference btn-link btn-xs btn text-error no-underline;
-}
+  .btn-standard-action-trigger-dialog {
+    @apply btn-accent btn-sm btn;
+  }
 
-/* legacy */
+  /* A button in a table column that just navigates somewhere */
+  .btn-table-action-navigate {
+    @apply btn-link btn-xs btn no-underline;
+  }
 
-.btn-base {
-  @reference min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
-}
+  /* A button in a table column that does something destructive */
+  .btn-table-action-danger {
+    @apply btn-link btn-xs btn text-error no-underline;
+  }
 
-.btn-normal {
-  @reference btn-base bg-blue-500 text-white;
-}
+  /* legacy */
 
-.btn-normal:hover {
-  @reference bg-blue-700;
-}
+  .btn-base {
+    @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25;
+  }
 
-.btn-danger {
-  @reference btn-base bg-red-500 text-white;
-}
+  .btn-normal {
+    @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25 bg-blue-500 text-white;
+  }
 
-.btn-danger:hover {
-  @reference bg-red-700;
-}
+  .btn-normal:hover {
+    @apply bg-blue-700;
+  }
 
-.btn-warning {
-  @reference btn-base bg-orange-500 text-white;
-}
+  .btn-danger {
+    @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25 bg-red-500 text-white;
+  }
 
-.btn-warning:hover {
-  @reference bg-orange-700;
+  .btn-danger:hover {
+    @apply bg-red-700;
+  }
+
+  .btn-warning {
+    @apply min-w-[15em] rounded-xl p-3 font-bold disabled:opacity-25 bg-orange-500 text-white;
+  }
+
+  .btn-warning:hover {
+    @apply bg-orange-700;
+  }
 }
 
 .inline-list {
