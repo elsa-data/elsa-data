@@ -58,7 +58,7 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
   }
 
   private copyServiceResult: CachedLookup = {
-    serviceName: "Copy",
+    serviceName: "copy",
     attributeName: "ARN",
     attributeSecretName: undefined,
   };

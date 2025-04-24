@@ -11,10 +11,12 @@ import { releaseRouter } from "./api/routes/internal-trpc/release/release-router
 import { dacRouter } from "./api/routes/internal-trpc/dac-router";
 import { auditEventRouter } from "./api/routes/internal-trpc/audit-event-router";
 import { sharerRouter } from "./api/routes/internal-trpc/sharer-router";
+import { copyServiceRouter } from "./api/routes/internal-trpc/copy-service-router";
 
 export const appRouter = router({
-  dac: dacRouter,
   auditEventRouter: auditEventRouter,
+  copyService: copyServiceRouter,
+  dac: dacRouter,
   datasetRouter: datasetRouter,
   manifest: manifestRouter,
   release: releaseRouter,
