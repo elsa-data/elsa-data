@@ -1,14 +1,8 @@
-import { readFile } from "fs/promises";
-import { resolve } from "path";
 import { FastifyReply } from "fastify";
-import { template } from "lodash";
 import { existsSync } from "fs";
-import axios from "axios";
-import * as fs from "fs";
-import * as tar from "tar-stream";
-import gunzip from "gunzip-maybe";
-import { promisify } from "util";
-import * as stream from "stream";
+import { readFile } from "fs/promises";
+import { template } from "lodash";
+import { resolve } from "path";
 
 /**
  * Finds the location of the already built React/Vue/HTML website that we want to

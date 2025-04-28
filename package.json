@@ -25,8 +25,12 @@
     "start:watch:linux": "npm run frontend && npm run edgetypes && npm run backend:watch:linux",
     "start:watch:aws": "npm run frontend && npm run edgetypes && npm run backend:watch:aws"
   },
+  "simple-git-hooks": {
+    "pre-commit": "cd application/backend; bunx pretty-quick --staged"
+  },
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
-    "run-script-os": "^1.1.6"
+    "npm-run-all": "4.1.5",
+    "run-script-os": "1.1.6",
+    "simple-git-hooks": "2.13.0"
   }
 }

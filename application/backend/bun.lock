@@ -83,6 +83,7 @@
         "qs": "6.13.1",
         "randomstring": "1.3.0",
         "reflect-metadata": "0.2.2",
+        "simple-git-hooks": "^2.13.0",
         "tar-stream": "3.1.7",
         "temp": "0.9.4",
         "tsyringe": "4.8.0",
@@ -1587,6 +1588,8 @@
     "side-channel": ["side-channel@1.0.6", "", { "dependencies": { "call-bind": "^1.0.7", "es-errors": "^1.3.0", "get-intrinsic": "^1.2.4", "object-inspect": "^1.13.1" } }, "sha512-fDW/EZ6Q9RiO8eFG8Hj+7u/oW+XrPTIChwCOM2+th2A6OblDtYYIpve9m+KvI9Z4C9qSEXlaGR6bTEYHReuglA=="],
 
     "signal-exit": ["signal-exit@4.1.0", "", {}, "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw=="],
+
+    "simple-git-hooks": ["simple-git-hooks@2.13.0", "", { "bin": { "simple-git-hooks": "cli.js" } }, "sha512-N+goiLxlkHJlyaYEglFypzVNMaNplPAk5syu0+OPp/Bk6dwVoXF6FfOw2vO0Dp+JHsBaI+w6cm8TnFl2Hw6tDA=="],
 
     "sinon": ["sinon@14.0.2", "", { "dependencies": { "@sinonjs/commons": "^2.0.0", "@sinonjs/fake-timers": "^9.1.2", "@sinonjs/samsam": "^7.0.1", "diff": "^5.0.0", "nise": "^5.1.2", "supports-color": "^7.2.0" } }, ""],
 
