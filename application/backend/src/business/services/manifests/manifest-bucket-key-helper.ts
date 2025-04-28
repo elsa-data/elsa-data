@@ -109,8 +109,12 @@ export async function transformMasterManifestToBucketKeyManifest(
           ),
           artifactId: artifact.id,
           objectType: objectType,
-          objectStoreUrl: file.url,
-          ...decomposeObjectUrlIntoParts(file.url, file.size, file.checksums),
+          objectStoreUrl: file!.url,
+          ...decomposeObjectUrlIntoParts(
+            file!.url,
+            file!.size,
+            file!.checksums,
+          ),
         };
       };
 

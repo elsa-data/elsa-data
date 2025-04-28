@@ -3,7 +3,7 @@ import { Executor } from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
-import { ReleaseDetailType } from "@umccr/elsa-types";
+import type { ReleaseDetailType } from "../../../shared/schemas-releases";
 import { inject, injectable } from "tsyringe";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../releases/release-service";

@@ -4,7 +4,7 @@ import {
   createFile,
   makeSystemlessIdentifierArray,
 } from "../util/test-data-helpers";
-import { DuoLimitationCodedType } from "@umccr/elsa-types";
+import { DuoLimitationCodedType } from "../../shared/schemas-duo";
 import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
 

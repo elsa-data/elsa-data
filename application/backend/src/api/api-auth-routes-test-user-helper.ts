@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "../shared/constants-cookies";
 import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./auth/session-cookie-constants";
 import { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";

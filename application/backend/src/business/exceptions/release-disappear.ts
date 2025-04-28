@@ -1,4 +1,4 @@
-import { Base7807Error } from "@umccr/elsa-types/error-types";
+import { Base7807Error } from "../../shared/error-types";
 
 /**
  * This is a very unlikely event - but one that we are forced to check each time

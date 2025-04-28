@@ -78,7 +78,7 @@ export function australianGenomicsDacRedcapToDuoString(
 /**
  * The CSV fields exported from the Australian Genomics Redcap DAC
  */
-export interface AustraliaGenomicsDacRedcap {
+export type AustraliaGenomicsDacRedcap = {
   // Application number
   daf_num: string; //"2";
 
@@ -237,4 +237,4 @@ export interface AustraliaGenomicsDacRedcap {
   daf_pi_institution: string; //"";
   daf_pi_institution_same: string; //"Yes";
   daf_pi_name: string; //"Christina Yang";
-}
+};

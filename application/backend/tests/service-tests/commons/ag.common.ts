@@ -1,5 +1,5 @@
 import { storage } from "../../../dbschema/interfaces";
-import { MergedManifestMetadataType } from "../../../src/business/services/australian-genomics/s3-index-import-service";
+import { MergedManifestMetadataType } from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
 
 /**
  * Will declare some mock test data here

@@ -44,7 +44,7 @@ export async function awsListObjects(
         const key = objContent.Key;
 
         s3ObjectList.push({
-          s3Url: `s3://${bucketName}/${key}` ?? "",
+          s3Url: `s3://${bucketName}/${key}`,
           eTag: objContent.ETag ?? "",
           size: objContent.Size ?? 0,
         });

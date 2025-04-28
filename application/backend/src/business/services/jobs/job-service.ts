@@ -2,21 +2,24 @@ import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
-import { ReleaseDetailType, ReleasePreviousJobType } from "@umccr/elsa-types";
+import type {
+  ReleaseDetailType,
+  ReleasePreviousJobType,
+} from "../../../shared/schemas-releases";
 import { inject, injectable } from "tsyringe";
 import { differenceInSeconds } from "date-fns";
 import { SelectService } from "../select-service";
 import { ReleaseService } from "../releases/release-service";
 import { Transaction } from "gel/dist/transaction";
 import { AuditEventService } from "../audit-event-service";
-import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
+// import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
 import { jobAsType } from "./job-helpers";
 import {
   createPagedResult,
   PagedResult,
 } from "../../../api/helpers/pagination-helpers";
 import _ from "lodash";
+import { Base7807Error } from "../../../shared/error-types";
 
 export class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseKey: string) {
@@ -147,6 +150,8 @@ export class JobService {
         tx,
       );
 
+      // MADE CHANGES BELOW TO FIX COMPILE BUG - THIS WILL NOT WORK
+      // NEEDS TO BE REWRITTEN ANYHOW
       // create a new select job entry
       await e
         .insert(e.job.SelectJob, {
@@ -155,8 +160,8 @@ export class JobService {
           started: e.datetime_current(),
           percentDone: e.int16(0),
           messages: e.literal(e.array(e.str), ["Created"]),
-          initialTodoCount: e.count(releaseAllDatasetCasesQuery),
-          todoQueue: releaseAllDatasetCasesQuery,
+          initialTodoCount: 0, // e.count(releaseAllDatasetCasesQuery),
+          todoQueue: e.set(), // releaseAllDatasetCasesQuery,
           selectedSpecimens: e.set(),
           auditEntry: e
             .select(e.audit.ReleaseAuditEvent, (ae) => ({
@@ -287,10 +292,10 @@ export class JobService {
         for (const cas of casesFromQueue) {
           for (const pat of cas.patients || []) {
             for (const spec of pat.specimens || []) {
-              const r = await vcfArtifactUrlsBySpecimenQuery.run(tx, {
-                specimenId: spec.id,
-              });
               // TODO: fix this
+              //const r = await vcfArtifactUrlsBySpecimenQuery.run(tx, {
+              //  specimenId: spec.id,
+              //});
               // [
               //   {
               //     vcfs: [
@@ -301,12 +306,12 @@ export class JobService {
               // ]
               let vcf = undefined,
                 index = undefined;
-              if (r && r.length > 0) {
-                if (r[0].vcfs && r[0].vcfs.length === 2) {
-                  vcf = r[0].vcfs[0];
-                  index = r[0].vcfs[1];
-                }
-              }
+              //if (r && r.length > 0) {
+              //  if (r[0].vcfs && r[0].vcfs.length === 2) {
+              //    vcf = r[0].vcfs[0];
+              //    index = r[0].vcfs[1];
+              //  }
+              // }
 
               if (
                 await this.selectService.isSelectable(

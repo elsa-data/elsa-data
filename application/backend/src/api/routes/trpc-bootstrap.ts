@@ -16,9 +16,8 @@ import { currentPageSize } from "../helpers/pagination-helpers";
 import { ReleaseDataEgressService } from "../../business/services/releases/release-data-egress-service";
 import { AwsAccessPointService } from "../../business/services/sharers/aws-access-point/aws-access-point-service";
 import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
+import { Base7807Error } from "../../shared/error-types";
 import { DatasetService } from "../../business/services/dataset-service";
-import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
 import { ReleaseSelectionService } from "../../business/services/releases/release-selection-service";
 import { DacService } from "../../business/services/dacs/dac-service";
 import { AuditEventService } from "../../business/services/audit-event-service";
@@ -123,7 +122,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       jobCopyOutService: ctx.container.resolve(JobCopyOutService),
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
-      agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
+      //      agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
       sharerService: ctx.container.resolve(SharerService),
       ...ctx,
     },

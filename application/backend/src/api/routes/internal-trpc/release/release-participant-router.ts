@@ -13,7 +13,7 @@ import {
   ReleaseParticipantRoleType,
   ReleaseParticipantRole,
   ReleaseParticipantRoleConst,
-} from "@umccr/elsa-types";
+} from "../../../../shared/schemas-releases";
 
 /**
  * RPC for release participants

@@ -12,7 +12,7 @@ repos:
     hooks:
       - id: prettier
         additional_dependencies:
-          - prettier-plugin-tailwindcss
+          - prettier-plugin-organize-imports
 
   - repo: https://github.com/yelp/detect-secrets
     rev: v1.4.0

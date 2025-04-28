@@ -1,7 +1,7 @@
-import type { ElsaSettings } from "../../config/elsa-settings";
-import { inject, injectable } from "tsyringe";
-import type { Logger } from "pino";
 import maxmind, { CityResponse, Reader } from "maxmind";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import type { ElsaSettings } from "../../config/elsa-settings";
 
 export type LocationType = {
   country?: string;

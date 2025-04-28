@@ -11,7 +11,6 @@ import {
   unorderedInputPaginationParameter,
 } from "../input-schemas-common";
 import { PagedResult } from "../../../helpers/pagination-helpers";
-import { ReleaseCaseType } from "@umccr/elsa-types";
 
 const htsgetRestriction = z.object({
   restriction: z.union([

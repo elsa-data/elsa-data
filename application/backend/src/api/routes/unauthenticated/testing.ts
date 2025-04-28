@@ -1,7 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { Base7807Error } from "@umccr/elsa-types/error-types";
-import { testingRequestValidate } from "../../../validators/validate-json";
-import { ApiRequestValidationError } from "../../errors/api-request-validation-error";
+import { Base7807Error } from "../../../shared/error-types";
 
 /**
  * Routes that exist mainly for use in very specific dev integration testing (do errors
@@ -40,7 +38,7 @@ export const testingDevRoutes = async (fastify: FastifyInstance) => {
     reply.send(val);
   });
 
-  fastify.post(
+  /*fastify.post(
     "/testing/post-api-validation",
     {},
     async function (request, reply) {
@@ -51,5 +49,5 @@ export const testingDevRoutes = async (fastify: FastifyInstance) => {
         throw new ApiRequestValidationError(testingRequestValidate.errors!);
       }
     },
-  );
+  ); */
 };

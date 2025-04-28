@@ -1,7 +1,7 @@
 import {
   S3IndexApplicationService,
   FileGroupType,
-} from "../../../src/business/services/australian-genomics/s3-index-import-service";
+} from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
 import { S3Client } from "@aws-sdk/client-s3";
 import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";

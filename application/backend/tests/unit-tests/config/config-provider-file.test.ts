@@ -3,8 +3,8 @@ import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-schem
 import { promises as fs } from "fs";
 import * as path from "path";
 
-const FOLDER1_RELATIVE = "./tests/unit-tests/config/folder1";
-const FOLDER2_RELATIVE = "./tests/unit-tests/config/folder2";
+const FOLDER1_RELATIVE = "./config/folder1";
+const FOLDER2_RELATIVE = "./config/folder2";
 
 it("basic config file loads from a single relative folder path", async () => {
   process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = FOLDER1_RELATIVE;
@@ -47,9 +47,13 @@ it("non-existent config file throws Error from a single relative folder path", a
 
   const pf = new ProviderFile([{ type: "string", value: "dontexist" }]);
 
-  await expect(async () => {
+  const testCall = async () => {
     await pf.getConfig();
-  }).rejects.toThrow("was not found in any of the configuration folders");
+  };
+
+  await expect(testCall()).rejects.toThrow(
+    "was not found in any of the configuration folders",
+  );
 });
 
 it("trying to use relative file paths won't find a config (same as non-existent)", async () => {
@@ -72,18 +76,21 @@ it("trying to use relative file paths won't find a config (same as non-existent)
       { type: "string", value: "../folder2/only2" },
     ]);
 
-    // and now it doesn't exist
-    await expect(async () => {
+    const testCall = async () => {
       await pf.getConfig();
-    }).rejects.toThrow("was not found in any of the configuration folders");
+    };
+
+    // and now it doesn't exist
+    await expect(testCall()).rejects.toThrow(
+      "was not found in any of the configuration folders",
+    );
   }
 });
 
 it("change the ordering of two different folders to see the different files loaded (first/left most wins)", async () => {
   {
-    process.env[
-      CONFIG_FOLDERS_ENVIRONMENT_VAR
-    ] = `${FOLDER1_RELATIVE}${path.delimiter}${FOLDER2_RELATIVE}`;
+    process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+      `${FOLDER1_RELATIVE}${path.delimiter}${FOLDER2_RELATIVE}`;
 
     const pf = new ProviderFile([{ type: "string", value: "test1" }]);
     const config = await pf.getConfig();
@@ -92,9 +99,8 @@ it("change the ordering of two different folders to see the different files load
   }
 
   {
-    process.env[
-      CONFIG_FOLDERS_ENVIRONMENT_VAR
-    ] = `${FOLDER2_RELATIVE}${path.delimiter}${FOLDER1_RELATIVE}`;
+    process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+      `${FOLDER2_RELATIVE}${path.delimiter}${FOLDER1_RELATIVE}`;
 
     const pf = new ProviderFile([{ type: "string", value: "test1" }]);
     const config = await pf.getConfig();
@@ -104,13 +110,14 @@ it("change the ordering of two different folders to see the different files load
 });
 
 it("duplicate listing of a folder is an error", async () => {
-  process.env[
-    CONFIG_FOLDERS_ENVIRONMENT_VAR
-  ] = `${FOLDER1_RELATIVE}${path.delimiter}${FOLDER2_RELATIVE}${path.delimiter}${FOLDER1_RELATIVE}`;
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
+    `${FOLDER1_RELATIVE}${path.delimiter}${FOLDER2_RELATIVE}${path.delimiter}${FOLDER1_RELATIVE}`;
 
   const pf = new ProviderFile([{ type: "string", value: "test1" }]);
 
-  await expect(async () => {
+  const testCall = async () => {
     await pf.getConfig();
-  }).rejects.toThrow("folder we have already had listed");
+  };
+
+  await expect(testCall()).rejects.toThrow("folder we have already had listed");
 });

@@ -7,7 +7,7 @@ import { isString } from "lodash";
 import { stringify } from "csv-stringify";
 import { Readable } from "stream";
 import streamConsumers from "node:stream/consumers";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types";
+import { ObjectStoreRecordKey } from "../../../shared/schemas";
 
 const S3_PREFIX = "s3://";
 const GS_PREFIX = "gs://";

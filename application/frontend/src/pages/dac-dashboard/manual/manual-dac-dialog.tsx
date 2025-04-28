@@ -4,7 +4,7 @@ import Select from "react-select";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { ReleaseManualType } from "../../../../../backend/src/shared/schemas";
+import type { ReleaseManualType } from "../../../../../backend/src/shared/schemas";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { ErrorBoundary } from "../../../components/errors";
 import { RhRadioItem, RhRadios } from "../../../components/rh/rh-radios";

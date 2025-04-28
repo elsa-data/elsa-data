@@ -24,10 +24,10 @@ import {
 import e from "../../../../dbschema/edgeql-js";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
-import {
+import type {
   ReleaseParticipantRoleType,
   ReleaseParticipantType,
-} from "@umccr/elsa-types";
+} from "../../../shared/schemas-releases";
 import {
   createPagedResult,
   PagedResult,

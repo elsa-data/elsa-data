@@ -1,11 +1,11 @@
 import * as gel from "gel";
 import { Executor } from "gel";
 import e from "../../../../dbschema/edgeql-js";
-import {
+import type {
   ReleaseDetailType,
   ReleaseManualType,
   ReleaseSummaryType,
-} from "@umccr/elsa-types";
+} from "../../../shared/schemas-releases";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { PagedResult } from "../../../api/helpers/pagination-helpers";
 import { getReleaseInfo } from "../helpers";

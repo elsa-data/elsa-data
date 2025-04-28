@@ -75,8 +75,8 @@ export const DuoNotForProfitUseOnlySchema = Type.Object({
 
 export const DuoTimeSpecificSchema = Type.Object({
   code: Type.Literal("DUO:0000025"), // TS
-  start: Type.Optional(Type.RegExp(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
-  end: Type.Optional(Type.RegExp(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
+  start: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
+  end: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
 });
 
 export type DuoGeographicalRestrictionType = Static<

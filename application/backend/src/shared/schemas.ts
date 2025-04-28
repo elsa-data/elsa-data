@@ -97,12 +97,3 @@ export const RemsApprovedApplicationSchema = Type.Object({
 export type RemsApprovedApplicationType = Static<
   typeof RemsApprovedApplicationSchema
 >;
-
-export * from "./schemas-audit";
-export * from "./schemas-application-coded";
-export * from "./schemas-coding";
-export * from "./schemas-duo";
-export * from "./schemas-dataset";
-export * from "./schemas-release-operations";
-export * from "./schemas-releases";
-export * from "./schemas-users";

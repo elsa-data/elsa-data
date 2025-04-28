@@ -369,8 +369,8 @@ describe("edgedb audit entry tests", () => {
     expect(userAdmin).toBeDefined();
 
     await updateUserAuditEvents(edgeDbClient, {
-      subjectId: userAdmin!.subjectId,
-      whoDisplayName: userAdmin!.displayName,
+      subjectId: userAdmin[0].subjectId,
+      whoDisplayName: userAdmin[0].displayName,
       actionDescription: "description",
       details: {
         role: "Administrator",
@@ -389,7 +389,7 @@ describe("edgedb audit entry tests", () => {
       .run(edgeDbClient);
 
     expect(updatedUser).toBeDefined();
-    expect(updatedUser!.userAuditEvent[0].details).toStrictEqual({
+    expect(updatedUser[0].userAuditEvent[0].details).toStrictEqual({
       role: "Administrator",
       releaseKey: "R002",
     });

@@ -7,10 +7,10 @@ import {
   createPagedResult,
   PagedResult,
 } from "../../api/helpers/pagination-helpers";
-import {
+import type {
   PotentialUserSummaryType,
   UserSummaryType,
-} from "@umccr/elsa-types/schemas-users";
+} from "../../shared/schemas-users";
 import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   NonExistentUser,
@@ -33,9 +33,9 @@ import {
   userUpdatePermissions,
 } from "../../../dbschema/queries";
 import { IPLookupService, LocationType } from "./ip-lookup-service";
-import { ReleaseParticipantRoleType } from "@umccr/elsa-types";
 import { UserData } from "../data/user-data";
 import { AuditEventService } from "./audit-event-service";
+import { ReleaseParticipantRoleType } from "../../shared/schemas-releases";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;

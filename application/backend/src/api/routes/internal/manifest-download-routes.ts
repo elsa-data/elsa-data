@@ -1,14 +1,14 @@
 import { FastifyInstance } from "fastify";
-import {
-  ReleasePresignRequestSchema,
-  ReleasePresignRequestType,
-} from "@umccr/elsa-types";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 import { DependencyContainer } from "tsyringe";
 import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
 import { S3ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
+import {
+  ReleasePresignRequestSchema,
+  ReleasePresignRequestType,
+} from "../../../shared/schemas";
 
 /**
  * We want to allow manifests to be downloaded with kind of native browser

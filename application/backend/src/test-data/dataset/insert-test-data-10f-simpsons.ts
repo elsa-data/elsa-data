@@ -15,7 +15,7 @@ import {
   DuoHealthMedicalBiomedicalResearchType,
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
-} from "@umccr/elsa-types";
+} from "../../shared/schemas-duo";
 import type { ElsaSettings } from "../../config/elsa-settings";
 import { DependencyContainer } from "tsyringe";
 

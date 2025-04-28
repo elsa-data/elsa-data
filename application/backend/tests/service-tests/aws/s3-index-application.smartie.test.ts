@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { mockClient } from "aws-sdk-client-mock";
 import { S3Client } from "@aws-sdk/client-s3";
 import { registerTypes } from "../../test-dependency-injection.common";
-import { S3IndexApplicationService } from "../../../src/business/services/australian-genomics/s3-index-import-service";
+import { S3IndexApplicationService } from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { beforeEachCommon } from "../commons/user.common";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
@@ -73,8 +73,8 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
 
     const findPatientById = (id: string) => {
       const casesWithPatient = datasetSummary?.cases.filter((a) => {
-        return a.patients.find(
-          (p) => p.externalIdentifiers?.map((e) => e.value).includes(id),
+        return a.patients.find((p) =>
+          p.externalIdentifiers?.map((e) => e.value).includes(id),
         );
       });
 
@@ -83,8 +83,8 @@ describe("Test our Smartie dataset loaded via an S3 mocking layer", () => {
           "There were multiple cases containing the same patient id OR no cases containing the patient id",
         );
 
-      return casesWithPatient[0].patients.find(
-        (p) => p.externalIdentifiers?.map((e) => e.value).includes(id),
+      return casesWithPatient[0].patients.find((p) =>
+        p.externalIdentifiers?.map((e) => e.value).includes(id),
       );
     };
 

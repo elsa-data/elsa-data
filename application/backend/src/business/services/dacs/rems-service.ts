@@ -3,7 +3,6 @@ import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
 import e from "../../../../dbschema/edgeql-js";
 import { inject, injectable } from "tsyringe";
 import axios from "axios";
-import { RemsApprovedApplicationType } from "@umccr/elsa-types";
 import { UserService } from "../user-service";
 import { AuthenticatedUser } from "../../authenticated-user";
 import type { ElsaSettings } from "../../../config/elsa-settings";
@@ -25,6 +24,7 @@ import {
   insertPotentialOrReal,
 } from "../_dac-user-helper";
 import { AuditEventService } from "../audit-event-service";
+import { RemsApprovedApplicationType } from "../../../shared/schemas";
 @injectable()
 export class RemsService {
   constructor(

@@ -29,7 +29,7 @@ import { insertRelease5 } from "../release/insert-test-data-release5";
 import { blankTestData } from "../util/blank-test-data";
 import { insertUser4 } from "../user/insert-user4";
 import { DatasetService } from "../../business/services/dataset-service";
-import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service";
+// import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service.xts";
 import { UserService } from "../../business/services/user-service";
 import { insertUser5 } from "../user/insert-user5";
 import {
@@ -88,7 +88,7 @@ export async function insertScenario1(dc: DependencyContainer) {
     throw new Error("Basic scenario users are missing");
 
   // Create datasets record
-  const s3IndexService = dc.resolve(S3IndexApplicationService);
+  // const s3IndexService = dc.resolve(S3IndexApplicationService);
 
   // because this dataset *only* exists as a set of mocks for AWS - if we actually want
   // to do localhost dev in AWS (so no mocks) we need to not load this
@@ -106,10 +106,10 @@ export async function insertScenario1(dc: DependencyContainer) {
         })
         .run(edgeDbClient);
 
-      await s3IndexService.syncWithDatabaseFromDatasetUri(
-        SMARTIE_URI,
-        SMARTIE_DATASET_CONFIG,
-      );
+      //await s3IndexService.syncWithDatabaseFromDatasetUri(
+      //  SMARTIE_URI,
+      //  SMARTIE_DATASET_CONFIG,
+      //);
     }
   }
 

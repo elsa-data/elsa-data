@@ -17,7 +17,7 @@ export class PhenopacketsService {
   ): Promise<Uint8Array> {
     throw new Error("Not implemented");
 
-    const patient = await e
+    /*const patient = await e
       .select(e.dataset.DatasetPatient, (dp) => ({
         ...e.dataset.DatasetPatient["*"],
         specimens: {
@@ -47,5 +47,7 @@ export class PhenopacketsService {
 
     return Phenopacket.encode(message).finish();
     // let decoded = Phenopacket.decode(buffer);
+
+     */
   }
 }

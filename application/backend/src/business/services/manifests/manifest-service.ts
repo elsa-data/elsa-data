@@ -18,15 +18,12 @@ import {
 import archiver, { ArchiverOptions } from "archiver";
 import { ReleaseService } from "../releases/release-service";
 import { AuthenticatedUser } from "../../authenticated-user";
-import {
-  ObjectStoreRecordKey,
-  ReleaseSizeType,
-} from "@umccr/elsa-types/schemas";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
 import { getReleaseInfo } from "../helpers";
 import { PermissionService } from "../permission-service";
+import { ObjectStoreRecordKey, ReleaseSizeType } from "../../../shared/schemas";
 
 @injectable()
 export class ManifestService {

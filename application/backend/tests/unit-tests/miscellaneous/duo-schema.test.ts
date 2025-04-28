@@ -1,4 +1,7 @@
-import { DuoLimitationCodedType, DuoLimitationSchema } from "@umccr/elsa-types";
+import {
+  DuoLimitationCodedType,
+  DuoLimitationSchema,
+} from "../../../src/shared/schemas-duo";
 import addFormats from "ajv-formats";
 import Ajv from "ajv/dist/2019";
 

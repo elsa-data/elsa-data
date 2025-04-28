@@ -1,9 +1,9 @@
-import e from "../../../dbschema/edgeql-js";
 import { Executor } from "gel";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UserService } from "./user-service";
 import { ReleaseDisappearedError } from "../exceptions/release-disappear";
 import { Transaction } from "gel/dist/transaction";
+import e from "../../../dbschema/edgeql-js";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate
@@ -48,11 +48,11 @@ export async function doRoleInReleaseCheck(
  * Do a 'lite' fetch of the information about the given release and return it in a format
  * that is useful and friendly for the caller (i.e. ids -> JS Set())
  *
- * @param edgeDbClient an edgedb client
+ * @param gelClient a gel client
  * @param releaseKey the release to load
  */
 export async function getReleaseInfo(
-  edgeDbClient: Executor | Transaction,
+  gelClient: Executor | Transaction,
   releaseKey: string,
 ) {
   // the base (id only) query that will give us just the release
@@ -90,7 +90,7 @@ export async function getReleaseInfo(
     })),
   }));
 
-  const releaseInfo = await releaseInfoQuery.run(edgeDbClient);
+  const releaseInfo = await releaseInfoQuery.run(gelClient);
 
   if (!releaseInfo) throw new ReleaseDisappearedError(releaseKey);
 
@@ -126,16 +126,16 @@ export async function getReleaseInfo(
   );
 
   return {
-    releaseQuery,
-    releaseSelectedSpecimensQuery,
-    releaseInfo,
-    releaseInfoQuery,
-    datasetIdToUriMap,
-    datasetUriToIdMap,
-    releaseAllDatasetIdDbSet,
-    releaseAllDatasetQuery,
-    releaseAllDatasetCasesQuery,
-    releaseSelectedCasesQuery,
+    releaseQuery: releaseQuery,
+    releaseSelectedSpecimensQuery: releaseSelectedSpecimensQuery,
+    releaseInfo: releaseInfo,
+    releaseInfoQuery: releaseInfoQuery,
+    datasetIdToUriMap: datasetIdToUriMap,
+    datasetUriToIdMap: datasetUriToIdMap,
+    releaseAllDatasetIdDbSet: releaseAllDatasetIdDbSet,
+    releaseAllDatasetQuery: releaseAllDatasetQuery,
+    releaseAllDatasetCasesQuery: releaseAllDatasetQuery,
+    releaseSelectedCasesQuery: releaseSelectedCasesQuery,
   };
 }
 
