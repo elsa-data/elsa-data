@@ -1,6 +1,8 @@
 name: Tests
 
-on: push
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   test:
@@ -9,7 +11,7 @@ jobs:
 
     # run an Gel database in the background that will be connected to from our app
     services:
-      edgedb:
+      gel:
         image: geldata/gel:6.5
         env:
           GEL_SERVER_SECURITY: insecure_dev_mode
@@ -22,6 +24,7 @@ jobs:
       GEL_DSN: gel://localhost:5656
 
     steps:
+      # get the code
       - uses: actions/checkout@v4
 
       # install software we will use
