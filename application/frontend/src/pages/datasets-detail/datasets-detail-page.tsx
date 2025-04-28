@@ -29,7 +29,7 @@ export const DatasetsDetailPage: React.FC = () => {
     ".",
   );
 
-  const datasetQuery = trpc.datasetRouter.getSingleDataset.useQuery(
+  const datasetQuery = trpc.dataset.getSingleDataset.useQuery(
     {
       datasetUri: datasetUri,
     },

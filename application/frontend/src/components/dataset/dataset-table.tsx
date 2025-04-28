@@ -31,7 +31,7 @@ export const DatasetTable: React.FC = ({}) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const datasetQuery = trpc.datasetRouter.getAllDataset.useQuery(
+  const datasetQuery = trpc.dataset.getAllDataset.useQuery(
     {
       page: currentPage,
     },

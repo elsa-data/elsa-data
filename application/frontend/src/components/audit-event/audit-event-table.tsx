@@ -319,12 +319,12 @@ export const useAuditEventQuery = (
   };
 
   if (type === "AuditEvent") {
-    return trpc.auditEventRouter.getAuditEvent.useQuery(
+    return trpc.auditEvent.getAuditEvent.useQuery(
       { ...query, filter: includeEvents },
       options,
     );
   } else {
-    return trpc.auditEventRouter.getReleaseAuditEvent.useQuery(
+    return trpc.auditEvent.getReleaseAuditEvent.useQuery(
       { ...query, releaseKey: type.releaseKey },
       options,
     );
