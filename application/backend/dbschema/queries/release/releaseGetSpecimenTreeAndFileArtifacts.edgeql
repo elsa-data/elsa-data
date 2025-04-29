@@ -56,13 +56,13 @@ select {
                   externalIdentifiers,
                   sampleType
                 }
-                filter dataset::DatasetSpecimen in selected
+                filter any(dataset::DatasetSpecimen in selected)
               }
               # this filter is needed otherwise we end up with 'empty' patients
-              filter .specimens in selected,
+              filter any(.specimens in selected),
            }
            # this filter is needed otherwise we end up with 'empty' cases
-           filter .patients.specimens in selected
+           filter any(.patients.specimens in selected)
 
            # the order is not particularly important but we would like it
            # to be at least somewhat stable

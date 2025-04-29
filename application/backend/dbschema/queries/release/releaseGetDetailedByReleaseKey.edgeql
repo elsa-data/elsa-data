@@ -3,9 +3,9 @@
 select assert_single((
   select release::Release{
     *,
-    dataSharingConfiguration: { * }
-    applicationCoded: { * }
-    runningJob: { * }
+    dataSharingConfiguration: { * },
+    applicationCoded: { * },
+    runningJob: { * },
     activation: { * }
   }
   filter
