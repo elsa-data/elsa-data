@@ -1,9 +1,5 @@
-import React, { useCallback, useRef, useState } from "react";
-import {
-  faCheck,
-  faSpinner,
-  faUserPlus,
-} from "@fortawesome/free-solid-svg-icons";
+import { useCallback, useRef, useState } from "react";
+import { faCheck, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   EagerErrorBoundary,
@@ -52,7 +48,7 @@ export const InvitePotentialUser = () => {
     setIsDialogOpen(false);
   };
 
-  const isLoadingMutate = invitePotentialUser.isLoading;
+  const isLoadingMutate = invitePotentialUser.isPending;
 
   const onInvite = useCallback(() => {
     invitePotentialUser.mutate({

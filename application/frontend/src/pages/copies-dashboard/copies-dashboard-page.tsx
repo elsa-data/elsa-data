@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box } from "../../components/boxes";
 import { trpc } from "../../helpers/trpc";
 import { IsLoadingDiv } from "../../components/is-loading-div";
+import classNames from "classnames";
+import { useNavigate } from "react-router-dom";
 
 export const CopiesDashboardPage: React.FC = () => {
-  const utils = trpc.useUtils();
+  const navigate = useNavigate();
 
   const {
     data: copyData,
     isSuccess: copyIsSuccess,
     isPending: copyIsPending,
   } = trpc.copyService.getCopied.useQuery();
-
-  const [reportState, setReportState] = useState("");
-
-  useEffect(() => {
-    if (copyIsSuccess) {
-    }
-  }, [copyIsSuccess]);
 
   return (
     <>
@@ -31,18 +26,18 @@ export const CopiesDashboardPage: React.FC = () => {
                 {copyData.map((x: any) => {
                   return (
                     <tr>
-                      <td
-                        onClick={async () => {
-                          const r =
-                            await utils.copyService.getCopiedReport.fetch({
-                              executionArn: x.arn,
-                            });
-                          setReportState(r);
-                        }}
-                      >
-                        {x.id}
-                      </td>
+                      <td>{x.id}</td>
                       <td>{x.status}</td>
+                      <td className="text-right">
+                        <button
+                          className={classNames("btn-table-action-navigate")}
+                          onClick={async () => {
+                            navigate(encodeURIComponent(x.arn));
+                          }}
+                        >
+                          view
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -50,9 +45,6 @@ export const CopiesDashboardPage: React.FC = () => {
             </table>
           </>
         )}
-      </Box>
-      <Box heading="Report">
-        <pre>{JSON.stringify(reportState, null, 2)}</pre>
       </Box>
     </>
   );

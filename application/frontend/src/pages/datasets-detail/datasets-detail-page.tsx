@@ -1,21 +1,18 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { DatasetCaseType } from "@umccr/elsa-types";
+import { DatasetCaseType } from "../../../../backend/src/shared/schemas-dataset";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
-import { ConsentPopup } from "../releases/detail/cases-box/consent-popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMale, faFemale, faRotate } from "@fortawesome/free-solid-svg-icons";
+import { faFemale, faMale } from "@fortawesome/free-solid-svg-icons";
 import ConsentSummary from "../releases/detail/cases-box/consent-summary";
 import { trpc } from "../../helpers/trpc";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { isNil } from "lodash";
-import { useQueryClient } from "@tanstack/react-query";
 import { Table } from "../../components/tables";
-import { useLoggedInUser } from "../../providers/logged-in-user-provider";
 
 type DatasetsSpecificPageParams = {
   datasetUri: string;

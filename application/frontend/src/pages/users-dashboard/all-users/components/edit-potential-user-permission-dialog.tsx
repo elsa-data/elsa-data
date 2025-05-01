@@ -62,7 +62,7 @@ export const EditPotentialUserPermissionDialog: React.FC<{
       },
     });
 
-  const isLoadingMutatePermission = changeUserPermissionMutate.isLoading;
+  const isLoadingMutatePermission = changeUserPermissionMutate.isPending;
 
   return (
     <>

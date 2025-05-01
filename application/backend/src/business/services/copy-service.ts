@@ -1,14 +1,21 @@
-import * as gel from "gel";
-import { inject, injectable, singleton } from "tsyringe";
-import type { ElsaSettings } from "../../config/elsa-settings";
-import { AwsDiscoveryService } from "./aws/aws-discovery-service";
+import { S3Client } from "@aws-sdk/client-s3";
 import {
   DescribeExecutionCommand,
   ExecutionStatus,
   paginateListExecutions,
   SFNClient,
 } from "@aws-sdk/client-sfn";
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import * as gel from "gel";
+import { LRUCache } from "lru-cache";
+import { inject, injectable, singleton } from "tsyringe";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
+import type { ElsaSettings } from "../../config/elsa-settings";
+import { CopyInvokeEntryType } from "../../shared/schemas-copier";
+import { AwsDiscoveryService } from "./aws/aws-discovery-service";
+import { getCopierMapRunManifestEntries } from "./copy-service-helpers";
 
 export type Copied = {
   id: string;
@@ -16,19 +23,24 @@ export type Copied = {
   status: string;
 };
 
-export type DistributedMapManifest = {
-  DestinationBucket: string;
-  MapRunArn: string;
-  ResultFiles: {
-    FAILED: { Key: string; Size: number }[];
-    PENDING: { Key: string; Size: number }[];
-    SUCCEEDED: { Key: string; Size: number }[];
-  };
+export type CopySummaryEntry = CopyInvokeEntryType;
+
+export type CopySummaryHeader = {
+  overallError?: string;
+  timeTakenSeconds: number;
+  totalBytesTransferred: number;
+};
+
+export type CopySummary = {
+  header: CopySummaryHeader;
+  entries: CopySummaryEntry[];
 };
 
 @injectable()
 @singleton()
 export class CopyService {
+  private readonly cache: LRUCache<string, CopySummary>;
+
   constructor(
     @inject("Database") private readonly gelClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
@@ -36,7 +48,13 @@ export class CopyService {
     @inject("SFNClient") private readonly sfnClient: SFNClient,
     @inject(AwsDiscoveryService)
     private readonly awsDiscoveryService: AwsDiscoveryService,
-  ) {}
+  ) {
+    this.cache = new LRUCache<string, CopySummary>({
+      max: 500,
+      // how long to live in ms
+      ttl: 1000 * 60 * 15,
+    });
+  }
 
   public async getCopied() {
     const stateMachineArn =
@@ -71,7 +89,146 @@ export class CopyService {
     return results;
   }
 
-  public async getCopiedReport(copiedExecutionArn: string) {
+  public async getCopySummaryHeader(copiedExecutionArn: string) {
+    const summary =
+      await this.getCopySummaryFromExecutionWithCaching(copiedExecutionArn);
+
+    return summary.header;
+  }
+
+  public async getCopySummaryRows(
+    copiedExecutionArn: string,
+    limit: number,
+    offset: number,
+  ): Promise<PagedResult<any>> {
+    const summary =
+      await this.getCopySummaryFromExecutionWithCaching(copiedExecutionArn);
+
+    return createPagedResult(
+      summary.entries.slice(offset, offset + limit),
+      summary.entries.length,
+    );
+  }
+
+  private async getCopySummaryFromExecutionWithCaching(
+    copiedExecutionArn: string,
+  ): Promise<CopySummary> {
+    const x = this.cache.get(copiedExecutionArn, {
+      updateAgeOnGet: true,
+    });
+
+    if (x) return x;
+
+    const y = await this.getCopySummaryFromExecution(copiedExecutionArn);
+
+    this.cache.set(copiedExecutionArn, y);
+
+    return y;
+  }
+
+  /*
+  {
+    "bytes_transferred": 11671621,
+    "check_stats": {
+      "compared": [
+        {
+          "locations": [
+            "/work/copy-batch",
+            "/tmp/copy-batch"
+          ],
+          "reason": {
+            "kind": "crc64nvme",
+            "value": "e4a9115dfbcabae1"
+          }
+        }
+      ],
+      "comparison_type": "Equality",
+      "elapsed_seconds": 0.001293792,
+      "groups": [
+        [
+          "/tmp/copy-batch",
+          "/work/copy-batch"
+        ]
+      ]
+    },
+    "copy_mode": "ServerSide",
+    "destination": "file:///tmp/copy-batch",
+    "elapsed_seconds": 0.149844584,
+    "generate_stats": {
+      "check_stats": {
+        "comparison_type": "Comparability",
+        "elapsed_seconds": 0.000084334,
+        "groups": [
+          [
+            "/tmp/copy-batch"
+          ],
+          [
+            "/work/copy-batch"
+          ]
+        ]
+      },
+      "elapsed_seconds": 0.122502083,
+      "stats": [
+        {
+          "checksums_generated": [
+            {
+              "kind": "crc64nvme",
+              "value": "e4a9115dfbcabae1"
+            }
+          ],
+          "input": "/work/copy-batch",
+          "updated": true
+        },
+        {
+          "checksums_generated": [
+            {
+              "kind": "crc64nvme",
+              "value": "e4a9115dfbcabae1"
+            }
+          ],
+          "input": "/tmp/copy-batch",
+          "updated": true
+        }
+      ]
+    },
+    "n_retries": 0,
+    "reason": {
+      "kind": "crc64nvme",
+      "value": "e4a9115dfbcabae1"
+    },
+    "skipped": false,
+    "source": "file:///work/copy-batch",
+    "sums_mismatch": false
+  }
+   */
+
+  /**
+   * Look at the outputs of a steps orchestration and build an in-memory summary of the copy.
+   * This steps is resource intensive and involves AWS calls - so should be cached if
+   * possible.
+   *
+   * @param copiedExecutionArn
+   * @private
+   */
+  private async getCopySummaryFromExecution(
+    copiedExecutionArn: string,
+  ): Promise<CopySummary> {
+    // needs to be coordinated with the definition in the Steps copier
+    // is an example output
+    // {
+    //     "type": "Large",
+    //     "manifestKey": "a-working-folder/beb5bbd8b59f9c00/objects-to-copy.tsv/f7875ce4-a8d2-4afc-a52d-2131322eb233/manifest.json",
+    //     "manifestBucket": "stepss3copy-working66f7dd3f-x4jwbnt6qvxc",
+    //     "mapRunArn": "arn:aws:states:ap-southeast-2:843407916570:mapRun:StepsS3CopyStateMachine157A1409-jx4WNxpdckgQ/40effd22-8724-3d56-ab76-cff4f6ac3446:f7875ce4-a8d2-4afc-a52d-2131322eb233"
+    //   }
+
+    type StepsResultEntry = {
+      type: string;
+      manifestKey: string;
+      manifestBucket: string;
+      mapRunArn: string;
+    };
+
     const describeExecutionResult = await this.sfnClient.send(
       new DescribeExecutionCommand({
         executionArn: copiedExecutionArn,
@@ -80,198 +237,64 @@ export class CopyService {
     );
 
     if (describeExecutionResult.status === ExecutionStatus.SUCCEEDED) {
-      return JSON.parse(describeExecutionResult.output!);
-    } else {
-      return {
-        error: describeExecutionResult.error!,
-        status: describeExecutionResult.status,
-      };
-    }
-  }
-
-  private async getCopiedReportEntries(
-    manifestBucket: string,
-    manifestKey: string,
-  ) {
-    // the manifest.json is generated by an AWS Steps DISTRIBUTED map and shows the results
-    // of all the individual map run parts
-    const getManifestCommand = new GetObjectCommand({
-      Bucket: manifestBucket,
-      Key: manifestKey,
-    });
-
-    const getManifestResult = await this.s3Client.send(getManifestCommand);
-
-    if (!getManifestResult.Body) {
-      throw new Error("Could not find manifest");
-    }
-
-    const manifest: DistributedMapManifest = JSON.parse(
-      await getManifestResult.Body.transformToString(),
-    );
-
-    // A sample manifest
-    // {
-    //  "DestinationBucket":"elsa-data-tmp",
-    //  "MapRunArn":"arn:aws:states:ap-southeast-2:12345678:mapRun:CopyOutStateMachineABCD/4474d22f-4056-30e3-978c-027016edac90:0c17ffd6-e8ad-44c0-a65b-a8b721007241",
-    //  "ResultFiles":{
-    //     "FAILED":[],
-    //     "PENDING":[],
-    //     "SUCCEEDED":[{"Key":"copy-out-test-working/a6faea86c066cd90/1-objects-to-copy.tsv/0c17ffd6-e8ad-44c0-a65b-a8b721007241/SUCCEEDED_0.json",
-    //                   "Size":2887}]}}
-
-    if (!manifest.ResultFiles)
-      throw new Error(
-        "AWS Steps Distributed map manifest.json is missing ResultFiles",
+      const stepsResult: StepsResultEntry[] = JSON.parse(
+        describeExecutionResult.output!,
       );
 
-    if (
-      !Array.isArray(manifest.ResultFiles.PENDING) ||
-      !Array.isArray(manifest.ResultFiles.FAILED) ||
-      !Array.isArray(manifest.ResultFiles.SUCCEEDED)
-    )
-      throw new Error(
-        "AWS Steps Distributed map manifest.json is missing an expected array for PENDING, FAILED or SUCCEEDED",
-      );
+      // we expect our steps result to be an array of MapRun results
+      // where results from all the runs need to be returned
+      if (Array.isArray(stepsResult)) {
+        const resultArray: CopySummaryEntry[] = [];
 
-    if (manifest.ResultFiles.PENDING.length > 0)
-      throw new Error(
-        "AWS Steps Distributed map manifest.json indicates there are PENDING results which is not a state we are expecting",
-      );
+        for (const sr of stepsResult) {
+          // TODO use the sr.type to distinguish the ways the files were copied
+          // and use that to look at stats
+          // for instance - get time taken for thaw from
+          // thawing copier
 
-    const fileResults = {};
-
-    for (const s of manifest.ResultFiles.SUCCEEDED) {
-      const getSuccessCommand = new GetObjectCommand({
-        Bucket: manifestBucket,
-        Key: s.Key,
-      });
-
-      const getSuccessResult = await this.s3Client.send(getSuccessCommand);
-
-      if (!getSuccessResult.Body) continue;
-
-      const getSuccessContent = await getSuccessResult.Body.transformToString();
-
-      return getSuccessContent;
-    }
-  }
-}
-
-/*
-
-    return getSuccessContent;
-
-    for (const row of JSON.parse(getSuccessContent)) {
-      if (row["Output"]) {
-        const rowOutput = JSON.parse(row["Output"]);
-
-        //  { "bytes": 0,
-        //  "checks": 0,
-        //  "deletedDirs": 0,
-        //  "deletes": 0,
-        //  "elapsedTime": 0.2928195,
-        //  "errors": 0,
-        //  "eta": null,
-        //  "fatalError": false,
-        //  "renames": 0,
-        //  "retryError": false,
-        //  "serverSideCopies": 1,
-        //  "serverSideCopyBytes": 9,
-        //  "serverSideMoveBytes": 0,
-        //  "serverSideMoves": 0,
-        //  "source": "s3:elsa-data-tmp/copy-out-test-objects/d76848c9ae316e13/1-src/1.bin",
-        //  "speed": 0,
-        //  "totalBytes": 0,
-        //  "totalChecks": 0,
-        //  "totalTransfers": 1,
-        //  "transferTime": 0.046778609,
-        //  "transfers": 1 }
-        for (const rcloneRow of rowOutput["rcloneResult"]) {
-          console.log(JSON.stringify(rcloneRow, null, 2));
-
-          const s = rcloneRow["source"];
-          const b = basename(s);
-
-          // NOTE/WARNING: this behaviour is very dependent on rclone and our interpretation
-          // of rclone stats - so if things start breaking this is where I would start
-          // looking
-          const errors: number = rcloneRow["errors"];
-          const lastError: number = rcloneRow["lastError"];
-          const serverSideCopyBytes: number = rcloneRow["serverSideCopyBytes"];
-          const elapsedTime = rcloneRow["elapsedTime"];
-          const totalTransfers = rcloneRow["totalTransfers"];
-          const retryError = rcloneRow["retryError"];
-
-          // firstly if we have been signalled an error - we need to report that
-          if (errors > 0) {
-            fileResults[b] = {
-              name: b,
-              status: "ERROR",
-              speed: 0,
-              message: lastError,
-            };
-          } else {
-            // if we didn't end up transferring anything BUT there was no actual error AND
-            // we did a retry - then that probably means the source file didn't exist
-            if (totalTransfers < 1 && retryError) {
-              fileResults[b] = {
-                name: b,
-                status: "ERROR",
-                speed: 0,
-                message: "source file did not exist so nothing was transferred",
-              };
-            }
-              // if we didn't end up transferring anything BUT there was no actual error
-              // AND we didn't do any retries then changes are we skipped due to it already
-            // being at the destination
-            else if (totalTransfers < 1 && !retryError) {
-              fileResults[b] = {
-                name: b,
-                status: "ALREADYCOPIED",
-                speed: 0,
-                message:
-                  "destination file already exists with same checksum so nothing was transferred",
-              };
-            } else {
-              // if we did do a copy then copySeconds will normally be a value and we can compute a speed
-              if (elapsedTime)
-                fileResults[b] = {
-                  name: b,
-                  status: "COPIED",
-                  speed: Math.floor(
-                    serverSideCopyBytes / elapsedTime / 1024 / 1024,
-                  ),
-                  message: "",
-                };
-            }
+          for await (const e of getCopierMapRunManifestEntries(
+            this.s3Client,
+            sr.manifestBucket,
+            sr.manifestKey,
+          )) {
+            resultArray.push(e);
           }
         }
+
+        let totalTransferred = 0;
+
+        for (const stat of resultArray) {
+          totalTransferred += stat.bytes_transferred;
+        }
+
+        return {
+          header: {
+            totalBytesTransferred: totalTransferred,
+            timeTakenSeconds:
+              (describeExecutionResult.stopDate!.getTime() -
+                describeExecutionResult.startDate!.getTime()) /
+              1000,
+          },
+          entries: resultArray,
+        };
+      } else {
+        return {
+          header: {
+            overallError: "Result was not an array",
+            timeTakenSeconds: 0,
+            totalBytesTransferred: 0,
+          },
+          entries: [],
+        };
       }
     }
-
-    // debug results before we make the CSV
-    console.debug(JSON.stringify(fileResults, null, 2));
-
-    const output = stringify(Object.values(fileResults), {
-      header: true,
-      columns: {
-        name: "OBJECTNAME",
-        status: "TRANSFERSTATUS",
-        speed: "MBPERSEC",
-        message: "MESSAGE",
+    return {
+      header: {
+        overallError: describeExecutionResult.error!,
+        timeTakenSeconds: 0,
+        totalBytesTransferred: 0,
       },
-    });
-
-    return output;
-
-    const putCommand = new PutObjectCommand({
-      Bucket: event.destinationBucket,
-      Key: `${event.destinationPrefixKey}${event.destinationEndCopyRelativeKey}`,
-      Body: output,
-    });
-
-    await client.send(putCommand);
+      entries: [],
+    };
   }
 }
-*/

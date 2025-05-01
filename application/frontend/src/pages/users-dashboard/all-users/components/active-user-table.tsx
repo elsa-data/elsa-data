@@ -1,7 +1,4 @@
-import {
-  UserPermissionType,
-  UserSummaryType,
-} from "@umccr/elsa-types/schemas-users";
+import { UserSummaryType } from "../../../../../../backend/src/shared/schemas-users";
 import React, { useState } from "react";
 import classNames from "classnames";
 import { BoxPaginator } from "../../../../components/box-paginator";

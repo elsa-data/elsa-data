@@ -40,6 +40,7 @@ import {
   RELEASES_ROUTE_PART,
 } from "../../backend/src/shared/constants-routes";
 import { CopiesDashboardPage } from "./pages/copies-dashboard/copies-dashboard-page";
+import { CopiesDetailPage } from "./pages/copies-detail/copies-detail-page.tsx";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -210,7 +211,13 @@ export function IndexRouter({ features }: IndexRouterProps) {
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
-          <Route path={`copies`} element={<CopiesDashboardPage />} />
+
+          <Route path={`copies`}>
+            <Route index element={<CopiesDashboardPage />} />
+            <Route path={`:copyExecutionArn`}>
+              <Route index element={<CopiesDetailPage />} />
+            </Route>
+          </Route>
 
           <Route path={`audit-events`} element={<AuditEventsPage />} />
 

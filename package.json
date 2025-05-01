@@ -32,5 +32,6 @@
     "npm-run-all": "4.1.5",
     "run-script-os": "1.1.6",
     "simple-git-hooks": "2.13.0"
-  }
+  },
+  "packageManager": "pnpm@10.8.0+sha512.0e82714d1b5b43c74610193cb20734897c1d00de89d0e18420aebc5977fa13d780a9cb05734624e81ebd81cc876cd464794850641c48b9544326b5622ca29971"
 }

@@ -10,7 +10,7 @@ import {
   ActionCategoryType,
   AuditEventType,
   RouteValidation,
-} from "../../../../backend/src/shared/schemas";
+} from "../../../../backend/src/shared/schemas-audit";
 import { UseQueryResult } from "@tanstack/react-query";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
