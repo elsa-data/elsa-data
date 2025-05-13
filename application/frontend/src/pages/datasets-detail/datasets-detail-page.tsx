@@ -26,14 +26,9 @@ export const DatasetsDetailPage: React.FC = () => {
     ".",
   );
 
-  const datasetQuery = trpc.dataset.getSingleDataset.useQuery(
-    {
-      datasetUri: datasetUri,
-    },
-    {
-      keepPreviousData: true,
-    },
-  );
+  const datasetQuery = trpc.dataset.getSingleDataset.useQuery({
+    datasetUri: datasetUri,
+  });
 
   if (datasetQuery.isLoading) return <IsLoadingDiv />;
   const data = datasetQuery?.data;

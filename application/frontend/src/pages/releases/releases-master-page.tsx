@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Outlet, useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
 import { makeReleaseTypeLocal } from "./queries";

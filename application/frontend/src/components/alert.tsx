@@ -1,10 +1,4 @@
-import React, {
-  ReactNode,
-  RefObject,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
 import { Transition } from "@headlessui/react";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -83,15 +77,18 @@ export const Alert = ({
 
   const [dismissed, setDismissed] = useState(false);
 
+  const transitionClass = classNames(
+    "alert flex flex-row justify-between shadow-lg",
+    additionalAlertClassName,
+    {
+      "animate-pop": isInView && animate,
+    },
+  );
+
   return (
     <Transition
-      className={classNames(
-        "alert flex flex-row justify-between shadow-lg",
-        additionalAlertClassName,
-        {
-          "animate-pop": isInView && animate,
-        },
-      )}
+      as="div"
+      className={transitionClass}
       show={!dismissed}
       enter="transition-opacity duration-75"
       enterFrom="opacity-0"

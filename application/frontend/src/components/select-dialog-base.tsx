@@ -1,6 +1,6 @@
-import React, { Fragment, MutableRefObject, ReactNode } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { EagerErrorBoundary, OfflineAlert } from "./errors";
+import React, { MutableRefObject, ReactNode } from "react";
+import { Dialog, Transition, TransitionChild } from "@headlessui/react";
+import { EagerErrorBoundary } from "./errors";
 import { AiOutlineClose } from "react-icons/ai";
 
 type Props = {
@@ -25,15 +25,14 @@ export const SelectDialogBase: React.FC<Props> = ({
   initialFocus,
 }) => {
   return (
-    <Transition.Root show={showing} as={Fragment}>
+    <Transition show={showing}>
       <Dialog
         as="div"
         className="relative z-10"
         initialFocus={initialFocus}
         onClose={cancelShowing}
       >
-        <Transition.Child
-          as={Fragment}
+        <TransitionChild
           enter="ease-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
@@ -42,12 +41,11 @@ export const SelectDialogBase: React.FC<Props> = ({
           leaveTo="opacity-0"
         >
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </Transition.Child>
+        </TransitionChild>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <Transition.Child
-              as={Fragment}
+            <TransitionChild
               enter="ease-out duration-300"
               enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               enterTo="opacity-100 translate-y-0 sm:scale-100"
@@ -88,10 +86,10 @@ export const SelectDialogBase: React.FC<Props> = ({
                   {buttons}
                 </div>
               </Dialog.Panel>
-            </Transition.Child>
+            </TransitionChild>
           </div>
         </div>
       </Dialog>
-    </Transition.Root>
+    </Transition>
   );
 };

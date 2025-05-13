@@ -1,4 +1,4 @@
-import React, { Fragment, PropsWithChildren, ReactNode } from "react";
+import React, { PropsWithChildren, ReactNode } from "react";
 import { Menu as HeadlessUIMenu, Transition } from "@headlessui/react";
 import classNames from "classnames";
 import { BiChevronDown } from "react-icons/bi";
@@ -27,7 +27,6 @@ export const Menu: React.FC<PropsWithChildren<MenuProps>> = ({
       </HeadlessUIMenu.Button>
 
       <Transition
-        as={Fragment}
         enter="transition ease-out duration-100"
         enterFrom="transform opacity-0 scale-95"
         enterTo="transform opacity-100 scale-100"
