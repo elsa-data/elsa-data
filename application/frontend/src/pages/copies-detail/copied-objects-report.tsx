@@ -3,7 +3,6 @@ import classNames from "classnames";
 import { BoxPaginator } from "../../components/box-paginator";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { Table } from "../../components/tables";
-import { formatLocalDateTime } from "../../helpers/datetime-helper";
 import { trpc } from "../../helpers/trpc";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { CopySummaryEntry } from "../../../../backend/src/business/services/copy-service.ts";
@@ -79,7 +78,14 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
               "font-normal",
             )}
           >
-            {row.bytes_transferred}
+            {row.elapsed_seconds > 0 &&
+              (
+                row.bytes_transferred /
+                row.elapsed_seconds /
+                1024 /
+                1024
+              ).toFixed(2)}{" "}
+            MiB/s
           </td>
 
           <td
@@ -124,6 +130,17 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
           <p>
             Amount transferred ={" "}
             {fileSize(copySummaryHeaderQuery.data.totalBytesTransferred)}
+          </p>
+          <p>
+            Overall rate ={" "}
+            {(
+              copySummaryHeaderQuery.data.totalBytesTransferred /
+              copySummaryHeaderQuery.data.timeTakenSeconds /
+              1024 /
+              1024 /
+              1024
+            ).toFixed(2)}{" "}
+            GiB/s
           </p>
         </p>
       )}
