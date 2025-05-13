@@ -8,7 +8,6 @@ import {
   LeftDiv,
   RightDiv,
 } from "../../../../components/rh/rh-structural";
-import { REACT_QUERY_RELEASE_KEYS } from "../../queries";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 import { trpc } from "../../../../helpers/trpc";
@@ -25,14 +24,6 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
     error: null,
     isSuccess: true,
   });
-
-  const afterMutateUpdateQueryData = (result: ReleaseTypeLocal) => {
-    queryClient.setQueryData(
-      REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-      result,
-    );
-    setError({ error: null, isSuccess: true });
-  };
 
   const applyAllMutate = trpc.releaseJob.startCohortConstruction.useMutation({
     onSettled: async () => await queryClient.invalidateQueries(),
@@ -82,7 +73,7 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
                       applyAllMutate.mutate({ releaseKey: releaseKey })
                     }
                     disabled={
-                      isJobRunning || isActivated || applyAllMutate.isLoading
+                      isJobRunning || isActivated || applyAllMutate.isPending
                     }
                   >
                     Apply All
