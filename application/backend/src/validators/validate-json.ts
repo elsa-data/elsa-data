@@ -1,11 +1,6 @@
 import addFormats from "ajv-formats";
 import Ajv from "ajv/dist/2019";
-import {
-  DatasetGen3SyncRequestSchema,
-  DatasetGen3SyncRequestType,
-  TestingRequestSchema,
-  TestingRequestType,
-} from "@umccr/elsa-types";
+import { DatasetGen3SyncRequestSchema } from "../shared/schemas";
 
 const ajv = addFormats(new Ajv({ allErrors: true }), [
   "date-time",
@@ -26,8 +21,8 @@ const ajv = addFormats(new Ajv({ allErrors: true }), [
   .addKeyword("kind")
   .addKeyword("modifier");
 
-export const datasetGen3SyncRequestValidate =
-  ajv.compile<DatasetGen3SyncRequestType>(DatasetGen3SyncRequestSchema);
+//export const datasetGen3SyncRequestValidate =
+//  ajv.compile<DatasetGen3SyncRequestType>(DatasetGen3SyncRequestSchema);
 
-export const testingRequestValidate =
-  ajv.compile<TestingRequestType>(TestingRequestSchema);
+//export const testingRequestValidate =
+//  ajv.compile<TestingRequestType>(TestingRequestSchema);

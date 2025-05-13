@@ -1,7 +1,7 @@
 import { FastifyRequest } from "fastify";
 import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./session-cookie-constants";
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
-import { SECURE_COOKIE_NAME } from "@umccr/elsa-constants";
+import { SECURE_COOKIE_NAME } from "../../shared/constants-cookies";
 import type { ElsaSettings } from "../../config/elsa-settings";
 import {
   AuthenticatedUser,

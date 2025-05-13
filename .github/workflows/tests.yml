@@ -1,46 +1,46 @@
 name: Tests
 
-on: push
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   test:
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
-    # run an EdgeDb in the background that will be connected to from our app
+    # run an Gel database in the background that will be connected to from our app
     services:
-      edgedb:
-        image: edgedb/edgedb:3
+      gel:
+        image: geldata/gel:6.5
         env:
-          EDGEDB_SERVER_SECURITY: insecure_dev_mode
+          GEL_SERVER_SECURITY: insecure_dev_mode
         ports:
           - 5656:5656
 
     # these will be used by all EdgeDb clients in order to connect to the above
     env:
-      EDGEDB_CLIENT_SECURITY: insecure_dev_mode
-      EDGEDB_DSN: edgedb://localhost:5656
+      GEL_CLIENT_SECURITY: insecure_dev_mode
+      GEL_DSN: gel://localhost:5656
 
     steps:
-      - uses: actions/checkout@v3
+      # get the code
+      - uses: actions/checkout@v4
 
-      # setup NodeJs
-      - uses: actions/setup-node@v3
+      # install software we will use
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
 
-      # setup all our packages (with caching)
-      - uses: bahmutov/npm-install@v1
-        with:
-          working-directory: |
-            e2e
-            application/common/elsa-constants
-            application/common/elsa-types
-            application/backend
-            application/frontend
-          install-command: npm ci --install-links=false
+      # setup our backend packages
+      - name: Backend packages
+        run: bun install
+        working-directory: application/backend
 
-      # Sanity/lint checks
+      # sanity/lint checks
       - name: Run pre build lint checks
         run: |
           if ! grep -qR "container.*tsyringe" src/ tests/ jobs/; then
@@ -57,17 +57,17 @@ jobs:
         working-directory: application/backend
         env:
           # we explicitly make sure that if a unit test *did* try to access the db it will fail
-          EDGEDB_DSN: undefined
+          GEL_DSN: undefined
 
       # install the EdgeDb CLI
-      - uses: edgedb/setup-edgedb@v1.2.2
+      - uses: gel/setup-gel@v1.4.0
         with:
           cli-version: stable
           server-version: none
-          server-dsn: ${{ env.EDGEDB_DSN }}
+          server-dsn: ${{ env.GEL_DSN }}
 
       # get our database schema correct
-      - run: edgedb migrate
+      - run: gel migrate
         working-directory: application/backend
 
       # generate our types

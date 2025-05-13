@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { CSRFInputToken } from "../../../../components/csrf-token";
 import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types/schemas";
+import { ObjectStoreRecordKey } from "../../../../../../backend/src/shared/schemas";
 import { Alert } from "../../../../components/alert";
 import { trpc } from "../../../../helpers/trpc";
 import { EagerErrorBoundary } from "../../../../components/errors";

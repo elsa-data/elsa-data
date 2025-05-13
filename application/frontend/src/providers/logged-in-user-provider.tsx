@@ -1,8 +1,7 @@
 import React from "react";
-import _ from "lodash";
 import { createCtx } from "./create-ctx";
 import { useCookies } from "react-cookie";
-import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "../../../backend/src/shared/constants-cookies";
 import { trpc } from "../helpers/trpc";
 import { IsLoadingDiv } from "../components/is-loading-div";
 

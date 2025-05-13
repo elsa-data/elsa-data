@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import {
   SESSION_KEYS,
   SESSION_OIDC_NONCE_KEY_NAME,

@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { CSRF_TOKEN_COOKIE_NAME } from "@umccr/elsa-constants";
+import { CSRF_TOKEN_COOKIE_NAME } from "../shared/constants-cookies";
 import {
   SESSION_OIDC_NONCE_KEY_NAME,
   SESSION_OIDC_STATE_KEY_NAME,
@@ -23,7 +23,7 @@ import {
   NO_EMAIL_OR_NAME_ROUTE_PART,
   NO_SUBJECT_ID_ROUTE_PART,
   NOT_AUTHORISED_ROUTE_PART,
-} from "@umccr/elsa-constants/constants-routes";
+} from "../shared/constants-routes";
 
 /**
  * Make this match the Typescript filename - for logging

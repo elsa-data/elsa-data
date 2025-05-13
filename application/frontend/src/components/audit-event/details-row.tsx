@@ -18,7 +18,7 @@ export type DetailsRowProps = {
  * The details row shown when clicking on a row in an audit event table.
  */
 export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
-  const detailsQuery = trpc.auditEventRouter.getAuditEventDetails.useQuery(
+  const detailsQuery = trpc.auditEvent.getAuditEventDetails.useQuery(
     { id: objectId },
     { keepPreviousData: true },
   );

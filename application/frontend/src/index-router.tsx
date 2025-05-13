@@ -34,11 +34,13 @@ import {
   FEATURE_DEV_TEST_USERS_LOGIN,
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
-} from "@umccr/elsa-constants";
+} from "../../backend/src/shared/constants-features";
 import {
   NOT_AUTHORISED_ROUTE_PART,
   RELEASES_ROUTE_PART,
-} from "@umccr/elsa-constants/constants-routes";
+} from "../../backend/src/shared/constants-routes";
+import { CopiesDashboardPage } from "./pages/copies-dashboard/copies-dashboard-page";
+import { CopiesDetailPage } from "./pages/copies-detail/copies-detail-page.tsx";
 
 type IndexRouterProps = {
   features: Set<string>;
@@ -209,6 +211,13 @@ export function IndexRouter({ features }: IndexRouterProps) {
 
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
+
+          <Route path={`copies`}>
+            <Route index element={<CopiesDashboardPage />} />
+            <Route path={`:copyExecutionArn`}>
+              <Route index element={<CopiesDetailPage />} />
+            </Route>
+          </Route>
 
           <Route path={`audit-events`} element={<AuditEventsPage />} />
 

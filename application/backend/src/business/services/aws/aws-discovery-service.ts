@@ -12,6 +12,7 @@ import {
 import { differenceInHours, differenceInMinutes, subHours } from "date-fns";
 
 export type IAwsDiscoveryService = {
+  locateCopyServiceStepsArn(): Promise<string | undefined>;
   locateCopyOutStepsArn(): Promise<string | undefined>;
   locateObjectSigningPair(): Promise<[string, string] | undefined>;
   locateBeaconLambdaArn(): Promise<string | undefined>;
@@ -54,6 +55,23 @@ export class AwsDiscoveryService implements IAwsDiscoveryService {
     logger.debug(
       "Created AwsDiscoveryService instance - expecting this to only happen once",
     );
+  }
+
+  private copyServiceResult: CachedLookup = {
+    serviceName: "copy",
+    attributeName: "ARN",
+    attributeSecretName: undefined,
+  };
+
+  /**
+   * Discover the ARN for the Copy steps function if it is present in our AWS
+   * setup, or else return undefined. Caches the value.
+   */
+  public async locateCopyServiceStepsArn(): Promise<string | undefined> {
+    if (await this.discoverAttributeValueWithCaching(this.copyServiceResult))
+      return this.copyServiceResult.value;
+
+    return undefined;
   }
 
   private copyOutResult: CachedLookup = {

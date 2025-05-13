@@ -21,7 +21,7 @@ export function registerTypes() {
 
   const logger = pino(createTestElsaSettings().logger);
 
-  testContainer.register<edgedb.Client>("Database", {
+  testContainer.register<gel.Client>("Database", {
     useFactory: () => gel.createClient(),
   });
 

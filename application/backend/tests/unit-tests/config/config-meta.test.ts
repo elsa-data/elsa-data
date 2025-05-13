@@ -1,14 +1,15 @@
 import { getMetaConfig } from "../../../src/config/config-load";
 import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../../../src/config/config-schema";
 import { parseMeta } from "../../../src/config/meta/meta-parser";
-import assert from "assert";
+
+const REAL_LIKE_CONFIG_PATH = "./config/real-like";
+const COMPLEX_KEYS_CONFIG_PATH = "./config/complex-keys";
 
 // TODO: because this actually instantiates the providers, all providers mentioned here need to work in test
 // TODO: we still need to set up the test infrastructure so that AWS tests will work (using fake AWS??)
 
 it("basic parsing of meta syntax", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
-    "./tests/unit-tests/config/real-like";
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = REAL_LIKE_CONFIG_PATH;
 
   const { config } = await getMetaConfig(
     parseMeta("file('base') file('dev-localhost')"),
@@ -19,8 +20,7 @@ it("basic parsing of meta syntax", async () => {
 });
 
 it("basic parsing with right most providers overriding", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
-    "./tests/unit-tests/config/real-like";
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = REAL_LIKE_CONFIG_PATH;
 
   const { config } = await getMetaConfig(
     parseMeta(
@@ -33,8 +33,7 @@ it("basic parsing with right most providers overriding", async () => {
 });
 
 it("plus minus operations for arrays", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
-    "./tests/unit-tests/config/real-like";
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = REAL_LIKE_CONFIG_PATH;
 
   // with just the single file we have two datasets
   {
@@ -42,7 +41,7 @@ it("plus minus operations for arrays", async () => {
       parseMeta("file('datasets') file('base')"),
     );
 
-    assert(config);
+    expect(config).toBeDefined();
     expect(config).toHaveProperty("datasets");
 
     const datasets = config["datasets"];
@@ -63,7 +62,7 @@ it("plus minus operations for arrays", async () => {
       parseMeta("file('datasets') file('add-delete') file('base')"),
     );
 
-    assert(config);
+    expect(config).toBeDefined();
     expect(config).toHaveProperty("datasets");
 
     const datasets = config["datasets"];
@@ -81,8 +80,7 @@ it("plus minus operations for arrays", async () => {
 });
 
 it("minus an entry that doesn't exist is an error", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
-    "./tests/unit-tests/config/real-like";
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = REAL_LIKE_CONFIG_PATH;
 
   expect.assertions(1);
   try {
@@ -95,14 +93,13 @@ it("minus an entry that doesn't exist is an error", async () => {
 });
 
 it("complex key with path expression works", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
-    "./tests/unit-tests/config/complex-keys";
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = COMPLEX_KEYS_CONFIG_PATH;
 
   const { config } = await getMetaConfig(
     parseMeta("file('test0') file('test1') file('test2')"),
   );
 
-  assert(config);
+  expect(config).toBeDefined();
   expect(config).toHaveProperty("aws");
 
   const aws = config["aws"];
@@ -111,8 +108,7 @@ it("complex key with path expression works", async () => {
 });
 
 it("basic parsing but with env variable override", async () => {
-  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] =
-    "./tests/unit-tests/config/real-like";
+  process.env[CONFIG_FOLDERS_ENVIRONMENT_VAR] = REAL_LIKE_CONFIG_PATH;
   process.env["ELSA_DATA_CONFIG_HTTP_HOSTING_PORT"] = "9999";
 
   const { config } = await getMetaConfig(
@@ -126,9 +122,11 @@ it("basic parsing but with env variable override", async () => {
 });
 
 it("parser error with double left bracket", async () => {
-  await expect(async () => {
+  const testCall = async () => {
     await getMetaConfig(
       parseMeta("file(('base') file('dev-common') file('dev-deployed')"),
     );
-  }).rejects.toThrow("an argument list is started");
+  };
+
+  return expect(testCall()).rejects.toThrow("an argument list is started");
 });

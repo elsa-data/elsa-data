@@ -1,6 +1,6 @@
-# A query that summarize egress size groped by file level.
+# A query that summarize egress size grouped by file level.
 
-with
+WITH
 
   # There are 2 scenarios where the list of files could come from:
   # (1) From a manifest that WAS active
@@ -8,10 +8,9 @@ with
 
   # (1)
   prevReleaseActivation := (
-    select release::Activation
-    filter 
-      .<previouslyActivated[is release::Release]
-      .releaseKey = <str>$releaseKey
+    SELECT release::Activation
+    FILTER
+      .<previouslyActivated[is release::Release].releaseKey = <str>$releaseKey
   ),
 
   prevSpecimenList := json_get(
@@ -47,8 +46,7 @@ with
   currReleaseActivation := (
     select release::Activation
     filter 
-      .<activation[is release::Release]
-      .releaseKey = <str>$releaseKey
+      .<activation[is release::Release].releaseKey = <str>$releaseKey
   ),
 
   currSpecimenList := json_get(

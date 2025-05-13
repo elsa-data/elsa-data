@@ -3,7 +3,7 @@ import { UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerAwsAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
 import { trpc } from "../../../../helpers/trpc";
-import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type AwsAccessPointAccordionContentProps = {
@@ -24,7 +24,7 @@ const NONE_DISPLAY = "-- none --";
 export const AwsAccessPointAccordionContent: React.FC<
   PropsWithChildren<AwsAccessPointAccordionContentProps>
 > = (props) => {
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
 
   const [accessPointNameInput, setAccessPointNameInput] = useState<string>(
     props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY,
@@ -70,10 +70,10 @@ export const AwsAccessPointAccordionContent: React.FC<
   // if mutators are running then UI bits needs to be disabled until finished
   const isCurrentlyMutating =
     // can't be within our own trigger operation
-    accessPointInstallTriggerMutate.isLoading ||
-    accessPointUninstallTriggerMutate.isLoading ||
+    accessPointInstallTriggerMutate.isPending ||
+    accessPointUninstallTriggerMutate.isPending ||
     // can't be started whilst other fields are being mutated
-    props.releasePatchMutator.isLoading;
+    props.releasePatchMutator.isPending;
 
   // there are various system/release level things that can cause us to not want to enable UI
   const isCurrentlyRunningAnotherJob =

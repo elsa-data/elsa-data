@@ -7,7 +7,7 @@ import { useReleasesMasterData } from "../releases-types";
 import { SharerControlBox } from "./sharer-control-box/sharer-control-box";
 import { AccessBox } from "./access-box/access-box";
 import { useEnvRelay } from "../../../providers/env-relay-provider";
-import { FEATURE_RELEASE_CONSENT_DISPLAY } from "@umccr/elsa-constants";
+import { FEATURE_RELEASE_CONSENT_DISPLAY } from "../../../../../backend/src/shared/constants-features";
 
 /**
  * The sub-page display the main details a single

@@ -1,5 +1,4 @@
-import { Base7807Error } from "@umccr/elsa-types/error-types";
-import { TRPCError } from "@trpc/server";
+import { Base7807Error } from "../../shared/error-types";
 
 export class ReleaseActivationPermissionError extends Base7807Error {
   constructor(releaseKey: string) {

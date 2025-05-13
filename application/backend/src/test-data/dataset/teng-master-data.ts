@@ -1,4 +1,4 @@
-import { DuoLimitationCodedType } from "@umccr/elsa-types";
+import type { DuoLimitationCodedType } from "../../shared/schemas-duo";
 
 /**
  * A master data structure that can represent in memory

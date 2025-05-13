@@ -1,10 +1,5 @@
 import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
-import {
-  DataSharingAwsAccessPointType,
-  ReleaseDetailType,
-  ReleaseParticipantRoleType,
-} from "@umccr/elsa-types";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { getReleaseInfo } from "../helpers";
 import { UserService } from "../user-service";
@@ -24,6 +19,11 @@ import {
 import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
 import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import { PermissionService } from "../permission-service";
+import {
+  DataSharingAwsAccessPointType,
+  ReleaseDetailType,
+  ReleaseParticipantRoleType,
+} from "../../../shared/schemas-releases";
 
 export type UserRoleInRelease = ReleaseParticipantRoleType | "AdminView";
 

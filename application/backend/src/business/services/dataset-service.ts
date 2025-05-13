@@ -3,8 +3,7 @@ import e from "../../../dbschema/edgeql-js";
 import {
   DatasetDeepType,
   DatasetLightType,
-  DuoLimitationCodedType,
-} from "@umccr/elsa-types";
+} from "../../shared/schemas-dataset";
 import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
 import {
@@ -22,6 +21,7 @@ import {
   getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
 import { DatasetType } from "../../config/config-schema-dataset";
+import { DuoLimitationCodedType } from "../../shared/schemas-duo";
 
 @injectable()
 export class DatasetService {

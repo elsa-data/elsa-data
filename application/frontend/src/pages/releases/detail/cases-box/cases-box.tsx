@@ -1,5 +1,5 @@
-import React, { ReactNode, useState } from "react";
-import { ReleaseCaseType } from "@umccr/elsa-types";
+import React, { ReactNode, useEffect, useState } from "react";
+import type { ReleaseCaseType } from "../../../../../../backend/src/shared/schemas";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
@@ -128,23 +128,23 @@ export const CasesBox: React.FC<Props> = ({
     setSearchText(text);
   };
 
-  const casesQuery = trpc.release.getReleaseCases.useQuery(
-    {
+  const { data, isSuccess, isPending, error, isError, isFetching } =
+    trpc.release.getReleaseCases.useQuery({
       releaseKey: releaseKey,
       page: currentPage,
       q: searchText,
-    },
-    {
-      onSuccess: (res) => {
-        setCurrentTotalCases(res.total);
-        setCurrentSelectedSpecimens(res.totalSelectedSpecimens);
-      },
-    },
-  );
+    });
 
-  const casesQueryData: ReleaseCaseType[] | undefined = casesQuery.data?.data;
+  useEffect(() => {
+    if (isSuccess) {
+      setCurrentTotalCases(data.total);
+      setCurrentSelectedSpecimens(data.totalSelectedSpecimens);
+    }
+  }, [isSuccess]);
 
-  const trpcUtils = trpc.useContext();
+  const casesQueryData: ReleaseCaseType[] | undefined = data?.data;
+
+  const trpcUtils = trpc.useUtils();
 
   const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
     onSuccess: async () =>
@@ -158,13 +158,13 @@ export const CasesBox: React.FC<Props> = ({
     setIsSelectAllIndeterminate(false);
 
     if (ce.target.checked) {
-      await specimenMutate.mutate({
+      specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "add",
         args: { selectAll: true },
       });
     } else {
-      await specimenMutate.mutate({
+      specimenMutate.mutate({
         releaseKey: releaseKey,
         op: "remove",
         args: { selectAll: true },
@@ -227,7 +227,7 @@ export const CasesBox: React.FC<Props> = ({
       applyIsDisabledStyle={!isAllowEdit && isAllowAdminView}
     >
       <div className={classNames("flex flex-col")}>
-        {casesQuery.isError && <EagerErrorBoundary error={casesQuery.error} />}
+        {isError && <EagerErrorBoundary error={error} />}
 
         <BoxPaginator
           currentPage={currentPage}
@@ -237,14 +237,14 @@ export const CasesBox: React.FC<Props> = ({
           rowWord="cases"
           currentSearchText={searchText}
           onSearchTextChange={onSearchTextChange}
-          isLoading={casesQuery.isFetching}
+          isLoading={isFetching}
         />
 
         <DisabledInputWrapper
           isInputDisabled={!isAllowEdit || releaseIsActivated}
         >
           <>
-            {casesQuery.isLoading && (
+            {isPending && (
               <div className={classNames(baseMessageDivClasses)}>
                 <p>{isUseableSearchText ? "Searching..." : "Loading..."}</p>
               </div>
@@ -269,7 +269,7 @@ export const CasesBox: React.FC<Props> = ({
                 </div>
               )}
             {casesQueryData && casesQueryData.length > 0 && (
-              <div className={specimenMutate.isLoading ? "opacity-50" : ""}>
+              <div className={specimenMutate.isPending ? "opacity-50" : ""}>
                 <Table
                   additionalTableClassName="text-left text-sm text-gray-500"
                   tableBody={casesQueryData.map((row, rowIndex) => (
@@ -329,7 +329,7 @@ export const CasesBox: React.FC<Props> = ({
                               // we _can_ be showing this just with admin view permissions
                               // so we need to disable unless we are allowed to edit
                               disabled={
-                                specimenMutate.isLoading ||
+                                specimenMutate.isPending ||
                                 releaseIsActivated ||
                                 !isAllowEdit
                               }
@@ -358,7 +358,7 @@ export const CasesBox: React.FC<Props> = ({
                       onParseSelectCsv={onParseSelectCsv}
                       onParseUnselectCsv={onParseUnselectCsv}
                       disabled={
-                        specimenMutate.isLoading ||
+                        specimenMutate.isPending ||
                         releaseIsActivated ||
                         !isAllowEdit
                       }

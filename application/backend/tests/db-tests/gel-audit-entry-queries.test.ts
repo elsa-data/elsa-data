@@ -1,20 +1,20 @@
 import { Client, createClient } from "gel";
 import e from "../../dbschema/edgeql-js";
-import { blankTestData } from "../../src/test-data/util/blank-test-data";
-import { insertRelease2 } from "../../src/test-data/release/insert-test-data-release2";
 import {
   auditEventGetSomeByUser,
   insertSystemAuditEvent,
   insertUserAuditEvent,
   updateUserAuditEvents,
 } from "../../dbschema/queries";
-import { registerTypes } from "../test-dependency-injection.common";
+import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
+import { insertRelease2 } from "../../src/test-data/release/insert-test-data-release2";
 import {
   TEST_SUBJECT_3,
   TEST_SUBJECT_3_DISPLAY,
   TEST_SUBJECT_3_EMAIL,
 } from "../../src/test-data/user/insert-user3";
-import { TENF_URI } from "../../src/test-data/dataset/insert-test-data-10f-helpers";
+import { blankTestData } from "../../src/test-data/util/blank-test-data";
+import { registerTypes } from "../test-dependency-injection.common";
 
 const SUBJECT_ID_1 = "subjectid1";
 const SUBJECT_DISPLAY_NAME_1 = "Subject 1";
@@ -360,17 +360,19 @@ describe("edgedb audit entry tests", () => {
 
   it("update user audit events query.", async () => {
     const userAdmin = await e
-      .select(e.permission.User, (_) => ({
-        ...e.permission.User["*"],
-        filter_single: { id: user3IsAdmin.id },
-      }))
+      .assert_single(
+        e.select(e.permission.User, (_) => ({
+          ...e.permission.User["*"],
+          filter_single: { id: user3IsAdmin.id },
+        })),
+      )
       .run(edgeDbClient);
 
     expect(userAdmin).toBeDefined();
 
     await updateUserAuditEvents(edgeDbClient, {
-      subjectId: userAdmin!.subjectId,
-      whoDisplayName: userAdmin!.displayName,
+      subjectId: userAdmin.subjectId,
+      whoDisplayName: userAdmin.displayName,
       actionDescription: "description",
       details: {
         role: "Administrator",
@@ -379,17 +381,19 @@ describe("edgedb audit entry tests", () => {
     });
 
     const updatedUser = await e
-      .select(e.permission.User, (_) => ({
-        id: true,
-        userAuditEvent: {
-          details: true,
-        },
-        filter_single: { id: e.uuid(user3IsAdmin.id) },
-      }))
+      .assert_single(
+        e.select(e.permission.User, (_) => ({
+          id: true,
+          userAuditEvent: {
+            details: true,
+          },
+          filter_single: { id: e.uuid(user3IsAdmin.id) },
+        })),
+      )
       .run(edgeDbClient);
 
     expect(updatedUser).toBeDefined();
-    expect(updatedUser!.userAuditEvent[0].details).toStrictEqual({
+    expect(updatedUser.userAuditEvent[0].details).toStrictEqual({
       role: "Administrator",
       releaseKey: "R002",
     });

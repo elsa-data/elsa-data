@@ -1,4 +1,4 @@
-import { Base7807Error } from "@umccr/elsa-types";
+import { Base7807Error } from "../../../shared/error-types";
 
 export class ReleaseNeedsActivationToStartJob extends Base7807Error {
   constructor(jobType: string, releaseKey: string) {

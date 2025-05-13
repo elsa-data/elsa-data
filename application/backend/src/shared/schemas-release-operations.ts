@@ -11,6 +11,7 @@ import { StringUnion } from "./typebox-helpers";
  * data structure back. It also allows us to have operations customised to the UI - i.e.
  * add/remove where our UI allows add/remove operations.
  */
+
 export const ReleasePatchOperationSchema = Type.Union([
   Type.Object({
     op: Type.Literal("add"),

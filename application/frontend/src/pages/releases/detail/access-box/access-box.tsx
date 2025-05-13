@@ -9,7 +9,7 @@ import { GcpStorageIamShareForm } from "./gcp-storage-iam-share-form";
 import { HtsgetForm } from "./htsget-form";
 import { ObjectSigningForm } from "./object-signing-form";
 import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
-import { isDiscriminate } from "@umccr/elsa-constants";
+import { isDiscriminate } from "../../../../../../backend/src/shared/typescript";
 
 type Props = {
   releaseKey: string;

@@ -11,7 +11,7 @@ import {
 import { RhChecks } from "../../../../components/rh/rh-checks";
 import { axiosPatchOperationMutationFn } from "../../queries";
 import { trpc } from "../../../../helpers/trpc";
-import { isDiscriminate } from "@umccr/elsa-constants";
+import { isDiscriminate } from "../../../../../../backend/src/shared/typescript";
 import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
 import { SharingConfigurationAccordion } from "./sharing-configuration-accordion";
 import { CopyOutAccordionContent } from "./copy-out-accordion-content";
@@ -41,19 +41,17 @@ export const SharerControlBox: React.FC<Props> = ({
   isAllowEdit = false,
 }) => {
   const { sharers } = useLoggedInUserConfigRelay()!;
-  const utils = trpc.useContext();
+  const utils = trpc.useUtils();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
-  const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    {
-      onSuccess: async () =>
-        await utils.release.getSpecificRelease.invalidate({
-          releaseKey: releaseKey,
-        }),
-    },
-  );
+  const releasePatchMutate = useMutation({
+    mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
+    onSuccess: async () =>
+      await utils.release.getSpecificRelease.invalidate({
+        releaseKey: releaseKey,
+      }),
+  });
 
   // the settings come from the backend on login and tell us what is fundamentally enabled
   // in the system

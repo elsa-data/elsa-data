@@ -3,7 +3,7 @@ import { getServices } from "./di-helpers";
 import { insert10G, TENG_URI } from "./test-data/dataset/insert-test-data-10g";
 import { TENF_URI } from "./test-data/dataset/insert-test-data-10f-helpers";
 import { insert10F } from "./test-data/dataset/insert-test-data-10f";
-import { S3IndexApplicationService } from "./business/services/australian-genomics/s3-index-import-service";
+// import { S3IndexApplicationService } from "./business/services/australian-genomics/s3-index-import-service.xts";
 
 export const SYNC_DATASETS_COMMAND = "sync-datasets";
 
@@ -19,7 +19,7 @@ export async function commandSyncDatasets(
   datasetUriArray: string[],
 ): Promise<number> {
   const { settings, logger } = getServices(dc);
-  const agIndexService = dc.resolve(S3IndexApplicationService);
+  // const agIndexService = dc.resolve(S3IndexApplicationService);
 
   // no point in doing a dataset twice - even if the user lists them twice - so we put the input into a set
   const datasetUriSet = new Set<string>(datasetUriArray);
@@ -37,10 +37,11 @@ export async function commandSyncDatasets(
 
         switch (configuredDataset.loader) {
           case "australian-genomics-directories":
-            await agIndexService.syncWithDatabaseFromDatasetUri(
-              datasetUri,
-              configuredDataset,
-            );
+            throw new Error("Not implemented yet");
+            //await agIndexService.syncWithDatabaseFromDatasetUri(
+            //  datasetUri,
+            //  configuredDataset,
+            //);
             break;
           case "pfdl":
             // await agIndexService.syncWithDatabaseFromDatasetUri(

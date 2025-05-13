@@ -53,11 +53,11 @@ WITH
                                              paramDbIds NOT IN dataset::DatasetCase.id),
 
   specimensWithIdentifiers := (SELECT dataset::DatasetSpecimen FILTER .dataset IN datasets AND
-                                                                      array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers),
+                                                                      any(array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers)),
   patientsWithIdentifiers := (SELECT dataset::DatasetPatient FILTER .dataset IN datasets AND
-                                                                    array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers),
+                                                                    any(array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers)),
   casesWithIdentifiers := (SELECT dataset::DatasetCase FILTER .dataset IN datasets AND
-                                                              array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers),
+                                                              any(array_unpack(.externalIdentifiers).value IN paramExternalIdentifiers)),
 
   # Will be all specimens if $selectAll == true
   maybeAllSpecimens := (SELECT dataset::DatasetSpecimen FILTER .dataset IN datasets AND paramSelectAll)

@@ -1,13 +1,12 @@
 import * as gel from "gel";
 import e from "../../../../dbschema/edgeql-js";
-import {
-  DuoLimitationCodedType,
+import type {
   ReleaseCaseType,
   ReleaseDetailType,
   ReleaseNodeStatusType,
   ReleasePatientType,
   ReleaseSpecimenType,
-} from "@umccr/elsa-types";
+} from "../../../shared/schemas-releases";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { isEmpty, isObjectLike } from "lodash";
 import { createPagedResult } from "../../../api/helpers/pagination-helpers";
@@ -32,6 +31,7 @@ import {
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { PermissionService } from "../permission-service";
+import { DuoLimitationCodedType } from "../../../shared/schemas-duo";
 
 /**
  * The release selection service handles CRUD operations on the list of items

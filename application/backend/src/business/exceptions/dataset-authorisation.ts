@@ -1,4 +1,4 @@
-import { Base7807Error } from "@umccr/elsa-types/error-types";
+import { Base7807Error } from "../../shared/error-types";
 
 export class NotAuthorisedViewDataset extends Base7807Error {
   constructor(datasetUri?: string) {

@@ -35,8 +35,8 @@ A problem details object can have the following members:
  */
 
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { Base7807Error, Base7807Response } from "@umccr/elsa-types/error-types";
 import { NOT_AUTHORISED_MESSAGE } from "./authentication-error";
+import { Base7807Error, Base7807Response } from "../../shared/error-types";
 
 export function ErrorHandler(
   error: Error,

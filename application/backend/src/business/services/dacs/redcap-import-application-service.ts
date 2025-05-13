@@ -1,38 +1,35 @@
-import * as gel from "gel";
-import e from "../../../../dbschema/edgeql-js";
-import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
-import { inject, injectable } from "tsyringe";
-import { australianGenomicsDacRedcapToDuoString } from "@umccr/elsa-types";
-import { UserService } from "../user-service";
-import { AuthenticatedUser } from "../../authenticated-user";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types/csv-australian-genomics";
 import { format } from "date-fns";
-import { getNextReleaseKey } from "../../db/release-queries";
-import { ReleaseService } from "../releases/release-service";
+import { printf } from "fast-printf";
+import * as gel from "gel";
+import { isInteger } from "lodash";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
+import type { DacRedcapAustralianGenomicsCsvType } from "../../../config/config-schema-dac";
+import { generateZipPassword } from "../../../helpers/passwords";
+import {
+  AustraliaGenomicsDacRedcap,
+  australianGenomicsDacRedcapToDuoString,
+} from "../../../shared/csv-australian-genomics";
+import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { UserData } from "../../data/user-data";
+import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import {
   ApplicationUser,
   checkValidApplicationUser,
   insertPotentialOrReal,
 } from "../_dac-user-helper";
-import { DacRedcapAustralianGenomicsCsvType } from "../../../config/config-schema-dac";
-import type { Logger } from "pino";
-import { ReleaseCreateError } from "../../exceptions/release-authorisation";
-import { UserData } from "../../data/user-data";
-import { generateZipPassword } from "../../../helpers/passwords";
-import { printf } from "fast-printf";
-import { isInteger } from "lodash";
 import { AuditEventService } from "../audit-event-service";
+import { UserService } from "../user-service";
 
 @injectable()
 export class RedcapImportApplicationService {
   constructor(
     @inject("Database") private readonly edgeDbClient: gel.Client,
-    @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,
     @inject(UserData) private readonly userData: UserData,
-    @inject(ReleaseService) private readonly releaseService: ReleaseService,
     @inject(AuditEventService)
     private readonly auditEventService: AuditEventService,
   ) {}

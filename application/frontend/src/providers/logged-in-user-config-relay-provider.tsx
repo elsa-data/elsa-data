@@ -3,7 +3,6 @@ import { createCtx } from "./create-ctx";
 import { DacType } from "../../../backend/src/config/config-schema-dac";
 import { trpc } from "../helpers/trpc";
 import { useLoggedInUser } from "./logged-in-user-provider";
-import { SharerType } from "../../../backend/src/config/config-schema-sharer";
 import { SharerWithStatusType } from "../../../backend/src/business/services/sharers/sharer-service";
 
 export type LoggedInUserConfigRelay = {
@@ -39,7 +38,7 @@ export const LoggedInUserConfigRelayProvider: React.FC<{
     enabled: !!loggedInUser,
   };
 
-  const datasetsQuery = trpc.datasetRouter.getConfiguredDatasets.useQuery(
+  const datasetsQuery = trpc.dataset.getConfiguredDatasets.useQuery(
     undefined,
     qSettings,
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box } from "../../components/boxes";
 import { EagerErrorBoundary } from "../../components/errors";
 import { IsLoadingDiv } from "../../components/is-loading-div";
@@ -18,29 +18,33 @@ export const ReleasesDashboardPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const releaseQuery = trpc.release.getAllRelease.useQuery(
-    {
+  const { data, isSuccess, isLoading, isError, error } =
+    trpc.release.getAllRelease.useQuery({
       page: currentPage,
-    },
-    {
-      keepPreviousData: true,
-      onSuccess: (res) => {
-        setCurrentTotal(res.total);
-      },
-    },
-  );
-  const queryData = releaseQuery.data?.data;
+    });
+
+  const { data: copyData, isSuccess: copyIsSuccess } =
+    trpc.copyService.getCopied.useQuery();
+
+  useEffect(() => {
+    if (isSuccess) {
+      setCurrentTotal(data.total);
+    }
+    if (copyIsSuccess) {
+      console.log(copyData);
+    }
+  }, [isError, isSuccess, copyIsSuccess]);
+
+  const queryData = data?.data;
 
   return (
     <>
       <Box heading="Releases">
-        {releaseQuery.isError && (
-          <EagerErrorBoundary error={releaseQuery.error} />
-        )}
+        {isError && <EagerErrorBoundary error={error} />}
 
-        {releaseQuery.isLoading && <IsLoadingDiv />}
+        {isLoading && <IsLoadingDiv />}
 
-        {releaseQuery.isSuccess && queryData?.length === 0 && (
+        {isSuccess && queryData?.length === 0 && (
           <article className="prose max-w-none">
             <p>
               This page normally shows any releases that you are involved in.
@@ -55,7 +59,7 @@ export const ReleasesDashboardPage: React.FC = () => {
             </p>
           </article>
         )}
-        {releaseQuery.isSuccess && queryData && queryData?.length > 0 && (
+        {isSuccess && queryData && queryData?.length > 0 && (
           <>
             <Table
               tableHead={
@@ -73,7 +77,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                   <th scope="col">{/* action links */}</th>
                 </tr>
               }
-              tableBody={queryData.map((r, idx) => {
+              tableBody={queryData.map((r: any, idx: number) => {
                 const jobBadgeContent = r.isRunningJobBadge
                   ? `${r.isRunningJobBadge} ${r.isRunningJobPercentDone}%`
                   : undefined;

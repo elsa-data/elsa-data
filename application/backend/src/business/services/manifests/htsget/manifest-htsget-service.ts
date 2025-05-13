@@ -30,10 +30,10 @@ import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import { ReleaseService } from "../../releases/release-service";
 import { ManifestHtsgetTsvType } from "../manifest-bucket-key-types";
 import { PermissionService } from "../../permission-service";
-import { ObjectStoreRecordKey } from "@umccr/elsa-types";
 import { getFirstExternalIds } from "../manifest-tsv-helper";
 import { decomposeUrl } from "../../_release-file-list-helper";
 import { createTsv } from "../manifest-master-helper";
+import { ObjectStoreRecordKey } from "../../../../shared/schemas";
 
 export function getHtsgetSetting(
   settings: ElsaSettings,

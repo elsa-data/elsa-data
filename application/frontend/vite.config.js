@@ -1,10 +1,11 @@
-import svgrPlugin from "vite-plugin-svgr";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { build, defineConfig, UserConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import svgrPlugin from "vite-plugin-svgr";
 
 // https://vitejs.dev/config/
 export default defineConfig((env) => {
-  const defaultConfig: UserConfig = {
+  const defaultConfig = {
     build: {
       outDir: "build",
     },
@@ -15,6 +16,8 @@ export default defineConfig((env) => {
     },
     plugins: [
       react(),
+      tailwindcss(),
+      // converts SVGs encountered in the build process into React components
       svgrPlugin({
         svgrOptions: {
           icon: true,
