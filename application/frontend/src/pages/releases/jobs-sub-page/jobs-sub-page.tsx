@@ -1,6 +1,5 @@
-import React from "react";
 import { usePageSizer } from "../../../hooks/page-sizer";
-import { JobTable } from "../../../components/job/job-table";
+import { JobTable } from "./job-table.tsx";
 import { useParams } from "react-router-dom";
 
 export const JobsSubPage = () => {

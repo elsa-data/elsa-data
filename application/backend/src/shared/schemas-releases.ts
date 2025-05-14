@@ -1,6 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
-import { StringUnion, TypeDate, Nullable } from "./typebox-helpers";
+import { Nullable, StringUnion, TypeDate } from "./typebox-helpers";
 
 export const ReleaseSummarySchema = Type.Object({
   // the primary public identifier for this release
@@ -237,9 +237,9 @@ export const ReleaseCaseSchema = Type.Object({
 export const ReleasePreviousJobSchema = Type.Object({
   objectId: Type.String(),
   type: Type.String(),
-  created: TypeDate,
-  started: TypeDate,
-  ended: TypeDate,
+  created: Type.Optional(TypeDate),
+  started: Type.Optional(TypeDate),
+  ended: Type.Optional(TypeDate),
   requestedCancellation: Type.Boolean(),
   details: Type.String(),
 });

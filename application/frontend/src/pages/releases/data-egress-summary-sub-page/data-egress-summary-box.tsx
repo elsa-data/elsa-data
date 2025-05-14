@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box } from "../../../components/boxes";
 import { DataEgressSummaryTable } from "../../../components/data-egress/data-egress-summary-table";
 import { DataEgressDetailedTable } from "../../../components/data-egress/data-egress-detailed-table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRotate, faX } from "@fortawesome/free-solid-svg-icons";
-import { trpcOld } from "../../../helpers/trpc-old.ts";
+import { faRotate } from "@fortawesome/free-solid-svg-icons";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { Alert } from "../../../components/alert";
 import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const DataEgressSummaryBox = ({
   releaseKey,
@@ -15,16 +16,18 @@ export const DataEgressSummaryBox = ({
   releaseKey: string;
 }) => {
   const user = useLoggedInUser();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [isSummaryView, setIsSummaryView] = useState<boolean>(true);
-  const utils = trpcOld.useContext();
 
-  const updateReleaseEgressRecordMutate =
-    trpcOld.releaseDataEgress.updateDataEgressRecord.useMutation({
-      onSettled: async () => {
-        await utils.releaseDataEgress.invalidate();
-      },
+  const updateReleaseEgressRecordMutateOptions =
+    trpc.releaseDataEgress.updateDataEgressRecord.mutationOptions({
+      onSettled: async () => await queryClient.invalidateQueries(),
     });
+  const updateReleaseEgressRecordMutate = useMutation(
+    updateReleaseEgressRecordMutateOptions,
+  );
 
   const BoxHeader = () => {
     return (
@@ -37,13 +40,13 @@ export const DataEgressSummaryBox = ({
           {user?.isAllowedRefreshDatasetIndex && (
             <button
               className="btn-outline btn-xs btn ml-2"
-              disabled={updateReleaseEgressRecordMutate.isLoading}
+              disabled={updateReleaseEgressRecordMutate.isPending}
               onClick={() =>
                 updateReleaseEgressRecordMutate.mutate({ releaseKey })
               }
             >
               <FontAwesomeIcon
-                spin={updateReleaseEgressRecordMutate.isLoading}
+                spin={updateReleaseEgressRecordMutate.isPending}
                 icon={faRotate}
               />
             </button>
@@ -69,7 +72,7 @@ export const DataEgressSummaryBox = ({
       {updateReleaseEgressRecordMutate.isError && (
         <EagerErrorBoundary error={updateReleaseEgressRecordMutate.error} />
       )}
-      {updateReleaseEgressRecordMutate.isLoading && (
+      {updateReleaseEgressRecordMutate.isPending && (
         <Alert
           icon={<span className="loading loading-bars loading-xs" />}
           description={"Updating data egress records"}

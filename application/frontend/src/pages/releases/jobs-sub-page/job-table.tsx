@@ -1,14 +1,7 @@
-import React, {
-  Dispatch,
-  Fragment,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
-import { ReleasePreviousJobType } from "@umccr/elsa-types";
-import { Box } from "../boxes";
-import { BoxPaginator } from "../box-paginator";
+import { Fragment, ReactNode, useState } from "react";
+import { ReleasePreviousJobType } from "../../../../../backend/src/shared/schemas-releases";
+import { Box } from "../../../components/boxes.tsx";
+import { BoxPaginator } from "../../../components/box-paginator.tsx";
 import {
   ColumnSizingHeader,
   CoreHeader,
@@ -20,18 +13,17 @@ import {
   RowData,
   useReactTable,
 } from "@tanstack/react-table";
-import { Base7807Error, Base7807Response } from "@umccr/elsa-types";
 import {
   formatFromNowTime,
   formatLocalDateTime,
-} from "../../helpers/datetime-helper";
-import { Table } from "../tables";
-import { ToolTip } from "../tooltip";
+} from "../../../helpers/datetime-helper.ts";
+import { Table } from "../../../components/tables.tsx";
+import { ToolTip } from "../../../components/tooltip.tsx";
 import { BiChevronDown, BiChevronRight, BiChevronUp } from "react-icons/bi";
 import classNames from "classnames";
-import { EagerErrorBoundary, ErrorState } from "../errors";
-import { IsLoadingDiv } from "../is-loading-div";
-import { trpcOld } from "../../helpers/trpc-old.ts";
+import { IsLoadingDiv } from "../../../components/is-loading-div.tsx";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,26 +55,17 @@ export const JobTable = ({
   pageSize,
   releaseKey,
 }: JobTableProps): JSX.Element => {
+  const trpc = useTRPC();
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentTotal, setCurrentTotal] = useState(1);
 
-  const [data, setData] = useState<ReleasePreviousJobType[]>([]);
-  const [error, setError] = useState<ErrorState>({
-    error: null,
-    isSuccess: true,
+  const dataQueryOptions = trpc.releaseJob.previousJobs.queryOptions({
+    releaseKey: releaseKey,
+    page: currentPage,
   });
+  const dataQuery = useQuery(dataQueryOptions);
 
-  const dataQuery = useJobQuery(
-    currentPage,
-    releaseKey,
-    setCurrentTotal,
-    setData,
-    setError,
-  );
-
-  useEffect(() => {
-    dataQuery.refetch();
-  }, []);
+  const data: ReleasePreviousJobType[] = dataQuery?.data?.data ?? [];
 
   const table = useReactTable({
     data: data,
@@ -106,124 +89,85 @@ export const JobTable = ({
       }
     >
       <div className="flex flex-col">
-        {error.isSuccess ? (
-          <Table
-            tableHead={table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    onClick={
-                      header.id === "details"
-                        ? table.getToggleAllRowsExpandedHandler()
-                        : () => {}
-                    }
-                    scope="col"
-                    className={
-                      !header.column.columnDef.meta?.headerStyling
-                        ? "whitespace-nowrap"
-                        : header.column.columnDef.meta?.headerStyling
-                    }
-                  >
-                    {header.isPlaceholder ? undefined : (
-                      <JobTableHeader header={header} />
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-            tableBody={table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <tr
-                  key={row.id}
-                  onClick={() =>
-                    row.getCanExpand() &&
-                    row.getValue("details") &&
-                    row.toggleExpanded()
+        <Table
+          tableHead={table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  onClick={
+                    header.id === "details"
+                      ? table.getToggleAllRowsExpandedHandler()
+                      : () => {}
+                  }
+                  scope="col"
+                  className={
+                    !header.column.columnDef.meta?.headerStyling
+                      ? "whitespace-nowrap"
+                      : header.column.columnDef.meta?.headerStyling
                   }
                 >
-                  {row.getVisibleCells().map((cell, i, row) => (
-                    <td
-                      key={cell.id}
-                      className={classNames(
-                        cell.column.columnDef.meta?.cellStyling,
-                        {
-                          "whitespace-nowrap":
-                            !cell.column.columnDef.meta?.cellStyling,
-                          "text-left": i + 1 !== row.length,
-                        },
-                      )}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
+                  {header.isPlaceholder ? undefined : (
+                    <JobTableHeader header={header} />
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
+          tableBody={table.getRowModel().rows.map((row) => (
+            <Fragment key={row.id}>
+              <tr
+                key={row.id}
+                onClick={() =>
+                  row.getCanExpand() &&
+                  row.getValue("details") &&
+                  row.toggleExpanded()
+                }
+              >
+                {row.getVisibleCells().map((cell, i, row) => (
+                  <td
+                    key={cell.id}
+                    className={classNames(
+                      cell.column.columnDef.meta?.cellStyling,
+                      {
+                        "whitespace-nowrap":
+                          !cell.column.columnDef.meta?.cellStyling,
+                        "text-left": i + 1 !== row.length,
+                      },
+                    )}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+              {row.getIsExpanded() && row.getValue<string>("details") && (
+                <tr key={`expanded-row.id`}>
+                  {/* skip our expand/unexpand column */}
+                  <td>&nbsp;</td>
+                  {/* expanded content now into the rest of the columns */}
+                  <td key={row.id} colSpan={row.getVisibleCells().length - 1}>
+                    <div className="whitespace-pre-wrap font-mono text-xs">
+                      {row.getValue<string>("details")}
+                    </div>
+                  </td>
                 </tr>
-                {row.getIsExpanded() && row.getValue<string>("details") && (
-                  <tr key={`expanded-row.id`}>
-                    {/* skip our expand/unexpand column */}
-                    <td>&nbsp;</td>
-                    {/* expanded content now into the rest of the columns */}
-                    <td key={row.id} colSpan={row.getVisibleCells().length - 1}>
-                      <div className="whitespace-pre-wrap font-mono text-xs">
-                        {row.getValue<string>("details")}
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            ))}
-          />
-        ) : (
-          <EagerErrorBoundary error={error.error} />
-        )}
+              )}
+            </Fragment>
+          ))}
+        />
+        )
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {
             table.reset();
             setCurrentPage(n);
           }}
-          rowCount={currentTotal}
+          rowCount={dataQuery.data?.total ?? 0}
           rowsPerPage={pageSize}
           rowWord="jobs"
         />
       </div>
     </Box>
-  );
-};
-
-/**
- * Wrapper around a useQuery hook for an audit entry event.
- */
-export const useJobQuery = (
-  currentPage: number,
-  releaseKey: string,
-  setCurrentTotal: Dispatch<SetStateAction<number>>,
-  setData: Dispatch<SetStateAction<ReleasePreviousJobType[]>>,
-  setError: Dispatch<SetStateAction<ErrorState>>,
-) => {
-  const query = {
-    page: currentPage,
-  };
-  const options = {
-    enabled: false,
-    keepPreviousData: true,
-    onSuccess: (data: any) => {
-      setCurrentTotal(data.total);
-      setData((data.data as ReleasePreviousJobType[]) ?? []);
-      setError({ error: null, isSuccess: data.data !== undefined });
-    },
-    onError: (error: any) => {
-      setData([]);
-      setError({ error, isSuccess: false });
-    },
-  };
-
-  return trpcOld.releaseJob.previousJobs.useQuery(
-    { ...query, releaseKey },
-    options,
   );
 };
 
@@ -294,8 +238,6 @@ const TimeToolTip = ({ time }: { time: string | undefined }) => (
 
 /**
  * Create the column definition based on the audit entry type.
- *
- * @param navigate a function for performing navigation
  */
 export const createColumns = () => {
   const columnHelper = createColumnHelper<ReleasePreviousJobType>();
