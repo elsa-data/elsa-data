@@ -1,24 +1,30 @@
 import React, { useState } from "react";
 import { isNil } from "lodash";
-import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpcOld } from "../../helpers/trpc-old.ts";
-import { usePageSizer } from "../../hooks/page-sizer";
-import { BoxPaginator } from "../box-paginator";
-import { EagerErrorBoundary } from "../errors";
-import { IsLoadingDiv } from "../is-loading-div";
+import { formatLocalDateTime } from "../../helpers/datetime-helper.ts";
+import { usePageSizer } from "../../hooks/page-sizer.ts";
+import { BoxPaginator } from "../../components/box-paginator.tsx";
+import { EagerErrorBoundary } from "../../components/errors.tsx";
+import { IsLoadingDiv } from "../../components/is-loading-div.tsx";
 import classNames from "classnames";
 import { useNavigate } from "react-router-dom";
-import { ToolTip } from "../tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
-import { Table } from "../tables";
-import { useLoggedInUser } from "../../providers/logged-in-user-provider";
+import { Table } from "../../components/tables.tsx";
+import { useLoggedInUser } from "../../providers/logged-in-user-provider.tsx";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 const baseColumnClasses = ["p-4", "font-medium", "text-gray-500"];
 const baseMessageDivClasses =
   "min-h-[10em] w-full flex items-center justify-center";
 
-export const DatasetTable: React.FC = ({}) => {
+/**
+ * A table listing the datasets available in the system
+ *
+ * @constructor
+ */
+export const DatasetsTable: React.FC = ({}) => {
+  const trpc = useTRPC();
   const user = useLoggedInUser();
   const navigate = useNavigate();
 
@@ -29,24 +35,18 @@ export const DatasetTable: React.FC = ({}) => {
   // Pagination Variables
   const pageSize = usePageSizer();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const datasetQuery = trpcOld.dataset.getAllDataset.useQuery(
-    {
-      page: currentPage,
-    },
-    {
-      keepPreviousData: true,
-      onSuccess: (res) => {
-        setCurrentTotal(res.total);
-      },
-    },
-  );
+  const datasetQueryOptions = trpc.dataset.getAllDataset.queryOptions({
+    page: currentPage,
+  });
+  const datasetQuery = useQuery(datasetQueryOptions);
 
   if (datasetQuery.isLoading) return <IsLoadingDiv />;
 
   const data = datasetQuery.data?.data;
-  if (isNil(data))
+  const total = datasetQuery.data?.total;
+
+  if (isNil(data) || isNil(total))
     return (
       <div className={classNames(baseMessageDivClasses)}>
         <p>There are no visible dataset(s)</p>
@@ -72,7 +72,7 @@ export const DatasetTable: React.FC = ({}) => {
             {allowDatasetView && <th />}
           </tr>
         }
-        tableBody={data.map((row, rowIndex) => {
+        tableBody={data.map((row) => {
           return (
             <tr key={row.uri}>
               {/* Is not in Config Icon */}
@@ -144,7 +144,7 @@ export const DatasetTable: React.FC = ({}) => {
       <BoxPaginator
         currentPage={currentPage}
         setPage={setCurrentPage}
-        rowCount={currentTotal}
+        rowCount={total}
         rowsPerPage={pageSize}
         rowWord="datasets"
       />

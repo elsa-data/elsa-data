@@ -1,12 +1,12 @@
 import React from "react";
 import { Box } from "../../components/boxes";
-import { DatasetTable } from "../../components/dataset/dataset-table";
+import { DatasetsTable } from "./datasets-table.tsx";
 
 export const DatasetsDashboardPage: React.FC = () => {
   return (
     <>
       <Box heading="Datasets">
-        <DatasetTable />
+        <DatasetsTable />
       </Box>
     </>
   );

@@ -1,27 +1,24 @@
 import * as gel from "gel";
-import e from "../../../dbschema/edgeql-js";
-import {
-  DatasetDeepType,
-  DatasetLightType,
-} from "../../shared/schemas-dataset";
-import { AuthenticatedUser } from "../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import { makeSystemlessIdentifierArray } from "../db/helper";
-import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
-import type { ElsaSettings } from "../../config/elsa-settings";
-import { AuditEventService } from "./audit-event-service";
+import e from "../../../dbschema/edgeql-js";
 import {
   getAllDataset,
   getDatasetCasesByUri,
   getDatasetConsent,
   getDatasetStorageStatsByUri,
 } from "../../../dbschema/queries";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
 import { DatasetType } from "../../config/config-schema-dataset";
+import type { ElsaSettings } from "../../config/elsa-settings";
+import { DatasetLightType } from "../../shared/schemas-dataset";
 import { DuoLimitationCodedType } from "../../shared/schemas-duo";
+import { AuthenticatedUser } from "../authenticated-user";
+import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
+import { makeSystemlessIdentifierArray } from "../db/helper";
+import { AuditEventService } from "./audit-event-service";
 
 @injectable()
 export class DatasetService {
@@ -152,7 +149,7 @@ export class DatasetService {
     user: AuthenticatedUser,
     datasetUri: string,
     includeDeletedFile: boolean,
-  ): Promise<DatasetDeepType | null> {
+  ) {
     const datasetCasesQuery = await getDatasetCasesByUri(this.edgeDbClient, {
       userDbId: user.dbId,
       datasetUri: datasetUri,
@@ -169,23 +166,8 @@ export class DatasetService {
     if (!datasetCasesQuery || !datasetStorageStatsQuery) return null;
 
     return {
-      uri: datasetCasesQuery.uri,
-      description: datasetCasesQuery.description,
-      updatedDateTime: datasetCasesQuery.updatedDateTime,
-      isInConfig: datasetCasesQuery.isInConfig,
-      totalCaseCount: datasetCasesQuery.totalCaseCount,
-      totalPatientCount: datasetCasesQuery.totalPatientCount,
-      totalSpecimenCount: datasetCasesQuery.totalSpecimenCount,
-      cases: datasetCasesQuery.cases,
-
-      // Artifact Type Count
-      totalArtifactCount: datasetStorageStatsQuery.totalArtifactCount,
-      totalArtifactSizeBytes: datasetStorageStatsQuery.totalArtifactSizeBytes,
-      bclCount: datasetStorageStatsQuery.bclCount,
-      fastqCount: datasetStorageStatsQuery.fastqCount,
-      vcfCount: datasetStorageStatsQuery.vcfCount,
-      bamCount: datasetStorageStatsQuery.bamCount,
-      cramCount: datasetStorageStatsQuery.cramCount,
+      ...datasetCasesQuery,
+      ...datasetStorageStatsQuery,
     };
   }
 

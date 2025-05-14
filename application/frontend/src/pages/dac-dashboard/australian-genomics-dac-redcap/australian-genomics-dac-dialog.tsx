@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { isNil, isNumber } from "lodash";
-import { REACT_QUERY_RELEASE_KEYS } from "../../releases/queries";
-import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
+import { AustraliaGenomicsDacRedcap } from "../../../../../backend/src/shared/csv-australian-genomics";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../../../components/tables";
-import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
 
 type Props = {
   showing: boolean;
@@ -25,6 +24,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   initialError,
 }) => {
   const navigate = useNavigate();
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
@@ -34,7 +34,8 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   const [lastError, setLastError] = useState<string | undefined>();
   useEffect(() => setLastError(initialError), [initialError]);
 
-  const createNewReleaseMutate = trpcOld.dac.createNew.useMutation();
+  const createNewReleaseMutateOptions = trpc.dac.createNew.mutationOptions();
+  const createNewReleaseMutate = useMutation(createNewReleaseMutateOptions);
 
   /*const createNewReleaseMutatex = useMutation((d: AustraliaGenomicsDacRedcap) =>
     axios
@@ -97,7 +98,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
       }
       buttons={
         <SuccessCancelButtons
-          isLoading={createNewReleaseMutate.isLoading}
+          isLoading={createNewReleaseMutate.isPending}
           isSuccessDisabled={isNil(selectedRowIndex)}
           successButtonLabel={"Add"}
           onSuccess={() => {
@@ -110,12 +111,10 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                 {
                   onSuccess: (newReleaseKey) => {
                     // invalidate the keys so that going to the dashboard will be refreshed
-                    queryClient
-                      .invalidateQueries(REACT_QUERY_RELEASE_KEYS.all)
-                      .then(() => {
-                        // bounce us to the details page for the release we just made
-                        navigate(`/releases/${newReleaseKey}/detail`);
-                      });
+                    queryClient.invalidateQueries().then(() => {
+                      // bounce us to the details page for the release we just made
+                      navigate(`/releases/${newReleaseKey}/detail`);
+                    });
 
                     // now close the dialog
                     closeDialog();
