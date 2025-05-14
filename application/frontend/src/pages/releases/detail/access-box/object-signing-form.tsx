@@ -4,7 +4,7 @@ import { TsvColumnCheck } from "../../../../components/access-box";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "../../../../../../backend/src/shared/schemas";
 import { Alert } from "../../../../components/alert";
-import { trpc } from "../../../../helpers/trpc";
+import { trpcOld } from "../../../../helpers/trpc-old.ts";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { SharerObjectSigningType } from "../../../../../../backend/src/config/config-schema-sharer";
 
@@ -21,7 +21,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
   const [isViewPassword, setIsViewPassword] = useState<boolean>(false);
 
-  const getFilePasswordQuery = trpc.release.getReleasePassword.useQuery(
+  const getFilePasswordQuery = trpcOld.release.getReleasePassword.useQuery(
     {
       releaseKey,
     },

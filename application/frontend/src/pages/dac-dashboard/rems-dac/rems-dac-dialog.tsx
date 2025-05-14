@@ -7,7 +7,7 @@ import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../../../components/errors";
 import { Table } from "../../../components/tables";
-import { trpc } from "../../../helpers/trpc";
+import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
 type Props = {
@@ -34,9 +34,9 @@ export const RemsDacDialog: React.FC<Props> = ({
     undefined,
   );
 
-  const createNewReleaseMutate = trpc.dac.createNew.useMutation();
+  const createNewReleaseMutate = trpcOld.dac.createNew.useMutation();
 
-  const detectNewReleaseQuery = trpc.dac.detectNewQuery.useQuery<
+  const detectNewReleaseQuery = trpcOld.dac.detectNewQuery.useQuery<
     {},
     RemsApprovedApplicationType[]
   >({ dacId: dacId }, { enabled: false });

@@ -28,7 +28,7 @@ if (rootElement != null) {
   // e.g.
   // rootElement.dataset.deployedEnvironment
   // (NOTE: the conversion from kebab casing to camel casing is AUTOMATIC as part of HTML5!)
-  const loc = rootElement.dataset.locale || "en";
+  // const loc = rootElement.dataset.locale || "en";
   const ver = rootElement.dataset.version || "undefined version";
   const built = rootElement.dataset.built || "unknown";
   const rev = rootElement.dataset.revision || "undefined revision";

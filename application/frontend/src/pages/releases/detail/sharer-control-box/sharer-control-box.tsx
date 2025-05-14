@@ -1,6 +1,5 @@
-import React, { PropsWithChildren, ReactNode, useState } from "react";
-import classNames from "classnames";
-import { useMutation } from "@tanstack/react-query";
+import React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../../shared-types";
 import {
@@ -10,7 +9,6 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { RhChecks } from "../../../../components/rh/rh-checks";
 import { axiosPatchOperationMutationFn } from "../../queries";
-import { trpc } from "../../../../helpers/trpc";
 import { isDiscriminate } from "../../../../../../backend/src/shared/typescript";
 import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
 import { SharingConfigurationAccordion } from "./sharing-configuration-accordion";
@@ -41,16 +39,15 @@ export const SharerControlBox: React.FC<Props> = ({
   isAllowEdit = false,
 }) => {
   const { sharers } = useLoggedInUserConfigRelay()!;
-  const utils = trpc.useUtils();
+  const queryClient = useQueryClient();
+
+  // NOTE this is NOT a TRPC call
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation({
     mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    onSuccess: async () =>
-      await utils.release.getSpecificRelease.invalidate({
-        releaseKey: releaseKey,
-      }),
+    onSuccess: async () => await queryClient.invalidateQueries(),
   });
 
   // the settings come from the backend on login and tell us what is fundamentally enabled

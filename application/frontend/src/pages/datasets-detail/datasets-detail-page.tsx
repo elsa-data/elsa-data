@@ -9,10 +9,11 @@ import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFemale, faMale } from "@fortawesome/free-solid-svg-icons";
 import ConsentSummary from "../releases/detail/cases-box/consent-summary";
-import { trpc } from "../../helpers/trpc";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { isNil } from "lodash";
 import { Table } from "../../components/tables";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 type DatasetsSpecificPageParams = {
   datasetUri: string;
@@ -26,9 +27,12 @@ export const DatasetsDetailPage: React.FC = () => {
     ".",
   );
 
-  const datasetQuery = trpc.dataset.getSingleDataset.useQuery({
+  const trpc = useTRPC();
+
+  const datasetQueryOptions = trpc.dataset.getSingleDataset.queryOptions({
     datasetUri: datasetUri,
   });
+  const datasetQuery = useQuery(datasetQueryOptions);
 
   if (datasetQuery.isLoading) return <IsLoadingDiv />;
   const data = datasetQuery?.data;

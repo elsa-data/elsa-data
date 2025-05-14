@@ -20,7 +20,7 @@ describe("TRPC good/bad request handling tests", () => {
 
     const client = await createTrpcClient(
       server,
-      "/api/trpc",
+      "/api/trpcOld",
       authCookieValue,
       csrfHeaderValue,
     );

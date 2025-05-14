@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { fileSize } from "humanize-plus";
 import { isNil } from "lodash";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { BoxPaginator } from "../box-paginator";
 import { EagerErrorBoundary } from "../errors";
@@ -29,7 +29,7 @@ export function DataEgressDetailedTable({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const dataEgressQuery = trpc.releaseDataEgress.dataEgressRecords.useQuery(
+  const dataEgressQuery = trpcOld.releaseDataEgress.dataEgressRecords.useQuery(
     { releaseKey, page: currentPage },
     {
       onSuccess: (res) => {

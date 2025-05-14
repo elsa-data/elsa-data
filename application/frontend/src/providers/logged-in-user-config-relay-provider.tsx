@@ -1,9 +1,10 @@
 import React from "react";
 import { createCtx } from "./create-ctx";
 import { DacType } from "../../../backend/src/config/config-schema-dac";
-import { trpc } from "../helpers/trpc";
 import { useLoggedInUser } from "./logged-in-user-provider";
 import { SharerWithStatusType } from "../../../backend/src/business/services/sharers/sharer-service";
+import { useTRPC } from "../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 export type LoggedInUserConfigRelay = {
   // the set of datasets currently available from the instance
@@ -28,6 +29,7 @@ export type LoggedInUserConfigRelay = {
 export const LoggedInUserConfigRelayProvider: React.FC<{
   children: React.ReactNode;
 }> = (props) => {
+  const trpc = useTRPC();
   const loggedInUser = useLoggedInUser();
 
   const qSettings = {
@@ -38,17 +40,23 @@ export const LoggedInUserConfigRelayProvider: React.FC<{
     enabled: !!loggedInUser,
   };
 
-  const datasetsQuery = trpc.dataset.getConfiguredDatasets.useQuery(
+  const datasetsQueryOptions = trpc.user.getOwnUser.queryOptions(
     undefined,
     qSettings,
   );
+  const datasetsQuery = useQuery(datasetsQueryOptions);
 
-  const sharersQuery = trpc.sharer.getConfiguredSharers.useQuery(
+  const sharersQueryOptions = trpc.sharer.getConfiguredSharers.queryOptions(
     undefined,
     qSettings,
   );
+  const sharersQuery = useQuery(sharersQueryOptions);
 
-  const dacQuery = trpc.dac.getConfiguredDacs.useQuery(undefined, qSettings);
+  const dacQueryOptions = trpc.dac.getConfiguredDacs.queryOptions(
+    undefined,
+    qSettings,
+  );
+  const dacQuery = useQuery(dacQueryOptions);
 
   const val = {
     datasets: datasetsQuery.isSuccess ? datasetsQuery.data : {},

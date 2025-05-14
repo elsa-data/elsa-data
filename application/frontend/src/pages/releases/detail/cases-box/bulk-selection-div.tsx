@@ -1,11 +1,9 @@
 import React, { useCallback, useState } from "react";
-import { trpc } from "../../../../helpers/trpc";
 import { CsvDropzone } from "../../../../components/csv-dropzone";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { EagerErrorBoundary } from "../../../../components/errors";
-import classNames from "classnames";
 
 type ParseCallback = (identifiers: string[]) => void;
 
@@ -17,9 +15,17 @@ type Props = {
   disabled: boolean;
 };
 
+/**
+ * A div on which CSV files can be dropped. The CSV content will then
+ * be used to either select or deselect cases (via passed in
+ * callback methods).
+ *
+ * @param onParseSelectCsv
+ * @param onParseUnselectCsv
+ * @param disabled
+ * @constructor
+ */
 export const BulkSelectionDiv: React.FC<Props> = ({
-  releaseKey,
-  releaseIsActivated,
   onParseSelectCsv,
   onParseUnselectCsv,
   disabled,

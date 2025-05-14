@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { PotentialUserSummaryType } from "@umccr/elsa-types/schemas-users";
+import { PotentialUserSummaryType } from "../../../../../../backend/src/shared/schemas-users";
 import classNames from "classnames";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { EagerErrorBoundary } from "../../../../components/errors";
@@ -7,7 +7,6 @@ import { IsLoadingDiv } from "../../../../components/is-loading-div";
 import { Table } from "../../../../components/tables";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { ToolTip } from "../../../../components/tooltip";
-import { trpc } from "../../../../helpers/trpc";
 import { usePageSizer } from "../../../../hooks/page-sizer";
 import {
   OVERALL_ADMIN_VIEW_DESC,
@@ -26,6 +25,8 @@ import { EditPotentialUserPermissionDialog } from "./edit-potential-user-permiss
 import { useLoggedInUser } from "../../../../providers/logged-in-user-provider";
 import ConfirmDialog from "../../../../components/confirmation-dialog";
 import { Alert } from "../../../../components/alert";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const permissionIconProperties: {
   key:
@@ -53,16 +54,16 @@ export const permissionIconProperties: {
 ];
 
 /**
- * A box containing all users in the has logged in.
+ * A box containing all users that have been invited but not yet on the system.
  *
- * @param pageSize
  * @constructor
  */
 export const PotentialUserTable = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const pageSize = usePageSizer();
 
   const loggedInUser = useLoggedInUser();
-  const utils = trpc.useContext();
 
   // Some boolean values for component to show or not
   const isEditingAllowed = !!loggedInUser?.isAllowedChangeUserPermission;
@@ -70,29 +71,20 @@ export const PotentialUserTable = () => {
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
-
-  const potentialUsersQuery = trpc.user.getPotentialUsers.useQuery(
-    {
-      page: currentPage,
-    },
-    {
-      keepPreviousData: true,
-      onSuccess: (res) => {
-        if (!res) return undefined;
-
-        // use the total
-        setCurrentTotal(res.total);
-      },
-    },
-  );
-
-  const removePotentialUserMutate = trpc.user.removePotentialUser.useMutation({
-    onSuccess: async () => {
-      await utils.user.getPotentialUsers.invalidate();
-    },
+  const potentialUsersQueryOptions = trpc.user.getPotentialUsers.queryOptions({
+    page: currentPage,
   });
+  const potentialUsersQuery = useQuery(potentialUsersQueryOptions);
+
+  const removePotentialUserMutateOptions =
+    trpc.user.removePotentialUser.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+      },
+    });
+  const removePotentialUserMutate = useMutation(
+    removePotentialUserMutateOptions,
+  );
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
@@ -174,7 +166,7 @@ export const PotentialUserTable = () => {
                 <ConfirmDialog
                   openButtonLabel={`remove`}
                   openButtonClassName={classNames("btn-table-action-danger", {
-                    "btn-disabled": removePotentialUserMutate.isLoading,
+                    "btn-disabled": removePotentialUserMutate.isPending,
                   })}
                   onConfirmButtonLabel={"Remove"}
                   dialogTitle={`Remove Potential User Confirmation`}
@@ -231,9 +223,9 @@ export const PotentialUserTable = () => {
           <BoxPaginator
             currentPage={currentPage}
             setPage={(n) => setCurrentPage(n)}
-            rowCount={currentTotal}
+            rowCount={potentialUsersQuery.data.total}
             rowsPerPage={pageSize}
-            rowWord="all users"
+            rowWord="invited users"
           />
         </>
       )}

@@ -4,7 +4,7 @@ import { DataEgressSummaryTable } from "../../../components/data-egress/data-egr
 import { DataEgressDetailedTable } from "../../../components/data-egress/data-egress-detailed-table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRotate, faX } from "@fortawesome/free-solid-svg-icons";
-import { trpc } from "../../../helpers/trpc";
+import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { Alert } from "../../../components/alert";
 import { useLoggedInUser } from "../../../providers/logged-in-user-provider";
@@ -17,10 +17,10 @@ export const DataEgressSummaryBox = ({
   const user = useLoggedInUser();
 
   const [isSummaryView, setIsSummaryView] = useState<boolean>(true);
-  const utils = trpc.useContext();
+  const utils = trpcOld.useContext();
 
   const updateReleaseEgressRecordMutate =
-    trpc.releaseDataEgress.updateDataEgressRecord.useMutation({
+    trpcOld.releaseDataEgress.updateDataEgressRecord.useMutation({
       onSettled: async () => {
         await utils.releaseDataEgress.invalidate();
       },

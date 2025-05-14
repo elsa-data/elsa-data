@@ -7,7 +7,7 @@ import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { doLookup } from "../../../../helpers/ontology-helper";
-import { trpc } from "../../../../helpers/trpc";
+import { trpcOld } from "../../../../helpers/trpc-old.ts";
 import { Flags } from "../../../../components/flags";
 
 type Props = {
@@ -63,9 +63,9 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
 
   let consentQuery;
   if (consentId) {
-    consentQuery = trpc.dataset.getDatasetConsent.useQuery({ consentId });
+    consentQuery = trpcOld.dataset.getDatasetConsent.useQuery({ consentId });
   } else {
-    consentQuery = trpc.release.getReleaseConsent.useQuery({
+    consentQuery = trpcOld.release.getReleaseConsent.useQuery({
       releaseKey: releaseKey ?? "",
       nodeId: nodeId ?? "",
     });

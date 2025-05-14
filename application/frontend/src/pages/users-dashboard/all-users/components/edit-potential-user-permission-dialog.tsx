@@ -5,7 +5,6 @@ import {
 } from "../../../../components/errors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SelectDialogBase } from "../../../../components/select-dialog-base";
-import { trpc } from "../../../../helpers/trpc";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import { Alert } from "../../../../components/alert";
@@ -16,6 +15,8 @@ import {
   UserPermissionsInput,
 } from "../../../../components/user/user-permissions-input";
 import { SuccessCancelButtons } from "../../../../components/success-cancel-buttons";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type UserProps = {
   email: string;
@@ -28,8 +29,9 @@ type UserProps = {
 export const EditPotentialUserPermissionDialog: React.FC<{
   user: UserProps;
 }> = ({ user }) => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const loggedInUser = useLoggedInUser();
-  const utils = trpc.useContext();
 
   // Some boolean values for component to show or not
   const isEditingAllowed = loggedInUser?.isAllowedChangeUserPermission;
@@ -52,15 +54,18 @@ export const EditPotentialUserPermissionDialog: React.FC<{
   }, [isDialogOpen, isEditingMode, user]);
 
   // Editing/Mutation Purposes
-  const changeUserPermissionMutate =
-    trpc.user.changePotentialUserPermission.useMutation({
+  const changeUserPermissionMutateOptions =
+    trpc.user.changePotentialUserPermission.mutationOptions({
       onSettled: async () => {
         setIsEditingMode(false);
       },
       onSuccess: async () => {
-        await utils.user.getPotentialUsers.invalidate();
+        await queryClient.invalidateQueries();
       },
     });
+  const changeUserPermissionMutate = useMutation(
+    changeUserPermissionMutateOptions,
+  );
 
   const isLoadingMutatePermission = changeUserPermissionMutate.isPending;
 

@@ -4,7 +4,7 @@ import { isNil } from "lodash";
 import { EagerErrorBoundary } from "../errors";
 import { BoxPaginator } from "../box-paginator";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { Table } from "../tables";
 import classNames from "classnames";
@@ -31,7 +31,7 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const dataEgressQuery = trpc.releaseDataEgress.dataEgressSummary.useQuery(
+  const dataEgressQuery = trpcOld.releaseDataEgress.dataEgressSummary.useQuery(
     { releaseKey, page: currentPage },
     {
       onSuccess: (res) => {

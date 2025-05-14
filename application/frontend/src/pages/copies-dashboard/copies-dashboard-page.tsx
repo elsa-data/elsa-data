@@ -1,6 +1,6 @@
 import React from "react";
 import { Box } from "../../components/boxes";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import classNames from "classnames";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ export const CopiesDashboardPage: React.FC = () => {
     data: copyData,
     isSuccess: copyIsSuccess,
     isPending: copyIsPending,
-  } = trpc.copyService.getCopied.useQuery();
+  } = trpcOld.copyService.getCopied.useQuery();
 
   return (
     <>

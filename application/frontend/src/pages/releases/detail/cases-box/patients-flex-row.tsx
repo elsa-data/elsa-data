@@ -1,11 +1,15 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDna } from "@fortawesome/free-solid-svg-icons";
-import { ReleaseCaseType, ReleasePatientType } from "@umccr/elsa-types";
+import {
+  ReleaseCaseType,
+  ReleasePatientType,
+} from "../../../../../../backend/src/shared/schemas-releases";
 import classNames from "classnames";
 import { ConsentPopup } from "./consent-popup";
-import { trpc } from "../../../../helpers/trpc";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   releaseKey: string;
@@ -57,19 +61,21 @@ export const PatientsFlexRow: React.FC<Props> = ({
   isAllowEdit,
   row,
 }) => {
-  const trpcUtils = trpc.useContext();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
-    onSuccess: async () =>
-      // once we've altered the selection set we want to invalidate this releases cases queries
-      await trpcUtils.release.getReleaseCases.invalidate({
-        releaseKey: releaseKey,
-      }),
-  });
+  const specimenMutateOptions =
+    trpc.release.updateReleaseSpecimens.mutationOptions({
+      onSuccess: async () =>
+        // once we've altered the selection set we want to invalidate this releases cases queries
+        await queryClient.invalidateQueries(),
+    });
+
+  const specimenMutate = useMutation(specimenMutateOptions);
 
   const onChangeCasesCheckbox =
-    (externalId: string, nextState: boolean) => async () => {
-      await specimenMutate.mutate({
+    (externalId: string, nextState: boolean) => () => {
+      specimenMutate.mutate({
         op: nextState ? "add" : "remove",
         releaseKey: releaseKey,
         args: { externalIdentifierValues: [externalId] },
@@ -117,7 +123,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
 
     // the select/unselect operation can be a bit complex on the backend - so we want to give visual feedback
     // as the operation applies
-    if (specimenMutate && specimenMutate.isLoading)
+    if (specimenMutate && specimenMutate.isPending)
       patientClasses.push("opacity-50");
 
     // at these sizes on screen the icons are barely distinguishable but whatever
@@ -195,7 +201,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
         <label className="flex cursor-pointer space-x-4">
           <IndeterminateCheckbox
             disabled={
-              specimenMutate.isLoading || releaseIsActivated || !isAllowEdit
+              specimenMutate.isPending || releaseIsActivated || !isAllowEdit
             }
             checked={row.nodeStatus === "selected"}
             indeterminate={row.nodeStatus === "indeterminate"}

@@ -3,7 +3,7 @@ import classNames from "classnames";
 import { BoxPaginator } from "../../components/box-paginator";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { Table } from "../../components/tables";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { CopySummaryEntry } from "../../../../backend/src/business/services/copy-service.ts";
 import { fileSize } from "humanize-plus";
@@ -26,14 +26,16 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   const copySummaryHeaderQuery =
-    trpc.copyService.getCopiedReportHeader.useQuery({
+    trpcOld.copyService.getCopiedReportHeader.useQuery({
       stepsExecutionArn: props.copyExecutionArn,
     });
 
-  const copySummaryRowsQuery = trpc.copyService.getCopiedReportRows.useQuery({
-    stepsExecutionArn: props.copyExecutionArn,
-    page: currentPage,
-  });
+  const copySummaryRowsQuery = trpcOld.copyService.getCopiedReportRows.useQuery(
+    {
+      stepsExecutionArn: props.copyExecutionArn,
+      page: currentPage,
+    },
+  );
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 

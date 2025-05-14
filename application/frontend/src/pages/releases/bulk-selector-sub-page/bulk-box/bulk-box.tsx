@@ -10,7 +10,7 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
-import { trpc } from "../../../../helpers/trpc";
+import { trpcOld } from "../../../../helpers/trpc-old.ts";
 
 type Props = {
   releaseKey: string;
@@ -25,11 +25,13 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
     isSuccess: true,
   });
 
-  const applyAllMutate = trpc.releaseJob.startCohortConstruction.useMutation({
-    onSettled: async () => await queryClient.invalidateQueries(),
-    onError: (error: any) => setError({ error, isSuccess: false }),
-    onSuccess: () => setError({ error: null, isSuccess: true }),
-  });
+  const applyAllMutate = trpcOld.releaseJob.startCohortConstruction.useMutation(
+    {
+      onSettled: async () => await queryClient.invalidateQueries(),
+      onError: (error: any) => setError({ error, isSuccess: false }),
+      onSuccess: () => setError({ error: null, isSuccess: true }),
+    },
+  );
 
   const isActivated = !!releaseData.activation;
   const isJobRunning = !isUndefined(releaseData.runningJob);

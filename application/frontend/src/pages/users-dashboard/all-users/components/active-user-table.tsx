@@ -8,39 +8,28 @@ import { Table } from "../../../../components/tables";
 import { EditActiveUserPermissionDialog } from "./edit-active-user-permission-dialog";
 import { formatLocalDateTime } from "../../../../helpers/datetime-helper";
 import { ToolTip } from "../../../../components/tooltip";
-import { trpc } from "../../../../helpers/trpc";
 import { usePageSizer } from "../../../../hooks/page-sizer";
 import { permissionIconProperties } from "../all-users";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * A box containing all users in the has logged in.
  *
- * @param pageSize
  * @constructor
  */
 export const ActiveUserTable = () => {
   const pageSize = usePageSizer();
+  const trpc = useTRPC();
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  // very briefly whilst the first page is downloaded we estimate that we have only one entry
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
+  const usersQueryOptions = trpc.user.getActiveUsers.queryOptions({
+    page: currentPage,
+  });
 
-  const usersQuery = trpc.user.getActiveUsers.useQuery(
-    {
-      page: currentPage,
-    },
-    {
-      keepPreviousData: true,
-      onSuccess: (res) => {
-        if (!res) return undefined;
-
-        // use the total
-        setCurrentTotal(res.total);
-      },
-    },
-  );
+  const usersQuery = useQuery(usersQueryOptions);
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
@@ -125,7 +114,7 @@ export const ActiveUserTable = () => {
       <h2 className="my-2 font-medium">Active User</h2>
 
       <p className="prose mb-4 text-sm text-gray-500">
-        {`This table will display a list of logged-in users along with their permissions.`}
+        {`This table will display a list of active users (those that have logged in at least once) along with their permissions.`}
       </p>
       {usersQuery.isError && <EagerErrorBoundary error={usersQuery.error} />}
 
@@ -138,9 +127,9 @@ export const ActiveUserTable = () => {
           <BoxPaginator
             currentPage={currentPage}
             setPage={(n) => setCurrentPage(n)}
-            rowCount={currentTotal}
+            rowCount={usersQuery.data.total}
             rowsPerPage={pageSize}
-            rowWord="all users"
+            rowWord="active users"
           />
         </>
       )}

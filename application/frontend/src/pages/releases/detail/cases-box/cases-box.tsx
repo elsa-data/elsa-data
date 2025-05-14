@@ -1,17 +1,17 @@
 import React, { ReactNode, useEffect, useState } from "react";
-import type { ReleaseCaseType } from "../../../../../../backend/src/shared/schemas";
+import type { ReleaseCaseType } from "../../../../../../backend/src/shared/schemas-releases";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
 import { Box } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
-import { ConsentPopup } from "./consent-popup";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { Table } from "../../../../components/tables";
 import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
-import { trpc } from "../../../../helpers/trpc";
 import { BulkSelectionDiv } from "./bulk-selection-div";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   releaseKey: string;
@@ -101,6 +101,9 @@ export const CasesBox: React.FC<Props> = ({
   isAllowAdminView,
   showConsent,
 }) => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   // a quasi state for just the UI that tracks if we think the entire set is checked or unchecked
   // (basically we are guessing it is indeterminate after any selection activity - unless
   // we get a strong signal via button press that everything is cleared or set)
@@ -128,12 +131,14 @@ export const CasesBox: React.FC<Props> = ({
     setSearchText(text);
   };
 
-  const { data, isSuccess, isPending, error, isError, isFetching } =
-    trpc.release.getReleaseCases.useQuery({
-      releaseKey: releaseKey,
-      page: currentPage,
-      q: searchText,
-    });
+  const getReleaseCasesOptions = trpc.release.getReleaseCases.queryOptions({
+    releaseKey: releaseKey,
+    page: currentPage,
+    q: searchText,
+  });
+  const { data, isSuccess, isPending, error, isError, isFetching } = useQuery(
+    getReleaseCasesOptions,
+  );
 
   useEffect(() => {
     if (isSuccess) {
@@ -144,15 +149,14 @@ export const CasesBox: React.FC<Props> = ({
 
   const casesQueryData: ReleaseCaseType[] | undefined = data?.data;
 
-  const trpcUtils = trpc.useUtils();
+  const specimenMutateOptions =
+    trpc.release.updateReleaseSpecimens.mutationOptions({
+      onSuccess: async () =>
+        // once we've altered the selection set we want to invalidate the cases queries *just* of this release
+        await queryClient.invalidateQueries(),
+    });
 
-  const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
-    onSuccess: async () =>
-      // once we've altered the selection set we want to invalidate the cases queries *just* of this release
-      await trpcUtils.release.getReleaseCases.invalidate({
-        releaseKey: releaseKey,
-      }),
-  });
+  const specimenMutate = useMutation(specimenMutateOptions);
 
   const onSelectAllChange = async (ce: React.ChangeEvent<HTMLInputElement>) => {
     setIsSelectAllIndeterminate(false);

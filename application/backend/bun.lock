@@ -35,8 +35,8 @@
         "@smithy/protocol-http": "5.1.0",
         "@smithy/url-parser": "4.0.2",
         "@smithy/util-stream": "4.2.0",
-        "@trpc/client": "11.1.1",
-        "@trpc/server": "11.1.1",
+        "@trpc/client": "11.1.2",
+        "@trpc/server": "11.1.2",
         "ajv": "8.17.1",
         "ajv-formats": "3.0.1",
         "amazon-s3-uri": "0.1.1",
@@ -571,9 +571,9 @@
 
     "@tootallnate/once": ["@tootallnate/once@2.0.0", "", {}, ""],
 
-    "@trpc/client": ["@trpc/client@11.1.1", "", { "peerDependencies": { "@trpc/server": "11.1.1", "typescript": ">=5.7.2" } }, "sha512-Beiv56hlt+ARbijtUsCQOvKJw/FkfuVk4W9TzJl285iIJw8iCA3ZTwTG9GjIeSgeR7d2MyOeUbI26LV255n33A=="],
+    "@trpc/client": ["@trpc/client@11.1.2", "", { "peerDependencies": { "@trpc/server": "11.1.2", "typescript": ">=5.7.2" } }, "sha512-RpifJOAv+ql9gF3oafa3dLCF01AzWu2DzejvehAPG2IlwHxopKoYXaImJ8zPwRkZokuWiKz5v65HjElmi8TlrQ=="],
 
-    "@trpc/server": ["@trpc/server@11.1.1", "", { "peerDependencies": { "typescript": ">=5.7.2" } }, "sha512-ZjPN3ypBHvGMAlMgeZPrxlRcH/3dn4AK0s5Ph1z+E6uiAvIQVCj7ZoMlXeeBsIy4THGDAk953jHVW2kMnlbb4g=="],
+    "@trpc/server": ["@trpc/server@11.1.2", "", { "peerDependencies": { "typescript": ">=5.7.2" } }, "sha512-Oi9zWHG0ZDkbDo4sYkduoV7q4sIe6UwjrRLC91vNMYQK+PVgpbTCmK1laRwewAGu0zaayqcGDosANjceOIC3GA=="],
 
     "@tsconfig/bun": ["@tsconfig/bun@1.0.7", "", {}, "sha512-udGrGJBNQdXGVulehc1aWT73wkR9wdaGBtB6yL70RJsqwW/yJhIg6ZbRlPOfIUiFNrnBuYLBi9CSmMKfDC7dvA=="],
 

@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { EagerErrorBoundary } from "../../../components/errors";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
-import { trpc } from "../../../helpers/trpc";
+import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import {
@@ -22,7 +22,7 @@ export const EditParticipantRoleDialog: React.FC<
 
   // Some boolean values for component to show or not
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const utils = trpc.useContext();
+  const utils = trpcOld.useContext();
 
   // A function when dialog is closed
   const cancelButtonRef = useRef(null);
@@ -36,14 +36,13 @@ export const EditParticipantRoleDialog: React.FC<
   );
 
   // Mutating the participant role
-  const participantMutate = trpc.releaseParticipant.editParticipant.useMutation(
-    {
+  const participantMutate =
+    trpcOld.releaseParticipant.editParticipant.useMutation({
       onSuccess: () => {
         utils.releaseParticipant.getParticipants.invalidate();
         setIsDialogOpen(false);
       },
-    },
-  );
+    });
 
   // Parsing for easy access
   const isLoading = participantMutate.isLoading;

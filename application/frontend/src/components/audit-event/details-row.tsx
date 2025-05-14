@@ -2,7 +2,7 @@ import { EagerErrorBoundary } from "../errors";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { IsLoadingDivIcon } from "../is-loading-div";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 
 /**
  * Props for the details row.
@@ -18,7 +18,7 @@ export type DetailsRowProps = {
  * The details row shown when clicking on a row in an audit event table.
  */
 export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
-  const detailsQuery = trpc.auditEvent.getAuditEventDetails.useQuery(
+  const detailsQuery = trpcOld.auditEvent.getAuditEventDetails.useQuery(
     { id: objectId },
     { keepPreviousData: true },
   );

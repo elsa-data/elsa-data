@@ -6,13 +6,14 @@ import {
   ErrorBoundary,
 } from "../../../../components/errors";
 import { SelectDialogBase } from "../../../../components/select-dialog-base";
-import { trpc } from "../../../../helpers/trpc";
 import classNames from "classnames";
 import { isValidEmail } from "../../../../helpers/utils";
 import { Alert } from "../../../../components/alert";
 import { UserPermissionsInput } from "../../../../components/user/user-permissions-input";
 import { useLoggedInUser } from "../../../../providers/logged-in-user-provider";
 import { SuccessCancelButtons } from "../../../../components/success-cancel-buttons";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const INIT_POTENTIAL_USER = {
   potentialUserEmail: "",
@@ -23,8 +24,8 @@ const INIT_POTENTIAL_USER = {
 };
 
 export const InvitePotentialUser = () => {
-  const utils = trpc.useContext();
-
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
   const loggedInUser = useLoggedInUser();
   const isEditingAllowed = loggedInUser?.isAllowedChangeUserPermission;
 
@@ -37,11 +38,13 @@ export const InvitePotentialUser = () => {
   }, []);
 
   // Editing/Mutation Purposes
-  const invitePotentialUser = trpc.user.addPotentialUser.useMutation({
-    onSuccess: async () => {
-      utils.user.getPotentialUsers.invalidate();
-    },
-  });
+  const invitePotentialUserMutateOptions =
+    trpc.user.addPotentialUser.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
+      },
+    });
+  const invitePotentialUser = useMutation(invitePotentialUserMutateOptions);
 
   const cancelButtonRef = useRef(null);
   const cancelButton = () => {

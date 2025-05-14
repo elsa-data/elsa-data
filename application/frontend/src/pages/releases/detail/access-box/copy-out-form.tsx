@@ -4,7 +4,7 @@ import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
-import { trpc } from "../../../../helpers/trpc";
+import { trpcOld } from "../../../../helpers/trpc-old.ts";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { TsvDownloadDiv } from "./tsv-download-div";
 
@@ -21,14 +21,14 @@ type Props = {
  * @constructor
  */
 export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
-  const utils = trpc.useContext();
+  const utils = trpcOld.useContext();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation(
     axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     {
-      // whenever we do a patch mutations of our release we need to invalidate our trpc state
+      // whenever we do a patch mutations of our release we need to invalidate our trpcOld state
       // to force a refresh
       onSuccess: async (result: ReleaseTypeLocal) => {
         await utils.release.getSpecificRelease.invalidate();

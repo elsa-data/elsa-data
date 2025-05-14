@@ -2,15 +2,16 @@ import React from "react";
 import { createCtx } from "./create-ctx";
 import { useCookies } from "react-cookie";
 import { CSRF_TOKEN_COOKIE_NAME } from "../../../backend/src/shared/constants-cookies";
-import { trpc } from "../helpers/trpc";
 import { IsLoadingDiv } from "../components/is-loading-div";
+import { useTRPC } from "../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 export type LoggedInUser = {
   id: string;
   subjectIdentifier: string;
   email: string;
   displayName: string;
-  lastLogin?: Date;
+  // lastLogin?: Date;
 
   // Write Access
   isAllowedChangeUserPermission: boolean;
@@ -32,13 +33,16 @@ type Props = {
  * @constructor
  */
 export const LoggedInUserProvider: React.FC<Props> = (props: Props) => {
+  const trpc = useTRPC();
   const [cookies] = useCookies<any>([CSRF_TOKEN_COOKIE_NAME]);
 
   const isLoggedIn = cookies[CSRF_TOKEN_COOKIE_NAME];
 
-  const ownUserQuery = trpc.user.getOwnUser.useQuery(undefined, {
+  const ownUserQueryOptions = trpc.user.getOwnUser.queryOptions(undefined, {
     enabled: !!isLoggedIn,
   });
+  const ownUserQuery = useQuery(ownUserQueryOptions);
+
   const val =
     isLoggedIn && ownUserQuery.data
       ? {

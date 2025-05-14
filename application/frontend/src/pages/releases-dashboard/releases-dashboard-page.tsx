@@ -7,10 +7,12 @@ import { BoxPaginator } from "../../components/box-paginator";
 import { usePageSizer } from "../../hooks/page-sizer";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpc } from "../../helpers/trpc";
 import { Table } from "../../components/tables";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 export const ReleasesDashboardPage: React.FC = () => {
+  const trpc = useTRPC();
   const navigate = useNavigate();
 
   // our internal state for which page we are on
@@ -18,13 +20,15 @@ export const ReleasesDashboardPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
+  const getReleaseOptions = trpc.release.getAllRelease.queryOptions({
+    page: currentPage,
+  });
   const { data, isSuccess, isLoading, isError, error } =
-    trpc.release.getAllRelease.useQuery({
-      page: currentPage,
-    });
+    useQuery(getReleaseOptions);
 
+  const getCopiedOptions = trpc.copyService.getCopied.queryOptions();
   const { data: copyData, isSuccess: copyIsSuccess } =
-    trpc.copyService.getCopied.useQuery();
+    useQuery(getCopiedOptions);
 
   useEffect(() => {
     if (isSuccess) {

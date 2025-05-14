@@ -39,7 +39,7 @@ import { DetailsRow } from "./details-row";
 import { FilterElements } from "./filter-elements";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { IsLoadingDiv } from "../is-loading-div";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 
 declare module "@tanstack/table-core" {
@@ -319,12 +319,12 @@ export const useAuditEventQuery = (
   };
 
   if (type === "AuditEvent") {
-    return trpc.auditEvent.getAuditEvent.useQuery(
+    return trpcOld.auditEvent.getAuditEvent.useQuery(
       { ...query, filter: includeEvents },
       options,
     );
   } else {
-    return trpc.auditEvent.getReleaseAuditEvent.useQuery(
+    return trpcOld.auditEvent.getReleaseAuditEvent.useQuery(
       { ...query, releaseKey: type.releaseKey },
       options,
     );

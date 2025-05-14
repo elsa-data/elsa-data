@@ -4,7 +4,7 @@ import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { FileRejection } from "react-dropzone";
 import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
-import { trpc } from "../../../helpers/trpc";
+import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { CsvDropzone, formatError } from "../../../components/csv-dropzone";
 
 type Props = {
@@ -22,7 +22,7 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
 
   const [parseError, setParseError] = useState<string | undefined>(undefined);
 
-  const detectQuery = trpc.dac.detectNew.useMutation({
+  const detectQuery = trpcOld.dac.detectNew.useMutation({
     onSuccess: (d) => {
       setPossibleApplications(d as any);
       setShowingRedcapDialog(true);

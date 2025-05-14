@@ -1,10 +1,14 @@
 import React, { PropsWithChildren } from "react";
-import { UseMutationResult } from "@tanstack/react-query";
+import {
+  useMutation,
+  UseMutationResult,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerCopyOutType } from "../../../../../../backend/src/config/config-schema-sharer";
-import { trpc } from "../../../../helpers/trpc";
-import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas";
+import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 import { EagerErrorBoundary } from "../../../../components/errors";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
 
 type CopyOutAccordionContentProps = {
   releaseKey: string;
@@ -22,13 +26,12 @@ type CopyOutAccordionContentProps = {
 export const CopyOutAccordionContent: React.FC<
   PropsWithChildren<CopyOutAccordionContentProps>
 > = (props) => {
-  const utils = trpc.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const copyOutTriggerMutate = trpc.releaseJob.startCopyOut.useMutation({
+  const copyOutTriggerOptions = trpc.releaseJob.startCopyOut.mutationOptions({
     onSuccess: async () => {
-      await utils.release.getSpecificRelease.invalidate({
-        releaseKey: props.releaseKey,
-      });
+      await queryClient.invalidateQueries();
       // once we have started the copy out and invalidated the release state - our next render
       // will show a progress bar at the top... we take them there to show it occurring
       window.scrollTo({
@@ -38,6 +41,7 @@ export const CopyOutAccordionContent: React.FC<
       });
     },
   });
+  const copyOutTriggerMutate = useMutation(copyOutTriggerOptions);
 
   const error = copyOutTriggerMutate.error;
   const isError = copyOutTriggerMutate.isError;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box } from "../../../components/boxes";
-import { UserPermissionType } from "@umccr/elsa-types/schemas-users";
+import { UserPermissionType } from "../../../../../backend/src/shared/schemas-users";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowsRotate,
@@ -55,7 +55,6 @@ type Props = {};
 /**
  * A box containing all the users in the database.
  *
- * @param pageSize
  * @constructor
  */
 export const AllUsers: React.FC<Props> = () => {

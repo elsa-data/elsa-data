@@ -31,7 +31,7 @@ import { BiChevronDown, BiChevronRight, BiChevronUp } from "react-icons/bi";
 import classNames from "classnames";
 import { EagerErrorBoundary, ErrorState } from "../errors";
 import { IsLoadingDiv } from "../is-loading-div";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -221,7 +221,7 @@ export const useJobQuery = (
     },
   };
 
-  return trpc.releaseJob.previousJobs.useQuery(
+  return trpcOld.releaseJob.previousJobs.useQuery(
     { ...query, releaseKey },
     options,
   );

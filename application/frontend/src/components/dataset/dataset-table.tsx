@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { isNil } from "lodash";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpc } from "../../helpers/trpc";
+import { trpcOld } from "../../helpers/trpc-old.ts";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { BoxPaginator } from "../box-paginator";
 import { EagerErrorBoundary } from "../errors";
@@ -31,7 +31,7 @@ export const DatasetTable: React.FC = ({}) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const datasetQuery = trpc.dataset.getAllDataset.useQuery(
+  const datasetQuery = trpcOld.dataset.getAllDataset.useQuery(
     {
       page: currentPage,
     },

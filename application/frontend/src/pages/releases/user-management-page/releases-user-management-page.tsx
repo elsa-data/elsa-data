@@ -10,7 +10,7 @@ import classNames from "classnames";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { useReleasesMasterData } from "../releases-types";
 import { Table } from "../../../components/tables";
-import { trpc } from "../../../helpers/trpc";
+import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { EditParticipantRoleDialog } from "./edit-participant-role-dialog";
 import ConfirmDialog from "../../../components/confirmation-dialog";
 import { usePageSizer } from "../../../hooks/page-sizer";
@@ -32,7 +32,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
     | ReleaseParticipantRoleType[]
     | null;
 
-  const utils = trpc.useContext();
+  const utils = trpcOld.useContext();
 
   const afterMutateForceRefresh = () => {
     utils.releaseParticipant.getParticipants.invalidate();
@@ -41,7 +41,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
   };
 
   const releaseParticipantsQuery =
-    trpc.releaseParticipant.getParticipants.useQuery(
+    trpcOld.releaseParticipant.getParticipants.useQuery(
       {
         releaseKey,
         page: currentPage,
@@ -55,12 +55,12 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const participantDataList = releaseParticipantsQuery.data?.data;
 
   const addParticipantMutate =
-    trpc.releaseParticipant.addParticipant.useMutation({
+    trpcOld.releaseParticipant.addParticipant.useMutation({
       onSuccess: afterMutateForceRefresh,
     });
 
   const removeParticipantMutate =
-    trpc.releaseParticipant.removeParticipant.useMutation({
+    trpcOld.releaseParticipant.removeParticipant.useMutation({
       onSuccess: afterMutateForceRefresh,
     });
 
@@ -84,8 +84,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const error = releaseParticipantsQuery.error
     ? releaseParticipantsQuery.error
     : addParticipantMutate.error
-    ? addParticipantMutate.error
-    : removeParticipantMutate.error;
+      ? addParticipantMutate.error
+      : removeParticipantMutate.error;
 
   const ourRadio = (text: string, checked: boolean, onChange: () => void) => (
     <div className="form-control items-start">

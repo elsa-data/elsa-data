@@ -6,7 +6,7 @@ import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { Table } from "../../../components/tables";
-import { trpc } from "../../../helpers/trpc";
+import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
 
 type Props = {
@@ -34,7 +34,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
   const [lastError, setLastError] = useState<string | undefined>();
   useEffect(() => setLastError(initialError), [initialError]);
 
-  const createNewReleaseMutate = trpc.dac.createNew.useMutation();
+  const createNewReleaseMutate = trpcOld.dac.createNew.useMutation();
 
   /*const createNewReleaseMutatex = useMutation((d: AustraliaGenomicsDacRedcap) =>
     axios
