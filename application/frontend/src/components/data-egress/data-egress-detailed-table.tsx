@@ -6,7 +6,7 @@ import { usePageSizer } from "../../hooks/page-sizer";
 import { BoxPaginator } from "../box-paginator";
 import { EagerErrorBoundary } from "../errors";
 import { Table } from "../tables";
-import { Flags } from "../flags";
+import { FlagsFragment } from "../flags-fragment.tsx";
 import { useTRPC } from "../../helpers/trpc-modern.ts";
 import { useQuery } from "@tanstack/react-query";
 
@@ -83,7 +83,9 @@ export function DataEgressDetailedTable({
                           return (
                             <>
                               {`${loc.city ?? "-"}, ${loc.country ?? "-"} `}
-                              {loc.region && <Flags regions={[loc.region]} />}
+                              {loc.region && (
+                                <FlagsFragment regions={[loc.region]} />
+                              )}
                             </>
                           );
                         }

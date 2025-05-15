@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CSRFInputToken } from "../../../../components/csrf-token";
-import { TsvColumnCheck } from "../../../../components/access-box";
+import { TsvColumnCheckbox } from "../../../../components/tsv-column-checkbox.tsx";
 import { ObjectStoreRecordKey } from "../../../../../../backend/src/shared/schemas";
 import { Alert } from "../../../../components/alert";
 
@@ -47,7 +47,7 @@ export const TsvDownloadDiv: React.FC<Props> = (props) => {
               {ObjectStoreRecordKey.filter(
                 (field) => !props.fieldsToExclude.includes(field),
               ).map((field, i) => (
-                <TsvColumnCheck key={i} field={field} />
+                <TsvColumnCheckbox key={i} field={field} />
               ))}
             </div>
 

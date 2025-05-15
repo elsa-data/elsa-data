@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { CSRFInputToken } from "../../../../components/csrf-token";
-import { TsvColumnCheck } from "../../../../components/access-box";
+import { TsvColumnCheckbox } from "../../../../components/tsv-column-checkbox.tsx";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ObjectStoreRecordKey } from "../../../../../../backend/src/shared/schemas";
 import { Alert } from "../../../../components/alert";
-import { trpcOld } from "../../../../helpers/trpc-old.ts";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { SharerObjectSigningType } from "../../../../../../backend/src/config/config-schema-sharer";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 type Props = {
   releaseKey: string;
@@ -18,10 +19,12 @@ export const ObjectSigningForm: React.FC<Props> = ({
   releaseKey,
   releaseData,
 }) => {
+  const trpc = useTRPC();
+
   const [isPrepareDownload, setIsPrepareDownload] = useState<boolean>(false);
   const [isViewPassword, setIsViewPassword] = useState<boolean>(false);
 
-  const getFilePasswordQuery = trpcOld.release.getReleasePassword.useQuery(
+  const getFilePasswordOptions = trpc.release.getReleasePassword.queryOptions(
     {
       releaseKey,
     },
@@ -29,6 +32,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
       enabled: isViewPassword,
     },
   );
+  const getFilePasswordQuery = useQuery(getFilePasswordOptions);
 
   const [isPassInClipboard, setIsPassInClipboard] = useState<boolean>(false);
   return (
@@ -123,7 +127,7 @@ export const ObjectSigningForm: React.FC<Props> = ({
             </article>
 
             {ObjectStoreRecordKey.map((field, i) => (
-              <TsvColumnCheck key={i} field={field} />
+              <TsvColumnCheckbox key={i} field={field} />
             ))}
 
             <div className="prose">

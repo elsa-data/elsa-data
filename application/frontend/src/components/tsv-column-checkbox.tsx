@@ -4,7 +4,7 @@ type Props = {
   field: string;
 };
 
-export const TsvColumnCheck: React.FC<Props> = ({ field }) => (
+export const TsvColumnCheckbox: React.FC<Props> = ({ field }) => (
   <div className="checkbox-accent checkbox flex items-center gap-2">
     <input
       type="checkbox"

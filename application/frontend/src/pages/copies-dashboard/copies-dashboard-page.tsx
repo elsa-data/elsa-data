@@ -1,18 +1,19 @@
 import React from "react";
 import { Box } from "../../components/boxes";
-import { trpcOld } from "../../helpers/trpc-old.ts";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import classNames from "classnames";
 import { useNavigate } from "react-router-dom";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
 
 export const CopiesDashboardPage: React.FC = () => {
+  const trpc = useTRPC();
   const navigate = useNavigate();
 
   const {
     data: copyData,
     isSuccess: copyIsSuccess,
     isPending: copyIsPending,
-  } = trpcOld.copyService.getCopied.useQuery();
+  } = trpc.copyService.getCopied.useQuery();
 
   return (
     <>

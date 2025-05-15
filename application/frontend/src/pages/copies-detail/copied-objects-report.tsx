@@ -3,10 +3,10 @@ import classNames from "classnames";
 import { BoxPaginator } from "../../components/box-paginator";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { Table } from "../../components/tables";
-import { trpcOld } from "../../helpers/trpc-old.ts";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { CopySummaryEntry } from "../../../../backend/src/business/services/copy-service.ts";
 import { fileSize } from "humanize-plus";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
 
 type CopiedObjectTableProps = {
   copyExecutionArn: string;
@@ -21,10 +21,12 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
   props,
 ) => {
   const pageSize = usePageSizer();
+  const trpc = useTRPC();
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
+  const copySummaryHeaderOptions = trpc.copyService;
   const copySummaryHeaderQuery =
     trpcOld.copyService.getCopiedReportHeader.useQuery({
       stepsExecutionArn: props.copyExecutionArn,

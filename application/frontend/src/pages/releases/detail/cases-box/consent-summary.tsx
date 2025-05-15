@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { DuoLimitationCodedType, DuoModifierType } from "@umccr/elsa-types";
-import { hasFlag } from "country-flag-icons";
-import getUnicodeFlagIcon from "country-flag-icons/unicode";
+import { useEffect, useState } from "react";
+import {
+  DuoLimitationCodedType,
+  DuoModifierType,
+} from "../../../../../../backend/src/shared/schemas-duo";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";
 import { doLookup } from "../../../../helpers/ontology-helper";
-import { trpcOld } from "../../../../helpers/trpc-old.ts";
-import { Flags } from "../../../../components/flags";
+import { FlagsFragment } from "../../../../components/flags-fragment.tsx";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
 
 type Props = {
   releaseKey?: string;
@@ -52,7 +53,8 @@ const resolveDiseaseCode = async function (
 };
 
 function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
-  const [error, setError] = useState<ErrorState>({
+  const trpc = useTRPC();
+  const [error] = useState<ErrorState>({
     error: null,
     isSuccess: true,
   });
@@ -61,15 +63,18 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
 
   const terminologyFhirUrl = envRelay.terminologyFhirUrl;
 
-  let consentQuery;
+  let consentQueryOptions;
   if (consentId) {
-    consentQuery = trpcOld.dataset.getDatasetConsent.useQuery({ consentId });
+    consentQueryOptions = trpc.dataset.getDatasetConsent.queryOptions({
+      consentId,
+    });
   } else {
-    consentQuery = trpcOld.release.getReleaseConsent.useQuery({
+    consentQueryOptions = trpc.release.getReleaseConsent.queryOptions({
       releaseKey: releaseKey ?? "",
       nodeId: nodeId ?? "",
     });
   }
+  const consentQuery = useQuery(consentQueryOptions);
 
   const duosCode: DuoLimitationCodedType[] = consentQuery.data ?? [];
 
@@ -136,7 +141,7 @@ function ConsentSummary({ consentId, releaseKey, nodeId }: Props) {
                             {regions && (
                               <>
                                 {" "}
-                                <Flags regions={regions} />
+                                <FlagsFragment regions={regions} />
                               </>
                             )}
                           </li>
