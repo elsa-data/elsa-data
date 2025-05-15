@@ -1,9 +1,7 @@
 import React, { useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ReleaseApplicationCodedType } from "@umccr/elsa-types";
 import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
-import { RhSelect } from "../../../../components/rh/rh-select";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
 import {
   axiosPatchOperationMutationFn,
@@ -16,7 +14,7 @@ import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
-  applicationCoded: ReleaseApplicationCodedType;
+  applicationCoded: any;
 };
 
 const malesQuery = {
@@ -111,19 +109,17 @@ export const ApplicationCodedBox: React.FC<Props> = ({
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
-  const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    {
-      // whenever we do a mutation of application coded data - our API returns the complete updated
-      // state of the *whole* release - and we can use that data to replace the stored react-query state
-      onSuccess: (result: ReleaseTypeLocal) => {
-        queryClient.setQueryData(
-          REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-          result,
-        );
-      },
+  const releasePatchMutate = useMutation({
+    mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
+    // whenever we do a mutation of application coded data - our API returns the complete updated
+    // state of the *whole* release - and we can use that data to replace the stored react-query state
+    onSuccess: (result: ReleaseTypeLocal) => {
+      queryClient.setQueryData(
+        REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
+        result,
+      );
     },
-  );
+  });
 
   const ApplicationTypeRadio = (
     label: string,
@@ -133,7 +129,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
       label={label}
       name="studyType"
       checked={applicationCoded.type === value}
-      onChange={(e) =>
+      onChange={() =>
         releasePatchMutate.mutate({
           op: "replace",
           path: "/applicationCoded/type",

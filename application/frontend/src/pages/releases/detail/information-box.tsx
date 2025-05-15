@@ -3,9 +3,9 @@ import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { trpc } from "../../../helpers/trpc";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EagerErrorBoundary } from "../../../components/errors";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
 
 type Props = {
   releaseKey: string;
@@ -46,18 +46,21 @@ export const InformationBox: React.FC<Props> = ({
     </ul>
   );
 
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const activateMutation = trpc.releaseActivation.activate.useMutation();
-  const deactivateMutation = trpc.releaseActivation.deactivate.useMutation();
+  const activateOptions = trpc.releaseActivation.activate.mutationOptions();
+  const activateMutation = useMutation(activateOptions);
+  const deactivateOptions = trpc.releaseActivation.deactivate.mutationOptions();
+  const deactivateMutation = useMutation(deactivateOptions);
 
   const error = activateMutation.error ?? deactivateMutation.error;
 
   // some handy state booleans
   const mutationInProgress =
-    activateMutation.isLoading ||
+    activateMutation.isPending ||
     activateMutation.isPaused ||
-    deactivateMutation.isLoading ||
+    deactivateMutation.isPending ||
     deactivateMutation.isPaused;
   const releaseIsActivated = !!releaseData.activation;
 

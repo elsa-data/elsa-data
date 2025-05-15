@@ -1,17 +1,17 @@
-import React, { ReactNode, useEffect, useState } from "react";
-import type { ReleaseCaseType } from "../../../../../../backend/src/shared/schemas";
+import React, { ReactNode, useState } from "react";
+import type { ReleaseCaseType } from "../../../../../../backend/src/shared/schemas-releases";
 import { IndeterminateCheckbox } from "../../../../components/indeterminate-checkbox";
 import { PatientsFlexRow } from "./patients-flex-row";
 import classNames from "classnames";
 import { Box } from "../../../../components/boxes";
 import { BoxPaginator } from "../../../../components/box-paginator";
 import { isEmpty, trim } from "lodash";
-import { ConsentPopup } from "./consent-popup";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { Table } from "../../../../components/tables";
 import { DisabledInputWrapper } from "../../../../components/disable-input-wrapper";
-import { trpc } from "../../../../helpers/trpc";
 import { BulkSelectionDiv } from "./bulk-selection-div";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   releaseKey: string;
@@ -101,6 +101,9 @@ export const CasesBox: React.FC<Props> = ({
   isAllowAdminView,
   showConsent,
 }) => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   // a quasi state for just the UI that tracks if we think the entire set is checked or unchecked
   // (basically we are guessing it is indeterminate after any selection activity - unless
   // we get a strong signal via button press that everything is cleared or set)
@@ -109,13 +112,6 @@ export const CasesBox: React.FC<Props> = ({
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotalCases, setCurrentTotalCases] = useState<number>(1);
-
-  // just a helper for the UI which we get from our cases query as a bonus
-  // TODO get from the backend the currentTotalSpecimens - and then use
-  //      that to derive real select all/unselect all state rather than the pseudo SelectAllIndeterminate
-  const [currentSelectedSpecimens, setCurrentSelectedSpecimens] =
-    useState<number>(0);
 
   // a text input which changes the behaviour of the control to being a search result
   const [searchText, setSearchText] = useState("");
@@ -128,31 +124,25 @@ export const CasesBox: React.FC<Props> = ({
     setSearchText(text);
   };
 
-  const { data, isSuccess, isPending, error, isError, isFetching } =
-    trpc.release.getReleaseCases.useQuery({
-      releaseKey: releaseKey,
-      page: currentPage,
-      q: searchText,
-    });
-
-  useEffect(() => {
-    if (isSuccess) {
-      setCurrentTotalCases(data.total);
-      setCurrentSelectedSpecimens(data.totalSelectedSpecimens);
-    }
-  }, [isSuccess]);
+  const getReleaseCasesOptions = trpc.release.getReleaseCases.queryOptions({
+    releaseKey: releaseKey,
+    page: currentPage,
+    q: searchText,
+  });
+  const { data, isPending, error, isError, isFetching } = useQuery(
+    getReleaseCasesOptions,
+  );
 
   const casesQueryData: ReleaseCaseType[] | undefined = data?.data;
 
-  const trpcUtils = trpc.useUtils();
+  const specimenMutateOptions =
+    trpc.release.updateReleaseSpecimens.mutationOptions({
+      onSuccess: async () =>
+        // once we've altered the selection set we want to invalidate the cases queries *just* of this release
+        await queryClient.invalidateQueries(),
+    });
 
-  const specimenMutate = trpc.release.updateReleaseSpecimens.useMutation({
-    onSuccess: async () =>
-      // once we've altered the selection set we want to invalidate the cases queries *just* of this release
-      await trpcUtils.release.getReleaseCases.invalidate({
-        releaseKey: releaseKey,
-      }),
-  });
+  const specimenMutate = useMutation(specimenMutateOptions);
 
   const onSelectAllChange = async (ce: React.ChangeEvent<HTMLInputElement>) => {
     setIsSelectAllIndeterminate(false);
@@ -232,7 +222,7 @@ export const CasesBox: React.FC<Props> = ({
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
-          rowCount={currentTotalCases}
+          rowCount={data?.total ?? 0}
           rowsPerPage={pageSize}
           rowWord="cases"
           currentSearchText={searchText}
@@ -347,9 +337,9 @@ export const CasesBox: React.FC<Props> = ({
                     */}
                       {/* status span */}
                       <span>
-                        {currentSelectedSpecimens} specimen
-                        {currentSelectedSpecimens !== 1 && "s"} in total
-                        selected
+                        {data?.totalSelectedSpecimens ?? 0} specimen
+                        {(data?.totalSelectedSpecimens ?? 0) !== 1 && "s"} in
+                        total selected
                       </span>
                     </div>
                     <BulkSelectionDiv

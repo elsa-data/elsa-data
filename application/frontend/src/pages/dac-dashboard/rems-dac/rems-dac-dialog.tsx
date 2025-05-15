@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { RemsApprovedApplicationType } from "@umccr/elsa-types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { RemsApprovedApplicationType } from "../../../../../backend/src/shared/schemas";
 import { useForm } from "react-hook-form";
 import { isNil } from "lodash";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../../../components/errors";
 import { Table } from "../../../components/tables";
-import { trpc } from "../../../helpers/trpc";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
 
 type Props = {
   showing: boolean;
@@ -22,6 +22,7 @@ export const RemsDacDialog: React.FC<Props> = ({
   dacId,
 }) => {
   const navigate = useNavigate();
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const { register, watch, reset } = useForm<{ newId: number }>();
@@ -34,12 +35,14 @@ export const RemsDacDialog: React.FC<Props> = ({
     undefined,
   );
 
-  const createNewReleaseMutate = trpc.dac.createNew.useMutation();
+  const createNewReleaseMutateOptions = trpc.dac.createNew.mutationOptions();
+  const createNewReleaseMutate = useMutation(createNewReleaseMutateOptions);
 
-  const detectNewReleaseQuery = trpc.dac.detectNewQuery.useQuery<
-    {},
-    RemsApprovedApplicationType[]
-  >({ dacId: dacId }, { enabled: false });
+  const detectNewReleaseQueryOptions = trpc.dac.detectNewQuery.queryOptions(
+    { dacId: dacId },
+    { enabled: false },
+  );
+  const detectNewReleaseQuery = useQuery(detectNewReleaseQueryOptions);
 
   useEffect(() => {
     // as soon as we enter 'showing' dialog state we want to fetch all the new
@@ -53,6 +56,10 @@ export const RemsDacDialog: React.FC<Props> = ({
     }
   }, [showing]);
 
+  const data = detectNewReleaseQuery?.data as
+    | RemsApprovedApplicationType[]
+    | undefined;
+
   return (
     <ErrorBoundary>
       <SelectDialogBase
@@ -62,9 +69,9 @@ export const RemsDacDialog: React.FC<Props> = ({
         buttons={
           <>
             <SuccessCancelButtons
-              isLoading={createNewReleaseMutate.isLoading}
+              isLoading={createNewReleaseMutate.isPending}
               isSuccessDisabled={
-                createNewReleaseMutate.isLoading || isNil(newId)
+                createNewReleaseMutate.isPending || isNil(newId)
               }
               successButtonLabel={"Add"}
               onSuccess={() => {
@@ -112,7 +119,8 @@ export const RemsDacDialog: React.FC<Props> = ({
               additionalTableClassName="mt-4 text-sm"
               tableBody={
                 detectNewReleaseQuery.isSuccess &&
-                detectNewReleaseQuery.data
+                data &&
+                data
                   .sort((a, b) => a.when.localeCompare(b.when))
                   .map((nr) => (
                     <tr>

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Outlet, useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
 import { makeReleaseTypeLocal } from "./queries";
 import { EagerErrorBoundary, ErrorState } from "../../components/errors";
 import { ReleasesBreadcrumbsDiv } from "./releases-breadcrumbs-div";
 import { ReleasesMasterContextType } from "./releases-types";
-import { trpc } from "../../helpers/trpc";
 import { Alert, TriangleExclamationIcon } from "../../components/alert";
 import {
   differenceFromNow,
@@ -15,6 +14,7 @@ import {
 } from "../../helpers/datetime-helper";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { useLoggedInUser } from "../../providers/logged-in-user-provider";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
 
 /**
  * The master page layout performing actions/viewing data for a single
@@ -26,8 +26,8 @@ export const ReleasesMasterPage: React.FC = () => {
   const REFRESH_JOB_STATUS_MS = 5000;
   const ALERT_RELEASE_EDITED_TIME: Millisecond = 600000;
 
+  const trpc = useTRPC();
   const user = useLoggedInUser();
-  const utils = trpc.useUtils();
 
   const { releaseKey } = useParams<{ releaseKey: string }>();
 
@@ -43,13 +43,14 @@ export const ReleasesMasterPage: React.FC = () => {
 
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isSuccess, isError, error } =
-    trpc.release.getSpecificRelease.useQuery(
-      { releaseKey },
-      {
-        select: (d: any) => makeReleaseTypeLocal(d),
-      },
-    );
+  const queryOpts = trpc.release.getSpecificRelease.queryOptions(
+    { releaseKey },
+    {
+      select: (d: any) => makeReleaseTypeLocal(d),
+    },
+  );
+
+  const { data, isLoading, isSuccess, isError, error } = useQuery(queryOpts);
 
   useEffect(() => {
     if (isError) {
@@ -60,11 +61,12 @@ export const ReleasesMasterPage: React.FC = () => {
     }
   }, [isError, isSuccess]);
 
-  const cancelMutate = trpc.releaseJob.cancel.useMutation({
+  const cancelMutateOptions = trpc.releaseJob.cancel.mutationOptions({
     onSettled: () => queryClient.invalidateQueries(),
     onSuccess: () => setErrorState({ error: null, isSuccess: true }),
     onError: (error: any) => setErrorState({ error, isSuccess: false }),
   });
+  const cancelMutate = useMutation(cancelMutateOptions);
 
   // *only* when running a job in the background - we want to set up a polling loop of the backend
   // so we set this effect up with a dependency on the runningJob field - and switch the
@@ -74,7 +76,7 @@ export const ReleasesMasterPage: React.FC = () => {
     let interval: NodeJS.Timer | undefined = undefined;
     if (data?.runningJob) {
       interval = setInterval(async () => {
-        await utils.release.getSpecificRelease.invalidate();
+        await queryClient.invalidateQueries();
       }, REFRESH_JOB_STATUS_MS);
     } else {
       const invalidateAllQuery = async () => {

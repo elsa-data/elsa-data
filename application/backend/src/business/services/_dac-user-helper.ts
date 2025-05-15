@@ -83,7 +83,7 @@ export const insertPotentialOrReal = async (
       .update(e.permission.PotentialUser, (pu) => ({
         filter: e.op(e.uuid(potentialDbUser.id), "=", pu.id),
         set: {
-          futureReleaseParticipant: {
+          releaseParticipant: {
             "+=": e.select(e.release.Release, (r) => ({
               filter: e.op(e.uuid(releaseId), "=", r.id),
               "@role": e.str(role),
@@ -98,7 +98,7 @@ export const insertPotentialOrReal = async (
       .insert(e.permission.PotentialUser, {
         displayName: au.displayName,
         email: au.email,
-        futureReleaseParticipant: e.select(e.release.Release, (r) => ({
+        releaseParticipant: e.select(e.release.Release, (r) => ({
           filter: e.op(e.uuid(releaseId), "=", r.id),
           "@role": e.str(role),
         })),

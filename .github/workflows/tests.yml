@@ -105,7 +105,7 @@ jobs:
           # whilst ever we allow React warnings in dev we need to do this to switch off CI over strictness
           CI: false
 
-      # integration tests run only in the backend and concentrate on auth/http/trpc mechanics (but need frontend files for something to serve as HTML)
+      # integration tests run only in the backend and concentrate on auth/http/trpcOld mechanics (but need frontend files for something to serve as HTML)
       - name: Run integration tests
         run: npm run test:integration
         working-directory: application/backend

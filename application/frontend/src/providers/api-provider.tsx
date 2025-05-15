@@ -1,11 +1,12 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCookies } from "react-cookie";
-import { httpBatchLink } from "@trpc/client";
-import { trpc } from "../helpers/trpc";
+import { httpBatchLink, createTRPCClient } from "@trpc/client";
 import { CSRF_TOKEN_COOKIE_NAME } from "../../../backend/src/shared/constants-cookies";
 import { useShowAlert } from "./show-alert-provider";
 import axios, { AxiosRequestConfig } from "axios";
+import { AppRouter } from "../../../backend/src/app-router.ts";
+import { TRPCProvider } from "../helpers/trpc-modern.ts";
 
 export const APIProvider: React.FC<Props> = (props: Props) => {
   const queryClient = new QueryClient({
@@ -21,7 +22,7 @@ export const APIProvider: React.FC<Props> = (props: Props) => {
   ]);
   const { show } = useShowAlert();
 
-  const trpcClient = trpc.createClient({
+  const trpcClient = createTRPCClient<AppRouter>({
     links: [
       httpBatchLink({
         url: "/api/trpc",
@@ -99,12 +100,12 @@ export const APIProvider: React.FC<Props> = (props: Props) => {
 
   return (
     <>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        {/* the query provider comes from react-query and provides standardised remote query semantics */}
-        <QueryClientProvider client={queryClient}>
+      {/* the query provider comes from react-query and provides standardised remote query semantics */}
+      <QueryClientProvider client={queryClient}>
+        <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
           {props.children}
-        </QueryClientProvider>
-      </trpc.Provider>
+        </TRPCProvider>
+      </QueryClientProvider>
     </>
   );
 };

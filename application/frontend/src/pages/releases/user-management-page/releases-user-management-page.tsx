@@ -4,18 +4,19 @@ import { Box } from "../../../components/boxes";
 import {
   ReleaseParticipantRoleType,
   ReleaseParticipantType,
-} from "@umccr/elsa-types";
+} from "../../../../../backend/src/shared/schemas-releases";
 import { IsLoadingDiv } from "../../../components/is-loading-div";
 import classNames from "classnames";
 import { formatLocalDateTime } from "../../../helpers/datetime-helper";
 import { useReleasesMasterData } from "../releases-types";
 import { Table } from "../../../components/tables";
-import { trpc } from "../../../helpers/trpc";
 import { EditParticipantRoleDialog } from "./edit-participant-role-dialog";
 import ConfirmDialog from "../../../components/confirmation-dialog";
 import { usePageSizer } from "../../../hooks/page-sizer";
 import { BoxPaginator } from "../../../components/box-paginator";
 import { isValidEmail } from "../../../helpers/utils";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * A page allowing the display/editing of users participating in a release.
@@ -23,46 +24,44 @@ import { isValidEmail } from "../../../helpers/utils";
 export const ReleasesUserManagementPage: React.FC = () => {
   const { releaseKey, releaseData } = useReleasesMasterData();
 
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   // Pagination Variables
   const pageSize = usePageSizer();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const authorisedInviteRoles = releaseData.rolesAllowedToAlterParticipant as
     | ReleaseParticipantRoleType[]
     | null;
 
-  const utils = trpc.useContext();
-
   const afterMutateForceRefresh = () => {
-    utils.releaseParticipant.getParticipants.invalidate();
+    queryClient.invalidateQueries();
+    // utils.releaseParticipant.getParticipants.invalidate();
     setNewUserEmail("");
     setNewUserRole("Member");
   };
 
-  const releaseParticipantsQuery =
-    trpc.releaseParticipant.getParticipants.useQuery(
-      {
-        releaseKey,
-        page: currentPage,
-      },
-      {
-        onSuccess: (res) => {
-          setCurrentTotal(res.total);
-        },
-      },
-    );
+  const releaseParticipantsQueryOptions =
+    trpc.releaseParticipant.getParticipants.queryOptions({
+      releaseKey,
+      page: currentPage,
+    });
+
+  const releaseParticipantsQuery = useQuery(releaseParticipantsQueryOptions);
   const participantDataList = releaseParticipantsQuery.data?.data;
 
-  const addParticipantMutate =
-    trpc.releaseParticipant.addParticipant.useMutation({
+  const addParticipantMutateOptions =
+    trpc.releaseParticipant.addParticipant.mutationOptions({
       onSuccess: afterMutateForceRefresh,
     });
+  const addParticipantMutate = useMutation(addParticipantMutateOptions);
 
-  const removeParticipantMutate =
-    trpc.releaseParticipant.removeParticipant.useMutation({
+  const removeParticipantMutateOptions =
+    trpc.releaseParticipant.removeParticipant.mutationOptions({
       onSuccess: afterMutateForceRefresh,
     });
+  const removeParticipantMutate = useMutation(removeParticipantMutateOptions);
 
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] =
@@ -70,8 +69,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const isEmailValid = newUserEmail == "" || isValidEmail(newUserEmail);
 
   const isLoading =
-    addParticipantMutate.isLoading ||
-    removeParticipantMutate.isLoading ||
+    addParticipantMutate.isPending ||
+    removeParticipantMutate.isPending ||
     releaseParticipantsQuery.isLoading;
   const isAddButtonDisabled =
     isLoading || newUserEmail.trim().length == 0 || !isEmailValid;
@@ -84,8 +83,8 @@ export const ReleasesUserManagementPage: React.FC = () => {
   const error = releaseParticipantsQuery.error
     ? releaseParticipantsQuery.error
     : addParticipantMutate.error
-    ? addParticipantMutate.error
-    : removeParticipantMutate.error;
+      ? addParticipantMutate.error
+      : removeParticipantMutate.error;
 
   const ourRadio = (text: string, checked: boolean, onChange: () => void) => (
     <div className="form-control items-start">
@@ -201,9 +200,9 @@ export const ReleasesUserManagementPage: React.FC = () => {
                     <th></th>
                   </tr>
                 }
-                tableBody={participantDataList.map((row: any, idx) => {
+                tableBody={participantDataList.map((row, idx) => {
                   const {
-                    role,
+                    participation,
                     email,
                     displayName,
                     subjectId,
@@ -228,7 +227,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
                         </div>
                       </td>
                       <td>
-                        <div>{role}</div>
+                        <div>{participation?.role}</div>
                       </td>
                       <td>
                         {lastLogin
@@ -237,10 +236,12 @@ export const ReleasesUserManagementPage: React.FC = () => {
                       </td>
                       <td className="text-right">
                         <>
-                          {role && canBeRoleAltered && (
+                          {participation?.role && canBeRoleAltered && (
                             <EditParticipantRoleDialog
                               releaseKey={releaseKey}
-                              releaseParticipant={row}
+                              releaseParticipant={
+                                row as unknown as ReleaseParticipantType
+                              }
                             />
                           )}
 
@@ -276,7 +277,7 @@ export const ReleasesUserManagementPage: React.FC = () => {
               <BoxPaginator
                 currentPage={currentPage}
                 setPage={(n) => setCurrentPage(n)}
-                rowCount={currentTotal}
+                rowCount={releaseParticipantsQuery.data?.total ?? 0}
                 rowsPerPage={pageSize}
                 rowWord="Participants"
               />

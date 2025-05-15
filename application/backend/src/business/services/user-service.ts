@@ -1,24 +1,7 @@
 import * as gel from "gel";
-import e from "../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable } from "tsyringe";
 import { isEmpty, isNil } from "lodash";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import type {
-  PotentialUserSummaryType,
-  UserSummaryType,
-} from "../../shared/schemas-users";
-import type { ElsaSettings } from "../../config/elsa-settings";
-import {
-  NonExistentUser,
-  NotAuthorisedEditUserManagement,
-  NotAuthorisedGetOwnUser,
-  UserEmailExist,
-  UserEmailNotExist,
-} from "../exceptions/user";
+import { inject, injectable } from "tsyringe";
+import e from "../../../dbschema/edgeql-js";
 import {
   potentialUserDeleteByEmail,
   potentialUserGetAllByUser,
@@ -32,10 +15,27 @@ import {
   userGetBySubjectId,
   userUpdatePermissions,
 } from "../../../dbschema/queries";
-import { IPLookupService, LocationType } from "./ip-lookup-service";
-import { UserData } from "../data/user-data";
-import { AuditEventService } from "./audit-event-service";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { ReleaseParticipantRoleType } from "../../shared/schemas-releases";
+import type {
+  PotentialUserSummaryType,
+  UserSummaryType,
+} from "../../shared/schemas-users";
+import { AuthenticatedUser } from "../authenticated-user";
+import { UserData } from "../data/user-data";
+import {
+  NonExistentUser,
+  NotAuthorisedEditUserManagement,
+  NotAuthorisedGetOwnUser,
+  UserEmailExist,
+  UserEmailNotExist,
+} from "../exceptions/user";
+import { AuditEventService } from "./audit-event-service";
+import { IPLookupService, LocationType } from "./ip-lookup-service";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;
@@ -482,12 +482,10 @@ export class UserService {
 
         // find all the 'default' settings (like releases they are part of) for the user
         releasesToAdd =
-          potentialDbUser.futureReleaseParticipant &&
-          potentialDbUser.futureReleaseParticipant.length > 0
+          potentialDbUser.releaseParticipant &&
+          potentialDbUser.releaseParticipant.length > 0
             ? e.set(
-                ...potentialDbUser.futureReleaseParticipant.map((a) =>
-                  e.uuid(a.id),
-                ),
+                ...potentialDbUser.releaseParticipant.map((a) => e.uuid(a.id)),
               )
             : e.cast(e.uuid, e.set());
 

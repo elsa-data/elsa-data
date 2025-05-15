@@ -1,4 +1,4 @@
-import { ReleaseDetailType } from "@umccr/elsa-types";
+import { ReleaseDetailType } from "../../../../backend/src/shared/schemas-releases";
 import { ReactNode } from "react";
 
 /**

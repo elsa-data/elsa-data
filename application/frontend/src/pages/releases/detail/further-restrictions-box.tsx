@@ -1,6 +1,6 @@
 import React, { useCallback, useState, ReactNode } from "react";
 import classNames from "classnames";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../components/boxes";
 import { ReleaseTypeLocal } from "../shared-types";
 import {
@@ -10,11 +10,11 @@ import {
 } from "../../../components/rh/rh-structural";
 import { RhCheckItem, RhChecks } from "../../../components/rh/rh-checks";
 import { axiosPatchOperationMutationFn } from "../queries";
-import { trpc } from "../../../helpers/trpc";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFile } from "@fortawesome/free-solid-svg-icons";
 import type { ReleaseSizeType } from "../../../../../backend/src/shared/schemas";
 import { fileSize } from "humanize-plus";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
 
 const Stats = ({
   stats,
@@ -55,29 +55,30 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
   releaseData,
   isAllowEdit = false,
 }) => {
-  const utils = trpc.useContext();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation({
     mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
 
-    onSuccess: (result: ReleaseTypeLocal) =>
+    onSuccess: (_: ReleaseTypeLocal) =>
       // we need to cross over into TRPC world to invalidate its cache
       // eventually we should move this PATCH to TRPC too
-      utils.release.getSpecificRelease.invalidate({
-        releaseKey: releaseKey,
-      }),
+      queryClient.invalidateQueries(),
   });
 
   const [releaseSize, setReleaseSize] = useState<
     "unknown" | "loading" | ReleaseSizeType
   >("unknown");
 
-  const releaseSizeQuery = trpc.manifest.getReleaseSize.useQuery(
+  const releaseSizeOptions = trpc.manifest.getReleaseSize.queryOptions(
     { releaseKey },
     { enabled: false },
   );
+
+  const releaseSizeQuery = useQuery(releaseSizeOptions);
 
   const onPressComputeSize = useCallback(async () => {
     setReleaseSize("loading");
@@ -103,7 +104,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       disabled={!path || !!releaseData.activation}
       className={classNames({ "opacity-50": releasePatchMutate.isPending })}
       inputClassName={"checkbox-accent"}
-      onChange={(e) => {
+      onChange={(_) => {
         if (path) {
           releasePatchMutate.mutate({
             op: "replace",

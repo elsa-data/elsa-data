@@ -17,7 +17,12 @@ export const ReleasesDetailSubPage: React.FC = () => {
   const { releaseKey, releaseData, releaseDataIsLoading } =
     useReleasesMasterData();
 
+  // feature
   const { features } = useEnvRelay();
+
+  // we have switched off consent display entirely whislt it is being rebuilt - but this
+  // boolean should be re-inserted to the CasesBox when safe
+  features.has(FEATURE_RELEASE_CONSENT_DISPLAY);
 
   const pageSize = usePageSizer();
 
@@ -38,7 +43,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         isAllowAdminView={releaseData.permissionViewSelections ?? false}
         pageSize={pageSize}
         releaseIsActivated={releaseIsActivated}
-        showConsent={features.has(FEATURE_RELEASE_CONSENT_DISPLAY)}
+        showConsent={false}
       />
 
       {releaseData.permissionViewSelections && (

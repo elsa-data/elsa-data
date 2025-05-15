@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { fileSize } from "humanize-plus";
 import { isNil } from "lodash";
 import { EagerErrorBoundary } from "../errors";
 import { BoxPaginator } from "../box-paginator";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpc } from "../../helpers/trpc";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { Table } from "../tables";
-import classNames from "classnames";
-import { ToolTip } from "../tooltip";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
+import { ToolTip } from "../tooltip.tsx";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },
@@ -26,19 +26,18 @@ const COLUMN_TO_SHOW = [
 ];
 
 export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
+  const trpc = useTRPC();
+
   // Pagination Variables
   const pageSize = usePageSizer();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const dataEgressQuery = trpc.releaseDataEgress.dataEgressSummary.useQuery(
-    { releaseKey, page: currentPage },
-    {
-      onSuccess: (res) => {
-        setCurrentTotal(res.total);
-      },
-    },
-  );
+  const dataEgressQueryOptions =
+    trpc.releaseDataEgress.dataEgressSummary.queryOptions({
+      releaseKey,
+      page: currentPage,
+    });
+  const dataEgressQuery = useQuery(dataEgressQueryOptions);
 
   const data = dataEgressQuery.data?.data;
   if (isNil(data) && dataEgressQuery.isSuccess) return <>No Data Found!</>;
@@ -101,9 +100,9 @@ export function DataEgressSummaryTable({ releaseKey }: { releaseKey: string }) {
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}
-        rowCount={currentTotal}
+        rowCount={dataEgressQuery?.data?.total ?? 0}
         rowsPerPage={pageSize}
-        rowWord="Egress Summary Records"
+        rowWord="egress summary records"
       />
     </>
   );

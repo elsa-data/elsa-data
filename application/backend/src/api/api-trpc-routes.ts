@@ -1,11 +1,12 @@
-import { FastifyInstance } from "fastify";
+import { TRPCError } from "@trpc/server";
 import {
   CreateFastifyContextOptions,
   fastifyTRPCPlugin,
+  FastifyTRPCPluginOptions,
 } from "@trpc/server/adapters/fastify";
-import { appRouter } from "../app-router";
+import { FastifyInstance } from "fastify";
+import { AppRouter, appRouter } from "../app-router";
 import { Context } from "./routes/trpc-bootstrap";
-import { TRPCError } from "@trpc/server";
 
 /**
  * Define the Fastify setup for TRPC - the TRPC middleware, routes etc is
@@ -33,6 +34,6 @@ export const trpcRoutes = async (
       onError: (opts: { error: TRPCError }) => {
         fastify.log.error(opts.error.cause);
       },
-    },
+    } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
   });
 };

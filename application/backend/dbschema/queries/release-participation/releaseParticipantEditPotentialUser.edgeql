@@ -5,7 +5,7 @@
 update permission::PotentialUser
 filter .email = <str>$email
 set {
- futureReleaseParticipant += (
+ releaseParticipant += (
     select release::Release { @role := <str>$role } filter .releaseKey = <str>$releaseKey
     )
 };

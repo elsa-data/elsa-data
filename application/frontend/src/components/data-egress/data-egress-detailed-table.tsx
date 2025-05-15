@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { fileSize } from "humanize-plus";
 import { isNil } from "lodash";
 import { formatLocalDateTime } from "../../helpers/datetime-helper";
-import { trpc } from "../../helpers/trpc";
 import { usePageSizer } from "../../hooks/page-sizer";
 import { BoxPaginator } from "../box-paginator";
 import { EagerErrorBoundary } from "../errors";
 import { Table } from "../tables";
-import { Flags } from "../flags";
+import { FlagsFragment } from "../flags-fragment.tsx";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },
@@ -24,21 +25,22 @@ export function DataEgressDetailedTable({
 }: {
   releaseKey: string;
 }) {
+  const trpc = useTRPC();
+
   // Pagination Variables
   const pageSize = usePageSizer();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
-  const dataEgressQuery = trpc.releaseDataEgress.dataEgressRecords.useQuery(
-    { releaseKey, page: currentPage },
-    {
-      onSuccess: (res) => {
-        setCurrentTotal(res.total);
-      },
-    },
-  );
+  const dataEgressQueryOptions =
+    trpc.releaseDataEgress.dataEgressRecords.queryOptions({
+      releaseKey,
+      page: currentPage,
+    });
+  const dataEgressQuery = useQuery(dataEgressQueryOptions);
 
   const data = dataEgressQuery.data?.data;
+  const total = dataEgressQuery.data?.total;
+
   if (isNil(data) && dataEgressQuery.isSuccess) return <>No Data Found!</>;
 
   return (
@@ -81,7 +83,9 @@ export function DataEgressDetailedTable({
                           return (
                             <>
                               {`${loc.city ?? "-"}, ${loc.country ?? "-"} `}
-                              {loc.region && <Flags regions={[loc.region]} />}
+                              {loc.region && (
+                                <FlagsFragment regions={[loc.region]} />
+                              )}
                             </>
                           );
                         }
@@ -110,9 +114,9 @@ export function DataEgressDetailedTable({
       <BoxPaginator
         currentPage={currentPage}
         setPage={(n) => setCurrentPage(n)}
-        rowCount={currentTotal}
+        rowCount={total ?? 0}
         rowsPerPage={pageSize}
-        rowWord="dataEgress"
+        rowWord="data egress records"
       />
     </>
   );

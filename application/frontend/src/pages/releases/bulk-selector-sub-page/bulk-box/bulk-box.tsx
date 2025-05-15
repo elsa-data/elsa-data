@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Box } from "../../../../components/boxes";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { ApplicationCodedBox } from "./application-coded-box";
@@ -10,7 +10,7 @@ import {
 } from "../../../../components/rh/rh-structural";
 import { isUndefined } from "lodash";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
-import { trpc } from "../../../../helpers/trpc";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
 
 type Props = {
   releaseKey: string;
@@ -18,6 +18,7 @@ type Props = {
 };
 
 export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const [error, setError] = useState<ErrorState>({
@@ -25,11 +26,14 @@ export const BulkBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
     isSuccess: true,
   });
 
-  const applyAllMutate = trpc.releaseJob.startCohortConstruction.useMutation({
-    onSettled: async () => await queryClient.invalidateQueries(),
-    onError: (error: any) => setError({ error, isSuccess: false }),
-    onSuccess: () => setError({ error: null, isSuccess: true }),
-  });
+  const applyAllMutateOptions =
+    trpc.releaseJob.startCohortConstruction.mutationOptions({
+      onSettled: async () => await queryClient.invalidateQueries(),
+      onError: (error: any) => setError({ error, isSuccess: false }),
+      onSuccess: () => setError({ error: null, isSuccess: true }),
+    });
+
+  const applyAllMutate = useMutation(applyAllMutateOptions);
 
   const isActivated = !!releaseData.activation;
   const isJobRunning = !isUndefined(releaseData.runningJob);

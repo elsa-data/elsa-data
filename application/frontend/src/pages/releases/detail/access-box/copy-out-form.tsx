@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCircle } from "@fortawesome/free-solid-svg-icons";
-import { trpc } from "../../../../helpers/trpc";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { TsvDownloadDiv } from "./tsv-download-div";
 
@@ -21,30 +20,28 @@ type Props = {
  * @constructor
  */
 export const CopyOutForm: React.FC<Props> = ({ releaseKey, releaseData }) => {
-  const utils = trpc.useContext();
+  const queryClient = useQueryClient();
 
   // a mutator that can alter any field set up using our REST PATCH mechanism
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
-  const releasePatchMutate = useMutation(
-    axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    {
-      // whenever we do a patch mutations of our release we need to invalidate our trpc state
-      // to force a refresh
-      onSuccess: async (result: ReleaseTypeLocal) => {
-        await utils.release.getSpecificRelease.invalidate();
-      },
-      onError: (e) => {
-        console.log(e);
-      },
+  const releasePatchMutate = useMutation({
+    mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
+    // whenever we do a patch mutations of our release we need to invalidate our react query state
+    // to force a refresh
+    onSuccess: async () => {
+      await queryClient.invalidateQueries();
     },
-  );
+    onError: (e) => {
+      console.log(e);
+    },
+  });
   const [input, setInput] = useState<string>(
     releaseData.dataSharingCopyOut?.destinationLocation ?? "",
   );
 
   const isMatchDb =
     input === releaseData.dataSharingCopyOut?.destinationLocation;
-  const isLoading = releasePatchMutate.isLoading;
+  const isLoading = releasePatchMutate.isPending;
 
   return (
     <>

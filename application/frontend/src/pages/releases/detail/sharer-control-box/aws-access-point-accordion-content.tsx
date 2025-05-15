@@ -1,10 +1,14 @@
 import React, { PropsWithChildren, useState } from "react";
-import { UseMutationResult } from "@tanstack/react-query";
+import {
+  useMutation,
+  UseMutationResult,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { SharerAwsAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
-import { trpc } from "../../../../helpers/trpc";
-import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas";
+import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 import { EagerErrorBoundary } from "../../../../components/errors";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
 
 type AwsAccessPointAccordionContentProps = {
   releaseKey: string;
@@ -24,7 +28,8 @@ const NONE_DISPLAY = "-- none --";
 export const AwsAccessPointAccordionContent: React.FC<
   PropsWithChildren<AwsAccessPointAccordionContentProps>
 > = (props) => {
-  const utils = trpc.useUtils();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [accessPointNameInput, setAccessPointNameInput] = useState<string>(
     props.releaseData?.dataSharingAwsAccessPoint?.name || NONE_DISPLAY,
@@ -39,9 +44,7 @@ export const AwsAccessPointAccordionContent: React.FC<
     ) && props.releaseData?.dataSharingAwsAccessPoint?.installed;
 
   const onSuccess = async () => {
-    await utils.release.getSpecificRelease.invalidate({
-      releaseKey: props.releaseKey,
-    });
+    await queryClient.invalidateQueries();
     // once we have started the copy out and invalidated the release state - our next render
     // will show a progress bar at the top... we take them there to show it occurring
     window.scrollTo({
@@ -51,15 +54,21 @@ export const AwsAccessPointAccordionContent: React.FC<
     });
   };
 
-  const accessPointInstallTriggerMutate =
-    trpc.releaseJob.startAwsAccessPointInstall.useMutation({
+  const accessPointInstallTriggerOptions =
+    trpc.releaseJob.startAwsAccessPointInstall.mutationOptions({
       onSuccess: onSuccess,
     });
+  const accessPointInstallTriggerMutate = useMutation(
+    accessPointInstallTriggerOptions,
+  );
 
-  const accessPointUninstallTriggerMutate =
-    trpc.releaseJob.startAwsAccessPointUninstall.useMutation({
+  const accessPointUninstallTriggerOptions =
+    trpc.releaseJob.startAwsAccessPointUninstall.mutationOptions({
       onSuccess: onSuccess,
     });
+  const accessPointUninstallTriggerMutate = useMutation(
+    accessPointUninstallTriggerOptions,
+  );
 
   // ALL OUR boolean states that will go into enabling or disabling buttons
 

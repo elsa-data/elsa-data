@@ -1,12 +1,8 @@
 import React, { PropsWithChildren } from "react";
 import { UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
-import {
-  SharerCopyOutType,
-  SharerObjectSigningType,
-} from "../../../../../../backend/src/config/config-schema-sharer";
-import { trpc } from "../../../../helpers/trpc";
-import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import { SharerObjectSigningType } from "../../../../../../backend/src/config/config-schema-sharer";
+import { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 
 type ObjectSigningAccordionContentProps = {
   releaseKey: string;

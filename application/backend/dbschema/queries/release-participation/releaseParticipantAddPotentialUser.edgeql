@@ -4,7 +4,7 @@
 update permission::PotentialUser
 filter .id = <uuid>$potentialUserUuid
 set {
- futureReleaseParticipant += (
+ releaseParticipant += (
     select release::Release { @role := <str>$role } filter .releaseKey = <str>$releaseKey
     )
 };

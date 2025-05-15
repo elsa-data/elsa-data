@@ -23,16 +23,13 @@ select assert_single((
 
     cases := (
       select .cases { 
-        consent: { 
-          id,
-        },
         externalIdentifiers,
         patients: {
           sexAtBirth,
-          consent : { 
-            id,
-          },
           externalIdentifiers,
+          specimens: {
+            externalIdentifiers
+          }
         }
       }
     ),

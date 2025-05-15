@@ -17,69 +17,69 @@ with
   bclArtifact := (
     select lab::ArtifactBcl 
     filter 
-      (
+      any(
         (not .bclFile.isDeleted) or <bool>$includeDeletedFile
       )
         and
-      .<artifacts[is dataset::DatasetSpecimen]
+      any(.<artifacts[is dataset::DatasetSpecimen]
       .dataset
-      .uri = <str>$datasetUri
+      .uri = <str>$datasetUri)
   ),
 
   fastqArtifact := (
     select lab::ArtifactFastqPair
     filter 
-      (
+      any(
         (not .forwardFile.isDeleted) or <bool>$includeDeletedFile
           and
         (not .reverseFile.isDeleted) or <bool>$includeDeletedFile
       )
         and
-      .<artifacts[is dataset::DatasetSpecimen]
+      any(.<artifacts[is dataset::DatasetSpecimen]
       .dataset
-      .uri = <str>$datasetUri
+      .uri = <str>$datasetUri)
   ),
 
   vcfArtifact := (
     select lab::ArtifactVcf
     filter 
-      (
+      any(
         (not .vcfFile.isDeleted) or <bool>$includeDeletedFile
           and
         (not .tbiFile.isDeleted) or <bool>$includeDeletedFile
       )
         and
-      .<artifacts[is dataset::DatasetSpecimen]
+      any(.<artifacts[is dataset::DatasetSpecimen]
       .dataset
-      .uri = <str>$datasetUri
+      .uri = <str>$datasetUri)
   ),
 
   bamArtifact := (
     select lab::ArtifactBam
     filter 
-      (
+      any(
         (not .bamFile.isDeleted) or <bool>$includeDeletedFile
           and
         (not .baiFile.isDeleted) or <bool>$includeDeletedFile
       )
         and
-      .<artifacts[is dataset::DatasetSpecimen]
+      any(.<artifacts[is dataset::DatasetSpecimen]
       .dataset
-      .uri = <str>$datasetUri
+      .uri = <str>$datasetUri)
   ),
 
   cramArtifact := (
     select lab::ArtifactCram
     filter 
-      (
+      any(
         (not .cramFile.isDeleted) or <bool>$includeDeletedFile
           and
         (not .craiFile.isDeleted) or <bool>$includeDeletedFile
       )
         and
-      .<artifacts[is dataset::DatasetSpecimen]
+      any(.<artifacts[is dataset::DatasetSpecimen]
       .dataset
-      .uri = <str>$datasetUri
+      .uri = <str>$datasetUri)
   ),
 
 

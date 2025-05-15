@@ -1,15 +1,13 @@
 import React, { useRef, useState } from "react";
 import { EagerErrorBoundary } from "../../../components/errors";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SelectDialogBase } from "../../../components/select-dialog-base";
-import { trpc } from "../../../helpers/trpc";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import _ from "lodash";
 import {
   ReleaseParticipantRoleType,
   ReleaseParticipantType,
-} from "@umccr/elsa-types";
+} from "../../../../../backend/src/shared/schemas-releases.ts";
 import { SuccessCancelButtons } from "../../../components/success-cancel-buttons";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type EditParticipantRoleDialogProps = {
   releaseKey: string;
@@ -22,7 +20,8 @@ export const EditParticipantRoleDialog: React.FC<
 
   // Some boolean values for component to show or not
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const utils = trpc.useContext();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   // A function when dialog is closed
   const cancelButtonRef = useRef(null);
@@ -36,17 +35,17 @@ export const EditParticipantRoleDialog: React.FC<
   );
 
   // Mutating the participant role
-  const participantMutate = trpc.releaseParticipant.editParticipant.useMutation(
-    {
-      onSuccess: () => {
-        utils.releaseParticipant.getParticipants.invalidate();
+  const participantMutateOptions =
+    trpc.releaseParticipant.editParticipant.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries();
         setIsDialogOpen(false);
       },
-    },
-  );
+    });
+  const participantMutate = useMutation(participantMutateOptions);
 
   // Parsing for easy access
-  const isLoading = participantMutate.isLoading;
+  const isPending = participantMutate.isPending;
   const isError = participantMutate.isError;
   const error = participantMutate.error;
 
@@ -64,8 +63,8 @@ export const EditParticipantRoleDialog: React.FC<
         title="Participant Role Change"
         buttons={
           <SuccessCancelButtons
-            isLoading={isLoading}
-            isSuccessDisabled={isLoading && !!newRole}
+            isLoading={isPending}
+            isSuccessDisabled={isPending && !!newRole}
             successButtonLabel={"Save"}
             onSuccess={() => {
               if (newRole) {

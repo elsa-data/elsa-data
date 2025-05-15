@@ -21,7 +21,7 @@ describe("TRPC authentication tests", () => {
     // no session auth cookie
     const client = await createTrpcClient(
       server,
-      "/api/trpc",
+      "/api/trpcOld",
       undefined,
       csrfHeaderValue,
     );
@@ -52,7 +52,7 @@ describe("TRPC authentication tests", () => {
     // no CSRF
     const client = await createTrpcClient(
       server,
-      "/api/trpc",
+      "/api/trpcOld",
       authCookieValue,
       undefined,
     );

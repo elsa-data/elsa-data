@@ -1,15 +1,11 @@
 import React, { PropsWithChildren, ReactNode, useState } from "react";
-import { UseMutationResult } from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
-import {
-  SharerCopyOutType,
-  SharerHtsgetType,
-  SharerObjectSigningType,
-} from "../../../../../../backend/src/config/config-schema-sharer";
-import { trpc } from "../../../../helpers/trpc";
-import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import { SharerHtsgetType } from "../../../../../../backend/src/config/config-schema-sharer";
+import { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 import classNames from "classnames";
 import { EagerErrorBoundary } from "../../../../components/errors";
+import { useTRPC } from "../../../../helpers/trpc-modern.ts";
 
 type HtsgetAccordionContentProps = {
   releaseKey: string;
@@ -26,6 +22,8 @@ type HtsgetAccordionContentProps = {
 export const HtsgetAccordionContent: React.FC<
   PropsWithChildren<HtsgetAccordionContentProps>
 > = (props) => {
+  const trpc = useTRPC();
+
   const [congenitalHeartDefect, setCongenitalHeartDefect] = useState(
     props.releaseData.dataSharingHtsgetRestrictions.includes(
       "CongenitalHeartDefect",
@@ -38,10 +36,12 @@ export const HtsgetAccordionContent: React.FC<
     props.releaseData.dataSharingHtsgetRestrictions.includes("Achromatopsia"),
   );
 
-  const applyHtsgetRestriction =
-    trpc.release.applyHtsgetRestriction.useMutation();
-  const removeHtsgetRestriction =
-    trpc.release.removeHtsgetRestriction.useMutation();
+  const applyHtsgetRestrictionOptions =
+    trpc.release.applyHtsgetRestriction.mutationOptions();
+  const applyHtsgetRestriction = useMutation(applyHtsgetRestrictionOptions);
+  const removeHtsgetRestrictionOptions =
+    trpc.release.removeHtsgetRestriction.mutationOptions();
+  const removeHtsgetRestriction = useMutation(removeHtsgetRestrictionOptions);
 
   type HtsgetRestrictionProps = {
     releaseKey: string;
@@ -75,8 +75,8 @@ export const HtsgetAccordionContent: React.FC<
           }}
           className={classNames("checkbox-accent checkbox checkbox-sm mr-2", {
             "opacity-50":
-              applyHtsgetRestriction.isLoading ||
-              removeHtsgetRestriction.isLoading,
+              applyHtsgetRestriction.isPending ||
+              removeHtsgetRestriction.isPending,
           })}
         />
         <span className="label-text">{props.label}</span>

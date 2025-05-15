@@ -1,11 +1,8 @@
 import axios from "axios";
 import { ReleaseTypeLocal } from "./shared-types";
 import { QueryFunctionContext } from "@tanstack/react-query";
-import {
-  ReleaseDetailType,
-  ReleaseParticipantType,
-  ReleasePatchOperationType,
-} from "@umccr/elsa-types";
+import { ReleaseDetailType } from "../../../../backend/src/shared/schemas-releases";
+import { ReleasePatchOperationType } from "../../../../backend/src/shared/schemas-release-operations.ts";
 import { createDatasetMap } from "./dataset-map";
 
 /**
@@ -51,7 +48,7 @@ export function makeReleaseTypeLocal(
   return releaseData as ReleaseTypeLocal;
 }
 
-export const axiosPostNullMutationFn = (apiUrl: string) => (c: null) =>
+export const axiosPostNullMutationFn = (apiUrl: string) => (_: null) =>
   axios
     .post<ReleaseDetailType>(apiUrl, null)
     .then((response) => makeReleaseTypeLocal(response.data));

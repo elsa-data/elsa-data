@@ -1,23 +1,28 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { Box } from "../../components/boxes";
-import { DatasetCaseType } from "../../../../backend/src/shared/schemas-dataset";
 import JSONToTable from "../../components/json-to-table";
 import { fileSize } from "humanize-plus";
 import { EagerErrorBoundary } from "../../components/errors";
 import { getFirstExternalIdentifierValue } from "../../helpers/database-helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFemale, faMale } from "@fortawesome/free-solid-svg-icons";
-import ConsentSummary from "../releases/detail/cases-box/consent-summary";
-import { trpc } from "../../helpers/trpc";
 import { IsLoadingDiv } from "../../components/is-loading-div";
 import { isNil } from "lodash";
 import { Table } from "../../components/tables";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 type DatasetsSpecificPageParams = {
   datasetUri: string;
 };
 
+/**
+ * Display some details of a dataset including some estimates and counts of object sizes
+ * and details of patient ids etc.
+ *
+ * @constructor
+ */
 export const DatasetsDetailPage: React.FC = () => {
   const { datasetUri: encodedDatasetUri } =
     useParams<DatasetsSpecificPageParams>();
@@ -26,16 +31,22 @@ export const DatasetsDetailPage: React.FC = () => {
     ".",
   );
 
-  const datasetQuery = trpc.dataset.getSingleDataset.useQuery({
+  const trpc = useTRPC();
+
+  const datasetQueryOptions = trpc.dataset.getSingleDataset.queryOptions({
     datasetUri: datasetUri,
   });
+  const datasetQuery = useQuery(datasetQueryOptions);
 
   if (datasetQuery.isLoading) return <IsLoadingDiv />;
   const data = datasetQuery?.data;
   if (isNil(data))
     return (
       <div className={""}>
-        <p>No dataset URI found</p>
+        <p>
+          No records for dataset URI{" "}
+          <span className={"font-mono"}>{datasetUri}</span> are in the system
+        </p>
       </div>
     );
 
@@ -81,111 +92,72 @@ export const DatasetsDetailPage: React.FC = () => {
               }
             >
               <div className="overflow-auto">
-                {data && <DatasetTable cases={data.cases} />}
+                {data && (
+                  <Table
+                    tableHead={
+                      <tr>
+                        <th>Case</th>
+                        <th>Patient</th>
+                        <th>Specimen(s)</th>
+                      </tr>
+                    }
+                    tableBody={data.cases.map((caseVal, caseIdx: number) => {
+                      const caseExternalId = getFirstExternalIdentifierValue(
+                        caseVal.externalIdentifiers ?? undefined,
+                      );
+                      const patients = caseVal.patients;
+
+                      return patients.map((patient, patientIdx) => {
+                        const patientExternalId =
+                          getFirstExternalIdentifierValue(
+                            patient.externalIdentifiers ?? undefined,
+                          );
+                        const patientSpecimenIds = patient.specimens
+                          ? patient.specimens.map((s) =>
+                              getFirstExternalIdentifierValue(
+                                s.externalIdentifiers ?? undefined,
+                              ),
+                            )
+                          : [];
+                        return (
+                          <tr
+                            key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}
+                          >
+                            {patientIdx == 0 && (
+                              <td
+                                rowSpan={patients.length}
+                                className="whitespace-nowrap font-medium text-gray-900"
+                              >
+                                {caseExternalId}
+                              </td>
+                            )}
+                            <td className="whitespace-nowrap font-medium text-gray-900">
+                              <>
+                                {patient.sexAtBirth == "female" ? (
+                                  <FontAwesomeIcon icon={faFemale} />
+                                ) : patient.sexAtBirth == "male" ? (
+                                  <FontAwesomeIcon icon={faMale} />
+                                ) : (
+                                  <></>
+                                )}
+                                {` - ${patientExternalId}`}
+                              </>
+                            </td>
+                            <td className="whitespace-nowrap font-medium text-gray-900">
+                              {patientSpecimenIds.join(", ")}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })}
+                  />
+                )}
               </div>
             </Box>
-            {/* <ConsentBox /> */}
           </>
         )}
       </>
     </div>
-  );
-};
-
-const DATASET_COLUMN = [
-  { columnTitle: "Case Id", jsonKey: "caseId" },
-  { columnTitle: "Case Consent", jsonKey: "caseConsentId" },
-  { columnTitle: "Patient Id", jsonKey: "patientId" },
-  { columnTitle: "Patient Consent", jsonKey: "patientConsentId" },
-];
-const DatasetTable: React.FC<{ cases: DatasetCaseType[] }> = ({ cases }) => {
-  return (
-    <Table
-      tableHead={
-        <tr>
-          {DATASET_COLUMN.map((val, i) => (
-            <th key={i}>{val.columnTitle}</th>
-          ))}
-        </tr>
-      }
-      tableBody={cases.map((caseVal: DatasetCaseType, caseIdx: number) => {
-        const exId = getFirstExternalIdentifierValue(
-          caseVal.externalIdentifiers ?? undefined,
-        );
-        const patients = caseVal.patients;
-
-        return patients.map((patient, patientIdx) => {
-          const patientId = getFirstExternalIdentifierValue(
-            patient.externalIdentifiers ?? undefined,
-          );
-          return (
-            <tr key={`caseIdx-${caseIdx}-patientIdx-${patientIdx}`}>
-              {DATASET_COLUMN.map(
-                (col: Record<string, string>, colIdx: number) => {
-                  return (
-                    <React.Fragment key={`${caseIdx}-${patientIdx}-${colIdx}`}>
-                      {col.jsonKey == "caseId" ? (
-                        <>
-                          {patientIdx == 0 && (
-                            <td
-                              rowSpan={patients.length}
-                              className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                            >
-                              {exId}
-                            </td>
-                          )}
-                        </>
-                      ) : col.jsonKey == "caseConsentId" ? (
-                        <>
-                          {patientIdx == 0 && (
-                            <td
-                              rowSpan={patients.length}
-                              className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                            >
-                              {caseVal.consent?.id ? (
-                                <ConsentSummary
-                                  consentId={caseVal.consent.id}
-                                />
-                              ) : (
-                                `-`
-                              )}
-                            </td>
-                          )}
-                        </>
-                      ) : col.jsonKey == "patientId" ? (
-                        <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                          <>
-                            {patient.sexAtBirth == "female" ? (
-                              <FontAwesomeIcon icon={faFemale} />
-                            ) : patient.sexAtBirth == "male" ? (
-                              <FontAwesomeIcon icon={faMale} />
-                            ) : (
-                              <></>
-                            )}
-
-                            {` - ${patientId}`}
-                          </>
-                        </td>
-                      ) : col.jsonKey == "patientConsentId" ? (
-                        <td className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                          {patient.consent?.id ? (
-                            <ConsentSummary consentId={patient.consent.id} />
-                          ) : (
-                            `-`
-                          )}
-                        </td>
-                      ) : (
-                        <td>{col.jsonKey}</td>
-                      )}
-                    </React.Fragment>
-                  );
-                },
-              )}
-            </tr>
-          );
-        });
-      })}
-    />
   );
 };
 
