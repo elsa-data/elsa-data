@@ -1,7 +1,7 @@
 import axios from "axios";
 import { partial, zipWith } from "lodash";
 import LRUCache from "lru-cache";
-import { CodingType } from "@umccr/elsa-types";
+import { CodingType } from "../../../backend/src/shared/schemas-coding";
 import {
   countriesEnglishNames,
   ISO3166_SYTEM_URI,

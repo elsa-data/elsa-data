@@ -28,7 +28,6 @@ export default defineConfig((env) => {
   };
 
   if (env.mode === "development") {
-    defaultConfig.build.minify = false;
   } else {
     defaultConfig.build.outDir = "../backend/client/dist";
   }

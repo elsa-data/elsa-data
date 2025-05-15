@@ -1,6 +1,5 @@
 import classNames from "classnames";
 import React from "react";
-import { isString } from "lodash";
 import { Pagination } from "react-headless-pagination";
 
 type Props = {
