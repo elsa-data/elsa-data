@@ -49,21 +49,13 @@
       },
     },
     {
-      id: "rems-hgpp",
+      id: "rems-biocommons",
       type: "rems",
-      description: "REMS HGPP (demo)",
-      url: "https://hgpp-rems.dev.umccr.org",
+      description: "REMS BioCommons (test)",
+      url: "https://rems.test.biocommons.org.au",
       // the bot keys will be set via our relevant secret mechanism
       botUser: "will-be-replaced",
       botKey: "will-be-replaced",
-    },
-    {
-      id: "rems-fake",
-      type: "rems",
-      description: "REMS Fake (non-existent)",
-      url: "https://fake-rems.dev.umccr.org",
-      botUser: "not",
-      botKey: "arealkey",
     },
   ],
   aws: {

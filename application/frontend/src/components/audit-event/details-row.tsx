@@ -1,8 +1,7 @@
 import { EagerErrorBoundary } from "../errors";
-import React from "react";
-import { useNavigate } from "react-router-dom";
 import { IsLoadingDivIcon } from "../is-loading-div";
-import { trpcOld } from "../../helpers/trpc-old.ts";
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 /**
  * Props for the details row.
@@ -18,10 +17,14 @@ export type DetailsRowProps = {
  * The details row shown when clicking on a row in an audit event table.
  */
 export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
-  const detailsQuery = trpcOld.auditEvent.getAuditEventDetails.useQuery(
-    { id: objectId },
-    { keepPreviousData: true },
+  const trpc = useTRPC();
+
+  const detailsQueryOptions = trpc.auditEvent.getAuditEventDetails.queryOptions(
+    {
+      id: objectId,
+    },
   );
+  const detailsQuery = useQuery(detailsQueryOptions);
 
   // TODO make a link here to a full details page
   // if we decide it is worth it (and that's a big if)

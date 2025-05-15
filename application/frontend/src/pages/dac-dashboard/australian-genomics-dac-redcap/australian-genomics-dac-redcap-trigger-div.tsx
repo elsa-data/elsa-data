@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
-import { FileRejection } from "react-dropzone";
-import { AustraliaGenomicsDacRedcap } from "@umccr/elsa-types";
+import { AustraliaGenomicsDacRedcap } from "../../../../../backend/src/shared/csv-australian-genomics";
 import { AustralianGenomicsDacDialog } from "./australian-genomics-dac-dialog";
-import { trpcOld } from "../../../helpers/trpc-old.ts";
 import { CsvDropzone, formatError } from "../../../components/csv-dropzone";
+import { useTRPC } from "../../../helpers/trpc-modern.ts";
+import { useMutation } from "@tanstack/react-query";
 
 type Props = {
   dacId: string;
@@ -14,6 +14,8 @@ type Props = {
 export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
   dacId,
 }) => {
+  const trpc = useTRPC();
+
   const [showingRedcapDialog, setShowingRedcapDialog] = useState(false);
 
   const [possibleApplications, setPossibleApplications] = useState<
@@ -22,7 +24,7 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
 
   const [parseError, setParseError] = useState<string | undefined>(undefined);
 
-  const detectQuery = trpcOld.dac.detectNew.useMutation({
+  const detectQueryOptions = trpc.dac.detectNew.mutationOptions({
     onSuccess: (d) => {
       setPossibleApplications(d as any);
       setShowingRedcapDialog(true);
@@ -32,6 +34,8 @@ export const AustralianGenomicsDacRedcapTriggerDiv: React.FC<Props> = ({
       setShowingRedcapDialog(true);
     },
   });
+
+  const detectQuery = useMutation(detectQueryOptions);
 
   const onDrop = useCallback(() => {
     setPossibleApplications([]);

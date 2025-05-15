@@ -5,7 +5,7 @@ select assert_single((
     update permission::PotentialUser
     filter .email = <str>$email
     set {
-    futureReleaseParticipant -= (
+    releaseParticipant -= (
         select release::Release filter .releaseKey = <str>$releaseKey
         )
 }

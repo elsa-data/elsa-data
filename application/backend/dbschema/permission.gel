@@ -4,6 +4,14 @@ module permission {
     # by email address - but who have not yet ever logged into Elsa Data and so have not become
     # concrete users
 
+    abstract link Participation {
+        property role -> str {
+            constraint one_of('Administrator', 'Manager', 'Member');
+        }
+
+        index on (__subject__@role);
+    }
+
     type PotentialUser {
 
         # note that email is the only identifier we are likely to be able to source from
@@ -31,10 +39,8 @@ module permission {
 
         # whether this user will become a participant of a release when they login
 
-        multi link futureReleaseParticipant -> release::Release {
-            property role -> str {
-               constraint one_of('Administrator', 'Manager', 'Member');
-            }
+        multi link releaseParticipant -> release::Release {
+            extending Participation;
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release
             # (in general releases won't be deleted anyway)
@@ -99,9 +105,7 @@ module permission {
         # whether this user is a participant in a release
 
         multi link releaseParticipant -> release::Release {
-            property role -> str {
-               constraint one_of('Administrator', 'Manager', 'Member');
-            }
+            extending Participation;
 
             # allow releases to be removed - all that happens for the user is they lose involvement with that release
             # (in general releases won't be deleted anyway)

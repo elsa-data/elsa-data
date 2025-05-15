@@ -1,30 +1,26 @@
-import * as gel from "gel";
-import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
-import e from "../../../../dbschema/edgeql-js";
-import { inject, injectable } from "tsyringe";
 import axios from "axios";
-import { UserService } from "../user-service";
-import { AuthenticatedUser } from "../../authenticated-user";
-import type { ElsaSettings } from "../../../config/elsa-settings";
 import { format } from "date-fns";
-import { getNextReleaseKey } from "../../db/release-queries";
-import { ReleaseService } from "../releases/release-service";
+import * as gel from "gel";
+import { isEmpty, isInteger } from "lodash";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
 import { DacRemsType } from "../../../config/config-schema-dac";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import { generateZipPassword } from "../../../helpers/passwords";
+import { RemsApprovedApplicationType } from "../../../shared/schemas";
+import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { UserData } from "../../data/user-data";
+import { getNextReleaseKey } from "../../db/release-queries";
 import {
   ReleaseCreateError,
   ReleaseViewError,
 } from "../../exceptions/release-authorisation";
-import { UserData } from "../../data/user-data";
-import { generateZipPassword } from "../../../helpers/passwords";
-import { isEmpty, isInteger } from "lodash";
-import type { Logger } from "pino";
-import {
-  ApplicationUser,
-  checkValidApplicationUser,
-  insertPotentialOrReal,
-} from "../_dac-user-helper";
+import { ApplicationUser, insertPotentialOrReal } from "../_dac-user-helper";
 import { AuditEventService } from "../audit-event-service";
-import { RemsApprovedApplicationType } from "../../../shared/schemas";
+import { ReleaseService } from "../releases/release-service";
+import { UserService } from "../user-service";
 @injectable()
 export class RemsService {
   constructor(
@@ -57,7 +53,7 @@ export class RemsService {
       .get(
         isInteger(applicationId)
           ? `${url}/api/applications/${applicationId}`
-          : `${url}/api/applications`,
+          : `${url}/api/applications/`,
         {
           headers: {
             accept: "application/json",

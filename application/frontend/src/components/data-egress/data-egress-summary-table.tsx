@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { fileSize } from "humanize-plus";
 import { isNil } from "lodash";
 import { EagerErrorBoundary } from "../errors";
@@ -8,6 +8,7 @@ import { usePageSizer } from "../../hooks/page-sizer";
 import { Table } from "../tables";
 import { useTRPC } from "../../helpers/trpc-modern.ts";
 import { useQuery } from "@tanstack/react-query";
+import { ToolTip } from "../tooltip.tsx";
 
 const COLUMN_TO_SHOW = [
   { key: "fileUrl", value: "File URL" },

@@ -112,13 +112,6 @@ export const CasesBox: React.FC<Props> = ({
 
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotalCases, setCurrentTotalCases] = useState<number>(1);
-
-  // just a helper for the UI which we get from our cases query as a bonus
-  // TODO get from the backend the currentTotalSpecimens - and then use
-  //      that to derive real select all/unselect all state rather than the pseudo SelectAllIndeterminate
-  const [currentSelectedSpecimens, setCurrentSelectedSpecimens] =
-    useState<number>(0);
 
   // a text input which changes the behaviour of the control to being a search result
   const [searchText, setSearchText] = useState("");
@@ -136,16 +129,9 @@ export const CasesBox: React.FC<Props> = ({
     page: currentPage,
     q: searchText,
   });
-  const { data, isSuccess, isPending, error, isError, isFetching } = useQuery(
+  const { data, isPending, error, isError, isFetching } = useQuery(
     getReleaseCasesOptions,
   );
-
-  useEffect(() => {
-    if (isSuccess) {
-      setCurrentTotalCases(data.total);
-      setCurrentSelectedSpecimens(data.totalSelectedSpecimens);
-    }
-  }, [isSuccess]);
 
   const casesQueryData: ReleaseCaseType[] | undefined = data?.data;
 
@@ -236,7 +222,7 @@ export const CasesBox: React.FC<Props> = ({
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => setCurrentPage(n)}
-          rowCount={currentTotalCases}
+          rowCount={data?.total ?? 0}
           rowsPerPage={pageSize}
           rowWord="cases"
           currentSearchText={searchText}
@@ -351,9 +337,9 @@ export const CasesBox: React.FC<Props> = ({
                     */}
                       {/* status span */}
                       <span>
-                        {currentSelectedSpecimens} specimen
-                        {currentSelectedSpecimens !== 1 && "s"} in total
-                        selected
+                        {data?.totalSelectedSpecimens ?? 0} specimen
+                        {(data?.totalSelectedSpecimens ?? 0) !== 1 && "s"} in
+                        total selected
                       </span>
                     </div>
                     <BulkSelectionDiv

@@ -155,7 +155,6 @@ export const JobTable = ({
             </Fragment>
           ))}
         />
-        )
         <BoxPaginator
           currentPage={currentPage}
           setPage={(n) => {

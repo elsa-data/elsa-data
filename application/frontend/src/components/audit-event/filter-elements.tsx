@@ -1,5 +1,5 @@
 import { RouteValidation } from "../../../../backend/src/shared/schemas-audit";
-import React, { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { ToolTip } from "../tooltip";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
 

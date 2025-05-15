@@ -1,9 +1,7 @@
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import * as gel from "gel";
-import { AuthenticatedUser } from "../../authenticated-user";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "../user-service";
-import { ReleaseBaseService } from "./release-base-service";
-import type { ElsaSettings } from "../../../config/elsa-settings";
+import e from "../../../../dbschema/edgeql-js";
 import {
   potentialUserGetByEmail,
   releaseParticipantAddPotentialUser,
@@ -16,24 +14,20 @@ import {
   releaseParticipantRemoveUser,
   userGetByEmail,
 } from "../../../../dbschema/queries";
+import { createPagedResult } from "../../../api/helpers/pagination-helpers";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type { ReleaseParticipantRoleType } from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
 import {
-  ReleaseParticipationPermissionError,
-  ReleaseParticipationNotFoundError,
   ReleaseParticipationExistError,
+  ReleaseParticipationNotFoundError,
+  ReleaseParticipationPermissionError,
 } from "../../exceptions/release-participation";
-import e from "../../../../dbschema/edgeql-js";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
-import type {
-  ReleaseParticipantRoleType,
-  ReleaseParticipantType,
-} from "../../../shared/schemas-releases";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../../api/helpers/pagination-helpers";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { PermissionService } from "../permission-service";
+import { UserService } from "../user-service";
+import { ReleaseBaseService } from "./release-base-service";
 
 /**
  * A service that coordinates the participation of users in a release
@@ -93,7 +87,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         // Also they can't change their own roles in the release
         const isAllowedChangeThisParticipant =
           roleOptionFromThisUser?.includes(
-            p.role as ReleaseParticipantRoleType,
+            p?.participation?.role as ReleaseParticipantRoleType,
           ) && p.id !== user.dbId;
 
         return {
@@ -208,7 +202,7 @@ export class ReleaseParticipationService extends ReleaseBaseService {
           .insert(e.permission.PotentialUser, {
             displayName: newUserEmail,
             email: newUserEmail,
-            futureReleaseParticipant: e.select(e.release.Release, (r) => ({
+            releaseParticipant: e.select(e.release.Release, (r) => ({
               filter: e.op(releaseKey, "=", r.releaseKey),
               "@role": e.str(newUserRole),
             })),
@@ -356,8 +350,8 @@ export class ReleaseParticipationService extends ReleaseBaseService {
         }
 
         // Check if current user role is authorised to remove
-        const participantRole =
-          participantReleaseInfo.role as ReleaseParticipantRoleType;
+        const participantRole = participantReleaseInfo.participation
+          ?.role as ReleaseParticipantRoleType;
         const roleAllowed = this.getParticipantRoleOption(userRole);
         if (!roleAllowed?.includes(participantRole)) {
           throw new ReleaseParticipationPermissionError(releaseKey);

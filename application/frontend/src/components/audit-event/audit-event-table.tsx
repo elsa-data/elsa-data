@@ -1,4 +1,4 @@
-import React, {
+import {
   Dispatch,
   Fragment,
   ReactNode,
@@ -11,7 +11,6 @@ import {
   AuditEventType,
   RouteValidation,
 } from "../../../../backend/src/shared/schemas-audit";
-import { UseQueryResult } from "@tanstack/react-query";
 import { Box } from "../boxes";
 import { BoxPaginator } from "../box-paginator";
 import {
@@ -39,8 +38,9 @@ import { DetailsRow } from "./details-row";
 import { FilterElements } from "./filter-elements";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import { IsLoadingDiv } from "../is-loading-div";
-import { trpcOld } from "../../helpers/trpc-old.ts";
 import AuditEventUserFilterType = RouteValidation.AuditEventUserFilterType;
+import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -299,6 +299,7 @@ export const useAuditEventQuery = (
   setData: Dispatch<SetStateAction<AuditEventType[]>>,
   setError: Dispatch<SetStateAction<ErrorState>>,
 ) => {
+  const trpc = useTRPC();
   const query = {
     page: currentPage,
     orderByProperty: orderByProperty,
@@ -319,15 +320,17 @@ export const useAuditEventQuery = (
   };
 
   if (type === "AuditEvent") {
-    return trpcOld.auditEvent.getAuditEvent.useQuery(
-      { ...query, filter: includeEvents },
-      options,
-    );
+    const queryOptions = trpc.auditEvent.getAuditEvent.queryOptions({
+      ...query,
+      filter: includeEvents,
+    });
+    return useQuery(queryOptions);
   } else {
-    return trpcOld.auditEvent.getReleaseAuditEvent.useQuery(
-      { ...query, releaseKey: type.releaseKey },
-      options,
-    );
+    const queryOptions = trpc.auditEvent.getReleaseAuditEvent.queryOptions({
+      ...query,
+      releaseKey: type.releaseKey,
+    });
+    return useQuery(queryOptions);
   }
 };
 
@@ -466,9 +469,9 @@ export const CELL_BOX = "flex items-center justify-center";
 /**
  * Create the column definition based on the audit entry type.
  *
- * @param navigate a function for performing navigation
+ * @param _navigate a function for performing navigation
  */
-export const createColumns = (navigate: NavigateFunction) => {
+export const createColumns = (_navigate: NavigateFunction) => {
   const columnHelper = createColumnHelper<AuditEventType>();
   return [
     columnHelper.accessor("hasDetails", {
