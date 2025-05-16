@@ -1,4 +1,4 @@
-import { RefinementCtx, z } from "zod";
+import { type RefinementCtx, z } from "zod";
 
 export function oneOf<
   A,

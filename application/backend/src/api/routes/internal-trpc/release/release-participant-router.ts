@@ -1,19 +1,15 @@
+import { z } from "zod";
+import { ReleaseParticipantRoleConst } from "../../../../shared/schemas-releases";
 import {
   calculateOffset,
   internalProcedure,
   router,
 } from "../../trpc-bootstrap";
-import { z } from "zod";
 import {
   inputPaginationParameter,
   inputReleaseKey,
   inputReleaseKeySingle,
 } from "../input-schemas-common";
-import {
-  ReleaseParticipantRoleType,
-  ReleaseParticipantRole,
-  ReleaseParticipantRoleConst,
-} from "../../../../shared/schemas-releases";
 
 /**
  * RPC for release participants

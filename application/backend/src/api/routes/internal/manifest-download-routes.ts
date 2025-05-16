@@ -1,14 +1,14 @@
-import { FastifyInstance } from "fastify";
-import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
-import { DependencyContainer } from "tsyringe";
-import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
-import { PresignedUrlService } from "../../../business/services/presigned-url-service";
-import { ManifestService } from "../../../business/services/manifests/manifest-service";
+import type { FastifyInstance } from "fastify";
+import type { DependencyContainer } from "tsyringe";
 import { S3ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
+import { ManifestService } from "../../../business/services/manifests/manifest-service";
+import { PresignedUrlService } from "../../../business/services/presigned-url-service";
+import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
 import {
   ReleasePresignRequestSchema,
-  ReleasePresignRequestType,
+  type ReleasePresignRequestType,
 } from "../../../shared/schemas";
+import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 
 /**
  * We want to allow manifests to be downloaded with kind of native browser

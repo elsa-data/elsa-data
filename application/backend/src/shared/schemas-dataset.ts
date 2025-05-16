@@ -1,6 +1,6 @@
-import { Static, Type } from "@sinclair/typebox";
-import { TypeDate } from "./typebox-helpers";
+import { type Static, Type } from "@sinclair/typebox";
 import { ReleasePatientBirthSexSchema } from "./schemas-releases";
+import { TypeDate } from "./typebox-helpers";
 /**
  * We use typebox to provide us with JSON schema compatible definitions
  * AND Typescript compatible types.

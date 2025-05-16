@@ -1,11 +1,11 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
 import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "../util/test-data-helpers";
-import { InsertReleaseProps, insertRole } from "./helpers";
+import { type InsertReleaseProps, insertRole } from "./helpers";
 
 export const RELEASE3_RELEASE_IDENTIFIER = "R003";
 

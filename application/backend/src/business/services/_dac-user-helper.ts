@@ -1,4 +1,4 @@
-import { Executor } from "gel";
+import type { Executor } from "gel";
 import _ from "lodash";
 import e from "../../../dbschema/edgeql-js";
 import {

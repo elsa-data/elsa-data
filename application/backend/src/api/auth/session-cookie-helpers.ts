@@ -1,13 +1,13 @@
-import { FastifyRequest } from "fastify";
-import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./session-cookie-constants";
-import { SecureSessionPluginOptions } from "@fastify/secure-session";
-import { SECURE_COOKIE_NAME } from "../../shared/constants-cookies";
-import type { ElsaSettings } from "../../config/elsa-settings";
+import type { SecureSessionPluginOptions } from "@fastify/secure-session";
+import type { FastifyRequest } from "fastify";
 import {
   AuthenticatedUser,
-  AuthenticatedUserJsonType,
+  type AuthenticatedUserJsonType,
 } from "../../business/authenticated-user";
 import { UserService } from "../../business/services/user-service";
+import type { ElsaSettings } from "../../config/elsa-settings";
+import { SECURE_COOKIE_NAME } from "../../shared/constants-cookies";
+import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./session-cookie-constants";
 
 /**
  * Return a secure sessions plugin options object for Fastify.

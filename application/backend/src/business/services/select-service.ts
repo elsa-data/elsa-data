@@ -1,13 +1,13 @@
-import * as gel from "gel";
-import { inject, injectable } from "tsyringe";
 import {
   InvocationType,
   InvokeCommand,
   LambdaClient,
 } from "@aws-sdk/client-lambda";
 import AmazonS3URI from "amazon-s3-uri";
+import * as gel from "gel";
 import _ from "lodash";
-import { dataset, release } from "../../../dbschema/interfaces";
+import { inject, injectable } from "tsyringe";
+import type { dataset, release } from "../../../dbschema/interfaces";
 
 @injectable()
 export class SelectService {

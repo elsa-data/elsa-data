@@ -1,11 +1,11 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
+import type { AuthenticatedUserJsonType } from "../../business/authenticated-user";
 import {
-  SESSION_KEYS,
+  type SESSION_KEYS,
   SESSION_OIDC_NONCE_KEY_NAME,
   SESSION_OIDC_STATE_KEY_NAME,
   SESSION_USER_DB_OBJECT_KEY_NAME,
 } from "../auth/session-cookie-constants";
-import { AuthenticatedUserJsonType } from "../../business/authenticated-user";
 
 declare module "@fastify/secure-session" {
   interface SessionData {

@@ -1,11 +1,11 @@
+import type { DependencyContainer } from "tsyringe";
+import type { ElsaSettings } from "./config/elsa-settings";
 import {
   FEATURE_DEV_TEST_USERS_LOGIN,
   FEATURE_RELEASE_COHORT_CONSTRUCTOR,
   FEATURE_RELEASE_CONSENT_DISPLAY,
   FEATURE_RELEASE_DATA_EGRESS_VIEWER,
 } from "./shared/constants-features";
-import type { ElsaSettings } from "./config/elsa-settings";
-import { DependencyContainer } from "tsyringe";
 
 /**
  * Determine on startup which features are enabled in this Elsa Data instance.

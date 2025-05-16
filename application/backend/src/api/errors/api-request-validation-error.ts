@@ -1,5 +1,5 @@
-import { ErrorObject } from "ajv";
-import { Base7807Error, Base7807Response } from "../../shared/error-types";
+import type { ErrorObject } from "ajv";
+import { Base7807Error, type Base7807Response } from "../../shared/error-types";
 
 export class ApiRequestValidationError extends Base7807Error {
   constructor(private readonly errors: ErrorObject[]) {

@@ -1,20 +1,20 @@
+import { randomUUID } from "crypto";
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
+import { getServices } from "../../di-helpers";
 import {
   createArtifacts,
   createFile,
   makeSystemlessIdentifier,
   makeSystemlessIdentifierArray,
 } from "../util/test-data-helpers";
-import { makeSimpsonsTrio } from "./insert-test-data-10f-simpsons";
 import {
   makeTrio,
   TENF_DESCRIPTION,
   TENF_URI,
 } from "./insert-test-data-10f-helpers";
 import { makeJetsonsTrio } from "./insert-test-data-10f-jetsons";
-import { randomUUID } from "crypto";
-import { DependencyContainer } from "tsyringe";
-import { getServices } from "../../di-helpers";
+import { makeSimpsonsTrio } from "./insert-test-data-10f-simpsons";
 
 // we haven't copied some of the other files up yet so we just point to nothing
 const blankFile = () =>

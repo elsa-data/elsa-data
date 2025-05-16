@@ -1,11 +1,11 @@
+import { type GetSignedUrlConfig, Storage } from "@google-cloud/storage";
 import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
-import { GcpEnabledService } from "./gcp-enabled-service";
-import { ReleaseService } from "./releases/release-service";
 import type { ElsaSettings } from "../../config/elsa-settings";
+import { GcpEnabledService } from "./gcp-enabled-service";
 import type { IPresignedUrlProvider } from "./presigned-url-service";
-import { GetSignedUrlConfig, Storage } from "@google-cloud/storage";
+import { ReleaseService } from "./releases/release-service";
+import { UserService } from "./user-service";
 
 @injectable()
 export class GcpPresignedUrlService implements IPresignedUrlProvider {

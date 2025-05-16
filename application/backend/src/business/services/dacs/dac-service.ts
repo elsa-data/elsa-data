@@ -1,14 +1,14 @@
 import * as gel from "gel";
-import { inject, injectable } from "tsyringe";
-import { UserService } from "../user-service";
-import { AuthenticatedUser } from "../../authenticated-user";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { ReleaseService } from "../releases/release-service";
-import { DacType } from "../../../config/config-schema-dac";
 import _ from "lodash";
-import { RemsService } from "./rems-service";
-import { RedcapImportApplicationService } from "./redcap-import-application-service";
+import { inject, injectable } from "tsyringe";
+import type { DacType } from "../../../config/config-schema-dac";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { UserData } from "../../data/user-data";
+import { ReleaseService } from "../releases/release-service";
+import { UserService } from "../user-service";
+import { RedcapImportApplicationService } from "./redcap-import-application-service";
+import { RemsService } from "./rems-service";
 
 /**
  * A service wrapping all our upstream Data Access Committee

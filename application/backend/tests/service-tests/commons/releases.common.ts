@@ -1,24 +1,24 @@
 import { createClient } from "gel";
-import { blankTestData } from "../../../src/test-data/util/blank-test-data";
-import {
-  insert10G,
-  TENG_URI,
-} from "../../../src/test-data/dataset/insert-test-data-10g";
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import {
-  findSpecimenQuery,
-  makeSingleCodeArray,
-} from "../../../src/test-data/util/test-data-helpers";
+import { insert10C } from "../../../src/test-data/dataset/insert-test-data-10c";
 import { insert10F } from "../../../src/test-data/dataset/insert-test-data-10f";
 import { TENF_URI } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";
+import { JUDY_SPECIMEN } from "../../../src/test-data/dataset/insert-test-data-10f-jetsons";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
 } from "../../../src/test-data/dataset/insert-test-data-10f-simpsons";
-import { JUDY_SPECIMEN } from "../../../src/test-data/dataset/insert-test-data-10f-jetsons";
-import { insert10C } from "../../../src/test-data/dataset/insert-test-data-10c";
-import { DependencyContainer } from "tsyringe";
+import {
+  insert10G,
+  TENG_URI,
+} from "../../../src/test-data/dataset/insert-test-data-10g";
+import { blankTestData } from "../../../src/test-data/util/blank-test-data";
+import {
+  findSpecimenQuery,
+  makeSingleCodeArray,
+} from "../../../src/test-data/util/test-data-helpers";
 
 /**
  * This is a common beforeEach call that should be used to setup a base

@@ -1,6 +1,6 @@
-import { Executor } from "gel";
-import { UserObject } from "../user/helpers";
+import type { Executor } from "gel";
 import e from "../../../dbschema/edgeql-js";
+import type { UserObject } from "../user/helpers";
 
 export type InsertReleaseProps = {
   // From User perspective

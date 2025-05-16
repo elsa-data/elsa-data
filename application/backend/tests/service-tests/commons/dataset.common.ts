@@ -1,10 +1,10 @@
 import { createClient } from "gel";
-import { blankTestData } from "../../../src/test-data/util/blank-test-data";
-import { insert10G } from "../../../src/test-data/dataset/insert-test-data-10g";
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { insert10F } from "../../../src/test-data/dataset/insert-test-data-10f";
-import { DependencyContainer } from "tsyringe";
+import { insert10G } from "../../../src/test-data/dataset/insert-test-data-10g";
+import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 
 /**
  * This is a common beforeEach call that should be used to setup a base

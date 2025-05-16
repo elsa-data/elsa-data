@@ -1,21 +1,21 @@
-import { DependencyContainer } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
+import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
+import { AwsCloudTrailLakeService } from "./business/services/aws/aws-cloudtrail-lake-service";
 import { AwsDiscoveryService } from "./business/services/aws/aws-discovery-service";
 import { AwsEnabledService } from "./business/services/aws/aws-enabled-service";
 import { AwsPresignedUrlService } from "./business/services/aws/aws-presigned-url-service";
 import { AwsS3Service } from "./business/services/aws/aws-s3-service";
-import { AwsAccessPointService } from "./business/services/sharers/aws-access-point/aws-access-point-service";
-import { AwsCloudTrailLakeService } from "./business/services/aws/aws-cloudtrail-lake-service";
-import { GcpEnabledService } from "./business/services/gcp-enabled-service";
-import { GcpStorageSharingService } from "./business/services/gcp-storage-sharing-service";
-import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
+import { S3 } from "./business/services/cloud-storage-service";
 import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
+import { EmailService } from "./business/services/email-service";
+import { GcpEnabledService } from "./business/services/gcp-enabled-service";
+import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
+import { GcpStorageSharingService } from "./business/services/gcp-storage-sharing-service";
+import { IPLookupService } from "./business/services/ip-lookup-service";
+import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { ManifestService } from "./business/services/manifests/manifest-service";
 import { PresignedUrlService } from "./business/services/presigned-url-service";
-import { AuditEventTimedService } from "./business/services/audit-event-timed-service";
-import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
-import { S3 } from "./business/services/cloud-storage-service";
-import { IPLookupService } from "./business/services/ip-lookup-service";
-import { EmailService } from "./business/services/email-service";
+import { AwsAccessPointService } from "./business/services/sharers/aws-access-point/aws-access-point-service";
 
 /**
  * Register singleton instances of all services that should be singleton.

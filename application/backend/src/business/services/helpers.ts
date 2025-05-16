@@ -1,9 +1,9 @@
-import { Executor } from "gel";
-import { AuthenticatedUser } from "../authenticated-user";
-import { UserService } from "./user-service";
-import { ReleaseDisappearedError } from "../exceptions/release-disappear";
+import type { Executor } from "gel";
 import { Transaction } from "gel/dist/transaction";
 import e from "../../../dbschema/edgeql-js";
+import { AuthenticatedUser } from "../authenticated-user";
+import { ReleaseDisappearedError } from "../exceptions/release-disappear";
+import { UserService } from "./user-service";
 
 /**
  * A set of code snippets used within the releases service - but broken out into separate

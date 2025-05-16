@@ -5,11 +5,11 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyRateLimit from "@fastify/rate-limit";
 import fastifySecureSession from "@fastify/secure-session";
 import fastifyStatic from "@fastify/static";
-import { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
-import Fastify, { FastifyBaseLogger, FastifyInstance } from "fastify";
+import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import Fastify, { type FastifyBaseLogger, type FastifyInstance } from "fastify";
 import * as fs from "fs";
 import * as mime from "mime-types";
-import { DependencyContainer } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
 import { apiExternalRoutes } from "./api/api-external-routes";
 import { apiInternalRoutes } from "./api/api-internal-routes";
@@ -17,8 +17,8 @@ import { trpcRoutes } from "./api/api-trpc-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
 import { getSecureSessionOptions } from "./api/auth/session-cookie-helpers";
 import { ErrorHandler } from "./api/errors/_error.handler";
-import { Context } from "./api/routes/trpc-bootstrap";
-import { getMandatoryEnv, IndexHtmlTemplateData } from "./app-env";
+import type { Context } from "./api/routes/trpc-bootstrap";
+import { getMandatoryEnv, type IndexHtmlTemplateData } from "./app-env";
 import {
   locateHtmlDirectory,
   serveCustomIndexHtml,

@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
 export const ActionCategorySchema = Type.Union([

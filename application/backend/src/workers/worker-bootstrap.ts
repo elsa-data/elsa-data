@@ -1,8 +1,8 @@
-import { Logger, pino } from "pino";
+import { type Logger, pino } from "pino";
 import { bootstrapDependencyInjection } from "../bootstrap-dependency-injection";
 import { bootstrapSettings } from "../bootstrap-settings";
 import { getDirectConfig } from "../config/config-load";
-import { ElsaSettings } from "../config/elsa-settings";
+import type { ElsaSettings } from "../config/elsa-settings";
 import { getFeaturesEnabled } from "../features";
 
 /**

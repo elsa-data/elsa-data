@@ -1,29 +1,29 @@
-import { DependencyContainer } from "tsyringe";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { CloudTrailClient } from "@aws-sdk/client-cloudtrail";
-import { SESClient } from "@aws-sdk/client-ses";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 import { ServiceDiscoveryClient } from "@aws-sdk/client-servicediscovery";
+import { SESClient } from "@aws-sdk/client-ses";
 import { SFNClient } from "@aws-sdk/client-sfn";
 import { STSClient } from "@aws-sdk/client-sts";
-import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
-import { createMockServiceDiscovery } from "./test-data/aws-mock/service-discovery";
-import { createMockSecretsManager } from "./test-data/aws-mock/secrets-manager";
 import { mockClient } from "aws-sdk-client-mock";
+import { join } from "node:path";
+import type { Logger } from "pino";
+import type { DependencyContainer } from "tsyringe";
 import { addMocksForFileSystem } from "./test-data/aws-mock/add-s3-mocks-for-filesystem";
+import { addMocksForInMemory } from "./test-data/aws-mock/add-s3-mocks-for-in-memory";
+import { createMockCloudFormation } from "./test-data/aws-mock/cloud-formation";
+import { createMockCloudTrail } from "./test-data/aws-mock/cloud-trail";
+import { createMockSecretsManager } from "./test-data/aws-mock/secrets-manager";
+import { createMockServiceDiscovery } from "./test-data/aws-mock/service-discovery";
+import { createMockSes } from "./test-data/aws-mock/ses";
+import { createMockSteps } from "./test-data/aws-mock/steps";
+import { createMockSts } from "./test-data/aws-mock/sts";
+import { australianGenomicsDirectoryStructureFor10G } from "./test-data/dataset/insert-test-data-10g";
 import {
   SMARTIE_FAKE_BUCKET,
   SMARTIE_FAKE_KEY,
 } from "./test-data/dataset/insert-test-data-smartie";
-import { join } from "node:path";
-import { addMocksForInMemory } from "./test-data/aws-mock/add-s3-mocks-for-in-memory";
-import { australianGenomicsDirectoryStructureFor10G } from "./test-data/dataset/insert-test-data-10g";
-import { createMockSteps } from "./test-data/aws-mock/steps";
-import { createMockCloudTrail } from "./test-data/aws-mock/cloud-trail";
-import { createMockSts } from "./test-data/aws-mock/sts";
-import { createMockSes } from "./test-data/aws-mock/ses";
-import { createMockCloudFormation } from "./test-data/aws-mock/cloud-formation";
-import type { Logger } from "pino";
 
 /**
  * Register factories for all the AWS clients we might need.

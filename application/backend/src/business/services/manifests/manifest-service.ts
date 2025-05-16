@@ -1,29 +1,32 @@
+import archiver, { type ArchiverOptions } from "archiver";
+import type { Executor } from "gel";
+import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
-import * as gel from "gel";
-import { Executor } from "gel";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
-import { ManifestMasterType } from "./manifest-master-types";
 import {
-  createTsv,
-  transformDbManifestToMasterManifest,
-} from "./manifest-master-helper";
-import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
-import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
-import {
-  KnownObjectProtocolType,
-  ManifestBucketKeyType,
-  ManifestTsvBodyType,
-} from "./manifest-bucket-key-types";
-import archiver, { ArchiverOptions } from "archiver";
-import { ReleaseService } from "../releases/release-service";
+  ObjectStoreRecordKey,
+  type ReleaseSizeType,
+} from "../../../shared/schemas";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
 import { getReleaseInfo } from "../helpers";
 import { PermissionService } from "../permission-service";
-import { ObjectStoreRecordKey, ReleaseSizeType } from "../../../shared/schemas";
+import { PresignedUrlService } from "../presigned-url-service";
+import { ReleaseService } from "../releases/release-service";
+import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
+import type {
+  KnownObjectProtocolType,
+  ManifestBucketKeyType,
+  ManifestTsvBodyType,
+} from "./manifest-bucket-key-types";
+import {
+  createTsv,
+  transformDbManifestToMasterManifest,
+} from "./manifest-master-helper";
+import type { ManifestMasterType } from "./manifest-master-types";
+import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
 
 @injectable()
 export class ManifestService {

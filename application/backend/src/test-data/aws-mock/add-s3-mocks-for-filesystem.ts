@@ -1,16 +1,16 @@
-import { promises as fs } from "fs";
-import { createHash } from "crypto";
-import { AwsStub } from "aws-sdk-client-mock";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
   ObjectStorageClass,
-  ServiceInputTypes,
-  ServiceOutputTypes,
+  type ServiceInputTypes,
+  type ServiceOutputTypes,
   StorageClass,
 } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
 import { sdkStreamMixin } from "@smithy/util-stream";
+import { AwsStub } from "aws-sdk-client-mock";
+import { createHash } from "crypto";
+import { promises as fs } from "fs";
+import { Readable } from "stream";
 
 /**
  * To an existing S3 mock client - we add specific Mock responses that will reflect

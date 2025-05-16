@@ -1,13 +1,13 @@
 import { isString } from "lodash";
-import { ManifestMasterType } from "./manifest-master-types";
+import { basename } from "path/posix";
+import { collapseExternalIds } from "../helpers";
 import {
   KnownObjectProtocolsArray,
-  KnownObjectProtocolType,
-  ManifestBucketKeyObjectType,
-  ManifestBucketKeyType,
+  type KnownObjectProtocolType,
+  type ManifestBucketKeyObjectType,
+  type ManifestBucketKeyType,
 } from "./manifest-bucket-key-types";
-import { collapseExternalIds } from "../helpers";
-import { basename } from "path/posix";
+import type { ManifestMasterType } from "./manifest-master-types";
 
 /**
  * Create a simple list of object in the manifest broken into simple fields - service, bucket, key, protocol etc

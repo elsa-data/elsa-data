@@ -1,9 +1,9 @@
-import { App } from "../../src/app";
-import { FastifyInstance } from "fastify";
-import { Base7807Response } from "@umccr/elsa-types/error-types";
-import { registerTypes } from "../test-dependency-injection.common";
-import { getServices } from "../../src/di-helpers";
 import { FEATURE_RELEASE_COHORT_CONSTRUCTOR } from "@umccr/elsa-constants";
+import { Base7807Response } from "@umccr/elsa-types/error-types";
+import type { FastifyInstance } from "fastify";
+import { App } from "../../src/app";
+import { getServices } from "../../src/di-helpers";
+import { registerTypes } from "../test-dependency-injection.common";
 
 describe("http API error handling tests", () => {
   let server: FastifyInstance;

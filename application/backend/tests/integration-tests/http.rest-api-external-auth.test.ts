@@ -1,8 +1,8 @@
-import { App } from "../../src/app";
-import { FastifyInstance } from "fastify";
-import { registerTypes } from "../test-dependency-injection.common";
-import { getServices } from "../../src/di-helpers";
 import { FEATURE_RELEASE_COHORT_CONSTRUCTOR } from "@umccr/elsa-constants";
+import type { FastifyInstance } from "fastify";
+import { App } from "../../src/app";
+import { getServices } from "../../src/di-helpers";
+import { registerTypes } from "../test-dependency-injection.common";
 
 describe("http integration tests", () => {
   let server: FastifyInstance;

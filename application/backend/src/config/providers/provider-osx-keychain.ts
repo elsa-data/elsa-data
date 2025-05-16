@@ -1,7 +1,7 @@
-import { Token } from "../meta/meta-lexer";
-import { ProviderBase } from "./provider-base";
 import { exec } from "child_process";
 import { promisify } from "util";
+import type { Token } from "../meta/meta-lexer";
+import { ProviderBase } from "./provider-base";
 const execPromise = promisify(exec);
 
 /**

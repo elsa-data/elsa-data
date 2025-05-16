@@ -1,11 +1,11 @@
-import { inject, injectable } from "tsyringe";
-import { AwsEnabledService } from "./aws-enabled-service";
-import { CloudStorage, HeadOutput } from "../cloud-storage-service";
 import {
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { inject, injectable } from "tsyringe";
+import type { CloudStorage, HeadOutput } from "../cloud-storage-service";
+import { AwsEnabledService } from "./aws-enabled-service";
 
 @injectable()
 export class AwsS3Service implements CloudStorage {

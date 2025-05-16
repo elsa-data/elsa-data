@@ -1,5 +1,3 @@
-import { AuthenticatedUserJsonType } from "../../business/authenticated-user";
-
 /**
  * The following constants are keys within our single SECURE_COOKIE_NAME
  * as managed by fastify session management.

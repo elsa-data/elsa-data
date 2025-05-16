@@ -1,6 +1,6 @@
-import { DependencyContainer } from "tsyringe";
+import type { Client } from "gel";
 import type { Logger } from "pino";
-import { Client } from "gel";
+import type { DependencyContainer } from "tsyringe";
 import type { ElsaSettings } from "./config/elsa-settings";
 
 // our DI framework is limited by javascript/typescript - and so for concrete classes

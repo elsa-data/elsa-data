@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ReleaseActivationPermissionError } from "../../../../business/exceptions/release-activation";
 import {
   calculateOffset,
   internalProcedure,
@@ -10,7 +9,6 @@ import {
   inputReleaseKeySingle,
   unorderedInputPaginationParameter,
 } from "../input-schemas-common";
-import { PagedResult } from "../../../helpers/pagination-helpers";
 
 const htsgetRestriction = z.object({
   restriction: z.union([

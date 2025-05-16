@@ -1,7 +1,7 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
-import { UserObject } from "./helpers";
+import type { UserObject } from "./helpers";
 
 export const TEST_SUBJECT_4 = "http://subject4.com";
 export const TEST_SUBJECT_4_EMAIL = "subject4@elsa.net";

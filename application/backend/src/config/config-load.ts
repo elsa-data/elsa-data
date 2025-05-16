@@ -1,13 +1,16 @@
 import jsonpath from "jsonpath";
 import { cloneDeep, isNil, isNumber, isString, merge } from "lodash";
-import { ZodError, ZodIssue, ZodIssueCode } from "zod";
+import { ZodError, type ZodIssue, ZodIssueCode } from "zod";
 import {
   environmentVariableMap,
   trySetEnvironmentVariableInteger,
   trySetEnvironmentVariableString,
 } from "./config-load-environment-variable-map";
-import { configZodDefinition, ElsaConfigurationType } from "./config-schema";
-import { ProviderMeta } from "./meta/meta-parser";
+import {
+  configZodDefinition,
+  type ElsaConfigurationType,
+} from "./config-schema";
+import type { ProviderMeta } from "./meta/meta-parser";
 import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
 import { ProviderFile } from "./providers/provider-file";
 import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";

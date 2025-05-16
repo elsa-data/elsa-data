@@ -1,5 +1,5 @@
-import { FastifyInstance } from "fastify";
 import { ReleasePatchOperationType } from "@umccr/elsa-types";
+import type { FastifyInstance } from "fastify";
 import { createLoggedInServerWithRelease } from "./integration.common";
 
 describe("http patch schema handling tests", () => {

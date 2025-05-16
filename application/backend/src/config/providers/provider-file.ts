@@ -1,9 +1,9 @@
-import { Token } from "../meta/meta-lexer";
 import { constants, promises as fs } from "fs";
-import path, { resolve } from "path";
-import { ProviderBase } from "./provider-base";
 import json5 from "json5";
+import path, { resolve } from "path";
 import { CONFIG_FOLDERS_ENVIRONMENT_VAR } from "../config-schema";
+import type { Token } from "../meta/meta-lexer";
+import { ProviderBase } from "./provider-base";
 
 /**
  * A provider that can get config from a file

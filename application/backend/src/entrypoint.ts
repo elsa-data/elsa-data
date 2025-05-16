@@ -42,7 +42,7 @@ import {
 import { getCommands, getSettingsFromEnv } from "./entrypoint-helper";
 import { getFeaturesEnabled } from "./features";
 
-// some Node wide synchronous initialisations
+// some runtime wide *synchronous* initialisations
 bootstrapGlobalSynchronous();
 
 /**

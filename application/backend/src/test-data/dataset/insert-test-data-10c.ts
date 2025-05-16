@@ -1,10 +1,10 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
 import {
   createArtifacts,
-  makeSystemlessIdentifierArray,
   createFile,
+  makeSystemlessIdentifierArray,
 } from "../util/test-data-helpers";
 
 export const TENC_URI = "urn:fdc:umccr.org:2022:dataset/10c";

@@ -1,16 +1,16 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
+import { getServices } from "../../di-helpers";
+import type {
+  AustralianGenomicsDirectoryStructure,
+  AustralianGenomicsDirectoryStructureObject,
+} from "../aws-mock/add-s3-mocks-for-in-memory";
 import {
   createArtifacts,
   createFile,
   makeSystemlessIdentifierArray,
 } from "../util/test-data-helpers";
-import { DependencyContainer } from "tsyringe";
-import { getServices } from "../../di-helpers";
-import {
-  AustralianGenomicsDirectoryStructure,
-  AustralianGenomicsDirectoryStructureObject,
-} from "../aws-mock/add-s3-mocks-for-in-memory";
-import { masterCases10g, MasterRareDiseaseCase } from "./teng-master-data";
+import { masterCases10g, type MasterRareDiseaseCase } from "./teng-master-data";
 
 export const TENG_URI = "urn:fdc:umccr.org:2022:dataset/10g";
 

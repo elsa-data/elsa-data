@@ -1,3 +1,13 @@
+import type { DependencyContainer } from "tsyringe";
+import type { ElsaSettings } from "../../config/elsa-settings";
+import type {
+  DuoDiseaseSpecificResearchType,
+  DuoGeneralResearchUseType,
+  DuoGeographicalRestrictionType,
+  DuoHealthMedicalBiomedicalResearchType,
+  DuoNonCommercialUseOnlyType,
+  DuoNotForProfitUseOnlyType,
+} from "../../shared/schemas-duo";
 import { createFile } from "../util/test-data-helpers";
 import {
   CORIELL_CELL_SYSTEM,
@@ -8,16 +18,6 @@ import {
   PGP_SYSTEM,
   THOUSAND_GENOMES_SYSTEM,
 } from "./insert-test-data-10f-helpers";
-import {
-  DuoDiseaseSpecificResearchType,
-  DuoGeneralResearchUseType,
-  DuoGeographicalRestrictionType,
-  DuoHealthMedicalBiomedicalResearchType,
-  DuoNonCommercialUseOnlyType,
-  DuoNotForProfitUseOnlyType,
-} from "../../shared/schemas-duo";
-import type { ElsaSettings } from "../../config/elsa-settings";
-import { DependencyContainer } from "tsyringe";
 
 // we make these identifiers as external const so they can be used as insertion values
 // but can also be in test suites for looking up know cases etc

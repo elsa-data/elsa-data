@@ -1,7 +1,6 @@
 import archiver from "archiver";
-import Bree from "bree";
-import path from "path";
 import i18n from "i18n";
+import { join } from "node:path";
 
 /**
  * A location for any synchronous setup that
@@ -14,16 +13,13 @@ export function bootstrapGlobalSynchronous() {
   // note: only do it once per Node.js process/application, as duplicate registration will throw an error
   archiver.registerFormat("zip-encrypted", require("archiver-zip-encrypted"));
 
-  // global settings for bree (job scheduler)
-  Bree.extend(require("@breejs/ts-worker"));
-
   // translations - its possible this may need to move *post* settings in order to discover default locale
   // for the moment it is ok here
   i18n.configure({
     locales: ["en"],
     defaultLocale: "en",
     queryParameter: "lang",
-    directory: path.join("./", "locales"),
+    directory: join("./", "locales"),
     api: {
       __: "translate",
       __n: "translateN",

@@ -1,5 +1,17 @@
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import * as gel from "gel";
+import { isEmpty, isObjectLike } from "lodash";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
+import type { dataset } from "../../../../dbschema/interfaces";
+import {
+  releaseGetSpecimensByDbIdsAndExternalIdentifiers,
+  releaseSelectionGetCases,
+} from "../../../../dbschema/queries";
+import { createPagedResult } from "../../../api/helpers/pagination-helpers";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type { DuoLimitationCodedType } from "../../../shared/schemas-duo";
 import type {
   ReleaseCaseType,
   ReleaseDetailType,
@@ -8,30 +20,18 @@ import type {
   ReleaseSpecimenType,
 } from "../../../shared/schemas-releases";
 import { AuthenticatedUser } from "../../authenticated-user";
-import { isEmpty, isObjectLike } from "lodash";
-import { createPagedResult } from "../../../api/helpers/pagination-helpers";
-import { collapseExternalIds, getReleaseInfo } from "../helpers";
-import { inject, injectable } from "tsyringe";
-import { UserService } from "../user-service";
-import { ReleaseBaseService } from "./release-base-service";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { dataset } from "../../../../dbschema/interfaces";
-import { AuditEventService } from "../audit-event-service";
-import type { Logger } from "pino";
+import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
 import {
   ReleaseSelectionCrossLinkedIdentifierError,
   ReleaseSelectionNonExistentIdentifierError,
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
-import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
-import {
-  releaseGetSpecimensByDbIdsAndExternalIdentifiers,
-  releaseSelectionGetCases,
-} from "../../../../dbschema/queries";
+import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import { collapseExternalIds, getReleaseInfo } from "../helpers";
 import { PermissionService } from "../permission-service";
-import { DuoLimitationCodedType } from "../../../shared/schemas-duo";
+import { UserService } from "../user-service";
+import { ReleaseBaseService } from "./release-base-service";
 
 /**
  * The release selection service handles CRUD operations on the list of items

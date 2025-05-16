@@ -1,48 +1,51 @@
-import * as gel from "gel";
-import { Executor } from "gel";
-import e from "../../../../dbschema/edgeql-js";
-import type {
-  ReleaseDetailType,
-  ReleaseManualType,
-  ReleaseSummaryType,
-} from "../../../shared/schemas-releases";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { PagedResult } from "../../../api/helpers/pagination-helpers";
-import { getReleaseInfo } from "../helpers";
-import { inject, injectable } from "tsyringe";
-import { UserService } from "../user-service";
-import { ReleaseBaseService, UserRoleInRelease } from "./release-base-service";
-import { getNextReleaseKey } from "../../db/release-queries";
-import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
-import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
-import type { ElsaSettings } from "../../../config/elsa-settings";
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { format } from "date-fns";
+import type { Executor } from "gel";
+import * as gel from "gel";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
 import {
   applyHtsgetRestriction,
   releaseGetAllByUser,
   releaseGetCounterNext,
   removeHtsgetRestriction,
 } from "../../../../dbschema/queries";
+import type { PagedResult } from "../../../api/helpers/pagination-helpers";
 import { auditReleaseUpdateStart, auditSuccess } from "../../../audit-helpers";
-import { AuditEventService } from "../audit-event-service";
-import type { Logger } from "pino";
-import { jobAsBadgeLabel } from "../jobs/job-helpers";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import { generateZipPassword } from "../../../helpers/passwords";
+import type {
+  ReleaseDetailType,
+  ReleaseManualType,
+  ReleaseSummaryType,
+} from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { UserData } from "../../data/user-data";
+import { getNextReleaseKey } from "../../db/release-queries";
+import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
+import {
+  ReleaseCreateError,
+  ReleaseViewError,
+} from "../../exceptions/release-authorisation";
+import { ReleaseConfigurationError } from "../../exceptions/release-configuration";
+import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
+import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
 import {
   checkValidApplicationUser,
   insertPotentialOrReal,
   splitUserEmails,
 } from "../_dac-user-helper";
+import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
-import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
-import {
-  ReleaseCreateError,
-  ReleaseViewError,
-} from "../../exceptions/release-authorisation";
-import { UserData } from "../../data/user-data";
-import { generateZipPassword } from "../../../helpers/passwords";
+import { getReleaseInfo } from "../helpers";
+import { jobAsBadgeLabel } from "../jobs/job-helpers";
 import { PermissionService } from "../permission-service";
-import { ReleaseConfigurationError } from "../../exceptions/release-configuration";
+import { UserService } from "../user-service";
+import {
+  ReleaseBaseService,
+  type UserRoleInRelease,
+} from "./release-base-service";
 
 @injectable()
 export class ReleaseService extends ReleaseBaseService {

@@ -1,4 +1,4 @@
-import { DependencyContainer } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
 import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
 
 export const ADD_SCENARIO_COMMAND = "add-scenario";

@@ -17,10 +17,10 @@ import {
 } from "../../../dbschema/queries";
 import {
   createPagedResult,
-  PagedResult,
+  type PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import type { ElsaSettings } from "../../config/elsa-settings";
-import { ReleaseParticipantRoleType } from "../../shared/schemas-releases";
+import type { ReleaseParticipantRoleType } from "../../shared/schemas-releases";
 import type {
   PotentialUserSummaryType,
   UserSummaryType,
@@ -35,7 +35,7 @@ import {
   UserEmailNotExist,
 } from "../exceptions/user";
 import { AuditEventService } from "./audit-event-service";
-import { IPLookupService, LocationType } from "./ip-lookup-service";
+import { IPLookupService, type LocationType } from "./ip-lookup-service";
 
 export type ChangeablePermission = {
   isAllowedRefreshDatasetIndex: boolean;

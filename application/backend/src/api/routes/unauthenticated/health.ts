@@ -1,8 +1,8 @@
-import { FastifyInstance } from "fastify";
-import { DependencyContainer } from "tsyringe";
-import { getServices } from "../../../di-helpers";
-import { version, platform } from "node:process";
+import type { FastifyInstance } from "fastify";
+import { platform, version } from "node:process";
+import type { DependencyContainer } from "tsyringe";
 import { getMandatoryEnv } from "../../../app-env";
+import { getServices } from "../../../di-helpers";
 
 /**
  * Routes that exist mainly for confirming functionality (health checks).

@@ -1,22 +1,12 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { CSRF_TOKEN_COOKIE_NAME } from "../shared/constants-cookies";
-import {
-  SESSION_OIDC_NONCE_KEY_NAME,
-  SESSION_OIDC_STATE_KEY_NAME,
-  SESSION_USER_DB_OBJECT_KEY_NAME,
-} from "./auth/session-cookie-constants";
-import type { ElsaSettings } from "../config/elsa-settings";
-import { DependencyContainer } from "tsyringe";
-import { UserService } from "../business/services/user-service";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { errors, generators, TokenSet } from "openid-client";
-import { AuditEventService } from "../business/services/audit-event-service";
-import {
-  cookieBackendSessionSetKeyValue,
-  cookieForUI,
-} from "./helpers/cookie-helpers";
-import { getServices } from "../di-helpers";
-import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
+import type { DependencyContainer } from "tsyringe";
 import { AuthenticatedUser } from "../business/authenticated-user";
+import { AuditEventService } from "../business/services/audit-event-service";
+import { UserService } from "../business/services/user-service";
+import type { ElsaSettings } from "../config/elsa-settings";
+import { getServices } from "../di-helpers";
+import { CSRF_TOKEN_COOKIE_NAME } from "../shared/constants-cookies";
 import {
   DATABASE_FAIL_ROUTE_PART,
   FLOW_FAIL_ROUTE_PART,
@@ -24,6 +14,16 @@ import {
   NO_SUBJECT_ID_ROUTE_PART,
   NOT_AUTHORISED_ROUTE_PART,
 } from "../shared/constants-routes";
+import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
+import {
+  SESSION_OIDC_NONCE_KEY_NAME,
+  SESSION_OIDC_STATE_KEY_NAME,
+  SESSION_USER_DB_OBJECT_KEY_NAME,
+} from "./auth/session-cookie-constants";
+import {
+  cookieBackendSessionSetKeyValue,
+  cookieForUI,
+} from "./helpers/cookie-helpers";
 
 /**
  * Make this match the Typescript filename - for logging
@@ -119,7 +119,7 @@ export const apiAuthRoutes = async (
   // web browsing or API calls
   const clearOurLoginState = (
     request: FastifyRequest,
-    reply: FastifyReply,
+    _reply: FastifyReply,
     auditDetails: any = null,
   ) => {
     const dbUser = request.session.get(SESSION_USER_DB_OBJECT_KEY_NAME);

@@ -1,8 +1,8 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
+import type { DatasetAustralianGenomicsDirectories } from "../../config/config-schema-dataset";
 import { getServices } from "../../di-helpers";
 import { makeSystemlessIdentifierArray } from "../util/test-data-helpers";
-import { DatasetAustralianGenomicsDirectories } from "../../config/config-schema-dataset";
 
 export const SMARTIE_URI = "urn:example:elsa-data-demo-dataset-smartie";
 

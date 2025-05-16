@@ -1,25 +1,24 @@
+import { differenceInSeconds } from "date-fns";
 import * as gel from "gel";
+import { Transaction } from "gel/dist/transaction";
+import _ from "lodash";
+import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { getReleaseInfo } from "../helpers";
+import {
+  createPagedResult,
+  type PagedResult,
+} from "../../../api/helpers/pagination-helpers";
+import { Base7807Error } from "../../../shared/error-types";
 import type {
   ReleaseDetailType,
   ReleasePreviousJobType,
 } from "../../../shared/schemas-releases";
-import { inject, injectable } from "tsyringe";
-import { differenceInSeconds } from "date-fns";
-import { SelectService } from "../select-service";
-import { ReleaseService } from "../releases/release-service";
-import { Transaction } from "gel/dist/transaction";
+import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
-// import { vcfArtifactUrlsBySpecimenQuery } from "../../db/lab-queries";
+import { getReleaseInfo } from "../helpers";
+import { ReleaseService } from "../releases/release-service";
+import { SelectService } from "../select-service";
 import { jobAsType } from "./job-helpers";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../../api/helpers/pagination-helpers";
-import _ from "lodash";
-import { Base7807Error } from "../../../shared/error-types";
 
 export class NotAuthorisedToControlJob extends Base7807Error {
   constructor(userRole: string, releaseKey: string) {

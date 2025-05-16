@@ -1,19 +1,14 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import { DependencyContainer } from "tsyringe";
 import { insertSystemAuditEvent } from "../../../dbschema/queries";
 import { getServices } from "../../di-helpers";
 
-import {
-  insert10G,
-  TENG_DESCRIPTION,
-  TENG_URI,
-} from "../dataset/insert-test-data-10g";
-import { insert10F } from "../dataset/insert-test-data-10f";
 import { insert10C } from "../dataset/insert-test-data-10c";
+import { insert10F } from "../dataset/insert-test-data-10f";
+import { insert10G, TENG_URI } from "../dataset/insert-test-data-10g";
 import { insertGs } from "../dataset/insert-test-data-gs";
 import {
   insertBlankDataset,
-  makeEmptyIdentifierArray,
   makeSystemlessIdentifierArray,
 } from "../util/test-data-helpers";
 
@@ -26,19 +21,16 @@ import { insertRelease2 } from "../release/insert-test-data-release2";
 import { insertRelease3 } from "../release/insert-test-data-release3";
 import { insertRelease4 } from "../release/insert-test-data-release4";
 import { insertRelease5 } from "../release/insert-test-data-release5";
-import { blankTestData } from "../util/blank-test-data";
 import { insertUser4 } from "../user/insert-user4";
-import { DatasetService } from "../../business/services/dataset-service";
+import { blankTestData } from "../util/blank-test-data";
 // import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service.xts";
 import { UserService } from "../../business/services/user-service";
-import { insertUser5 } from "../user/insert-user5";
 import {
-  SMARTIE_DATASET_CONFIG,
   SMARTIE_DESCRIPTION,
   SMARTIE_URI,
 } from "../dataset/insert-test-data-smartie";
-import { addMocksForInMemory } from "../aws-mock/add-s3-mocks-for-in-memory";
 import { insertRelease6 } from "../release/insert-test-data-release6";
+import { insertUser5 } from "../user/insert-user5";
 
 const BLANK_DB_PROPS = [
   { id: "10M", uri: "urn:fdc:umccr.org:2022:dataset/10m" },

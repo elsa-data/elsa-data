@@ -1,8 +1,9 @@
-import { FastifyInstance } from "fastify";
-import { CSRF_TOKEN_COOKIE_NAME } from "../shared/constants-cookies";
-import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./auth/session-cookie-constants";
-import { DependencyContainer } from "tsyringe";
+import type { FastifyInstance } from "fastify";
+import type { DependencyContainer } from "tsyringe";
+import { AuthenticatedUser } from "../business/authenticated-user";
 import { UserService } from "../business/services/user-service";
+import { getServices } from "../di-helpers";
+import { CSRF_TOKEN_COOKIE_NAME } from "../shared/constants-cookies";
 import {
   TEST_SUBJECT_1,
   TEST_SUBJECT_1_DISPLAY,
@@ -23,12 +24,11 @@ import {
   TEST_SUBJECT_4_DISPLAY,
   TEST_SUBJECT_4_EMAIL,
 } from "../test-data/user/insert-user4";
+import { SESSION_USER_DB_OBJECT_KEY_NAME } from "./auth/session-cookie-constants";
 import {
   cookieBackendSessionSetKeyValue,
   cookieForUI,
 } from "./helpers/cookie-helpers";
-import { getServices } from "../di-helpers";
-import { AuthenticatedUser } from "../business/authenticated-user";
 
 const ALL_TEST_SUBJECT = [
   {

@@ -1,24 +1,24 @@
-import { mockClient } from "aws-sdk-client-mock";
-import * as gel from "gel";
 import {
   CloudFormationClient,
   CreateStackCommand,
-  CreateStackCommandInput,
-  CreateStackCommandOutput,
+  type CreateStackCommandInput,
+  type CreateStackCommandOutput,
   DeleteStackCommand,
-  DeleteStackCommandInput,
+  type DeleteStackCommandInput,
   DescribeStacksCommand,
-  DescribeStacksCommandInput,
-  DescribeStacksCommandOutput,
+  type DescribeStacksCommandInput,
+  type DescribeStacksCommandOutput,
   StackStatus,
 } from "@aws-sdk/client-cloudformation";
+import { mockClient } from "aws-sdk-client-mock";
+import * as gel from "gel";
+import type { Logger } from "pino";
+import { v4 as uuidv4 } from "uuid";
 import {
   deleteCloudFormationStack,
   describeCloudFormationStacks,
   installCloudFormationStack,
 } from "../../../dbschema/queries";
-import { v4 as uuidv4 } from "uuid";
-import type { Logger } from "pino";
 
 /**
  * A mock client for cloud formation stacks.

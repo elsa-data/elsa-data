@@ -1,15 +1,15 @@
-import { FastifyInstance } from "fastify";
-import { DependencyContainer } from "tsyringe";
+import type { FastifyInstance } from "fastify";
+import type { DependencyContainer } from "tsyringe";
+import { ManifestHtsgetStorageNotEnabled } from "../../../business/exceptions/manifest-htsget";
+import { ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
 import {
   ManifestHtsgetParamsSchema,
-  ManifestHtsgetParamsType,
+  type ManifestHtsgetParamsType,
   ManifestHtsgetQuerySchema,
-  ManifestHtsgetQueryType,
+  type ManifestHtsgetQueryType,
   ManifestHtsgetResponseSchema,
-  ManifestHtsgetResponseType,
+  type ManifestHtsgetResponseType,
 } from "../../../business/services/manifests/htsget/manifest-htsget-types";
-import { ManifestHtsgetService } from "../../../business/services/manifests/htsget/manifest-htsget-service";
-import { ManifestHtsgetStorageNotEnabled } from "../../../business/exceptions/manifest-htsget";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,

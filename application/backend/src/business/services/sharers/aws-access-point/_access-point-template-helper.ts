@@ -1,12 +1,12 @@
-import { chunk, groupBy, isEmpty, size } from "lodash";
-import { randomBytes } from "crypto";
-import { Stack } from "@aws-sdk/client-cloudformation";
-import { ManifestBucketKeyObjectType } from "../../manifests/manifest-bucket-key-types";
+import type { Stack } from "@aws-sdk/client-cloudformation";
 import {
   GetAccessPointPolicyCommand,
   S3ControlClient,
 } from "@aws-sdk/client-s3-control";
+import { randomBytes } from "crypto";
+import { chunk, groupBy, isEmpty, size } from "lodash";
 import type { Logger } from "pino";
+import type { ManifestBucketKeyObjectType } from "../../manifests/manifest-bucket-key-types";
 
 export type AccessPointTemplateToSave = {
   root: boolean;

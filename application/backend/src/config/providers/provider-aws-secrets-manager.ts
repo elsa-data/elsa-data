@@ -2,9 +2,9 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { Token } from "../meta/meta-lexer";
-import { ProviderBase } from "./provider-base";
 import json5 from "json5";
+import type { Token } from "../meta/meta-lexer";
+import { ProviderBase } from "./provider-base";
 
 /**
  * A provider that can get config from a specified AWS secret formatted in JSON5

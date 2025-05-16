@@ -1,12 +1,12 @@
 import { TRPCError } from "@trpc/server";
 import {
-  CreateFastifyContextOptions,
   fastifyTRPCPlugin,
-  FastifyTRPCPluginOptions,
+  type CreateFastifyContextOptions,
+  type FastifyTRPCPluginOptions,
 } from "@trpc/server/adapters/fastify";
-import { FastifyInstance } from "fastify";
-import { AppRouter, appRouter } from "../app-router";
-import { Context } from "./routes/trpc-bootstrap";
+import type { FastifyInstance } from "fastify";
+import { appRouter, type AppRouter } from "../app-router";
+import type { Context } from "./routes/trpc-bootstrap";
 
 /**
  * Define the Fastify setup for TRPC - the TRPC middleware, routes etc is

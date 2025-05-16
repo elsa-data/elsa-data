@@ -1,4 +1,4 @@
-import { Client } from "gel";
+import type { Client } from "gel";
 import e from "../../dbschema/edgeql-js";
 import { AuditEventService } from "../business/services/audit-event-service";
 import { AwsCloudTrailLakeService } from "../business/services/aws/aws-cloudtrail-lake-service";

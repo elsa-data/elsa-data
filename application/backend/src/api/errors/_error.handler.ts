@@ -34,9 +34,9 @@ A problem details object can have the following members:
       information if dereferenced.
  */
 
-import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { Base7807Error, type Base7807Response } from "../../shared/error-types";
 import { NOT_AUTHORISED_MESSAGE } from "./authentication-error";
-import { Base7807Error, Base7807Response } from "../../shared/error-types";
 
 export function ErrorHandler(
   error: Error,

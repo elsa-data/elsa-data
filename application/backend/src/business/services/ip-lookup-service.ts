@@ -1,4 +1,4 @@
-import maxmind, { CityResponse, Reader } from "maxmind";
+import maxmind, { type CityResponse, Reader } from "maxmind";
 import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../config/elsa-settings";

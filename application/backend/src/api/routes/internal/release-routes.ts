@@ -1,15 +1,15 @@
-import { FastifyInstance } from "fastify";
-import {
-  ReleaseManualSchema,
-  ReleaseManualType,
-} from "../../../shared/schemas-releases";
-import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
-import { DependencyContainer } from "tsyringe";
+import type { FastifyInstance } from "fastify";
+import type { DependencyContainer } from "tsyringe";
 import { ReleaseService } from "../../../business/services/releases/release-service";
 import {
   ReleasePatchOperationsSchema,
-  ReleasePatchOperationsType,
+  type ReleasePatchOperationsType,
 } from "../../../shared/schemas-release-operations";
+import {
+  ReleaseManualSchema,
+  type ReleaseManualType,
+} from "../../../shared/schemas-releases";
+import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
 
 /**
  * The release routes are legacy REST routes that have not yet been moved to TRPC.
