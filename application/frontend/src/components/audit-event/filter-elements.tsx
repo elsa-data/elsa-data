@@ -19,7 +19,6 @@ export const FilterElements = ({
   includeEvents,
   setIncludeEvents,
   setCurrentPage,
-  setCurrentTotal,
   setUpdateData,
   showAdminView,
 }: FilterElementsProps): JSX.Element => {
@@ -33,7 +32,6 @@ export const FilterElements = ({
     }
 
     setCurrentPage(1);
-    setCurrentTotal(1);
     setUpdateData(true);
   };
 
