@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from "react";
-import { Tab } from "@headlessui/react";
+import { Tab, TabPanels, TabPanel, TabGroup, TabList } from "@headlessui/react";
 import classNames from "classnames";
 
 type VerticalTabsProps = {
@@ -26,46 +26,45 @@ export const VerticalTabs: React.FC<PropsWithChildren<VerticalTabsProps>> = ({
     );
 
   return (
-    <div
+    <TabGroup
+      vertical
       className={classNames(
         "flex flex-row space-x-4",
         "min-h-[200px]", // we want to assert a minimum height so that the whole tab group doesn't resize up and down as we tab through (small) content
       )}
     >
-      <Tab.Group vertical={true}>
-        <Tab.List
-          className={classNames(
-            "flex flex-col justify-start", // vertical flex column but everything justified start (as we have a overall min height we *don't* want to grow into)
-            "min-w-min", // assert a column span for the headers - here 1/5 of the overall grid
-            "space-y-4", // with some spacing between tab headers
-          )}
-        >
-          {tabHeadings.map((t, idx) => (
-            <Tab
-              key={idx}
-              as="a"
-              className={({ selected }) =>
-                classNames(
-                  "cursor-pointer px-4 py-2 text-sm uppercase outline-0 ring-0",
-                  "translate-x-2 transform border-l-2 font-bold",
-                  {
-                    "border-secondary": selected,
-                    "border-slate-200 transition duration-200 ease-in-out hover:border-secondary-focus":
-                      !selected,
-                  },
-                )
-              }
-            >
-              {t}
-            </Tab>
-          ))}
-        </Tab.List>
-        <Tab.Panels className="w-full overflow-x-auto pl-4">
-          {definedChildren.map((child, idx) => (
-            <Tab.Panel key={idx}>{child}</Tab.Panel>
-          ))}
-        </Tab.Panels>
-      </Tab.Group>
-    </div>
+      <TabList
+        className={classNames(
+          "flex flex-col justify-start", // vertical flex column but everything justified start (as we have a overall min height we *don't* want to grow into)
+          "min-w-min", // assert a column span for the headers - here 1/5 of the overall grid
+          "space-y-4", // with some spacing between tab headers
+        )}
+      >
+        {tabHeadings.map((t, idx) => (
+          <Tab
+            key={idx}
+            as="a"
+            className={({ selected }) =>
+              classNames(
+                "cursor-pointer px-4 py-2 text-sm uppercase outline-0 ring-0",
+                "translate-x-2 transform border-l-2 font-bold",
+                {
+                  "border-secondary": selected,
+                  "border-slate-200 transition duration-200 ease-in-out hover:border-secondary-focus":
+                    !selected,
+                },
+              )
+            }
+          >
+            {t}
+          </Tab>
+        ))}
+      </TabList>
+      <TabPanels className="w-full overflow-x-auto pl-4">
+        {definedChildren.map((child, idx) => (
+          <TabPanel key={idx}>{child}</TabPanel>
+        ))}
+      </TabPanels>
+    </TabGroup>
   );
 };
