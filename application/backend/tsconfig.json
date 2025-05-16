@@ -1,13 +1,14 @@
 {
   "//extends": "The Bun tsconfig gives us all the settings we need for both running as Bun and regular compile with tsc",
   "extends": "@tsconfig/bun/tsconfig.json",
-  "//compilerOptions1": "noPropertyAccessFromIndexSignature is false to help with Gel data generated interfaces file",
-  "//compilerOptions2": "experimentalDecorators is true to support tsyringe",
-  "//compilerOptions3": ".. noUnused we switch on/off depending on mood!",
+  "//compilerOptions1": "experimentalDecorators is true to support tsyringe",
+  "//compilerOptions2": "noPropertyAccessFromIndexSignature is false to help with Gel data generated interfaces file",
+  "//compilerOptions3": ".. noUnused* we switch on/off depending on mood!",
   "compilerOptions": {
-    "noUnusedLocals": false,
-    "experimentalDecorators": false,
-    "noPropertyAccessFromIndexSignature": false
+    "experimentalDecorators": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["node_modules"]
