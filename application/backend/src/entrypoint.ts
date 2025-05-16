@@ -1,9 +1,33 @@
-// must be first and before any DI is used
-// #import "reflect-metadata";
-
+import assert from "node:assert";
+import pino from "pino";
 import { bootstrapDependencyInjection } from "./bootstrap-dependency-injection";
 import { bootstrapGlobalSynchronous } from "./bootstrap-global-synchronous";
-import { getCommands, getSettingsFromEnv } from "./entrypoint-helper";
+import type { ElsaSettings } from "./config/elsa-settings";
+import {
+  ADD_SCENARIO_COMMAND,
+  commandAddScenario,
+} from "./entrypoint-command-add-scenario";
+import {
+  ADD_USER_COMMAND,
+  commandAddUser,
+} from "./entrypoint-command-add-user";
+import {
+  commandDbBlank,
+  DB_BLANK_COMMAND,
+} from "./entrypoint-command-db-blank";
+import {
+  commandDbCreate,
+  DB_CREATE_COMMAND,
+} from "./entrypoint-command-db-create";
+import {
+  commandDbMigrate,
+  DB_MIGRATE_COMMAND,
+} from "./entrypoint-command-db-migrate";
+import { commandDbWipe, DB_WIPE_COMMAND } from "./entrypoint-command-db-wipe";
+import {
+  commandDeleteDataset,
+  DELETE_DATASETS_COMMAND,
+} from "./entrypoint-command-delete-datasets";
 import {
   startJobQueue,
   startWebServer,
@@ -12,40 +36,11 @@ import {
   WEB_SERVER_WITH_SCENARIO_COMMAND,
 } from "./entrypoint-command-start-web-server";
 import {
-  commandDbBlank,
-  DB_BLANK_COMMAND,
-} from "./entrypoint-command-db-blank";
-import {
-  commandDbMigrate,
-  DB_MIGRATE_COMMAND,
-} from "./entrypoint-command-db-migrate";
-import {
-  ADD_SCENARIO_COMMAND,
-  commandAddScenario,
-} from "./entrypoint-command-add-scenario";
-import {
-  commandDeleteDataset,
-  DELETE_DATASETS_COMMAND,
-} from "./entrypoint-command-delete-datasets";
-import type { ElsaSettings } from "./config/elsa-settings";
-import pino from "pino";
-import { AuditEventService } from "./business/services/audit-event-service";
-import { ReleaseActivationService } from "./business/services/releases/release-activation-service";
-import { getFeaturesEnabled } from "./features";
-import {
-  ADD_USER_COMMAND,
-  commandAddUser,
-} from "./entrypoint-command-add-user";
-import {
   commandSyncDatasets,
   SYNC_DATASETS_COMMAND,
 } from "./entrypoint-command-sync-datasets";
-import {
-  commandDbCreate,
-  DB_CREATE_COMMAND,
-} from "./entrypoint-command-db-create";
-import { commandDbWipe, DB_WIPE_COMMAND } from "./entrypoint-command-db-wipe";
-import assert from "node:assert";
+import { getCommands, getSettingsFromEnv } from "./entrypoint-helper";
+import { getFeaturesEnabled } from "./features";
 
 // some Node wide synchronous initialisations
 bootstrapGlobalSynchronous();
@@ -179,7 +174,7 @@ bootstrapGlobalSynchronous();
 
       case WEB_SERVER_COMMAND:
         todo.push(async () => waitForDatabaseReady(dc));
-        todo.push(async () => startJobQueue(rawConfig));
+        todo.push(async () => startJobQueue(dc, rawConfig));
         todo.push(async () => startWebServer(dc, null));
         break;
 
@@ -192,7 +187,7 @@ bootstrapGlobalSynchronous();
         }
 
         todo.push(async () => waitForDatabaseReady(dc));
-        todo.push(async () => startJobQueue(rawConfig));
+        todo.push(async () => startJobQueue(dc, rawConfig));
         todo.push(async () => startWebServer(dc, parseInt(c.args[0])));
         break;
 
@@ -252,7 +247,7 @@ bootstrapGlobalSynchronous();
   // if no commands were specified - then our default behaviour is to pretend they asked us todo start-web-server
   if (todo.length === 0) {
     await waitForDatabaseReady(dc);
-    await startJobQueue(rawConfig);
+    await startJobQueue(dc, rawConfig);
     await startWebServer(dc, null);
   } else {
     for (const t of todo) {
