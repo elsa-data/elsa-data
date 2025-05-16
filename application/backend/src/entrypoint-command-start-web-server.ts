@@ -1,6 +1,6 @@
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
-import { DependencyContainer } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
 import { App } from "./app";
 import { DatasetService } from "./business/services/dataset-service";
 import { EmailService } from "./business/services/email-service";

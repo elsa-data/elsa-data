@@ -1,11 +1,11 @@
-import { DependencyContainer } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
 import { getServices } from "../../di-helpers";
 
 import { insertUser1 } from "../user/insert-user1";
 import { insertUser2 } from "../user/insert-user2";
 import { insertUser3 } from "../user/insert-user3";
-import { blankTestData } from "../util/blank-test-data";
 import { insertUser4 } from "../user/insert-user4";
+import { blankTestData } from "../util/blank-test-data";
 
 /**
  * Inserting a set of data in scenario 99.

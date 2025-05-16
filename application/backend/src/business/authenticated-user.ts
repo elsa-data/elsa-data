@@ -1,6 +1,6 @@
-import { UnexpectedStateInternalServerError } from "../api/errors/unexpected-state-internal-server-error";
 import { isNil } from "lodash";
-import { UserDataDbUser } from "./data/user-data";
+import { UnexpectedStateInternalServerError } from "../api/errors/unexpected-state-internal-server-error";
+import type { UserDataDbUser } from "./data/user-data";
 
 export type AuthenticatedUserJsonType = Omit<
   NonNullable<UserDataDbUser>,

@@ -1,15 +1,9 @@
+import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import {
-  findSpecimenQuery,
-  makeDoubleCodeArray,
-  makeIdentifierTuple,
-  makeSingleCodeArray,
-} from "../util/test-data-helpers";
-import { DependencyContainer } from "tsyringe";
-import { getServices } from "../../di-helpers";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../dbschema/queries";
 import { transformDbManifestToMasterManifest } from "../../business/services/manifests/manifest-master-helper";
-import { InsertReleaseProps, insertRole } from "./helpers";
+import { getServices } from "../../di-helpers";
+import { ELROY_SPECIMEN } from "../dataset/insert-test-data-10f-jetsons";
 import {
   BART_SPECIMEN,
   HOMER_SPECIMEN,
@@ -17,7 +11,13 @@ import {
   MARGE_BAM_S3,
   MARGE_SPECIMEN,
 } from "../dataset/insert-test-data-10f-simpsons";
-import { ELROY_SPECIMEN } from "../dataset/insert-test-data-10f-jetsons";
+import {
+  findSpecimenQuery,
+  makeDoubleCodeArray,
+  makeIdentifierTuple,
+  makeSingleCodeArray,
+} from "../util/test-data-helpers";
+import { InsertReleaseProps, insertRole } from "./helpers";
 
 const applicationDetails = `
 #### Origin

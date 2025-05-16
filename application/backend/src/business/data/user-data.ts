@@ -1,12 +1,12 @@
+import type { Executor } from "gel";
 import { injectable } from "tsyringe";
 import {
   userGetByDbId,
   userGetByEmail,
   userGetBySubjectId,
-  UserGetBySubjectIdReturns,
+  type UserGetBySubjectIdReturns,
 } from "../../../dbschema/queries";
 import { AuthenticatedUser } from "../authenticated-user";
-import { Executor } from "gel";
 
 export type UserDataDbUser = NonNullable<UserGetBySubjectIdReturns>;
 

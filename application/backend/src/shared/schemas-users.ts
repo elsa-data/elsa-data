@@ -1,13 +1,5 @@
-import {
-  Static,
-  TLiteral,
-  TSchema,
-  TString,
-  TUnion,
-  Type,
-} from "@sinclair/typebox";
-import { CodingSchema } from "./schemas-coding";
-import { StringUnion, TypeDate } from "./typebox-helpers";
+import { type Static, Type } from "@sinclair/typebox";
+import { TypeDate } from "./typebox-helpers";
 
 export const UserSummarySchema = Type.Object({
   id: Type.String(),

@@ -1,20 +1,10 @@
-import * as gel from "gel";
-import { Executor } from "gel";
-import e from "../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../authenticated-user";
-import { inject, injectable } from "tsyringe";
 import { differenceInSeconds, sub } from "date-fns";
-import type {
-  AuditEventDetailsType,
-  AuditEventFullType,
-  AuditEventType,
-} from "../../shared/schemas-audit";
-import { RouteValidation } from "../../shared/schemas-audit";
-import {
-  createPagedResult,
-  PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import type { ElsaSettings } from "../../config/elsa-settings";
+import type { Executor } from "gel";
+import * as gel from "gel";
+import { Transaction } from "gel/dist/transaction";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import e from "../../../dbschema/edgeql-js";
 import type { audit } from "../../../dbschema/interfaces";
 import {
   auditEventGetMostRecent,
@@ -26,11 +16,21 @@ import {
   releaseLastUpdatedReset,
   updateUserAuditEvents,
 } from "../../../dbschema/queries";
-import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
-import { Transaction } from "gel/dist/transaction";
-import type { Logger } from "pino";
-import { UserData } from "../data/user-data";
+import {
+  createPagedResult,
+  PagedResult,
+} from "../../api/helpers/pagination-helpers";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { Base7807Error } from "../../shared/error-types";
+import type {
+  AuditEventDetailsType,
+  AuditEventFullType,
+  AuditEventType,
+} from "../../shared/schemas-audit";
+import { RouteValidation } from "../../shared/schemas-audit";
+import { AuthenticatedUser } from "../authenticated-user";
+import { UserData } from "../data/user-data";
+import { NotAuthorisedViewAudits } from "../exceptions/audit-authorisation";
 
 export const OUTCOME_SUCCESS = 0;
 export const OUTCOME_MINOR_FAILURE = 4;

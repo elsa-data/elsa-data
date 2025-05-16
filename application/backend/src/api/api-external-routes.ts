@@ -1,5 +1,5 @@
-import { FastifyInstance } from "fastify";
-import { DependencyContainer } from "tsyringe";
+import type { FastifyInstance } from "fastify";
+import type { DependencyContainer } from "tsyringe";
 import { UserService } from "../business/services/user-service";
 import { createBearerRouteHook } from "./bearer-route-hook";
 import { manifestRoutes } from "./routes/external/manifest-routes";

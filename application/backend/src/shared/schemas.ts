@@ -1,4 +1,9 @@
-import { Static, Type, TUnion, TLiteral } from "@sinclair/typebox";
+import {
+  Type,
+  type Static,
+  type TLiteral,
+  type TUnion,
+} from "@sinclair/typebox";
 import { TypeDate } from "./typebox-helpers";
 
 /**

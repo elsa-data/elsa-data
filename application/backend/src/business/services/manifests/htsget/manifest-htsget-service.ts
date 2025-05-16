@@ -1,39 +1,39 @@
+import { NotFound } from "@aws-sdk/client-s3";
+import { addSeconds, differenceInSeconds } from "date-fns";
+import type { Executor } from "gel";
 import * as gel from "gel";
-import { Executor } from "gel";
-import {
-  ManifestHtsgetResponseType,
-  ManifestHtsgetType,
-} from "./manifest-htsget-types";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
 import {
   releaseDataSharingConfigurationGetHtsget,
   releaseIsActivated,
 } from "../../../../../dbschema/queries";
+import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
+import type { ElsaSettings } from "../../../../config/elsa-settings";
+import { ObjectStoreRecordKey } from "../../../../shared/schemas";
+import { AuthenticatedUser } from "../../../authenticated-user";
 import {
   ManifestHtsgetEndpointNotEnabled,
   ManifestHtsgetError,
   ManifestHtsgetNotAllowed,
   ManifestHtsgetNotConfigured,
 } from "../../../exceptions/manifest-htsget";
-import { addSeconds, differenceInSeconds } from "date-fns";
-import { NotFound } from "@aws-sdk/client-s3";
-import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
-import { inject, injectable } from "tsyringe";
-import type { ElsaSettings } from "../../../../config/elsa-settings";
-import type { Logger } from "pino";
-import { CloudStorage } from "../../cloud-storage-service";
-import { AuditEventService } from "../../audit-event-service";
-import { ManifestService } from "../manifest-service";
-import { AwsS3Service } from "../../aws/aws-s3-service";
-import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
-import { AuthenticatedUser } from "../../../authenticated-user";
 import { ReleaseViewError } from "../../../exceptions/release-authorisation";
+import { decomposeUrl } from "../../_release-file-list-helper";
+import { AuditEventService } from "../../audit-event-service";
+import { AwsS3Service } from "../../aws/aws-s3-service";
+import { CloudStorage } from "../../cloud-storage-service";
+import { PermissionService } from "../../permission-service";
 import { ReleaseService } from "../../releases/release-service";
 import { ManifestHtsgetTsvType } from "../manifest-bucket-key-types";
-import { PermissionService } from "../../permission-service";
-import { getFirstExternalIds } from "../manifest-tsv-helper";
-import { decomposeUrl } from "../../_release-file-list-helper";
 import { createTsv } from "../manifest-master-helper";
-import { ObjectStoreRecordKey } from "../../../../shared/schemas";
+import { ManifestService } from "../manifest-service";
+import { getFirstExternalIds } from "../manifest-tsv-helper";
+import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
+import {
+  ManifestHtsgetResponseType,
+  ManifestHtsgetType,
+} from "./manifest-htsget-types";
 
 export function getHtsgetSetting(
   settings: ElsaSettings,

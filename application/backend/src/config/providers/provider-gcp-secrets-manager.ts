@@ -1,7 +1,7 @@
-import { Token } from "../meta/meta-lexer";
-import { ProviderBase } from "./provider-base";
 import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import json5 from "json5";
+import type { Token } from "../meta/meta-lexer";
+import { ProviderBase } from "./provider-base";
 
 /**
  * A provider that can get config from a specified GCP secret

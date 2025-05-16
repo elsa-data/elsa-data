@@ -1,10 +1,10 @@
-import { Token } from "../meta/meta-lexer";
-import { ProviderBase } from "./provider-base";
 import { execFile } from "child_process";
-import { promisify } from "util";
 import { readdirSync } from "fs";
-import { join, resolve, parse } from "node:path";
+import { join, parse, resolve } from "node:path";
 import { homedir } from "os";
+import { promisify } from "util";
+import type { Token } from "../meta/meta-lexer";
+import { ProviderBase } from "./provider-base";
 
 const execPromise = promisify(execFile);
 
@@ -27,7 +27,7 @@ export class ProviderLinuxPass extends ProviderBase {
 
   public async getConfig(): Promise<any> {
     const passFolder =
-      process.env.PASSWORD_STORE_DIR ?? join(homedir(), "/.password-store");
+      process.env["PASSWORD_STORE_DIR"] ?? join(homedir(), "/.password-store");
     const elsaPassFolder = resolve(join(passFolder, this.passwordStoreName));
 
     const values: { [k: string]: string } = {};

@@ -1,4 +1,4 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../business/services/user-service";
 import { getAuthenticatedUserFromSecureSession } from "./auth/session-cookie-helpers";
 import { NotAuthorisedCredentials } from "./errors/authentication-error";

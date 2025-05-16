@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
 import { CodingSchema } from "./schemas-coding";
 import { Nullable, StringUnion, TypeDate } from "./typebox-helpers";
 

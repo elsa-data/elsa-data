@@ -1,4 +1,4 @@
-import { FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { Base7807Error } from "../../../shared/error-types";
 
 /**

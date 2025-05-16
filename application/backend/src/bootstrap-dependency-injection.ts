@@ -1,13 +1,13 @@
 import * as gel from "gel";
+import type { Logger } from "pino";
 import * as tsyringe from "tsyringe";
 import { instanceCachingFactory } from "tsyringe";
-import { IPresignedUrlProvider } from "./business/services/presigned-url-service";
-import { AwsPresignedUrlService } from "./business/services/aws/aws-presigned-url-service";
-import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
-import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
 import { bootstrapDependencyInjectionAwsClients } from "./bootstrap-dependency-injection-aws-clients";
 import { bootstrapDependencyInjectionSingletonServices } from "./bootstrap-dependency-injection-singleton-services";
-import type { Logger } from "pino";
+import { AwsPresignedUrlService } from "./business/services/aws/aws-presigned-url-service";
+import { CloudflarePresignedUrlService } from "./business/services/cloudflare-presigned-url-service";
+import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
+import type { IPresignedUrlProvider } from "./business/services/presigned-url-service";
 
 /**
  * Bootstrap the DI with some basic services that are

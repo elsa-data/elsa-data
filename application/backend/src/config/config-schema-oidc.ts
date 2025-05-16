@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Sensitive } from "./config-schema-sensitive";
+import type { Sensitive } from "./config-schema-sensitive";
 
 /**
  * The master schema definition for our configuration objects (i.e. JSON).

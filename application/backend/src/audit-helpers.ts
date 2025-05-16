@@ -1,10 +1,10 @@
+import type { Executor } from "gel";
+import { AuthenticatedUser } from "./business/authenticated-user";
 import {
   AuditEventService,
   OUTCOME_SERIOUS_FAILURE,
   OUTCOME_SUCCESS,
 } from "./business/services/audit-event-service";
-import { Executor } from "gel";
-import { AuthenticatedUser } from "./business/authenticated-user";
 
 async function auditReleaseGenericStart(
   service: AuditEventService,

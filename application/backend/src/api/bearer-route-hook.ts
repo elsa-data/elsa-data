@@ -1,7 +1,7 @@
-import { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { UserService } from "../business/services/user-service";
 
-export function createBearerRouteHook(userService: UserService) {
+export function createBearerRouteHook(_userService: UserService) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // Should these be completely unauthorised?

@@ -1,8 +1,8 @@
-import { DependencyContainer } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
 import { getServices } from "./di-helpers";
-import { insert10G, TENG_URI } from "./test-data/dataset/insert-test-data-10g";
-import { TENF_URI } from "./test-data/dataset/insert-test-data-10f-helpers";
 import { insert10F } from "./test-data/dataset/insert-test-data-10f";
+import { TENF_URI } from "./test-data/dataset/insert-test-data-10f-helpers";
+import { insert10G, TENG_URI } from "./test-data/dataset/insert-test-data-10g";
 // import { S3IndexApplicationService } from "./business/services/australian-genomics/s3-index-import-service.xts";
 
 export const SYNC_DATASETS_COMMAND = "sync-datasets";

@@ -1,7 +1,7 @@
-import { FastifyInstance } from "fastify";
-import { DependencyContainer } from "tsyringe";
-import { testingDevRoutes } from "./routes/unauthenticated/testing";
+import type { FastifyInstance } from "fastify";
+import type { DependencyContainer } from "tsyringe";
 import { healthRoutes } from "./routes/unauthenticated/health";
+import { testingDevRoutes } from "./routes/unauthenticated/testing";
 
 /**
  * Defined a set of routes that have no authentication

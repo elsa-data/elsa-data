@@ -1,14 +1,4 @@
-import * as gel from "gel";
-import { Executor } from "gel";
-import e from "../../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { getReleaseInfo } from "../helpers";
-import type { ReleaseDetailType } from "../../../shared/schemas-releases";
-import { inject, injectable } from "tsyringe";
-import { SelectService } from "../select-service";
-import { ReleaseService } from "../releases/release-service";
-import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
-import { JobService, NotAuthorisedToControlJob } from "./job-service";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import {
   DescribeExecutionCommand,
   DescribeMapRunCommand,
@@ -17,17 +7,27 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
+import { randomBytes } from "crypto";
+import type { Executor } from "gel";
+import * as gel from "gel";
+import assert from "node:assert";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
+import { updateReleaseDataEgress } from "../../../../dbschema/queries";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type { ReleaseDetailType } from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
 import type { IAwsDiscoveryService } from "../aws/aws-discovery-service";
+import { getReleaseInfo } from "../helpers";
+import { ManifestService } from "../manifests/manifest-service";
+import { ReleaseService } from "../releases/release-service";
+import { SelectService } from "../select-service";
 import {
   CopyOutServiceNotInstalled,
   ReleaseNeedsActivationToStartJob,
 } from "./job-exception";
-import { ManifestService } from "../manifests/manifest-service";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { randomBytes } from "crypto";
-import assert from "node:assert";
-import { updateReleaseDataEgress } from "../../../../dbschema/queries";
+import { JobService, NotAuthorisedToControlJob } from "./job-service";
 
 /**
  * A service for performing long-running operations that copy out files

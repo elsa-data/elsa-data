@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Sensitive } from "./config-schema-sensitive";
+import type { Sensitive } from "./config-schema-sensitive";
 
 const ID_DESCRIBE =
   "A locally unique id for referencing this DAC within the configuration of this Elsa Data";

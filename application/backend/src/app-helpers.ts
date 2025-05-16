@@ -1,4 +1,4 @@
-import { FastifyReply } from "fastify";
+import type { FastifyReply } from "fastify";
 import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import { template } from "lodash";

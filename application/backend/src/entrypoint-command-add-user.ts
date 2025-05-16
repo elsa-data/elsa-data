@@ -1,7 +1,7 @@
-import { DependencyContainer } from "tsyringe";
 import * as gel from "gel";
-import { potentialUserGetByEmail, userGetByEmail } from "../dbschema/queries";
+import type { DependencyContainer } from "tsyringe";
 import e from "../dbschema/edgeql-js";
+import { potentialUserGetByEmail, userGetByEmail } from "../dbschema/queries";
 
 export const ADD_USER_COMMAND = "add-user";
 

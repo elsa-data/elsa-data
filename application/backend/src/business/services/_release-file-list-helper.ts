@@ -1,15 +1,15 @@
+import type { Executor } from "gel";
+import * as gel from "gel";
+import { basename } from "path/posix";
+import { AuthenticatedUser } from "../authenticated-user";
+import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
 import {
   collapseExternalIds,
   doRoleInReleaseCheck,
   getReleaseInfo,
 } from "./helpers";
-import { basename } from "path/posix";
-import * as gel from "gel";
-import { Executor } from "gel";
-import { artifactFilesForSpecimensQuery } from "../db/artifact-queries";
-import { AuthenticatedUser } from "../authenticated-user";
-import { UserService } from "./user-service";
 import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import { UserService } from "./user-service";
 
 // note that we are processing here every artifact that is accessible from
 // the chosen specimens

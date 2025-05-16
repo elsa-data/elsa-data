@@ -1,11 +1,11 @@
-import { Issuer } from "openid-client";
-import type { ElsaSettings } from "./config/elsa-settings";
-import _ from "lodash";
-import { ElsaConfigurationType } from "./config/config-schema";
-import * as path from "path";
-import { OidcType } from "./config/config-schema-oidc";
-import { SharerType } from "./config/config-schema-sharer";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
+import _ from "lodash";
+import { Issuer } from "openid-client";
+import * as path from "path";
+import type { ElsaConfigurationType } from "./config/config-schema";
+import type { OidcType } from "./config/config-schema-oidc";
+import type { SharerType } from "./config/config-schema-sharer";
+import type { ElsaSettings } from "./config/elsa-settings";
 
 /**
  * Enrich the raw OIDC configuration by creating an Issuer
