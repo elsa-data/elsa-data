@@ -1,64 +1,40 @@
-import "reflect-metadata";
-
-import { parentPort } from "worker_threads";
-import { JobService } from "../src/business/services/jobs/job-service";
-import { bootstrapDependencyInjection } from "../src/bootstrap-dependency-injection";
-import type { ElsaSettings } from "../src/config/elsa-settings";
-import { workerData as breeWorkerData } from "node:worker_threads";
-import { bootstrapSettings } from "../src/bootstrap-settings";
-import { getDirectConfig } from "../src/config/config-load";
-import pino, { Logger } from "pino";
-import { JobCloudFormationDeleteService } from "../src/business/services/jobs/job-cloud-formation-delete-service";
-import { JobCloudFormationCreateService } from "../src/business/services/jobs/job-cloud-formation-create-service";
-import { JobCopyOutService } from "../src/business/services/jobs/job-copy-out-service";
 import { differenceInHours, minTime } from "date-fns";
-import { getFeaturesEnabled } from "../src/features";
+import { JobCloudFormationCreateService } from "../business/services/jobs/job-cloud-formation-create-service";
+import { JobCloudFormationDeleteService } from "../business/services/jobs/job-cloud-formation-delete-service";
+import { JobCopyOutService } from "../business/services/jobs/job-copy-out-service";
+import { JobService } from "../business/services/jobs/job-service";
+import {
+  setupWorkerFromConfigJson,
+  sleepMicroseconds,
+} from "./worker-bootstrap";
 
-function sleep(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
+declare var self: Worker;
 
-(async () => {
-  console.log("HEELO FROM THE WORKER!");
+// top-level boolean if the job handler is cancelled
+let isJobHandlerCancelled = false;
 
-  const rawConfig = await getDirectConfig(breeWorkerData.job.worker.workerData);
+self.onmessage = (event: MessageEvent) => {
+  // handle cancellation (CURRENTLY DISABLED WITH BUN - NEVER TRIGGERED)
+  if (typeof event.data === "string") {
+    if (event.data === "cancel") isJobHandlerCancelled = true;
+  } else {
+    return jobHandler(event.data);
+  }
+};
 
-  const settings = await bootstrapSettings(rawConfig);
-
-  // we create a logger that always has a field telling us that the context was the
-  // job handler - allows us to separate out job logs in CloudWatch
-  const logger = pino(settings.logger).child({ context: "job-handler" });
-
-  // global settings for DI
-  const dc = await bootstrapDependencyInjection(
-    logger,
-    settings.devTesting?.mockAwsCloud,
+/**
+ * Job handler is an endless loop that periodically polls for jobs in the database, and if
+ * they exist it will "progress" the work for them and update the database state.
+ *
+ * @param configJson the configuration object as plain JSON
+ */
+async function jobHandler(configJson: any) {
+  const { dc, logger } = await setupWorkerFromConfigJson(
+    configJson,
+    "job-handler",
   );
 
-  dc.register<ElsaSettings>("Settings", {
-    useValue: settings,
-  });
-
-  dc.register<Logger>("Logger", {
-    useValue: logger,
-  });
-
-  const features = await getFeaturesEnabled(dc, settings);
-
-  dc.register<ReadonlySet<string>>("Features", {
-    useValue: features,
-  });
-
-  // store boolean if the job handler is cancelled
-  let isJobHandlerCancelled = false;
-
   let failureCount = 0;
-
-  // handle cancellation
-  if (parentPort)
-    parentPort.on("message", (message) => {
-      if (message === "cancel") isJobHandlerCancelled = true;
-    });
 
   // this is a measure of the chunk size of work we want to do
   // it is roughly also the responsiveness measure for the queue - in general starting new jobs or cancelling
@@ -67,9 +43,11 @@ function sleep(ms: number) {
 
   let lastEmptyInProgressMessageDateTime = minTime;
 
+  // @ts-ignore: statement cannot complete without throwing an exception
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
+      // so yes - we re-create the services each loop
       const jobService = dc.resolve(JobService);
       const jobCloudFormationCreateService = dc.resolve(
         JobCloudFormationCreateService,
@@ -79,6 +57,7 @@ function sleep(ms: number) {
       );
       const jobCopyOutService = dc.resolve(JobCopyOutService);
 
+      // the database has our state of active jobs
       const jobs = await jobService.getInProgressJobs();
 
       if (!jobs || jobs.length < 1) {
@@ -99,12 +78,12 @@ function sleep(ms: number) {
         // we then ask each job to progress its work...
         // some of these work items will go for 10ish seconds
         // some will just poll as they are waiting on external activity
-        // one 'made up' job will just sleep for 10 seconds
+        // one 'made up' job will just sleepMicroseconds for 10 seconds
 
         const jobPromises: Promise<void>[] = [];
 
         // at least one job needs to 'take time' or else we could busy wait if an active job is just polling
-        jobPromises.push(sleep(secondsChunk * 1000));
+        jobPromises.push(sleepMicroseconds(secondsChunk * 1000));
 
         for (const j of jobs) {
           logger.debug("JOB");
@@ -186,7 +165,7 @@ function sleep(ms: number) {
         const jobResults = await Promise.all(jobPromises);
       }
 
-      await sleep(secondsChunk * 1000);
+      await sleepMicroseconds(secondsChunk * 1000);
 
       logger.flush();
 
@@ -211,8 +190,8 @@ function sleep(ms: number) {
         logger.error(e, "JOB SERVICE FAILURE - RESTARTING");
       }
 
-      // make sure if we are looping that we aren't consuming *all* the CPU
-      await sleep(60 * 1000);
+      // make sure *if* we are busy looping (we shouldn't be - but if somehow we are) that we aren't consuming *all* the CPU
+      await sleepMicroseconds(60 * 1000);
     }
   }
-})();
+}

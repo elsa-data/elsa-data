@@ -1,18 +1,14 @@
-import { App } from "./app";
-import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
-import Bree from "bree";
-import { DependencyContainer } from "tsyringe";
-import path from "path";
-import { DatasetService } from "./business/services/dataset-service";
-import { getServices } from "./di-helpers";
-import { EmailService } from "./business/services/email-service";
 import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
-import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
-import { constants } from "fs";
-import { access } from "fs/promises";
+import { DependencyContainer } from "tsyringe";
+import { App } from "./app";
+import { DatasetService } from "./business/services/dataset-service";
+import { EmailService } from "./business/services/email-service";
 import { IPLookupService } from "./business/services/ip-lookup-service";
 import { ElsaConfigurationType } from "./config/config-schema";
+import { getServices } from "./di-helpers";
+import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
+import { insertScenario1 } from "./test-data/scenario/insert-scenario1";
 import { insertScenario99 } from "./test-data/scenario/insert-scenario99";
 
 export const WEB_SERVER_COMMAND = "web-server";
@@ -101,67 +97,34 @@ export async function startWebServer(
  * same time as the web server but was split out because it is the only code that needs
  * the raw 'config'.
  *
+ * @param dc
  * @param config
  */
-export async function startJobQueue(config: ElsaConfigurationType) {
-  const worker = new Worker("jobs/entrypoint-test.ts", {});
+export async function startJobQueue(
+  dc: DependencyContainer,
+  config: ElsaConfigurationType,
+) {
+  // note we can't pass any of the services like settings, logger etc _into_ the job handler
+  // we will need to construct new versions of these in the handler
+  const { logger } = getServices(dc);
 
-  worker.postMessage("hello");
+  const worker = new Worker("./src/workers/entrypoint-job-handler.ts", {
+    // preload sets up the tsyringe polyfill in a way that is compatible with Bun
+    preload: ["./bunfig.reflect-metadata-import.js"],
+  });
+
+  // we wait for the job worker to be ready before sending in the Elsa config - which
+  // will then trigger then worker
+  worker.addEventListener("open", () => {
+    worker.postMessage(config);
+  });
+
   worker.onmessage = (event) => {
     console.log(event.data);
   };
-
-  return;
-
-  let root = path.resolve("jobs");
-
-  const convertFileNameTsToJs = (tsFile: string) =>
-    tsFile.replace(/.ts$/, ".js");
-
-  const breeJobs: Bree.JobOptions[] = [];
-
-  // A long service job that always run
-  const jobFileName = "entrypoint-job-handler.ts";
-
-  // Check whether we need to take file from `/dist` directory
-  let isCompiled = false;
-  try {
-    await access(path.resolve("jobs", jobFileName), constants.R_OK);
-  } catch (e) {
-    isCompiled = true;
-    root = path.resolve("server/dist/jobs");
-  }
-
-  breeJobs.push({
-    name: isCompiled ? convertFileNameTsToJs(jobFileName) : jobFileName,
-    worker: {
-      workerData: config,
-    },
-  });
-
-  // If specified for auto-update egress records
-  const cronExpressionInterval = config.datasetEgress?.updateInterval;
-
-  if (cronExpressionInterval) {
-    const jobEgressUpdateFileName = "entrypoint-data-egress-update-handler.ts";
-
-    breeJobs.push({
-      name: isCompiled
-        ? convertFileNameTsToJs(jobEgressUpdateFileName)
-        : jobEgressUpdateFileName,
-      cron: cronExpressionInterval,
-      worker: {
-        workerData: config,
-      },
-    });
-  }
-
-  const bree = new Bree({
-    root: root,
-    jobs: breeJobs,
-  });
-
-  await bree.start();
+  worker.onerror = (event) => {
+    logger.error(event, "Worker job handler");
+  };
 }
 
 /**
@@ -257,7 +220,7 @@ export async function waitForDatabaseReady(dc: DependencyContainer) {
     server,
   });
 
-  await server.listen(settings.httpHosting.port);
+  server.listen(settings.httpHosting.port);
 
   let count = 0;
   while (!successQuery) {

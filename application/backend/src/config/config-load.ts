@@ -1,18 +1,18 @@
-import { ProviderMeta } from "./meta/meta-parser";
-import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
-import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
-import { ProviderFile } from "./providers/provider-file";
-import { configZodDefinition, ElsaConfigurationType } from "./config-schema";
-import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
-import { ProviderLinuxPass } from "./providers/provider-linux-pass";
 import jsonpath from "jsonpath";
+import { cloneDeep, isNil, isNumber, isString, merge } from "lodash";
+import { ZodError, ZodIssue, ZodIssueCode } from "zod";
 import {
   environmentVariableMap,
   trySetEnvironmentVariableInteger,
   trySetEnvironmentVariableString,
 } from "./config-load-environment-variable-map";
-import { ZodError, ZodIssue, ZodIssueCode } from "zod";
-import { cloneDeep, isNumber, isNil, isString, merge, set } from "lodash";
+import { configZodDefinition, ElsaConfigurationType } from "./config-schema";
+import { ProviderMeta } from "./meta/meta-parser";
+import { ProviderAwsSecretsManager } from "./providers/provider-aws-secrets-manager";
+import { ProviderFile } from "./providers/provider-file";
+import { ProviderGcpSecretsManager } from "./providers/provider-gcp-secrets-manager";
+import { ProviderLinuxPass } from "./providers/provider-linux-pass";
+import { ProviderOsxKeychain } from "./providers/provider-osx-keychain";
 
 /**
  * The structure returned when we try to load configuration. Handles
@@ -200,7 +200,7 @@ export async function getMetaConfig(
 /**
  * Give the raw JSON of configuration, return the data schema checked but otherwise passed through.
  * This function is drop in replacement for getMetaConfig - but is useful in
- * some testing situations.
+ * some testing situations and in setting up worker threads.
  *
  * @param config
  */
