@@ -96,16 +96,16 @@ export const AuditEventTable = ({
   showAdminView,
   type,
 }: AuditEventTableProps): JSX.Element => {
+  const trpc = useTRPC();
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentTotal, setCurrentTotal] = useState(1);
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [updateData, setUpdateData] = useState(true);
 
-  const [data, setData] = useState([] as AuditEventType[]);
-  const [error, setError] = useState<ErrorState>({
+  //  const [data, setData] = useState([] as AuditEventType[]);
+  const [error] = useState<ErrorState>({
     error: null,
     isSuccess: true,
   });
@@ -114,43 +114,85 @@ export const AuditEventTable = ({
     AuditEventUserFilterType[]
   >(filterElementsInitial);
 
-  const dataQueries = useAllAuditEventQueries(
-    currentPage,
-    type,
-    includeEvents,
-    setCurrentTotal,
-    setData,
-    setError,
-  );
+  let queryHook;
 
-  useEffect(() => {
-    if (updateData) {
-      let key;
-      if (sorting.length === 0) {
-        key = "occurredDateTimeDesc";
-      } else {
-        const { id, desc } = sorting[0];
-        key = desc ? id + "Desc" : id + "Asc";
-      }
+  const query = {
+    page: currentPage,
+    orderByProperty: "occurredDateTime",
+    orderAscending: true,
+  };
 
-      const isKeyOfDataQueries = (
-        key: string,
-      ): key is keyof typeof dataQueries => {
-        return key in dataQueries;
-      };
+  const options = {
+    enabled: true,
+    /* keepPreviousData: true,
+     onSuccess: (data: any) => {
+       setCurrentTotal(data.total);
+       setData((data.data as AuditEventType[]) ?? []);
+       setError({ error: null, isSuccess: data.data !== undefined });
+     },
+     onError: (error: any) => {
+       setData([]);
+       setError({ error, isSuccess: false });
+     }, */
+  };
 
-      if (isKeyOfDataQueries(key)) {
-        dataQueries[key].refetch();
-      } else {
-        throw Error("Unexpected key " + key);
-      }
+  if (type === "AuditEvent") {
+    const queryOptions = trpc.auditEvent.getAuditEvent.queryOptions(
+      {
+        ...query,
+        filter: includeEvents,
+      },
+      options,
+    );
+    queryHook = useQuery(queryOptions);
+  } else {
+    const queryOptions = trpc.auditEvent.getReleaseAuditEvent.queryOptions(
+      {
+        ...query,
+        releaseKey: type.releaseKey,
+      },
+      options,
+    );
+    queryHook = useQuery(queryOptions);
+  }
 
-      setUpdateData(false);
-    }
-  }, [updateData, dataQueries, sorting]);
+  /*const dataQueries = useAllAuditEventQueries(
+     currentPage,
+     type,
+     includeEvents,
+     setCurrentTotal,
+     setData,
+     setError,
+   ); */
+
+  /*useEffect(() => {
+     if (updateData) {
+       let key;
+       if (sorting.length === 0) {
+         key = "occurredDateTimeDesc";
+       } else {
+         const { id, desc } = sorting[0];
+         key = desc ? id + "Desc" : id + "Asc";
+       }
+
+       const isKeyOfDataQueries = (
+         key: string,
+       ): key is keyof typeof dataQueries => {
+         return key in dataQueries;
+       };
+
+       if (isKeyOfDataQueries(key)) {
+         dataQueries[key].refetch();
+       } else {
+         throw Error("Unexpected key " + key);
+       }
+
+       setUpdateData(false);
+     }
+   }, [updateData, dataQueries, sorting]); */
 
   const table = useReactTable({
-    data: data,
+    data: queryHook.data?.data ?? ([] as any[]),
     columns: createColumns(navigate),
     state: {
       sorting,
@@ -174,9 +216,9 @@ export const AuditEventTable = ({
         </div>
       }
     >
-      {isAnyAuditEventQueryFetching(dataQueries) && <IsLoadingDiv />}
+      {queryHook.isLoading && <IsLoadingDiv />}
 
-      {!isAnyAuditEventQueryFetching(dataQueries) && (
+      {!queryHook.isLoading && (
         <>
           <div className="flex grow justify-end">
             {filterElements && (
@@ -185,7 +227,6 @@ export const AuditEventTable = ({
                   includeEvents={includeEvents}
                   setIncludeEvents={setIncludeEvents}
                   setCurrentPage={setCurrentPage}
-                  setCurrentTotal={setCurrentTotal}
                   setUpdateData={setUpdateData}
                   showAdminView={showAdminView}
                 />
@@ -275,7 +316,7 @@ export const AuditEventTable = ({
                 setUpdateData(true);
                 setCurrentPage(n);
               }}
-              rowCount={currentTotal}
+              rowCount={queryHook?.data?.total ?? 0}
               rowsPerPage={pageSize}
               rowWord="audit events"
             />
@@ -289,7 +330,7 @@ export const AuditEventTable = ({
 /**
  * Wrapper around a useQuery hook for an audit entry event.
  */
-export const useAuditEventQuery = (
+/*export const useAuditEventQuery = (
   currentPage: number,
   type: Type,
   orderByProperty: string,
@@ -332,12 +373,12 @@ export const useAuditEventQuery = (
     });
     return useQuery(queryOptions);
   }
-};
+}; */
 
 /**
  * Declares all audit entry queries used by the logs box.
  */
-export const useAllAuditEventQueries = (
+/*export const useAllAuditEventQueries = (
   currentPage: number,
   type: Type,
   includeEvents: AuditEventUserFilterType[],
@@ -375,13 +416,13 @@ export const useAllAuditEventQueries = (
     occurredDurationAsc: useAuditEventQueryFn("occurredDuration", true),
     occurredDurationDesc: useAuditEventQueryFn("occurredDuration", false),
   };
-};
+};*/
 
-const isAnyAuditEventQueryFetching = (
+/*const isAnyAuditEventQueryFetching = (
   allAuditEventQueries: ReturnType<typeof useAllAuditEventQueries>,
 ) => {
   return Object.values(allAuditEventQueries).some((q) => q.isFetching);
-};
+}; */
 
 export type AuditEventTableHeaderProps<TData, TValue> = {
   header: CoreHeader<TData, TValue> & ColumnSizingHeader;
