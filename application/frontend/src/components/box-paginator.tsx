@@ -26,7 +26,7 @@ type Props = {
 };
 
 /**
- * A paginator component styled to live at the top of one of our boxes - where the rest of the box is
+ * A paginator component styled to live above/below our tables - where the rest of the box is
  * the paged table content.
  *
  * @param props
@@ -127,7 +127,8 @@ export const BoxPaginator: React.FC<Props> = (props) => {
               edgePageCount={2}
               middlePagesSiblingCount={1}
               className={classNames(
-                "relative z-0 inline-flex -space-x-px text-sm text-gray-700",
+                //"flex items-center w-full h-10 text-sm select-none list-none",
+                "relative list-none z-0 inline-flex -space-x-px text-sm text-gray-700",
                 { invisible: textSearchInProgress },
               )}
               truncableText="..."
@@ -146,7 +147,7 @@ export const BoxPaginator: React.FC<Props> = (props) => {
                 <span className="h-5 w-5" aria-hidden="true">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="icon icon-tabler icon-tabler-chevron-left mx-auto stroke-gray-500"
+                    className="icon icon-tabler icon-tabler-chevron-left mx-auto stroke-fray-500"
                     viewBox="0 0 24 24"
                     strokeWidth="1.5"
                     stroke="#597e8d"
