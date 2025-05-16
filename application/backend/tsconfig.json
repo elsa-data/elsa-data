@@ -6,8 +6,7 @@
   "//compilerOptions3": ".. noUnused we switch on/off depending on mood!",
   "compilerOptions": {
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "experimentalDecorators": true,
+    "experimentalDecorators": false,
     "noPropertyAccessFromIndexSignature": false
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],

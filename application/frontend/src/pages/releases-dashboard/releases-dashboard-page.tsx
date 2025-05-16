@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box } from "../../components/boxes";
 import { EagerErrorBoundary } from "../../components/errors";
 import { IsLoadingDiv } from "../../components/is-loading-div";
@@ -11,6 +11,12 @@ import { Table } from "../../components/tables";
 import { useTRPC } from "../../helpers/trpc-modern.ts";
 import { useQuery } from "@tanstack/react-query";
 
+/**
+ * A basic dashboard showing the releases that the current user is involved
+ * with and some basic details.
+ *
+ * @constructor
+ */
 export const ReleasesDashboardPage: React.FC = () => {
   const trpc = useTRPC();
   const navigate = useNavigate();
@@ -18,37 +24,24 @@ export const ReleasesDashboardPage: React.FC = () => {
   // our internal state for which page we are on
   const pageSize = usePageSizer();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [currentTotal, setCurrentTotal] = useState<number>(1);
 
   const getReleaseOptions = trpc.release.getAllRelease.queryOptions({
     page: currentPage,
   });
-  const { data, isSuccess, isLoading, isError, error } =
-    useQuery(getReleaseOptions);
-
-  const getCopiedOptions = trpc.copyService.getCopied.queryOptions();
-  const { data: copyData, isSuccess: copyIsSuccess } =
-    useQuery(getCopiedOptions);
-
-  useEffect(() => {
-    if (isSuccess) {
-      setCurrentTotal(data.total);
-    }
-    if (copyIsSuccess) {
-      console.log(copyData);
-    }
-  }, [isError, isSuccess, copyIsSuccess]);
-
-  const queryData = data?.data;
+  const getReleaseQuery = useQuery(getReleaseOptions);
+  const getReleaseData = getReleaseQuery.data?.data;
+  const getReleaseTotal = getReleaseQuery.data?.total;
 
   return (
     <>
       <Box heading="Releases">
-        {isError && <EagerErrorBoundary error={error} />}
+        {getReleaseQuery.isError && (
+          <EagerErrorBoundary error={getReleaseQuery.error} />
+        )}
 
-        {isLoading && <IsLoadingDiv />}
+        {getReleaseQuery.isLoading && <IsLoadingDiv />}
 
-        {isSuccess && queryData?.length === 0 && (
+        {getReleaseQuery.isSuccess && !getReleaseTotal && (
           <article className="prose max-w-none">
             <p>
               This page normally shows any releases that you are involved in.
@@ -63,7 +56,7 @@ export const ReleasesDashboardPage: React.FC = () => {
             </p>
           </article>
         )}
-        {isSuccess && queryData && queryData?.length > 0 && (
+        {getReleaseQuery.isSuccess && getReleaseData && getReleaseTotal && (
           <>
             <Table
               tableHead={
@@ -81,7 +74,7 @@ export const ReleasesDashboardPage: React.FC = () => {
                   <th scope="col">{/* action links */}</th>
                 </tr>
               }
-              tableBody={queryData.map((r: any, idx: number) => {
+              tableBody={getReleaseData.map((r: any, idx: number) => {
                 const jobBadgeContent = r.isRunningJobBadge
                   ? `${r.isRunningJobBadge} ${r.isRunningJobPercentDone}%`
                   : undefined;
@@ -164,7 +157,7 @@ export const ReleasesDashboardPage: React.FC = () => {
             <BoxPaginator
               currentPage={currentPage}
               setPage={setCurrentPage}
-              rowCount={currentTotal}
+              rowCount={getReleaseTotal}
               rowsPerPage={pageSize}
               rowWord="releases"
             />
