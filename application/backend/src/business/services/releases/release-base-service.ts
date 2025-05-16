@@ -1,29 +1,29 @@
-import * as gel from "gel";
-import e from "../../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { getReleaseInfo } from "../helpers";
-import { UserService } from "../user-service";
-import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
-import { ReleaseViewError } from "../../exceptions/release-authorisation";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { AuditEventService } from "../audit-event-service";
-import { AuditEventTimedService } from "../audit-event-timed-service";
-import {
-  SharerAwsAccessPointType,
-  SharerHtsgetType,
-} from "../../../config/config-schema-sharer";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
-import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
-import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
-import { PermissionService } from "../permission-service";
-import {
+import * as gel from "gel";
+import e from "../../../../dbschema/edgeql-js";
+import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
+import type {
+  SharerAwsAccessPointType,
+  SharerHtsgetType,
+} from "../../../config/config-schema-sharer";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type {
   DataSharingAwsAccessPointType,
   ReleaseDetailType,
   ReleaseParticipantRoleType,
 } from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { ReleaseNoEditingWhilstActivatedError } from "../../exceptions/release-activation";
+import { ReleaseViewError } from "../../exceptions/release-authorisation";
+import { ReleaseSelectionPermissionError } from "../../exceptions/release-selection";
+import { AuditEventService } from "../audit-event-service";
+import { AuditEventTimedService } from "../audit-event-timed-service";
+import { getReleaseInfo } from "../helpers";
+import { PermissionService } from "../permission-service";
+import { UserService } from "../user-service";
 
 export type UserRoleInRelease = ReleaseParticipantRoleType | "AdminView";
 

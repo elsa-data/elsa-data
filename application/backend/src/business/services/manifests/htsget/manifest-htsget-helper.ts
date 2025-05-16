@@ -1,11 +1,11 @@
 import _ from "lodash";
+import type { ManifestMasterType } from "../manifest-master-types";
 import type {
   ManifestHtsgetReadsFileType,
   ManifestHtsgetType,
   ManifestHtsgetVariantsFileType,
+  ManifestRegionRestrictionType,
 } from "./manifest-htsget-types";
-import { ManifestRegionRestrictionType } from "./manifest-htsget-types";
-import { ManifestMasterType } from "../manifest-master-types";
 
 /**
  * Create a structured/tree manifest for the data included in a release.

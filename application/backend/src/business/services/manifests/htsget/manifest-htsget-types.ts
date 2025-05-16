@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
 import { CloudStorageSchema } from "../../cloud-storage-service";
 
 /**

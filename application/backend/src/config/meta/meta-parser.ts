@@ -1,5 +1,5 @@
-import { lexVariable, Token } from "./meta-lexer";
 import _ from "lodash";
+import { lexVariable, type Token } from "./meta-lexer";
 
 export type ProviderMeta = {
   providerToken: Token;

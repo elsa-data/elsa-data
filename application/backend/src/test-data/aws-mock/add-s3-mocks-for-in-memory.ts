@@ -1,14 +1,14 @@
-import { AwsStub } from "aws-sdk-client-mock";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
   ObjectStorageClass,
-  ServiceInputTypes,
-  ServiceOutputTypes,
+  type ServiceInputTypes,
+  type ServiceOutputTypes,
   StorageClass,
 } from "@aws-sdk/client-s3";
-import { Readable } from "stream";
 import { sdkStreamMixin } from "@smithy/util-stream";
+import { AwsStub } from "aws-sdk-client-mock";
+import { Readable } from "stream";
 
 export type AustralianGenomicsDirectoryStructureObject = {
   // the path of the object *within the overall dataset*.. i.e. "2010-01/mybam.bam"

@@ -1,10 +1,13 @@
-import archiver, { ArchiverOptions } from "archiver";
+import archiver, { type ArchiverOptions } from "archiver";
 import type { Executor } from "gel";
 import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import { releaseGetSpecimenTreeAndFileArtifacts } from "../../../../dbschema/queries";
-import { ObjectStoreRecordKey, ReleaseSizeType } from "../../../shared/schemas";
+import {
+  ObjectStoreRecordKey,
+  type ReleaseSizeType,
+} from "../../../shared/schemas";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { ReleaseViewError } from "../../exceptions/release-authorisation";
 import { AuditEventService } from "../audit-event-service";
@@ -13,7 +16,7 @@ import { PermissionService } from "../permission-service";
 import { PresignedUrlService } from "../presigned-url-service";
 import { ReleaseService } from "../releases/release-service";
 import { transformMasterManifestToBucketKeyManifest } from "./manifest-bucket-key-helper";
-import {
+import type {
   KnownObjectProtocolType,
   ManifestBucketKeyType,
   ManifestTsvBodyType,
@@ -22,7 +25,7 @@ import {
   createTsv,
   transformDbManifestToMasterManifest,
 } from "./manifest-master-helper";
-import { ManifestMasterType } from "./manifest-master-types";
+import type { ManifestMasterType } from "./manifest-master-types";
 import { transformMasterManifestToTsvManifest } from "./manifest-tsv-helper";
 
 @injectable()

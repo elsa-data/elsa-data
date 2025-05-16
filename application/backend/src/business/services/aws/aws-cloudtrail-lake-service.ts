@@ -1,15 +1,14 @@
-import * as gel from "gel";
-import { inject, injectable } from "tsyringe";
 import {
   CloudTrailClient,
   GetQueryResultsCommand,
   StartQueryCommand,
 } from "@aws-sdk/client-cloudtrail";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
+import * as gel from "gel";
 import type { Logger } from "pino";
-import { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
+import { inject, injectable } from "tsyringe";
 import { releaseGetAllActivationByReleaseKey } from "../../../../dbschema/queries";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import type { ReleaseEgressRecords } from "../releases/helpers/release-data-egress-helper";
 
 enum CloudTrailQueryType {
   PresignUrl = "PresignUrl",

@@ -1,6 +1,6 @@
 import type { DependencyContainer } from "tsyringe";
 import type { ElsaSettings } from "../../config/elsa-settings";
-import {
+import type {
   DuoDiseaseSpecificResearchType,
   DuoGeneralResearchUseType,
   DuoGeographicalRestrictionType,

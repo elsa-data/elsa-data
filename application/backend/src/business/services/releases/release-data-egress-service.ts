@@ -1,26 +1,26 @@
 import * as gel from "gel";
-import { AuthenticatedUser } from "../../authenticated-user";
 import { inject, injectable } from "tsyringe";
+import { createPagedResult } from "../../../api/helpers/pagination-helpers";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { AuditEventService } from "../audit-event-service";
 import { UserService } from "../user-service";
 import { ReleaseBaseService } from "./release-base-service";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import { AuditEventService } from "../audit-event-service";
-import { createPagedResult } from "../../../api/helpers/pagination-helpers";
 
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import {
   getReleaseDataEgress,
   getReleaseDataEgressSummary,
   releaseGetByReleaseKey,
   releaseLastUpdatedReset,
 } from "../../../../dbschema/queries";
-import { NotAuthorisedUpdateDataEgressRecords } from "../../exceptions/audit-authorisation";
-import { AwsCloudTrailLakeService } from "../aws/aws-cloudtrail-lake-service";
-import { AuditEventTimedService } from "../audit-event-timed-service";
-import { IPLookupService, LocationType } from "../ip-lookup-service";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { UserData } from "../../data/user-data";
-import { updateDataEgressRecordByReleaseKey } from "./helpers/release-data-egress-helper";
+import { NotAuthorisedUpdateDataEgressRecords } from "../../exceptions/audit-authorisation";
+import { AuditEventTimedService } from "../audit-event-timed-service";
+import { AwsCloudTrailLakeService } from "../aws/aws-cloudtrail-lake-service";
+import { IPLookupService, type LocationType } from "../ip-lookup-service";
 import { PermissionService } from "../permission-service";
+import { updateDataEgressRecordByReleaseKey } from "./helpers/release-data-egress-helper";
 
 /**
  * A service that coordinates the participation of users in a release

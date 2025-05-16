@@ -1,4 +1,4 @@
-import { Static, Type } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
 
 export const KnownObjectProtocolsArray = ["s3", "gs", "r2"] as const;
 

@@ -8,7 +8,7 @@ import {
   doRoleInReleaseCheck,
   getReleaseInfo,
 } from "./helpers";
-import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import type { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
 import { UserService } from "./user-service";
 
 // note that we are processing here every artifact that is accessible from

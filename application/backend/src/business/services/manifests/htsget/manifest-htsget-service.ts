@@ -8,7 +8,7 @@ import {
   releaseDataSharingConfigurationGetHtsget,
   releaseIsActivated,
 } from "../../../../../dbschema/queries";
-import { SharerHtsgetType } from "../../../../config/config-schema-sharer";
+import type { SharerHtsgetType } from "../../../../config/config-schema-sharer";
 import type { ElsaSettings } from "../../../../config/elsa-settings";
 import { ObjectStoreRecordKey } from "../../../../shared/schemas";
 import { AuthenticatedUser } from "../../../authenticated-user";
@@ -22,15 +22,15 @@ import { ReleaseViewError } from "../../../exceptions/release-authorisation";
 import { decomposeUrl } from "../../_release-file-list-helper";
 import { AuditEventService } from "../../audit-event-service";
 import { AwsS3Service } from "../../aws/aws-s3-service";
-import { CloudStorage } from "../../cloud-storage-service";
+import type { CloudStorage } from "../../cloud-storage-service";
 import { PermissionService } from "../../permission-service";
 import { ReleaseService } from "../../releases/release-service";
-import { ManifestHtsgetTsvType } from "../manifest-bucket-key-types";
+import type { ManifestHtsgetTsvType } from "../manifest-bucket-key-types";
 import { createTsv } from "../manifest-master-helper";
 import { ManifestService } from "../manifest-service";
 import { getFirstExternalIds } from "../manifest-tsv-helper";
 import { transformMasterManifestToHtsgetManifest } from "./manifest-htsget-helper";
-import {
+import type {
   ManifestHtsgetResponseType,
   ManifestHtsgetType,
 } from "./manifest-htsget-types";

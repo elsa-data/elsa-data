@@ -1,6 +1,6 @@
 import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import { DatasetAustralianGenomicsDirectories } from "../../config/config-schema-dataset";
+import type { DatasetAustralianGenomicsDirectories } from "../../config/config-schema-dataset";
 import { getServices } from "../../di-helpers";
 import { makeSystemlessIdentifierArray } from "../util/test-data-helpers";
 

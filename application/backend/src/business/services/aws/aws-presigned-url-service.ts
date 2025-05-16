@@ -1,15 +1,15 @@
 import { S3Client } from "@aws-sdk/client-s3";
-import { inject, injectable } from "tsyringe";
-import { AwsEnabledService } from "./aws-enabled-service";
-import { HttpRequest } from "@smithy/protocol-http";
 import { S3RequestPresigner } from "@aws-sdk/s3-request-presigner";
-import { parseUrl } from "@smithy/url-parser";
-import { Hash } from "@smithy/hash-node";
 import { formatUrl } from "@aws-sdk/util-format-url";
+import { Hash } from "@smithy/hash-node";
+import { HttpRequest } from "@smithy/protocol-http";
+import { parseUrl } from "@smithy/url-parser";
+import { inject, injectable } from "tsyringe";
+import type { SharerObjectSigningType } from "../../../config/config-schema-sharer";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import type { IPresignedUrlProvider } from "../presigned-url-service";
 import { AwsDiscoveryService } from "./aws-discovery-service";
-import { SharerObjectSigningType } from "../../../config/config-schema-sharer";
+import { AwsEnabledService } from "./aws-enabled-service";
 
 export function getObjectSigningSetting(
   settings: ElsaSettings,

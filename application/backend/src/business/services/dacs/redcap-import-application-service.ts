@@ -8,7 +8,7 @@ import e from "../../../../dbschema/edgeql-js";
 import type { DacRedcapAustralianGenomicsCsvType } from "../../../config/config-schema-dac";
 import { generateZipPassword } from "../../../helpers/passwords";
 import {
-  AustraliaGenomicsDacRedcap,
+  type AustraliaGenomicsDacRedcap,
   australianGenomicsDacRedcapToDuoString,
 } from "../../../shared/csv-australian-genomics";
 import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
@@ -16,7 +16,7 @@ import { AuthenticatedUser } from "../../authenticated-user";
 import { UserData } from "../../data/user-data";
 import { ReleaseCreateError } from "../../exceptions/release-authorisation";
 import {
-  ApplicationUser,
+  type ApplicationUser,
   checkValidApplicationUser,
   insertPotentialOrReal,
 } from "../_dac-user-helper";

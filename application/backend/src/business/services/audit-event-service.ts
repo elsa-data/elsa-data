@@ -18,7 +18,7 @@ import {
 } from "../../../dbschema/queries";
 import {
   createPagedResult,
-  PagedResult,
+  type PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import type { ElsaSettings } from "../../config/elsa-settings";
 import { Base7807Error } from "../../shared/error-types";

@@ -1,31 +1,31 @@
-import { AuthenticatedUser } from "../../../authenticated-user";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import * as gel from "gel";
-import { inject, injectable } from "tsyringe";
-import { UserService } from "../../user-service";
-import { AwsEnabledService } from "../../aws/aws-enabled-service";
 import {
   CloudFormationClient,
   DescribeStacksCommand,
-  DescribeStacksCommandOutput,
-  Stack,
+  type DescribeStacksCommandOutput,
+  type Stack,
 } from "@aws-sdk/client-cloudformation";
-import { AuditEventService } from "../../audit-event-service";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import assert from "assert";
 import { stringify } from "csv-stringify";
-import { Readable } from "stream";
+import * as gel from "gel";
 import streamConsumers from "node:stream/consumers";
+import type { Logger } from "pino";
+import { Readable } from "stream";
+import { inject, injectable } from "tsyringe";
+import type { ElsaSettings } from "../../../../config/elsa-settings";
+import { AuthenticatedUser } from "../../../authenticated-user";
+import { ReleaseViewError } from "../../../exceptions/release-authorisation";
+import { AuditEventService } from "../../audit-event-service";
+import { AwsEnabledService } from "../../aws/aws-enabled-service";
+import { ManifestService } from "../../manifests/manifest-service";
+import { PermissionService } from "../../permission-service";
 import { ReleaseService } from "../../releases/release-service";
+import { UserService } from "../../user-service";
 import {
-  AccessPointEntry,
+  type AccessPointEntry,
   correctAccessPointUrls,
   createAccessPointTemplateFromObjects,
 } from "./_access-point-template-helper";
-import type { ElsaSettings } from "../../../../config/elsa-settings";
-import type { Logger } from "pino";
-import { ReleaseViewError } from "../../../exceptions/release-authorisation";
-import assert from "assert";
-import { ManifestService } from "../../manifests/manifest-service";
-import { PermissionService } from "../../permission-service";
 
 @injectable()
 export class AwsAccessPointService {

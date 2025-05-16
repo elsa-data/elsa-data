@@ -84,7 +84,7 @@ export async function* getCopierMapRunManifestEntries(
     if (!getSuccessResult.Body) continue;
 
     const rl = readline.createInterface(
-      Readable.fromWeb(getSuccessResult.Body.transformToWebStream()),
+      Readable.fromWeb(getSuccessResult.Body.transformToWebStream() as any),
     );
 
     for await (const jsonLineString of rl) {

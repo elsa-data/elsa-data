@@ -5,7 +5,7 @@ import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "../util/test-data-helpers";
-import { InsertReleaseProps, insertRole } from "./helpers";
+import { type InsertReleaseProps, insertRole } from "./helpers";
 
 export const RELEASE2_RELEASE_IDENTIFIER = "R002";
 export const RELEASE2_APPLICATION_DAC_TITLE =

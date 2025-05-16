@@ -1,8 +1,8 @@
 import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
+import type { SharerType } from "../../../config/config-schema-sharer";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
-import { SharerType } from "../../../config/config-schema-sharer";
 import { AwsDiscoveryService } from "../aws/aws-discovery-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
 

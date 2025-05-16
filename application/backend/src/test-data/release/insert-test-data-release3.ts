@@ -5,7 +5,7 @@ import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "../util/test-data-helpers";
-import { InsertReleaseProps, insertRole } from "./helpers";
+import { type InsertReleaseProps, insertRole } from "./helpers";
 
 export const RELEASE3_RELEASE_IDENTIFIER = "R003";
 

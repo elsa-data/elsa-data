@@ -1,11 +1,11 @@
+import { unpackFileArtifact } from "../_release-file-list-helper";
+import { getFirstSystemSortedExternalIdentifierValue } from "../helpers";
+import { PresignedUrlService } from "../presigned-url-service";
 import type {
   ManifestBucketKeyObjectType,
   ManifestTsvBodyType,
 } from "./manifest-bucket-key-types";
-import { ManifestMasterType } from "./manifest-master-types";
-import { unpackFileArtifact } from "../_release-file-list-helper";
-import { PresignedUrlService } from "../presigned-url-service";
-import { getFirstSystemSortedExternalIdentifierValue } from "../helpers";
+import type { ManifestMasterType } from "./manifest-master-types";
 
 async function manifestBodyElements(
   datasetSpecimen: any,

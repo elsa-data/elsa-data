@@ -5,10 +5,10 @@ import { isEmpty, isInteger } from "lodash";
 import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
-import { DacRemsType } from "../../../config/config-schema-dac";
+import type { DacRemsType } from "../../../config/config-schema-dac";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import { generateZipPassword } from "../../../helpers/passwords";
-import { RemsApprovedApplicationType } from "../../../shared/schemas";
+import type { RemsApprovedApplicationType } from "../../../shared/schemas";
 import { makeEmptyCodeArray } from "../../../test-data/util/test-data-helpers";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { UserData } from "../../data/user-data";
@@ -17,7 +17,10 @@ import {
   ReleaseCreateError,
   ReleaseViewError,
 } from "../../exceptions/release-authorisation";
-import { ApplicationUser, insertPotentialOrReal } from "../_dac-user-helper";
+import {
+  type ApplicationUser,
+  insertPotentialOrReal,
+} from "../_dac-user-helper";
 import { AuditEventService } from "../audit-event-service";
 import { ReleaseService } from "../releases/release-service";
 import { UserService } from "../user-service";

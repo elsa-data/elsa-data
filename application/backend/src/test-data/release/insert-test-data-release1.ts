@@ -17,7 +17,7 @@ import {
   makeIdentifierTuple,
   makeSingleCodeArray,
 } from "../util/test-data-helpers";
-import { InsertReleaseProps, insertRole } from "./helpers";
+import { type InsertReleaseProps, insertRole } from "./helpers";
 
 const applicationDetails = `
 #### Origin

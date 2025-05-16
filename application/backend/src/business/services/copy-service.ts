@@ -10,10 +10,10 @@ import { LRUCache } from "lru-cache";
 import { inject, injectable, singleton } from "tsyringe";
 import {
   createPagedResult,
-  PagedResult,
+  type PagedResult,
 } from "../../api/helpers/pagination-helpers";
 import type { ElsaSettings } from "../../config/elsa-settings";
-import { CopyInvokeEntryType } from "../../shared/schemas-copier";
+import type { CopyInvokeEntryType } from "../../shared/schemas-copier";
 import { AwsDiscoveryService } from "./aws/aws-discovery-service";
 import { getCopierMapRunManifestEntries } from "./copy-service-helpers";
 

@@ -1,15 +1,15 @@
-import { AuthenticatedUser } from "../authenticated-user";
-import * as gel from "gel";
-import { inject, injectable } from "tsyringe";
-import { UserService } from "./user-service";
-import { GcpEnabledService } from "./gcp-enabled-service";
-import { AuditEventService } from "./audit-event-service";
 import { Storage } from "@google-cloud/storage";
-import { getAllFileRecords } from "./_release-file-list-helper";
-import pLimit, { Limit } from "p-limit";
-import { ReleaseService } from "./releases/release-service";
-import { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import * as gel from "gel";
+import pLimit, { type Limit } from "p-limit";
+import { inject, injectable } from "tsyringe";
+import { AuthenticatedUser } from "../authenticated-user";
 import { ReleaseSelectionPermissionError } from "../exceptions/release-selection";
+import { getAllFileRecords } from "./_release-file-list-helper";
+import { AuditEventService } from "./audit-event-service";
+import { GcpEnabledService } from "./gcp-enabled-service";
+import type { ManifestBucketKeyObjectType } from "./manifests/manifest-bucket-key-types";
+import { ReleaseService } from "./releases/release-service";
+import { UserService } from "./user-service";
 
 @injectable()
 export class GcpStorageSharingService {

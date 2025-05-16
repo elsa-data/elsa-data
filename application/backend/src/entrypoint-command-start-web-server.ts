@@ -5,7 +5,7 @@ import { App } from "./app";
 import { DatasetService } from "./business/services/dataset-service";
 import { EmailService } from "./business/services/email-service";
 import { IPLookupService } from "./business/services/ip-lookup-service";
-import { ElsaConfigurationType } from "./config/config-schema";
+import type { ElsaConfigurationType } from "./config/config-schema";
 import { getServices } from "./di-helpers";
 import { DB_MIGRATE_COMMAND } from "./entrypoint-command-db-migrate";
 import { insertScenario1 } from "./test-data/scenario/insert-scenario1";

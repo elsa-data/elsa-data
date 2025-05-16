@@ -1,6 +1,6 @@
 import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../config/elsa-settings";
-import { UserRoleInRelease } from "./releases/release-base-service";
+import type { UserRoleInRelease } from "./releases/release-base-service";
 
 /**
  * A service that holds common definitions of permission business

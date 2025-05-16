@@ -1,16 +1,16 @@
 import { Issuer } from "openid-client";
-import { LoggerOptions } from "pino";
-import { DacType } from "./config-schema-dac";
-import { DatasetType } from "./config-schema-dataset";
-import { SharerType } from "./config-schema-sharer";
-import { EmailerType } from "./config-schema-emailer";
-import { BrandingType } from "./config-schema-branding";
-import { OidcType } from "./config-schema-oidc";
-import { HttpHostingType } from "./config-schema-http-hosting";
-import { FeatureType } from "./config-schema-feature";
-import { DataEgressConfigType } from "./config-schema-data-egress";
-import { DevTestingType } from "./config-schema-dev";
-import { PermissionType } from "./config-schema-permission";
+import type { LoggerOptions } from "pino";
+import type { BrandingType } from "./config-schema-branding";
+import type { DacType } from "./config-schema-dac";
+import type { DataEgressConfigType } from "./config-schema-data-egress";
+import type { DatasetType } from "./config-schema-dataset";
+import type { DevTestingType } from "./config-schema-dev";
+import type { EmailerType } from "./config-schema-emailer";
+import type { FeatureType } from "./config-schema-feature";
+import type { HttpHostingType } from "./config-schema-http-hosting";
+import type { OidcType } from "./config-schema-oidc";
+import type { PermissionType } from "./config-schema-permission";
+import type { SharerType } from "./config-schema-sharer";
 
 /**
  * The rich, well-typed settings for Elsa.

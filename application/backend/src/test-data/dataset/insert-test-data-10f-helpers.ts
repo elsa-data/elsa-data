@@ -1,11 +1,11 @@
+import e from "../../../dbschema/edgeql-js";
+import type { DuoLimitationCodedType } from "../../shared/schemas-duo";
 import {
   createArtifacts,
-  File,
-  IdentifierMap,
+  type File,
+  type IdentifierMap,
   makeDictionaryIdentifierArray,
 } from "../util/test-data-helpers";
-import e from "../../../dbschema/edgeql-js";
-import { DuoLimitationCodedType } from "../../shared/schemas-duo";
 
 export const TENF_URI = "urn:fdc:umccr.org:2022:dataset/10f";
 

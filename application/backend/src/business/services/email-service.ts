@@ -1,13 +1,13 @@
+import * as aws from "@aws-sdk/client-ses";
+import Email from "email-templates";
+import * as gel from "gel";
+import { createTransport, type Transporter } from "nodemailer";
+import type { Address } from "nodemailer/lib/mailer";
+import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../config/elsa-settings";
-import { createTransport, Transporter } from "nodemailer";
-import * as aws from "@aws-sdk/client-ses";
-import type { Logger } from "pino";
 import { AuditEventService } from "./audit-event-service";
-import * as gel from "gel";
 import { AwsEnabledService } from "./aws/aws-enabled-service";
-import Email from "email-templates";
-import { Address } from "nodemailer/lib/mailer";
 
 @injectable()
 export class EmailService {

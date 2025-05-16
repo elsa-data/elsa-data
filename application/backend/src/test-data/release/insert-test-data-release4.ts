@@ -5,7 +5,7 @@ import {
   makeEmptyCodeArray,
   makeSystemlessIdentifier,
 } from "../util/test-data-helpers";
-import { InsertReleaseProps, insertRole } from "./helpers";
+import { type InsertReleaseProps, insertRole } from "./helpers";
 
 export async function insertRelease4(
   dc: DependencyContainer,
