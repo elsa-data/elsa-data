@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { SelectDialogBase } from "./select-dialog-base";
 import { SuccessCancelButtons } from "./success-cancel-buttons";
 
