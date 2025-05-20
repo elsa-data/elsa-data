@@ -128,8 +128,8 @@ export const ManualDacDialog: React.FC<Props> = ({
                         option: () => "!font-medium !text-gray-700",
                         placeholder: () => "!text-sm !text-gray-500",
                       }}
-                      onChange={(opts) =>
-                        onChange(opts.map((opt) => opt.value))
+                      onChange={(opts: any) =>
+                        onChange(opts.map((opt: any) => opt.value))
                       }
                     />
                   </>

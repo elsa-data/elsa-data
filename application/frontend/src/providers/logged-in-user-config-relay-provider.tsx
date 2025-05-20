@@ -40,7 +40,7 @@ export const LoggedInUserConfigRelayProvider: React.FC<{
     enabled: !!loggedInUser,
   };
 
-  const datasetsQueryOptions = trpc.user.getOwnUser.queryOptions(
+  const datasetsQueryOptions = trpc.dataset.getConfiguredDatasets.queryOptions(
     undefined,
     qSettings,
   );
