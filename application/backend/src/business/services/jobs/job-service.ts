@@ -5,6 +5,10 @@ import _ from "lodash";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import {
+  releaseJobInsertCohortBuildJob,
+  selectJobUpdateWorkChunk,
+} from "../../../../dbschema/queries";
+import {
   createPagedResult,
   type PagedResult,
 } from "../../../api/helpers/pagination-helpers";
@@ -15,7 +19,7 @@ import type {
 } from "../../../shared/schemas-releases";
 import { AuthenticatedUser } from "../../authenticated-user";
 import { AuditEventService } from "../audit-event-service";
-import { getReleaseInfo } from "../helpers";
+import { collapseExternalIds } from "../helpers";
 import { ReleaseService } from "../releases/release-service";
 import { SelectService } from "../select-service";
 import { jobAsType } from "./job-helpers";
@@ -30,6 +34,11 @@ export class NotAuthorisedToControlJob extends Base7807Error {
   }
 }
 
+/**
+ * The job service is responsible for coordinating database state with a
+ * long running background task that is responsible for progressing "jobs"
+ * in small chunks.
+ */
 @injectable()
 export class JobService {
   constructor(
@@ -84,7 +93,8 @@ export class JobService {
   }
 
   /**
-   * Return the ids for any jobs that are currently in progress. This is the main
+   * Return the ids for any jobs that are currently in progress across
+   * the *entire* system. This is the main
    * entry to the job system for our worker threads looking for work.
    */
   public async getInProgressJobs() {
@@ -131,11 +141,6 @@ export class JobService {
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
-    const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey,
-    );
-
     await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
       // the ability to audit jobs that don't start at all - but maybe we do that
@@ -144,31 +149,15 @@ export class JobService {
         user,
         releaseKey,
         "E",
-        "Ran Dynamic Consent",
+        "Ran Cohort Build",
         new Date(),
         tx,
       );
 
-      // MADE CHANGES BELOW TO FIX COMPILE BUG - THIS WILL NOT WORK
-      // NEEDS TO BE REWRITTEN ANYHOW
-      // create a new select job entry
-      await e
-        .insert(e.job.SelectJob, {
-          forRelease: releaseQuery,
-          status: e.job.JobStatus.running,
-          started: e.datetime_current(),
-          percentDone: e.int16(0),
-          messages: e.literal(e.array(e.str), ["Created"]),
-          initialTodoCount: 0, // e.count(releaseAllDatasetCasesQuery),
-          todoQueue: e.set(), // releaseAllDatasetCasesQuery,
-          selectedSpecimens: e.set(),
-          auditEntry: e
-            .select(e.audit.ReleaseAuditEvent, (ae) => ({
-              filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
-            }))
-            .assert_single(),
-        })
-        .run(tx);
+      await releaseJobInsertCohortBuildJob(tx, {
+        releaseKey: releaseKey,
+        alreadyInsertedAuditEntryId: newAuditEventId,
+      });
     });
 
     // return the status of the release - which now has a runningJob
@@ -187,11 +176,6 @@ export class JobService {
 
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
-
-    const { releaseQuery, releaseAllDatasetCasesQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey,
-    );
 
     await this.edgeDbClient.transaction(async (tx) => {
       const currentJob = await e
@@ -281,12 +265,8 @@ export class JobService {
         // edgedb.reflection.$expr_Literal<
         //           edgedb.reflection.ScalarType<"std::uuid", string, true, string>
         //         >
-        const resultSpecimens: any[] = [];
-
+        const resultSpecimens: string[] = [];
         const resultMessages: string[] = [];
-
-        // todo: get some messages back from the selection service
-        resultMessages.push("Doing some work");
 
         for (const cas of casesFromQueue) {
           for (const pat of cas.patients || []) {
@@ -322,28 +302,26 @@ export class JobService {
                   spec as any,
                 )
               ) {
-                resultSpecimens.push(e.uuid(spec.id));
+                resultSpecimens.push(spec.id);
+                resultMessages.push(
+                  `In - ${collapseExternalIds(cas.externalIdentifiers)} ${collapseExternalIds(pat.externalIdentifiers)} ${collapseExternalIds(spec.externalIdentifiers)}`,
+                );
+              } else {
+                resultMessages.push(
+                  `Out - ${collapseExternalIds(cas.externalIdentifiers)} ${collapseExternalIds(pat.externalIdentifiers)} ${collapseExternalIds(spec.externalIdentifiers)}`,
+                );
               }
             }
           }
         }
 
-        if (resultSpecimens.length > 0) {
-          // get all the entries from the db corresponding to the specimens we chose
-          const newResults = e.select(e.dataset.DatasetSpecimen, (ds) => ({
-            filter: e.op(ds.id, "in", e.set(...resultSpecimens)),
-          }));
-
-          // we add those specimens that survived our consent logic into the selectSpecimens set
-          const x = await e
-            .update(e.job.SelectJob, (sj) => ({
-              filter: e.op(sj.id, "=", e.uuid(jobId)),
-              set: {
-                selectedSpecimens: { "+=": newResults },
-              },
-            }))
-            .run(tx);
-        }
+        console.log(
+          await selectJobUpdateWorkChunk(tx, {
+            jobId: jobId,
+            newMessages: resultMessages,
+            newSpecimens: resultSpecimens,
+          }),
+        );
 
         // and we remove *all* the cases that we process as part of this batch from the todoQueue
         if (casesFromQueue.length > 0) {

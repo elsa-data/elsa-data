@@ -41,16 +41,21 @@ export const RhRadios: React.FC<
     React.HTMLAttributes<HTMLFieldSetElement>
 > = ({ label, children, className }) => {
   return (
-    <fieldset className={className}>
+    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+      <legend className="fieldset-legend">{label}</legend>
+
+      <div className="flex flex-col space-y-2">{children}</div>
+    </fieldset>
+  );
+};
+
+/*     <fieldset className={className}>
       <legend className="sr-only">{label}</legend>
       <div className="text-base font-medium text-gray-900" aria-hidden="true">
         {label}
       </div>
       <div className="mt-4 space-y-4">{children}</div>
-    </fieldset>
-  );
-};
-
+    </fieldset> */
 {
   /*
       <div className="col-span-6 sm:col-span-3">

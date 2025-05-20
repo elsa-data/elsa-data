@@ -1,20 +1,29 @@
-import React, { useRef } from "react";
+import React, { useRef, useId } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
 import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
-import {
-  axiosPatchOperationMutationFn,
-  REACT_QUERY_RELEASE_KEYS,
-} from "../../queries";
+import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
-import { RhTextArea } from "../../../../components/rh/rh-text-area";
 import { RhCheckItem, RhChecks } from "../../../../components/rh/rh-checks";
 import { EagerErrorBoundary } from "../../../../components/errors";
 
 type Props = {
   releaseKey: string;
-  applicationCoded: any;
+  applicationCoded: {
+    type: "HMB" | "DS" | "CC" | "GRU" | "POA";
+    diseases: {
+      display?: string | undefined;
+      code: string;
+      system: string;
+    }[];
+    countriesInvolved: {
+      display?: string | undefined;
+      code: string;
+      system: string;
+    }[];
+    beaconQuery: any;
+  };
 };
 
 const malesQuery = {
@@ -111,33 +120,91 @@ export const ApplicationCodedBox: React.FC<Props> = ({
   // the argument to the mutator needs to be a single ReleasePatchOperationType operation
   const releasePatchMutate = useMutation({
     mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
-    // whenever we do a mutation of application coded data - our API returns the complete updated
-    // state of the *whole* release - and we can use that data to replace the stored react-query state
-    onSuccess: (result: ReleaseTypeLocal) => {
-      queryClient.setQueryData(
-        REACT_QUERY_RELEASE_KEYS.detail(releaseKey),
-        result,
-      );
+    onSuccess: async (_result: ReleaseTypeLocal) => {
+      await queryClient.invalidateQueries();
+      // TODO whenever we do a mutation of application coded data - our API returns the complete updated
+      //      state of the *whole* release - and we can use that data to replace the stored react-query state
     },
   });
+
+  const CountryTypeCheck = (label: string, value: string) => (
+    <label className="label">
+      <input
+        type="checkbox"
+        className="checkbox"
+        checked={(applicationCoded.countriesInvolved ?? []).some(
+          (t) => t.code === value,
+        )}
+        onChange={(e) => {
+          if (e.target.checked) {
+            releasePatchMutate.mutate({
+              op: "add",
+              path: "/applicationCoded/countries",
+              value: {
+                system: "",
+                code: value,
+              },
+            });
+          } else {
+            releasePatchMutate.mutate({
+              op: "remove",
+              path: "/applicationCoded/countries",
+              value: {
+                system: "",
+                code: value,
+              },
+            });
+          }
+        }}
+      />
+      {label}
+    </label>
+  );
+
+  {
+    /*<RhCheckItem
+    label={label}
+
+    /> */
+  }
 
   const ApplicationTypeRadio = (
     label: string,
     value: "HMB" | "POA" | "DS" | "GRU" | "UN",
-  ) => (
-    <RhRadioItem
-      label={label}
-      name="studyType"
-      checked={applicationCoded.type === value}
-      onChange={() =>
-        releasePatchMutate.mutate({
-          op: "replace",
-          path: "/applicationCoded/type",
-          value: value,
-        })
-      }
-    />
-  );
+  ) => {
+    const id = useId();
+
+    return (
+      <>
+        <label className="label" htmlFor={id}>
+          <input
+            type="radio"
+            className="radio"
+            id={id}
+            name="studyType"
+            checked={applicationCoded.type === value}
+            onChange={() =>
+              releasePatchMutate.mutate({
+                op: "replace",
+                path: "/applicationCoded/type",
+                value: value,
+              })
+            }
+          />
+          {label}
+        </label>
+      </>
+    );
+  };
+
+  /*(
+
+  <RhRadioItem
+    label={label}
+    name="studyType"
+    }
+  />
+);*/
 
   const ExampleBeaconQueryLink = (label: string, query: any) => (
     <a
@@ -208,9 +275,10 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                 }
               />
             </RhChecks>
+
             <div className="grid grid-cols-2 gap-4">
               <RhRadios label={"Study Type"}>
-                {ApplicationTypeRadio("Unspecified", "UN")}
+                {/*ApplicationTypeRadio("Unspecified", "UN")*/}
                 {ApplicationTypeRadio(
                   "Population Origins or Ancestry Research Only",
                   "POA",
@@ -246,18 +314,15 @@ export const ApplicationCodedBox: React.FC<Props> = ({
               )}
             </div>
 
-            {/* this needs to be converted to a proper ontology search/set like "diseases"
-              <RhSelect
-                label={"Country of Research"}
-                options={[
-                  { label: "Australia", value: "AUS" },
-                  { label: "New Zealand", value: "NZL" },
-                  { label: "United States", value: "USA" },
-                ]}
-              />
-              */}
+            <RhChecks label={"Superpopulation"}>
+              {CountryTypeCheck("European", "EUR")}
+              {CountryTypeCheck("East Asian", "EAS")}
+              {CountryTypeCheck("South Asian", "SAS")}
+              {CountryTypeCheck("African", "AFR")}
+              {CountryTypeCheck("American", "AMR")}
+            </RhChecks>
 
-            <div>
+            {/*<div>
               <RhTextArea
                 label={"Beacon v2 Query"}
                 className="w-full rounded-md border border-gray-300 font-mono"
@@ -295,7 +360,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                   femalesWithChr20VariantQuery,
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </RightDiv>

@@ -431,7 +431,9 @@ export abstract class ReleaseBaseService {
     const { userRole, isActivated } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
-    const isRemoveOrAddText = removeRatherThanAdd ? `removing` : `adding`;
+    const isRemoveOrAddText = removeRatherThanAdd
+      ? `removing from`
+      : `adding to`;
     const actionDescription = `${isRemoveOrAddText} the application coded array (if audit details is false means nothing has changed)`;
 
     const { datasetUriToIdMap } = await getReleaseInfo(
@@ -511,7 +513,8 @@ export abstract class ReleaseBaseService {
                 },
               }))
               .run(tx);
-          else if (field === "countries")
+          else if (field === "countries") {
+            console.log(newArray);
             await e
               .update(e.release.ApplicationCoded, (ac) => ({
                 filter: commonFilter(ac),
@@ -520,7 +523,7 @@ export abstract class ReleaseBaseService {
                 },
               }))
               .run(tx);
-          else
+          } else
             throw new Error(
               `Field instruction of ${field} was not handled in the remove operation`,
             );
