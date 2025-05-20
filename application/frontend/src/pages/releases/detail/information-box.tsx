@@ -139,11 +139,10 @@ export const InformationBox: React.FC<Props> = ({
           <div className="collapse-compact collapse-title">
             See details of application
           </div>
-          <div className="collapse-content">
+          <div className="collapse-content prose">
             {releaseData.applicationDacDetails && (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                className="prose"
                 children={releaseData.applicationDacDetails}
               />
             )}
