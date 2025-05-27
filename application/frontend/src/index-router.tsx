@@ -212,12 +212,12 @@ export function IndexRouter({ features }: IndexRouterProps) {
           <Route path={`account`} element={<AccountPage />} />
           <Route path={`users`} element={<UsersDashboardPage />} />
 
-          {/* <Route path={`copies`}>
+          <Route path={`copies`}>
             <Route index element={<CopiesDashboardPage />} />
             <Route path={`:copyExecutionArn`}>
               <Route index element={<CopiesDetailPage />} />
             </Route>
-          </Route> */}
+          </Route>
 
           <Route path={`audit-events`} element={<AuditEventsPage />} />
 

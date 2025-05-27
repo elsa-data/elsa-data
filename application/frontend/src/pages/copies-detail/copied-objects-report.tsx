@@ -7,6 +7,7 @@ import { usePageSizer } from "../../hooks/page-sizer";
 import { CopySummaryEntry } from "../../../../backend/src/business/services/copy-service.ts";
 import { fileSize } from "humanize-plus";
 import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 type CopiedObjectTableProps = {
   copyExecutionArn: string;
@@ -26,18 +27,18 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
   // our internal state for which page we are on
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const copySummaryHeaderOptions = trpc.copyService;
-  const copySummaryHeaderQuery =
-    trpcOld.copyService.getCopiedReportHeader.useQuery({
+  const copySummaryHeaderOptions =
+    trpc.copyService.getCopiedReportHeader.queryOptions({
       stepsExecutionArn: props.copyExecutionArn,
     });
+  const copySummaryHeaderQuery = useQuery(copySummaryHeaderOptions);
 
-  const copySummaryRowsQuery = trpcOld.copyService.getCopiedReportRows.useQuery(
-    {
+  const copySummaryRowsOptions =
+    trpc.copyService.getCopiedReportRows.queryOptions({
       stepsExecutionArn: props.copyExecutionArn,
       page: currentPage,
-    },
-  );
+    });
+  const copySummaryRowsQuery = useQuery(copySummaryRowsOptions);
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
 
@@ -52,9 +53,6 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
         </th>
         <th scope="col" className="table-cell">
           Copy Mode
-        </th>
-        <th scope="col" className="table-cell text-right">
-          Checksums
         </th>
       </tr>
     );
@@ -82,13 +80,10 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
               "font-normal",
             )}
           >
-            {row.elapsed_seconds > 0 &&
-              (
-                row.bytes_transferred /
-                row.elapsed_seconds /
-                1024 /
-                1024
-              ).toFixed(2)}{" "}
+            {row.elapsedSeconds > 0 &&
+              (row.bytesTransferred / row.elapsedSeconds / 1024 / 1024).toFixed(
+                2,
+              )}{" "}
             MiB/s
           </td>
 
@@ -100,18 +95,7 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
               "font-normal",
             )}
           >
-            {row.copy_mode}
-          </td>
-
-          <td
-            className={classNames(
-              baseColumnClasses,
-              "text-left",
-              "pl-4",
-              "font-normal",
-            )}
-          >
-            {row.reason?.kind} {row.reason?.value}
+            {row.copyMode}
           </td>
         </tr>
       );
@@ -129,22 +113,32 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
       {copySummaryHeaderQuery.isSuccess && (
         <p className="prose mb-4 text-sm text-gray-500">
           <p>
-            Time taken = {copySummaryHeaderQuery.data.timeTakenSeconds} seconds
+            Wall clock time taken ={" "}
+            {copySummaryHeaderQuery.data.wallClockTimeTakenSeconds} seconds
           </p>
           <p>
             Amount transferred ={" "}
             {fileSize(copySummaryHeaderQuery.data.totalBytesTransferred)}
           </p>
           <p>
-            Overall rate ={" "}
+            Wall clock rate ={" "}
             {(
               copySummaryHeaderQuery.data.totalBytesTransferred /
-              copySummaryHeaderQuery.data.timeTakenSeconds /
+              copySummaryHeaderQuery.data.wallClockTimeTakenSeconds /
               1024 /
               1024 /
               1024
             ).toFixed(2)}{" "}
             GiB/s
+          </p>
+          <p>
+            Average transfer rate ={" "}
+            {(
+              copySummaryHeaderQuery.data.averageTransferSpeed /
+              1024 /
+              1024
+            ).toFixed(2)}{" "}
+            MiB/s
           </p>
         </p>
       )}

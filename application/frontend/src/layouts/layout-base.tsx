@@ -2,7 +2,7 @@ import React, { PropsWithChildren, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useLoggedInUser } from "../providers/logged-in-user-provider";
 import { LayoutBaseHeaderUser } from "./layout-base-header-user";
-import { ErrorBoundary, OfflineAlert } from "../components/errors";
+import { ErrorBoundary } from "../components/errors";
 import { LayoutBaseFooter } from "./layout-base-footer";
 import { useEnvRelay } from "../providers/env-relay-provider";
 
@@ -142,7 +142,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                       )}
                     </li>
                   )}
-                  {/*{user.isAllowedCreateRelease && (
+                  {user.isAllowedCreateRelease && (
                     <li className="my-2 md:my-0">
                       {navLink(
                         "/copies",
@@ -152,7 +152,7 @@ export const LayoutBase: React.FC<PropsWithChildren<Props>> = () => {
                         "hover:border-primary-focus",
                       )}
                     </li>
-                  )}*/}
+                  )}
                   <li className="my-2 md:my-0">
                     {navLink(
                       "/users",

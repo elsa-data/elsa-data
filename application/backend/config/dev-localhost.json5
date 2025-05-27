@@ -7,6 +7,7 @@
     clientId: "aclientid",
     clientSecret: "abc",
   },
+  serviceDiscoveryNamespace: "umccr",
   httpHosting: {
     // the security of our localhost dev cookies is not so important - for the real deployments
     // we need to get these secrets from a real secret source
