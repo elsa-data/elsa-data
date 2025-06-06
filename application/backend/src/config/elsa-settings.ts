@@ -32,7 +32,11 @@ export type ElsaSettings = {
   // the settings for our web server (cookies, ports etc)
   httpHosting: HttpHostingType;
 
-  oidc?: Omit<OidcType, "issuerUrl"> & { issuer?: Issuer };
+  oidc?: Pick<OidcType, "clientId" | "clientSecret"> & { issuer?: Issuer };
+
+  oidcSecondary?: Pick<OidcType, "clientId" | "clientSecret"> & {
+    issuer?: Issuer;
+  };
 
   // selectively switch on/off functionality
   feature?: FeatureType;

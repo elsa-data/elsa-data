@@ -13,6 +13,18 @@ export const OidcSchema = z.object({
     .string()
     .describe("The client secret of the OIDC issuer")
     .brand<Sensitive>(),
+  secondaryIssuerUrl: z.optional(
+    z.string().describe("The URL of the OIDC issuer for authn"),
+  ),
+  secondaryClientId: z.optional(
+    z.string().describe("The client id registered with the OIDC issuer"),
+  ),
+  secondaryClientSecret: z.optional(
+    z
+      .string()
+      .describe("The client secret of the OIDC issuer")
+      .brand<Sensitive>(),
+  ),
 });
 
 export type OidcType = z.infer<typeof OidcSchema>;

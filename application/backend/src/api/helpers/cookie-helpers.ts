@@ -6,12 +6,14 @@ import {
   SESSION_OIDC_STATE_KEY_NAME,
   SESSION_USER_DB_OBJECT_KEY_NAME,
 } from "../auth/session-cookie-constants";
+import { SESSION_OIDC_FLOW_KEY_NAME } from "../auth/session-cookie-constants.ts";
 
 declare module "@fastify/secure-session" {
   interface SessionData {
     [SESSION_USER_DB_OBJECT_KEY_NAME]: AuthenticatedUserJsonType;
     [SESSION_OIDC_NONCE_KEY_NAME]: string;
     [SESSION_OIDC_STATE_KEY_NAME]: string;
+    [SESSION_OIDC_FLOW_KEY_NAME]: string;
   }
 }
 

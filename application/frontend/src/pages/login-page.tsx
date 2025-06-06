@@ -19,8 +19,23 @@ export const LoginPageOrRedirect: React.FC<Props> = ({ showDevTestLogin }) => {
   return (
     <div className="relative">
       <form action="/auth/login" method="POST" id="loginTriggerForm">
-        <button className="btn-neutral btn" type="submit">
-          Log in
+        <button className="btn-neutral btn btn-xl m-2" type="submit">
+          Log in (CILogon)
+        </button>
+      </form>
+      <form action="/auth/login2/petermac" method="POST" id="login2TriggerForm">
+        <button className="btn-neutral btn btn-xl m-2" type="submit">
+          Log in (AAF Peter Mac)
+        </button>
+      </form>
+      <form action="/auth/login2/unimelb" method="POST" id="login2TriggerForm">
+        <button className="btn-neutral btn btn-xl m-2" type="submit">
+          Log in (AAF Unimelb)
+        </button>
+      </form>
+      <form action="/auth/login2/all" method="POST" id="login2TriggerForm">
+        <button className="btn-neutral btn btn-xl m-2" type="submit">
+          Log in (AAF All)
         </button>
       </form>
       {showDevTestLogin && (

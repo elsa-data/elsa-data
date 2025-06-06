@@ -16,6 +16,7 @@ import {
 } from "../shared/constants-routes";
 import { addTestUserRoutesAndActualUsers } from "./api-auth-routes-test-user-helper";
 import {
+  SESSION_OIDC_FLOW_KEY_NAME,
   SESSION_OIDC_NONCE_KEY_NAME,
   SESSION_OIDC_STATE_KEY_NAME,
   SESSION_USER_DB_OBJECT_KEY_NAME,
@@ -50,6 +51,58 @@ function createClient(settings: ElsaSettings, redirectUri: string) {
   });
 }
 
+function createSecondaryClient(settings: ElsaSettings, redirectUri: string) {
+  // we allow the absence of settings to silently go through - but will display
+  // a proper exception if the undefined BaseClient is attempted to be used in practice
+  if (
+    !settings.oidcSecondary ||
+    !settings.oidcSecondary.issuer ||
+    !settings.oidcSecondary.clientId ||
+    !settings.oidcSecondary.clientSecret
+  )
+    return undefined;
+
+  return new settings.oidcSecondary.issuer.Client({
+    client_id: settings.oidcSecondary.clientId,
+    client_secret: settings.oidcSecondary.clientSecret,
+    redirect_uris: [redirectUri],
+    response_types: ["code"],
+    token_endpoint_auth_method: "client_secret_post",
+  });
+}
+
+function createSessionFlowCookies(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  flowId: string,
+) {
+  // before changing please read https://danielfett.de/2020/05/16/pkce-vs-nonce-equivalent-or-not/
+  // note though we are using state rather than the newer PKCE
+  // save a nonce and state
+  const nonce = generators.nonce();
+  const state = generators.state();
+  cookieBackendSessionSetKeyValue(
+    request,
+    reply,
+    SESSION_OIDC_STATE_KEY_NAME,
+    state,
+  );
+  cookieBackendSessionSetKeyValue(
+    request,
+    reply,
+    SESSION_OIDC_NONCE_KEY_NAME,
+    nonce,
+  );
+  cookieBackendSessionSetKeyValue(
+    request,
+    reply,
+    SESSION_OIDC_FLOW_KEY_NAME,
+    flowId,
+  );
+
+  return { nonce, state };
+}
+
 /**
  * Register all routes that initiate actions in the authz systems.
  *
@@ -69,35 +122,18 @@ export const apiAuthRoutes = async (
 
   const auditLogService = opts.container.resolve(AuditEventService);
 
-  const client = createClient(settings, opts.redirectUri);
-
   // the login route is the route posted to by the client to initiate a login
   // it constructs the appropriate auth url (as known to the backend only)
   // and sends it back to the client as a redirect to start the oidc flow
   fastify.post("/login", async (request, reply) => {
+    const client = createClient(settings, opts.redirectUri);
+
     if (!client)
       throw new Error(
         "OIDC client not configured so cannot proceed with an OIDC login flow",
       );
 
-    // before changing please read https://danielfett.de/2020/05/16/pkce-vs-nonce-equivalent-or-not/
-    // note though we are using state rather than the newer PKCE
-
-    // save a nonce and state
-    const nonce = generators.nonce();
-    const state = generators.state();
-    cookieBackendSessionSetKeyValue(
-      request,
-      reply,
-      SESSION_OIDC_STATE_KEY_NAME,
-      state,
-    );
-    cookieBackendSessionSetKeyValue(
-      request,
-      reply,
-      SESSION_OIDC_NONCE_KEY_NAME,
-      nonce,
-    );
+    const { nonce, state } = createSessionFlowCookies(request, reply, "1");
 
     const oidcParams = {
       scope: "openid email profile",
@@ -110,6 +146,47 @@ export const apiAuthRoutes = async (
     logger.info(
       { ...oidcParams, redirectUrl },
       `${FILENAME_FOR_LOGGING}: OIDC flow start`,
+    );
+
+    reply.redirect(redirectUrl);
+  });
+
+  fastify.post("/login2/:org", async (request, reply) => {
+    const client = createSecondaryClient(settings, opts.redirectUri);
+
+    if (!client)
+      throw new Error(
+        "OIDC secondary client not configured so cannot proceed with an OIDC login flow",
+      );
+
+    const { nonce, state } = createSessionFlowCookies(request, reply, "2");
+
+    const oidcParams: Record<string, string> = {
+      scope: "openid email profile",
+      nonce: nonce,
+      state: state,
+    };
+
+    // if we don't have a param or we don't match an org we know - then we just don't fill in the
+    // entityId and AAF will provide an org picker as per normal
+    if (request.params && (request.params as any)["org"]) {
+      switch ((request.params as any)["org"]) {
+        case "petermac":
+          oidcParams["entityID"] =
+            "https://aaftest.petermac.org/idp/shibboleth";
+          break;
+        case "unimelb":
+          oidcParams["entityID"] =
+            "https://idp-test.unimelb.edu.au/idp/shibboleth";
+          break;
+      }
+    }
+
+    const redirectUrl = client.authorizationUrl(oidcParams);
+
+    logger.info(
+      { ...oidcParams, redirectUrl },
+      `${FILENAME_FOR_LOGGING}: OIDC secondary flow start`,
     );
 
     reply.redirect(redirectUrl);
@@ -180,12 +257,38 @@ export const callbackRoutes = async (
   const { settings } = getServices(opts.container);
   const userService = opts.container.resolve(UserService);
 
-  const client = createClient(settings, opts.redirectUri);
-
   // the cb (callback) route is the route that is redirected to as part of the OIDC flow
   // it expects a 'code' parameter on the URL and uses that to get a token set
   // from the OIDC flow
   fastify.get("/", async (request, reply) => {
+    const flow = request.session.get(SESSION_OIDC_FLOW_KEY_NAME);
+
+    if (!flow)
+      throw new Error(
+        "OIDC flow callback reached but no session state defined the flow",
+      );
+
+    const state = request.session.get(SESSION_OIDC_STATE_KEY_NAME);
+
+    if (!state)
+      throw new Error(
+        "OIDC flow callback reached but no session state defined the state",
+      );
+
+    const nonce = request.session.get(SESSION_OIDC_NONCE_KEY_NAME);
+
+    if (!nonce)
+      throw new Error(
+        "OIDC flow callback reached but no session state defined the nonce",
+      );
+
+    // we create different clients based on which flow we are in
+    // TODO: create a more robust mechanism for naming flows
+    const client =
+      flow === "1"
+        ? createClient(settings, opts.redirectUri)
+        : createSecondaryClient(settings, opts.redirectUri);
+
     if (!client)
       throw new Error(
         "OIDC client not configured so cannot proceed with an OIDC login flow",
@@ -194,11 +297,13 @@ export const callbackRoutes = async (
     // extract raw params from the request
     const params = client.callbackParams(request.raw);
 
-    const state = request.session.get(SESSION_OIDC_STATE_KEY_NAME);
-    const nonce = request.session.get(SESSION_OIDC_NONCE_KEY_NAME);
-
     request.log.info(
-      { ...params, stateFromSession: state, nonceFromSession: nonce },
+      {
+        ...params,
+        stateFromSession: state,
+        nonceFromSession: nonce,
+        flowFromSession: flow,
+      },
       `${FILENAME_FOR_LOGGING}: OIDC flow callback parameters`,
     );
 

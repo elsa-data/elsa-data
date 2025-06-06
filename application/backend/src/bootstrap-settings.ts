@@ -38,6 +38,33 @@ export async function oidcConfigurationToSettings(
   };
 }
 
+/**
+ * Enrich the raw OIDC configuration by creating an Issuer
+ * instance.
+ *
+ * @param oidcConfiguration
+ */
+export async function oidcSecondaryConfigurationToSettings(
+  oidcConfiguration?: OidcType,
+) {
+  if (!oidcConfiguration) return undefined;
+
+  if (!oidcConfiguration.secondaryClientId) return undefined;
+
+  if (!oidcConfiguration.secondaryClientSecret) return undefined;
+
+  let issuer: Issuer | undefined = undefined;
+
+  if (oidcConfiguration.secondaryIssuerUrl) {
+    issuer = await Issuer.discover(oidcConfiguration.secondaryIssuerUrl);
+  } else return undefined;
+
+  return {
+    issuer: issuer,
+    clientId: oidcConfiguration.secondaryClientId,
+    clientSecret: oidcConfiguration.secondaryClientSecret,
+  };
+}
 export async function bootstrapSettings(
   config: ElsaConfigurationType,
 ): Promise<ElsaSettings> {
@@ -135,6 +162,7 @@ export async function bootstrapSettings(
       isDevelopment || isLocalhost,
       config.oidc,
     ),
+    oidcSecondary: await oidcSecondaryConfigurationToSettings(config.oidc),
     feature: _.get(config, "feature"),
     aws: hasAws
       ? {
