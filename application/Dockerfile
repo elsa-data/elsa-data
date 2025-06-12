@@ -19,7 +19,9 @@ RUN echo '{ \
     }' > package.json && npm install
 
 #
-# Database builder to create all generated files that require the install database
+# Database builder to create all generated schema related files that require an installed database
+# NOTE: the database here is used *only* for the purposes of generating schema related files
+#       it is not the actual database for the running system
 #
 FROM geldata/gel:6.7 AS gel-builder
 
@@ -36,8 +38,6 @@ COPY --from=node-deps /build .
 
 # gel needs the dbschema folder which has the schemas/migrations/queries
 COPY --chown=gel ./backend/dbschema/ dbschema/
-
-#     #
 
 # NOTE: the & and && here has some pretty subtle interaction - be careful working on this
 # NOTE: the deliberate absence of .ts on the queries generated 'file' (is auto added by generate)
@@ -67,27 +67,44 @@ RUN gel-server-6 \
     --tls-security insecure
 
 #
-# Application builder makes the frontend and backend
+# Application builder makes the frontend and backend with a stripped down directory structure
 #
 FROM node:22-bookworm  AS app-builder
 
 WORKDIR /build
 
-# this doesn't affect the image size - but does affect the time taken to build - possibly
-# can fix - we don't use Docker in dev though so maybe it doesn't really matter
-COPY . .
+# bring in precisely everything we need to make our "deployed" directory structure
+COPY --from=gel-builder /build/dbschema/migrations/ /build/backend/dbschema/migrations/
+COPY --from=gel-builder /build/dbschema/edgeql-js/ /build/backend/dbschema/edgeql-js/
+COPY --from=gel-builder /build/dbschema/interfaces.ts /build/backend/dbschema/
+COPY --from=gel-builder /build/dbschema/queries.ts /build/backend/dbschema/
+COPY backend/emails/ /build/backend/emails/
+COPY backend/locales/ /build/backend/locales/
+COPY backend/src/ /build/backend/src/
+COPY backend/bun.lock /build/backend/
+COPY backend/bunfig.reflect-metadata-import.js /build/backend/
+COPY backend/bunfig.toml /build/backend/
+COPY backend/package.json /build/backend/
+COPY backend/tsconfig.json /build/backend/
 
-ADD https://github.com/oven-sh/bun/releases/latest/download/bun-linux-aarch64.zip bun.zip
+# install packages for the backend using our chosen runtime (bun)
+
+
+ADD https://github.com/oven-sh/bun/releases/download/bun-v1.2.16/bun-linux-aarch64.zip bun.zip
 RUN unzip bun.zip
+RUN : \
+ && cd backend \
+ && ../bun-linux-aarch64/bun install
 
-RUN cd backend && ../bun-linux-aarch64/bun install
-RUN cd frontend && npm ci
-
-# add in an extra compile step - which whilst not needed for runtime does help keep
+# add in a proper compile step - which whilst not needed for runtime does help keep
 # crazy errors away (bun does not actually do type checking)
-# RUN : \
-#  && cd backend && ../bun-linux-aarch64/bun x tsc --noEmit
+RUN : \
+ && cd backend \
+ && ../bun-linux-aarch64/bun x tsc --noEmit
 
+# build the frontend
+COPY frontend/ /build/frontend/
+RUN cd frontend && npm ci
 RUN : \
   && cd frontend \
   && npm run prod:build
@@ -102,7 +119,7 @@ RUN : \
 # https://github.com/geldata/gel-docker/blob/master/Dockerfile
 # so our choice of FROM image is somewhat constrained to something vaguelly compatible
 #
-FROM oven/bun:1.2-debian
+FROM debian:bookworm-slim
 
 # we want to embed into the image environment immutable tags passed in by the build environment
 # this is the 'semantic' version as set by developers i.e. 1.0.3
@@ -124,28 +141,17 @@ EXPOSE 80
 
 WORKDIR /a
 
-# we use a matching CLI binary from our builder - and keep it for some admin level activity (migrations etc)
-# NOTE this is a path that is just referred to in some of the entrypoint - so this is just expected to exist for
-# some things to function
-# TODO add a startup check the make sure it does exist
-COPY --from=gel-builder /usr/bin/edgedb /a/
+# the bun runtime
+COPY --from=app-builder /build/bun-linux-aarch64/bun .
 
+# the fully built application
 COPY --from=app-builder /build/backend/ /a/
 
-# bring in needed configs and migrations
-# NOTE these need to be relative to the current directory of where node launches from (not relative to entrypoint src)
-COPY --from=gel-builder /build/dbschema/migrations/ /a/dbschema/migrations/
-COPY --from=gel-builder /build/dbschema/edgeql-js/ /a/dbschema/edgeql-js/
-COPY --from=gel-builder /build/dbschema/interfaces.ts /a/dbschema/
-COPY --from=gel-builder /build/dbschema/queries.ts /a/dbschema/
+# we bring in a matching Gel CLI binary from our builder - and keep it for some
+# admin level activity (runnings migrations etc)
+# NOTE this is a path that is just referred to in the code of the entrypoint - so this is just expected to exist for
+# some things to function
+# TODO add a startup check the make sure it does exist
+COPY --from=gel-builder /usr/bin/gel /a/
 
-#COPY --from=app-builder /build/backend/locales/ /a/locales/
-#COPY --from=app-builder /build/backend/emails/ /a/emails/
-
-# the front end bundled up as per normal
-#COPY --from=app-builder /build/backend/client/ /a/client/
-
-
-# NOTE a feature of using node directly as the entrypoint is that container signal handling
-# correctly passes SIGTERM to the Fastify server which can then shut down gracefully
-ENTRYPOINT [ "bun", "src/entrypoint.ts" ]
+ENTRYPOINT [ "/a/bun", "src/entrypoint.ts" ]
