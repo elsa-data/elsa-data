@@ -94,7 +94,7 @@ ADD https://github.com/oven-sh/bun/releases/download/bun-v1.2.16/bun-linux-aarch
 RUN unzip bun.zip
 RUN : \
  && cd backend \
- && ../bun-linux-aarch64/bun install
+ && ../bun-linux-aarch64/bun install --frozen-lockfile
 
 # add in a proper compile step - which whilst not needed for runtime does help keep
 # crazy errors away (bun does not actually do type checking)

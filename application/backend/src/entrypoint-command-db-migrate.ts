@@ -1,5 +1,5 @@
-import { executeEdgeCli } from "./entrypoint-helper";
 import type { Logger } from "pino";
+import { executeGelCli } from "./entrypoint-helper";
 
 export const DB_MIGRATE_COMMAND = "db-migrate";
 
@@ -8,7 +8,7 @@ export const DB_MIGRATE_COMMAND = "db-migrate";
  */
 export async function commandDbMigrate(logger: Logger): Promise<number> {
   try {
-    await executeEdgeCli(logger, ["migration", "apply"]);
+    await executeGelCli(logger, ["migration", "apply"]);
 
     return 0;
   } catch (e) {

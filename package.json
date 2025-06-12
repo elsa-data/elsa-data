@@ -1,14 +1,12 @@
 {
   "name": "elsa-data",
   "scripts": {
-    "install:backend": "cd application/backend && npm install",
-    "install:elsa-constants": "cd application/common/elsa-constants && npm install",
-    "install:elsa-types": "cd application/common/elsa-types && npm install",
+    "install:backend": "cd application/backend && bun install",
     "install:frontend": "cd application/frontend && npm install",
     "install:e2e": "cd e2e && npm install",
     "postinstall": "run-p install:*",
-    "migrate-db": "cd application/backend && edgedb migration create || true && edgedb migrate",
-    "init-db": "cd application/backend && edgedb project init",
+    "migrate-db": "cd application/backend && gel migration create || true && gel migrate",
+    "init-db": "cd application/backend && gel project init",
     "edgetypes": "cd application/backend && npm run edgetypes",
     "frontend": "cd application/frontend && npm run dev:build",
     "backend:watch:mac": "cd application/backend && npm run watch:mac",
