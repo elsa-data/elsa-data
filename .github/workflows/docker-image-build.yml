@@ -19,14 +19,14 @@ on:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     # needs permissions to write to the github docker registry
     permissions: write-all
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
 
       - name: Docker Meta
         id: meta
