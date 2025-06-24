@@ -1,5 +1,5 @@
-import { executeEdgeCli } from "./entrypoint-helper";
 import type { Logger } from "pino";
+import { executeGelCli } from "./entrypoint-helper";
 
 export const DB_WIPE_COMMAND = "db-wipe";
 
@@ -14,7 +14,7 @@ export async function commandDbWipe(logger: Logger): Promise<number> {
   }
 
   try {
-    await executeEdgeCli(logger, ["database", "wipe", "--non-interactive"]);
+    await executeGelCli(logger, ["database", "wipe", "--non-interactive"]);
   } catch (e) {
     logger.fatal(e, "Database wipe");
 

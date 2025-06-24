@@ -175,22 +175,22 @@ export function redactConfig(obj: any) {
 }
 
 /**
- * Run the `edgedb` CLI command with the given arguments. Deletes a set of
+ * Run the `gel` CLI command with the given arguments. Deletes a set of
  * keys from the environment if need be (this can be needed in order to
- * convince EdgeDb that it is *not* already configured for a particular db).
+ * convince Gel that it is *not* already configured for a particular db).
  *
- * @param logger
- * @param args
- * @param deleteEnvKeys
+ * @param logger a logger instance
+ * @param args the args to pass to the Gel CLI invoke
+ * @param deleteEnvKeys a list of environment variables to delete before invoke
  */
-export async function executeEdgeCli(
+export async function executeGelCli(
   logger: Logger,
   args: string[],
   deleteEnvKeys: string[] = [],
 ) {
   const execFilePromise = promisify(execFile);
 
-  logger.debug(`EdgeDb CLI invoke args = ${args.join(", ")}`);
+  logger.debug(`Gel CLI invoke args = ${args.join(", ")}`);
 
   const newEnv = { ...process.env };
 
@@ -198,14 +198,15 @@ export async function executeEdgeCli(
     delete newEnv[ek];
   }
 
-  const promiseInvoke = execFilePromise("/a/edgedb", args, {
+  // note: this path is hardcoded and is dependent on the way the Docker image is built
+  const promiseInvoke = execFilePromise("/a/gel", args, {
     maxBuffer: 1024 * 1024 * 64,
     env: newEnv,
   });
 
   const { stdout, stderr } = await promiseInvoke;
 
-  logger.debug(`EdgeDb CLI exit code = ${promiseInvoke.child.exitCode}`);
+  logger.debug(`Gel CLI exit code = ${promiseInvoke.child.exitCode}`);
 
   if (stdout) {
     stdout.split("\n").forEach((l) => {

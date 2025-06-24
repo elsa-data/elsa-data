@@ -1,5 +1,5 @@
-import { executeEdgeCli } from "./entrypoint-helper";
 import type { Logger } from "pino";
+import { executeGelCli } from "./entrypoint-helper";
 
 export const DB_CREATE_COMMAND = "db-create";
 
@@ -9,12 +9,12 @@ export const DB_CREATE_COMMAND = "db-create";
 export async function commandDbCreate(logger: Logger): Promise<number> {
   // the database is fixed by the deployment - but may not actually
   // exist in the instance
-  // so we get its name and tell edgedb to create
-  const dbName = process.env["EDGEDB_DATABASE"];
+  // so we get its name and tell gel to create
+  const dbName = process.env["GEL_DATABASE"];
 
   if (!dbName) {
-    logger.fatal("edgedb 'database create' failed");
-    logger.fatal("No EDGEDB_DATABASE environment variable");
+    logger.fatal("gel 'database create' failed");
+    logger.fatal("No GEL_DATABASE environment variable");
 
     return 1;
   }
@@ -22,10 +22,10 @@ export async function commandDbCreate(logger: Logger): Promise<number> {
   try {
     // we need to delete the EDGE DB database env variables - as the edge db CLI tries to connect
     // to it before then trying to create it
-    await executeEdgeCli(
+    await executeGelCli(
       logger,
       ["database", "create", dbName],
-      ["EDGEDB_DATABASE"],
+      ["GEL_DATABASE"],
     );
 
     return 0;
