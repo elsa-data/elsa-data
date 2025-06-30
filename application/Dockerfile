@@ -71,6 +71,9 @@ RUN gel-server-6 \
 #
 FROM node:22-bookworm  AS app-builder
 
+ARG TARGETARCH
+ARG BUN_VERSION=1.2.16
+
 WORKDIR /build
 
 # bring in precisely everything we need to make our "deployed" directory structure
@@ -89,18 +92,20 @@ COPY backend/tsconfig.json /build/backend/
 
 # install packages for the backend using our chosen runtime (bun)
 
+# download specific versioned binaries into files matching Docker $TARGETARCH naming format
+ADD https://github.com/oven-sh/bun/releases/download/bun-v$BUN_VERSION/bun-linux-x64.zip bun-amd64.zip
+ADD https://github.com/oven-sh/bun/releases/download/bun-v$BUN_VERSION/bun-linux-aarch64.zip bun-arm64.zip
 
-ADD https://github.com/oven-sh/bun/releases/download/bun-v1.2.16/bun-linux-aarch64.zip bun.zip
-RUN unzip bun.zip
+RUN unzip -j bun-$TARGETARCH.zip -d bun-unzipped
 RUN : \
  && cd backend \
- && ../bun-linux-aarch64/bun install --frozen-lockfile
+ && ../bun-unzipped/bun install --frozen-lockfile
 
 # add in a proper compile step - which whilst not needed for runtime does help keep
 # crazy errors away (bun does not actually do type checking)
 RUN : \
  && cd backend \
- && ../bun-linux-aarch64/bun x tsc --noEmit
+ && ../bun-unzipped/bun x tsc --noEmit
 
 # build the frontend
 COPY frontend/ /build/frontend/
@@ -142,7 +147,7 @@ EXPOSE 80
 WORKDIR /a
 
 # the bun runtime
-COPY --from=app-builder /build/bun-linux-aarch64/bun .
+COPY --from=app-builder /build/bun-unzipped/bun .
 
 # the fully built application
 COPY --from=app-builder /build/backend/ /a/

@@ -66,17 +66,19 @@ jobs:
         id: build-push
         uses: docker/build-push-action@v6.18.0
         with:
+          # build push action can source using git context - meaning we don't have to have a check-out step
           context: "{{defaultContext}}:application"
+          # try to use layers in our actions for caching
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
-          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
           build-args: |
             ELSA_DATA_VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
             ELSA_DATA_BUILT=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             ELSA_DATA_REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+          outputs: type=image,push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest
         run: |
