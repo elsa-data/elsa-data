@@ -63,7 +63,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push by digest
-        id: build-push
+        id: build
         uses: docker/build-push-action@v6.18.0
         with:
           # build push action can source using git context - meaning we don't have to have a check-out step
