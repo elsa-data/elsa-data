@@ -25,7 +25,7 @@ on:
 jobs:
   docker-build:
     # runs-on: ubuntu-24.04-arm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
 
     # needs permissions to write to the github docker registry
     permissions: write-all
