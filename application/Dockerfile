@@ -5,7 +5,7 @@
 # Note unlike the gel-builder, we have a functional npm which is why we do this here
 # Based on techniques from https://discord.com/channels/841451783728529451/955887885557579788/955946426322522153
 #
-FROM --platform=linux/amd64 node:22-bookworm AS node-deps
+FROM --platform=linux/arm64 node:22-bookworm AS node-deps
 
 WORKDIR /build
 
@@ -23,7 +23,7 @@ RUN echo '{ \
 # NOTE: the database here is used *only* for the purposes of generating schema related files
 #       it is not the actual database for the running system
 #
-FROM --platform=linux/amd64 geldata/gel:6.7 AS gel-builder
+FROM --platform=linux/arm64 geldata/gel:6.7 AS gel-builder
 
 # bring in the compatible node binary
 COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
