@@ -7,17 +7,6 @@
 ARG GEL_VERSION=6.7
 ARG BUN_VERSION=1.2.16
 
-# set by the buildx
-ARG TARGETARCH
-
-# we want to embed into the image environment immutable tags passed in by the build environment
-# this is the 'semantic' version as set by developers i.e. 1.0.3
-ARG ELSA_DATA_VERSION
-# this is the literal timestamp of building
-ARG ELSA_DATA_BUILT
-# this is the github revision tag that precisely indicates the commit trigger
-ARG ELSA_DATA_REVISION
-
 #
 # Sources Nodejs binaries without having to package install them (ok as long as both images shared common Slim base)
 # Also install the specific Gel packages we use
@@ -42,7 +31,7 @@ RUN echo '{ \
 # NOTE: the database here is used *only* for the purposes of generating schema related files
 #       it is not the actual database for the running system
 #
-FROM geldata/gel:$GEL_VERSION AS gel-builder
+FROM geldata/gel:${GEL_VERSION} AS gel-builder
 
 # bring in the compatible node binary
 COPY --from=node-deps /usr/local/bin/node /usr/local/bin/node
@@ -90,6 +79,10 @@ RUN gel-server-6 \
 #
 FROM node:22-bookworm  AS app-builder
 
+# set by the buildx and needed for chosing the right bun executable
+ARG TARGETARCH
+# passed in version pin - see top of Dockerfile
+ARG BUN_VERSION
 
 WORKDIR /build
 
@@ -144,6 +137,16 @@ RUN : \
 FROM debian:bookworm-slim
 
 # put passed in build args into the environment for use by the running server
+
+
+# we want to embed into the image environment immutable tags passed in by the build environment
+# this is the 'semantic' version as set by developers i.e. 1.0.3
+ARG ELSA_DATA_VERSION
+# this is the literal timestamp of building
+ARG ELSA_DATA_BUILT
+# this is the github revision tag that precisely indicates the commit trigger
+ARG ELSA_DATA_REVISION
+
 RUN ["/bin/bash", "-c", ": ${ELSA_DATA_VERSION:?Build argument needs to be set and not null.}"]
 RUN ["/bin/bash", "-c", ": ${ELSA_DATA_BUILT:?Build argument needs to be set and not null.}"]
 RUN ["/bin/bash", "-c", ": ${ELSA_DATA_REVISION:?Build argument needs to be set and not null.}"]
@@ -166,6 +169,6 @@ COPY --from=app-builder /build/backend/ /a/
 # NOTE this is a path that is just referred to in the code of the entrypoint - so this is just expected to exist for
 # some things to function
 # TODO add a startup check into elsa to make sure it does exist
-COPY --from=geldata/gel:$GEL_VERSION /usr/bin/gel /a/
+COPY --from=gel-builder /usr/bin/gel /a/
 
 ENTRYPOINT [ "/a/bun", "src/entrypoint.ts" ]
