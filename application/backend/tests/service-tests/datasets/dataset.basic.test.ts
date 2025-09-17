@@ -1,15 +1,15 @@
-import { Client } from "gel";
 import assert from "assert";
+import { Client } from "gel";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { beforeEachCommon } from "../commons/dataset.common";
-import { registerTypes } from "../../test-dependency-injection.common";
-import { DatasetService } from "../../../src/business/services/dataset-service";
-import { TENG_URI } from "../../../src/test-data/dataset/insert-test-data-10g";
+import { DatasetService } from "../../../src/business/services/dataset/dataset-service";
 import {
   insert10C,
   TENC_URI,
 } from "../../../src/test-data/dataset/insert-test-data-10c";
 import { TENF_URI } from "../../../src/test-data/dataset/insert-test-data-10f-helpers";
+import { TENG_URI } from "../../../src/test-data/dataset/insert-test-data-10g";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { beforeEachCommon } from "../commons/dataset.common";
 
 let edgeDbClient: Client;
 let datasetService: DatasetService;

@@ -2,7 +2,7 @@ import { createServer } from "http";
 import { createHttpTerminator } from "http-terminator";
 import type { DependencyContainer } from "tsyringe";
 import { App } from "./app";
-import { DatasetService } from "./business/services/dataset-service";
+import { DatasetService } from "./business/services/dataset/dataset-service.ts";
 import { EmailService } from "./business/services/email-service";
 import { IPLookupService } from "./business/services/ip-lookup-service";
 import type { ElsaConfigurationType } from "./config/config-schema";

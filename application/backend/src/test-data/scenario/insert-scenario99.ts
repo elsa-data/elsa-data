@@ -10,7 +10,7 @@ import { blankTestData } from "../util/blank-test-data";
 /**
  * Inserting a set of data in scenario 99.
 
- * This scenario is essentially empty part from users to login.
+ * This scenario is essentially empty apart from users to login.
  *
  * @param dc
  */

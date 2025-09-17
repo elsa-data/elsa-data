@@ -24,6 +24,7 @@ import { insertRelease5 } from "../release/insert-test-data-release5";
 import { insertUser4 } from "../user/insert-user4";
 import { blankTestData } from "../util/blank-test-data";
 // import { S3IndexApplicationService } from "../../business/services/australian-genomics/s3-index-import-service.xts";
+import { DevLoader } from "../../business/services/dataset/loader/dev-loader.ts";
 import { UserService } from "../../business/services/user-service";
 import {
   SMARTIE_DESCRIPTION,
@@ -127,6 +128,13 @@ export async function insertScenario1(dc: DependencyContainer) {
   const ten_c_uri = await insert10C(dc);
   const ten_g_uri = await insert10G(dc);
   const gs_uri = await insertGs(dc);
+
+  const devLoader = dc.resolve(DevLoader);
+
+  await devLoader.synchroniseDataset(
+    edgeDbClient,
+    "urn:doi:10.example-not-real/kaos",
+  );
 
   // Some blank DB records inserted to see how it looks like
   for (const dbProp of BLANK_DB_PROPS) {
