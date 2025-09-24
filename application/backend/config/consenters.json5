@@ -1,0 +1,11 @@
+{
+  consenters: [
+    {
+      id: "ctrldev",
+      type: "ctrl",
+      description: "CTRL dev instance at Garvan",
+      url: "<willbereplaced>",
+      authorizationHeaderValue: "<willbereplaced>",
+    },
+  ],
+}

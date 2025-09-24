@@ -14,12 +14,12 @@ import {
   insertArtifactBamQuery,
 } from "../../../src/business/db/lab-queries";
 import { fileByUrlQuery } from "../../../src/business/db/storage-queries";
+import * as awsHelper from "../../../src/business/services/aws/aws-helper";
+import { DatasetService } from "../../../src/business/services/dataset/dataset-service";
 import {
   FileGroupType,
   S3IndexApplicationService,
-} from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
-import * as awsHelper from "../../../src/business/services/aws/aws-helper";
-import { DatasetService } from "../../../src/business/services/dataset/dataset-service";
+} from "../../../src/business/services/dataset/loader/s3-index-import-service.xts";
 import { DatasetAustralianGenomicsDirectories } from "../../../src/config/config-schema-dataset";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
 import { registerTypes } from "../../test-dependency-injection.common";

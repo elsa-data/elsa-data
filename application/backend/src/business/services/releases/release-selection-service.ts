@@ -11,7 +11,6 @@ import {
 } from "../../../../dbschema/queries";
 import { createPagedResult } from "../../../api/helpers/pagination-helpers";
 import type { ElsaSettings } from "../../../config/elsa-settings";
-import type { DuoLimitationCodedType } from "../../../shared/schemas-duo";
 import type {
   ReleaseCaseType,
   ReleaseDetailType,
@@ -28,6 +27,7 @@ import {
 } from "../../exceptions/release-selection";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
+import type { DuoLimitationCodedType } from "../consent/duo/duo-schemas.ts";
 import { collapseExternalIds, getReleaseInfo } from "../helpers";
 import { PermissionService } from "../permission-service";
 import { UserService } from "../user-service";

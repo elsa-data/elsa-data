@@ -3,8 +3,8 @@ import { mockClient } from "aws-sdk-client-mock";
 import assert from "node:assert";
 import { join } from "node:path";
 import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { S3IndexApplicationService } from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
 import { DatasetService } from "../../../src/business/services/dataset/dataset-service";
+import { S3IndexApplicationService } from "../../../src/business/services/dataset/loader/s3-index-import-service.xts";
 import { addMocksForFileSystem } from "../../../src/test-data/aws-mock/add-s3-mocks-for-filesystem";
 import {
   SMARTIE_DATASET_CONFIG,

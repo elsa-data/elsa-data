@@ -18,12 +18,14 @@ module consent {
 
     }
 
+    # consent statement as a DUO data use limitation JSON model
     type ConsentStatementDuo extending ConsentStatement {
         required property dataUseLimitation -> json;
     }
 
+    # consent statement as a dynamic DUO data use limitation JSON model (fetch dynamically)
     type ConsentStatementDynamicDuo extending ConsentStatement {
-        required property consentSystemIdentifier -> string;
+        required property consentSystemIdentifier -> str;
     }
 
 }

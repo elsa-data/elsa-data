@@ -1,9 +1,8 @@
 # synchronises the KAOS dataset
 
 WITH
-  doi := "10.example-not-real/kaos",
-
-  uri := "urn:doi:" ++ doi,
+  doi := <str>$datasetDoi,
+  uri := <str>$datasetUri,
   externalIdentifiers := [ (system:="DOI",value:=doi) ],
   description := "KAOS - a dataset for getting smart",
 
@@ -216,10 +215,25 @@ WITH
   cases := {
     (INSERT dataset::DatasetCase {
       externalIdentifiers := [ (system:="",value:="FAMILY-ABC") ],
+      # we have a static consent at the family level allowing
+      consent := (INSERT consent::Consent {
+        statements := {
+          (INSERT consent::ConsentStatementDuo {
+            dataUseLimitation := <json>(name := "named tuple", count := 2)
+          })
+        }
+      }),
       patients := {
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
           externalIdentifiers := [ (system:="",value:="A") ],
+          consent := (INSERT consent::Consent {
+            statements := {
+              (INSERT consent::ConsentStatementDynamicDuo {
+                consentSystemIdentifier := "PID-TYT-00000"
+              })
+            }
+          }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
                 externalIdentifiers := [ (system:="",value:="HG00096") ],

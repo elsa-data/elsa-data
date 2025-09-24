@@ -1,6 +1,5 @@
 {
-  // an ontoserver with MONDO terminology loaded
-  ontoFhirUrl: "https://onto.prod.umccr.org/fhir",
+  ontoFhirUrl: "https://api.healthterminologies.gov.au/integration/R4/fhir",
   releaseKeyPrefix: "R",
   ipLookup: { maxMindDbPath: "config/Geoacumen-Country.mmdb" },
   feature: {

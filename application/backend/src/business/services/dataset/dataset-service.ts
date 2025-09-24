@@ -14,11 +14,11 @@ import {
 import type { DatasetType } from "../../../config/config-schema-dataset.ts";
 import type { ElsaSettings } from "../../../config/elsa-settings.ts";
 import type { DatasetLightType } from "../../../shared/schemas-dataset.ts";
-import type { DuoLimitationCodedType } from "../../../shared/schemas-duo.ts";
 import { AuthenticatedUser } from "../../authenticated-user.ts";
 import { selectDatasetIdByDatasetUri } from "../../db/dataset-queries.ts";
 import { makeSystemlessIdentifierArray } from "../../db/helper.ts";
 import { AuditEventService } from "../audit-event-service.ts";
+import type { DuoLimitationCodedType } from "../consent/duo/duo-schemas.ts";
 
 @injectable()
 export class DatasetService {

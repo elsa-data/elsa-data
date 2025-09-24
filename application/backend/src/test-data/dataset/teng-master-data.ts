@@ -1,4 +1,4 @@
-import type { DuoLimitationCodedType } from "../../shared/schemas-duo";
+import type { DuoLimitationCodedType } from "../../business/services/consent/duo/duo-schemas.ts";
 
 /**
  * A master data structure that can represent in memory
