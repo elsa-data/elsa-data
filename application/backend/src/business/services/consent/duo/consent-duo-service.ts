@@ -19,11 +19,10 @@ import type {
 export type ConsentDuoContext = {
   now?: Date;
   diseaseIsA?: (
-    applicationSystem: string,
+    system: string,
     applicationCode: string,
-    consentedSystem: string,
     consentedCode: string,
-  ) => boolean;
+  ) => Promise<boolean>;
 };
 
 @injectable()
@@ -98,7 +97,11 @@ export class ConsentDuoService {
     // instead we just hand code
 
     // type check at a data level that this meets our definition of a limitation
-    if (!this.limitationChecker.Check(limitation)) return false;
+    // TODO: investigate and re-enable (if deemed needed)
+    if (!this.limitationChecker.Check(limitation))
+      throw new Error(
+        `->${JSON.stringify(limitation)}<- does not meet our DUO limitation schema`,
+      );
 
     const doModifierCheck = async () => {
       // it is ok for there to be no modifiers
@@ -107,7 +110,7 @@ export class ConsentDuoService {
       for (const m of limitation.modifiers) {
         // if *any* modifier is not met then overall consent fails
         if (
-          !(await this.testSingleConsentLimitation(
+          !(await this.testSingleConsentModifier(
             context,
             application,
             m as any,
@@ -139,12 +142,11 @@ export class ConsentDuoService {
           if (!application.disease) return false;
 
           if (
-            !context.diseaseIsA(
+            !(await context.diseaseIsA(
               limitation.diseaseSystem,
               application.disease,
-              limitation.diseaseSystem,
               limitation.diseaseCode,
-            )
+            ))
           )
             return false;
         } else {
@@ -184,7 +186,10 @@ export class ConsentDuoService {
     modifier: DuoModifierType,
   ): Promise<boolean> {
     // type check at a data level that this meets our definition of a modifier
-    if (!this.modifierChecker.Check(modifier)) return false;
+    if (!this.modifierChecker.Check(modifier))
+      throw new Error(
+        `->${JSON.stringify(modifier)}<- does not meet our DUO modifier schema`,
+      );
 
     return true;
   }

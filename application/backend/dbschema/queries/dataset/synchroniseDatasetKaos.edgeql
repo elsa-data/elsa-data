@@ -215,11 +215,17 @@ WITH
   cases := {
     (INSERT dataset::DatasetCase {
       externalIdentifiers := [ (system:="",value:="FAMILY-ABC") ],
-      # we have a static consent at the family level allowing
+      # we have static consents at this family level allowing only
+      # disease specific research
       consent := (INSERT consent::Consent {
         statements := {
           (INSERT consent::ConsentStatementDuo {
-            dataUseLimitation := <json>(name := "named tuple", count := 2)
+            # SNOMED hereditary auditory
+            dataUseLimitation := <json>(code := "DUO:0000007", diseaseSystem := "http://snomed.info/sct", diseaseCode := "362991006")
+          }),
+          (INSERT consent::ConsentStatementDuo {
+            # SNOMED hereditary visual
+            dataUseLimitation := <json>(code := "DUO:0000007", diseaseSystem := "http://snomed.info/sct", diseaseCode := "363343008")
           })
         }
       }),
@@ -227,6 +233,7 @@ WITH
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
           externalIdentifiers := [ (system:="",value:="A") ],
+          # patient A is hooked into the dynamic consent system
           consent := (INSERT consent::Consent {
             statements := {
               (INSERT consent::ConsentStatementDynamicDuo {
@@ -244,10 +251,27 @@ WITH
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "female",
           externalIdentifiers := [ (system:="",value:="B") ],
+          # patient B is hooked into the dynamic consent system
+          consent := (INSERT consent::Consent {
+            statements := {
+              (INSERT consent::ConsentStatementDynamicDuo {
+                consentSystemIdentifier := "PID-TYT-00001"
+              })
+            }
+          }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00097") ],
-                artifacts := bArtifacts
+              externalIdentifiers := [ (system:="",value:="HG00097") ],
+              # but B has a specific specimen level consent with no restrictions that will overrule all
+              consent := (INSERT consent::Consent {
+                statements := {
+                  (INSERT consent::ConsentStatementDuo {
+                    # no restrictions
+                    dataUseLimitation := <json>(code := "DUO:0000004")
+                  })
+                }
+              }),
+              artifacts := bArtifacts
             }
           )
         }),
@@ -269,6 +293,15 @@ WITH
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "female",
           externalIdentifiers := [ (system:="",value:="D") ],
+          # we have static consent at this patient allowing disease specific research
+          consent := (INSERT consent::Consent {
+            statements := {
+              (INSERT consent::ConsentStatementDuo {
+                # SNOMED hereditary endocrine
+                dataUseLimitation := <json>(code := "DUO:0000007", diseaseSystem := "http://snomed.info/sct", diseaseCode := "363104002")
+              })
+            }
+          }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
                 externalIdentifiers := [ (system:="",value:="HG00011") ],

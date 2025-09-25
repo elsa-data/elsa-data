@@ -1,4 +1,4 @@
-CREATE MIGRATION m1xfbplmnh5cczv4lynu5zzji6kqb4ivgpv6gwlnlck65utg3rxjxq
+CREATE MIGRATION m1j7iwxobulrwf5txjmogozxuk6ktfwoqxy3pxe7fpdd3ogtx3we2a
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -347,6 +347,9 @@ CREATE MIGRATION m1xfbplmnh5cczv4lynu5zzji6kqb4ivgpv6gwlnlck65utg3rxjxq
   };
   CREATE TYPE consent::ConsentStatementDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY dataUseLimitation: std::json;
+  };
+  CREATE TYPE consent::ConsentStatementDynamicDuo EXTENDING consent::ConsentStatement {
+      CREATE REQUIRED PROPERTY consentSystemIdentifier: std::str;
   };
   ALTER TYPE dataset::DatasetCase {
       CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
