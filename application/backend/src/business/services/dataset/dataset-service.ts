@@ -18,7 +18,7 @@ import { AuthenticatedUser } from "../../authenticated-user.ts";
 import { selectDatasetIdByDatasetUri } from "../../db/dataset-queries.ts";
 import { makeSystemlessIdentifierArray } from "../../db/helper.ts";
 import { AuditEventService } from "../audit-event-service.ts";
-import type { DuoLimitationCodedType } from "../consent/duo/duo-schemas.ts";
+import type { DuoLimitationCodedType } from "../consent/duo/duo-types.ts";
 
 @injectable()
 export class DatasetService {

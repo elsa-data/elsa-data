@@ -6,7 +6,7 @@ import type {
   DuoHealthMedicalBiomedicalResearchType,
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
-} from "../../business/services/consent/duo/duo-schemas.ts";
+} from "../../business/services/consent/duo/duo-types.ts";
 import type { ElsaSettings } from "../../config/elsa-settings";
 import { createFile } from "../util/test-data-helpers";
 import {

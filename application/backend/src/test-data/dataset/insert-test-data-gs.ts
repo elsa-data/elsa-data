@@ -1,6 +1,6 @@
 import type { DependencyContainer } from "tsyringe";
 import e from "../../../dbschema/edgeql-js";
-import type { DuoLimitationCodedType } from "../../business/services/consent/duo/duo-schemas.ts";
+import type { DuoLimitationCodedType } from "../../business/services/consent/duo/duo-types.ts";
 import { getServices } from "../../di-helpers";
 import {
   createArtifacts,
